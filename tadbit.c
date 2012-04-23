@@ -4,6 +4,20 @@
 
 #define TOLERANCE 1e-6
 
+double grad(double *k, double *d, double a, double b, int n) {
+
+   int i;
+   double f = 0.0, g = 0.0, tmp;
+
+   for (i = 0 ; i < n ; i++) {
+      tmp  =  exp(a+b*d[i])-k[i];
+      f   +=  tmp;
+      g   +=  tmp * d[i];
+   }
+
+   return f*f + g*g;
+
+}
 
 double ml_ab(double *k, double *d, double *ab, int n) {
 /*
@@ -16,18 +30,15 @@ double ml_ab(double *k, double *d, double *ab, int n) {
 
    int i, j;
    double a = ab[0], b = ab[1], llik;
+   double da, db, oldgrad, newgrad;
    double f = 0.0, g = 0.0, dfda, dfdb, dgda, dgdb;
    double denom, tmp; // 'tmp' is used as computation intermediate.
 
    // Initialize 'f' and 'g'.
-   for (i = 0 ; i < n ; i++) {
-      tmp  =  exp(a+b*d[i])-k[i];
-      f   +=  tmp;
-      g   +=  tmp * d[i];
-   }
+   oldgrad = grad(k, d, a, b, n);
 
    // Newton-Raphson until gradient function < TOLERANCE.
-   while ((f*f + g*g) > TOLERANCE) {
+   while (oldgrad > TOLERANCE) {
 
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
@@ -39,10 +50,20 @@ double ml_ab(double *k, double *d, double *ab, int n) {
       }
       dfdb = dgda;
 
-      // NB: skip gradient test.
       denom = dfdb*dgda - dfda*dgdb;
-      a += (f*dgdb - g*dfdb) / denom;
-      b += (g*dfda - f*dgda) / denom;
+      da = (f*dgdb - g*dfdb) / denom;
+      db = (g*dfda - f*dgda) / denom;
+
+      // Gradient test.
+      while ((newgrad = grad(k, d, a+da, b+db, n)) > oldgrad) {
+
+         da /= 2;
+         db /= 2;
+      }
+
+      // Update 'a' and 'b'.
+      a += da;
+      b += db;
 
       // Update 'f' and 'g' for testing.
       f = g = 0.0;
@@ -51,6 +72,10 @@ double ml_ab(double *k, double *d, double *ab, int n) {
          f   +=  tmp;
          g   +=  tmp * d[i];
       }
+
+      // Update gradient function.
+      oldgrad = newgrad;
+
    }
 
    // Update 'ab' in place.
@@ -173,14 +198,15 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
 
    // Breakpoint lists. The first index is the end of the segment,
    // the second is 1 if this position is an end (breakpoint).
-   int new_bkpt_list[n][n];
-   int old_bkpt_list[n][n];
+   
+   // int new_bkpt_list[n][n];
+   // int old_bkpt_list[n][n];
+   int *new_bkpt_list = (int *) malloc(n*n * sizeof(int));
+   int *old_bkpt_list = (int *) malloc(n*n * sizeof(int));
+
    // Initialize to 0.
-   for (i = 0 ; i < n ; i++) {
-      for (j = 0 ; j < n ; j++) {
-         new_bkpt_list[i][j] = 0;
-         old_bkpt_list[i][j] = 0;
-      }
+   for (i = 0 ; i < n*n ; i++) {
+      new_bkpt_list[i] = old_bkpt_list[i] = 0;
    }
 
    double new_full_llik = old_llik[n-1];
@@ -192,7 +218,7 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
       nbreaks++;
       for (i = 0 ; i < n ; i++) {
          for (j = 0 ; j < n ; j++) {
-            old_bkpt_list[i][j] = new_bkpt_list[i][j];
+            old_bkpt_list[i+j*n] = new_bkpt_list[i+j*n];
          }
       }
 
@@ -214,9 +240,9 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
          // Update breakpoint list.
          if (new_llik[j] > -INFINITY) {
             for (i = 0 ; i < n ; i++) {
-               new_bkpt_list[j][i] = old_bkpt_list[new_breakpoint][i];
+               new_bkpt_list[j+i*n] = old_bkpt_list[new_breakpoint+i*n];
             }
-            new_bkpt_list[j][new_breakpoint] = 1;
+            new_bkpt_list[j+new_breakpoint*n] = 1;
          }
 
       }
@@ -230,9 +256,13 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
 
    }
    
+
    for (i = 0 ; i < n ; i++) {
-      all_breakpoints[i] = old_bkpt_list[n-1][i];
+      all_breakpoints[i] = old_bkpt_list[n-1+i*n];
    }
+
+   free(new_bkpt_list);
+   free(old_bkpt_list);
 
    return all_breakpoints;
 
@@ -258,8 +288,8 @@ int *tadbit(double *obs, int n, int fast) {
    * 3 pairs of parameters.
 */
 
-   // double *dis = (double *) malloc(n*n * sizeof(double));
-   double dis[n*n], llik[n*n];
+   double *dis = (double *) malloc(n*n * sizeof(double));
+   double *llik = (double *) malloc(n*n * sizeof(double));
 
    k = 0;
    for (i = 0; i < n ; i++) {
@@ -355,15 +385,8 @@ int *tadbit(double *obs, int n, int fast) {
    }
    free(d_blk);
    free(k_blk);
-
-
-   // START DEBUG
-   for (i = 0 ; i < n ;i++) {
-      printf("%d ", all_breakpoints[i]);
-   }
-   printf("\n");
-   // END DEBUG
-
+   free(dis);
+   free(llik);
 
    // Done!!
    return all_breakpoints;
