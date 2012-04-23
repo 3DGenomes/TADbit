@@ -4,20 +4,6 @@
 
 #define TOLERANCE 1e-6
 
-double grad(double *k, double *d, double a, double b, int n) {
-
-   int i;
-   double f = 0.0, g = 0.0, tmp;
-
-   for (i = 0 ; i < n ; i++) {
-      tmp  =  exp(a+b*d[i])-k[i];
-      f   +=  tmp;
-      g   +=  tmp * d[i];
-   }
-
-   return f*f + g*g;
-
-}
 
 double ml_ab(double *k, double *d, double *ab, int n) {
 /*
@@ -28,17 +14,26 @@ double ml_ab(double *k, double *d, double *ab, int n) {
  * of the model is Sigma -exp(a + b*d_i) + k_i(a + b*d_i).
  */
 
-   int i, j;
+   int i;
    double a = ab[0], b = ab[1], llik;
-   double da, db, oldgrad, newgrad;
-   double f = 0.0, g = 0.0, dfda, dfdb, dgda, dgdb;
+   double da = 0.0, db = 0.0, oldgrad;
+   double f, g, dfda = 0.0, dfdb = 0.0, dgda = 0.0, dgdb = 0.0;
    double denom, tmp; // 'tmp' is used as computation intermediate.
 
-   // Initialize 'f' and 'g'.
-   oldgrad = grad(k, d, a, b, n);
+
+   void recompute_fg(void) {
+      f = 0.0; g = 0.0;
+      for (i = 0 ; i < n ; i++) {
+         tmp  =  exp(a+da+(b+db)*d[i])-k[i];
+         f   +=  tmp;
+         g   +=  tmp * d[i];
+      }
+   }
+
+   recompute_fg();
 
    // Newton-Raphson until gradient function < TOLERANCE.
-   while (oldgrad > TOLERANCE) {
+   while ((oldgrad = f*f + g*g) > TOLERANCE) {
 
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
@@ -55,26 +50,16 @@ double ml_ab(double *k, double *d, double *ab, int n) {
       db = (g*dfda - f*dgda) / denom;
 
       // Gradient test.
-      while ((newgrad = grad(k, d, a+da, b+db, n)) > oldgrad) {
-
+      recompute_fg();
+      while (f*f + g*g > oldgrad) {
          da /= 2;
          db /= 2;
+         recompute_fg();
       }
 
       // Update 'a' and 'b'.
       a += da;
       b += db;
-
-      // Update 'f' and 'g' for testing.
-      f = g = 0.0;
-      for (i = 0 ; i < n ; i++) {
-         tmp  =  exp(a+b*d[i])-k[i];
-         f   +=  tmp;
-         g   +=  tmp * d[i];
-      }
-
-      // Update gradient function.
-      oldgrad = newgrad;
 
    }
 
@@ -185,7 +170,7 @@ void remove_non_local_maxima (double *obs, double *dis, int n,
 int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
 
    int i,j, nbreaks = 0;
-   int new_breakpoint;
+   int new_breakpoint = 0;
 
    double tmp;
 
@@ -402,4 +387,8 @@ void tadbit_R_call(double *obs, int *dim, int *fast, int *R_mem) {
       R_mem[i] = all_breakpoints[i];
    }
 
+}
+
+int main(void) {
+   return 0;
 }
