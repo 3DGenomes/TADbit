@@ -1,8 +1,21 @@
 #include <math.h>
 #include <stdlib.h>
 #include <R.h>
+#include <Rinternals.h>
+#include <R_ext/Rdynload.h>
 
 #define TOLERANCE 1e-6
+
+// Declare and register R/C interface.
+SEXP tadbit_R_call(SEXP obs, SEXP fast);
+R_CallMethodDef callMethods[] = {
+   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 2},
+   {NULL, NULL, 0}
+};
+
+void R_init_ccode(DllInfo *info) {
+   R_registerRoutines(info, NULL, callMethods, NULL, NULL);
+}
 
 
 double ml_ab(double *k, double *d, double *ab, int n) {
@@ -403,4 +416,41 @@ void tadbit_R_call(double *obs, int *dim, int *m, int *fast, int *R_mem) {
       R_mem[i] = all_breakpoints[i];
    }
 
+}
+
+SEXP tadbit_R_call(SEXP obs_list, SEXP fast_yn) {
+
+   R_len_t i, m = length(list);
+   int first = 0; n, *dim;
+
+
+   // Convert 'obs_list' to pointer of pointer to double.
+   // Check input with 'isMatrix'.
+   double **obs = (double **) malloc(m * sizeof(double **));
+   for (i = 0 ; i < m ; i++) {
+      // This fails is list element is not numeric.
+      obs[i] = REAL(coerceVector(VECTOR_ELT(list, i), REALSXP));
+
+      // Check the dimension.
+      dim = INTEGER(getAttrib(VECTOR_ELT(list, i), R_DimSymbol));
+      if (dim[0] != dim[1]) {
+         error("input must be square matrix");
+      }
+      if (first) {
+         n = dim[0];
+         first = 1;
+      }
+      else {
+         if (n != dim[0]) {
+            error("all matrices must have same dimensions");;
+         }
+      }
+   }
+
+   // int *tadbit(double **obs, int n, int m, int fast) {
+   int bkpts = tadbit(obs, n, m, fast);
+
+   PROTECT(bkpts = allocVector(??));
+   UNPROTECT(1);
+   return bkpts;
 }
