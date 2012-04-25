@@ -7,12 +7,12 @@
 
 double ml_ab(double *k, double *d, double *ab, int n) {
 /*
- * The 2-double-array 'ab' is upated in place and the log-likelihood
- * is returned.
- * The fitted model (by maximum likelihood) is Poisson with lambda
- * paramter such that lambda = exp(a + b*d). So the full log-likelihood
- * of the model is Sigma -exp(a + b*d_i) + k_i(a + b*d_i).
- */
+   * The 2-array 'ab' is upated in place and the log-likelihood
+   * is returned.
+   * The fitted model (by maximum likelihood) is Poisson with lambda
+   * paramter such that lambda = exp(a + b*d). So the full log-likelihood
+   * of the model is Sigma -exp(a + b*d_i) + k_i(a + b*d_i).
+*/
 
    int i;
    double a = ab[0], b = ab[1], llik;
@@ -21,6 +21,7 @@ double ml_ab(double *k, double *d, double *ab, int n) {
    double denom, tmp; // 'tmp' is used as computation intermediate.
 
 
+   // Comodity function.
    void recompute_fg(void) {
       f = 0.0; g = 0.0;
       for (i = 0 ; i < n ; i++) {
@@ -49,8 +50,8 @@ double ml_ab(double *k, double *d, double *ab, int n) {
       da = (f*dgdb - g*dfdb) / denom;
       db = (g*dfda - f*dgda) / denom;
 
-      // Gradient test.
       recompute_fg();
+      // Gradient test. Traceback if not going down the gradient.
       while (f*f + g*g > oldgrad) {
          da /= 2;
          db /= 2;
@@ -63,14 +64,14 @@ double ml_ab(double *k, double *d, double *ab, int n) {
 
    }
 
-   // Update 'ab' in place.
-   ab[0] = a; ab[1] = b;
-
-   // Compute log-likelihood (starting from 'dfda').
-   llik = -dfda;
+   // Compute log-likelihood (using 'dfda').
+   llik = 0.0;
    for (i = 0 ; i < n ; i++) {
-      llik += k[i] * (a + b*d[i]);
+      llik += exp(a+b*d[i]) + k[i] * (a + b*d[i]);
    }
+
+   // Update 'ab' in place (to make the estimates available).
+   ab[0] = a; ab[1] = b;
 
    return llik;
 
@@ -78,11 +79,11 @@ double ml_ab(double *k, double *d, double *ab, int n) {
 
 double **break_in_blocks(double *mat, int n, int i, int j, double **blocks) {
 /*
- *  Break up 'mat' in three blocks delimited by 'i' and 'j'.
- *  The upper block is (0,i-1)x(i,j), the triangular block is
- *  the upper triangular block without diagonal (i,j)x(i,j)
- *  and the bottom block is (j+1,n)x(i,j).
- */
+   *  Break up 'mat' in three blocks delimited by 'i' and 'j'.
+   *  The upper block is (0,i-1)x(i,j), the triangular block is
+   *  the upper triangular block without diagonal (i,j)x(i,j)
+   *  and the bottom block is (j+1,n)x(i,j).
+*/
 
    int row, col;
    int top_counter = 0, tri_counter = 0, bot_counter = 0;
@@ -116,10 +117,16 @@ double **break_in_blocks(double *mat, int n, int i, int j, double **blocks) {
 }
 
 
-void remove_non_local_maxima (double *obs, double *dis, int n,
+void remove_non_local_maxima (double **obs, double *dis, int n, int k,
     double **k_blk, double **d_blk, int *bkpts) {
+/*
+   * Segment the data with one breakpoint, compute the
+   * likelihood and return the local maxima of that function.
+   * Final breakpoints are likely to be one of those local
+   * maxima.
+*/
 
-   int i, j;
+   int i, j, k;
    double llik[n];
    double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
 
@@ -131,29 +138,33 @@ void remove_non_local_maxima (double *obs, double *dis, int n,
    // Compute the log-lik of the first segment forward...
    for (j = 2 ; j < n ; j++) {
       // Cut the (i,j)-blocks.
-      k_blk = break_in_blocks(obs, n, 0, j, k_blk);
       d_blk = break_in_blocks(dis, n, 0, j, d_blk);
 
-      // Compute the likelihood and sum.
-      llik[j] =
-          ml_ab(k_blk[1], d_blk[1], ab[1], j*(j+1)/2)          +
-          ml_ab(k_blk[2], d_blk[2], ab[2], (n-j-1)*(j+1)) / 2;
+      llik[j] = 0.0;
+      for (k = 0 ; k < m ; k++) {
+         k_blk = break_in_blocks(obs[k], n, 0, j, k_blk);
+
+         // Compute the likelihood and sum.
+         llik[j] +=
+             ml_ab(k_blk[1], d_blk[1], ab[1], j*(j+1)/2)          +
+             ml_ab(k_blk[2], d_blk[2], ab[2], (n-j-1)*(j+1)) / 2;
+      }
    }
 
    // ... and the second segment backward.
    for (j = 3 ; j < n-3 ; j++) {
       // Cut the (i,j)-blocks.
-      k_blk = break_in_blocks(obs, n, j, n-1, k_blk);
       d_blk = break_in_blocks(dis, n, j, n-1, d_blk);
 
-      // Compute the likelihood and sum.
-      llik[j-1] += 
-          ml_ab(k_blk[0], d_blk[0], ab[0], j*(n-j+1))       / 2  +
-          ml_ab(k_blk[1], d_blk[1], ab[1], (n-j)*(n-j+1)/2);
+      for (k = 0 ; k < m ; k++) {
+         k_blk = break_in_blocks(obs[k], n, j, n-1, k_blk);
+         // Compute the likelihood and sum.
+         llik[j-1] += 
+             ml_ab(k_blk[0], d_blk[0], ab[0], j*(n-j+1))       / 2  +
+             ml_ab(k_blk[1], d_blk[1], ab[1], (n-j)*(n-j+1)/2);
+      }
    }
 
-
-   // Get local bkpts.
    bkpts[n-1] = 1;
    for (i = 0 ; i < n-1 ; i++) {
       bkpts[i] = 0;
@@ -168,6 +179,9 @@ void remove_non_local_maxima (double *obs, double *dis, int n,
 }
 
 int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
+/*
+   * Find the maximum likelihood estimate by a dynamic algorithm.
+*/
 
    int i,j, nbreaks = 0;
    int new_breakpoint = 0;
@@ -254,7 +268,7 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
 }
 
 
-int *tadbit(double *obs, int n, int fast) {
+int *tadbit(double **obs, int n, int m, int fast) {
 
    int i, j, k;
 
@@ -317,6 +331,7 @@ int *tadbit(double *obs, int n, int fast) {
       remove_non_local_maxima(obs, dis, n, k_blk, d_blk, bkpts);
    }
 
+
 /*
    * Compute the log-likelihood of the segments. the element
    * (i,j) of the matrix-like array 'llik' will contain the
@@ -326,8 +341,6 @@ int *tadbit(double *obs, int n, int fast) {
    * left out and possibily most of the elements if fast is
    * true.
 */
-
-
 
    for (i = 0 ; i < n-2 ; i++) {
       // Skip if not a potential breakpoint.
@@ -342,14 +355,17 @@ int *tadbit(double *obs, int n, int fast) {
          }
          
          // Segment the (i,j)-blocks.
-         k_blk = break_in_blocks(obs, n, i, j, k_blk);
          d_blk = break_in_blocks(dis, n, i, j, d_blk);
 
-         // Get the likelihood per block and sum.
-         llik[i+j*n] =
-             ml_ab(k_blk[0], d_blk[0], ab[0], i*(j-i+1))       / 2  +
-             ml_ab(k_blk[1], d_blk[1], ab[1], (j-i)*(j-i+1)/2)      +
-             ml_ab(k_blk[2], d_blk[2], ab[2], (n-j-1)*(j-i+1)) / 2;
+         llik[i+j*n] = 0.0;
+         for (k = 0 ; k < m ; k++) {
+            k_blk = break_in_blocks(obs[k], n, i, j, k_blk);
+            // Get the likelihood per block and sum.
+            llik[i+j*n] +=
+                ml_ab(k_blk[0], d_blk[0], ab[0], i*(j-i+1))       / 2  +
+                ml_ab(k_blk[1], d_blk[1], ab[1], (j-i)*(j-i+1)/2)      +
+                ml_ab(k_blk[2], d_blk[2], ab[2], (n-j-1)*(j-i+1)) / 2;
+         }
       }
    }
 
@@ -378,7 +394,7 @@ int *tadbit(double *obs, int n, int fast) {
 
 }
 
-void tadbit_R_call(double *obs, int *dim, int *fast, int *R_mem) {
+void tadbit_R_call(double *obs, int *dim, int *m, int *fast, int *R_mem) {
 
    int *all_breakpoints = tadbit (obs, *dim, *fast);
 
@@ -387,8 +403,4 @@ void tadbit_R_call(double *obs, int *dim, int *fast, int *R_mem) {
       R_mem[i] = all_breakpoints[i];
    }
 
-}
-
-int main(void) {
-   return 0;
 }
