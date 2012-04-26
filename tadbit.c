@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
@@ -7,13 +8,13 @@
 #define TOLERANCE 1e-6
 
 // Declare and register R/C interface.
-SEXP tadbit_R_call(SEXP obs, SEXP fast);
+SEXP tadbit_R_call(SEXP list, SEXP fast_yn);
 R_CallMethodDef callMethods[] = {
    {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 2},
    {NULL, NULL, 0}
 };
 
-void R_init_ccode(DllInfo *info) {
+void R_init_tadbit(DllInfo *info) {
    R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 }
 
@@ -130,7 +131,7 @@ double **break_in_blocks(double *mat, int n, int i, int j, double **blocks) {
 }
 
 
-void remove_non_local_maxima (double **obs, double *dis, int n, int k,
+void remove_non_local_maxima (double **obs, double *dis, int n, int m,
     double **k_blk, double **d_blk, int *bkpts) {
 /*
    * Segment the data with one breakpoint, compute the
@@ -341,7 +342,7 @@ int *tadbit(double **obs, int n, int m, int fast) {
 
    // If 'fast', only local maxima are candidates.
    if (fast) {
-      remove_non_local_maxima(obs, dis, n, k_blk, d_blk, bkpts);
+      remove_non_local_maxima(obs, dis, n, m, k_blk, d_blk, bkpts);
    }
 
 
@@ -407,30 +408,30 @@ int *tadbit(double **obs, int n, int m, int fast) {
 
 }
 
-void tadbit_R_call(double *obs, int *dim, int *m, int *fast, int *R_mem) {
-
-   int *all_breakpoints = tadbit (obs, *dim, *fast);
-
-   int i;
-   for (i = 0 ; i < *dim ; i++) {
-      R_mem[i] = all_breakpoints[i];
-   }
-
-}
-
-SEXP tadbit_R_call(SEXP obs_list, SEXP fast_yn) {
+// R/C interface.
+SEXP tadbit_R_call(SEXP list, SEXP fast_yn) {
+/*
+   * This is a tadbit wrapper for R. The matrices have to passed
+   * in a list (in R). Checks that the input consists of numeric
+   * square matrices, with identical dimensions. The list is
+   * is converted to pointer of pointers to doubles and passed
+   * to 'tadbit'.
+*/
 
    R_len_t i, m = length(list);
-   int first = 0; n, *dim;
-
+   int first = 1, n, *dim;
+   int fast = INTEGER(fast_yn)[0];
 
    // Convert 'obs_list' to pointer of pointer to double.
-   // Check input with 'isMatrix'.
    double **obs = (double **) malloc(m * sizeof(double **));
    for (i = 0 ; i < m ; i++) {
       // This fails is list element is not numeric.
       obs[i] = REAL(coerceVector(VECTOR_ELT(list, i), REALSXP));
 
+      // Check that input is a matrix.
+      if (!isMatrix(VECTOR_ELT(list, i))) {
+         error("input must be square matrix");
+      }
       // Check the dimension.
       dim = INTEGER(getAttrib(VECTOR_ELT(list, i), R_DimSymbol));
       if (dim[0] != dim[1]) {
@@ -438,7 +439,7 @@ SEXP tadbit_R_call(SEXP obs_list, SEXP fast_yn) {
       }
       if (first) {
          n = dim[0];
-         first = 1;
+         first = 0;
       }
       else {
          if (n != dim[0]) {
@@ -447,10 +448,20 @@ SEXP tadbit_R_call(SEXP obs_list, SEXP fast_yn) {
       }
    }
 
-   // int *tadbit(double **obs, int n, int m, int fast) {
-   int bkpts = tadbit(obs, n, m, fast);
+   // Call 'tadbit'.
+   int *bkpts = tadbit(obs, n, m, fast);
 
-   PROTECT(bkpts = allocVector(??));
+   // Wrap it up.
+   SEXP return_val_sexp;
+   PROTECT(return_val_sexp = allocVector(INTSXP, n));
+   int *return_val = INTEGER(return_val_sexp);
+   // Copy output from 'tadbit'.
+   for (i = 0 ; i < n ; i++) {
+      return_val[i] = bkpts[i];
+   }
+   free (bkpts);
    UNPROTECT(1);
-   return bkpts;
+
+   return return_val_sexp;
+
 }
