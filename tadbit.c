@@ -28,15 +28,35 @@ double ml_ab(double *k, double *d, double *ab, int n) {
    * of the model is Sigma -exp(a + b*d_i) + k_i(a + b*d_i).
 */
 
-   int i;
+   int i, j = 0;
    double a = ab[0], b = ab[1], llik;
    double da = 0.0, db = 0.0, oldgrad;
    double f, g, dfda = 0.0, dfdb = 0.0, dgda = 0.0, dgdb = 0.0;
    double denom, tmp; // 'tmp' is used as computation intermediate.
 
 
+   // Filter out NAs. Variable 'j'
+   for (i = 0 ; i < n ; i++) {
+      if (isnan(d[i]) || isnan(k[i])) {
+         continue;
+      }
+      else {
+         d[j] = d[i];
+         k[j] = k[i];
+         j++;
+      }
+   }
+
+   if (j == 0) {
+      return NAN;
+   }
+   else {
+      n = j;
+   }
+
+
    // Comodity function.
-   void recompute_fg(void) {
+   void recompute_fg() {
       f = 0.0; g = 0.0;
       for (i = 0 ; i < n ; i++) {
          tmp  =  exp(a+da+(b+db)*d[i])-k[i];
@@ -86,6 +106,12 @@ double ml_ab(double *k, double *d, double *ab, int n) {
 
    // Update 'ab' in place (to make the estimates available).
    ab[0] = a; ab[1] = b;
+
+      // START DEBUG
+      if (isnan(llik)) {
+         printf("%f, %f ", ab[0], ab[1]);
+      }
+      // END DEBUG
 
    return llik;
 
@@ -184,6 +210,9 @@ void remove_non_local_maxima (double **obs, double *dis, int n, int m,
       bkpts[i] = 0;
    }
    for (i = 3 ; i < n-1 ; i++) {
+      // START DEBUG
+      printf("%.2f ", llik[i]);
+      // END DEBUG
       if (llik[i] > llik[i-1] && llik[i] > llik[i+1]) {
          bkpts[i] = 1;
       }
@@ -345,6 +374,15 @@ int *tadbit(double **obs, int n, int m, int fast) {
       remove_non_local_maxima(obs, dis, n, m, k_blk, d_blk, bkpts);
    }
 
+   // START DEBUG
+   for (i = 0 ; i < n ; i++) {
+      if (bkpts[i] > 0) {
+         printf("%d ", i);
+      }
+   }
+   printf("\n", i);
+   // END DEBUG
+
 
 /*
    * Compute the log-likelihood of the segments. the element
@@ -416,6 +454,8 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn) {
    * square matrices, with identical dimensions. The list is
    * is converted to pointer of pointers to doubles and passed
    * to 'tadbit'.
+   * Assume that NAs can be passed from R and are ignored in the
+   * computation.
 */
 
    R_len_t i, m = length(list);
