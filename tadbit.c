@@ -47,7 +47,7 @@ double ml_ab(double *k, double *d, double *ab, int n) {
       }
    }
 
-   if (j == 0) {
+   if (j < 3) {
       return NAN;
    }
    else {
@@ -96,6 +96,7 @@ double ml_ab(double *k, double *d, double *ab, int n) {
       a += da;
       b += db;
 
+
    }
 
    // Compute log-likelihood (using 'dfda').
@@ -107,11 +108,6 @@ double ml_ab(double *k, double *d, double *ab, int n) {
    // Update 'ab' in place (to make the estimates available).
    ab[0] = a; ab[1] = b;
 
-      // START DEBUG
-      if (isnan(llik)) {
-         printf("%f, %f ", ab[0], ab[1]);
-      }
-      // END DEBUG
 
    return llik;
 
