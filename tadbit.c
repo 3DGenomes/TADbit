@@ -19,7 +19,7 @@ void R_init_tadbit(DllInfo *info) {
 }
 
 
-double ml_ab(double *k, double *d, double *ab, int n) {
+double ml_ab(double *k_orig, double *d_orig, double *ab, int n) {
 /*
    * The 2-array 'ab' is upated in place and the log-likelihood
    * is returned.
@@ -34,15 +34,16 @@ double ml_ab(double *k, double *d, double *ab, int n) {
    double f, g, dfda = 0.0, dfdb = 0.0, dgda = 0.0, dgdb = 0.0;
    double denom, tmp; // 'tmp' is used as computation intermediate.
 
+   double k[n], d[n];
 
-   // Filter out NAs. Variable 'j'
+   // Filter out NAs while copying.
    for (i = 0 ; i < n ; i++) {
-      if (isnan(d[i]) || isnan(k[i])) {
+      if (isnan(d_orig[i]) || isnan(k_orig[i])) {
          continue;
       }
       else {
-         d[j] = d[i];
-         k[j] = k[i];
+         d[j] = d_orig[i];
+         k[j] = k_orig[i];
          j++;
       }
    }
@@ -108,7 +109,6 @@ double ml_ab(double *k, double *d, double *ab, int n) {
    // Update 'ab' in place (to make the estimates available).
    ab[0] = a; ab[1] = b;
 
-
    return llik;
 
 }
@@ -172,7 +172,7 @@ void remove_non_local_maxima (double **obs, double *dis, int n, int m,
 */
 
    // Compute the log-lik of the first segment forward...
-   for (j = 2 ; j < n ; j++) {
+   for (j = 2 ; j < n-3 ; j++) {
       // Cut the (i,j)-blocks.
       d_blk = break_in_blocks(dis, n, 0, j, d_blk);
 
@@ -188,7 +188,7 @@ void remove_non_local_maxima (double **obs, double *dis, int n, int m,
    }
 
    // ... and the second segment backward.
-   for (j = 3 ; j < n-3 ; j++) {
+   for (j = 3 ; j < n-2 ; j++) {
       // Cut the (i,j)-blocks.
       d_blk = break_in_blocks(dis, n, j, n-1, d_blk);
 
@@ -196,8 +196,8 @@ void remove_non_local_maxima (double **obs, double *dis, int n, int m,
          k_blk = break_in_blocks(obs[k], n, j, n-1, k_blk);
          // Compute the likelihood and sum.
          llik[j-1] += 
-             ml_ab(k_blk[0], d_blk[0], ab[0], j*(n-j+1))       / 2  +
-             ml_ab(k_blk[1], d_blk[1], ab[1], (n-j)*(n-j+1)/2);
+             ml_ab(k_blk[0], d_blk[0], ab[0], (j-1)*(n-j))  / 2  +
+             ml_ab(k_blk[1], d_blk[1], ab[1], (n-j-1)*(n-j)/2);
       }
    }
 
@@ -206,14 +206,10 @@ void remove_non_local_maxima (double **obs, double *dis, int n, int m,
       bkpts[i] = 0;
    }
    for (i = 3 ; i < n-1 ; i++) {
-      // START DEBUG
-      printf("%.2f ", llik[i]);
-      // END DEBUG
       if (llik[i] > llik[i-1] && llik[i] > llik[i+1]) {
          bkpts[i] = 1;
       }
    }
-
 
 }
 
@@ -369,15 +365,6 @@ int *tadbit(double **obs, int n, int m, int fast) {
    if (fast) {
       remove_non_local_maxima(obs, dis, n, m, k_blk, d_blk, bkpts);
    }
-
-   // START DEBUG
-   for (i = 0 ; i < n ; i++) {
-      if (bkpts[i] > 0) {
-         printf("%d ", i);
-      }
-   }
-   printf("\n", i);
-   // END DEBUG
 
 
 /*
