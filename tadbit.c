@@ -28,6 +28,10 @@ double ml_ab(double *k_orig, double *d_orig, double *ab, int n) {
    * of the model is Sigma -exp(a + b*d_i) + k_i(a + b*d_i).
 */
 
+   if (n < 1) {
+      return 0.0;
+   }
+
    int i, j = 0;
    double a = ab[0], b = ab[1], llik;
    double da = 0.0, db = 0.0, oldgrad;
@@ -379,13 +383,13 @@ int *tadbit(double **obs, int n, int m, int fast) {
 
    for (i = 0 ; i < n-2 ; i++) {
       // Skip if not a potential breakpoint.
-      if ((i > 0) && (bkpts[i-1] != 1)) {
+      if ((i > 0) && (!bkpts[i-1])) {
          continue;
       }
 
       for (j = i+2 ; j < n ; j++) {
          // Skip if not a potential breakpoint.
-         if (bkpts[j] != 1) {
+         if (!bkpts[j]) {
             continue;
          }
          
