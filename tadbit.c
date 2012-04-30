@@ -1,6 +1,7 @@
-#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <math.h>
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
@@ -191,6 +192,10 @@ void remove_non_local_maxima (double **obs, double *dis, int n, int m,
       }
    }
 
+   // START DEBUG
+   printf("done forward\n");
+   // END DEBUG
+
    // ... and the second segment backward.
    for (j = 3 ; j < n-2 ; j++) {
       // Cut the (i,j)-blocks.
@@ -333,7 +338,8 @@ int *tadbit(double **obs, int n, int m, int fast) {
    for (i = 0; i < n ; i++) {
       for (j = 0; j < n ; j++) {
          llik[k] = NAN;
-         dis[k++] = abs(i-j);
+         dis[k] = abs(i-j);
+         k++;
       }
    }
 
@@ -347,6 +353,7 @@ int *tadbit(double **obs, int n, int m, int fast) {
    k_blk[0] = (double *) malloc((n+1)*(n+1)/4 * sizeof(double));
    k_blk[1] = (double *) malloc(n*(n+1)/2 * sizeof(double));
    k_blk[2] = (double *) malloc((n+1)*(n+1)/4 * sizeof(double));
+
 
    // Initialize 'a' and 'b' to 0.
    double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
@@ -491,4 +498,21 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn) {
 
    return return_val_sexp;
 
+}
+
+int main (int argc, const char* argv[]) {
+   FILE *f = fopen(argv[1], "r");
+   char line[1024], *p, *e;
+   long v;
+   while (fgets(line, sizeof(line), f)) {
+       p = line;
+       for (p = line ; ; p = e) {
+           v = strtol(p, &e, 10);
+           if (p == e)
+               break;
+           // process v here
+           printf("%d\n", v);
+       }
+   }
+   fclose(f);
 }
