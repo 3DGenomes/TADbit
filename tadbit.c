@@ -9,6 +9,12 @@
 
 #define TOLERANCE 1e-6
 
+typedef struct {
+   int size[3];
+   double *k[3];
+   double *d[3];
+} ml_blocks;
+
 // Declare and register R/C interface.
 SEXP tadbit_R_call(SEXP list, SEXP fast_yn);
 R_CallMethodDef callMethods[] = {
@@ -21,7 +27,7 @@ void R_init_tadbit(DllInfo *info) {
 }
 
 
-double ml_ab(double *k_orig, double *d_orig, double *ab, int n) {
+double ml_ab(double *k, double *d, double *ab, int n) {
 /*
    * The 2-array 'ab' is upated in place and the log-likelihood
    * is returned.
@@ -33,34 +39,16 @@ double ml_ab(double *k_orig, double *d_orig, double *ab, int n) {
    if (n < 1) {
       return 0.0;
    }
+   if (n < 3) {
+      return NAN;
+   }
 
    int i, j = 0;
    double a = ab[0], b = ab[1], llik;
    double da = 0.0, db = 0.0, oldgrad;
    double f, g, dfda = 0.0, dfdb = 0.0, dgda = 0.0, dgdb = 0.0;
-   double denom, tmp; // 'tmp' is used as computation intermediate.
-
-   double k[n], d[n];
-
-   // Filter out NAs while copying.
-   for (i = 0 ; i < n ; i++) {
-      if (isnan(d_orig[i]) || isnan(k_orig[i])) {
-         continue;
-      }
-      else {
-         d[j] = d_orig[i];
-         k[j] = k_orig[i];
-         j++;
-      }
-   }
-
-   if (j < 3) {
-      return NAN;
-   }
-   else {
-      n = j;
-   }
-
+   double denom;
+   long double tmp; // 'tmp' is used as computation intermediate.
 
    // Comodity function.
    void recompute_fg() {
@@ -119,7 +107,7 @@ double ml_ab(double *k_orig, double *d_orig, double *ab, int n) {
 
 }
 
-double **break_in_blocks(double *mat, int n, int i, int j, double **blocks) {
+void slice(double *k, double *d, int n, int i, int j, ml_blocks *blocks) {
 /*
    *  Break up 'mat' in three blocks delimited by 'i' and 'j'.
    *  The upper block is (0,i-1)x(i,j), the triangular block is
@@ -127,40 +115,47 @@ double **break_in_blocks(double *mat, int n, int i, int j, double **blocks) {
    *  and the bottom block is (j+1,n)x(i,j).
 */
 
-   int row, col;
+   int l, row, col;
    int top_counter = 0, tri_counter = 0, bot_counter = 0;
 
-   double *top = blocks[0];
-   double *tri = blocks[1];
-   double *bot = blocks[2];
-
+   for (l = 0 ; l < 3 ; l++) {
+      blocks->sizes[l] = 0;
+   }
 
    // Fill vertically.
    for (col = i ; col < j+1 ; col++) {
       // Skip if 'i' is 0.
       for (row = 0 ; row < i ; row++) {
-         top[top_counter++] = mat[row+col*n];
+         if (!isnan(k[row+col*n])) {
+            blocks->k[0][blocks->size[0]] = k[row+col*n];
+            blocks->d[0][blocks->size[0]] = d[row+col*n];
+            blocks->size[0]++;
+         }
       }
 
       // Skip if 'col' is i.
       for (row = i ; row < col ; row++) {
-         tri[tri_counter++] = mat[row+col*n];
+         if (!isnan(k[row+col*n])) {
+            blocks->k[1][blocks->size[1]] = k[row+col*n];
+            blocks->d[1][blocks->size[1]] = d[row+col*n];
+            blocks->size[1]++;
+         }
       }
 
       // Skip if 'j' is n-1.
       for (row = j+1 ; row < n ; row++) {
-         bot[bot_counter++] = mat[row+col*n];
+         if (!isnan(k[row+col*n])) {
+            blocks->k[2][blocks->size[2]] = k[row+col*n];
+            blocks->d[2][blocks->size[2]] = d[row+col*n];
+            blocks->size[2]++;
+         }
       }
-
    }
-
-   return blocks;
-
 }
 
 
 void remove_non_local_maxima (double **obs, double *dis, int n, int m,
-    double **k_blk, double **d_blk, int *bkpts) {
+    ml_blocks *blocks, int *bkpts) {
 /*
    * Segment the data with one breakpoint, compute the
    * likelihood and return the local maxima of that function.
@@ -179,35 +174,24 @@ void remove_non_local_maxima (double **obs, double *dis, int n, int m,
 
    // Compute the log-lik of the first segment forward...
    for (j = 2 ; j < n-3 ; j++) {
-      // Cut the (i,j)-blocks.
-      d_blk = break_in_blocks(dis, n, 0, j, d_blk);
-
-      llik[j] = 0.0;
       for (k = 0 ; k < m ; k++) {
-         k_blk = break_in_blocks(obs[k], n, 0, j, k_blk);
+         slice(obs[k], dis, n, 0, j, blocks);
 
          // Compute the likelihood and sum.
-         llik[j] +=
-             ml_ab(k_blk[1], d_blk[1], ab[1], j*(j+1)/2)          +
-             ml_ab(k_blk[2], d_blk[2], ab[2], (n-j-1)*(j+1)) / 2;
+         llik[j] =
+           ml_ab(blocks->k[1], blocks->d[1], ab[1], blocks->size[1])  +
+           ml_ab(blocks->k[2], blocks->d[2], ab[2], blocks->size[2]) / 2;
       }
    }
 
-   // START DEBUG
-   printf("done forward\n");
-   // END DEBUG
-
    // ... and the second segment backward.
    for (j = 3 ; j < n-2 ; j++) {
-      // Cut the (i,j)-blocks.
-      d_blk = break_in_blocks(dis, n, j, n-1, d_blk);
-
       for (k = 0 ; k < m ; k++) {
-         k_blk = break_in_blocks(obs[k], n, j, n-1, k_blk);
+         slice(obs[k], dis, n, j, n-1, blocks);
          // Compute the likelihood and sum.
          llik[j-1] += 
-             ml_ab(k_blk[0], d_blk[0], ab[0], (j-1)*(n-j))  / 2  +
-             ml_ab(k_blk[1], d_blk[1], ab[1], (n-j-1)*(n-j)/2);
+             ml_ab(blocks->k[0], blocks->d[0], ab[0], blocks->size[0]) / 2 +
+             ml_ab(blocks->k[1], blocks->d[1], ab[1], blocks->size[1]);
       }
    }
 
@@ -344,16 +328,16 @@ int *tadbit(double **obs, int n, int m, int fast) {
       }
    }
 
-   // Allocate max possible size to blocks matrices.
-   double **d_blk = (double **) malloc(3 * sizeof(double *));
-   d_blk[0] = (double *) malloc((n+1)*(n+1)/4 * sizeof(double));
-   d_blk[1] = (double *) malloc(n*(n+1)/2 * sizeof(double));
-   d_blk[2] = (double *) malloc((n+1)*(n+1)/4 * sizeof(double));
+   // Allocate max possible size to blocks.
+   ml_blocks *blocks = (ml_blocks *) malloc(sizeof(ml_blocks));
+   int nmax = (n+1)*(n+1)/4;
 
-   double **k_blk = (double **) malloc(3 * sizeof(double *));
-   k_blk[0] = (double *) malloc((n+1)*(n+1)/4 * sizeof(double));
-   k_blk[1] = (double *) malloc(n*(n+1)/2 * sizeof(double));
-   k_blk[2] = (double *) malloc((n+1)*(n+1)/4 * sizeof(double));
+   blocks->k[0] = (double *) malloc(nmax     * sizeof(double));
+   blocks->k[1] = (double *) malloc(nmax * 2 * sizeof(double));
+   blocks->k[2] = (double *) malloc(nmax     * sizeof(double));
+   blocks->d[0] = (double *) malloc(nmax     * sizeof(double));
+   blocks->d[1] = (double *) malloc(nmax * 2 * sizeof(double));
+   blocks->d[2] = (double *) malloc(nmax     * sizeof(double));
 
 
    // Initialize 'a' and 'b' to 0.
@@ -375,7 +359,7 @@ int *tadbit(double **obs, int n, int m, int fast) {
 
    // If 'fast', only local maxima are candidates.
    if (fast) {
-      remove_non_local_maxima(obs, dis, n, m, k_blk, d_blk, bkpts);
+      remove_non_local_maxima(obs, dis, n, m, blocks, bkpts);
    }
 
 
@@ -401,17 +385,14 @@ int *tadbit(double **obs, int n, int m, int fast) {
             continue;
          }
          
-         // Segment the (i,j)-blocks.
-         d_blk = break_in_blocks(dis, n, i, j, d_blk);
-
          llik[i+j*n] = 0.0;
          for (k = 0 ; k < m ; k++) {
-            k_blk = break_in_blocks(obs[k], n, i, j, k_blk);
+            slice(obs[k], dis, n, i, j, blocks);
             // Get the likelihood per block and sum.
             llik[i+j*n] +=
-                ml_ab(k_blk[0], d_blk[0], ab[0], i*(j-i+1))       / 2  +
-                ml_ab(k_blk[1], d_blk[1], ab[1], (j-i)*(j-i+1)/2)      +
-                ml_ab(k_blk[2], d_blk[2], ab[2], (n-j-1)*(j-i+1)) / 2;
+              ml_ab(blocks->k[0], blocks->d[0], ab[0], blocks->size[0]) / 2 +
+              ml_ab(blocks->k[1], blocks->d[1], ab[1], blocks->size[1])     +
+              ml_ab(blocks->k[2], blocks->d[2], ab[2], blocks->size[2]) / 2;
          }
       }
    }
@@ -426,13 +407,7 @@ int *tadbit(double **obs, int n, int m, int fast) {
    int *all_breakpoints = (int *) malloc(n * sizeof(n));
    all_breakpoints = get_breakpoints(llik, n, all_breakpoints);
 
-   // Free allocated memory (not sure this is needed).
-   for (i = 0 ; i < 3 ; i++) {
-      free(d_blk[i]);
-      free(k_blk[i]);
-   }
-   free(d_blk);
-   free(k_blk);
+   // TODO: free blocks (?)
    free(dis);
    free(llik);
 
