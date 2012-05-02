@@ -119,7 +119,7 @@ void slice(double *k, double *d, int n, int i, int j, ml_blocks *blocks) {
    int top_counter = 0, tri_counter = 0, bot_counter = 0;
 
    for (l = 0 ; l < 3 ; l++) {
-      blocks->sizes[l] = 0;
+      blocks->size[l] = 0;
    }
 
    // Fill vertically.
