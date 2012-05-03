@@ -6,7 +6,7 @@ clean:
 	- rm -f $(OBJECTS)
 
 tadbit_R.so: tadbit.o
-	R CMD SHLIB tadbit_R.c tadbit.o
+	R CMD SHLIB libefence.a tadbit_R.c tadbit.o
 
 tadbit: libefence.a tadbit.o main.o
 	- rm -f tadbit
@@ -25,10 +25,10 @@ libefence.a: efence.o page.o print.o
 	- rm -f efence.o page.o print.o
 
 efence.o: efence.c
-	cc -g   -c -o efence.o efence.c
+	cc -g -fPIC -c -o efence.o efence.c
 
 page.o: page.c
-	cc -g   -c -o page.o page.c
+	cc -g -fPIC -c -o page.o page.c
 
 print.o: print.c
-	cc -g   -c -o print.o print.c
+	cc -g -fPIC -c -o print.o print.c
