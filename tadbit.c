@@ -1,30 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 #include <ctype.h>
-#include <R.h>
-#include <Rinternals.h>
-#include <R_ext/Rdynload.h>
 
-#define TOLERANCE 1e-6
-
-typedef struct {
-   int size[3];
-   double *k[3];
-   double *d[3];
-} ml_blocks;
-
-// Declare and register R/C interface.
-SEXP tadbit_R_call(SEXP list, SEXP fast_yn);
-R_CallMethodDef callMethods[] = {
-   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 2},
-   {NULL, NULL, 0}
-};
-
-void R_init_tadbit(DllInfo *info) {
-   R_registerRoutines(info, NULL, callMethods, NULL, NULL);
-}
+#include "tadbit.h"
 
 
 double ml_ab(double *k, double *d, double *ab, int n) {
@@ -48,7 +27,12 @@ double ml_ab(double *k, double *d, double *ab, int n) {
    double da = 0.0, db = 0.0, oldgrad;
    double f, g, dfda = 0.0, dfdb = 0.0, dgda = 0.0, dgdb = 0.0;
    double denom;
-   long double tmp; // 'tmp' is used as computation intermediate.
+
+   // 'tmp' is a computation intermediate that will be the return
+   // value of 'exp'. This can call '__slowexp' which on 64-bit machines
+   // can return a long double (causing segmentation fault if 'tmp' is
+   // declared as long).
+   long double tmp;
 
    // Comodity function.
    void recompute_fg() {
@@ -414,153 +398,4 @@ int *tadbit(double **obs, int n, int m, int fast) {
    // Done!!
    return all_breakpoints;
 
-}
-
-// R/C interface.
-SEXP tadbit_R_call(SEXP list, SEXP fast_yn) {
-/*
-   * This is a tadbit wrapper for R. The matrices have to passed
-   * in a list (in R). Checks that the input consists of numeric
-   * square matrices, with identical dimensions. The list is
-   * is converted to pointer of pointers to doubles and passed
-   * to 'tadbit'.
-   * Assume that NAs can be passed from R and are ignored in the
-   * computation.
-*/
-
-   R_len_t i, m = length(list);
-   int first = 1, n, *dim;
-   int fast = INTEGER(fast_yn)[0];
-
-   // Convert 'obs_list' to pointer of pointer to double.
-   double **obs = (double **) malloc(m * sizeof(double **));
-   for (i = 0 ; i < m ; i++) {
-      // This fails is list element is not numeric.
-      obs[i] = REAL(coerceVector(VECTOR_ELT(list, i), REALSXP));
-
-      // Check that input is a matrix.
-      if (!isMatrix(VECTOR_ELT(list, i))) {
-         error("input must be square matrix");
-      }
-      // Check the dimension.
-      dim = INTEGER(getAttrib(VECTOR_ELT(list, i), R_DimSymbol));
-      if (dim[0] != dim[1]) {
-         error("input must be square matrix");
-      }
-      if (first) {
-         n = dim[0];
-         first = 0;
-      }
-      else {
-         if (n != dim[0]) {
-            error("all matrices must have same dimensions");;
-         }
-      }
-   }
-
-   // Call 'tadbit'.
-   int *bkpts = tadbit(obs, n, m, fast);
-
-   // Wrap it up.
-   SEXP return_val_sexp;
-   PROTECT(return_val_sexp = allocVector(INTSXP, n));
-   int *return_val = INTEGER(return_val_sexp);
-   // Copy output from 'tadbit'.
-   for (i = 0 ; i < n ; i++) {
-      return_val[i] = bkpts[i];
-   }
-   free (bkpts);
-   UNPROTECT(1);
-
-   return return_val_sexp;
-
-}
-
-int *read_int_matrix (const char *fname, int *n_ptr) {
-/*
-   * Read integers from a file and return a line-matrix (a pointer
-   * of pointers to int). Assume that the first line is a header
-   * containing as many space characters as columns, that the number
-   * of rows is the same as the number of columns, and that each
-   * row starts with the row name.
-*/
-
-   int i, j = 0, check_row = 0, check_col, n = 0;
-   char line[65536], row_name[256], *a, *z;
-
-   int *array;
-   long u;
-
-   // Garbage collection in case of early return.
-   int *failure_exit() {
-      free(array);
-      return NULL;
-   }
-
-   FILE *f = fopen(fname, "r");
-   if (f == NULL) {
-      return NULL;
-   }
-
-   // Use first line to get 'n' by counting tabs.
-   fgets(line, sizeof(line), f);
-   for (i = 0 ; i < strlen(line)-1 ; i++) {
-      if (isspace(line[i])) {
-         n++;
-      }
-   }
-
-   array = (int *) malloc (n*n * sizeof(int));
-
-   while (fgets(line, sizeof(line), f)) {
-      if (++check_row > n) {
-         printf("check_row = %d\n", check_row);
-         return failure_exit();
-      }
-
-      a = line;
-      z = NULL;
-
-      // Skip row name.
-      if (sscanf(line, "%s", row_name)) {
-         a += strlen(row_name);
-      }
-
-      check_col = 0;
-      u = strtol(a, &z, 10);
-      while (a != z) {
-         check_col++;
-         array[j++] = (int) u;
-         a = z;
-         u = strtol(a, &z, 10);
-      }
-
-      if (check_col != n) {
-         printf("n = %d, check_col = %d\n", n, check_col);
-         return failure_exit();
-      }
-
-   }
-
-   if (check_row != n) {
-      return failure_exit();
-   }
-
-   fclose(f);
-   *n_ptr = n;
-   return array;
-
-}
-
-
-int main (int argc, const char* argv[]) {
-   int i, n, *some_ints = read_int_matrix(argv[1], &n);
-   if (some_ints != NULL) {
-      double *counts = (double *) malloc(n*n * sizeof(double));
-      for (i = 0 ; i < n*n ; i++) {
-         counts[i] = (double) some_ints[i];
-      }
-      double **obs = &counts;
-      int *breakpoints = tadbit(obs, n, 1, 1);
-   }
 }
