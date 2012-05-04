@@ -137,55 +137,84 @@ void slice(double *k, double *d, int n, int i, int j, ml_blocks *blocks) {
    }
 }
 
+double quantile (double array[], int n, double quant) {
+
+   if (quant < 0.0 || quant > 1.0) {
+      return NAN;
+   }
+
+   // Comparison function.
+   int comp(const void * a, const void * b) {
+      return ( *(double*)a - *(double*)b );
+   }
+
+   // Copy array (while removin NAs).
+   int i, j = 0;
+   double sorted_array[n];
+   for (i = 0 ; i < n ; i++) {
+      if (!isnan(array[i])) {
+         sorted_array[j++] = array[i];
+      }
+   }
+
+   if (j < 1) {
+      return NAN;
+   }
+   
+   // Sort and return the quant-th position.
+   qsort(sorted_array, n, sizeof(double), comp);
+   return sorted_array[(int) (quant*j)];
+
+}
+
 
 void remove_non_local_maxima (double **obs, double *dis, int n, int m,
     ml_blocks *blocks, int *bkpts) {
 /*
-   * Segment the data with one breakpoint, compute the
-   * likelihood and return the local maxima of that function.
-   * Final breakpoints are likely to be one of those local
-   * maxima.
 */
 
-   int i, j, k;
-   double llik[n];
-   double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
+   int i, j, k, no_real_value;
+   double tmp, dist[m][n];
 
-/*
-   * The code is not very DRY, those lines are almost duplicated
-   * in the function 'tadbit'.
-*/
-
-   // Compute the log-lik of the first segment forward...
-   for (j = 2 ; j < n-3 ; j++) {
-      for (k = 0 ; k < m ; k++) {
-         slice(obs[k], dis, n, 0, j, blocks);
-
-         // Compute the likelihood and sum.
-         llik[j] =
-           ml_ab(blocks->k[1], blocks->d[1], ab[1], blocks->size[1])  +
-           ml_ab(blocks->k[2], blocks->d[2], ab[2], blocks->size[2]) / 2;
+   // Compute distances asd absolute differences.
+   for (k = 0 ; k < m ; k++) {
+      for (j = 0 ; j < n-1 ; j++) {
+         // Initialize with a negative value. Set distance to NA
+         // if it is still negative after additions.
+         dist[k][j] = 0.0;
+         no_real_value = 1;
+         for (i = 0 ; i < n ; i++) {
+            // Do not compute the difference with diagonal terms.
+            if (i == j || i == j+1) {
+               continue;
+            }
+            tmp = abs(obs[k][i+j*n] - obs[k][i+(j+1)*n]);
+            if (!isnan(tmp)) {
+               no_real_value = 0;
+               dist[k][j] += tmp;
+            }
+         }
+         if (no_real_value) {
+            dist[k][j] = NAN;
+         }
       }
    }
 
-   // ... and the second segment backward.
-   for (j = 3 ; j < n-2 ; j++) {
-      for (k = 0 ; k < m ; k++) {
-         slice(obs[k], dis, n, j, n-1, blocks);
-         // Compute the likelihood and sum.
-         llik[j-1] += 
-             ml_ab(blocks->k[0], blocks->d[0], ab[0], blocks->size[0]) / 2 +
-             ml_ab(blocks->k[1], blocks->d[1], ab[1], blocks->size[1]);
-      }
-   }
 
+   // Initialize.
    bkpts[n-1] = 1;
    for (i = 0 ; i < n-1 ; i++) {
       bkpts[i] = 0;
    }
-   for (i = 3 ; i < n-1 ; i++) {
-      if (llik[i] > llik[i-1] && llik[i] > llik[i+1]) {
-         bkpts[i] = 1;
+
+   double decile;
+   // Set a potential breakpoint if distance is in top 10%.
+   for (k = 0 ; k < m ; k++) {
+      decile = quantile(dist[k], n, 0.9);
+      for (i = 3 ; i < n-1 ; i++) {
+         if (dist[k][i] > decile) {
+            bkpts[i] = 1;
+         }
       }
    }
 
@@ -193,7 +222,8 @@ void remove_non_local_maxima (double **obs, double *dis, int n, int m,
 
 int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
 /*
-   * Find the maximum likelihood estimate by a dynamic algorithm.
+   * Find the maximum likelihood estimate by a dynamic
+   * programming algorithm.
 */
 
    int i,j, nbreaks = 0;

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "tadbit.h"
 
 int *read_int_matrix (const char *fname, int *n_ptr) {
@@ -81,12 +82,23 @@ int *read_int_matrix (const char *fname, int *n_ptr) {
 
 
 int main (int argc, const char* argv[]) {
-   int i, n, *some_ints = read_int_matrix(argv[1], &n);
-   if (some_ints != NULL) {
+   int i, j, n, *read = read_int_matrix(argv[1], &n);
+   if (read != NULL) {
       double *counts = (double *) malloc(n*n * sizeof(double));
       for (i = 0 ; i < n*n ; i++) {
-         counts[i] = (double) some_ints[i];
+         counts[i] = (double) read[i];
       }
+
+      // Set NAs on rows and cols that have 0 diagonal term.
+      for (i = 0 ; i < n ; i++) {
+         if (counts[i+i*n] == 0.0) {
+            for (j = 0 ; j < n ; j++) {
+               counts[j+i*n] = 0/0.0;
+               counts[i+j*n] = 0/0.0;
+            }
+         }
+      }
+
       double **obs = &counts;
       int *breakpoints = tadbit(obs, n, 1, 1);
    }
