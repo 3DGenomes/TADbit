@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <pthread.h>
 #include <ctype.h>
 
 #include "tadbit.h"
@@ -168,10 +169,7 @@ double quantile (double array[], int n, double quant) {
 }
 
 
-void remove_non_local_maxima (double **obs, double *dis, int n, int m,
-    ml_blocks *blocks, int *bkpts) {
-/*
-*/
+void narrow_down (double **obs, double *dis, int n, int m, int *bkpts) {
 
    int i, j, k, no_real_value;
    double tmp, dist[m][n];
@@ -310,8 +308,65 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
 
 }
 
+void *fill_matrix(void *shared_arg) {
 
-int *tadbit(double **obs, int n, int m, int fast) {
+   thread_arg *arg = (thread_arg *) shared_arg; 
+   int m = arg->m;
+   int n = arg->n;
+   double *llik = arg->llik;
+   double *dis = arg->dis;
+   double **obs = arg->obs;
+
+   int i, j, k;
+
+   // Allocate max possible size to blocks.
+   ml_blocks *blk = (ml_blocks *) malloc(sizeof(ml_blocks));
+   int nmax = (n+1)*(n+1)/4;
+
+   blk->k[0] = (double *) malloc(nmax     * sizeof(double));
+   blk->k[1] = (double *) malloc(nmax * 2 * sizeof(double));
+   blk->k[2] = (double *) malloc(nmax     * sizeof(double));
+   blk->d[0] = (double *) malloc(nmax     * sizeof(double));
+   blk->d[1] = (double *) malloc(nmax * 2 * sizeof(double));
+   blk->d[2] = (double *) malloc(nmax     * sizeof(double));
+
+
+   // Initialize 'a' and 'b' to 0.
+   double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
+
+   for (i = 0 ; i < n-2 ; i++) {
+      for (j = i+2 ; j < n ; j++) {
+         if (arg->done[i+j*n] != 0) {
+            continue;
+         }
+         else {
+            arg->done[i+j*n] = 1;
+            llik[i+j*n] = 0.0;
+            for (k = 0 ; k < m ; k++) {
+               slice(obs[k], dis, n, i, j, blk);
+               // Get the likelihood per block and sum.
+               llik[i+j*n] +=
+                  ml_ab(blk->k[0], blk->d[0], ab[0], blk->size[0]) / 2 +
+                  ml_ab(blk->k[1], blk->d[1], ab[1], blk->size[1])     +
+                  ml_ab(blk->k[2], blk->d[2], ab[2], blk->size[2]) / 2;
+            }
+            arg->done[i+j*n] = 2;
+         }
+      }
+   }
+
+   // Free allocated memory.
+   for (i = 0 ; i < 3 ; i++) {
+      free(blk->k[i]);
+      free(blk->d[i]);
+   }
+   free(blk);
+
+   return NULL;
+
+}
+
+int *tadbit(double **obs, int n, int m, int fast, int n_threads) {
 
    int i, j, k;
 
@@ -342,20 +397,6 @@ int *tadbit(double **obs, int n, int m, int fast) {
       }
    }
 
-   // Allocate max possible size to blocks.
-   ml_blocks *blocks = (ml_blocks *) malloc(sizeof(ml_blocks));
-   int nmax = (n+1)*(n+1)/4;
-
-   blocks->k[0] = (double *) malloc(nmax     * sizeof(double));
-   blocks->k[1] = (double *) malloc(nmax * 2 * sizeof(double));
-   blocks->k[2] = (double *) malloc(nmax     * sizeof(double));
-   blocks->d[0] = (double *) malloc(nmax     * sizeof(double));
-   blocks->d[1] = (double *) malloc(nmax * 2 * sizeof(double));
-   blocks->d[2] = (double *) malloc(nmax     * sizeof(double));
-
-
-   // Initialize 'a' and 'b' to 0.
-   double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
 
 /*
    * If 'fast' is true, a heuristic is used to speed up the
@@ -365,7 +406,7 @@ int *tadbit(double **obs, int n, int m, int fast) {
    * same order.
 */
    
-   int bkpts[n];
+   int *bkpts = (int *) malloc(n * sizeof(int));
    // By default, all breakpoints are candidates.
    for (i = 0 ; i < n ; i++) {
       bkpts[i] = 1;
@@ -373,9 +414,8 @@ int *tadbit(double **obs, int n, int m, int fast) {
 
    // If 'fast', only local maxima are candidates.
    if (fast) {
-      remove_non_local_maxima(obs, dis, n, m, blocks, bkpts);
+      narrow_down(obs, dis, n, m, bkpts);
    }
-
 
 /*
    * Compute the log-likelihood of the segments. the element
@@ -387,30 +427,39 @@ int *tadbit(double **obs, int n, int m, int fast) {
    * true.
 */
 
-   for (i = 0 ; i < n-2 ; i++) {
-      // Skip if not a potential breakpoint.
-      if ((i > 0) && (!bkpts[i-1])) {
-         continue;
-      }
+   // Start multithreading.
 
-      for (j = i+2 ; j < n ; j++) {
-         // Skip if not a potential breakpoint.
-         if (!bkpts[j]) {
-            continue;
-         }
-         
-         llik[i+j*n] = 0.0;
-         for (k = 0 ; k < m ; k++) {
-            slice(obs[k], dis, n, i, j, blocks);
-            // Get the likelihood per block and sum.
-            llik[i+j*n] +=
-              ml_ab(blocks->k[0], blocks->d[0], ab[0], blocks->size[0]) / 2 +
-              ml_ab(blocks->k[1], blocks->d[1], ab[1], blocks->size[1])     +
-              ml_ab(blocks->k[2], blocks->d[2], ab[2], blocks->size[2]) / 2;
-         }
+   // Create a structure to manage threads:
+   //    -1 : the position has to be skipped.
+   //     0 : the position is not being filled by any thread.
+   //     1 : the position is being filled.
+   //     2 : the position is filled.
+   int *done = (int *) malloc(n*n * sizeof(int));
+   for (i = 0 ; i < n ; i++) {
+      for (j = 0 ; j < n ; j++) {
+         done[i+j*n] = (i == 0 || bkpts[i-1]) && bkpts[j] ? 0 : -1;
       }
    }
 
+   thread_arg *arg = (thread_arg *) malloc(sizeof(thread_arg));
+   arg->m = m;
+   arg->n = n;
+   arg->done = done;
+   arg->llik = llik;
+   arg->dis = dis;
+   arg->obs = obs;
+   arg->bkpts = bkpts;
+
+   pthread_t tid[n_threads];
+   for (i = 0 ; i < n_threads ; i++) {
+      if (pthread_create(&(tid[i]), NULL, &fill_matrix, arg) != 0) {
+         return NULL;
+      }
+   }
+
+   for (i = 0 ; i < n_threads ; i++) {
+      pthread_join(tid[0], NULL);
+   }
 
 /*
    * The matrix 'llik' contains the log-likelihood of the
@@ -418,10 +467,9 @@ int *tadbit(double **obs, int n, int m, int fast) {
    * programming routine 'get_breakpoints'.
 */
 
-   int *all_breakpoints = (int *) malloc(n * sizeof(n));
+   int *all_breakpoints = (int *) malloc(n * sizeof(int));
    all_breakpoints = get_breakpoints(llik, n, all_breakpoints);
 
-   // TODO: free blocks (?)
    free(dis);
    free(llik);
 

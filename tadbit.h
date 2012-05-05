@@ -9,5 +9,18 @@ typedef struct {
    double *d[3];
 } ml_blocks;
 
-int *tadbit(double **obs, int n, int m, int fast);
+
+// A struct for thread argument.
+typedef struct {
+   int m;
+   int n;
+   double *llik;
+   double *dis;
+   double **obs;
+   int *bkpts;
+   int *done;
+} thread_arg;
+
+
+int *tadbit(double **, int, int, int, int);
 #endif

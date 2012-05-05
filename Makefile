@@ -14,7 +14,7 @@ tadbit: libefence.a tadbit.o main.o
 	tadbit.o libefence.a main.o -o tadbit 
 
 tadbit.o: tadbit.c
-	cc -std=gnu99 -fPIC -g -c tadbit.c -o tadbit.o
+	cc -std=gnu99 -fPIC -g -c tadbit.c -o tadbit.o -lpthread
 
 main.o: main.c
 	cc -std=gnu99 -g -c main.c -o main.o

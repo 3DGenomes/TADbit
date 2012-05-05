@@ -100,6 +100,6 @@ int main (int argc, const char* argv[]) {
       }
 
       double **obs = &counts;
-      int *breakpoints = tadbit(obs, n, 1, 1);
+      int *breakpoints = tadbit(obs, n, 1, 1, 2);
    }
 }

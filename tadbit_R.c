@@ -57,13 +57,14 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn) {
    }
 
    // Call 'tadbit'.
-   int *bkpts = tadbit(obs, n, m, fast);
+   int *bkpts = tadbit(obs, n, m, fast, 1);
 
    // Wrap it up.
    SEXP return_val_sexp;
    PROTECT(return_val_sexp = allocVector(INTSXP, n));
    int *return_val = INTEGER(return_val_sexp);
-   // Copy output from 'tadbit'.
+   // Copy output from 'tadbit'.:60
+
    for (i = 0 ; i < n ; i++) {
       return_val[i] = bkpts[i];
    }
