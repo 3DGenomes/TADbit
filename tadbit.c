@@ -3,6 +3,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #include "tadbit.h"
 
@@ -308,63 +309,16 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
 
 }
 
-void *fill_matrix(void *shared_arg) {
 
-   thread_arg *arg = (thread_arg *) shared_arg; 
-   int m = arg->m;
-   int n = arg->n;
-   double *llik = arg->llik;
-   double *dis = arg->dis;
-   double **obs = arg->obs;
-
-   int i, j, k;
-
-   // Allocate max possible size to blocks.
-   ml_blocks *blk = (ml_blocks *) malloc(sizeof(ml_blocks));
-   int nmax = (n+1)*(n+1)/4;
-
-   blk->k[0] = (double *) malloc(nmax     * sizeof(double));
-   blk->k[1] = (double *) malloc(nmax * 2 * sizeof(double));
-   blk->k[2] = (double *) malloc(nmax     * sizeof(double));
-   blk->d[0] = (double *) malloc(nmax     * sizeof(double));
-   blk->d[1] = (double *) malloc(nmax * 2 * sizeof(double));
-   blk->d[2] = (double *) malloc(nmax     * sizeof(double));
-
-
-   // Initialize 'a' and 'b' to 0.
-   double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
-
-   for (i = 0 ; i < n-2 ; i++) {
-      for (j = i+2 ; j < n ; j++) {
-         if (arg->done[i+j*n] != 0) {
-            continue;
-         }
-         else {
-            arg->done[i+j*n] = 1;
-            llik[i+j*n] = 0.0;
-            for (k = 0 ; k < m ; k++) {
-               slice(obs[k], dis, n, i, j, blk);
-               // Get the likelihood per block and sum.
-               llik[i+j*n] +=
-                  ml_ab(blk->k[0], blk->d[0], ab[0], blk->size[0]) / 2 +
-                  ml_ab(blk->k[1], blk->d[1], ab[1], blk->size[1])     +
-                  ml_ab(blk->k[2], blk->d[2], ab[2], blk->size[2]) / 2;
-            }
-            arg->done[i+j*n] = 2;
-         }
-      }
-   }
-
-   // Free allocated memory.
-   for (i = 0 ; i < 3 ; i++) {
-      free(blk->k[i]);
-      free(blk->d[i]);
-   }
-   free(blk);
-
-   return NULL;
-
+int n_proc(void) {
+  #ifdef _SC_NPROCESSORS_ONLN
+    long nProcessorsOnline = sysconf(_SC_NPROCESSORS_ONLN);
+  #else
+    long nProcessorsOnline = 0;
+  #endif
+  return (int) nProcessorsOnline;
 }
+
 
 int *tadbit(double **obs, int n, int m, int fast, int n_threads) {
 
@@ -406,7 +360,7 @@ int *tadbit(double **obs, int n, int m, int fast, int n_threads) {
    * same order.
 */
    
-   int *bkpts = (int *) malloc(n * sizeof(int));
+   int bkpts[n];
    // By default, all breakpoints are candidates.
    for (i = 0 ; i < n ; i++) {
       bkpts[i] = 1;
@@ -428,31 +382,75 @@ int *tadbit(double **obs, int n, int m, int fast, int n_threads) {
 */
 
    // Start multithreading.
-
    // Create a structure to manage threads:
    //    -1 : the position has to be skipped.
    //     0 : the position is not being filled by any thread.
    //     1 : the position is being filled.
    //     2 : the position is filled.
-   int *done = (int *) malloc(n*n * sizeof(int));
+   int status[n*n];
    for (i = 0 ; i < n ; i++) {
       for (j = 0 ; j < n ; j++) {
-         done[i+j*n] = (i == 0 || bkpts[i-1]) && bkpts[j] ? 0 : -1;
+         status[i+j*n] = (i == 0 || bkpts[i-1]) && bkpts[j] ? 0 : -1;
       }
    }
 
-   thread_arg *arg = (thread_arg *) malloc(sizeof(thread_arg));
-   arg->m = m;
-   arg->n = n;
-   arg->done = done;
-   arg->llik = llik;
-   arg->dis = dis;
-   arg->obs = obs;
-   arg->bkpts = bkpts;
+   
 
+   void *fill_matrix(void *arg) {
+   
+      int i, j, k;
+   
+      // Allocate max possible size to blocks.
+      ml_blocks *blk = (ml_blocks *) malloc(sizeof(ml_blocks));
+      int nmax = (n+1)*(n+1)/4;
+   
+      blk->k[0] = (double *) malloc(nmax     * sizeof(double));
+      blk->k[1] = (double *) malloc(nmax * 2 * sizeof(double));
+      blk->k[2] = (double *) malloc(nmax     * sizeof(double));
+      blk->d[0] = (double *) malloc(nmax     * sizeof(double));
+      blk->d[1] = (double *) malloc(nmax * 2 * sizeof(double));
+      blk->d[2] = (double *) malloc(nmax     * sizeof(double));
+   
+   
+      // Initialize 'a' and 'b' to 0.
+      double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
+   
+      for (i = 0 ; i < n-2 ; i++) {
+         for (j = i+2 ; j < n ; j++) {
+            if (status[i+j*n] != 0) {
+               continue;
+            }
+            else {
+               status[i+j*n] = 1;
+               llik[i+j*n] = 0.0;
+               for (k = 0 ; k < m ; k++) {
+                  slice(obs[k], dis, n, i, j, blk);
+                  // Get the likelihood per block and sum.
+                  llik[i+j*n] +=
+                     ml_ab(blk->k[0], blk->d[0], ab[0], blk->size[0]) / 2 +
+                     ml_ab(blk->k[1], blk->d[1], ab[1], blk->size[1])     +
+                     ml_ab(blk->k[2], blk->d[2], ab[2], blk->size[2]) / 2;
+               }
+               status[i+j*n] = 2;
+            }
+         }
+      }
+   
+      // Free allocated memory.
+      for (i = 0 ; i < 3 ; i++) {
+         free(blk->k[i]);
+         free(blk->d[i]);
+      }
+      free(blk);
+   
+      return NULL;
+   
+   }
+
+  
    pthread_t tid[n_threads];
    for (i = 0 ; i < n_threads ; i++) {
-      if (pthread_create(&(tid[i]), NULL, &fill_matrix, arg) != 0) {
+      if (pthread_create(&(tid[i]), NULL, &fill_matrix, NULL) != 0) {
          return NULL;
       }
    }

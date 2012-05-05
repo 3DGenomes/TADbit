@@ -9,18 +9,8 @@ typedef struct {
    double *d[3];
 } ml_blocks;
 
-
-// A struct for thread argument.
-typedef struct {
-   int m;
-   int n;
-   double *llik;
-   double *dis;
-   double **obs;
-   int *bkpts;
-   int *done;
-} thread_arg;
-
-
+// Useful functions.
+int n_proc(void);
+double ml_ab(double *, double *, double *, int);
 int *tadbit(double **, int, int, int, int);
 #endif

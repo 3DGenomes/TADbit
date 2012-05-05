@@ -99,7 +99,10 @@ int main (int argc, const char* argv[]) {
          }
       }
 
+      // Keep one core free and give one thread per core.
+      int n_threads = n_proc() ? n_proc() - 1 : 1;
+
       double **obs = &counts;
-      int *breakpoints = tadbit(obs, n, 1, 1, 2);
+      int *breakpoints = tadbit(obs, n, 1, 1, n_threads);
    }
 }

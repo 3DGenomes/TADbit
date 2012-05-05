@@ -5,7 +5,7 @@
 #include "tadbit.h"
 
 // Declare and register R/C interface.
-SEXP tadbit_R_call(SEXP list, SEXP fast_yn);
+SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP threads);
 R_CallMethodDef callMethods[] = {
    {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 2},
    {NULL, NULL, 0}
@@ -16,7 +16,7 @@ void R_init_tadbit(DllInfo *info) {
 }
 
 
-SEXP tadbit_R_call(SEXP list, SEXP fast_yn) {
+SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP threads) {
 /*
    * This is a tadbit wrapper for R. The matrices have to passed
    * in a list (in R). Checks that the input consists of numeric
@@ -29,7 +29,7 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn) {
 
    R_len_t i, m = length(list);
    int first = 1, n, *dim;
-   int fast = INTEGER(fast_yn)[0];
+   int fast = INTEGER(fast_yn)[0], n_threads = INTEGER(threads)[0];
 
    // Convert 'obs_list' to pointer of pointer to double.
    double **obs = (double **) malloc(m * sizeof(double **));
@@ -56,8 +56,14 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn) {
       }
    }
 
+   // If 'n_threads' is 0, allocate thread number automatically.
+   if (!n_threads) {
+      // Keep one core free and allocate one thread per core.
+      n_threads = n_proc() ? n_proc() - 1 : 1;
+   }
+
    // Call 'tadbit'.
-   int *bkpts = tadbit(obs, n, m, fast, 1);
+   int *bkpts = tadbit(obs, n, m, fast, n_threads);
 
    // Wrap it up.
    SEXP return_val_sexp;
