@@ -11,6 +11,6 @@ typedef struct {
 
 // Useful functions.
 int n_proc(void);
-double ml_ab(double *, double *, double *, int);
-int *tadbit(double **, int, int, int, int);
+double ml_ab(const double *, const double *, double *, const int);
+int *tadbit(const double **, const int, const int, const int, const int);
 #endif

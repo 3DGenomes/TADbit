@@ -8,7 +8,7 @@
 #include "tadbit.h"
 
 
-double ml_ab(double *k, double *d, double *ab, int n) {
+double ml_ab(const double *k, const double *d, double *ab, const int n) {
 /*
    * The 2-array 'ab' is upated in place and the log-likelihood
    * is returned.
@@ -24,7 +24,7 @@ double ml_ab(double *k, double *d, double *ab, int n) {
       return NAN;
    }
 
-   int i, j = 0;
+   int i;
    double a = ab[0], b = ab[1], llik;
    double da = 0.0, db = 0.0, oldgrad;
    double f, g, dfda = 0.0, dfdb = 0.0, dgda = 0.0, dgdb = 0.0;
@@ -93,7 +93,8 @@ double ml_ab(double *k, double *d, double *ab, int n) {
 
 }
 
-void slice(double *k, double *d, int n, int i, int j, ml_blocks *blocks) {
+void slice(const double *k, const double *d, const int n, const int i,
+      const int j, ml_blocks *blocks) {
 /*
    *  Break up 'mat' in three blocks delimited by 'i' and 'j'.
    *  The upper block is (0,i-1)x(i,j), the triangular block is
@@ -102,7 +103,6 @@ void slice(double *k, double *d, int n, int i, int j, ml_blocks *blocks) {
 */
 
    int l, row, col;
-   int top_counter = 0, tri_counter = 0, bot_counter = 0;
 
    for (l = 0 ; l < 3 ; l++) {
       blocks->size[l] = 0;
@@ -146,8 +146,8 @@ double quantile (double array[], int n, double quant) {
    }
 
    // Comparison function.
-   int comp(const void * a, const void * b) {
-      return ( *(double*)a - *(double*)b );
+   int comp(const void *a, const void *b) {
+      return ( *(double *)a - *(double *)b );
    }
 
    // Copy array (while removin NAs).
@@ -170,7 +170,8 @@ double quantile (double array[], int n, double quant) {
 }
 
 
-void narrow_down (double **obs, double *dis, int n, int m, int *bkpts) {
+void narrow_down (const double **obs, const double *dis, const int n,
+      const int m, int *bkpts) {
 
    int i, j, k, no_real_value;
    double tmp, dist[m][n];
@@ -320,7 +321,8 @@ int n_proc(void) {
 }
 
 
-int *tadbit(double **obs, int n, int m, int fast, int n_threads) {
+int *tadbit(const double **obs, const int n, const int m,
+      const int fast, const int n_threads) {
 
    int i, j, k;
 

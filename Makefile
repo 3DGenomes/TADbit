@@ -14,7 +14,7 @@ tadbit: tadbit.o main.o
 	tadbit.o main.o -o tadbit 
 
 tadbit.o: tadbit.c
-	cc -std=gnu99 -fPIC -g -c tadbit.c -o tadbit.o -O3 -lpthread
+	cc -std=gnu99 -fPIC -g -c tadbit.c -o tadbit.o -O3 -lpthread -Wall
 
 main.o: main.c
 	cc -std=gnu99 -g -c main.c -o main.o -O3
