@@ -147,7 +147,8 @@ double quantile (double array[], int n, double quant) {
 
    // Comparison function.
    int comp(const void *a, const void *b) {
-      return ( *(double *)a - *(double *)b );
+      // '(*a - *b)' fails.
+      return ((*(double *)a > *(double *)b) - (*(double *)a < *(double *)b));
    }
 
    // Copy array (while removin NAs).
@@ -164,7 +165,7 @@ double quantile (double array[], int n, double quant) {
    }
    
    // Sort and return the quant-th position.
-   qsort(sorted_array, n, sizeof(double), comp);
+   qsort(sorted_array, j, sizeof(double), comp);
    return sorted_array[(int) (quant*j)];
 
 }
@@ -176,7 +177,7 @@ void narrow_down (const double **obs, const double *dis, const int n,
    int i, j, k, no_real_value;
    double tmp, dist[m][n];
 
-   // Compute distances asd absolute differences.
+   // Compute distances as absolute differences.
    for (k = 0 ; k < m ; k++) {
       for (j = 0 ; j < n-1 ; j++) {
          // Initialize with a negative value. Set distance to NA
@@ -207,12 +208,12 @@ void narrow_down (const double **obs, const double *dis, const int n,
       bkpts[i] = 0;
    }
 
-   double decile;
+   double cutoff;
    // Set a potential breakpoint if distance is in top 10%.
    for (k = 0 ; k < m ; k++) {
-      decile = quantile(dist[k], n, 0.9);
+      cutoff = quantile(dist[k], n, 0.92);
       for (i = 3 ; i < n-1 ; i++) {
-         if (dist[k][i] > decile) {
+         if (dist[k][i] > cutoff) {
             bkpts[i] = 1;
          }
       }
@@ -384,6 +385,14 @@ int *tadbit(const double **obs, const int n, const int m,
 */
 
    // Start multithreading.
+
+   // Create mutex.
+   pthread_mutex_t lock;
+   if (pthread_mutex_init(&lock, NULL) != 0) {
+      fprintf(stderr, "failed to create mutex");
+      return NULL;
+   }
+  
    // Create a structure to manage threads:
    //    -1 : the position has to be skipped.
    //     0 : the position is not being filled by any thread.
@@ -395,8 +404,6 @@ int *tadbit(const double **obs, const int n, const int m,
          status[i+j*n] = (i == 0 || bkpts[i-1]) && bkpts[j] ? 0 : -1;
       }
    }
-
-   
 
    void *fill_matrix(void *arg) {
    
@@ -419,11 +426,17 @@ int *tadbit(const double **obs, const int n, const int m,
    
       for (i = 0 ; i < n-2 ; i++) {
          for (j = i+2 ; j < n ; j++) {
+            // Get access to 'status'.
+            pthread_mutex_lock(&lock);
             if (status[i+j*n] != 0) {
+               // Release lock.
+               pthread_mutex_unlock(&lock);
                continue;
             }
             else {
+               // Update status and release lock.
                status[i+j*n] = 1;
+               pthread_mutex_unlock(&lock);
                llik[i+j*n] = 0.0;
                for (k = 0 ; k < m ; k++) {
                   slice(obs[k], dis, n, i, j, blk);
@@ -433,10 +446,15 @@ int *tadbit(const double **obs, const int n, const int m,
                      ml_ab(blk->k[1], blk->d[1], ab[1], blk->size[1])     +
                      ml_ab(blk->k[2], blk->d[2], ab[2], blk->size[2]) / 2;
                }
+               // Update status.
+               pthread_mutex_lock(&lock);
                status[i+j*n] = 2;
+               pthread_mutex_unlock(&lock);
             }
          }
       }
+
+      ;
    
       // Free allocated memory.
       for (i = 0 ; i < 3 ; i++) {

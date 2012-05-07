@@ -63,7 +63,7 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP threads) {
    }
 
    // Call 'tadbit'.
-   int *bkpts = tadbit(obs, n, m, fast, n_threads);
+   int *bkpts = tadbit((const double **) obs, n, m, fast, n_threads);
 
    // Wrap it up.
    SEXP return_val_sexp;

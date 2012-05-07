@@ -10,8 +10,8 @@ tadbit_R.so: tadbit.o
 
 tadbit: tadbit.o main.o
 	- rm -f tadbit
-	cc -std=gnu99 -g -Wall -lpthread -lm \
-	tadbit.o main.o -o tadbit 
+	cc -std=gnu99 -g -lpthread -lm \
+	tadbit.o main.o -o tadbit -Wall
 
 tadbit.o: tadbit.c
 	cc -std=gnu99 -fPIC -g -c tadbit.c -o tadbit.o -O3 -lpthread -Wall
