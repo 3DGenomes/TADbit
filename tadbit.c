@@ -177,7 +177,9 @@ void narrow_down (const double **obs, const double *dis, const int n,
    int i, j, k, no_real_value;
    double tmp, dist[m][n];
 
-   // Compute distances as absolute differences.
+   // Compute a distance as absolute differences between the counts
+   // normalized by the corresponding diagonal term (to also put potential
+   // breakpoints in regions with low count, which do occur in real data).
    for (k = 0 ; k < m ; k++) {
       for (j = 0 ; j < n-1 ; j++) {
          // Initialize with a negative value. Set distance to NA
@@ -189,7 +191,8 @@ void narrow_down (const double **obs, const double *dis, const int n,
             if (i == j || i == j+1) {
                continue;
             }
-            tmp = abs(obs[k][i+j*n] - obs[k][i+(j+1)*n]);
+            tmp = abs(obs[k][i+j*n] / obs[k][i+i*n] - \
+                                 obs[k][i+(j+1)*n] / obs[k][j+j*n]);
             if (!isnan(tmp)) {
                no_real_value = 0;
                dist[k][j] += tmp;
@@ -211,7 +214,7 @@ void narrow_down (const double **obs, const double *dis, const int n,
    double cutoff;
    // Set a potential breakpoint if distance is in top 10%.
    for (k = 0 ; k < m ; k++) {
-      cutoff = quantile(dist[k], n, 0.92);
+      cutoff = quantile(dist[k], n, 0.90);
       for (i = 3 ; i < n-1 ; i++) {
          if (dist[k][i] > cutoff) {
             bkpts[i] = 1;
