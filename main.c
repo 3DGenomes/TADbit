@@ -83,26 +83,35 @@ int *read_int_matrix (const char *fname, int *n_ptr) {
 
 int main (int argc, const char* argv[]) {
    int i, j, n, *read = read_int_matrix(argv[1], &n);
-   if (read != NULL) {
-      double *counts = (double *) malloc(n*n * sizeof(double));
-      for (i = 0 ; i < n*n ; i++) {
-         counts[i] = (double) read[i];
-      }
-
-      // Set NAs on rows and cols that have 0 diagonal term.
-      for (i = 0 ; i < n ; i++) {
-         if (counts[i+i*n] == 0.0) {
-            for (j = 0 ; j < n ; j++) {
-               counts[j+i*n] = 0/0.0;
-               counts[i+j*n] = 0/0.0;
-            }
-         }
-      }
-
-      // Keep one core free and give one thread per core.
-      int n_threads = n_proc() ? n_proc() - 1 : 1;
-
-      double **obs = &counts;
-      int *breakpoints = tadbit((const double **) obs, n, 1, 1, n_threads);
+   if (read == NULL) {
+      fprintf(stderr, "read error");
+      exit(1);
    }
+
+   double *counts = (double *) malloc(n*n * sizeof(double));
+   for (i = 0 ; i < n*n ; i++) {
+	   counts[i] = (double) read[i];
+   }
+
+   // Set NAs on rows and cols that have 0 diagonal term.
+   for (i = 0 ; i < n ; i++) {
+	   if (counts[i+i*n] == 0.0) {
+		   for (j = 0 ; j < n ; j++) {
+			   counts[j+i*n] = 0/0.0;
+			   counts[i+j*n] = 0/0.0;
+		   }
+	   }
+   }
+
+   // Keep one core free and give one thread per core.
+   int n_threads = n_proc() ? n_proc() - 1 : 1;
+
+   double **obs = &counts;
+   int *breakpoints = tadbit((const double **) obs, n, 1, 1,
+		   .25, n_threads, 1);
+
+   for (i = 0 ; i < n ; i++) {
+      printf("%d ", breakpoints[i]);
+   }
+   printf("\n");
 }

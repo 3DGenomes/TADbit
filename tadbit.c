@@ -212,9 +212,9 @@ void narrow_down (const double **obs, const double *dis, const int n,
    }
 
    double cutoff;
-   // Set a potential breakpoint if distance is in top 10%.
+   // Set a potential breakpoint if distance is in top 50%.
    for (k = 0 ; k < m ; k++) {
-      cutoff = quantile(dist[k], n, 0.90);
+      cutoff = quantile(dist[k], n, 0.50);
       for (i = 3 ; i < n-1 ; i++) {
          if (dist[k][i] > cutoff) {
             bkpts[i] = 1;
@@ -224,7 +224,7 @@ void narrow_down (const double **obs, const double *dis, const int n,
 
 }
 
-int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
+void get_breakpoints(double *llik, int n, int *all_breakpoints) {
 /*
    * Find the maximum likelihood estimate by a dynamic
    * programming algorithm.
@@ -242,26 +242,25 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
       old_llik[j] = llik[j*n];
    }
 
+   double llik_history[n];
    // Breakpoint lists. The first index is the end of the segment,
    // the second is 1 if this position is an end (breakpoint).
-   
-   // int new_bkpt_list[n][n];
-   // int old_bkpt_list[n][n];
+   // These must be allocated from the heap because 'n' can be large.
    int *new_bkpt_list = (int *) malloc(n*n * sizeof(int));
    int *old_bkpt_list = (int *) malloc(n*n * sizeof(int));
+   int *bkpt_history  = (int *) malloc(n*n * sizeof(int));
 
    // Initialize to 0.
-   for (i = 0 ; i < n*n ; i++) {
-      new_bkpt_list[i] = old_bkpt_list[i] = 0;
+   for (i = 0 ; i < n ; i++) {
+      for (j = 0 ; j < n ; j++) {
+         new_bkpt_list[i+j*n] = old_bkpt_list[i+j*n] = 0;
+      }
    }
 
-   double new_full_llik = old_llik[n-1];
+   double new_full_llik = llik_history[0] = old_llik[n-1];
    double old_full_llik = -INFINITY;
 
-   while (old_full_llik < new_full_llik) {
-
-      // Update breakpoints.
-      nbreaks++;
+   for (nbreaks = 1 ; nbreaks < n/4 ; nbreaks++) {
       for (i = 0 ; i < n ; i++) {
          for (j = 0 ; j < n ; j++) {
             old_bkpt_list[i+j*n] = new_bkpt_list[i+j*n];
@@ -273,9 +272,9 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
          new_llik[j] = -INFINITY;
 
          // Cycle over start point 'i'.
-         for (i = 3 * nbreaks ; i < j - 1 ; i++) {
+         for (i = 3 * nbreaks ; i < j-3 ; i++) {
 
-            // NAN if not a breakpoint, so next line evaluates to false.
+            // NAN if not a breakpoint, so following line will be false.
             tmp = old_llik[i-1] + llik[i+j*n];
             if (tmp > new_llik[j]) {
                new_llik[j] = tmp;
@@ -295,22 +294,31 @@ int *get_breakpoints(double *llik, int n, int *all_breakpoints) {
 
       // Update full log-likelihoods.
       old_full_llik = new_full_llik;
-      new_full_llik = new_llik[n-1];
+      new_full_llik = llik_history[nbreaks] = new_llik[n-1];
       for (i = 0 ; i < n ; i++) {
          old_llik[i] = new_llik[i];
+         bkpt_history[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
       }
 
    }
    
+   nbreaks = 0;
+   for (i = 1 ; i < n ; i++) {
+      // Check if numbers are defined real, and if they maximize BIC. 
+      if (llik_history[i]-llik_history[i-1] > -INFINITY &&
+             llik_history[i]-llik_history[i-1]-3*log(n*(n-1)/2) < 1.0) {
+         break;
+      }
+      nbreaks++;
+   }
 
    for (i = 0 ; i < n ; i++) {
-      all_breakpoints[i] = old_bkpt_list[n-1+i*n];
+      all_breakpoints[i] = bkpt_history[nbreaks+i*n];
    }
 
    free(new_bkpt_list);
    free(old_bkpt_list);
-
-   return all_breakpoints;
+   free(bkpt_history);
 
 }
 
@@ -325,10 +333,15 @@ int n_proc(void) {
 }
 
 
-int *tadbit(const double **obs, const int n, const int m,
-      const int fast, const int n_threads) {
+int *tadbit(const double **obs, const int n, const int m, const int fast,
+      double max_tad_size, const int n_threads, const int verbose) {
 
    int i, j, k;
+
+   // Get absolute max tad size.
+   max_tad_size = max_tad_size > 0 ? 
+      max_tad_size < 1 ? max_tad_size *n : max_tad_size :
+      INFINITY;
 
 /*
    * Allocate memory and initialize variables. The distance
@@ -352,7 +365,10 @@ int *tadbit(const double **obs, const int n, const int m,
    for (i = 0; i < n ; i++) {
       for (j = 0; j < n ; j++) {
          llik[k] = NAN;
-         dis[k] = abs(i-j);
+         // The exp model.
+         // dis[k] = abs(i-j);
+         // The power model.
+         dis[k] = log(1+abs(i-j));
          k++;
       }
    }
@@ -377,6 +393,7 @@ int *tadbit(const double **obs, const int n, const int m,
       narrow_down(obs, dis, n, m, bkpts);
    }
 
+
 /*
    * Compute the log-likelihood of the segments. the element
    * (i,j) of the matrix-like array 'llik' will contain the
@@ -396,21 +413,28 @@ int *tadbit(const double **obs, const int n, const int m,
       return NULL;
    }
   
-   // Create a structure to manage threads:
-   //    -1 : the position has to be skipped.
-   //     0 : the position is not being filled by any thread.
-   //     1 : the position is being filled.
-   //     2 : the position is filled.
-   int status[n*n];
-   for (i = 0 ; i < n ; i++) {
-      for (j = 0 ; j < n ; j++) {
-         status[i+j*n] = (i == 0 || bkpts[i-1]) && bkpts[j] ? 0 : -1;
+   // Create an array of thread ids.
+   pthread_t tid[n_threads];
+   int *assignment = (int *) malloc(n*n * sizeof(int));
+   int processed = 0, to_process = 0;
+   
+   // 'assignment' is
+   for (i = 0 ; i < n-3 ; i++) {
+      for (j = i+3 ; j < n ; j++) {
+         if ((i == 0 || bkpts[i-1]) && bkpts[j] && (j-i < max_tad_size)) {
+            assignment[i+j*n] = to_process % n_threads;
+            to_process++;
+         }
+         else {
+            assignment[i+j*n] = -1;
+         }
       }
    }
 
    void *fill_matrix(void *arg) {
    
       int i, j, k;
+      pthread_t myid = pthread_self();
    
       // Allocate max possible size to blocks.
       ml_blocks *blk = (ml_blocks *) malloc(sizeof(ml_blocks));
@@ -423,23 +447,16 @@ int *tadbit(const double **obs, const int n, const int m,
       blk->d[1] = (double *) malloc(nmax * 2 * sizeof(double));
       blk->d[2] = (double *) malloc(nmax     * sizeof(double));
    
-   
       // Initialize 'a' and 'b' to 0.
       double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
    
-      for (i = 0 ; i < n-2 ; i++) {
-         for (j = i+2 ; j < n ; j++) {
-            // Get access to 'status'.
-            pthread_mutex_lock(&lock);
-            if (status[i+j*n] != 0) {
-               // Release lock.
-               pthread_mutex_unlock(&lock);
+      for (i = 0 ; i < n-3 ; i++) {
+         for (j = i+3 ; j < n ; j++) {
+            if (assignment[i+j*n] < 0) {
                continue;
             }
-            else {
+            if (pthread_equal(myid, tid[assignment[i+j*n]])) {
                // Update status and release lock.
-               status[i+j*n] = 1;
-               pthread_mutex_unlock(&lock);
                llik[i+j*n] = 0.0;
                for (k = 0 ; k < m ; k++) {
                   slice(obs[k], dis, n, i, j, blk);
@@ -449,16 +466,17 @@ int *tadbit(const double **obs, const int n, const int m,
                      ml_ab(blk->k[1], blk->d[1], ab[1], blk->size[1])     +
                      ml_ab(blk->k[2], blk->d[2], ab[2], blk->size[2]) / 2;
                }
-               // Update status.
                pthread_mutex_lock(&lock);
-               status[i+j*n] = 2;
+               processed++;
                pthread_mutex_unlock(&lock);
+               if (verbose) {
+                  fprintf(stderr, "%0.f%% done\r",
+                        99 * processed / (float) to_process);
+               }
             }
          }
       }
 
-      ;
-   
       // Free allocated memory.
       for (i = 0 ; i < 3 ; i++) {
          free(blk->k[i]);
@@ -471,7 +489,6 @@ int *tadbit(const double **obs, const int n, const int m,
    }
 
   
-   pthread_t tid[n_threads];
    for (i = 0 ; i < n_threads ; i++) {
       if (pthread_create(&(tid[i]), NULL, &fill_matrix, NULL) != 0) {
          return NULL;
@@ -479,8 +496,11 @@ int *tadbit(const double **obs, const int n, const int m,
    }
 
    for (i = 0 ; i < n_threads ; i++) {
-      pthread_join(tid[0], NULL);
+      pthread_join(tid[i], NULL);
    }
+
+   free(dis);
+   free(assignment);
 
 /*
    * The matrix 'llik' contains the log-likelihood of the
@@ -489,12 +509,14 @@ int *tadbit(const double **obs, const int n, const int m,
 */
 
    int *all_breakpoints = (int *) malloc(n * sizeof(int));
-   all_breakpoints = get_breakpoints(llik, n, all_breakpoints);
+   get_breakpoints(llik, n, all_breakpoints);
 
-   free(dis);
    free(llik);
 
    // Done!!
+   if (verbose) {
+      fprintf(stderr, "100%% done\n");
+   }
    return all_breakpoints;
 
 }

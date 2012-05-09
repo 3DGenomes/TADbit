@@ -5,9 +5,10 @@
 #include "tadbit.h"
 
 // Declare and register R/C interface.
-SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP threads);
+SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP maxtadsize, SEXP threads,
+      SEXP verbose);
 R_CallMethodDef callMethods[] = {
-   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 2},
+   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 5},
    {NULL, NULL, 0}
 };
 
@@ -16,7 +17,8 @@ void R_init_tadbit(DllInfo *info) {
 }
 
 
-SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP threads) {
+SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP max_tad_size,
+      SEXP threads, SEXP verbose) {
 /*
    * This is a tadbit wrapper for R. The matrices have to passed
    * in a list (in R). Checks that the input consists of numeric
@@ -63,7 +65,8 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP threads) {
    }
 
    // Call 'tadbit'.
-   int *bkpts = tadbit((const double **) obs, n, m, fast, n_threads);
+   int *bkpts = tadbit((const double **) obs, n, m, fast,
+         REAL(max_tad_size)[0], n_threads, INTEGER(verbose)[0]);
 
    // Wrap it up.
    SEXP return_val_sexp;
