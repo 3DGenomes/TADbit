@@ -151,12 +151,12 @@ slice(
    }
 }
 
-void
+int
 get_breakpoints(
   double *llik,
   int n,
-  int *all_breakpoints,
-  int *minmax
+  int m,
+  int *all_breakpoints
 ){
 
 /*
@@ -196,7 +196,9 @@ get_breakpoints(
    double new_full_llik = old_llik[n-1];
    double old_full_llik = -INFINITY;
 
-   minmax[0] = minmax[1] = 0;
+   int n_params;
+   const int N = n*(n-1)/2;
+   double BIC = -INFINITY;
 
    for (nbreaks = 1 ; nbreaks < n/4 ; nbreaks++) {
       // Update breakpoint lists.
@@ -235,139 +237,30 @@ get_breakpoints(
       // Update full log-likelihoods.
       old_full_llik = new_full_llik;
       new_full_llik = new_llik[n-1];
+
       for (i = 0 ; i < n ; i++) {
          old_llik[i] = new_llik[i];
          all_breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
       }
 
-      if ((new_full_llik > -INFINITY) && (minmax[0] == 0)) {
-         minmax[0] = nbreaks;
+      // Return when max BIC is reached.
+      n_params = m * (8 + 6*(nbreaks-1));
+      if (2*new_full_llik - n_params*log(N) < BIC) {
+         free(new_bkpt_list);
+         free(old_bkpt_list);
+         return nbreaks-1;
       }
-      if (!(new_full_llik > -INFINITY) && (minmax[0] > 0)) {
-         minmax[1] = nbreaks-1;
-         break;
+      else {
+         BIC = 2*new_full_llik - n_params*log(N);
       }
 
    }
 
-   if (minmax[1] == 0) {
-      minmax[1] = n/4;
-   }
-   
-   free(new_bkpt_list);
-   free(old_bkpt_list);
+   // Did not maximize BIC.
+   return -1;
 
 }
 
-
-void
-free_ml_block(
-  ml_block *blk
-){
-   int i;
-   // Start releasing diagonal blocks.
-   for (i = 0 ; i < blk->n_diag_blk; i++) {
-      free(blk->k_diag[i]);
-      free(blk->d_diag[i]);
-   }
-   free(blk->sizes_diag_blk);
-   free(blk->k_diag);
-   free(blk->d_diag);
-
-   // Then release off-diagonal blocks.
-   for (i = 0 ; i < blk->n_off_blk; i++) {
-      free(blk->k_off[i]);
-      free(blk->d_off[i]);
-   }
-   free(blk->sizes_off_blk);
-   free(blk->k_off);
-   free(blk->d_off);
-
-   // Done.
-
-}
-
-void
-malloc_and_dice(
-  const double *obs,
-  const double *dis,
-  int bk_pts[],
-  const int nbreaks,
-  ml_block *blk,
-  const int n
-){
-
-/*
-   * Fill ml_block data according to breakpoints.
-*/
-
-   int a, b, c, i, j, k;
-   int size;
-
-   blk->n_diag_blk = nbreaks+1;
-   blk->n_off_blk = nbreaks*(nbreaks+1)/2;
-
-   blk->sizes_diag_blk = (int *) malloc(blk->n_diag_blk * sizeof(int));
-   blk->sizes_off_blk = (int *) malloc(blk->n_off_blk * sizeof(int));
-   blk->k_diag = (double **) malloc(blk->n_diag_blk * sizeof(double *));
-   blk->d_diag = (double **) malloc(blk->n_diag_blk * sizeof(double *));
-   blk->k_off = (double **) malloc(blk->n_off_blk * sizeof(double *));
-   blk->d_off = (double **) malloc(blk->n_off_blk * sizeof(double *));
-
-   // Start with diagonal blocks.
-   for (c = 0 ; c < nbreaks+1 ; c++) {
-      // Get the size of the block
-      size = (bk_pts[c+1]-bk_pts[c]) * (bk_pts[c+1]-bk_pts[c]-1) / 2;
-
-      // Allocate the memory.
-      blk->k_diag[c] = (double *) malloc(size * sizeof(double));
-      blk->d_diag[c] = (double *) malloc(size * sizeof(double));
-
-      // Fill in the values.
-      blk->sizes_diag_blk[c] = 0;
-      for (k = 0, j = bk_pts[c] + 1 ; j < bk_pts[c+1] + 1 ; j++) {
-      for (i = bk_pts[c] + 1 ; i < j ; i++) {
-         if (isnan(obs[i+j*n])) {
-            continue;
-         }
-         blk->k_diag[c][k] = obs[i+j*n];
-         blk->d_diag[c][k] = dis[i+j*n];
-         blk->sizes_diag_blk[c]++;
-         k++;
-      }
-      }
-   }
-
-   // Then do off-diagonal blocks.
-   for (c = 0, b = 0 ; b < nbreaks ; b++) {
-   for (a = b+1 ; a < nbreaks+1 ; a++) {
-      // Get the size of the block
-      size = (bk_pts[a+1]-bk_pts[a]) * (bk_pts[b+1]-bk_pts[b]);
-
-      // Allocate the memory.
-      blk->k_off[c] = (double *) malloc(size * sizeof(double));
-      blk->d_off[c] = (double *) malloc(size * sizeof(double));
-
-      // Fill in the values.
-      blk->sizes_off_blk[c] = 0;
-      for (k = 0, j = bk_pts[a]+1 ; j < bk_pts[a+1] + 1 ; j++) {
-      for (i = bk_pts[b]+1 ; i < bk_pts[b+1] + 1 ; i++) {
-         if (isnan(obs[i+j*n])) {
-            continue;
-         }
-         blk->k_off[c][k] = obs[i+j*n];
-         blk->d_off[c][k] = dis[i+j*n];
-         blk->sizes_off_blk[c]++;
-         k++;
-      }
-      }
-      c++;
-   }
-   }
-   
-   // Done.
-   
-}
 
 void
 tadbit(
@@ -534,108 +427,10 @@ tadbit(
    // programming.
 
    int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
-   int minmax[2];
-   get_breakpoints(llik, n, all_breakpoints, minmax);
-
-   free(llik);
-   llik = (double *) malloc(n/4 * sizeof(double));
-
-   // Assign tasks to threads.
-   assignment = (int *) malloc(n/4 * sizeof(int));
-   processed = 0;
-   to_process = minmax[1] - minmax[0] + 1;
-   for (i = minmax[0] ; i < minmax[1] ; i++) {
-      assignment[i] = processed % n_threads;
-      processed++;
-   }
-
-   // 'all_breakpoints' consists of a matrix with breakpoint
-   // position for each number of breakpoint.
-   void *get_block_ml(void *arg) {
-
-      int j, k, nbreaks;
-      int bk_pts[n/4];
-      double ab[2] = {0.0, 0.0};
-
-      pthread_t myid = pthread_self();
-
-      ml_block *blk = (ml_block *) malloc(sizeof(ml_block));
-
-      // Readability variable.
-      int assigned_to_me;
-      for (nbreaks = minmax[0] ; nbreaks  < minmax[1] ; nbreaks++) {
-         assigned_to_me = pthread_equal(myid, tid[assignment[nbreaks]]);
-         if (!assigned_to_me) {
-            continue;
-         }
-
-         // Recode breakpoint positions in an (n+2)-array.
-         bk_pts[0] = -1;
-         bk_pts[nbreaks+1] = n-1;
-         for (k = 1, j = 0 ; j < n ; j++) {
-            if (all_breakpoints[nbreaks+j*n] == 1) {
-               bk_pts[k] = j;
-               k++;
-            }
-         }
-
-         llik[nbreaks] = 0.0;
-         for (k = 0 ; k < m ; k++) {
-            // Allocate memory and dice matrices.
-            malloc_and_dice(obs[k], dis, bk_pts, nbreaks, blk, n);
-
-            // Start with diagonal blocks.
-	    for (j = 0 ; j < blk->n_diag_blk ; j++) {
-               ab[0] = ab[1] = 0.0;
-               llik[nbreaks] += poiss_reg(blk->k_diag[j],
-                     blk->d_diag[j], ab, blk->sizes_diag_blk[j]);
-	    }
-            // Then off-diagonal blocks.
-	    for (j = 0 ; j < blk->n_off_blk ; j++) {
-               ab[0] = ab[1] = 0.0;
-               llik[nbreaks] += poiss_reg(blk->k_off[j],
-                     blk->d_off[j], ab, blk->sizes_off_blk[j]);
-	    }
-
-            // Free the memory (not efficent).
-            free_ml_block(blk);
-         }
-
-         // Wrapper for complex memory relase.
-
-      }
-
-      return NULL;
-
-   }
-
-   // Start the threads once more...
-   for (i = 0 ; i < n_threads ; i++) {
-      if (pthread_create(&(tid[i]), NULL, &get_block_ml, NULL) != 0) {
-         return;
-      }
-   }
-
-   // ... and wait for them.
-   for (i = 0 ; i < n_threads ; i++) {
-      pthread_join(tid[i], NULL);
-   }
-
-   int nbreaks;
-   const int N = m * n*(n-1)/2;
-   double n_params, BIC = -INFINITY;
-   for (nbreaks = minmax[0] ; nbreaks < minmax[1] ; nbreaks++) {
-      n_params = (nbreaks+1) * (nbreaks+2);
-      if (2*llik[nbreaks] - n_params * log(N) > BIC) {
-         BIC = 2*llik[nbreaks] - n_params * log(N);
-      }
-      else {
-         break;
-      }
-   }
+   int nbreaks = get_breakpoints(llik, n, m, all_breakpoints);
 
    for (i = 0 ; i < n ; i++) {
-      return_val[i] = all_breakpoints[nbreaks-1+i*n];
+      return_val[i] = all_breakpoints[nbreaks+i*n];
    }
 
    free(all_breakpoints);
