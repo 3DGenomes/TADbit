@@ -533,7 +533,7 @@ tadbit(
    // segments. The breakpoints are found by dynamic
    // programming.
 
-   int *all_breakpoints = return_val;
+   int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
    int minmax[2];
    get_breakpoints(llik, n, all_breakpoints, minmax);
 
@@ -621,14 +621,26 @@ tadbit(
       pthread_join(tid[i], NULL);
    }
 
-   // START DEBUG.
-   for (i = 0 ; i < minmax[1] ; i++) {
-      printf("%f, ", llik[i]);
+   int nbreaks;
+   const int N = m * n*(n-1)/2;
+   double n_params, BIC = -INFINITY;
+   for (nbreaks = minmax[0] ; nbreaks < minmax[1] ; nbreaks++) {
+      n_params = (nbreaks+1) * (nbreaks+2);
+      if (2*llik[nbreaks] - n_params * log(N) > BIC) {
+         BIC = 2*llik[nbreaks] - n_params * log(N);
+      }
+      else {
+         break;
+      }
    }
-   printf("\n");
-   // END DEBUG.
 
+   for (i = 0 ; i < n ; i++) {
+      return_val[i] = all_breakpoints[nbreaks-1+i*n];
+   }
+
+   free(all_breakpoints);
    free(dis);
+   free(llik);
 
    // Done!!
 

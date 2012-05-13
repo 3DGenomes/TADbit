@@ -104,10 +104,10 @@ int main (int argc, const char* argv[]) {
    }
 
    double **obs = &counts;
-   int *val = (int *) malloc (n*n * sizeof(int));
+   int *val = (int *) malloc (n * sizeof(int));
    tadbit((const double **) obs, n, 1, 50, 0, 1, val);
 
-   for (i = 0 ; i < n*n ; i++) {
+   for (i = 0 ; i < n ; i++) {
       printf("%d ", val[i]);
    }
    printf("\n");

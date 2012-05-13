@@ -70,7 +70,7 @@ tadbit_R_call(
    }
 
    SEXP return_val_sexp;
-   PROTECT(return_val_sexp = allocVector(INTSXP, n*n));
+   PROTECT(return_val_sexp = allocVector(INTSXP, n));
    int *return_val = INTEGER(return_val_sexp);
    
    // Call 'tadbit'.
