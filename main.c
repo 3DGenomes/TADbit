@@ -103,15 +103,12 @@ int main (int argc, const char* argv[]) {
 	   }
    }
 
-   // Keep one core free and give one thread per core.
-   int n_threads = n_proc() ? n_proc() - 1 : 1;
-
    double **obs = &counts;
-   int *breakpoints = tadbit((const double **) obs, n, 1, 1,
-		   .25, n_threads, 1);
+   int *val = (int *) malloc (n*n * sizeof(int));
+   tadbit((const double **) obs, n, 1, 50, 0, 1, val);
 
-   for (i = 0 ; i < n ; i++) {
-      printf("%d ", breakpoints[i]);
+   for (i = 0 ; i < n*n ; i++) {
+      printf("%d ", val[i]);
    }
    printf("\n");
 }

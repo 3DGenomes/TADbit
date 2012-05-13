@@ -5,10 +5,16 @@
 #include "tadbit.h"
 
 // Declare and register R/C interface.
-SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP maxtadsize, SEXP threads,
-      SEXP verbose);
+SEXP
+tadbit_R_call(
+  SEXP list,
+  SEXP max_tad_size,
+  SEXP n_threads,
+  SEXP verbose
+);
+
 R_CallMethodDef callMethods[] = {
-   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 5},
+   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 4},
    {NULL, NULL, 0}
 };
 
@@ -17,8 +23,14 @@ void R_init_tadbit(DllInfo *info) {
 }
 
 
-SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP max_tad_size,
-      SEXP threads, SEXP verbose) {
+SEXP
+tadbit_R_call(
+  SEXP list,
+  SEXP max_tad_size,
+  SEXP n_threads,
+  SEXP verbose
+){
+
 /*
    * This is a tadbit wrapper for R. The matrices have to passed
    * in a list (in R). Checks that the input consists of numeric
@@ -31,7 +43,6 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP max_tad_size,
 
    R_len_t i, m = length(list);
    int first = 1, n, *dim;
-   int fast = INTEGER(fast_yn)[0], n_threads = INTEGER(threads)[0];
 
    // Convert 'obs_list' to pointer of pointer to double.
    double **obs = (double **) malloc(m * sizeof(double **));
@@ -58,28 +69,15 @@ SEXP tadbit_R_call(SEXP list, SEXP fast_yn, SEXP max_tad_size,
       }
    }
 
-   // If 'n_threads' is 0, allocate thread number automatically.
-   if (!n_threads) {
-      // Keep one core free and allocate one thread per core.
-      n_threads = n_proc() ? n_proc() - 1 : 1;
-   }
-
-   // Call 'tadbit'.
-   int *bkpts = tadbit((const double **) obs, n, m, fast,
-         REAL(max_tad_size)[0], n_threads, INTEGER(verbose)[0]);
-
-   // Wrap it up.
    SEXP return_val_sexp;
-   PROTECT(return_val_sexp = allocVector(INTSXP, n));
+   PROTECT(return_val_sexp = allocVector(INTSXP, n*n));
    int *return_val = INTEGER(return_val_sexp);
-   // Copy output from 'tadbit'.:60
+   
+   // Call 'tadbit'.
+   tadbit((const double **) obs, n, m, REAL(max_tad_size)[0],
+         INTEGER(n_threads)[0], INTEGER(verbose)[0], return_val);
 
-   for (i = 0 ; i < n ; i++) {
-      return_val[i] = bkpts[i];
-   }
-   free (bkpts);
    UNPROTECT(1);
-
    return return_val_sexp;
 
 }
