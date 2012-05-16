@@ -1,6 +1,8 @@
 #ifndef TADBIT_LOADED
 #define TADBIT_LOADED
 #define TOLERANCE 1e-6
+#define MAXITER 10000
+
 
 // Struct to hold slice data.
 typedef struct {

@@ -13,6 +13,8 @@ do_tadbit = function (chr_list) {
          x = read.delim(fname)
          x = as.matrix(x[,-1]) + double(1)
          # Set NAs on rows/columns that have 0 on the diagonal.
+         n <- dim(x)[1]
+         x <- x[1:(n-2),1:(n-2)]
          to_na = diag(x) < 2
          x[to_na,] = NA
          x[,to_na] = NA
@@ -40,3 +42,4 @@ do_tadbit = function (chr_list) {
 }
 
 cat("sourced\n")
+l = do_tadbit("21")

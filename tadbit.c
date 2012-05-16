@@ -24,11 +24,14 @@ poiss_reg (
    * of the model is Sigma -exp(a + b*d_i) + k_i(a + b*d_i).
 */
 
-   if (n < 3) {
+   if (n < 1) {
       return 0.0;
    }
+   if (n < 3) {
+      return NAN;
+   }
 
-   int i;
+   int i, iter = 0;
    double a = ab[0], b = ab[1], llik;
    double da = 0.0, db = 0.0, oldgrad;
    double f, g, dfda = 0.0, dfdb = 0.0, dgda = 0.0, dgdb = 0.0;
@@ -53,7 +56,7 @@ poiss_reg (
    recompute_fg();
 
    // Newton-Raphson until gradient function < TOLERANCE.
-   while ((oldgrad = f*f + g*g) > TOLERANCE) {
+   while ((oldgrad = f*f + g*g) > TOLERANCE && iter++ < MAXITER) {
 
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
@@ -81,17 +84,22 @@ poiss_reg (
       a += da;
       b += db;
 
-
    }
 
-   // Compute log-likelihood (using 'dfda').
-   llik = 0.0;
-   for (i = 0 ; i < n ; i++) {
-      llik += exp(a+b*d[i]) + k[i] * (a + b*d[i]);
+   if (iter < MAXITER) {
+      // Compute log-likelihood (using 'dfda').
+      llik = 0.0;
+      for (i = 0 ; i < n ; i++) {
+         llik += exp(a+b*d[i]) + k[i] * (a + b*d[i]);
+      }
+      // Update 'ab' in place (to make the estimates available).
+      ab[0] = a; ab[1] = b;
    }
-
-   // Update 'ab' in place (to make the estimates available).
-   ab[0] = a; ab[1] = b;
+   else {
+      // Something probably went wrong. Reset 'ab' and return NAN.
+      llik = NAN;
+      ab[0] = ab[1] = 0.0;
+   }
 
    return llik;
 
@@ -151,6 +159,7 @@ slice(
    }
 }
 
+
 int
 get_breakpoints(
   double *llik,
@@ -179,18 +188,15 @@ get_breakpoints(
       new_llik[j] = -INFINITY;
    }
 
-   // Breakpoint lists. The first index is the end of the slice,
+   // Breakpoint lists. The first index (line) is the end of the slice,
    // the second is 1 if this position is an end (breakpoint).
    // These must be allocated from the heap because 'n' can be large.
    int *new_bkpt_list = (int *) malloc(n*n * sizeof(int));
    int *old_bkpt_list = (int *) malloc(n*n * sizeof(int));
 
    // Initialize to 0.
-   for (i = 0 ; i < n ; i++) {
-   for (j = 0 ; j < n ; j++) {
-      all_breakpoints[i+j*n] = new_bkpt_list[i+j*n] = \
-            old_bkpt_list[i+j*n] = 0;
-   }
+   for (i = 0 ; i < n*n ; i++) {
+      all_breakpoints[i] = new_bkpt_list[i] = old_bkpt_list[i] = 0;
    }
 
    double new_full_llik = old_llik[n-1];
@@ -202,10 +208,8 @@ get_breakpoints(
 
    for (nbreaks = 1 ; nbreaks < n/4 ; nbreaks++) {
       // Update breakpoint lists.
-      for (i = 0 ; i < n ; i++) {
-      for (j = 0 ; j < n ; j++) {
-         old_bkpt_list[i+j*n] = new_bkpt_list[i+j*n];
-      }
+      for (i = 0 ; i < n*n ; i++) {
+         old_bkpt_list[i] = new_bkpt_list[i];
       }
 
       // Cycle over end point 'j'.
@@ -216,7 +220,8 @@ get_breakpoints(
          // Cycle over start point 'i'.
          for (i = 3 * nbreaks ; i < j-3 ; i++) {
 
-            // NAN if not a potential breakpoint (so evaluates to false).
+            // NAN if not a potential breakpoint, so the following
+            // lines evaluates to false.
             tmp = old_llik[i-1] + llik[i+j*n];
             if (tmp > new_llik[j]) {
                new_llik[j] = tmp;
@@ -244,7 +249,7 @@ get_breakpoints(
       }
 
       // Return when max BIC is reached.
-      n_params = m * (8 + 6*(nbreaks-1));
+      n_params = nbreaks + m * (8 + 6*(nbreaks-1));
       if (2*new_full_llik - n_params*log(N) < BIC) {
          free(new_bkpt_list);
          free(old_bkpt_list);
@@ -265,7 +270,7 @@ get_breakpoints(
 void
 tadbit(
   const double **obs,
-  const int n,
+  int n,
   const int m,
   double max_tad_size,
   int n_threads,
@@ -273,9 +278,72 @@ tadbit(
   int *return_val
 ){
 
-   int i, j, k;
 
-   // Get thread number if set to 0(automatic).
+   // Get absolute max tad size.
+   max_tad_size = max_tad_size > 0 ? 
+      max_tad_size < 1 ? max_tad_size *n : max_tad_size :
+      INFINITY;
+
+   int i, j, k, l;
+   const int init_n = n;
+
+   // Allocate memory and initialize variables. The distance
+   // matrix 'dis' is the distance to the main diagonal. Every
+   // element of coordinate (i,j) is on a diagonal; the distance
+   // is the log-shift to the main diagonal |i-j|.
+   // 'ab' contains parameters 'a' and 'b' for the maximum likelihood
+   // model. Because each segmentation defines 3 regions we need
+   // 3 pairs of parameters.
+
+   double *init_dis = (double *) malloc(init_n*init_n * sizeof(double));
+
+   for (l = 0, i = 0; i < init_n ; i++) {
+   for (j = 0; j < init_n ; j++) {
+      init_dis[l] = log(1+abs(i-j));
+      l++;
+   }
+   }
+
+   // Simplify input. Remove line and column if NA on the diagonal.
+   int remove[init_n];
+   for (i = 0 ; i < init_n ; i++) {
+      remove[i] = 0;
+      for (k = 0 ; k < m ; k++) {
+         if (isnan(obs[k][i+i*init_n])) {
+            remove[i] = 1;
+         }
+      }
+   }
+
+   // Update the dimension.
+   for (i = 0 ; i < init_n ; i++) {
+      n -= remove[i];
+   }
+
+   // Allocate and copy.
+   double **new_obs = (double **) malloc(m * sizeof(double *));
+   double *dis = (double *) malloc(n*n * sizeof(double));
+   for (k = 0 ; k < m ; k++) {
+      l = 0;
+      new_obs[k] = (double *) malloc(n*n * sizeof(double));
+      for (j = 0 ; j < init_n ; j++) {
+      for (i = 0 ; i < init_n ; i++) {
+         if (remove[i] || remove[j]) {
+            continue;
+         }
+         new_obs[k][l] = obs[k][i+j*init_n];
+         dis[l] = init_dis[i+j*init_n];
+         l++;
+      }
+      }
+   }
+
+   // We will not need the initial observations any more.
+   free(init_dis);
+   obs = new_obs;
+
+
+   // Get thread number if set to 0 (automatic).
    if (n_threads < 1) {
       #ifdef _SC_NPROCESSORS_ONLN
          n_threads = (int) sysconf(_SC_NPROCESSORS_ONLN);
@@ -284,10 +352,11 @@ tadbit(
       #endif
    }
 
-   // Get absolute max tad size.
-   max_tad_size = max_tad_size > 0 ? 
-      max_tad_size < 1 ? max_tad_size *n : max_tad_size :
-      INFINITY;
+
+   double *llik = (double *) malloc(n*n * sizeof(double));
+   for (l = 0 ; l < n*n ; l++) {
+      llik[l] = NAN;
+   }
 
    // Create an array of thread ids.
    pthread_t tid[n_threads];
@@ -313,25 +382,6 @@ tadbit(
    }
    }
 
-   // Allocate memory and initialize variables. The distance
-   // matrix 'dis' is the distance to the main diagonal. Every
-   // element of coordinate (i,j) is on a diagonal; the distance
-   // is the log-shift to the main diagonal |i-j|.
-   // 'ab' contains parameters 'a' and 'b' for the maximum likelihood
-   // model. Because each segmentation defines 3 regions we need
-   // 3 pairs of parameters.
-
-
-   double *dis = (double *) malloc(n*n * sizeof(double));
-   double *llik = (double *) malloc(n*n * sizeof(double));
-
-   for (k = i = 0; i < n ; i++) {
-   for (j = 0; j < n ; j++) {
-      llik[k] = NAN;
-      dis[k] = log(1+abs(i-j));
-      k++;
-   }
-   }
 
    // Inline function for threads.
    void *fill_matrix(void *arg) {
@@ -345,7 +395,7 @@ tadbit(
       * left out.
    */
   
-      int i, j, k;
+      int i = 0, j, k;
       pthread_t myid = pthread_self();
    
       // Allocate max possible size to blocks.
@@ -373,17 +423,17 @@ tadbit(
          if (do_not_process || !assigned_to_me) {
             continue;
          }
-         // Distinct parts of the array, not lock needed.
+
+         // Distinct parts of the array, no lock needed.
          llik[i+j*n] = 0.0;
          for (k = 0 ; k < m ; k++) {
             slice(obs[k], dis, n, i, j, slc);
             // Get the likelihood per slice and sum.
             llik[i+j*n] +=
                poiss_reg(slc->k[0], slc->d[0], ab[0], slc->size[0]) / 2 +
-               poiss_reg(slc->k[1], slc->d[1], ab[1], slc->size[1])     +
+	       poiss_reg(slc->k[1], slc->d[1], ab[1], slc->size[1])     +
                poiss_reg(slc->k[2], slc->d[2], ab[2], slc->size[2]) / 2;
          }
-         // No synchronization needed (no mutex).
          processed++;
          if (verbose) {
             fprintf(stderr, "Computing likelihood (%0.f%% done)\r",
@@ -398,8 +448,7 @@ tadbit(
          free(slc->d[i]);
       }
       free(slc);
-   
-      // Thread exit.
+
       return NULL;
    
    }
@@ -429,14 +478,24 @@ tadbit(
    int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
    int nbreaks = get_breakpoints(llik, n, m, all_breakpoints);
 
-   for (i = 0 ; i < n ; i++) {
-      return_val[i] = all_breakpoints[nbreaks+i*n];
+   for (l = 0, i = 0 ; i < init_n ; i++) {
+      if (remove[i]) {
+         return_val[i] = 0;
+      }
+      else {
+         return_val[i] = all_breakpoints[nbreaks+l*n];
+         l++;
+      }
    }
 
+   for (k = 0 ; k < m ; k++) {
+      free(new_obs[k]);
+   }
+   free(new_obs);
    free(all_breakpoints);
    free(dis);
    free(llik);
 
-   // Done!!
+   // Done!! The results is in 'return_val'.
 
 }
