@@ -12,16 +12,33 @@ double
 poiss_reg (
   const double *k,
   const double *d,
+  const double *w,
   double *ab,
   const int n
 ){
 
 /*
+   * Arguments:
+   *   k:  Counts (size |n|).
+   *   d:  Distances (size |n|).
+   *   w:  Weights (size |n|).
+   *   ab: Starting values of |a| and |b| (size 2).
+   *   n:  Length of the arrays |k|, |d| and |w|.
+   *
+   * Return:
+   *   Log-likelihood.
+   *
+   * Side-effects:
+   *   ab:  updated in place with the estimates.
+   *
    * The 2-array 'ab' is upated in place and the log-likelihood
    * is returned.
    * The fitted model (by maximum likelihood) is Poisson with lambda
-   * paramter such that lambda = exp(a + b*d). So the full log-likelihood
-   * of the model is Sigma -exp(a + b*d_i) + k_i(a + b*d_i).
+   * paramter such that lambda = w*exp(a + b*d). So the full
+   * log-likelihood of the model is the sum of terms
+   *
+   *         - w_i exp(a + b*d_i) + k_i(log(w_i) + a + b*d_i)
+   *
 */
 
    if (n < 1) {
@@ -43,11 +60,11 @@ poiss_reg (
    // declared as long).
    long double tmp;
 
-   // Comodity function.
+   // Comodity function. The function f is -dl/da and g is -dl/db.
    void recompute_fg() {
       f = 0.0; g = 0.0;
       for (i = 0 ; i < n ; i++) {
-         tmp  =  exp(a+da+(b+db)*d[i])-k[i];
+         tmp  =  w[i] * exp(a+da+(b+db)*d[i]) - k[i];
          f   +=  tmp;
          g   +=  tmp * d[i];
       }
@@ -61,7 +78,7 @@ poiss_reg (
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
       for (i = 0 ; i < n ; i++) {
-         tmp   =   exp(a+b*d[i]);
+         tmp   =   w[i] * exp(a+b*d[i]);
          dfda +=   tmp;
          dgda +=   tmp * d[i];
          dgdb +=   tmp * d[i]*d[i];
@@ -107,19 +124,27 @@ poiss_reg (
 
 void
 slice(
-  const double *k,
-  const double *d,
+  const double *obs,
+  const double *dis,
   const int n,
-  const int i,
-  const int j,
+  const int start,
+  const int end,
   ml_slice *blocks
 ){
 
 /*
-   *  Break up 'mat' in three blocks delimited by 'i' and 'j'.
-   *  The upper block is (0,i-1)x(i,j), the triangular block is
-   *  the upper triangular block without diagonal (i,j)x(i,j)
-   *  and the bottom block is (j+1,n)x(i,j).
+   * Arguments:
+   *   obs:    Observation array (size |n|^2).
+   *   dis:    Distance array (size |n|^2).
+   *   n:      Size of th |obs| and |dis|.
+   *   start:  Start index of the slice (included).
+   *   end:    Stop index of the slice (included).
+   *   blocks: Where to write the 3 blocks of the slice.
+   * Side-effects:
+   *   Update |blocks| in place.
+   *    
+   * Observations are weighted by the geometric mean of the counts on
+   * the diagonals.
 */
 
    int l, row, col;
@@ -129,30 +154,36 @@ slice(
    }
 
    // Fill vertically.
-   for (col = i ; col < j+1 ; col++) {
-      // Skip if 'i' is 0.
-      for (row = 0 ; row < i ; row++) {
-         if (!isnan(k[row+col*n])) {
-            blocks->k[0][blocks->size[0]] = k[row+col*n];
-            blocks->d[0][blocks->size[0]] = d[row+col*n];
+   for (col = start ; col < end+1 ; col++) {
+      // Skipped if |start| is 0.
+      for (row = 0 ; row < start ; row++) {
+         if (!isnan(obs[row+col*n])) {
+            blocks->k[0][blocks->size[0]] = obs[row+col*n];
+            blocks->d[0][blocks->size[0]] = dis[row+col*n];
+            blocks->w[0][blocks->size[0]] = \
+                sqrt(obs[row+row*n]*obs[col+col*n]);
             blocks->size[0]++;
          }
       }
 
-      // Skip if 'col' is i.
-      for (row = i ; row < col ; row++) {
-         if (!isnan(k[row+col*n])) {
-            blocks->k[1][blocks->size[1]] = k[row+col*n];
-            blocks->d[1][blocks->size[1]] = d[row+col*n];
+      // Skipped if |col| is |start|.
+      for (row = start ; row < col ; row++) {
+         if (!isnan(obs[row+col*n])) {
+            blocks->k[1][blocks->size[1]] = obs[row+col*n];
+            blocks->d[1][blocks->size[1]] = dis[row+col*n];
+            blocks->w[1][blocks->size[1]] = \
+                sqrt(obs[row+row*n]*obs[col+col*n]);
             blocks->size[1]++;
          }
       }
 
-      // Skip if 'j' is n-1.
-      for (row = j+1 ; row < n ; row++) {
-         if (!isnan(k[row+col*n])) {
-            blocks->k[2][blocks->size[2]] = k[row+col*n];
-            blocks->d[2][blocks->size[2]] = d[row+col*n];
+      // Skipped if |end| is |n|-1.
+      for (row = end+1 ; row < n ; row++) {
+         if (!isnan(obs[row+col*n])) {
+            blocks->k[2][blocks->size[2]] = obs[row+col*n];
+            blocks->d[2][blocks->size[2]] = dis[row+col*n];
+            blocks->w[2][blocks->size[2]] = \
+                sqrt(obs[row+row*n]*obs[col+col*n]);
             blocks->size[2]++;
          }
       }
@@ -409,6 +440,9 @@ tadbit(
       slc->d[0] = (double *) malloc(nmax     * sizeof(double));
       slc->d[1] = (double *) malloc(nmax * 2 * sizeof(double));
       slc->d[2] = (double *) malloc(nmax     * sizeof(double));
+      slc->w[0] = (double *) malloc(nmax     * sizeof(double));
+      slc->w[1] = (double *) malloc(nmax * 2 * sizeof(double));
+      slc->w[2] = (double *) malloc(nmax     * sizeof(double));
        
       // Initialize 'a' and 'b' to 0.
       double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
@@ -430,9 +464,9 @@ tadbit(
             slice(obs[k], dis, n, i, j, slc);
             // Get the likelihood per slice and sum.
             llik[i+j*n] +=
-               poiss_reg(slc->k[0], slc->d[0], ab[0], slc->size[0]) / 2 +
-	       poiss_reg(slc->k[1], slc->d[1], ab[1], slc->size[1])     +
-               poiss_reg(slc->k[2], slc->d[2], ab[2], slc->size[2]) / 2;
+               poiss_reg(slc->k[0], slc->d[0], slc->w[0], ab[0], slc->size[0]) / 2 +
+	       poiss_reg(slc->k[1], slc->d[1], slc->w[1], ab[1], slc->size[1])     +
+               poiss_reg(slc->k[2], slc->d[2], slc->w[2], ab[2], slc->size[2]) / 2;
          }
          processed++;
          if (verbose) {

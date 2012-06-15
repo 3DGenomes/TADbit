@@ -9,6 +9,7 @@ typedef struct {
    int size[3];
    double *k[3];
    double *d[3];
+   double *w[3];
 } ml_slice;
 
 // Struct to hold block data.
