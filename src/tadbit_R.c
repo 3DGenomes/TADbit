@@ -74,7 +74,7 @@ tadbit_R_call(
    int *return_val = INTEGER(return_val_sexp);
    
    // Call 'tadbit'.
-   tadbit((const double **) obs, n, m, REAL(max_tad_size)[0],
+   tadbit(obs, n, m, REAL(max_tad_size)[0],
          INTEGER(n_threads)[0], INTEGER(verbose)[0], return_val);
 
    UNPROTECT(1);

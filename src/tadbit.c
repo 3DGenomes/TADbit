@@ -148,6 +148,7 @@ slice(
 */
 
    int l, row, col;
+   int intervals[3] = {start, start, n};
 
    for (l = 0 ; l < 3 ; l++) {
       blocks->size[l] = 0;
@@ -155,6 +156,29 @@ slice(
 
    // Fill vertically.
    for (col = start ; col < end+1 ; col++) {
+      // Update boundary of diagonal block.
+      intervals[1] = col;
+
+      for (row = 0 ; row < n ; row++) {
+         // Skip the lower triangle of the diagonal block.
+         // NB: this ensures proper disjuction of cases next line.
+         if (row > col && row < end+1) {
+            continue;
+         }
+         // Get the block to update (|l| is its index).
+         for (l = 0 ; row + 1 > intervals[l] ; l++);
+
+         if (!isnan(obs[row+col*n])) {
+            blocks->k[l][blocks->size[l]] = obs[row+col*n];
+            blocks->d[l][blocks->size[l]] = dis[row+col*n];
+            blocks->w[l][blocks->size[l]] = \
+                sqrt(obs[row+row*n]*obs[col+col*n]);
+            blocks->size[l]++;
+         }
+      }
+   }
+
+/*
       // Skipped if |start| is 0.
       for (row = 0 ; row < start ; row++) {
          if (!isnan(obs[row+col*n])) {
@@ -188,6 +212,7 @@ slice(
          }
       }
    }
+*/
 }
 
 
@@ -300,7 +325,7 @@ get_breakpoints(
 
 void
 tadbit(
-  const double **obs,
+  double **obs,
   int n,
   const int m,
   double max_tad_size,

@@ -3,4 +3,7 @@
 *.so
 *.o
 *.a
-tadbit
+*.pyc
+src/build/*
+src/pytadbit.py
+src/pytadbit_wrap.c

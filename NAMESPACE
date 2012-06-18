@@ -1,0 +1,2 @@
+useDynLib(tadbit)
+export(tadbit)
