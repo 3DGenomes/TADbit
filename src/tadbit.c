@@ -61,7 +61,7 @@ poiss_reg (
    long double tmp;
 
    // Comodity function. The function f is -dl/da and g is -dl/db.
-   void recompute_fg() {
+   void recompute_fg(void) {
       f = 0.0; g = 0.0;
       for (i = 0 ; i < n ; i++) {
          tmp  =  w[i] * exp(a+da+(b+db)*d[i]) - k[i];
@@ -177,42 +177,6 @@ slice(
          }
       }
    }
-
-/*
-      // Skipped if |start| is 0.
-      for (row = 0 ; row < start ; row++) {
-         if (!isnan(obs[row+col*n])) {
-            blocks->k[0][blocks->size[0]] = obs[row+col*n];
-            blocks->d[0][blocks->size[0]] = dis[row+col*n];
-            blocks->w[0][blocks->size[0]] = \
-                sqrt(obs[row+row*n]*obs[col+col*n]);
-            blocks->size[0]++;
-         }
-      }
-
-      // Skipped if |col| is |start|.
-      for (row = start ; row < col ; row++) {
-         if (!isnan(obs[row+col*n])) {
-            blocks->k[1][blocks->size[1]] = obs[row+col*n];
-            blocks->d[1][blocks->size[1]] = dis[row+col*n];
-            blocks->w[1][blocks->size[1]] = \
-                sqrt(obs[row+row*n]*obs[col+col*n]);
-            blocks->size[1]++;
-         }
-      }
-
-      // Skipped if |end| is |n|-1.
-      for (row = end+1 ; row < n ; row++) {
-         if (!isnan(obs[row+col*n])) {
-            blocks->k[2][blocks->size[2]] = obs[row+col*n];
-            blocks->d[2][blocks->size[2]] = dis[row+col*n];
-            blocks->w[2][blocks->size[2]] = \
-                sqrt(obs[row+row*n]*obs[col+col*n]);
-            blocks->size[2]++;
-         }
-      }
-   }
-*/
 }
 
 
@@ -256,7 +220,6 @@ get_breakpoints(
    }
 
    double new_full_llik = old_llik[n-1];
-   double old_full_llik = -INFINITY;
 
    int n_params;
    const int N = n*(n-1)/2;
@@ -296,7 +259,6 @@ get_breakpoints(
       }
 
       // Update full log-likelihoods.
-      old_full_llik = new_full_llik;
       new_full_llik = new_llik[n-1];
 
       for (i = 0 ; i < n ; i++) {
@@ -555,6 +517,6 @@ tadbit(
    free(dis);
    free(llik);
 
-   // Done!! The results is in 'return_val'.
+   // Done!! The results is in |return_val|.
 
 }
