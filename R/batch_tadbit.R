@@ -11,7 +11,7 @@ batch_tadbit <- function(directory=getwd(), sep='_',
 
    # Get file names and unit (chromosome) names.
    fname <- dir(directory, recursive=TRUE, full.names=TRUE)
-   unit <- sapply(strsplit(basename(fname), sep), "[", 1)
+   unit <- sapply(strsplit(basename(fname), sep, fixe=TRUE), "[", 1)
    fname_list <- tapply(X=fname, INDEX=unit, c)
 
    # Cycle through units (chromosomes).

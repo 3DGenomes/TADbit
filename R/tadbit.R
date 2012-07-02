@@ -1,4 +1,5 @@
-tadbit <- function(x, max_size="auto", n_CPU="auto", verbose=TRUE) {
+tadbit <- function(x, max_size="auto", n_CPU="auto", mask_from=Inf,
+   verbose=TRUE) {
 
    # Validate input type or stop with meaningful error message.
    if (!is.list(x)) {
@@ -28,12 +29,25 @@ tadbit <- function(x, max_size="auto", n_CPU="auto", verbose=TRUE) {
       }
    }
 
+   # Set positions further than |mask_from| from diagonal to NA.
+   if (!is.infinite(mask_from)) {
+      # Build the mask matrix.
+      n <- ref_dim[1]
+      row_ind <- rep(1:n, each=n)
+      col_ind <- rep(1:n, times=n)
+      mask <- array(abs(row_ind-col_ind) > mask_from, dim=ref_dim)
+      # Mask.
+      for (i in 1:length(x)) {
+         x[[i]][mask] <- NA
+      }
+   }
+
    # Assign automatic variables and coerce to proper type.
    max_size <- as.double(ifelse (max_size == "auto", .1, max_size))
    n_CPU <- as.integer(ifelse(n_CPU == "auto", 0, n_CPU))
    verbose <- as.logical(verbose)
 
-   ctdabit <- .Call("tadbit_R_call", x, max_size, n_CPU, verbose)
+   ctadbit <- .Call("tadbit_R_call", x, max_size, n_CPU, verbose)
 
    return (which(ctadbit == 1))
 
