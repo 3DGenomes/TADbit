@@ -23,7 +23,7 @@ tadbit <- function(x, max_size="auto", n_CPU="auto", verbose=TRUE) {
       stop("all the matrices in 'x' must be square")
    }
    for (this_dim in lapply(x, dim)) {
-      if (this_dim != ref_dim) {
+      if (any(this_dim != ref_dim)) {
          stop("all the matrices in 'x' must have same dimensions")
       }
    }
