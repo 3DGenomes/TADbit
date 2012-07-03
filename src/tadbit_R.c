@@ -64,7 +64,7 @@ tadbit_R_call(
       }
       else {
          if (n != dim[0]) {
-            error("all matrices must have same dimensions");;
+            error("all matrices must have same dimensions");
          }
       }
    }

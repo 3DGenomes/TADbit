@@ -35,8 +35,8 @@ batch_tadbit(directory=getwd(), sep='_', read_options=list(), ...)
   if the files have no header, use \code{read_options=list(header=FALSE)} and if
   they also have row names, \code{read_options=list(header=FALSE, row.names=1)}.
 
-  Other arguments such as \code{max_size}, \code{n_CPU}, \code{mask_from} and
-  \code{verbose} are passed to \code{tadbit}.
+  Other arguments such as \code{max_size}, \code{n_CPU} and \code{verbose} are
+  passed to \code{tadbit}.
 }
 
 \value{

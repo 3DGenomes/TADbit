@@ -1,5 +1,5 @@
-#ifndef TADBIT
-#define TADBIT
+#ifndef TADBIT_LOADED
+#define TADBIT_LOADED
 #define TOLERANCE 1e-6
 #define MAXITER 10000
 
@@ -12,6 +12,19 @@ typedef struct {
    double *w[3];
 } ml_slice;
 
+// Struct to hold block data.
+typedef struct {
+   // Diagonal block data.
+   int n_diag_blk;
+   int *sizes_diag_blk;
+   double **k_diag;
+   double **d_diag;
+   // Off-diagonal block data.
+   int n_off_blk;
+   int *sizes_off_blk;
+   double **k_off;
+   double **d_off;
+} ml_block;
 
 void
 tadbit(
