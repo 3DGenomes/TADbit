@@ -523,6 +523,6 @@ tadbit(
    free(dis);
    free(llik);
 
-   // Done!! The results is in 'return_val'.
+   // Done!! The results is in |return_val|.
 
 }
