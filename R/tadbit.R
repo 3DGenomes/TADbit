@@ -27,6 +27,11 @@ tadbit <- function(x, max_size="auto", n_CPU="auto", verbose=TRUE) {
          stop("all the matrices in 'x' must have same dimensions")
       }
    }
+   # Make sure values in 'x' are double.
+   # NOTE: calling the C function 'FLOAT' on integers passed from R
+   # is not reliable (values differ a bit) and can cause segmentation
+   # faults.
+   x <- lapply(x, function(y) { y + double(1) })
 
    # Assign automatic variables and coerce to proper type.
    max_size <- as.double(ifelse (max_size == "auto", .1, max_size))
