@@ -13,7 +13,8 @@ tadbit.so: tadbit.o tadbit_R.c
 	R CMD SHLIB tadbit_R.c tadbit.o -o tadbit.so
 
 tadbit.o: tadbit.c
-	gcc -std=gnu99 -fPIC -g -O3 -c tadbit.c -lpthread -Wall
+	gcc -fnested-functions -std=gnu99 -fPIC -g -O3 -c tadbit.c \
+		-lpthread -Wall
 
 pytadbit_wrap.c: pytadbit.i tadbit.c
 	swig -python pytadbit.i
