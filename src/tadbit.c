@@ -503,15 +503,6 @@ tadbit(
    // segments. The breakpoints are found by dynamic
    // programming.
 
-   // BEGIN STUFF ON BRANCH tmp
-   for (i = 0 ; i < n ; i++) {
-      for (j = 0 ; j < n ; j++) {
-         printf("%.3f\t", llik[i+j*n]);
-      }
-      printf("\n");
-   }
-   // END STUFF ON BRANCH tmp
-
    int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
    int nbreaks = get_breakpoints(llik, n, m, all_breakpoints);
 
