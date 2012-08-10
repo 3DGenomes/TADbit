@@ -299,7 +299,8 @@ tadbit(
   double max_tad_size,
   int n_threads,
   const int verbose,
-  int *return_val
+  int *breaks,
+  double *llik
 ){
 
 
@@ -377,7 +378,7 @@ tadbit(
    }
 
 
-   double *llik = (double *) malloc(n*n * sizeof(double));
+   //double *llik = (double *) malloc(n*n * sizeof(double));
    for (l = 0 ; l < n*n ; l++) {
       llik[l] = NAN;
    }
@@ -502,15 +503,24 @@ tadbit(
    // segments. The breakpoints are found by dynamic
    // programming.
 
+   // BEGIN STUFF ON BRANCH tmp
+   for (i = 0 ; i < n ; i++) {
+      for (j = 0 ; j < n ; j++) {
+         printf("%.3f\t", llik[i+j*n]);
+      }
+      printf("\n");
+   }
+   // END STUFF ON BRANCH tmp
+
    int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
    int nbreaks = get_breakpoints(llik, n, m, all_breakpoints);
 
    for (l = 0, i = 0 ; i < init_n ; i++) {
       if (remove[i]) {
-         return_val[i] = 0;
+         breaks[i] = 0;
       }
       else {
-         return_val[i] = all_breakpoints[nbreaks+l*n];
+         breaks[i] = all_breakpoints[nbreaks+l*n];
          l++;
       }
    }
@@ -521,8 +531,8 @@ tadbit(
    free(new_obs);
    free(all_breakpoints);
    free(dis);
-   free(llik);
+   //free(llik);
 
-   // Done!! The results is in |return_val|.
+   // Done!! The results is in 'breaks' and 'llik'.
 
 }

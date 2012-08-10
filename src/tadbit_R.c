@@ -42,7 +42,9 @@ tadbit_R_call(
 */
 
    R_len_t i, m = length(list);
-   int first = 1, n, *dim;
+   int first = 1, n, *dim_int;
+
+   SEXP dim;
 
    // Convert 'obs_list' to pointer of pointer to double.
    double **obs = (double **) malloc(m * sizeof(double **));
@@ -54,31 +56,40 @@ tadbit_R_call(
          error("input must be square matrix");
       }
       // Check the dimension.
-      dim = INTEGER(getAttrib(VECTOR_ELT(list, i), R_DimSymbol));
-      if (dim[0] != dim[1]) {
+      dim = getAttrib(VECTOR_ELT(list, i), R_DimSymbol);
+      dim_int = INTEGER(dim);
+      if (dim_int[0] != dim_int[1]) {
          error("input must be square matrix");
       }
       if (first) {
-         n = dim[0];
+         n = dim_int[0];
          first = 0;
       }
       else {
-         if (n != dim[0]) {
+         if (n != dim_int[0]) {
             error("all matrices must have same dimensions");
          }
       }
    }
 
-   SEXP return_val_sexp;
-   PROTECT(return_val_sexp = allocVector(INTSXP, n));
-   int *return_val = INTEGER(return_val_sexp);
+   SEXP breaks_sexp;
+   SEXP llik_sexp;
+   PROTECT(breaks_sexp = allocVector(INTSXP, n));
+   PROTECT(llik_sexp = allocVector(REALSXP, n*n));
+   setAttrib(llik_sexp, R_DimSymbol, dim);
+   int *breaks = INTEGER(breaks_sexp);
+   double *llik = REAL(llik_sexp);
    
    // Call 'tadbit'.
-   tadbit(obs, n, m, REAL(max_tad_size)[0],
-         INTEGER(n_threads)[0], INTEGER(verbose)[0], return_val);
+   tadbit(obs, n, m, REAL(max_tad_size)[0], INTEGER(n_threads)[0],
+         INTEGER(verbose)[0], breaks, llik);
 
-   UNPROTECT(1);
-   return return_val_sexp;
+   SEXP list_sexp;
+   PROTECT(list_sexp = allocVector(VECSXP, 2));
+   SET_VECTOR_ELT(list_sexp, 0, breaks_sexp);
+   SET_VECTOR_ELT(list_sexp, 1, llik_sexp);
+   UNPROTECT(3);
+   return list_sexp;
 
 }
 

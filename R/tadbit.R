@@ -38,8 +38,6 @@ tadbit <- function(x, max_size="auto", n_CPU="auto", verbose=TRUE) {
    n_CPU <- as.integer(ifelse(n_CPU == "auto", 0, n_CPU))
    verbose <- as.logical(verbose)
 
-   ctadbit <- .Call("tadbit_R_call", x, max_size, n_CPU, verbose)
-
-   return (which(ctadbit == 1))
+   return(.Call("tadbit_R_call", x, max_size, n_CPU, verbose))
 
 }

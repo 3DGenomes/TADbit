@@ -34,6 +34,7 @@ tadbit(
   double max_tad_size,
   int n_threads,
   const int verbose,
-  int *return_val
+  int *breaks,
+  double *llik
 );
 #endif
