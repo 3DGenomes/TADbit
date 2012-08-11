@@ -519,12 +519,12 @@ tadbit(
 
    for (l = 0, i = 0 ; i < init_n ; i++) {
       if (remove[i]) continue;
-      else l++;
-      for (j = 0, k = 0 ; j < init_n ; j++) {
+      for (k = 0, j = 0 ; j < init_n ; j++) {
          if (remove[j]) continue;
-         else k++;
-            orig_llik[i+j*n] = llik[l+k*init_n];
+         orig_llik[i+j*init_n] = llik[l+k*n];
+         k++;
       }
+      l++;
    }
 
    for (k = 0 ; k < m ; k++) {
@@ -533,6 +533,7 @@ tadbit(
    free(new_obs);
    free(all_breakpoints);
    free(dis);
+   free(llik);
 
    // Done!! The results is in 'breaks' and 'orig_llik'.
 
