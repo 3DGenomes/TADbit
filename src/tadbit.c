@@ -300,7 +300,7 @@ tadbit(
   int n_threads,
   const int verbose,
   int *breaks,
-  double *llik
+  double *orig_llik
 ){
 
 
@@ -325,6 +325,7 @@ tadbit(
    for (l = 0, i = 0; i < init_n ; i++) {
    for (j = 0; j < init_n ; j++) {
       init_dis[l] = log(1+abs(i-j));
+      orig_llik[l] = NAN;
       l++;
    }
    }
@@ -377,8 +378,7 @@ tadbit(
       #endif
    }
 
-
-   //double *llik = (double *) malloc(n*n * sizeof(double));
+   double *llik = (double *) malloc(n*n * sizeof(double));
    for (l = 0 ; l < n*n ; l++) {
       llik[l] = NAN;
    }
@@ -506,6 +506,7 @@ tadbit(
    int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
    int nbreaks = get_breakpoints(llik, n, m, all_breakpoints);
 
+   // Restore original output size.
    for (l = 0, i = 0 ; i < init_n ; i++) {
       if (remove[i]) {
          breaks[i] = 0;
@@ -516,14 +517,23 @@ tadbit(
       }
    }
 
+   for (l = 0, i = 0 ; i < init_n ; i++) {
+      if (remove[i]) continue;
+      else l++;
+      for (j = 0, k = 0 ; j < init_n ; j++) {
+         if (remove[j]) continue;
+         else k++;
+            orig_llik[i+j*n] = llik[l+k*init_n];
+      }
+   }
+
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
    }
    free(new_obs);
    free(all_breakpoints);
    free(dis);
-   //free(llik);
 
-   // Done!! The results is in 'breaks' and 'llik'.
+   // Done!! The results is in 'breaks' and 'orig_llik'.
 
 }
