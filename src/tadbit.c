@@ -229,7 +229,7 @@ get_breakpoints(
 
    int n_params;
    const int N = n*(n-1)/2;
-   double BIC = -INFINITY;
+   double LL = -INFINITY;
 
    for (nbreaks = 1 ; nbreaks < n/4 ; nbreaks++) {
       // Update breakpoint lists.
@@ -272,15 +272,14 @@ get_breakpoints(
          all_breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
       }
 
-      // Return when max BIC is reached.
-      n_params = nbreaks + m * (8 + 6*(nbreaks-1));
-      if (2*new_full_llik - n_params*log(N) < BIC) {
+      // Return when max LL is reached.
+      if (new_full_llik < LL) {
          free(new_bkpt_list);
          free(old_bkpt_list);
          return nbreaks-1;
       }
       else {
-         BIC = 2*new_full_llik - n_params*log(N);
+         LL = new_full_llik;
       }
 
    }
