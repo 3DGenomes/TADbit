@@ -299,7 +299,8 @@ tadbit(
   int n_threads,
   const int verbose,
   int *breaks,
-  double *orig_llik
+  double *orig_llik,
+  int heuristic
 ){
 
 
@@ -393,14 +394,39 @@ tadbit(
    // to lag behind if their task takes more time. However this
    // is much simpler to implement and prevents clobbering and
    // memory errors.
+
+
+   // TODO: Test this.
+   char *to_include = (char*) malloc(n*n * sizeof(char));
+   if (heuristic) {
+      int *pre_breaks = (int*) malloc(n * sizeof(int));
+      double *pre_llik = (double*) malloc(n*n *sizeof(double));
+      tadbit(obs, n, m, 10, n_threads, 0, pre_breaks, pre_llik, 0);
+
+      for (i = 0 ; i < n ; i++) {
+      for (j = 0 ; j < n ; j++) {
+         to_include[i+j*n] = pre_breaks[i] && pre_breaks[j];
+      }
+      }
+
+      free(pre_breaks);
+      free(pre_llik);
+   }
+   else {
+      memset(to_include, 1, n*n);
+   }
+
+
    for (i = 0 ; i < n-3 ; i++) {
    for (j = i+3 ; j < n ; j++) {
-      if (j-i < max_tad_size) {
+      //if (j-i < max_tad_size) {
+      //TODO: Check this line (and maybe remove the max size stuff).
+      if (j-i < max_tad_size && to_include[i+j*n]) {
          assignment[i+j*n] = to_process % n_threads;
          to_process++;
       }
       else {
-         // Do not process if slice too large.
+         // Do not process if slice is larger than 'max_tad_size'.
          assignment[i+j*n] = -1;
       }
    }
@@ -529,6 +555,7 @@ tadbit(
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
    }
+   free(to_inlcude);
    free(new_obs);
    free(all_breakpoints);
    free(dis);

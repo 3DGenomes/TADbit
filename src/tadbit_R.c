@@ -10,11 +10,12 @@ tadbit_R_call(
   SEXP list,
   SEXP max_tad_size,
   SEXP n_threads,
-  SEXP verbose
+  SEXP verbose,
+  SEXP heuristic
 );
 
 R_CallMethodDef callMethods[] = {
-   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 4},
+   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 5},
    {NULL, NULL, 0}
 };
 
@@ -28,7 +29,8 @@ tadbit_R_call(
   SEXP list,
   SEXP max_tad_size,
   SEXP n_threads,
-  SEXP verbose
+  SEXP verbose,
+  SEXP heuristic
 ){
 
 /*
@@ -82,7 +84,7 @@ tadbit_R_call(
    
    // Call 'tadbit'.
    tadbit(obs, n, m, REAL(max_tad_size)[0], INTEGER(n_threads)[0],
-         INTEGER(verbose)[0], breaks, llik);
+         INTEGER(verbose)[0], breaks, llik, INTEGER(heuristic)[0]);
 
    SEXP list_sexp;
    PROTECT(list_sexp = allocVector(VECSXP, 2));
