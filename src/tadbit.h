@@ -35,6 +35,7 @@ tadbit(
   int n_threads,
   const int verbose,
   int *breaks,
-  double *llik
+  double *llik,
+  int heuristic
 );
 #endif

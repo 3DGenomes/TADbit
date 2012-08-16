@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <pthread.h>
 #include <ctype.h>
@@ -226,9 +227,6 @@ get_breakpoints(
    }
 
    double new_full_llik = old_llik[n-1];
-
-   int n_params;
-   const int N = n*(n-1)/2;
    double LL = -INFINITY;
 
    for (nbreaks = 1 ; nbreaks < n/4 ; nbreaks++) {
@@ -284,7 +282,7 @@ get_breakpoints(
 
    }
 
-   // Did not maximize BIC.
+   // Did not maximize LL.
    return -1;
 
 }
@@ -368,7 +366,6 @@ tadbit(
    free(init_dis);
    obs = new_obs;
 
-
    // Get thread number if set to 0 (automatic).
    if (n_threads < 1) {
       #ifdef _SC_NPROCESSORS_ONLN
@@ -396,12 +393,13 @@ tadbit(
    // memory errors.
 
 
-   // TODO: Test this.
    char *to_include = (char*) malloc(n*n * sizeof(char));
    if (heuristic) {
+      if (verbose) {
+         fprintf(stderr, "running heuristic pre-screen\n");
+      }
       int *pre_breaks = (int*) malloc(n * sizeof(int));
-      double *pre_llik = (double*) malloc(n*n *sizeof(double));
-      tadbit(obs, n, m, 10, n_threads, 0, pre_breaks, pre_llik, 0);
+      tadbit(obs, n, m, 20, n_threads, 1, pre_breaks, llik, 0);
 
       for (i = 0 ; i < n ; i++) {
       for (j = 0 ; j < n ; j++) {
@@ -410,7 +408,6 @@ tadbit(
       }
 
       free(pre_breaks);
-      free(pre_llik);
    }
    else {
       memset(to_include, 1, n*n);
@@ -420,7 +417,6 @@ tadbit(
    for (i = 0 ; i < n-3 ; i++) {
    for (j = i+3 ; j < n ; j++) {
       //if (j-i < max_tad_size) {
-      //TODO: Check this line (and maybe remove the max size stuff).
       if (j-i < max_tad_size && to_include[i+j*n]) {
          assignment[i+j*n] = to_process % n_threads;
          to_process++;
@@ -489,7 +485,7 @@ tadbit(
          }
          processed++;
          if (verbose) {
-            fprintf(stderr, "Computing likelihood (%0.f%% done)\r",
+            fprintf(stderr, "computing likelihood (%0.f%% done)\r",
                99 * processed / (float) to_process);
          }
       }
@@ -519,7 +515,7 @@ tadbit(
       pthread_join(tid[i], NULL);
    }
    if (verbose) {
-      fprintf(stderr, "Computing likelihood (100%% done)\n");
+      fprintf(stderr, "computing likelihood (100%% done)\n");
    }
 
    free(assignment);
@@ -555,7 +551,7 @@ tadbit(
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
    }
-   free(to_inlcude);
+   free(to_include);
    free(new_obs);
    free(all_breakpoints);
    free(dis);
