@@ -6,25 +6,18 @@
 
 // Struct to hold slice data.
 typedef struct {
-   int size[3];
-   double *k[3];
-   double *d[3];
-   double *w[3];
+   int size;
+   double *lgamma;
+   double *counts;
+   double *dist;
+   double *weights;
+} ml_block;
+
+typedef struct {
+   ml_block *blocks[3];
 } ml_slice;
 
-// Struct to hold block data.
-typedef struct {
-   // Diagonal block data.
-   int n_diag_blk;
-   int *sizes_diag_blk;
-   double **k_diag;
-   double **d_diag;
-   // Off-diagonal block data.
-   int n_off_blk;
-   int *sizes_off_blk;
-   double **k_off;
-   double **d_off;
-} ml_block;
+
 
 void
 tadbit(

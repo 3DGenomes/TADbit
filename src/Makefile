@@ -7,7 +7,7 @@ clean:
 	rm -rf build/
 
 tadbit.so: tadbit.o tadbit_R.c
-	R CMD SHLIB tadbit_R.c tadbit.o -o tadbit.so
+	R CMD SHLIB tadbit_R.c tadbit.o -o tadbit.so -lm
 
 tadbit.o: tadbit.c
 	gcc -std=gnu99 -fPIC -g -O3 -c tadbit.c \

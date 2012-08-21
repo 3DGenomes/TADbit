@@ -8,18 +8,11 @@
 
 #include "tadbit.h"
 
-#define FIT_SLICE(slc,ab) \
-   poiss_reg(slc->k[0], slc->d[0], slc->w[0], ab[0], slc->size[0]) / 2 + \
-   poiss_reg(slc->k[1], slc->d[1], slc->w[1], ab[1], slc->size[1])     + \
-   poiss_reg(slc->k[2], slc->d[2], slc->w[2], ab[2], slc->size[2]) / 2
 
 double
 poiss_reg (
-  const double *k,
-  const double *d,
-  const double *w,
-  double *ab,
-  const int n
+  const ml_block *blk,
+  double ab[2]
 ){
 
 /*
@@ -45,6 +38,12 @@ poiss_reg (
    *         - w_i exp(a + b*d_i) + k_i(log(w_i) + a + b*d_i)
    *
 */
+
+  const int n = blk->size;
+  const double *log_gamma = blk->lgamma;
+  const double *k = blk->counts;
+  const double *d = blk->dist;
+  const double *w = blk->weights;
 
    if (n < 1) {
       return 0.0;
@@ -123,22 +122,35 @@ poiss_reg (
       ab[0] = ab[1] = 0.0;
    }
 
+   for (i = 0 ; i < n ; i++) {
+      llik -= log_gamma[i];
+   }
    return llik;
 
 }
 
+double fit_slice(const ml_slice *slc, double ab[3][2]) {
+   double top = poiss_reg(slc->blocks[0], ab[0]);
+   double mid = poiss_reg(slc->blocks[1], ab[1]);
+   double bot = poiss_reg(slc->blocks[2], ab[2]);
+   return top/2 + mid + bot/2;
+}
+
+
 void
 slice(
+  const double *log_gamma,
   const double *obs,
   const double *dis,
   const int n,
   const int start,
   const int end,
-  ml_slice *blocks
+  ml_slice *slc
 ){
 
 /*
    * Arguments:
+   *   log_gamma:    log gamma array (size 'n'^2).
    *   obs:    Observation array (size 'n'^2).
    *   dis:    Distance array (size 'n'^2).
    *   n:      Size of th 'obs' and 'dis'.
@@ -157,16 +169,18 @@ slice(
    // Comodity function for dryness.
    void add_to_block(int l) {
       if (!isnan(obs[row+col*n])) {
-         blocks->k[l][blocks->size[l]] = obs[row+col*n];
-         blocks->d[l][blocks->size[l]] = dis[row+col*n];
-         blocks->w[l][blocks->size[l]] = \
+         int pos = slc->blocks[l]->size;
+         slc->blocks[l]->counts[pos] = log_gamma[row+col*n];
+         slc->blocks[l]->counts[pos] = obs[row+col*n];
+         slc->blocks[l]->dist[pos] = dis[row+col*n];
+         slc->blocks[l]->weights[pos] = \
              sqrt(obs[row+row*n]*obs[col+col*n]);
-         blocks->size[l]++;
+         slc->blocks[l]->size++;
       }
    }
 
    for (l = 0 ; l < 3 ; l++) {
-      blocks->size[l] = 0;
+      slc->blocks[l]->size = 0;
    }
 
    // Fill vertically.
@@ -202,6 +216,7 @@ get_breakpoints(
    * maximum log-likelihood.
 */
 
+   const int max_n_breaks = n/4;
    int i,j, nbreaks = 0;
    int new_bkpt;
 
@@ -209,7 +224,9 @@ get_breakpoints(
 
    double new_llik[n];
    double old_llik[n];
+   double *all_llik = (double *) malloc(max_n_breaks * sizeof(double));
    // Initialize to first line of 'llik' (the end may be NAN).
+   all_llik[0] = -INFINITY;
    for (j = 0 ; j < n ; j++) {
       old_llik[j] = llik[j*n];
       new_llik[j] = -INFINITY;
@@ -226,10 +243,7 @@ get_breakpoints(
       all_breakpoints[i] = new_bkpt_list[i] = old_bkpt_list[i] = 0;
    }
 
-   double new_full_llik = old_llik[n-1];
-   double LL = -INFINITY;
-
-   for (nbreaks = 1 ; nbreaks < n/4 ; nbreaks++) {
+   for (nbreaks = 1 ; nbreaks < max_n_breaks ; nbreaks++) {
       // Update breakpoint lists.
       for (i = 0 ; i < n*n ; i++) {
          old_bkpt_list[i] = new_bkpt_list[i];
@@ -263,26 +277,43 @@ get_breakpoints(
       }
 
       // Update full log-likelihoods.
-      new_full_llik = new_llik[n-1];
+      all_llik[nbreaks] = new_llik[n-1];
 
+      // Record breakpoints.
       for (i = 0 ; i < n ; i++) {
          old_llik[i] = new_llik[i];
          all_breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
       }
 
-      // Return when max LL is reached.
-      if (new_full_llik < LL) {
-         free(new_bkpt_list);
-         free(old_bkpt_list);
-         return nbreaks-1;
-      }
-      else {
-         LL = new_full_llik;
-      }
+      if (all_llik[nbreaks-1] > all_llik[nbreaks]) break;
 
    }
 
-   // Did not maximize LL.
+   free(new_bkpt_list);
+   free(old_bkpt_list);
+
+   // Check that there is a non NAN max llik.
+   for (nbreaks-- ; isnan(all_llik[nbreaks]) ; nbreaks--) {
+      if (nbreaks < 0) return -1;
+   }
+
+
+   double diff = all_llik[nbreaks] - 2*all_llik[nbreaks-1] + all_llik[nbreaks-2];
+   int ssize = 1;
+   double sum  = diff;
+   double ssq  = diff*diff;
+   while (--nbreaks > 1) {
+      ssize++;
+      diff = all_llik[nbreaks] - 2*all_llik[nbreaks-1] + all_llik[nbreaks-2];
+      sum += diff;
+      ssq += diff*diff;
+      double mean = sum / ssize;
+      double sd  = sqrt(ssq / ssize - mean*mean);
+      if (abs(diff - mean) > 3 * sd) {
+         return nbreaks+2;
+      }
+   }
+
    return -1;
 
 }
@@ -345,16 +376,19 @@ tadbit(
    }
 
    // Allocate and copy.
+   double **log_gamma = (double **) malloc(m * sizeof(double *));
    double **new_obs = (double **) malloc(m * sizeof(double *));
    double *dis = (double *) malloc(n*n * sizeof(double));
    for (k = 0 ; k < m ; k++) {
       l = 0;
+      log_gamma[k] = (double *) malloc(n*n * sizeof(double));
       new_obs[k] = (double *) malloc(n*n * sizeof(double));
       for (j = 0 ; j < init_n ; j++) {
       for (i = 0 ; i < init_n ; i++) {
          if (remove[i] || remove[j]) {
             continue;
          }
+         log_gamma[k][l] = lgamma(obs[k][i+j*init_n]);
          new_obs[k][l] = obs[k][i+j*init_n];
          dis[l] = init_dis[i+j*init_n];
          l++;
@@ -446,21 +480,32 @@ tadbit(
    
       // Allocate max possible size to blocks.
       ml_slice *slc = (ml_slice *) malloc(sizeof(ml_slice));
+      ml_block *top = (ml_block *) malloc(sizeof(ml_block));
+      ml_block *mid = (ml_block *) malloc(sizeof(ml_block));
+      ml_block *bot = (ml_block *) malloc(sizeof(ml_block));
+      slc->blocks[0] = top;
+      slc->blocks[1] = mid;
+      slc->blocks[2] = bot;
       // Readability variable.
       int nmax = (n+1)*(n+1)/4;
 
       // TODO: Reduce max size to minimum actually used.
       // My last attempts caused segmentation faults.
-      slc->k[0] = (double *) malloc(nmax     * sizeof(double));
-      slc->k[1] = (double *) malloc(nmax * 2 * sizeof(double));
-      slc->k[2] = (double *) malloc(nmax     * sizeof(double));
-      slc->d[0] = (double *) malloc(nmax     * sizeof(double));
-      slc->d[1] = (double *) malloc(nmax * 2 * sizeof(double));
-      slc->d[2] = (double *) malloc(nmax     * sizeof(double));
-      slc->w[0] = (double *) malloc(nmax     * sizeof(double));
-      slc->w[1] = (double *) malloc(nmax * 2 * sizeof(double));
-      slc->w[2] = (double *) malloc(nmax     * sizeof(double));
-       
+      top->lgamma  = (double *) malloc(nmax * sizeof(double));
+      top->counts  = (double *) malloc(nmax * sizeof(double));
+      top->dist    = (double *) malloc(nmax * sizeof(double));
+      top->weights = (double *) malloc(nmax * sizeof(double));
+
+      mid->lgamma  = (double *) malloc(2 * nmax * sizeof(double));
+      mid->counts  = (double *) malloc(2 * nmax * sizeof(double));
+      mid->dist    = (double *) malloc(2 * nmax * sizeof(double));
+      mid->weights = (double *) malloc(2 * nmax * sizeof(double));
+
+      bot->lgamma  = (double *) malloc(nmax * sizeof(double));
+      bot->counts  = (double *) malloc(nmax * sizeof(double));
+      bot->dist    = (double *) malloc(nmax * sizeof(double));
+      bot->weights = (double *) malloc(nmax * sizeof(double));
+      
       // Initialize 'a' and 'b' to 0.
       double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
       
@@ -479,9 +524,9 @@ tadbit(
          llik[i+j*n] = 0.0;
          for (k = 0 ; k < m ; k++) {
             // Get the (i,j) slice (stored in 'slc').
-            slice(obs[k], dis, n, i, j, slc);
+            slice(log_gamma[k], obs[k], dis, n, i, j, slc);
             // Get the likelihood and sum (see macro definition).
-            llik[i+j*n] += FIT_SLICE(slc, ab);
+            llik[i+j*n] += fit_slice(slc, ab);
          }
          processed++;
          if (verbose) {
@@ -493,8 +538,11 @@ tadbit(
 
       // Free allocated memory.
       for (i = 0 ; i < 3 ; i++) {
-         free(slc->k[i]);
-         free(slc->d[i]);
+         free(slc->blocks[i]->lgamma);
+         free(slc->blocks[i]->counts);
+         free(slc->blocks[i]->dist);
+         free(slc->blocks[i]->weights);
+         free(slc->blocks[i]);
       }
       free(slc);
 
