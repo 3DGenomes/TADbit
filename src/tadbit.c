@@ -127,8 +127,6 @@ poiss_reg (
       llik -= log_gamma[i];
    }
    
-   //DEBUG
-   printf("[%d] %.6f, %.6f (%.6f)\n", n, ab[0], ab[1], llik);
    return llik;
 
 }
@@ -168,9 +166,6 @@ slice(
    * the diagonals.
 */
 
-   //DEBUG
-   printf("slice(%d, %d)\n", start, end);
-   //
    int l, row, col;
 
    // Comodity function for dryness.
@@ -368,7 +363,7 @@ tadbit(
 
    for (l = 0, i = 0; i < init_n ; i++) {
    for (j = 0; j < init_n ; j++) {
-      init_dis[l] = log(1+abs(i-j));
+      init_dis[l] = log(abs(i-j));
       orig_llik[l] = NAN;
       l++;
    }
