@@ -122,13 +122,9 @@ poiss_reg (
       ab[0] = ab[1] = 0.0;
    }
 
-   
    for (i = 0 ; i < n ; i++) {
       llik -= log_gamma[i];
    }
-   
-   //DEBUG
-   printf("[%d] %.6f, %.6f (%.6f)\n", n, ab[0], ab[1], llik);
    return llik;
 
 }
@@ -168,9 +164,6 @@ slice(
    * the diagonals.
 */
 
-   //DEBUG
-   printf("slice(%d, %d)\n", start, end);
-   //
    int l, row, col;
 
    // Comodity function for dryness.
@@ -224,14 +217,14 @@ get_breakpoints(
 */
 
    const int max_n_breaks = n/4;
-   int i,j, nbreaks = 0;
+   int i;
+   int j;
    int new_bkpt;
+   int nbreaks = 0;
 
-   double mllik[max_n_breaks];
+   double *mllik = (double *) malloc(max_n_breaks * sizeof(double));
+   memset(mllik, NAN, max_n_breaks);
    mllik[0] = -INFINITY;
-   for (i = 1 ; i < max_n_breaks ; i++) {
-      mllik[i] = NAN;
-   }
 
    double new_llik[n];
    double old_llik[n];
@@ -294,44 +287,27 @@ get_breakpoints(
          breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
       }
 
-      // Exit loop if log-likelihood starts to decrease.
-      if (mllik[nbreaks] < mllik[nbreaks-1]) {
-         break;
-      }
-
    }
 
    free(new_bkpt_list);
    free(old_bkpt_list);
 
-   int size = 1;
-   double ssq = 0.0;
-   double mean_ssq[max_n_breaks];
    double d2_mllik[max_n_breaks];
-   for (i = 0 ; i < max_n_breaks ; i++) {
-      mean_ssq[i] = NAN;
-      d2_mllik[i] = 0.0;
+   memset(d2_mllik, NAN, max_n_breaks);
+   // Find rightmost defined value.
+   for (i = max_n_breaks - 1 ; ! breakpoints[i] > -INFINITY ; i--) {
+      if (i < 1) return -1;
    }
 
-   // The highest max log-likelihood is at index 'nbreaks-1'.
-   for (i = nbreaks - 2 ; i > 0 ; i--) {
-      // Exit loop if 'mllik' is undefined (NAN or -inf).
-      if (!(mllik[i-1] > -INFINITY)) {
-         break;
-      }
+   // 'i' is the highest such that mllik is defined.
+   int whichmax = i;
+   for (i-- ; i > 1 ; i--) {
       d2_mllik[i] = mllik[i+1] - 2*mllik[i] + mllik[i-1];
-      ssq += d2_mllik[i]*d2_mllik[i]; 
-      mean_ssq[i] = ssq / size++;
+      if (mllik[i] > mllik[whichmax]) whichmax = i;
    }
 
-   for (i = 1 ; i < nbreaks -2 ; i++) {
-      if ((mean_ssq[i] > mean_ssq[i-1]) && (mean_ssq[i] > mean_ssq[i+1])) {
-         return i + (d2_mllik[i] > 0);
-      }
-   }
-
-   // If curve is smooth, return the log-likelihood optimum.
-   return nbreaks-1;
+   return 15;
+   //return -1;
 
 }
 
@@ -351,7 +327,9 @@ tadbit(
 
 
    // Get absolute max tad size.
-   max_tad_size = max_tad_size > 1 ? max_tad_size : max_tad_size * n;
+   max_tad_size = max_tad_size > 0 ? 
+      max_tad_size < 1 ? max_tad_size *n : max_tad_size :
+      INFINITY;
 
    int i, j, k, l;
    const int init_n = n;
