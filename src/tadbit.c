@@ -426,12 +426,12 @@ fill_llikmat(
 
    pthread_t myid = pthread_self();
 
-   thread_arg *myargs = (tadbit_thread_arg *) arg;
+   thread_arg *myargs = (thread_arg *) arg;
    const int n = myargs->n;
    const int m = myargs->m;
-   const double **obs = myargs->obs;
-   const double *dist = myargs->dist;
-   const double **log_gamma = myargs->log_gamma;
+   const double **obs = (const double **) myargs->obs;
+   const double *dist = (const double*) myargs->dist;
+   const double **log_gamma = (const double **) myargs->log_gamma;
    double *llikmat = myargs->llikmat;
    const int verbose = myargs->verbose;
 
@@ -601,7 +601,7 @@ tadbit(
       #endif
    }
 
-   *llikmat = (double *) malloc(n*n * sizeof(double));
+   double *llikmat = (double *) malloc(n*n * sizeof(double));
    for (l = 0 ; l < n*n ; l++) {
       llikmat[l] = NAN;
    }
@@ -697,7 +697,6 @@ tadbit(
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
    }
-   free(to_include);
    free(new_obs);
    free(dist);
 
