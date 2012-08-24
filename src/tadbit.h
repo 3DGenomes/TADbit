@@ -13,10 +13,10 @@ typedef struct {
    double *weights;
 } ml_block;
 
+
 typedef struct {
    ml_block *blocks[3];
 } ml_slice;
-
 
 
 void

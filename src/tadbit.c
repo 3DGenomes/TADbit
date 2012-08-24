@@ -9,41 +9,88 @@
 #include "tadbit.h"
 
 
+void
+recompute_fg(
+  const ml_block *blk,
+  const double a,
+  const double b,
+  const double da,
+  const double db,
+  double *f,
+  double *g
+){
+// SYNOPSIS:                                                            
+//   Subfroutine of 'poiss_reg' that computes 'f' and 'g' in Newton-    
+//   Raphson cycles.                                                    
+//                                                                      
+// ARGUMENTS:                                                           
+//   '*blk': the block to fit by Poisson regression.                    
+//   'a': parameter 'a' of the Poisson regression (see 'poiss_reg').    
+//   'b': parameter 'b' of the Poisson regression (see 'poiss_reg').    
+//   'da': computed differential of 'a' (see 'poiss_reg').              
+//   'db': computed differential of 'b' (see 'poiss_reg').              
+//   'f': first function to zero, recomputed by the routine.            
+//   'g': second function to zero, recomputed by the routine.           
+//                                                                      
+// RETURN:                                                              
+//   'void'                                                             
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'f' and 'g' in place.                                       
+//                                                                      
+
+   const int n = blk->size;
+   const double *k = blk->counts;
+   const double *d = blk->dist;
+   const double *w = blk->weights;
+
+   // 'tmp' is a computation intermediate that will be the return
+   // value of 'exp'. This can call '__slowexp' which on 64-bit machines
+   // can return a long double (causing segmentation fault if 'tmp' is
+   // declared as long).
+   long double tmp;
+   int i;
+
+   *f = 0.0; *g = 0.0;
+   for (i = 0 ; i < n ; i++) {
+      tmp  =  w[i] * exp(a+da+(b+db)*d[i]) - k[i];
+      *f  +=  tmp;
+      *g  +=  tmp * d[i];
+   }
+
+   return;
+
+}
+
+
 double
 poiss_reg (
   const ml_block *blk,
   double ab[2]
 ){
+// SYNOPSIS:                                                            
+//   The fitted model (by maximum likelihood) is Poisson with lambda    
+//   paramter such that lambda = w * exp(a + b*d). So the full          
+//   log-likelihood of the model is the sum of terms                    
+//                                                                      
+//         - w_i exp(a + b*d_i) + k_i(log(w_i) + a + b*d_i)             
+//                                                                      
+// ARGUMENTS:                                                           
+//   '*blk': the block to fit by Poisson regression.                    
+//   'ab[]': the initial parameters (updated in place).                 
+//                                                                      
+// RETURN:                                                              
+//   The maximum log-likelihood of a block of hiC data.                 
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'ab' in place.                                              
+//                                                                      
 
-/*
-   * Arguments:
-   *   k:  Counts (size 'n').
-   *   d:  Distances (size 'n').
-   *   w:  Weights (size 'n').
-   *   ab: Starting values of 'a' and 'b' (size 2).
-   *   n:  Length of the arrays 'k', 'd' and 'w'.
-   *
-   * Return:
-   *   Log-likelihood.
-   *
-   * Side-effects:
-   *   ab:  updated in place with the estimates.
-   *
-   * The 2-array 'ab' is upated in place and the log-likelihood
-   * is returned.
-   * The fitted model (by maximum likelihood) is Poisson with lambda
-   * paramter such that lambda = w*exp(a + b*d). So the full
-   * log-likelihood of the model is the sum of terms
-   *
-   *         - w_i exp(a + b*d_i) + k_i(log(w_i) + a + b*d_i)
-   *
-*/
-
-  const int n = blk->size;
-  const double *log_gamma = blk->lgamma;
-  const double *k = blk->counts;
-  const double *d = blk->dist;
-  const double *w = blk->weights;
+   const int n = blk->size;
+   const double *log_gamma = blk->lgamma;
+   const double *k = blk->counts;
+   const double *d = blk->dist;
+   const double *w = blk->weights;
 
    if (n < 1) {
       return 0.0;
@@ -52,31 +99,27 @@ poiss_reg (
       return NAN;
    }
 
-   int i, iter = 0;
-   double a = ab[0], b = ab[1], llik;
-   double da = 0.0, db = 0.0, oldgrad;
-   double f, g, dfda = 0.0, dfdb = 0.0, dgda = 0.0, dgdb = 0.0;
+   int i;
+   int iter = 0;
    double denom;
-
-   // 'tmp' is a computation intermediate that will be the return
-   // value of 'exp'. This can call '__slowexp' which on 64-bit machines
-   // can return a long double (causing segmentation fault if 'tmp' is
-   // declared as long).
-   long double tmp;
-
-   // Comodity function. The function f is -dl/da and g is -dl/db.
-   void recompute_fg(void) {
-      f = 0.0; g = 0.0;
-      for (i = 0 ; i < n ; i++) {
-         tmp  =  w[i] * exp(a+da+(b+db)*d[i]) - k[i];
-         f   +=  tmp;
-         g   +=  tmp * d[i];
-      }
-   }
+   double oldgrad;
+   double f;
+   double g;
+   double a = ab[0];
+   double b = ab[1];
+   double da = 0.0;
+   double db = 0.0;
+   double dfda = 0.0;
+   double dfdb = 0.0;
+   double dgda = 0.0;
+   double dgdb = 0.0;
+   // See the comment about 'tmp' in 'recompute_fg'.
+   long double tmp; 
 
    recompute_fg();
 
-   // Newton-Raphson until gradient function < TOLERANCE.
+   // Newton-Raphson until gradient function is less than TOLERANCE.
+   // The gradient function is the square norm 'f*f + g*g'.
    while ((oldgrad = f*f + g*g) > TOLERANCE && iter++ < MAXITER) {
 
       // Compute the derivatives.
@@ -94,7 +137,10 @@ poiss_reg (
       db = (g*dfda - f*dgda) / denom;
 
       recompute_fg();
-      // Gradient test. Traceback if not going down the gradient.
+
+      // Traceback if we are not going down the gradient. Cut the
+      // length of the steps in half until this step goes down
+      // the gradient.
       while (f*f + g*g > oldgrad) {
          da /= 2;
          db /= 2;
@@ -107,33 +153,58 @@ poiss_reg (
 
    }
 
-   if (iter < MAXITER) {
-      // Compute log-likelihood (using 'dfda').
-      llik = 0.0;
-      for (i = 0 ; i < n ; i++) {
-         llik += exp(a+b*d[i]) + k[i] * (a + b*d[i]);
-      }
-      // Update 'ab' in place (to make the estimates available).
-      ab[0] = a; ab[1] = b;
-   }
-   else {
+   if (iter >= MAXITER) {
       // Something probably went wrong. Reset 'ab' and return NAN.
-      llik = NAN;
       ab[0] = ab[1] = 0.0;
+      return NAN;
    }
 
+   // Compute log-likelihood (using 'dfda').
+   double llik = 0.0;
    for (i = 0 ; i < n ; i++) {
-      llik -= log_gamma[i];
+      llik += exp(a+b*d[i]) + k[i] * (a + b*d[i]) - log_gamma[i];
    }
+
+   // Update 'ab' in place (to make the estimates available).
+   ab[0] = a; ab[1] = b;
+
    return llik;
 
 }
 
-double fit_slice(const ml_slice *slc, double ab[3][2]) {
+double
+fit_slice(
+  const ml_slice *slc, 
+  double ab[3][2]
+){
+// SYNOPSIS:                                                            
+//   Wrapper for 'poiss_reg'. Fits the three regions of a slice         
+//   by Poisson regression and return the log-likelihood. Update        
+//   the parameters 'ab' in place to speed up next round of fit         
+//   (they will be used as initial values).                             
+//                                                                      
+// PARAMETERS:                                                          
+//   '*slc' : the slice to be fitted by Poisson regression.             
+//   'ab[3][2]' : the parameters of the fit (updated in place).         
+//                                                                      
+// RETURN:                                                              
+//   The total maximum log-likelihood of the slice.                     
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'ab' in place.                                              
+//                                                                      
+
    double top = poiss_reg(slc->blocks[0], ab[0]);
    double mid = poiss_reg(slc->blocks[1], ab[1]);
    double bot = poiss_reg(slc->blocks[2], ab[2]);
+
+   // The likelihood of 'top' and 'bot' blocks are divided by 2 because
+   // the hiC map is assumed to be symmetric. Those data points are
+   // used two times in a segmentation, while the data points of the
+   // 'mid' block are used only one time.
+   
    return top/2 + mid + bot/2;
+
 }
 
 
@@ -141,63 +212,77 @@ void
 slice(
   const double *log_gamma,
   const double *obs,
-  const double *dis,
+  const double *dist,
   const int n,
   const int start,
   const int end,
   ml_slice *slc
 ){
+// SYNOPSIS:                                                            
+//   Extract from a single replicate of the hiC data the three blocks   
+//   of a slice delimited by start and end positions.                   
+//                                                                      
+// PARAMETERS:                                                          
+//   '*log_gamma' : pre-computed log-gammas of the counts.              
+//   '*obs' : raw hiC count data (single replicate).                    
+//   '*dist' : linear separations corresponding to counts.              
+//   'n' : row/col number of the full data matrix.                      
+//   'start' : start index of the slice.                                
+//   'end' : end index of the slice.                                    
+//   '*slc' : variable to store the slice.                              
+//                                                                      
+// RETURN:                                                              
+//   'void'                                                             
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'slc' in place.                                             
+//                                                                      
 
-/*
-   * Arguments:
-   *   log_gamma:    log gamma array (size 'n'^2).
-   *   obs:    Observation array (size 'n'^2).
-   *   dis:    Distance array (size 'n'^2).
-   *   n:      Size of th 'obs' and 'dis'.
-   *   start:  Start index of the slice (included).
-   *   end:    Stop index of the slice (included).
-   *   blocks: Where to write the 3 blocks of the slice.
-   * Side-effects:
-   *   Update 'blocks' in place.
-   *    
-   * Observations are weighted by the geometric mean of the counts on
-   * the diagonals.
-*/
+   int l;
+   int pos;
+   int row;
+   int col;
 
-   int l, row, col;
-
-   // Comodity function for dryness.
-   void add_to_block(int l) {
-      if (!isnan(obs[row+col*n])) {
-         int pos = slc->blocks[l]->size;
-         slc->blocks[l]->counts[pos] = log_gamma[row+col*n];
-         slc->blocks[l]->counts[pos] = obs[row+col*n];
-         slc->blocks[l]->dist[pos] = dis[row+col*n];
-         slc->blocks[l]->weights[pos] = \
-             sqrt(obs[row+row*n]*obs[col+col*n]);
-         slc->blocks[l]->size++;
-      }
-   }
-
+   // Initialize block sizes to 0.
    for (l = 0 ; l < 3 ; l++) {
       slc->blocks[l]->size = 0;
    }
 
-   // Fill vertically.
+   // Iterate over data vertically.
    for (col = start ; col < end+1 ; col++) {
-      // Skipped if 'start' is 0.
-      for (row = 0 ; row < start ; row++) {
-         add_to_block(0);
-      }
-      // Skipped if 'col' is 'start'.
-      for (row = start ; row < col ; row++) {
-         add_to_block(1);
-      }
-      // Skipped if 'end' is 'n-1'.
-      for (row = end+1 ; row < n ; row++) {
-         add_to_block(2);
+      for (row = 0 ; row < n ; row++) {
+
+         // Skip NAs in the data.
+         if (isnan(obs[row+col*n]))
+            continue;
+
+         // Find which block to update ('l').
+         //   0: top
+         //   1: middle
+         //   2: bottom
+         
+         if        (row < start)  l = 0;
+         else if   (row < col)    l = 1;
+         else if   (row > end)    l = 2;
+         else                     continue;
+
+         pos = slc->blocks[l]->size;
+
+         slc->blocks[l]->counts[pos] = log_gamma[row+col*n];
+         slc->blocks[l]->counts[pos] = obs[row+col*n];
+         slc->blocks[l]->dist[pos] = dist[row+col*n];
+         // The weight is the square root of the product of the
+         // diagonal terms (the product of potencies).
+         slc->blocks[l]->weights[pos] = \
+                  sqrt(obs[row+row*n]*obs[col+col*n]);
+
+         slc->blocks[l]->size++;
+
       }
    }
+
+   return;
+
 }
 
 
@@ -206,30 +291,50 @@ get_breakpoints(
   double *llik,
   int n,
   int m,
-  int *all_breakpoints
+  int *breakpoints
 ){
+// SYNOPSIS:                                                            
+//   Dynamic programming algorithm to compute the most likely position  
+//   of breakpoints given a matrix of slice maximum log-likelihood.     
+//                                                                      
+// PARAMETERS:                                                          
+//   '*llik' : matrix of maximum log-likelihood values.                 
+//   'n' : row/col number of 'llik'.                                    
+//   'm' : number of replicates.                                        
+//   '*breakpoints' : optimal breakpoints per number of breaks.         
+//                                                                      
+// RETURN:                                                              
+//   The optimal number of breakpoints.                                 
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'breakpoints' in place.                                     
+//                                                                      
 
-/*
-   * Dynamic programming algorithm. Compute the most likely position
-   * of breakpoints for up to n/4 breakpoints.
-   * Return the minimum number of breakpoint that has a defined
-   * maximum log-likelihood.
-*/
 
    const int max_n_breaks = n/4;
-   int i,j, nbreaks = 0;
+   int i;
+   int j;
    int new_bkpt;
+   int nbreaks = 0;
 
-   double tmp;
+   // Store the max log-likelihood values of the full segmentation
+   // for a given number of breaks.
+   double *mllik = (double *) malloc(max_n_breaks * sizeof(double));
+   mllik[0] = -INFINITY;
 
-   double new_llik[n];
-   double old_llik[n];
-   double *all_llik = (double *) malloc(max_n_breaks * sizeof(double));
-   // Initialize to first line of 'llik' (the end may be NAN).
-   all_llik[0] = -INFINITY;
+   // Store the max log-likelihood values for partial segmentations.
+   // 'old_mllik' contains the max log-likelihood of the previous
+   // round of optimization (with one less breakpoint), and 'new_mllik'
+   // is updated by the dynamic algorithm.
+   double new_mllik[n];
+   double old_mllik[n];
+
+   // Initialize to first line of 'llik' (may contain NAN).
+   // This corresponds to the log-likelihood of the slices that start
+   // at the origin.
    for (j = 0 ; j < n ; j++) {
-      old_llik[j] = llik[j*n];
-      new_llik[j] = -INFINITY;
+      old_mllik[j] = llik[j*n];
+      new_mllik[j] = -INFINITY;
    }
 
    // Breakpoint lists. The first index (line) is the end of the slice,
@@ -238,10 +343,10 @@ get_breakpoints(
    int *new_bkpt_list = (int *) malloc(n*n * sizeof(int));
    int *old_bkpt_list = (int *) malloc(n*n * sizeof(int));
 
-   // Initialize to 0.
-   for (i = 0 ; i < n*n ; i++) {
-      all_breakpoints[i] = new_bkpt_list[i] = old_bkpt_list[i] = 0;
-   }
+   // Initialize breakpoint lists to 0.
+   memset(breakpoints,   0, n*n);
+   memset(new_bkpt_list, 0, n*n);
+   memset(old_bkpt_list, 0, n*n);
 
    for (nbreaks = 1 ; nbreaks < max_n_breaks ; nbreaks++) {
       // Update breakpoint lists.
@@ -251,7 +356,7 @@ get_breakpoints(
 
       // Cycle over end point 'j'.
       for (j = 3 * nbreaks + 2 ; j < n ; j++) {
-         new_llik[j] = -INFINITY;
+         new_mllik[j] = -INFINITY;
          new_bkpt = -1;
 
          // Cycle over start point 'i'.
@@ -259,15 +364,15 @@ get_breakpoints(
 
             // NAN if not a potential breakpoint, so the following
             // lines evaluates to false.
-            tmp = old_llik[i-1] + llik[i+j*n];
-            if (tmp > new_llik[j]) {
-               new_llik[j] = tmp;
+            double tmp = old_mllik[i-1] + llik[i+j*n];
+            if (tmp > new_mllik[j]) {
+               new_mllik[j] = tmp;
                new_bkpt = i-1;
             }
          }
 
          // Update breakpoint list (skip if log-lik is undefined).
-         if (new_llik[j] > -INFINITY) {
+         if (new_mllik[j] > -INFINITY) {
             for (i = 0 ; i < n ; i++) {
                new_bkpt_list[j+i*n] = old_bkpt_list[new_bkpt+i*n];
             }
@@ -277,15 +382,15 @@ get_breakpoints(
       }
 
       // Update full log-likelihoods.
-      all_llik[nbreaks] = new_llik[n-1];
+      mllik[nbreaks] = new_mllik[n-1];
 
-      // Record breakpoints.
+      // Update partial max log-likelihoods and record breakpoints.
       for (i = 0 ; i < n ; i++) {
-         old_llik[i] = new_llik[i];
-         all_breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
+         old_mllik[i] = new_mllik[i];
+         breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
       }
 
-      if (all_llik[nbreaks-1] > all_llik[nbreaks]) break;
+      if (mllik[nbreaks-1] > mllik[nbreaks]) break;
 
    }
 
@@ -293,18 +398,18 @@ get_breakpoints(
    free(old_bkpt_list);
 
    // Check that there is a non NAN max llik.
-   for (nbreaks-- ; isnan(all_llik[nbreaks]) ; nbreaks--) {
+   for (nbreaks-- ; isnan(mllik[nbreaks]) ; nbreaks--) {
       if (nbreaks < 0) return -1;
    }
 
 
-   double diff = all_llik[nbreaks] - 2*all_llik[nbreaks-1] + all_llik[nbreaks-2];
+   double diff = mllik[nbreaks] - 2*mllik[nbreaks-1] + mllik[nbreaks-2];
    int ssize = 1;
    double sum  = diff;
    double ssq  = diff*diff;
    while (--nbreaks > 1) {
       ssize++;
-      diff = all_llik[nbreaks] - 2*all_llik[nbreaks-1] + all_llik[nbreaks-2];
+      diff = mllik[nbreaks] - 2*mllik[nbreaks-1] + mllik[nbreaks-2];
       sum += diff;
       ssq += diff*diff;
       double mean = sum / ssize;
