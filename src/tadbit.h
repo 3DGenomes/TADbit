@@ -19,6 +19,15 @@ typedef struct {
    ml_block *blocks[3];
 } ml_slice;
 
+typedef struct {
+   int n;
+   int m;
+   double **obs;
+   double *dist;
+   double **log_gamma;
+   double *llikmat;
+   int verbose;
+} thread_arg;
 
 // 'tadbit' output struct.
 typedef struct {

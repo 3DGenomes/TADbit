@@ -9,6 +9,16 @@
 #include "tadbit.h"
 
 
+// Globals variables. //
+
+int n_processed;  // Number of slices processed so far.
+int n_to_process; // Total number of slices to process.
+int *assignment;  // Thread task manager.
+pthread_t *tid;   // IDs of running threads.
+
+
+
+
 void
 recompute_fg(
   /* input */
@@ -307,7 +317,7 @@ slice(
 void
 mlwalk(
   /* input */
-  const double *llik,
+  const double *llik_mat,
   const int n,
   const int m,
   /* output */
@@ -319,8 +329,8 @@ mlwalk(
 //   of breakpoints given a matrix of slice maximum log-likelihood.     
 //                                                                      
 // PARAMETERS:                                                          
-//   '*llik' : matrix of maximum log-likelihood values.                 
-//   'n' : row/col number of 'llik'.                                    
+//   '*llik_mat' : matrix of maximum log-likelihood values.             
+//   'n' : row/col number of 'llik_mat'.                                
 //   'm' : number of replicates.                                        
 //        -- output arguments --                                        
 //   '*mllik' : maximum log-likelihood of the segmentations.            
@@ -361,10 +371,10 @@ mlwalk(
       mllik[i] = NAN;
    }
 
-   // Initialize 'old_llik' to the first line of 'llik' containing the
-   // log-likelihood of segments starting at index 0.
+   // Initialize 'old_llik' to the first line of 'llik_mat' containing
+   // the log-likelihood of segments starting at index 0.
    for (i = 0 ; i < n ; i++) {
-      old_llik[i] = llik[i*n];
+      old_llik[i] = llik_mat[i*n];
       new_llik[i] = -INFINITY;
    }
 
@@ -385,7 +395,7 @@ mlwalk(
          for (i = 3 * nbreaks ; i < j-3 ; i++) {
 
             // If NAN the following condition evaluates to false.
-            double tmp = old_llik[i-1] + llik[i+j*n];
+            double tmp = old_llik[i-1] + llik_mat[i+j*n];
             if (tmp > new_llik[j]) {
                new_llik[j] = tmp;
                new_bkpt = i-1;
@@ -419,6 +429,114 @@ mlwalk(
 
 }
 
+void *
+fill_llikmat(
+   void *arg
+){
+// SYNOPSIS:                                                            
+//   Compute the log-likelihood of the slices. The element (i,j) of     
+//   the matrix 'llikmat' will contain the log-likelihood  of the       
+//   slice starting at i and ending at j. the matrix is initialized     
+//   with nan because not all elements will be computed. The lower      
+//   triangular part is left out.                                       
+//                                                                      
+// PARAMETERS:                                                          
+//   '*arg' : matrix of maximum log-likelihood values.                  
+//                                                                      
+// RETURN:                                                              
+//   void                                                               
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'llikmat' in place.                                         
+//                                                                      
+
+   pthread_t myid = pthread_self();
+
+   thread_arg *myargs = (tadbit_thread_arg *) arg;
+   const int n = myargs->n;
+   const int m = myargs->m;
+   const double **obs = myargs->obs;
+   const double *dist = myargs->dist;
+   const double **log_gamma = myargs->log_gamma;
+   double *llikmat = myargs->llikmat;
+   const int verbose = myargs->verbose;
+
+   int i;
+   int j;
+   int k;
+
+   // Allocate max possible size to blocks.
+   ml_slice *slc = (ml_slice *) malloc(sizeof(ml_slice));
+   ml_block *top = (ml_block *) malloc(sizeof(ml_block));
+   ml_block *mid = (ml_block *) malloc(sizeof(ml_block));
+   ml_block *bot = (ml_block *) malloc(sizeof(ml_block));
+   slc->blocks[0] = top;
+   slc->blocks[1] = mid;
+   slc->blocks[2] = bot;
+   // Readability variable.
+   const int nmax = (n+1)*(n+1)/4;
+
+   // TODO: Reduce max size to minimum actually used.
+   // My last attempts caused segmentation faults.
+   top->lgamma  = (double *) malloc(nmax * sizeof(double));
+   top->counts  = (double *) malloc(nmax * sizeof(double));
+   top->dist    = (double *) malloc(nmax * sizeof(double));
+   top->weights = (double *) malloc(nmax * sizeof(double));
+
+   mid->lgamma  = (double *) malloc(2 * nmax * sizeof(double));
+   mid->counts  = (double *) malloc(2 * nmax * sizeof(double));
+   mid->dist    = (double *) malloc(2 * nmax * sizeof(double));
+   mid->weights = (double *) malloc(2 * nmax * sizeof(double));
+
+   bot->lgamma  = (double *) malloc(nmax * sizeof(double));
+   bot->counts  = (double *) malloc(nmax * sizeof(double));
+   bot->dist    = (double *) malloc(nmax * sizeof(double));
+   bot->weights = (double *) malloc(nmax * sizeof(double));
+   
+   
+   // Readability variables.
+   int do_not_process;
+   int assigned_to_me;
+   
+   for (i = 0 ; i < n-3 ; i++) {
+   for (j = i+3 ; j < n ; j++) {
+      do_not_process = assignment[i+j*n] < 0;
+      assigned_to_me = pthread_equal(myid, tid[assignment[i+j*n]]);
+      if (do_not_process || !assigned_to_me) {
+         continue;
+      }
+
+      // Distinct parts of the array, no lock needed.
+      llikmat[i+j*n] = 0.0;
+      for (k = 0 ; k < m ; k++) {
+         // Get the (i,j) slice (stored in 'slc').
+         slice(log_gamma[k], obs[k], dist, n, i, j, slc);
+         // Get the likelihood and sum (see macro definition).
+         llikmat[i+j*n] += fit_slice(slc);
+      }
+      n_processed++;
+      if (verbose) {
+         fprintf(stderr, "computing likelihood (%0.f%% done)\r",
+            99 * n_processed / (float) n_to_process);
+      }
+   }
+   } // End of the (i,j) for loop.
+
+   // Free allocated memory.
+   for (i = 0 ; i < 3 ; i++) {
+      free(slc->blocks[i]->lgamma);
+      free(slc->blocks[i]->counts);
+      free(slc->blocks[i]->dist);
+      free(slc->blocks[i]->weights);
+      free(slc->blocks[i]);
+   }
+   free(slc);
+
+   return NULL;
+
+}
+
+
 
 void
 tadbit(
@@ -435,70 +553,72 @@ tadbit(
 ){
 
 
+   const int N = n;
+   int i;
+   int j;
+   int k;
+   int l;
+
    // Get absolute max tad size.
    max_tad_size = max_tad_size > 1 ? max_tad_size : max_tad_size * n;
 
-   int i, j, k, l;
-   const int init_n = n;
 
    // Allocate memory and initialize variables. The distance
-   // matrix 'dis' is the distance to the main diagonal. Every
+   // matrix 'dist' is the distance to the main diagonal. Every
    // element of coordinate (i,j) is on a diagonal; the distance
    // is the log-shift to the main diagonal 'i-j'.
    // 'ab' contains parameters 'a' and 'b' for the maximum likelihood
    // model. Because each segmentation defines 3 regions we need
    // 3 pairs of parameters.
 
-   double *init_dis = (double *) malloc(init_n*init_n * sizeof(double));
-   double *llikmat = (double *) malloc(init_n*init_n * sizeof(double));
+   double *init_dist = (double *) malloc(N*N * sizeof(double));
 
-   for (l = 0, i = 0; i < init_n ; i++) {
-   for (j = 0; j < init_n ; j++) {
-      init_dis[l] = log(abs(i-j));
-      llikmat[l] = NAN;
+   for (l = 0, i = 0; i < N ; i++) {
+   for (j = 0; j < N ; j++) {
+      init_dist[l] = log(abs(i-j));
       l++;
    }
    }
 
    // Simplify input. Remove line and column if 0 on the diagonal.
-   int remove[init_n];
-   for (i = 0 ; i < init_n ; i++) {
+   int remove[N];
+   for (i = 0 ; i < N ; i++) {
       remove[i] = 0;
       for (k = 0 ; k < m ; k++) {
-         if (obs[k][i+i*init_n] < 1.0) {
+         if (obs[k][i+i*N] < 1.0) {
             remove[i] = 1;
          }
       }
    }
 
    // Update the dimension.
-   for (i = 0 ; i < init_n ; i++) {
+   for (i = 0 ; i < N ; i++) {
       n -= remove[i];
    }
 
    // Allocate and copy.
    double **log_gamma = (double **) malloc(m * sizeof(double *));
    double **new_obs = (double **) malloc(m * sizeof(double *));
-   double *dis = (double *) malloc(n*n * sizeof(double));
+   double *dist = (double *) malloc(n*n * sizeof(double));
    for (k = 0 ; k < m ; k++) {
       l = 0;
       log_gamma[k] = (double *) malloc(n*n * sizeof(double));
       new_obs[k] = (double *) malloc(n*n * sizeof(double));
-      for (j = 0 ; j < init_n ; j++) {
-      for (i = 0 ; i < init_n ; i++) {
+      for (j = 0 ; j < N ; j++) {
+      for (i = 0 ; i < N ; i++) {
          if (remove[i] || remove[j]) {
             continue;
          }
-         log_gamma[k][l] = lgamma(obs[k][i+j*init_n]);
-         new_obs[k][l] = obs[k][i+j*init_n];
-         dis[l] = init_dis[i+j*init_n];
+         log_gamma[k][l] = lgamma(obs[k][i+j*N]);
+         new_obs[k][l] = obs[k][i+j*N];
+         dist[l] = init_dist[i+j*N];
          l++;
       }
       }
    }
 
    // We will not need the initial observations any more.
-   free(init_dis);
+   free(init_dist);
    obs = new_obs;
 
    // Get thread number if set to 0 (automatic).
@@ -510,135 +630,45 @@ tadbit(
       #endif
    }
 
-   double *llik = (double *) malloc(n*n * sizeof(double));
+   *llikmat = (double *) malloc(n*n * sizeof(double));
    for (l = 0 ; l < n*n ; l++) {
-      llik[l] = NAN;
+      llikmat[l] = NAN;
    }
 
    // Create an array of thread ids.
-   pthread_t tid[n_threads];
-   int *assignment = (int *) malloc(n*n * sizeof(int));
-   int processed = 0, to_process = 0;
+   assignment = (int *) malloc(n*n * sizeof(int));
+   n_processed = 0;
+   n_to_process = 0;
    
-   // The pointer 'assignment' specified which thread has to
-   // compute which part of 'llik'.
-   // NB: this is not optimal as this may cause some threads
-   // to lag behind if their task takes more time. However this
-   // is much simpler to implement and prevents clobbering and
-   // memory errors.
-
-
-   //FIXME: re-implement heurisitc.
-   char *to_include = (char*) malloc(n*n * sizeof(char));
-   memset(to_include, 1, n*n);
-
-
    for (i = 0 ; i < n-3 ; i++) {
    for (j = i+3 ; j < n ; j++) {
-      //if (j-i < max_tad_size) {
-      if (j-i < max_tad_size && to_include[i+j*n]) {
-         assignment[i+j*n] = to_process % n_threads;
-         to_process++;
+      // Do not process slices larger than 'max_tad_size'.
+      if (j-i < max_tad_size) {
+         assignment[i+j*n] = n_to_process % n_threads;
+         n_to_process++;
       }
       else {
-         // Do not process if slice is larger than 'max_tad_size'.
          assignment[i+j*n] = -1;
       }
    }
    }
-
-
-   // Inline function for threads.
-   void *fill_matrix(void *arg) {
- 
-   /*
-      * Compute the log-likelihood of the slices. the element
-      * (i,j) of the matrix-like pointer 'llik' will contain the
-      * log-likelihood of the slice starting at i and ending
-      * at j. the matrix is initialized with nan because not all
-      * elements will be computed. the lower triangular part is
-      * left out.
-   */
   
-      int i = 0, j, k;
-      pthread_t myid = pthread_self();
-   
-      // Allocate max possible size to blocks.
-      ml_slice *slc = (ml_slice *) malloc(sizeof(ml_slice));
-      ml_block *top = (ml_block *) malloc(sizeof(ml_block));
-      ml_block *mid = (ml_block *) malloc(sizeof(ml_block));
-      ml_block *bot = (ml_block *) malloc(sizeof(ml_block));
-      slc->blocks[0] = top;
-      slc->blocks[1] = mid;
-      slc->blocks[2] = bot;
-      // Readability variable.
-      int nmax = (n+1)*(n+1)/4;
+   thread_arg arg = {
+      .n = n,
+      .m = m,
+      .obs = obs,
+      .dist = dist,
+      .log_gamma = log_gamma,
+      .llikmat = llikmat,
+      .verbose = verbose,
+   };
 
-      // TODO: Reduce max size to minimum actually used.
-      // My last attempts caused segmentation faults.
-      top->lgamma  = (double *) malloc(nmax * sizeof(double));
-      top->counts  = (double *) malloc(nmax * sizeof(double));
-      top->dist    = (double *) malloc(nmax * sizeof(double));
-      top->weights = (double *) malloc(nmax * sizeof(double));
-
-      mid->lgamma  = (double *) malloc(2 * nmax * sizeof(double));
-      mid->counts  = (double *) malloc(2 * nmax * sizeof(double));
-      mid->dist    = (double *) malloc(2 * nmax * sizeof(double));
-      mid->weights = (double *) malloc(2 * nmax * sizeof(double));
-
-      bot->lgamma  = (double *) malloc(nmax * sizeof(double));
-      bot->counts  = (double *) malloc(nmax * sizeof(double));
-      bot->dist    = (double *) malloc(nmax * sizeof(double));
-      bot->weights = (double *) malloc(nmax * sizeof(double));
-      
-      // Initialize 'a' and 'b' to 0.
-      double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
-      
-      // Readability variables.
-      int do_not_process, assigned_to_me;
-      
-      for (i = 0 ; i < n-3 ; i++) {
-      for (j = i+3 ; j < n ; j++) {
-         do_not_process = assignment[i+j*n] < 0;
-         assigned_to_me = pthread_equal(myid, tid[assignment[i+j*n]]);
-         if (do_not_process || !assigned_to_me) {
-            continue;
-         }
-
-         // Distinct parts of the array, no lock needed.
-         llik[i+j*n] = 0.0;
-         for (k = 0 ; k < m ; k++) {
-            // Get the (i,j) slice (stored in 'slc').
-            slice(log_gamma[k], obs[k], dis, n, i, j, slc);
-            // Get the likelihood and sum (see macro definition).
-            llik[i+j*n] += fit_slice(slc, ab);
-         }
-         processed++;
-         if (verbose) {
-            fprintf(stderr, "computing likelihood (%0.f%% done)\r",
-               99 * processed / (float) to_process);
-         }
-      }
-      } // End of the (i,j) for loop.
-
-      // Free allocated memory.
-      for (i = 0 ; i < 3 ; i++) {
-         free(slc->blocks[i]->lgamma);
-         free(slc->blocks[i]->counts);
-         free(slc->blocks[i]->dist);
-         free(slc->blocks[i]->weights);
-         free(slc->blocks[i]);
-      }
-      free(slc);
-
-      return NULL;
-   
-   }
-
-  
-   // Start the threads.
+   // Allocate 'tid' and start the threads.
+   tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
    for (i = 0 ; i < n_threads ; i++) {
-      if (pthread_create(&(tid[i]), NULL, &fill_matrix, NULL) != 0) {
+      int errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
+      if (errno) {
+         fprintf(stderr, "error creating thread (%d)\n", errno);
          return;
       }
    }
@@ -653,24 +683,22 @@ tadbit(
 
    free(assignment);
 
-   // The matrix 'llik' now contains the log-likelihood of the
-   // segments. The breakpoints are found by dynamic
-   // programming.
+   // The matrix 'llikmat' now contains the log-likelihood of the
+   // segments. The breakpoints are found by dynamic programming.
 
-   //int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
    double *mllik = (double *) malloc(n/4 * sizeof(double));
    int *bkpts = (int *) malloc(n*n/4 * sizeof(int));
 
-   mlwalk(llik, n, m, mllik, bkpts);
+   mlwalk(llikmat, n, m, mllik, bkpts);
 
    // Resize output to match original.
-   int *resized_bkpts = (int *) malloc(init_n*n/4 * sizeof(int));
-   memset(resized_bkpts, 0, init_n*n/4);
+   int *resized_bkpts = (int *) malloc(N*n/4 * sizeof(int));
+   memset(resized_bkpts, 0, N*n/4);
 
-   for (l = 0, i = 0 ; i < init_n ; i++) {
+   for (l = 0, i = 0 ; i < N ; i++) {
       if (!remove[i]) {
          for (j = 0 ; j < n/4 ; j++) {
-            resized_bkpts[i+j*init_n] = bkpts[l+j*n];
+            resized_bkpts[i+j*N] = bkpts[l+j*n];
          }
          l++;
       }
@@ -678,27 +706,33 @@ tadbit(
 
    free(bkpts);
 
-   for (l = 0, i = 0 ; i < init_n ; i++) {
+   double *resized_llikmat = (double *) malloc(N*N * sizeof(double));
+   for (i = 0 ; i < N*N ; i++) {
+      resized_llikmat[l] = NAN;
+   }
+
+   for (l = 0, i = 0 ; i < N ; i++) {
       if (remove[i]) continue;
-      for (k = 0, j = 0 ; j < init_n ; j++) {
+      for (k = 0, j = 0 ; j < N ; j++) {
          if (remove[j]) continue;
-         llikmat[i+j*init_n] = llik[l+k*n];
+         resized_llikmat[i+j*N] = llikmat[l+k*n];
          k++;
       }
       l++;
    }
+
+   free(llikmat);
 
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
    }
    free(to_include);
    free(new_obs);
-   free(dis);
-   free(llik);
+   free(dist);
 
    // Update output struct.
    seg->nbreaks_opt = 15;
-   seg->llikmat = llikmat;
+   seg->llikmat = resized_llikmat;
    seg->mllik = mllik;
    seg->bkpts = resized_bkpts;
 
