@@ -201,39 +201,26 @@ slice(
    }
 }
 
-
-int
-get_breakpoints(
-  double *llik,
-  int n,
-  int m,
+void
+mlwalk(
+  /* input */
+  const double *llik,
+  const int n,
+  const int m,
+  /* output */
+  double *mllik,
   int *breakpoints
 ){
 
-/*
-   * Dynamic programming algorithm. Compute the most likely position
-   * of breakpoints for up to n/4 breakpoints.
-   * Return the minimum number of breakpoint that has a defined
-   * maximum log-likelihood.
-*/
-
+   // The max number of segments is 1/4 row/col number.
    const int max_n_breaks = n/4;
-   int i,j, nbreaks = 0;
-   int new_bkpt;
 
-   double mllik[max_n_breaks];
-   mllik[0] = -INFINITY;
-   for (i = 1 ; i < max_n_breaks ; i++) {
-      mllik[i] = NAN;
-   }
+   int i;
+   int j;
+   int nbreaks;
 
    double new_llik[n];
    double old_llik[n];
-   // Initialize to first line of 'llik' (the end may be NAN).
-   for (j = 0 ; j < n ; j++) {
-      old_llik[j] = llik[j*n];
-      new_llik[j] = -INFINITY;
-   }
 
    // Breakpoint lists. The first index (line) is the end of the slice,
    // the second is 1 if this position is an end (breakpoint).
@@ -241,11 +228,27 @@ get_breakpoints(
    int *new_bkpt_list = (int *) malloc(n*n * sizeof(int));
    int *old_bkpt_list = (int *) malloc(n*n * sizeof(int));
 
-   // Initialize to 0.
-   memset(breakpoints,   0, n*n);
-   memset(new_bkpt_list, 0, n*n);
-   memset(old_bkpt_list, 0, n*n);
+   // Initializations.
+   memset(breakpoints, 0, n*max_n_breaks);
 
+   for (i = 0 ; i < n*n ; i++) {
+      new_bkpt_list[i] = 0;
+      old_bkpt_list[i] = 0;
+   }
+
+   for (i = 0 ; i < max_n_breaks ; i++) {
+      mllik[i] = NAN;
+   }
+
+   // Initialize 'old_llik' to the first line of 'llik' containing the
+   // log-likelihood of segments starting at index 0.
+   for (i = 0 ; i < n ; i++) {
+      old_llik[i] = llik[i*n];
+      new_llik[i] = -INFINITY;
+   }
+
+
+   // Dynamic programming.
    for (nbreaks = 1 ; nbreaks < max_n_breaks ; nbreaks++) {
       // Update breakpoint lists.
       for (i = 0 ; i < n*n ; i++) {
@@ -255,13 +258,12 @@ get_breakpoints(
       // Cycle over end point 'j'.
       for (j = 3 * nbreaks + 2 ; j < n ; j++) {
          new_llik[j] = -INFINITY;
-         new_bkpt = -1;
+         int new_bkpt = -1;
 
          // Cycle over start point 'i'.
          for (i = 3 * nbreaks ; i < j-3 ; i++) {
 
-            // NAN if not a potential breakpoint, so the following
-            // lines evaluates to false.
+            // If NAN the following condition evaluates to false.
             double tmp = old_llik[i-1] + llik[i+j*n];
             if (tmp > new_llik[j]) {
                new_llik[j] = tmp;
@@ -276,7 +278,6 @@ get_breakpoints(
             }
             new_bkpt_list[j+new_bkpt*n] = 1;
          }
-
       }
 
       // Update full log-likelihoods.
@@ -285,16 +286,7 @@ get_breakpoints(
       // Record breakpoints.
       for (i = 0 ; i < n ; i++) {
          old_llik[i] = new_llik[i];
-         breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
-      }
-
-      //DEBUG
-      printf("%.6f, ", mllik[nbreaks]);
-      //
-
-      // Exit loop if log-likelihood starts to decrease.
-      if (mllik[nbreaks] < mllik[nbreaks-1]) {
-         break;
+         breakpoints[i+nbreaks*n] = new_bkpt_list[n-1+i*n];
       }
 
    }
@@ -302,22 +294,23 @@ get_breakpoints(
    free(new_bkpt_list);
    free(old_bkpt_list);
 
-   return nbreaks - 1;
+   return;
 
 }
 
 
 void
 tadbit(
+  /* input */
   double **obs,
   int n,
   const int m,
   double max_tad_size,
   int n_threads,
   const int verbose,
-  int *breaks,
-  double *orig_llik,
-  int heuristic
+  const int heuristic,
+  /* output */
+  tadbit_output *seg
 ){
 
 
@@ -336,11 +329,12 @@ tadbit(
    // 3 pairs of parameters.
 
    double *init_dis = (double *) malloc(init_n*init_n * sizeof(double));
+   double *llikmat = (double *) malloc(init_n*init_n * sizeof(double));
 
    for (l = 0, i = 0; i < init_n ; i++) {
    for (j = 0; j < init_n ; j++) {
       init_dis[l] = log(abs(i-j));
-      orig_llik[l] = NAN;
+      llikmat[l] = NAN;
       l++;
    }
    }
@@ -413,25 +407,9 @@ tadbit(
    // memory errors.
 
 
+   //FIXME: re-implement heurisitc.
    char *to_include = (char*) malloc(n*n * sizeof(char));
-   if (heuristic) {
-      if (verbose) {
-         fprintf(stderr, "running heuristic pre-screen\n");
-      }
-      int *pre_breaks = (int*) malloc(n * sizeof(int));
-      tadbit(obs, n, m, 20, n_threads, 1, pre_breaks, llik, 0);
-
-      for (i = 0 ; i < n ; i++) {
-      for (j = 0 ; j < n ; j++) {
-         to_include[i+j*n] = pre_breaks[i] && pre_breaks[j];
-      }
-      }
-
-      free(pre_breaks);
-   }
-   else {
-      memset(to_include, 1, n*n);
-   }
+   memset(to_include, 1, n*n);
 
 
    for (i = 0 ; i < n-3 ; i++) {
@@ -558,25 +536,32 @@ tadbit(
    // segments. The breakpoints are found by dynamic
    // programming.
 
-   int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
-   int nbreaks = get_breakpoints(llik, n, m, all_breakpoints);
+   //int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
+   double *mllik = (double *) malloc(n/4 * sizeof(double));
+   int *bkpts = (int *) malloc(n*n/4 * sizeof(int));
 
-   // Restore original output size.
+   mlwalk(llik, n, m, mllik, bkpts);
+
+   // Resize output to match original.
+   int *resized_bkpts = (int *) malloc(init_n*n/4 * sizeof(int));
+   memset(resized_bkpts, 0, init_n*n/4);
+
    for (l = 0, i = 0 ; i < init_n ; i++) {
-      if (remove[i]) {
-         breaks[i] = 0;
-      }
-      else {
-         breaks[i] = all_breakpoints[nbreaks+l*n];
+      if (!remove[i]) {
+         for (j = 0 ; j < n/4 ; j++) {
+            resized_bkpts[i+j*init_n] = bkpts[l+j*n];
+         }
          l++;
       }
    }
+
+   free(bkpts);
 
    for (l = 0, i = 0 ; i < init_n ; i++) {
       if (remove[i]) continue;
       for (k = 0, j = 0 ; j < init_n ; j++) {
          if (remove[j]) continue;
-         orig_llik[i+j*init_n] = llik[l+k*n];
+         llikmat[i+j*init_n] = llik[l+k*n];
          k++;
       }
       l++;
@@ -587,10 +572,25 @@ tadbit(
    }
    free(to_include);
    free(new_obs);
-   free(all_breakpoints);
    free(dis);
    free(llik);
 
-   // Done!! The results is in 'breaks' and 'orig_llik'.
+   // Update output struct.
+   seg->nbreaks_opt = 15;
+   seg->llikmat = llikmat;
+   seg->mllik = mllik;
+   seg->bkpts = resized_bkpts;
 
+   return;
+
+}
+
+void
+free_tadbit_output(
+  tadbit_output *seg
+){
+  free(seg->llikmat);
+  free(seg->mllik);
+  free(seg->bkpts);
+  free(seg);
 }
