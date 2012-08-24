@@ -47,6 +47,7 @@ tadbit_R_call(
    int first = 1, n, *dim_int;
 
    SEXP dim;
+   PROTECT(dim = allocVector(INTSXP, 2));
 
    // Convert 'obs_list' to pointer of pointer to double.
    double **obs = (double **) malloc(m * sizeof(double **));
@@ -74,24 +75,60 @@ tadbit_R_call(
       }
    }
 
-   SEXP breaks_sexp;
-   SEXP llik_sexp;
-   PROTECT(breaks_sexp = allocVector(INTSXP, n));
-   PROTECT(llik_sexp = allocVector(REALSXP, n*n));
-   setAttrib(llik_sexp, R_DimSymbol, dim);
-   int *breaks = INTEGER(breaks_sexp);
-   double *llik = REAL(llik_sexp);
+   UNPROTECT(1);
+
+   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
    
    // Call 'tadbit'.
    tadbit(obs, n, m, REAL(max_tad_size)[0], INTEGER(n_threads)[0],
-         INTEGER(verbose)[0], breaks, llik, INTEGER(heuristic)[0]);
+         INTEGER(verbose)[0], INTEGER(heuristic)[0], seg);
 
-   SEXP list_sexp;
-   PROTECT(list_sexp = allocVector(VECSXP, 2));
-   SET_VECTOR_ELT(list_sexp, 0, breaks_sexp);
-   SET_VECTOR_ELT(list_sexp, 1, llik_sexp);
-   UNPROTECT(3);
-   return list_sexp;
+   // Copy output to R-readable variables.
+   SEXP nbreaks_SEXP;
+   SEXP llikmat_SEXP;
+   SEXP mllik_SEXP;
+   SEXP bkpts_SEXP;
+
+   PROTECT(nbreaks_SEXP = allocVector(INTSXP, 1));
+   PROTECT(llikmat_SEXP = allocVector(REALSXP, n*n));
+   PROTECT(mllik_SEXP = allocVector(REALSXP, n/4));
+   PROTECT(bkpts_SEXP = allocVector(INTSXP, n*n/4));
+
+   int *nbreaks_opt = INTEGER(nbreaks_SEXP); 
+   double *llikmat = REAL(llikmat_SEXP);
+   double *mllik = REAL(mllik_SEXP);
+   int *bkpts = INTEGER(bkpts_SEXP);
+
+   nbreaks_opt[0] = seg->nbreaks_opt;
+   for (i = 0 ; i < n*n ; i++) llikmat[i] = seg->llikmat[i];
+   for (i = 0 ; i < n/4 ; i++) mllik[i] = seg->mllik[i];
+   for (i = 0 ; i < n*n/4 ; i++) bkpts[i] = seg->bkpts[i];
+
+
+   // Set 'dim' attributes.
+   SEXP dim_llikmat;
+   PROTECT(dim_llikmat = allocVector(INTSXP, 2));
+   INTEGER(dim_llikmat)[0] = n;
+   INTEGER(dim_llikmat)[1] = n;
+   setAttrib(llikmat_SEXP, R_DimSymbol, dim_llikmat);
+
+   SEXP dim_breaks;
+   PROTECT(dim_breaks = allocVector(INTSXP, 2));
+   INTEGER(dim_breaks)[0] = n;
+   INTEGER(dim_breaks)[1] = n/4;
+   setAttrib(bkpts_SEXP, R_DimSymbol, dim_breaks);
+
+   free_tadbit_output(seg);
+
+   SEXP list_SEXP;
+   PROTECT(list_SEXP = allocVector(VECSXP, 4));
+   SET_VECTOR_ELT(list_SEXP, 0, nbreaks_SEXP);
+   SET_VECTOR_ELT(list_SEXP, 1, llikmat_SEXP);
+   SET_VECTOR_ELT(list_SEXP, 2, mllik_SEXP);
+   SET_VECTOR_ELT(list_SEXP, 3, bkpts_SEXP);
+   UNPROTECT(7);
+
+   return list_SEXP;
 
 }
 

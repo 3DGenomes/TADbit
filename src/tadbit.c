@@ -11,11 +11,13 @@
 
 void
 recompute_fg(
+  /* input */
   const ml_block *blk,
   const double a,
   const double b,
   const double da,
   const double db,
+  /* output */
   double *f,
   double *g
 ){
@@ -29,6 +31,7 @@ recompute_fg(
 //   'b': parameter 'b' of the Poisson regression (see 'poiss_reg').    
 //   'da': computed differential of 'a' (see 'poiss_reg').              
 //   'db': computed differential of 'b' (see 'poiss_reg').              
+//        -- output arguments --                                        
 //   'f': first function to zero, recomputed by the routine.            
 //   'g': second function to zero, recomputed by the routine.           
 //                                                                      
@@ -65,7 +68,9 @@ recompute_fg(
 
 double
 poiss_reg (
+  /* input */
   const ml_block *blk,
+  /* output */
   double ab[2]
 ){
 // SYNOPSIS:                                                            
@@ -77,6 +82,7 @@ poiss_reg (
 //                                                                      
 // ARGUMENTS:                                                           
 //   '*blk': the block to fit by Poisson regression.                    
+//        -- output arguments --                                        
 //   'ab[]': the initial parameters (updated in place).                 
 //                                                                      
 // RETURN:                                                              
@@ -166,6 +172,10 @@ poiss_reg (
    }
 
    // Update 'ab' in place (to make the estimates available).
+   // TODO: check that the following line does not cause errors
+   // in the calculation. It is there to prevent starting so far
+   // off the optimum that the computation intermediate would
+   // be undefined.
    ab[0] = a; ab[1] = b;
 
    return llik;
@@ -174,7 +184,9 @@ poiss_reg (
 
 double
 fit_slice(
+  /* input */
   const ml_slice *slc, 
+  /* output */
   double ab[3][2]
 ){
 // SYNOPSIS:                                                            
@@ -185,6 +197,7 @@ fit_slice(
 //                                                                      
 // PARAMETERS:                                                          
 //   '*slc' : the slice to be fitted by Poisson regression.             
+//        -- output arguments --                                        
 //   'ab[3][2]' : the parameters of the fit (updated in place).         
 //                                                                      
 // RETURN:                                                              
@@ -210,12 +223,14 @@ fit_slice(
 
 void
 slice(
+  /* input */
   const double *log_gamma,
   const double *obs,
   const double *dist,
   const int n,
   const int start,
   const int end,
+  /* output */
   ml_slice *slc
 ){
 // SYNOPSIS:                                                            
@@ -229,6 +244,7 @@ slice(
 //   'n' : row/col number of the full data matrix.                      
 //   'start' : start index of the slice.                                
 //   'end' : end index of the slice.                                    
+//        -- output arguments --                                        
 //   '*slc' : variable to store the slice.                              
 //                                                                      
 // RETURN:                                                              
@@ -256,10 +272,13 @@ slice(
          if (isnan(obs[row+col*n]))
             continue;
 
+
+         //TODO: test those lines.
+
          // Find which block to update ('l').
-         //   0: top
-         //   1: middle
-         //   2: bottom
+         //     0: top                       
+         //     1: middle                    
+         //     2: bottom                    
          
          if        (row < start)  l = 0;
          else if   (row < col)    l = 1;
@@ -285,12 +304,14 @@ slice(
 
 }
 
-
-int
-get_breakpoints(
-  double *llik,
-  int n,
-  int m,
+void
+mlwalk(
+  /* input */
+  const double *llik,
+  const int n,
+  const int m,
+  /* output */
+  double *mllik,
   int *breakpoints
 ){
 // SYNOPSIS:                                                            
@@ -301,6 +322,8 @@ get_breakpoints(
 //   '*llik' : matrix of maximum log-likelihood values.                 
 //   'n' : row/col number of 'llik'.                                    
 //   'm' : number of replicates.                                        
+//        -- output arguments --                                        
+//   '*mllik' : maximum log-likelihood of the segmentations.            
 //   '*breakpoints' : optimal breakpoints per number of breaks.         
 //                                                                      
 // RETURN:                                                              
@@ -310,32 +333,15 @@ get_breakpoints(
 //   Update 'breakpoints' in place.                                     
 //                                                                      
 
-
+   // The max number of segments is 1/4 row/col number.
    const int max_n_breaks = n/4;
+
    int i;
    int j;
-   int new_bkpt;
-   int nbreaks = 0;
+   int nbreaks;
 
-   // Store the max log-likelihood values of the full segmentation
-   // for a given number of breaks.
-   double *mllik = (double *) malloc(max_n_breaks * sizeof(double));
-   mllik[0] = -INFINITY;
-
-   // Store the max log-likelihood values for partial segmentations.
-   // 'old_mllik' contains the max log-likelihood of the previous
-   // round of optimization (with one less breakpoint), and 'new_mllik'
-   // is updated by the dynamic algorithm.
-   double new_mllik[n];
-   double old_mllik[n];
-
-   // Initialize to first line of 'llik' (may contain NAN).
-   // This corresponds to the log-likelihood of the slices that start
-   // at the origin.
-   for (j = 0 ; j < n ; j++) {
-      old_mllik[j] = llik[j*n];
-      new_mllik[j] = -INFINITY;
-   }
+   double new_llik[n];
+   double old_llik[n];
 
    // Breakpoint lists. The first index (line) is the end of the slice,
    // the second is 1 if this position is an end (breakpoint).
@@ -343,11 +349,27 @@ get_breakpoints(
    int *new_bkpt_list = (int *) malloc(n*n * sizeof(int));
    int *old_bkpt_list = (int *) malloc(n*n * sizeof(int));
 
-   // Initialize breakpoint lists to 0.
-   memset(breakpoints,   0, n*n);
-   memset(new_bkpt_list, 0, n*n);
-   memset(old_bkpt_list, 0, n*n);
+   // Initializations.
+   memset(breakpoints, 0, n*max_n_breaks);
 
+   for (i = 0 ; i < n*n ; i++) {
+      new_bkpt_list[i] = 0;
+      old_bkpt_list[i] = 0;
+   }
+
+   for (i = 0 ; i < max_n_breaks ; i++) {
+      mllik[i] = NAN;
+   }
+
+   // Initialize 'old_llik' to the first line of 'llik' containing the
+   // log-likelihood of segments starting at index 0.
+   for (i = 0 ; i < n ; i++) {
+      old_llik[i] = llik[i*n];
+      new_llik[i] = -INFINITY;
+   }
+
+
+   // Dynamic programming.
    for (nbreaks = 1 ; nbreaks < max_n_breaks ; nbreaks++) {
       // Update breakpoint lists.
       for (i = 0 ; i < n*n ; i++) {
@@ -356,92 +378,65 @@ get_breakpoints(
 
       // Cycle over end point 'j'.
       for (j = 3 * nbreaks + 2 ; j < n ; j++) {
-         new_mllik[j] = -INFINITY;
-         new_bkpt = -1;
+         new_llik[j] = -INFINITY;
+         int new_bkpt = -1;
 
          // Cycle over start point 'i'.
          for (i = 3 * nbreaks ; i < j-3 ; i++) {
 
-            // NAN if not a potential breakpoint, so the following
-            // lines evaluates to false.
-            double tmp = old_mllik[i-1] + llik[i+j*n];
-            if (tmp > new_mllik[j]) {
-               new_mllik[j] = tmp;
+            // If NAN the following condition evaluates to false.
+            double tmp = old_llik[i-1] + llik[i+j*n];
+            if (tmp > new_llik[j]) {
+               new_llik[j] = tmp;
                new_bkpt = i-1;
             }
          }
 
          // Update breakpoint list (skip if log-lik is undefined).
-         if (new_mllik[j] > -INFINITY) {
+         if (new_llik[j] > -INFINITY) {
             for (i = 0 ; i < n ; i++) {
                new_bkpt_list[j+i*n] = old_bkpt_list[new_bkpt+i*n];
             }
             new_bkpt_list[j+new_bkpt*n] = 1;
          }
-
       }
 
       // Update full log-likelihoods.
-      mllik[nbreaks] = new_mllik[n-1];
+      mllik[nbreaks] = new_llik[n-1];
 
-      // Update partial max log-likelihoods and record breakpoints.
+      // Record breakpoints.
       for (i = 0 ; i < n ; i++) {
-         old_mllik[i] = new_mllik[i];
-         breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
+         old_llik[i] = new_llik[i];
+         breakpoints[i+nbreaks*n] = new_bkpt_list[n-1+i*n];
       }
-
-      if (mllik[nbreaks-1] > mllik[nbreaks]) break;
 
    }
 
    free(new_bkpt_list);
    free(old_bkpt_list);
 
-   // Check that there is a non NAN max llik.
-   for (nbreaks-- ; isnan(mllik[nbreaks]) ; nbreaks--) {
-      if (nbreaks < 0) return -1;
-   }
-
-
-   double diff = mllik[nbreaks] - 2*mllik[nbreaks-1] + mllik[nbreaks-2];
-   int ssize = 1;
-   double sum  = diff;
-   double ssq  = diff*diff;
-   while (--nbreaks > 1) {
-      ssize++;
-      diff = mllik[nbreaks] - 2*mllik[nbreaks-1] + mllik[nbreaks-2];
-      sum += diff;
-      ssq += diff*diff;
-      double mean = sum / ssize;
-      double sd  = sqrt(ssq / ssize - mean*mean);
-      if (abs(diff - mean) > 3 * sd) {
-         return nbreaks+2;
-      }
-   }
-
-   return -1;
+   return;
 
 }
 
 
 void
 tadbit(
+  /* input */
   double **obs,
   int n,
   const int m,
   double max_tad_size,
   int n_threads,
   const int verbose,
-  int *breaks,
-  double *orig_llik,
-  int heuristic
+  const int heuristic,
+  /* output */
+  tadbit_output *seg
 ){
 
 
    // Get absolute max tad size.
-   max_tad_size = max_tad_size > 0 ? 
-      max_tad_size < 1 ? max_tad_size *n : max_tad_size :
-      INFINITY;
+   max_tad_size = max_tad_size > 1 ? max_tad_size : max_tad_size * n;
 
    int i, j, k, l;
    const int init_n = n;
@@ -455,11 +450,12 @@ tadbit(
    // 3 pairs of parameters.
 
    double *init_dis = (double *) malloc(init_n*init_n * sizeof(double));
+   double *llikmat = (double *) malloc(init_n*init_n * sizeof(double));
 
    for (l = 0, i = 0; i < init_n ; i++) {
    for (j = 0; j < init_n ; j++) {
-      init_dis[l] = log(1+abs(i-j));
-      orig_llik[l] = NAN;
+      init_dis[l] = log(abs(i-j));
+      llikmat[l] = NAN;
       l++;
    }
    }
@@ -532,25 +528,9 @@ tadbit(
    // memory errors.
 
 
+   //FIXME: re-implement heurisitc.
    char *to_include = (char*) malloc(n*n * sizeof(char));
-   if (heuristic) {
-      if (verbose) {
-         fprintf(stderr, "running heuristic pre-screen\n");
-      }
-      int *pre_breaks = (int*) malloc(n * sizeof(int));
-      tadbit(obs, n, m, 20, n_threads, 1, pre_breaks, llik, 0);
-
-      for (i = 0 ; i < n ; i++) {
-      for (j = 0 ; j < n ; j++) {
-         to_include[i+j*n] = pre_breaks[i] && pre_breaks[j];
-      }
-      }
-
-      free(pre_breaks);
-   }
-   else {
-      memset(to_include, 1, n*n);
-   }
+   memset(to_include, 1, n*n);
 
 
    for (i = 0 ; i < n-3 ; i++) {
@@ -677,25 +657,32 @@ tadbit(
    // segments. The breakpoints are found by dynamic
    // programming.
 
-   int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
-   int nbreaks = get_breakpoints(llik, n, m, all_breakpoints);
+   //int *all_breakpoints = (int *) malloc(n*n * sizeof(int));
+   double *mllik = (double *) malloc(n/4 * sizeof(double));
+   int *bkpts = (int *) malloc(n*n/4 * sizeof(int));
 
-   // Restore original output size.
+   mlwalk(llik, n, m, mllik, bkpts);
+
+   // Resize output to match original.
+   int *resized_bkpts = (int *) malloc(init_n*n/4 * sizeof(int));
+   memset(resized_bkpts, 0, init_n*n/4);
+
    for (l = 0, i = 0 ; i < init_n ; i++) {
-      if (remove[i]) {
-         breaks[i] = 0;
-      }
-      else {
-         breaks[i] = all_breakpoints[nbreaks+l*n];
+      if (!remove[i]) {
+         for (j = 0 ; j < n/4 ; j++) {
+            resized_bkpts[i+j*init_n] = bkpts[l+j*n];
+         }
          l++;
       }
    }
+
+   free(bkpts);
 
    for (l = 0, i = 0 ; i < init_n ; i++) {
       if (remove[i]) continue;
       for (k = 0, j = 0 ; j < init_n ; j++) {
          if (remove[j]) continue;
-         orig_llik[i+j*init_n] = llik[l+k*n];
+         llikmat[i+j*init_n] = llik[l+k*n];
          k++;
       }
       l++;
@@ -706,10 +693,25 @@ tadbit(
    }
    free(to_include);
    free(new_obs);
-   free(all_breakpoints);
    free(dis);
    free(llik);
 
-   // Done!! The results is in 'breaks' and 'orig_llik'.
+   // Update output struct.
+   seg->nbreaks_opt = 15;
+   seg->llikmat = llikmat;
+   seg->mllik = mllik;
+   seg->bkpts = resized_bkpts;
 
+   return;
+
+}
+
+void
+free_tadbit_output(
+  tadbit_output *seg
+){
+  free(seg->llikmat);
+  free(seg->mllik);
+  free(seg->bkpts);
+  free(seg);
 }

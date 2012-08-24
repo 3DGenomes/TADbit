@@ -1,5 +1,6 @@
 #ifndef TADBIT_LOADED
 #define TADBIT_LOADED
+
 #define TOLERANCE 1e-6
 #define MAXITER 10000
 
@@ -19,16 +20,31 @@ typedef struct {
 } ml_slice;
 
 
+// 'tadbit' output struct.
+typedef struct {
+   int nbreaks_opt;
+   double *llikmat;
+   double *mllik;
+   int *bkpts;
+} tadbit_output;
+
+
+void
+free_tadbit_ouput(
+  tadbit_output *seg
+);
+
 void
 tadbit(
+  /* input */
   double **obs,
-  const int n,
+  int n,
   const int m,
   double max_tad_size,
   int n_threads,
   const int verbose,
-  int *breaks,
-  double *llik,
-  int heuristic
+  const int heuristic,
+  /* output */
+  tadbit_output *seg
 );
 #endif
