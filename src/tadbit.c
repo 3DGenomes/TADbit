@@ -122,7 +122,6 @@ poiss_reg (
       ab[0] = ab[1] = 0.0;
    }
 
-   
    for (i = 0 ; i < n ; i++) {
       llik -= log_gamma[i];
    }
@@ -289,6 +288,10 @@ get_breakpoints(
          breakpoints[nbreaks+i*n] = new_bkpt_list[n-1+i*n];
       }
 
+      //DEBUG
+      printf("%.6f, ", mllik[nbreaks]);
+      //
+
       // Exit loop if log-likelihood starts to decrease.
       if (mllik[nbreaks] < mllik[nbreaks-1]) {
          break;
@@ -299,34 +302,7 @@ get_breakpoints(
    free(new_bkpt_list);
    free(old_bkpt_list);
 
-   int size = 1;
-   double ssq = 0.0;
-   double mean_ssq[max_n_breaks];
-   double d2_mllik[max_n_breaks];
-   for (i = 0 ; i < max_n_breaks ; i++) {
-      mean_ssq[i] = NAN;
-      d2_mllik[i] = 0.0;
-   }
-
-   // The highest max log-likelihood is at index 'nbreaks-1'.
-   for (i = nbreaks - 2 ; i > 0 ; i--) {
-      // Exit loop if 'mllik' is undefined (NAN or -inf).
-      if (!(mllik[i-1] > -INFINITY)) {
-         break;
-      }
-      d2_mllik[i] = mllik[i+1] - 2*mllik[i] + mllik[i-1];
-      ssq += d2_mllik[i]*d2_mllik[i]; 
-      mean_ssq[i] = ssq / size++;
-   }
-
-   for (i = 1 ; i < nbreaks -2 ; i++) {
-      if ((mean_ssq[i] > mean_ssq[i-1]) && (mean_ssq[i] > mean_ssq[i+1])) {
-         return i + (d2_mllik[i] > 0);
-      }
-   }
-
-   // If curve is smooth, return the log-likelihood optimum.
-   return nbreaks-1;
+   return nbreaks - 1;
 
 }
 
