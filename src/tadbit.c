@@ -247,13 +247,8 @@ slice(
             continue;
 
 
-         //TODO: test those lines.
-
          // Find which block to update ('l').
-         //     0: top                       
-         //     1: middle                    
-         //     2: bottom                    
-         
+         // 0: top, 1: middle, 2: bottom, or none.                    
          if        (row < start)  l = 0;
          else if   (row < col)    l = 1;
          else if   (row > end)    l = 2;
