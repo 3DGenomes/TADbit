@@ -68,10 +68,7 @@ recompute_fg(
 
 double
 poiss_reg (
-  /* input */
-  const ml_block *blk,
-  /* output */
-  double ab[2]
+  const ml_block *blk
 ){
 // SYNOPSIS:                                                            
 //   The fitted model (by maximum likelihood) is Poisson with lambda    
@@ -82,14 +79,9 @@ poiss_reg (
 //                                                                      
 // ARGUMENTS:                                                           
 //   '*blk': the block to fit by Poisson regression.                    
-//        -- output arguments --                                        
-//   'ab[]': the initial parameters (updated in place).                 
 //                                                                      
 // RETURN:                                                              
 //   The maximum log-likelihood of a block of hiC data.                 
-//                                                                      
-// SIDE-EFFECTS:                                                        
-//   Update 'ab' in place.                                              
 //                                                                      
 
    const int n = blk->size;
@@ -111,8 +103,8 @@ poiss_reg (
    double oldgrad;
    double f;
    double g;
-   double a = ab[0];
-   double b = ab[1];
+   double a = 0.0;
+   double b = 0.0;
    double da = 0.0;
    double db = 0.0;
    double dfda = 0.0;
@@ -160,8 +152,7 @@ poiss_reg (
    }
 
    if (iter >= MAXITER) {
-      // Something probably went wrong. Reset 'ab' and return NAN.
-      ab[0] = ab[1] = 0.0;
+      // Something probably went wrong. Return NAN.
       return NAN;
    }
 
@@ -171,45 +162,28 @@ poiss_reg (
       llik += exp(a+b*d[i]) + k[i] * (a + b*d[i]) - log_gamma[i];
    }
 
-   // Update 'ab' in place (to make the estimates available).
-   // TODO: check that the following line does not cause errors
-   // in the calculation. It is there to prevent starting so far
-   // off the optimum that the computation intermediate would
-   // be undefined.
-   ab[0] = a; ab[1] = b;
-
    return llik;
 
 }
 
 double
 fit_slice(
-  /* input */
-  const ml_slice *slc, 
-  /* output */
-  double ab[3][2]
+  const ml_slice *slc
 ){
 // SYNOPSIS:                                                            
 //   Wrapper for 'poiss_reg'. Fits the three regions of a slice         
-//   by Poisson regression and return the log-likelihood. Update        
-//   the parameters 'ab' in place to speed up next round of fit         
-//   (they will be used as initial values).                             
+//   by Poisson regression and return the log-likelihood.               
 //                                                                      
 // PARAMETERS:                                                          
 //   '*slc' : the slice to be fitted by Poisson regression.             
-//        -- output arguments --                                        
-//   'ab[3][2]' : the parameters of the fit (updated in place).         
 //                                                                      
 // RETURN:                                                              
 //   The total maximum log-likelihood of the slice.                     
 //                                                                      
-// SIDE-EFFECTS:                                                        
-//   Update 'ab' in place.                                              
-//                                                                      
 
-   double top = poiss_reg(slc->blocks[0], ab[0]);
-   double mid = poiss_reg(slc->blocks[1], ab[1]);
-   double bot = poiss_reg(slc->blocks[2], ab[2]);
+   double top = poiss_reg(slc->blocks[0]);
+   double mid = poiss_reg(slc->blocks[1]);
+   double bot = poiss_reg(slc->blocks[2]);
 
    // The likelihood of 'top' and 'bot' blocks are divided by 2 because
    // the hiC map is assumed to be symmetric. Those data points are
@@ -445,9 +419,6 @@ tadbit(
    // matrix 'dis' is the distance to the main diagonal. Every
    // element of coordinate (i,j) is on a diagonal; the distance
    // is the log-shift to the main diagonal 'i-j'.
-   // 'ab' contains parameters 'a' and 'b' for the maximum likelihood
-   // model. Because each segmentation defines 3 regions we need
-   // 3 pairs of parameters.
 
    double *init_dis = (double *) malloc(init_n*init_n * sizeof(double));
    double *llikmat = (double *) malloc(init_n*init_n * sizeof(double));
@@ -591,8 +562,6 @@ tadbit(
       bot->dist    = (double *) malloc(nmax * sizeof(double));
       bot->weights = (double *) malloc(nmax * sizeof(double));
       
-      // Initialize 'a' and 'b' to 0.
-      double ab[3][2] = {{0.0,0.0}, {0.0,0.0}, {0.0,0.0}};
       
       // Readability variables.
       int do_not_process, assigned_to_me;
@@ -611,7 +580,7 @@ tadbit(
             // Get the (i,j) slice (stored in 'slc').
             slice(log_gamma[k], obs[k], dis, n, i, j, slc);
             // Get the likelihood and sum (see macro definition).
-            llik[i+j*n] += fit_slice(slc, ab);
+            llik[i+j*n] += fit_slice(slc);
          }
          processed++;
          if (verbose) {
