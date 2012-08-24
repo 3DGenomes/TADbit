@@ -122,7 +122,7 @@ poiss_reg (
    // See the comment about 'tmp' in 'recompute_fg'.
    long double tmp; 
 
-   recompute_fg();
+   recompute_fg(blk, a, b, da, db, &f, &g);
 
    // Newton-Raphson until gradient function is less than TOLERANCE.
    // The gradient function is the square norm 'f*f + g*g'.
@@ -142,7 +142,7 @@ poiss_reg (
       da = (f*dgdb - g*dfdb) / denom;
       db = (g*dfda - f*dgda) / denom;
 
-      recompute_fg();
+      recompute_fg(blk, a, b, da, db, &f, &g);
 
       // Traceback if we are not going down the gradient. Cut the
       // length of the steps in half until this step goes down
@@ -150,7 +150,7 @@ poiss_reg (
       while (f*f + g*g > oldgrad) {
          da /= 2;
          db /= 2;
-         recompute_fg();
+         recompute_fg(blk, a, b, da, db, &f, &g);
       }
 
       // Update 'a' and 'b'.
