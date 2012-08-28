@@ -25,8 +25,11 @@ typedef struct {
    double **obs;
    double *dist;
    double **log_gamma;
+   int *assignment;
    double *llikmat;
+   pthread_t *tid;
    int verbose;
+   int speed;
 } thread_arg;
 
 // 'tadbit' output struct.
@@ -49,7 +52,7 @@ tadbit(
   double **obs,
   int n,
   const int m,
-  double max_tad_size,
+  //double max_tad_size,
   int n_threads,
   const int verbose,
   const int heuristic,

@@ -1,4 +1,4 @@
-tadbit <- function(x, max_size="auto", n_CPU="auto", verbose=TRUE, heuristic=FALSE) {
+tadbit <- function(x, n_CPU="auto", verbose=TRUE, speed=0) {
 
    # Validate input type or stop with meaningful error message.
    if (!is.list(x)) {
@@ -9,9 +9,9 @@ tadbit <- function(x, max_size="auto", n_CPU="auto", verbose=TRUE, heuristic=FAL
          x <- list(x)
       }
    }
-   if (!max_size == "auto" && !is.numeric(max_size)) {
-      stop("'max_size' must be \"auto\" or a number")
-   }
+   #if (!max_size == "auto" && !is.numeric(max_size)) {
+   #   stop("'max_size' must be \"auto\" or a number")
+   #}
    if (!n_CPU=="auto" && !is.numeric(n_CPU)) {
       stop("'n_CPU' must be \"auto\" or a number")
    }
@@ -34,11 +34,11 @@ tadbit <- function(x, max_size="auto", n_CPU="auto", verbose=TRUE, heuristic=FAL
    x <- lapply(x, function(y) { y + double(1) })
 
    # Assign automatic variables and coerce to proper type.
-   max_size <- as.double(ifelse (max_size == "auto", .1, max_size))
+   #max_size <- as.double(ifelse (max_size == "auto", .1, max_size))
    n_CPU <- as.integer(ifelse(n_CPU == "auto", 0, n_CPU))
    verbose <- as.logical(verbose)
-   heuristic <- as.logical(heuristic)
+   speed <- as.integer(speed)
 
-   return(.Call("tadbit_R_call", x, max_size, n_CPU, verbose, heuristic))
+   return(.Call("tadbit_R_call", x, n_CPU, verbose, speed))
 
 }

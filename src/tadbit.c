@@ -13,9 +13,36 @@
 
 int n_processed;  // Number of slices processed so far.
 int n_to_process; // Total number of slices to process.
-int *assignment;  // Thread task manager.
-pthread_t *tid;   // IDs of running threads.
 
+
+int
+cmp (
+  const void *a,
+  const void *b
+){
+   // Sort in descending order.
+   const double *da = (const double *) a;
+   const double *db = (const double *) b;
+     
+   return (*da < *db) - (*da > *db);
+}
+
+
+double
+get_quantile(
+  double *array,
+  const int n,
+  double quantile
+){
+
+   double copy[n];
+   if (quantile < 0.0) quantile = 0.0;
+   if (quantile > 1.0) quantile = 1.0;
+
+   memcpy(copy, array, n*sizeof(double));
+   qsort(copy, n, sizeof(double), cmp);
+   return copy[(int)((n-1)*quantile)];
+}
 
 
 
@@ -214,6 +241,7 @@ slice(
   const int n,
   const int start,
   const int end,
+  const int speed,
   /* output */
   ml_slice *slc
 ){
@@ -256,6 +284,10 @@ slice(
          if (isnan(obs[row+col*n]))
             continue;
 
+         // Censor data separated by > 200 bins in speedy mode.
+         if ((speed > 1) && (abs(col - row) > 200)) {
+            continue;
+         }
 
          // Find which block to update ('l').
          // 0: top, 1: middle, 2: bottom, or none.                    
@@ -329,7 +361,7 @@ mlwalk(
    int *old_bkpt_list = (int *) malloc(n*n * sizeof(int));
 
    // Initializations.
-   memset(breakpoints, 0, n*max_n_breaks);
+   memset(breakpoints, 0, n*max_n_breaks*sizeof(int));
 
    for (i = 0 ; i < n*n ; i++) {
       new_bkpt_list[i] = 0;
@@ -427,8 +459,11 @@ fill_llikmat(
    const double **obs = (const double **) myargs->obs;
    const double *dist = (const double*) myargs->dist;
    const double **log_gamma = (const double **) myargs->log_gamma;
+   const int *assignment = (const int *) myargs->assignment;
    double *llikmat = myargs->llikmat;
+   pthread_t *tid = myargs->tid;
    const int verbose = myargs->verbose;
+   const int speed = myargs->speed;
 
    int i;
    int j;
@@ -479,7 +514,7 @@ fill_llikmat(
       llikmat[i+j*n] = 0.0;
       for (k = 0 ; k < m ; k++) {
          // Get the (i,j) slice (stored in 'slc').
-         slice(log_gamma[k], obs[k], dist, n, i, j, slc);
+         slice(log_gamma[k], obs[k], dist, n, i, j, speed, slc);
          // Get the likelihood and sum (see macro definition).
          llikmat[i+j*n] += fit_slice(slc);
       }
@@ -513,10 +548,10 @@ tadbit(
   double **obs,
   int n,
   const int m,
-  double max_tad_size,
+  //double max_tad_size,
   int n_threads,
   const int verbose,
-  const int heuristic,
+  const int speed,
   /* output */
   tadbit_output *seg
 ){
@@ -529,7 +564,7 @@ tadbit(
    int l;
 
    // Get absolute max tad size.
-   max_tad_size = max_tad_size > 1 ? max_tad_size : max_tad_size * n;
+   //max_tad_size = max_tad_size > 1 ? max_tad_size : max_tad_size * n;
 
 
    // Allocate memory and initialize variables. The distance
@@ -601,36 +636,94 @@ tadbit(
       llikmat[l] = NAN;
    }
 
+   int *skip = (int *) malloc(n*n *sizeof(int));
+   memset(skip, 0, n*n*sizeof(int));
+
+   if (speed > 0) {
+      if (verbose) {
+         fprintf(stderr, "running heuristic pre-screen\n");
+      }
+      // Compute a direcionality index with 10 consecutive bins,
+      // differentiate it to find likely transition points.
+      const int length = 10;
+      double ppotency;
+      double *DI = (double *) malloc(n* sizeof(double));
+      memset(DI, 0.0, n*sizeof(int));
+      for (i = length ; i < n-length ; i++) {
+         DI[i] = 0;
+         for (k = 0 ; k < m; k++) {
+            for (j = 1 ; j < length + 1 ; j++) {
+               ppotency = sqrt(obs[k][i+i*n]*obs[k][i-j+(i-j)*n]);
+               DI[i] += obs[k][i-j+i*n] / ppotency;
+               ppotency = sqrt(obs[k][i+i*n]*obs[k][i+j+(i+j)*n]);
+               DI[i] -= obs[k][i+(i+j)*n] / ppotency;
+            }
+         }
+      }
+      // Differentiate 'DI' with circular boundary condition.
+      const double first_value = DI[length];
+      for (i = length ; i < n-length-1 ; i++) {
+         DI[i] -= DI[i+1];
+      }
+      DI[n-length-1] -= first_value;
+
+      double *absdDI = (double *) malloc((n-2*length)*sizeof(double));
+      for (i = length ; i < n-length ; i++) {
+         absdDI[i-length] = DI[i] > 0.0 ? DI[i] : - DI[i];
+      }
+
+      double mad = 1.4826 * get_quantile(absdDI, n-2*length, 0.5);
+      double cut200 = get_quantile(DI, n, 200.0/n);
+      double cutoff = cut200 > 1.95*mad ? 1.95*mad : cut200;
+      for (i = 0 ; i < n ; i++) {
+      for (j = i ; j < n ; j++) {
+         int ii = (i < length+1) || (i > n-length-2) || DI[i-1] > cutoff;
+         int jj = (j < length+1) || (j > n-length-2) || DI[j] > cutoff;
+         skip[i+j*n] = (ii && jj) ?  0 : 1;
+      }
+      }
+
+      free(DI);
+      free(absdDI);
+
+   }
+
    // Create an array of thread ids.
-   assignment = (int *) malloc(n*n * sizeof(int));
+   int *assignment = (int *) malloc(n*n * sizeof(int));
    n_processed = 0;
    n_to_process = 0;
    
    for (i = 0 ; i < n-3 ; i++) {
    for (j = i+3 ; j < n ; j++) {
-      // Do not process slices larger than 'max_tad_size'.
-      if (j-i < max_tad_size) {
+      if (skip[i+j*n]) {
+         assignment[i+j*n] = -1;
+      }
+      else {
          assignment[i+j*n] = n_to_process % n_threads;
          n_to_process++;
       }
-      else {
-         assignment[i+j*n] = -1;
-      }
    }
    }
+
+   free(skip);
  
+
+   // Allocate 'tid' and start the threads.
+   pthread_t *tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
+
    thread_arg arg = {
       .n = n,
       .m = m,
       .obs = obs,
       .dist = dist,
       .log_gamma = log_gamma,
+      .assignment = assignment,
       .llikmat = llikmat,
+      .tid = tid,
       .verbose = verbose,
+      .speed = speed,
    };
 
-   // Allocate 'tid' and start the threads.
-   tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
    for (i = 0 ; i < n_threads ; i++) {
       int errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
       if (errno) {
@@ -659,7 +752,7 @@ tadbit(
 
    // Resize output to match original.
    int *resized_bkpts = (int *) malloc(N*n/4 * sizeof(int));
-   memset(resized_bkpts, 0, N*n/4);
+   memset(resized_bkpts, 0, N*n/4*sizeof(int));
 
    for (l = 0, i = 0 ; i < N ; i++) {
       if (!remove[i]) {
@@ -695,8 +788,21 @@ tadbit(
    free(new_obs);
    free(dist);
 
+   // Get optimal number of breaks by AIC.
+   double AIC = -INFINITY;
+   int n_params;
+   for (i = 1 ; i < n/4 ; i++) {
+      n_params = i + m*(8 + i*6);
+      if (AIC > mllik[i] - n_params) {
+         break;
+      }
+      else {
+         AIC = mllik[i] - n_params;
+      }
+   }
+
    // Update output struct.
-   seg->nbreaks_opt = 15;
+   seg->nbreaks_opt = i-1;
    seg->llikmat = resized_llikmat;
    seg->mllik = mllik;
    seg->bkpts = resized_bkpts;
