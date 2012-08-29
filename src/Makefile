@@ -6,9 +6,9 @@ clean:
 	rm -f $(OBJECTS)
 	rm -rf build/
 
-tadbit.so: tadbit.o tadbit_R.c
+tadbit.so: tadbit.o tadbit_R.c tadbit.h
 	R CMD SHLIB tadbit_R.c tadbit.o -o tadbit.so -lm
 
-tadbit.o: tadbit.c
+tadbit.o: tadbit.c tadbit.h
 	gcc -std=gnu99 -fPIC -g -O3 -c tadbit.c \
 		-lpthread -Wall

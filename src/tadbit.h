@@ -1,3 +1,5 @@
+#include <pthread.h>
+
 #ifndef TADBIT_LOADED
 #define TADBIT_LOADED
 
