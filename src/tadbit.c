@@ -666,7 +666,7 @@ tadbit(
       for (i = length ; i < n-length-1 ; i++) {
          DI[i] = DI[i+1] - DI[i];
       }
-      DI[n-length-1] -= first_value;
+      DI[n-length-1] = first_value - DI[n-length-1];
 
       double *absdDI = (double *) malloc((n-2*length)*sizeof(double));
       for (i = length ; i < n-length ; i++) {
