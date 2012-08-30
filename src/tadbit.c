@@ -645,25 +645,26 @@ tadbit(
       }
       // Compute a direcionality index with 10 consecutive bins,
       // differentiate it to find likely transition points.
+      //const int length = 10;
       const int length = 10;
-      double ppotency;
+      double potency;
       double *DI = (double *) malloc(n* sizeof(double));
-      memset(DI, 0.0, n*sizeof(int));
+      memset(DI, 0.0, n*sizeof(double));
       for (i = length ; i < n-length ; i++) {
          DI[i] = 0;
          for (k = 0 ; k < m; k++) {
             for (j = 1 ; j < length + 1 ; j++) {
-               ppotency = sqrt(obs[k][i+i*n]*obs[k][i-j+(i-j)*n]);
-               DI[i] += obs[k][i-j+i*n] / ppotency;
-               ppotency = sqrt(obs[k][i+i*n]*obs[k][i+j+(i+j)*n]);
-               DI[i] -= obs[k][i+(i+j)*n] / ppotency;
+               potency = sqrt(obs[k][i+i*n]*obs[k][i-j+(i-j)*n]);
+               DI[i] += obs[k][i-j+i*n] / potency;
+               potency = sqrt(obs[k][i+i*n]*obs[k][i+j+(i+j)*n]);
+               DI[i] -= obs[k][i+(i+j)*n] / potency;
             }
          }
       }
       // Differentiate 'DI' with circular boundary condition.
       const double first_value = DI[length];
       for (i = length ; i < n-length-1 ; i++) {
-         DI[i] -= DI[i+1];
+         DI[i] = DI[i+1] - DI[i];
       }
       DI[n-length-1] -= first_value;
 
