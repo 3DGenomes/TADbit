@@ -18,10 +18,6 @@ typedef struct {
 
 
 typedef struct {
-   ml_block *blocks[3];
-} ml_slice;
-
-typedef struct {
    int n;
    int m;
    double **obs;
@@ -33,6 +29,7 @@ typedef struct {
    int verbose;
    int speed;
 } thread_arg;
+
 
 // 'tadbit' output struct.
 typedef struct {
