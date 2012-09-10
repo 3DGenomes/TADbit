@@ -205,7 +205,8 @@ poiss_reg (
 
 double
 fit_slice(
-  const ml_slice *slc
+// PATTERN  const ml_slice *slc
+  ml_block *blocks[3] // QATTERN
 ){
 // SYNOPSIS:                                                            
 //   Wrapper for 'poiss_reg'. Fits the three regions of a slice         
@@ -218,14 +219,21 @@ fit_slice(
 //   The total maximum log-likelihood of the slice.                     
 //                                                                      
 
-   double top = poiss_reg(slc->blocks[0]);
-   double mid = poiss_reg(slc->blocks[1]);
-   double bot = poiss_reg(slc->blocks[2]);
+// PATTERN   double top = poiss_reg(slc->blocks[0]);
+// PATTERN   double mid = poiss_reg(slc->blocks[1]);
+// PATTERN   double bot = poiss_reg(slc->blocks[2]);
+   double top = poiss_reg(blocks[0]); // QATTERN
+   double mid = poiss_reg(blocks[1]); // QATTERN
+   double bot = poiss_reg(blocks[2]); // QATTERN
 
    // The likelihood of 'top' and 'bot' blocks are divided by 2 because
    // the hiC map is assumed to be symmetric. Those data points are
    // used two times in a segmentation, while the data points of the
    // 'mid' block are used only one time.
+
+   //DEBUG
+   printf("(top: %.6f, mid:%.6f, bot:%.6f)\n", top, mid, bot);
+   //
    
    return top/2 + mid + bot/2;
 
@@ -243,7 +251,8 @@ slice(
   const int end,
   const int speed,
   /* output */
-  ml_slice *slc
+// PATTERN  ml_slice *slc
+  ml_block *blocks[3] // QATTERN
 ){
 // SYNOPSIS:                                                            
 //   Extract from a single replicate of the hiC data the three blocks   
@@ -273,43 +282,51 @@ slice(
 
    // Initialize block sizes to 0.
    for (l = 0 ; l < 3 ; l++) {
-      slc->blocks[l]->size = 0;
+// PATTERN      slc->blocks[l]->size = 0;
+     blocks[l]->size = 0; // QATTERN
    }
 
    // Iterate over data vertically.
    for (col = start ; col < end+1 ; col++) {
-      for (row = 0 ; row < n ; row++) {
+   for (row = 0 ; row < n ; row++) {
 
-         // Skip NAs in the data.
-         if (isnan(obs[row+col*n]))
-            continue;
+      // Skip NAs in the data.
+      if (isnan(obs[row+col*n]))
+         continue;
 
-         // Censor data separated by > 200 bins in speedy mode.
-         if ((speed > 1) && (abs(col - row) > 200)) {
-            continue;
-         }
-
-         // Find which block to update ('l').
-         // 0: top, 1: middle, 2: bottom, or none.                    
-         if        (row < start)  l = 0;
-         else if   (row < col)    l = 1;
-         else if   (row > end)    l = 2;
-         else                     continue;
-
-         pos = slc->blocks[l]->size;
-
-         slc->blocks[l]->counts[pos] = log_gamma[row+col*n];
-         slc->blocks[l]->counts[pos] = obs[row+col*n];
-         slc->blocks[l]->dist[pos] = dist[row+col*n];
-         // The weight is the square root of the product of the
-         // diagonal terms (the product of potencies).
-         slc->blocks[l]->weights[pos] = \
-                  sqrt(obs[row+row*n]*obs[col+col*n]);
-
-         slc->blocks[l]->size++;
-
+      // Censor data separated by > 200 bins in speedy mode.
+      if ((speed > 1) && (abs(col - row) > 200)) {
+         continue;
       }
+
+      // Find which block to update ('l').
+      // 0: top, 1: middle, 2: bottom, or none.                    
+      if        (row < start)  l = 0;
+      else if   (row < col)    l = 1;
+      else if   (row > end)    l = 2;
+      else                     continue;
+
+// PATTERN      pos = slc->blocks[l]->size;
+      pos = blocks[l]->size; // QATTERN
+
+// PATTERN      slc->blocks[l]->counts[pos] = log_gamma[row+col*n];
+// PATTERN      slc->blocks[l]->counts[pos] = obs[row+col*n];
+// PATTERN      slc->blocks[l]->dist[pos] = dist[row+col*n];
+      blocks[l]->counts[pos] = log_gamma[row+col*n]; // QATTERN
+      blocks[l]->counts[pos] = obs[row+col*n]; // QATTERN
+      blocks[l]->dist[pos] = dist[row+col*n]; // QATTERN
+      // The weight is the square root of the product of the
+      // diagonal terms (the product of potencies).
+// PATTERN      slc->blocks[l]->weights[pos] = \
+// PATTERN               sqrt(obs[row+row*n]*obs[col+col*n]);
+      blocks[l]->weights[pos] = sqrt(obs[row+row*n]*obs[col+col*n]); // QATTERN
+
+// PATTERN      slc->blocks[l]->size++;
+      blocks[l]->size++; // QATTERN
+
    }
+   }
+   // End of the double for loop.
 
    return;
 
@@ -470,13 +487,17 @@ fill_llikmat(
    int k;
 
    // Allocate max possible size to blocks.
-   ml_slice *slc = (ml_slice *) malloc(sizeof(ml_slice));
+// PATTERN   ml_slice *slc = (ml_slice *) malloc(sizeof(ml_slice));
+   ml_block *blocks[3]; // QATTERN
    ml_block *top = (ml_block *) malloc(sizeof(ml_block));
    ml_block *mid = (ml_block *) malloc(sizeof(ml_block));
    ml_block *bot = (ml_block *) malloc(sizeof(ml_block));
-   slc->blocks[0] = top;
-   slc->blocks[1] = mid;
-   slc->blocks[2] = bot;
+// PATTERN   slc->blocks[0] = top;
+// PATTERN   slc->blocks[1] = mid;
+// PATTERN   slc->blocks[2] = bot;
+   blocks[0] = top; // QATTERN
+   blocks[1] = mid; // QATTERN
+   blocks[2] = bot; // QATTERN
    // Readability variable.
    const int nmax = (n+1)*(n+1)/4;
 
@@ -513,10 +534,13 @@ fill_llikmat(
       // Distinct parts of the array, no lock needed.
       llikmat[i+j*n] = 0.0;
       for (k = 0 ; k < m ; k++) {
+         // QATTERN: update the following comment.
          // Get the (i,j) slice (stored in 'slc').
-         slice(log_gamma[k], obs[k], dist, n, i, j, speed, slc);
+// PATTERN         slice(log_gamma[k], obs[k], dist, n, i, j, speed, slc);
+         slice(log_gamma[k], obs[k], dist, n, i, j, speed, blocks); // QATTERN
          // Get the likelihood and sum (see macro definition).
-         llikmat[i+j*n] += fit_slice(slc);
+// PATTERN         llikmat[i+j*n] += fit_slice(slc);
+         llikmat[i+j*n] += fit_slice(blocks); // QATTERN
       }
       n_processed++;
       if (verbose) {
@@ -528,13 +552,18 @@ fill_llikmat(
 
    // Free allocated memory.
    for (i = 0 ; i < 3 ; i++) {
-      free(slc->blocks[i]->lgamma);
-      free(slc->blocks[i]->counts);
-      free(slc->blocks[i]->dist);
-      free(slc->blocks[i]->weights);
-      free(slc->blocks[i]);
+// PATTERN      free(slc->blocks[i]->lgamma);
+// PATTERN      free(slc->blocks[i]->counts);
+// PATTERN      free(slc->blocks[i]->dist);
+// PATTERN      free(slc->blocks[i]->weights);
+// PATTERN      free(slc->blocks[i]);
+      free(blocks[i]->lgamma); // QATTERN
+      free(blocks[i]->counts); // QATTERN
+      free(blocks[i]->dist); // QATTERN
+      free(blocks[i]->weights); // QATTERN
+      free(blocks[i]); // QATTERN
    }
-   free(slc);
+// PATTERN   free(slc);
 
    return NULL;
 
