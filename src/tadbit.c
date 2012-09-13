@@ -471,22 +471,40 @@ fill_llikmat(
 
    // Allocate max possible size to blocks.
    ml_block *blocks[3];
+   /*
    ml_block *top = (ml_block *) malloc(sizeof(ml_block));
    ml_block *mid = (ml_block *) malloc(sizeof(ml_block));
    ml_block *bot = (ml_block *) malloc(sizeof(ml_block));
    blocks[0] = top;
    blocks[1] = mid;
    blocks[2] = bot;
-   // Readability variable.
+   */
+
+   // The middle block can be bigger than top and bottom.
+   int nmax[3] = { (n+1)*(n+1)/4, (n+1)*(n+1)/2, (n+1)*(n+1)/4 };
+
+   for (i = 0 ; i < 3 ; i++) {
+      blocks[i] = (ml_block *) malloc(sizeof(ml_block));
+
+      blocks[i]->lgamma  = (double *) malloc(nmax[i] * sizeof(double));
+      blocks[i]->counts  = (double *) malloc(nmax[i] * sizeof(double));
+      blocks[i]->dist    = (double *) malloc(nmax[i] * sizeof(double));
+      blocks[i]->weights = (double *) malloc(nmax[i] * sizeof(double));
+
+      memset(blocks[i]->lgamma,  0.0, nmax[i] * sizeof(double));
+      memset(blocks[i]->counts,  0.0, nmax[i] * sizeof(double));
+      memset(blocks[i]->dist,    0.0, nmax[i] * sizeof(double));
+      memset(blocks[i]->weights, 0.0, nmax[i] * sizeof(double));
+   }
+   /*
    const int nmax = (n+1)*(n+1)/4;
 
-   // TODO: Reduce max size to minimum actually used.
-   // My last attempts caused segmentation faults.
    top->lgamma  = (double *) malloc(nmax * sizeof(double));
    top->counts  = (double *) malloc(nmax * sizeof(double));
    top->dist    = (double *) malloc(nmax * sizeof(double));
    top->weights = (double *) malloc(nmax * sizeof(double));
 
+   // The middle block can be bigger than top and bottom.
    mid->lgamma  = (double *) malloc(2 * nmax * sizeof(double));
    mid->counts  = (double *) malloc(2 * nmax * sizeof(double));
    mid->dist    = (double *) malloc(2 * nmax * sizeof(double));
@@ -496,7 +514,22 @@ fill_llikmat(
    bot->counts  = (double *) malloc(nmax * sizeof(double));
    bot->dist    = (double *) malloc(nmax * sizeof(double));
    bot->weights = (double *) malloc(nmax * sizeof(double));
-   
+
+   memset(top->lgamma,  0.0, nmax * sizeof(double));
+   memset(top->counts,  0.0, nmax * sizeof(double));
+   memset(top->dist,    0.0, nmax * sizeof(double));
+   memset(top->weights, 0.0, nmax * sizeof(double));
+
+   memset(mid->lgamma,  0.0, 2 * nmax * sizeof(double));
+   memset(mid->counts,  0.0, 2 * nmax * sizeof(double));
+   memset(mid->dist,    0.0, 2 * nmax * sizeof(double));
+   memset(mid->weights, 0.0, 2 * nmax * sizeof(double));
+  
+   memset(bot->lgamma,  0.0, nmax * sizeof(double));
+   memset(bot->counts,  0.0, nmax * sizeof(double));
+   memset(bot->dist,    0.0, nmax * sizeof(double));
+   memset(bot->weights, 0.0, nmax * sizeof(double));
+   */
    
    // Readability variables.
    int do_not_process;
@@ -534,6 +567,11 @@ fill_llikmat(
       free(blocks[i]->weights);
       free(blocks[i]);
    }
+   /*
+   free(top);
+   free(mid);
+   free(bot);
+   */
 
    return NULL;
 
@@ -784,8 +822,10 @@ tadbit(
 
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
+      free(log_gamma[k]);
    }
    free(new_obs);
+   free(log_gamma);
    free(dist);
 
    // Get optimal number of breaks by AIC.
