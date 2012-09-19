@@ -471,18 +471,11 @@ fill_llikmat(
 
    // Allocate max possible size to blocks.
    ml_block *blocks[3];
-   /*
-   ml_block *top = (ml_block *) malloc(sizeof(ml_block));
-   ml_block *mid = (ml_block *) malloc(sizeof(ml_block));
-   ml_block *bot = (ml_block *) malloc(sizeof(ml_block));
-   blocks[0] = top;
-   blocks[1] = mid;
-   blocks[2] = bot;
-   */
 
    // The middle block can be bigger than top and bottom.
    int nmax[3] = { (n+1)*(n+1)/4, (n+1)*(n+1)/2, (n+1)*(n+1)/4 };
 
+   // Allocate and initialize 3 blocks of a slice.
    for (i = 0 ; i < 3 ; i++) {
       blocks[i] = (ml_block *) malloc(sizeof(ml_block));
 
@@ -496,50 +489,12 @@ fill_llikmat(
       memset(blocks[i]->dist,    0.0, nmax[i] * sizeof(double));
       memset(blocks[i]->weights, 0.0, nmax[i] * sizeof(double));
    }
-   /*
-   const int nmax = (n+1)*(n+1)/4;
-
-   top->lgamma  = (double *) malloc(nmax * sizeof(double));
-   top->counts  = (double *) malloc(nmax * sizeof(double));
-   top->dist    = (double *) malloc(nmax * sizeof(double));
-   top->weights = (double *) malloc(nmax * sizeof(double));
-
-   // The middle block can be bigger than top and bottom.
-   mid->lgamma  = (double *) malloc(2 * nmax * sizeof(double));
-   mid->counts  = (double *) malloc(2 * nmax * sizeof(double));
-   mid->dist    = (double *) malloc(2 * nmax * sizeof(double));
-   mid->weights = (double *) malloc(2 * nmax * sizeof(double));
-
-   bot->lgamma  = (double *) malloc(nmax * sizeof(double));
-   bot->counts  = (double *) malloc(nmax * sizeof(double));
-   bot->dist    = (double *) malloc(nmax * sizeof(double));
-   bot->weights = (double *) malloc(nmax * sizeof(double));
-
-   memset(top->lgamma,  0.0, nmax * sizeof(double));
-   memset(top->counts,  0.0, nmax * sizeof(double));
-   memset(top->dist,    0.0, nmax * sizeof(double));
-   memset(top->weights, 0.0, nmax * sizeof(double));
-
-   memset(mid->lgamma,  0.0, 2 * nmax * sizeof(double));
-   memset(mid->counts,  0.0, 2 * nmax * sizeof(double));
-   memset(mid->dist,    0.0, 2 * nmax * sizeof(double));
-   memset(mid->weights, 0.0, 2 * nmax * sizeof(double));
-  
-   memset(bot->lgamma,  0.0, nmax * sizeof(double));
-   memset(bot->counts,  0.0, nmax * sizeof(double));
-   memset(bot->dist,    0.0, nmax * sizeof(double));
-   memset(bot->weights, 0.0, nmax * sizeof(double));
-   */
-   
-   // Readability variables.
-   int do_not_process;
-   int assigned_to_me;
    
    for (i = 0 ; i < n-3 ; i++) {
    for (j = i+3 ; j < n ; j++) {
-      do_not_process = assignment[i+j*n] < 0;
-      assigned_to_me = pthread_equal(myid, tid[assignment[i+j*n]]);
-      if (do_not_process || !assigned_to_me) {
+      
+      int assigned_to_me = pthread_equal(myid, tid[assignment[i+j*n]]);
+      if (!assigned_to_me) {
          continue;
       }
 
@@ -567,11 +522,6 @@ fill_llikmat(
       free(blocks[i]->weights);
       free(blocks[i]);
    }
-   /*
-   free(top);
-   free(mid);
-   free(bot);
-   */
 
    return NULL;
 
@@ -585,7 +535,6 @@ tadbit(
   double **obs,
   int n,
   const int m,
-  //double max_tad_size,
   int n_threads,
   const int verbose,
   const int speed,
@@ -593,8 +542,7 @@ tadbit(
   tadbit_output *seg
 ){
 
-
-   const int N = n;
+   const int N = n; // Original size.
    int i;
    int j;
    int k;
@@ -715,6 +663,15 @@ tadbit(
       double cutoff = cut200 > 1.95*mad ? 1.95*mad : cut200;
       for (i = 0 ; i < n ; i++) {
       for (j = i ; j < n ; j++) {
+         int TAD_too_large_for_speed_setting =
+           ( (speed == 3) && (j - i) > n/2 )  ||
+           ( (speed == 4) && (j - i) > n/4 )  ||
+           ( (speed == 5) && (j - i) > n/8 );
+
+         if (TAD_too_large_for_speed_setting) {
+            skip[i+j*n] = 1;
+            continue;
+         }
          int ii = (i < length+1) || (i > n-length-2) || DI[i-1] > cutoff;
          int jj = (j < length+1) || (j > n-length-2) || DI[j] > cutoff;
          skip[i+j*n] = (ii && jj) ?  0 : 1;
@@ -728,16 +685,15 @@ tadbit(
 
    // Create an array of thread ids.
    int *assignment = (int *) malloc(n*n * sizeof(int));
+   memset(assignment, 0, n*n * sizeof(int));
    n_processed = 0;
    n_to_process = 0;
    
    for (i = 0 ; i < n-3 ; i++) {
    for (j = i+3 ; j < n ; j++) {
-      if (skip[i+j*n]) {
-         assignment[i+j*n] = -1;
-      }
-      else {
-         assignment[i+j*n] = n_to_process % n_threads;
+      if (!skip[i+j*n]) {
+         // Assign each slice to a thread, numbered from 1.
+         assignment[i+j*n] = 1 + n_to_process % n_threads;
          n_to_process++;
       }
    }
@@ -747,7 +703,7 @@ tadbit(
  
 
    // Allocate 'tid' and start the threads.
-   pthread_t *tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
+   pthread_t *tid = (pthread_t *) malloc((1+n_threads)*sizeof(pthread_t));
 
    thread_arg arg = {
       .n = n,
@@ -762,7 +718,8 @@ tadbit(
       .speed = speed,
    };
 
-   for (i = 0 ; i < n_threads ; i++) {
+   memset(tid, 0, (1 + n_threads) * sizeof(pthread_t *));
+   for (i = 1 ; i < 1 + n_threads ; i++) {
       int errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
       if (errno) {
          fprintf(stderr, "error creating thread (%d)\n", errno);
@@ -771,7 +728,7 @@ tadbit(
    }
 
    // Wait for threads to return.
-   for (i = 0 ; i < n_threads ; i++) {
+   for (i = 1 ; i < 1 + n_threads ; i++) {
       pthread_join(tid[i], NULL);
    }
    if (verbose) {
@@ -779,18 +736,19 @@ tadbit(
    }
 
    free(assignment);
+   free(tid);
 
    // The matrix 'llikmat' now contains the log-likelihood of the
    // segments. The breakpoints are found by dynamic programming.
 
-   double *mllik = (double *) malloc(n/4 * sizeof(double));
-   int *bkpts = (int *) malloc(n*n/4 * sizeof(int));
+   double *mllik = (double *) malloc((n/4) * sizeof(double));
+   int *bkpts = (int *) malloc(n*(n/4) * sizeof(int));
 
    mlwalk(llikmat, n, m, mllik, bkpts);
 
    // Resize output to match original.
-   int *resized_bkpts = (int *) malloc(N*n/4 * sizeof(int));
-   memset(resized_bkpts, 0, N*n/4*sizeof(int));
+   int *resized_bkpts = (int *) malloc(N*(n/4) * sizeof(int));
+   memset(resized_bkpts, 0, N*(n/4)*sizeof(int));
 
    for (l = 0, i = 0 ; i < N ; i++) {
       if (!remove[i]) {

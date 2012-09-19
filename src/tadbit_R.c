@@ -1,7 +1,6 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
-
 #include "tadbit.h"
 
 // Declare and register R/C interface.
@@ -133,4 +132,3 @@ tadbit_R_call(
    return list_SEXP;
 
 }
-
