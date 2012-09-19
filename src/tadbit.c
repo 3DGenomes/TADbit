@@ -11,9 +11,10 @@
 
 // Globals variables. //
 
-int n_processed;  // Number of slices processed so far.
-int n_to_process; // Total number of slices to process.
-
+int n_processed;              // Number of slices processed so far.
+int n_to_process;             // Total number of slices to process.
+int taskQ_i;   // Index used for task queue.
+pthread_mutex_t tadbit_lock;  // Mutex to access task queue.
 
 int
 cmp (
@@ -321,6 +322,7 @@ mlwalk(
   const double *llik_mat,
   const int n,
   const int m,
+  const int maxbreaks,
   /* output */
   double *mllik,
   int *breakpoints
@@ -344,9 +346,6 @@ mlwalk(
 //   Update 'breakpoints' in place.                                     
 //                                                                      
 
-   // The max number of segments is 1/4 row/col number.
-   const int max_n_breaks = n/4;
-
    int i;
    int j;
    int nbreaks;
@@ -361,14 +360,14 @@ mlwalk(
    int *old_bkpt_list = (int *) malloc(n*n * sizeof(int));
 
    // Initializations.
-   memset(breakpoints, 0, n*max_n_breaks*sizeof(int));
+   memset(breakpoints, 0, n*maxbreaks*sizeof(int));
 
    for (i = 0 ; i < n*n ; i++) {
       new_bkpt_list[i] = 0;
       old_bkpt_list[i] = 0;
    }
 
-   for (i = 0 ; i < max_n_breaks ; i++) {
+   for (i = 0 ; i < maxbreaks ; i++) {
       mllik[i] = NAN;
    }
 
@@ -381,7 +380,7 @@ mlwalk(
 
 
    // Dynamic programming.
-   for (nbreaks = 1 ; nbreaks < max_n_breaks ; nbreaks++) {
+   for (nbreaks = 1 ; nbreaks < maxbreaks ; nbreaks++) {
       // Update breakpoint lists.
       for (i = 0 ; i < n*n ; i++) {
          old_bkpt_list[i] = new_bkpt_list[i];
@@ -451,23 +450,22 @@ fill_llikmat(
 //   Update 'llikmat' in place.                                         
 //                                                                      
 
-   pthread_t myid = pthread_self();
-
    thread_arg *myargs = (thread_arg *) arg;
    const int n = myargs->n;
    const int m = myargs->m;
    const double **obs = (const double **) myargs->obs;
    const double *dist = (const double*) myargs->dist;
    const double **log_gamma = (const double **) myargs->log_gamma;
-   const int *assignment = (const int *) myargs->assignment;
+   const int *skip = (const int *) myargs->skip;
    double *llikmat = myargs->llikmat;
-   pthread_t *tid = myargs->tid;
    const int verbose = myargs->verbose;
    const int speed = myargs->speed;
 
    int i;
    int j;
    int k;
+
+   int job_index;
 
    // Allocate max possible size to blocks.
    ml_block *blocks[3];
@@ -490,13 +488,24 @@ fill_llikmat(
       memset(blocks[i]->weights, 0.0, nmax[i] * sizeof(double));
    }
    
-   for (i = 0 ; i < n-3 ; i++) {
-   for (j = i+3 ; j < n ; j++) {
-      
-      int assigned_to_me = pthread_equal(myid, tid[assignment[i+j*n]]);
-      if (!assigned_to_me) {
-         continue;
+   // Break out of the loop when task queue is empty.
+   while (1) {
+
+      pthread_mutex_lock(&tadbit_lock);
+      while ((taskQ_i < n*n) && (skip[taskQ_i] > 0)) {
+         taskQ_i++;
       }
+      if (taskQ_i >= n*n) {
+         // Task queue is empty. Exit while loop and wrap up.
+         pthread_mutex_unlock(&tadbit_lock);
+         break;
+      }
+      job_index = taskQ_i;
+      taskQ_i++;
+      pthread_mutex_unlock(&tadbit_lock);
+
+      i = job_index % n;
+      j = job_index / n;
 
       // Distinct parts of the array, no lock needed.
       llikmat[i+j*n] = 0.0;
@@ -512,7 +521,6 @@ fill_llikmat(
             99 * n_processed / (float) n_to_process);
       }
    }
-   } // End of the (i,j) for loop.
 
    // Free allocated memory.
    for (i = 0 ; i < 3 ; i++) {
@@ -543,13 +551,12 @@ tadbit(
 ){
 
    const int N = n; // Original size.
+   int errno;       // Used for error checking.
+
    int i;
    int j;
    int k;
    int l;
-
-   // Get absolute max tad size.
-   //max_tad_size = max_tad_size > 1 ? max_tad_size : max_tad_size * n;
 
 
    // Allocate memory and initialize variables. The distance
@@ -622,7 +629,15 @@ tadbit(
    }
 
    int *skip = (int *) malloc(n*n *sizeof(int));
-   memset(skip, 0, n*n*sizeof(int));
+   memset(skip, 1, n*n*sizeof(int));
+   n_processed = 0;
+   n_to_process = 0;
+   for (i = 0 ; i < n-3 ; i++) {
+   for (j = i+3 ; j < n ; j++) {
+      skip[i+j*n] = 0;
+      n_to_process++;
+   }
+   }
 
    if (speed > 0) {
       if (verbose) {
@@ -661,8 +676,8 @@ tadbit(
       double mad = 1.4826 * get_quantile(absdDI, n-2*length, 0.5);
       double cut200 = get_quantile(DI, n, 200.0/n);
       double cutoff = cut200 > 1.95*mad ? 1.95*mad : cut200;
-      for (i = 0 ; i < n ; i++) {
-      for (j = i ; j < n ; j++) {
+      for (i = 0 ; i < n-3 ; i++) {
+      for (j = i+3 ; j < n ; j++) {
          int TAD_too_large_for_speed_setting =
            ( (speed == 3) && (j - i) > n/2 )  ||
            ( (speed == 4) && (j - i) > n/4 )  ||
@@ -670,11 +685,13 @@ tadbit(
 
          if (TAD_too_large_for_speed_setting) {
             skip[i+j*n] = 1;
+            n_to_process--;
             continue;
          }
          int ii = (i < length+1) || (i > n-length-2) || DI[i-1] > cutoff;
          int jj = (j < length+1) || (j > n-length-2) || DI[j] > cutoff;
          skip[i+j*n] = (ii && jj) ?  0 : 1;
+         n_to_process -= skip[i+j*n];
       }
       }
 
@@ -683,26 +700,8 @@ tadbit(
 
    }
 
-   // Create an array of thread ids.
-   int *assignment = (int *) malloc(n*n * sizeof(int));
-   memset(assignment, 0, n*n * sizeof(int));
-   n_processed = 0;
-   n_to_process = 0;
-   
-   for (i = 0 ; i < n-3 ; i++) {
-   for (j = i+3 ; j < n ; j++) {
-      if (!skip[i+j*n]) {
-         // Assign each slice to a thread, numbered from 1.
-         assignment[i+j*n] = 1 + n_to_process % n_threads;
-         n_to_process++;
-      }
-   }
-   }
 
-   free(skip);
- 
-
-   // Allocate 'tid' and start the threads.
+   // Allocate 'tid'.
    pthread_t *tid = (pthread_t *) malloc((1+n_threads)*sizeof(pthread_t));
 
    thread_arg arg = {
@@ -711,16 +710,23 @@ tadbit(
       .obs = obs,
       .dist = dist,
       .log_gamma = log_gamma,
-      .assignment = assignment,
+      .skip = skip,
       .llikmat = llikmat,
-      .tid = tid,
       .verbose = verbose,
       .speed = speed,
    };
 
+   errno = pthread_mutex_init(&tadbit_lock, NULL);
+   if (errno) {
+      fprintf(stderr, "error initializing mutex (%d)\n", errno);
+      return;
+   }
+
+   taskQ_i = 0;
+
    memset(tid, 0, (1 + n_threads) * sizeof(pthread_t *));
    for (i = 1 ; i < 1 + n_threads ; i++) {
-      int errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
+      errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
       if (errno) {
          fprintf(stderr, "error creating thread (%d)\n", errno);
          return;
@@ -735,24 +741,26 @@ tadbit(
       fprintf(stderr, "computing likelihood (100%% done)\n");
    }
 
-   free(assignment);
+   pthread_mutex_destroy(&tadbit_lock);
+   free(skip);
    free(tid);
 
    // The matrix 'llikmat' now contains the log-likelihood of the
    // segments. The breakpoints are found by dynamic programming.
 
-   double *mllik = (double *) malloc((n/4) * sizeof(double));
-   int *bkpts = (int *) malloc(n*(n/4) * sizeof(int));
+   const int maxbreaks = n/4;
+   double *mllik = (double *) malloc(maxbreaks * sizeof(double));
+   int *bkpts = (int *) malloc(n*maxbreaks * sizeof(int));
 
-   mlwalk(llikmat, n, m, mllik, bkpts);
+   mlwalk(llikmat, n, m, maxbreaks, mllik, bkpts);
 
    // Resize output to match original.
-   int *resized_bkpts = (int *) malloc(N*(n/4) * sizeof(int));
-   memset(resized_bkpts, 0, N*(n/4)*sizeof(int));
+   int *resized_bkpts = (int *) malloc(N*maxbreaks * sizeof(int));
+   memset(resized_bkpts, 0, N*maxbreaks*sizeof(int));
 
    for (l = 0, i = 0 ; i < N ; i++) {
       if (!remove[i]) {
-         for (j = 0 ; j < n/4 ; j++) {
+         for (j = 0 ; j < maxbreaks ; j++) {
             resized_bkpts[i+j*N] = bkpts[l+j*n];
          }
          l++;
@@ -800,6 +808,7 @@ tadbit(
    }
 
    // Update output struct.
+   seg->maxbreaks = maxbreaks;
    seg->nbreaks_opt = i-1;
    seg->llikmat = resized_llikmat;
    seg->mllik = mllik;
@@ -807,14 +816,4 @@ tadbit(
 
    return;
 
-}
-
-void
-free_tadbit_output(
-  tadbit_output *seg
-){
-  free(seg->llikmat);
-  free(seg->mllik);
-  free(seg->bkpts);
-  free(seg);
 }

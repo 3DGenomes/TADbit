@@ -23,9 +23,8 @@ typedef struct {
    double **obs;
    double *dist;
    double **log_gamma;
-   int *assignment;
+   int *skip;
    double *llikmat;
-   pthread_t *tid;
    int verbose;
    int speed;
 } thread_arg;
@@ -33,17 +32,12 @@ typedef struct {
 
 // 'tadbit' output struct.
 typedef struct {
+   int maxbreaks;
    int nbreaks_opt;
    double *llikmat;
    double *mllik;
    int *bkpts;
 } tadbit_output;
-
-
-void
-free_tadbit_ouput(
-  tadbit_output *seg
-);
 
 
 void
