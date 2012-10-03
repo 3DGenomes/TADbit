@@ -285,11 +285,6 @@ slice(
       if (isnan(obs[row+col*n]))
          continue;
 
-      // Censor data separated by > 200 bins in speedy mode.
-      if ((speed > 1) && (abs(col - row) > 200)) {
-         continue;
-      }
-
       // Find which block to update ('l').
       // 0: top, 1: middle, 2: bottom, or none.                    
       if        (row < start)  l = 0;
@@ -679,9 +674,9 @@ tadbit(
       for (i = 0 ; i < n-3 ; i++) {
       for (j = i+3 ; j < n ; j++) {
          int TAD_too_large_for_speed_setting =
-           ( (speed == 3) && (j - i) > n/2 )  ||
-           ( (speed == 4) && (j - i) > n/4 )  ||
-           ( (speed == 5) && (j - i) > n/8 );
+           ( (speed == 2) && (j - i) > n/2 )  ||
+           ( (speed == 3) && (j - i) > n/4 )  ||
+           ( (speed == 4) && (j - i) > n/8 );
 
          if (TAD_too_large_for_speed_setting) {
             skip[i+j*n] = 1;
