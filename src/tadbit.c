@@ -771,7 +771,7 @@ tadbit(
 
    double *resized_llikmat = (double *) malloc(N*N * sizeof(double));
    for (i = 0 ; i < N*N ; i++) {
-      resized_llikmat[l] = NAN;
+      resized_llikmat[i] = NAN;
    }
 
    for (l = 0, i = 0 ; i < N ; i++) {

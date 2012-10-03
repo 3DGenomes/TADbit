@@ -39,6 +39,22 @@ tadbit <- function(x, n_CPU="auto", verbose=TRUE, speed=0) {
    verbose <- as.logical(verbose)
    speed <- as.integer(speed)
 
-   return(.Call("tadbit_R_call", x, n_CPU, verbose, speed))
+   tadbit_c_out <- (.Call("tadbit_R_call", x, n_CPU, verbose, speed))
+
+   opt_nbreaks <- tadbit_c_out[[1]]
+   llik_mat <- tadbit_c_out[[2]]
+
+   position <- which(tadbit_c_out[[4]][,opt_nbreaks] == 1)
+   score <- NA * position
+   
+   n <- ref_dim[1]
+   end <- c(position, n)
+   start <- c(1, position+1)
+   for (i in 1:length(score)) {
+      score[i] <- llik_mat[start[i],end[i]] +
+         llik_mat[start[i+1],end[i+1]] - llik_mat[start[i],end[i+1]]
+   }
+
+   return (list(position, score))
 
 }
