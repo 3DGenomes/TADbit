@@ -46,9 +46,9 @@ tadbit(
   double **obs,
   int n,
   const int m,
-  //double max_tad_size,
   int n_threads,
   const int verbose,
+  const int speed,
   const int heuristic,
   /* output */
   tadbit_output *seg

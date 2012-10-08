@@ -9,11 +9,12 @@ tadbit_R_call(
   SEXP list,
   SEXP n_threads,
   SEXP verbose,
-  SEXP speed
+  SEXP speed,
+  SEXP heuristic
 );
 
 R_CallMethodDef callMethods[] = {
-   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 4},
+   {"tadbit_R_call", (DL_FUNC) &tadbit_R_call, 5},
    {NULL, NULL, 0}
 };
 
@@ -27,7 +28,8 @@ tadbit_R_call(
   SEXP list,
   SEXP n_threads,
   SEXP verbose,
-  SEXP speed
+  SEXP speed,
+  SEXP heuristic
 ){
 
 /*
@@ -77,8 +79,8 @@ tadbit_R_call(
    tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
    
    // Call 'tadbit'.
-   tadbit(obs, n, m, /*REAL(max_tad_size)[0],*/ INTEGER(n_threads)[0],
-         INTEGER(verbose)[0], INTEGER(speed)[0], seg);
+   tadbit(obs, n, m, INTEGER(n_threads)[0], INTEGER(verbose)[0],
+         INTEGER(speed)[0], INTEGER(heuristic)[0], seg);
 
    int maxbreaks = seg->maxbreaks;
 

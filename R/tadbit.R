@@ -1,4 +1,5 @@
-tadbit <- function(x, n_CPU="auto", verbose=TRUE, speed=0) {
+tadbit <- function(x, n_CPU="auto", verbose=TRUE, speed=0,
+   heuristic=TRUE) {
 
    # Validate input type or stop with meaningful error message.
    if (!is.list(x)) {
@@ -38,8 +39,10 @@ tadbit <- function(x, n_CPU="auto", verbose=TRUE, speed=0) {
    n_CPU <- as.integer(ifelse(n_CPU == "auto", 0, n_CPU))
    verbose <- as.logical(verbose)
    speed <- as.integer(speed)
+   heuristic <- as.integer(heuristic)
 
-   tadbit_c_out <- (.Call("tadbit_R_call", x, n_CPU, verbose, speed))
+   tadbit_c_out <- (.Call("tadbit_R_call", x, n_CPU, verbose,
+      speed, heuristic))
 
    opt_nbreaks <- tadbit_c_out[[1]]
    llik_mat <- tadbit_c_out[[2]]

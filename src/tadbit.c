@@ -541,6 +541,7 @@ tadbit(
   int n_threads,
   const int verbose,
   const int speed,
+  const int heuristic,
   /* output */
   tadbit_output *seg
 ){
@@ -634,7 +635,7 @@ tadbit(
    }
    }
 
-   if (speed > 0) {
+   if (heuristic) {
       if (verbose) {
          fprintf(stderr, "running heuristic pre-screen\n");
       }
@@ -693,7 +694,7 @@ tadbit(
       free(DI);
       free(absdDI);
 
-   }
+   } // End of heuristic pre-screen.
 
 
    // Allocate 'tid'.
