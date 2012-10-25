@@ -65,6 +65,15 @@ def read_matrix(f_name):
             return reduce(lambda x, y: x+y, f_name), len(f_name)
         else:
             raise Exception('must be list of lists, all with same length.')
+    elif 'matrix' in str(type(f_name)):
+        try:
+            r, c = f_name.shape
+            if r!=c:
+                raise Exception('matrix needs to be square.')
+            return f_name.reshape(-1).tolist(), r
+        except Exception as e:
+            print 'Error found:', e
+            pass
     raise Exception('Unable to read this file or whatever it is :)')
 
 def tadbit(x, n_cpus=None, verbose=True, speed=0, heuristic=True):
