@@ -8,10 +8,10 @@ pytadbit_module = Extension(
 )
 
 setup(
-   name        = 'pytadbit',
-   version     = '1.0',
-   author      = 'Guillaume Filion',
+   name = 'pytadbit',
+   version = '1.0',
+   author = 'Guillaume Filion',
    description = 'Identify TADs in hi-C data',
    ext_modules = [pytadbit_module],
-   py_modules  = ["pytadbit"],
+   py_modules = ["pytadbit"],
 )
