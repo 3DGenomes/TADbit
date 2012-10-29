@@ -1,3 +1,3 @@
 
 
-from pytadbit.tadbit import tadbit
+from pytadbit.tadbit import tadbit, batch_tadbit
