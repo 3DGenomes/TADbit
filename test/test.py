@@ -25,7 +25,7 @@ def main():
     main function
     """
     chrom =  argv[0]
-    chrom = '/home/fransua/Tools/tadbit/pytadbit/test/test_a.tsv'
+    chrom = 'chrT/chrT_A.tsv'
     chrom = get_matrix(chrom)
 
     out = tadbit(chrom, speed=4, verbose=True, heuristic=False)
@@ -35,7 +35,7 @@ def main():
     plt.hlines(out[0], 0, chrom.shape[0])
     plt.show()
 
-    chrom_path = '../../db/chr21/'
+    chrom_path = 'chrT/'
     out_batch = batch_tadbit(chrom_path, speed=4, heuristic=True)
     plt.imshow(log2(chrom.T), origin='lower')
     plt.vlines(out[0], 0, chrom.shape[0])
