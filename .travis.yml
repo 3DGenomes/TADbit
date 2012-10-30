@@ -13,7 +13,7 @@ before_script:
   - python --version
 
 # command to run tests, e.g. python setup.py test
-script: cd test; python test/test_all.py
+script: cd test; python test_all.py
 
 branches:
   only:
