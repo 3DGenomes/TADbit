@@ -42,11 +42,11 @@ def _read_matrix(f_h):
     for line in f_h:
         values = line.split()
         try:
-            nums += [float(v) for v in values[1:]]
+            nums.append([float(v) for v in values[1:]])
         except ValueError:
             size = len(values)
             continue
-    return nums, size
+    return reduce(lambda x,y: x+y, zip(*nums)), size
 
 
 def read_matrix(things):
@@ -125,10 +125,11 @@ def tadbit(x, n_cpus=None, verbose=True, speed=0, heuristic=True):
     """
     nums, size = read_matrix(x)
     del(x)
+    print 'running {0} matrices of length {1}'.format(len(nums), size)
     tbo = tadbit_output()
     _pytadbit.tadbit(c_matrix(ct.c_double, nums),   # list of big lists representing the matrices
                      size,                          # size of one row/column
-                     1,                             # number of matrices
+                     len(nums),                     # number of matrices
                      n_cpus or 1,                   # number of threads
                      verbose,                       # verbose 0/1
                      speed,                         # speed

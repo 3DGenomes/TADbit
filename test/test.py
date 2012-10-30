@@ -1,7 +1,7 @@
 """
 25 Oct 2012
 
-
+manual test
 """
 
 from pytadbit import tadbit, batch_tadbit
@@ -18,7 +18,8 @@ def get_matrix(f_name):
             nums.append([float(v) for v in values[1:]])
         except ValueError:
             continue
-    return matrix(nums)
+    return matrix(zip(*nums))
+
 
 def main():
     """
@@ -28,7 +29,9 @@ def main():
     chrom = 'chrT/chrT_A.tsv'
     chrom = get_matrix(chrom)
 
-    out = tadbit(chrom, speed=4, verbose=True, heuristic=False)
+    out = tadbit(chrom, speed=0, verbose=True, heuristic=True)
+    print ('{:>6} '    * len(out[0])).format(*out[0])
+    print ('{:>6.1f} ' * len(out[1])).format(*out[1])
 
     plt.imshow(log2(chrom.T), origin='lower')
     plt.vlines(out[0], 0, chrom.shape[0])
@@ -36,7 +39,10 @@ def main():
     plt.show()
 
     chrom_path = 'chrT/'
-    out_batch = batch_tadbit(chrom_path, speed=4, heuristic=True)
+    out_batch = batch_tadbit(chrom_path, speed=0, n_cpus=1, heuristic=True)
+    print ('{:>6} '    * len(out_batch[0])).format(*out_batch[0])
+    print ('{:>6.1f} ' * len(out_batch[1])).format(*out_batch[1])
+
     plt.imshow(log2(chrom.T), origin='lower')
     plt.vlines(out[0], 0, chrom.shape[0])
     plt.hlines(out[0], 0, chrom.shape[0])

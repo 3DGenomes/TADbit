@@ -4,6 +4,8 @@
 *.o
 *.a
 *.pyc
+.RData
+.Rhistory
 src/build/*
 build
 src/pytadbit.py

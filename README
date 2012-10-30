@@ -1,5 +1,11 @@
 
-python install:
-
+PYTHON INSTALL:
+---------------
 python setup.py build
 sudo python setup.py install
+
+TEST PYTHON INSTALL:
+--------------------
+cd test
+python test_all.py
+
