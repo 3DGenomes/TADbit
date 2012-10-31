@@ -568,7 +568,7 @@ tadbit(
       l++;
    }
    }
-
+   printf("holala\n");
    // Simplify input. Remove line and column if 0 on the diagonal.
    int remove[N];
    for (i = 0 ; i < N ; i++) {
@@ -579,7 +579,7 @@ tadbit(
          }
       }
    }
-
+   printf("holala2\n");
    // Update the dimension.
    for (i = 0 ; i < N ; i++) {
       n -= remove[i];
