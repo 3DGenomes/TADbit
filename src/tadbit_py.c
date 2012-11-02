@@ -11,16 +11,15 @@ PyDoc_STRVAR(tadbit_py__doc__,
 
 /* The function doc string */
 PyDoc_STRVAR(_tadbit_wrapper__doc__,
-	     """
-Run tadbit function in tadbit.c.
-:argument obs: a python list of lists of floats, representing a list of linearized matrices.
-:argument 0 n: number of rows or columns in the matrix
-:argument 0 m: number of matrices
-:argument 0 n_threads: number of threads to use
-:argument 0 verbose: wether to display more/less information about process
-:argument 0 speed: can be 0, 2, 3 or 4. Divide the calculated area by 2**(speed-1)
-:argument 0 heuristic: whether to use or not some heuristics
- returns a python list with each""");
+"Run tadbit function in tadbit.c.\n\
+    :argument obs: a python list of lists of floats, representing a list of linearized matrices.\n\
+    :argument 0 n: number of rows or columns in the matrix\n\
+    :argument 0 m: number of matrices\n\
+    :argument 0 n_threads: number of threads to use\n\
+    :argument 0 verbose: wether to display more/less information about process\n\
+    :argument 0 speed: can be 0, 2, 3 or 4. Divide the calculated area by 2**(speed-1)\n\
+    :argument 0 heuristic: whether to use or not some heuristics\n\
+    :returns: a python list with each\n");
 
 
 /* The wrapper to the underlying C function */
