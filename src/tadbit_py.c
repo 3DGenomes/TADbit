@@ -3,8 +3,8 @@
 // testing:
 // gcc -shared tadbit_py.c -I/usr/include/python2.7 -lm -lpthread -std=gnu99 -fPIC -g -O3 -Wall -o tadbit_py.so
 
-#include "tadbit.c"
 #include "Python.h"
+#include "tadbit.c"
 
 /* The module doc string */
 PyDoc_STRVAR(tadbit_py__doc__,
@@ -27,18 +27,24 @@ static PyObject *py_tadbit (PyObject *self, PyObject *args){
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "O!iiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &speed, &heuristic))
+  if (!PyArg_ParseTuple(args, "Oiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &speed, &heuristic))
     return NULL;
 
   // convert list of lists to pointer o pointers
   int i;
   int j;
+  PyObject * list2;
+  PyObject * pyfloat;
   double **list = (double **) malloc(m * sizeof(double **));
   for (i = 0 ; i < m ; i++) {
-    for (j = 0 ; j < n*n ; j++){
-      list[i][j] = PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(list, i),j));
+    list2 = PyList_GetItem(list, i);
+    for (j = 0 ; j < 9 ; j++){
+      printf("%d\n", j);
+      pyfloat = PyList_GetItem(list2, j);
+      list[i][j] = PyFloat_AsDouble(pyfloat);
     }
   }
+  printf("->%d matrices, %d rows\n", m,n);
   tadbit(list, n, m, n_threads, verbose, speed, heuristic, seg);
   return 1;
 }
