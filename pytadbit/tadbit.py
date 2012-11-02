@@ -4,34 +4,8 @@
 
 """
 
-import ctypes as ct
-import os
-
-# TODO: fins a better way to do this:
-from pytadbit import __path__
-_pytadbit = ct.CDLL(__path__[0]+'/_pytadbit.so')
-
-
-def c_matrix(c_type, mat):
-    """Make a C matrix from a list of lists (mat)
-    picked from somewhere in the web...
-    """
-    row_type = c_type * len(mat[0])
-    mat_type = ct.POINTER(c_type) * len(mat)
-    mat = mat_type(*[row_type(*row) for row in mat])
-    return ct.cast(mat, ct.POINTER(ct.POINTER(c_type)))
-
-
-class tadbit_output(ct.Structure):
-    """
-    this corresponds to the type definition of tadbit_output structure (tadbit.h)
-    this object can store tadbit output
-    """
-    _fields_ = [("maxbreaks", ct.c_int),
-                ("nbreaks_opt", ct.c_int),
-                ("llikmat", ct.POINTER(ct.c_double)),
-                ("mllik", ct.POINTER(ct.c_double)),
-                ("bkpts", ct.POINTER(ct.c_int))]
+from os import path, listdir
+from pytadbit.tadbit_py import _tadbit_wrapper
 
 
 def _read_matrix(f_h):
@@ -126,20 +100,18 @@ def tadbit(x, n_cpus=None, verbose=True, speed=0, heuristic=True):
     nums, size = read_matrix(x)
     del(x)
     print 'running {0} matrices of length {1}'.format(len(nums), size)
-    tbo = tadbit_output()
-    _pytadbit.tadbit(c_matrix(ct.c_double, nums),   # list of big lists representing the matrices
-                     size,                          # size of one row/column
-                     len(nums),                     # number of matrices
-                     n_cpus or 1,                   # number of threads
-                     verbose,                       # verbose 0/1
-                     speed,                         # speed
-                     int(heuristic),                # heuristic 0/1
-                     ct.POINTER(tadbit_output)(tbo) # pointer to tbo object used to store output
-                     )
+    _, nbks, likmat, _, bkpts = _tadbit_wrapper(nums,          # list of big lists representing the matrices
+                                                size,          # size of one row/column
+                                                len(nums),     # number of matrices
+                                                n_cpus or 0,   # number of threads
+                                                int(verbose),  # verbose 0/1
+                                                speed,         # speed
+                                                int(heuristic) # heuristic 0/1
+                                                )
 
-    dim     = tbo.nbreaks_opt*size
-    breaks  = [i for i in xrange(size) if tbo.bkpts[i+dim]==1]
-    llikmat = [tbo.llikmat[i*size:i*size+size] for i in xrange(size)]
+    dim     = nbks*size
+    breaks  = [i for i in xrange(size) if bkpts[i+dim]==1]
+    llikmat = [likmat[i*size:i*size+size] for i in xrange(size)]
     start   = [0]+[b+1 for b in breaks]
     end     = breaks[:]+[size-1]
     scores  = [llikmat[end[i  ]][start[i  ]] + \
@@ -185,10 +157,10 @@ def batch_tadbit(directory, sep='_', **kwargs):
     """
 
     matrix = []
-    for f_name in os.listdir(directory):
+    for f_name in listdir(directory):
         if f_name.startswith('.'): continue
-        f_name = os.path.join(directory, f_name)
-        if not os.path.isfile(f_name):
+        f_name = path.join(directory, f_name)
+        if not path.isfile(f_name):
             continue
         print 'loading file:', f_name
         matrix.append(f_name)

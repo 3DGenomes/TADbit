@@ -2,8 +2,8 @@
 
 from distutils.core import setup, Extension
 
-pytadbit_module = Extension('pytadbit._pytadbit',
-                     sources=['src/tadbit.c'],
+pytadbit_module = Extension('pytadbit.tadbit_py',
+                     sources=['src/tadbit_py.c'],
                      )
 
 setup(
@@ -15,3 +15,4 @@ setup(
     packages    = ['pytadbit'],
     py_modules  = ["pytadbit"],
 )
+

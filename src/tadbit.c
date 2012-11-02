@@ -568,7 +568,7 @@ tadbit(
       l++;
    }
    }
-   printf("holala\n");
+
    // Simplify input. Remove line and column if 0 on the diagonal.
    int remove[N];
    for (i = 0 ; i < N ; i++) {
@@ -579,7 +579,7 @@ tadbit(
          }
       }
    }
-   printf("holala2\n");
+
    // Update the dimension.
    for (i = 0 ; i < N ; i++) {
       n -= remove[i];
@@ -668,6 +668,7 @@ tadbit(
       for (i = length ; i < n-length ; i++) {
          absdDI[i-length] = DI[i] > 0.0 ? DI[i] : - DI[i];
       }
+
 
       double mad = 1.4826 * get_quantile(absdDI, n-2*length, 0.5);
       double cut200 = get_quantile(DI, n, 200.0/n);
