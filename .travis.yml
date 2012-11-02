@@ -2,7 +2,6 @@ language: python
 python:
   - 2.6
   - 2.7
-  - 3.0
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
@@ -18,6 +17,7 @@ script: cd test; python test_all.py
 branches:
   only:
     - master
+    - c_extension
 
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:
