@@ -16,7 +16,7 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
     :argument 0 n: number of rows or columns in the matrix\n\
     :argument 0 m: number of matrices\n\
     :argument 0 n_threads: number of threads to use\n\
-    :argument 0 verbose: wether to display more/less information about process\n\
+    :argument 0 verbose: whether to display more/less information about process\n\
     :argument 0 speed: can be 0, 2, 3 or 4. Divide the calculated area by 2**(speed-1)\n\
     :argument 0 heuristic: whether to use or not some heuristics\n\
     :returns: a python list with each\n");
@@ -43,11 +43,10 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   double ** list;
   list = malloc(m * sizeof(double*));
   for (i = 0 ; i < m ; i++ )
-    list[i] = malloc(n*n * sizeof(double)); // need a bit more than expected in some machines
-  for (i = 0 ; i < m ; i++){
+    list[i] = malloc(n*n * sizeof(double));
+  for (i = 0 ; i < m ; i++)
     for (j = 0 ; j < n*n ; j++)
       list[i][j] =  PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
-  }
 
   /* the same for debugging..
   int i, j;
@@ -94,9 +93,9 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   // get bkpts
   int dim = nbreaks_opt*n;
   py_bkpts = PyList_New(dim+n);
-  for(i = 0 ; i < dim+n; i++){
+  for(i = 0 ; i < dim+n; i++)
     PyList_SetItem(py_bkpts, i, PyInt_FromLong(bkpts[i]));
-  }
+
   /* This is to return directly the list of breaks found
   j = 0;
   py_bkpts = PyList_New(nbreaks_opt);
@@ -110,15 +109,13 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
 
   // get llikmat
   py_llikmat = PyList_New(n*n+n);
-  for(i = 0 ; i < n*n+n; i++){
+  for(i = 0 ; i < n*n+n; i++)
     PyList_SetItem(py_llikmat, i, PyFloat_FromDouble(llikmat[i]));
-  }
 
   // get mllik
   py_mllik = PyList_New(mbreaks);
-  for(i = 0 ; i < mbreaks ; i++){
+  for(i = 0 ; i < mbreaks ; i++)
     PyList_SetItem(py_mllik, i, PyFloat_FromDouble(mllik[i]));
-  }
 
   // group results into a python list
   py_result = PyList_New(5);
