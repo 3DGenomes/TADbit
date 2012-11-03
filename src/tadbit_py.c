@@ -41,7 +41,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   // if something goes wrong, it is probably from there :S
   int i, j;
   double ** list;
-  list = malloc(m * sizeof(double **));
+  list = malloc(m * sizeof(double*));
   for (i = 0 ; i < m ; i++ )
     list[i] = malloc(n*n * sizeof(double)); // need a bit more than expected in some machines
   for (i = 0 ; i < m ; i++){
