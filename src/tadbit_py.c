@@ -39,8 +39,18 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
 
   // convert list of lists to pointer o pointers
   // if something goes wrong, it is probably from there :S
-  int i;
-  int j;
+  int i, j;
+  double ** list;
+  list = malloc(m * sizeof(double **));
+  for (i = 0 ; i < m ; i++ )
+    list[i] = malloc(2*n*n * sizeof(double*));
+  for (i = 0 ; i < m ; i++){
+    for (j = 0 ; j < n*n ; j++)
+      list[i][j] =  PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
+  }
+
+  /* the same for debugging..
+  int i, j;
   double ** list;
   list = malloc(m * sizeof(double **));
   for (i = 0 ; i < m ; i++ )
@@ -63,6 +73,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
       }
     }
   }
+  */
 
   // run tadbit
   tadbit(list, n, m, n_threads, verbose, speed, heuristic, seg);
