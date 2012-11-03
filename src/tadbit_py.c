@@ -58,6 +58,9 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
 	printf(" -> matrix %d, cell %d\n", i, j);
       }
       list[i][j] =  PyFloat_AsDouble(py_float);
+      if (list[i][j] < 0){
+	printf("%f\n", list[i][j]);
+      }
     }
   }
 
