@@ -98,6 +98,8 @@ def tadbit(x, n_cpus=None, verbose=True, speed=0, heuristic=True):
     corresponding list associated log likelihoods.
     """
     nums, size = read_matrix(x)
+    for n in nums:
+        print n[:4], '...', n[-4:]
     del(x)
     print 'running {0} matrices of length {1}'.format(len(nums), size)
     _, nbks, likmat, _, bkpts = _tadbit_wrapper(nums,          # list of big lists representing the matrices

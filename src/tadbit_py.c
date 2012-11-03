@@ -46,12 +46,18 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   for (i = 0 ; i < m ; i++ )
     list[i] = malloc(n*n * sizeof(double*));
   for (i = 0 ; i < m ; i++){
-    printf("\n%d\n", i);
     PyObject * tmplist = PyList_GET_ITEM(obs, i);
+    if(!PyTuple_Check(tmplist)){
+      printf("this is not a tuple!\n");
+      printf(" -> matrix %d\n", i);
+    }
     for (j = 0 ; j < n*n ; j++){
-      printf(" %d\n", j);
-      list[i][j] =  PyFloat_AsDouble(PyTuple_GET_ITEM(tmplist, j));
-      printf(" %f", list[i][j]);
+      PyObject * py_float = PyTuple_GET_ITEM(tmplist, j);
+      if(!PyFloat_Check(py_float)){
+	printf("this is not a list!\n");
+	printf(" -> matrix %d, cell %d\n", i, j);
+      }
+      list[i][j] =  PyFloat_AsDouble(py_float);
     }
   }
 
