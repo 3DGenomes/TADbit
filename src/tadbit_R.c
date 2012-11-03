@@ -9,7 +9,7 @@ tadbit_R_call(
   SEXP list,
   SEXP n_threads,
   SEXP verbose,
-  SEXP speed,
+  SEXP max_tad_size,
   SEXP heuristic
 );
 
@@ -28,7 +28,7 @@ tadbit_R_call(
   SEXP list,
   SEXP n_threads,
   SEXP verbose,
-  SEXP speed,
+  SEXP max_tad_size,
   SEXP heuristic
 ){
 
@@ -80,27 +80,31 @@ tadbit_R_call(
    
    // Call 'tadbit'.
    tadbit(obs, n, m, INTEGER(n_threads)[0], INTEGER(verbose)[0],
-         INTEGER(speed)[0], INTEGER(heuristic)[0], seg);
+         INTEGER(max_tad_size)[0], INTEGER(heuristic)[0], seg);
 
    int maxbreaks = seg->maxbreaks;
 
    // Copy output to R-readable variables.
    SEXP nbreaks_SEXP;
+   SEXP passages_SEXP;
    SEXP llikmat_SEXP;
    SEXP mllik_SEXP;
    SEXP bkpts_SEXP;
 
    PROTECT(nbreaks_SEXP = allocVector(INTSXP, 1));
+   PROTECT(passages_SEXP = allocVector(INTSXP, n));
    PROTECT(llikmat_SEXP = allocVector(REALSXP, n*n));
    PROTECT(mllik_SEXP = allocVector(REALSXP, maxbreaks));
    PROTECT(bkpts_SEXP = allocVector(INTSXP, n*(maxbreaks-1)));
 
    int *nbreaks_opt = INTEGER(nbreaks_SEXP); 
+   int *passages = INTEGER(passages_SEXP); 
    double *llikmat = REAL(llikmat_SEXP);
    double *mllik = REAL(mllik_SEXP);
    int *bkpts = INTEGER(bkpts_SEXP);
 
    nbreaks_opt[0] = seg->nbreaks_opt;
+   for (i = 0 ; i < n ; i++) passages[i] = seg->passages[i];
    for (i = 0 ; i < n*n ; i++) llikmat[i] = seg->llikmat[i];
    for (i = 0 ; i < maxbreaks ; i++) mllik[i] = seg->mllik[i];
    // Remove first column associated with 0 breaks. Itcontains only
@@ -121,19 +125,23 @@ tadbit_R_call(
    INTEGER(dim_breaks)[1] = maxbreaks-1;
    setAttrib(bkpts_SEXP, R_DimSymbol, dim_breaks);
 
+   // TODO Check whether there is a memory leak.
+   // for (i = 0 ; i < m ; i++) free(obs[i]);
    free(obs);
+   free(seg->passages);
    free(seg->llikmat);
    free(seg->mllik);
    free(seg->bkpts);
    free(seg);
 
    SEXP list_SEXP;
-   PROTECT(list_SEXP = allocVector(VECSXP, 4));
+   PROTECT(list_SEXP = allocVector(VECSXP, 5));
    SET_VECTOR_ELT(list_SEXP, 0, nbreaks_SEXP);
    SET_VECTOR_ELT(list_SEXP, 1, llikmat_SEXP);
    SET_VECTOR_ELT(list_SEXP, 2, mllik_SEXP);
    SET_VECTOR_ELT(list_SEXP, 3, bkpts_SEXP);
-   UNPROTECT(7);
+   SET_VECTOR_ELT(list_SEXP, 4, passages_SEXP);
+   UNPROTECT(8);
 
    return list_SEXP;
 

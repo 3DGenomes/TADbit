@@ -34,6 +34,7 @@ typedef struct {
 typedef struct {
    int maxbreaks;
    int nbreaks_opt;
+   int *passages;
    double *llikmat;
    double *mllik;
    int *bkpts;
@@ -48,7 +49,8 @@ tadbit(
   const int m,
   int n_threads,
   const int verbose,
-  const int speed,
+  //const int speed,
+  const int max_tad_size,
   const int heuristic,
   /* output */
   tadbit_output *seg
