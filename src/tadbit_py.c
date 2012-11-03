@@ -52,8 +52,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
       printf(" -> matrix %d\n", i);
     }
     for (j = 0 ; j < n*n ; j++){
-      PyObject * py_float = PyTuple_GET_ITEM(tmplist, j);
-      printf("%d\n", j);
+      PyObject * py_float = PyTuple_GetItem(tmplist, j);
       if(!PyFloat_Check(py_float)){
 	printf("this is not a list!\n");
 	printf(" -> matrix %d, cell %d\n", i, j);
