@@ -43,7 +43,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   double ** list;
   list = malloc(m * sizeof(double **));
   for (i = 0 ; i < m ; i++ )
-    list[i] = malloc(n+n*n * sizeof(double*)); // need a bit more than expected in some machines
+    list[i] = malloc(m*n*n * sizeof(double*)); // need a bit more than expected in some machines
   for (i = 0 ; i < m ; i++){
     for (j = 0 ; j < n*n ; j++)
       list[i][j] =  PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
