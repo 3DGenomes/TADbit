@@ -17,7 +17,7 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
     :argument 0 m: number of matrices\n\
     :argument 0 n_threads: number of threads to use\n\
     :argument 0 verbose: whether to display more/less information about process\n\
-    :argument 0 speed: can be 0, 2, 3 or 4. Divide the calculated area by 2**(speed-1)\n\
+    :argument 0 max_tad_size: an integer defining maximum size of TAD. Default defines it to the number of rows/columns.\n\
     :argument 0 heuristic: whether to use or not some heuristics\n\
     :returns: a python list with each\n");
 
@@ -29,12 +29,12 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   int m=0;
   int n_threads=0;
   const int verbose=0;
-  const int speed=0;
+  const int max_tad_size=0;
   const int heuristic=0;
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "Oiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &speed, &heuristic))
+  if (!PyArg_ParseTuple(args, "Oiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &heuristic))
     return NULL;
 
   // convert list of lists to pointer o pointers
@@ -75,11 +75,12 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   */
 
   // run tadbit
-  tadbit(list, n, m, n_threads, verbose, speed, heuristic, seg);
+  tadbit(list, n, m, n_threads, verbose, max_tad_size, heuristic, seg);
 
   // store each tadbit output
   int mbreaks      = seg->maxbreaks;
   int nbreaks_opt  = seg->nbreaks_opt;
+  int * passages   = seg->passages;
   double * llikmat = seg->llikmat;
   double * mllik   = seg->mllik;
   int    * bkpts   = seg->bkpts;
@@ -89,6 +90,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject * py_llikmat;
   PyObject * py_mllik;
   PyObject * py_result;
+  PyObject * py_passages;
 
   // get bkpts
   int dim = nbreaks_opt*n;
@@ -107,6 +109,11 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   }
   */
 
+  // get passages
+  py_passages = PyList_New(n);
+  for(i = 0 ; i < n; i++)
+    PyList_SetItem(py_passages, i, PyFloat_FromDouble(passages[i]));
+
   // get llikmat
   py_llikmat = PyList_New(n*n+n);
   for(i = 0 ; i < n*n+n; i++)
@@ -118,13 +125,14 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
     PyList_SetItem(py_mllik, i, PyFloat_FromDouble(mllik[i]));
 
   // group results into a python list
-  py_result = PyList_New(5);
+  py_result = PyList_New(6);
 
   PyList_SetItem(py_result, 0, PyInt_FromLong(mbreaks));
   PyList_SetItem(py_result, 1, PyInt_FromLong(nbreaks_opt));
-  PyList_SetItem(py_result, 2, py_llikmat);
-  PyList_SetItem(py_result, 3, py_mllik);
-  PyList_SetItem(py_result, 4, py_bkpts);
+  PyList_SetItem(py_result, 2, py_passages);
+  PyList_SetItem(py_result, 3, py_llikmat);
+  PyList_SetItem(py_result, 4, py_mllik);
+  PyList_SetItem(py_result, 5, py_bkpts);
 
   return py_result;
 }
