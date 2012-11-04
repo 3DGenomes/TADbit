@@ -19,7 +19,6 @@ script: cd test; python test_all.py
 branches:
   only:
     - master
-    - guillaumify
 
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:

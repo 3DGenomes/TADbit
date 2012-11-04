@@ -39,7 +39,6 @@ tadbit <- function(x, n_CPU="auto", verbose=TRUE, max_tad_size="auto",
    verbose <- as.logical(verbose)
    max_tad_size <- as.integer(ifelse(max_tad_size == "auto",
       ref_dim[1], max_tad_size))
-   print(max_tad_size);
    heuristic <- as.integer(heuristic)
 
    tadbit_c_out <- (.Call("tadbit_R_call", x, n_CPU, verbose,

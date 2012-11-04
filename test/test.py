@@ -29,7 +29,7 @@ def main():
     chrom = 'chrT/chrT_A.tsv'
     chrom = get_matrix(chrom)
 
-    out = tadbit(chrom, speed=0, verbose=True, heuristic=True)
+    out = tadbit(chrom, verbose=True, heuristic=True)
     print ('{:>6} '    * len(out[0])).format(*out[0])
     print ('{:>6.1f} ' * len(out[1])).format(*out[1])
 
@@ -39,7 +39,7 @@ def main():
     plt.show()
 
     chrom_path = 'chrT/'
-    out_batch = batch_tadbit(chrom_path, speed=0, n_cpus=1, heuristic=True)
+    out_batch = batch_tadbit(chrom_path, n_cpus=1, heuristic=True)
     print ('{:>6} '    * len(out_batch[0])).format(*out_batch[0])
     print ('{:>6.1f} ' * len(out_batch[1])).format(*out_batch[1])
 
