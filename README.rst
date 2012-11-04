@@ -5,8 +5,9 @@ Install tadbit
 With python wrapper:
 ====================
 
- * Download tadbit
- * Go to your tadbit directory
+* Download tadbit
+* Go to your tadbit directory
+
 ::
    cd src
    python setup.py build
@@ -23,6 +24,7 @@ Test python wrapper:
 --------------------
 
 To test the installation:
+
 ::
     cd test
     python test_all.py
