@@ -125,8 +125,6 @@ tadbit_R_call(
    INTEGER(dim_breaks)[1] = maxbreaks-1;
    setAttrib(bkpts_SEXP, R_DimSymbol, dim_breaks);
 
-   // TODO Check whether there is a memory leak.
-   // for (i = 0 ; i < m ; i++) free(obs[i]);
    free(obs);
    free(seg->passages);
    free(seg->llikmat);

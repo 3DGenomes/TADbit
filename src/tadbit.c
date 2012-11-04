@@ -11,41 +11,24 @@
 
 // Globals variables. //
 
-double **globs;               // Global pointer to observations.
-double **globw;               // Global pointer to weights.
-int globm;                    // Number of replicates.
 int n_processed;              // Number of slices processed so far.
 int n_to_process;             // Total number of slices to process.
 int taskQ_i;                  // Index used for task queue.
 pthread_mutex_t tadbit_lock;  // Mutex to access task queue.
 
 
-/*
-int
-obscmp (
-  const void *a,
-  const void *b
-){
-   int k;
-   double x = 0.0;
-   double y = 0.0; 
-
-   for (k = 0 ; k < globm ; k++) {
-      x += globs[k][*(int *)a] / globw[k][*(int *)a];
-      y += globs[k][*(int *)b] / globw[k][*(int *)b];
-   }
-
-   // Sort weighted observations in descending order.
-   if (x == y) return 0;
-   return (y > x) ? 1 : -1;
-}
-*/
-
-
 void
-recompute_fg(
+calc_fg(
   /* input */
-  const ml_block *blk,
+  const int    n,
+  const int    i_,
+  const int    _i,
+  const int    j_,
+  const int    _j,
+  const int    diag,
+  const double *k,
+  const double *d,
+  const double *w,
   const double a,
   const double b,
   const double da,
@@ -67,6 +50,7 @@ recompute_fg(
 //        -- output arguments --                                        
 //   'f': first function to zero, recomputed by the routine.            
 //   'g': second function to zero, recomputed by the routine.           
+// TODO Update arguments.
 //                                                                      
 // RETURN:                                                              
 //   'void'                                                             
@@ -75,62 +59,72 @@ recompute_fg(
 //   Update 'f' and 'g' in place.                                       
 //                                                                      
 
-   const int n = blk->size;
-   const double *k = blk->counts;
-   const double *d = blk->dist;
-   const double *w = blk->weights;
-
    // 'tmp' is a computation intermediate that will be the return
    // value of 'exp'. This can call '__slowexp' which on 64-bit machines
    // can return a long double (causing segmentation fault if 'tmp' is
    // declared as long).
    long double tmp;
    int i;
+   int j;
 
    *f = 0.0; *g = 0.0;
-   for (i = 0 ; i < n ; i++) {
-      tmp  =  w[i] * exp(a+da+(b+db)*d[i]) - k[i];
-      *f  +=  tmp;
-      *g  +=  tmp * d[i];
+   // Only the boundaries change for the diagonal half-block.
+   // The computations are the same in both cases.
+   if (diag) {
+      for (j = j_+1 ; j < _j+1 ; j++) {
+      for (i = i_ ; i < j ; i++) {
+         // TODO Cache the values 'exp(a+da+(b+db)*d[i+j*n])'.
+         tmp  =  w[i+j*n] * exp(a+da+(b+db)*d[i+j*n]) - k[i+j*n];
+         *f  +=  tmp;
+         *g  +=  tmp * d[i+j*n];
+      }
+      }
+   }
+   else {
+      for (j = j_ ; j < _j+1 ; j++) {
+      for (i = i_ ; i < _i+1 ; i++) {
+         tmp  =  w[i+j*n] * exp(a+da+(b+db)*d[i+j*n]) - k[i+j*n];
+         *f  +=  tmp;
+         *g  +=  tmp * d[i+j*n];
+      }
+      }
    }
 
    return;
 
 }
 
-
 double
-poiss_reg (
-  const ml_block *blk
+ll(
+  const int    n,
+  const int    i_,
+  const int    _i,
+  const int    j_,
+  const int    _j,
+  const int    diag,
+  const double *k,
+  const double *d,
+  const double *w,
+  const double *lg
 ){
 // SYNOPSIS:                                                            
 //   The fitted model (by maximum likelihood) is Poisson with lambda    
 //   paramter such that lambda = w * exp(a + b*d). So the full          
 //   log-likelihood of the model is the sum of terms                    
 //                                                                      
-//         - w_i exp(a + b*d_i) + k_i(log(w_i) + a + b*d_i)             
+//      - w_i exp(a + b*d_i) + k_i(log(w_i) + a + b*d_i) - log(k_i!)    
 //                                                                      
 // ARGUMENTS:                                                           
-//   '*blk': the block to fit by Poisson regression.                    
+// TODO: Describe the arguments.
 //                                                                      
 // RETURN:                                                              
 //   The maximum log-likelihood of a block of hiC data.                 
 //                                                                      
 
-   const int n = blk->size;
-   const double *log_gamma = blk->lgamma;
-   const double *k = blk->counts;
-   const double *d = blk->dist;
-   const double *w = blk->weights;
-
-   if (n < 1) {
-      return 0.0;
-   }
-   if (n < 3) {
-      return NAN;
-   }
+   if ((i_ >= _i) || (j_ >= _j)) return 0.0;
 
    int i;
+   int j;
    int iter = 0;
    double denom;
    double oldgrad;
@@ -144,10 +138,10 @@ poiss_reg (
    double dfdb = 0.0;
    double dgda = 0.0;
    double dgdb = 0.0;
-   // See the comment about 'tmp' in 'recompute_fg'.
+   // See the comment about 'tmp' in 'calc_fg'.
    long double tmp; 
 
-   recompute_fg(blk, a, b, da, db, &f, &g);
+   calc_fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, &f, &g);
 
    // Newton-Raphson until gradient function is less than TOLERANCE.
    // The gradient function is the square norm 'f*f + g*g'.
@@ -155,11 +149,27 @@ poiss_reg (
 
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
-      for (i = 0 ; i < n ; i++) {
-         tmp   =   w[i] * exp(a+b*d[i]);
-         dfda +=   tmp;
-         dgda +=   tmp * d[i];
-         dgdb +=   tmp * d[i]*d[i];
+      // Only the boundaries change for the diagonal half-block.
+      // The computations are the same in both cases.
+      if (diag) {
+         for (j = j_+1 ; j < _j+1 ; j++) {
+         for (i = i_ ; i < j ; i++) {
+            tmp   =   w[i+j*n] * exp(a+b*d[i+j*n]);
+            dfda +=   tmp;
+            dgda +=   tmp * d[i+j*n];
+            dgdb +=   tmp * d[i+j*n]*d[i+j*n];
+         }
+         }
+      }
+      else {
+         for (j = j_ ; j < _j+1 ; j++) {
+         for (i = i_ ; i < _i+1 ; i++) {
+            tmp   =   w[i+j*n] * exp(a+b*d[i+j*n]);
+            dfda +=   tmp;
+            dgda +=   tmp * d[i+j*n];
+            dgdb +=   tmp * d[i+j*n]*d[i+j*n];
+         }
+         }
       }
       dfdb = dgda;
 
@@ -167,7 +177,7 @@ poiss_reg (
       da = (f*dgdb - g*dfdb) / denom;
       db = (g*dfda - f*dgda) / denom;
 
-      recompute_fg(blk, a, b, da, db, &f, &g);
+      calc_fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, &f, &g);
 
       // Traceback if we are not going down the gradient. Cut the
       // length of the steps in half until this step goes down
@@ -175,7 +185,7 @@ poiss_reg (
       while (f*f + g*g > oldgrad) {
          da /= 2;
          db /= 2;
-         recompute_fg(blk, a, b, da, db, &f, &g);
+         calc_fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, &f, &g);
       }
 
       // Update 'a' and 'b'.
@@ -191,117 +201,22 @@ poiss_reg (
 
    // Compute log-likelihood (using 'dfda').
    double llik = 0.0;
-   for (i = 0 ; i < n ; i++) {
-      llik += exp(a+b*d[i]) + k[i] * (a + b*d[i]) - log_gamma[i];
-   }
+   if (diag) {
+      for (j = j_+1 ; j < _j+1 ; j++) {
+      for (i = i_ ; i < j ; i++) {
+         llik += exp(a+b*d[i+j*n]) + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
+      }
+      }
+   } 
+   else {
+      for (j = j_ ; j < _j+1 ; j++) {
+      for (i = i_ ; i < _i+1 ; i++) {
+         llik += exp(a+b*d[i+j*n]) + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
+      }
+      }
+   } 
 
    return llik;
-
-}
-
-double
-fit_slice(
-  ml_block *blocks[3]
-){
-// SYNOPSIS:                                                            
-//   Wrapper for 'poiss_reg'. Fits the three regions of a slice         
-//   by Poisson regression and return the log-likelihood.               
-//                                                                      
-// PARAMETERS:                                                          
-//   '*blocks' : the slice to be fitted by Poisson regression.          
-//                                                                      
-// RETURN:                                                              
-//   The total maximum log-likelihood of the slice.                     
-//                                                                      
-
-   double top = poiss_reg(blocks[0]);
-   double mid = poiss_reg(blocks[1]);
-   double bot = poiss_reg(blocks[2]);
-
-   // The likelihood of 'top' and 'bot' blocks are divided by 2 because
-   // the hiC map is assumed to be symmetric. Those data points are
-   // used two times in a segmentation, while the data points of the
-   // 'mid' block are used only one time.
-
-   return top/2 + mid + bot/2;
-
-}
-
-
-void
-slice(
-  /* input */
-  const double *log_gamma,
-  const double *obs,
-  const double *dist,
-  const int n,
-  const int start,
-  const int end,
-  /* output */
-  ml_block *blocks[3]
-){
-// SYNOPSIS:                                                            
-//   Extract from a single replicate of the hiC data the three blocks   
-//   of a slice delimited by start and end positions.                   
-//                                                                      
-// PARAMETERS:                                                          
-//   '*log_gamma' : pre-computed log-gammas of the counts.              
-//   '*obs' : raw hiC count data (single replicate).                    
-//   '*dist' : linear separations corresponding to counts.              
-//   'n' : row/col number of the full data matrix.                      
-//   'start' : start index of the slice.                                
-//   'end' : end index of the slice.                                    
-//        -- output arguments --                                        
-//   '*blocks' : variable to store the slice.                           
-//                                                                      
-// RETURN:                                                              
-//   'void'                                                             
-//                                                                      
-// SIDE-EFFECTS:                                                        
-//   Update 'blocks' in place.                                          
-//                                                                      
-
-   int l;
-   int pos;
-   int row;
-   int col;
-
-   // Initialize block sizes to 0.
-   for (l = 0 ; l < 3 ; l++) {
-     blocks[l]->size = 0;
-   }
-
-   // Iterate over data vertically.
-   for (col = start ; col < end+1 ; col++) {
-   for (row = 0 ; row < n ; row++) {
-
-      // Skip NAs in the data.
-      if (isnan(obs[row+col*n]))
-         continue;
-
-      // Find which block to update ('l').
-      // 0: top, 1: middle, 2: bottom, or none.                    
-      if        (row < start)  l = 0;
-      else if   (row < col)    l = 1;
-      else if   (row > end)    l = 2;
-      else                     continue;
-
-      pos = blocks[l]->size;
-
-      blocks[l]->counts[pos] = log_gamma[row+col*n];
-      blocks[l]->counts[pos] = obs[row+col*n];
-      blocks[l]->dist[pos] = dist[row+col*n];
-      // The weight is the square root of the product of the
-      // diagonal terms (the product of potencies).
-      blocks[l]->weights[pos] = sqrt(obs[row+row*n]*obs[col+col*n]);
-
-      blocks[l]->size++;
-
-   }
-   }
-   // End of the double for loop.
-
-   return;
 
 }
 
@@ -433,7 +348,7 @@ fill_llikmat(
 //   triangular part is left out.                                       
 //                                                                      
 // PARAMETERS:                                                          
-//   '*arg' : matrix of maximum log-likelihood values.                  
+// TODO Describe the parameters.
 //                                                                      
 // RETURN:                                                              
 //   void                                                               
@@ -445,49 +360,30 @@ fill_llikmat(
    thread_arg *myargs = (thread_arg *) arg;
    const int n = myargs->n;
    const int m = myargs->m;
-   const double **obs = (const double **) myargs->obs;
-   const double *dist = (const double*) myargs->dist;
-   const double **log_gamma = (const double **) myargs->log_gamma;
+   const double **k = (const double **) myargs->k;
+   const double *d = (const double*) myargs->d;
+   const double **w = (const double **) myargs->w;
+   const double **lg= (const double **) myargs->lg;
    const int *skip = (const int *) myargs->skip;
    double *llikmat = myargs->llikmat;
    const int verbose = myargs->verbose;
 
    int i;
    int j;
-   int k;
+   int l;
 
    int job_index;
-
-   // Allocate max possible size to blocks.
-   ml_block *blocks[3];
-
-   // The middle block can be bigger than top and bottom.
-   int nmax[3] = { (n+1)*(n+1)/4, (n+1)*(n+1)/2, (n+1)*(n+1)/4 };
-
-   // Allocate and initialize 3 blocks of a slice.
-   for (i = 0 ; i < 3 ; i++) {
-      blocks[i] = (ml_block *) malloc(sizeof(ml_block));
-
-      blocks[i]->lgamma  = (double *) malloc(nmax[i] * sizeof(double));
-      blocks[i]->counts  = (double *) malloc(nmax[i] * sizeof(double));
-      blocks[i]->dist    = (double *) malloc(nmax[i] * sizeof(double));
-      blocks[i]->weights = (double *) malloc(nmax[i] * sizeof(double));
-
-      memset(blocks[i]->lgamma,  0.0, nmax[i] * sizeof(double));
-      memset(blocks[i]->counts,  0.0, nmax[i] * sizeof(double));
-      memset(blocks[i]->dist,    0.0, nmax[i] * sizeof(double));
-      memset(blocks[i]->weights, 0.0, nmax[i] * sizeof(double));
-   }
    
    // Break out of the loop when task queue is empty.
    while (1) {
 
       pthread_mutex_lock(&tadbit_lock);
       while ((taskQ_i < n*n) && (skip[taskQ_i] > 0)) {
+         // Fast forward to the next job.
          taskQ_i++;
       }
       if (taskQ_i >= n*n) {
-         // Task queue is empty. Exit while loop and wrap up.
+         // Task queue is empty. Exit loop and return
          pthread_mutex_unlock(&tadbit_lock);
          break;
       }
@@ -495,31 +391,23 @@ fill_llikmat(
       taskQ_i++;
       pthread_mutex_unlock(&tadbit_lock);
 
+      // Compute the log-likelihood of slice '(i,j)'.
       i = job_index % n;
       j = job_index / n;
 
       // Distinct parts of the array, no lock needed.
       llikmat[i+j*n] = 0.0;
-      for (k = 0 ; k < m ; k++) {
-         // Get the (i,j) slice (stored in 'blocks').
-         slice(log_gamma[k], obs[k], dist, n, i, j, blocks);
-         // Get the likelihood and sum (see macro definition).
-         llikmat[i+j*n] += fit_slice(blocks);
+      for (l = 0 ; l < m ; l++) {
+         llikmat[i+j*n] += 
+            ll(n, 0, i-1, i, j, 0, k[l], d, w[l], lg[l]) +
+            ll(n, i,   j, i, j, 1, k[l], d, w[l], lg[l]) +
+            ll(n, j+1, n, i, j, 0, k[l], d, w[l], lg[l]);
       }
       n_processed++;
       if (verbose) {
          fprintf(stderr, "computing likelihood (%0.f%% done)\r",
             99 * n_processed / (float) n_to_process);
       }
-   }
-
-   // Free allocated memory.
-   for (i = 0 ; i < 3 ; i++) {
-      free(blocks[i]->lgamma);
-      free(blocks[i]->counts);
-      free(blocks[i]->dist);
-      free(blocks[i]->weights);
-      free(blocks[i]);
    }
 
    return NULL;
@@ -597,13 +485,14 @@ tadbit(
          if (remove[i] || remove[j]) {
             continue;
          }
-         log_gamma[k][l] = lgamma(obs[k][i+j*N]);
+         log_gamma[k][l] = lgamma(obs[k][i+j*N]+1);
          new_obs[k][l] = obs[k][i+j*N];
          dist[l] = init_dist[i+j*N];
          l++;
       }
       }
    }
+   fprintf(stderr, "\n");
 
    // We will not need the initial observations any more.
    free(init_dist);
@@ -626,13 +515,15 @@ tadbit(
 
    // Compute the weights.
    double **weights = (double **) malloc(m * sizeof(double *));
-   for (k = 0 ; k < m ; k++) {
-      weights[k] = (double *) malloc(n*n * sizeof(double));
-      memset(weights[k], 0.0, n*n * sizeof(double));
+   for (l = 0 ; l < m ; l++) {
+      weights[l] = (double *) malloc(n*n * sizeof(double));
+      memset(weights[l], 0.0, n*n * sizeof(double));
       // Compute scalar product.
-      for (i = 0 ; i < n ; i++) {
       for (j = 0 ; j < n ; j++) {
-         weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
+      for (i = 0 ; i < n ; i++) {
+         // TODO implement the following weights.
+         // weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
+         weights[l][i+j*n] = sqrt(obs[l][i+i*n]*obs[l][j+j*n]);
       }
       }
    }
@@ -687,54 +578,7 @@ tadbit(
       max_tad_size = i;
       fprintf(stderr, "set 'max_tad_size' to %d\n", i);
 
-
-      /*
-      int *indices = (int *) malloc(n*(n-1)/2 * sizeof(int));
-      for (i = 0, l = 0 ; i < n ; i++) {
-      for (j = i+1 ; j < n ; j++) {
-         indices[l++] = i+j*n;
-      }
-      }
-
-      globs = obs;
-      globw = weights;
-      globm = m;
-      qsort(indices, n*(n-1)/2, sizeof(int), obscmp);
-
-      double *cumsums = (double *) malloc(n*(n-1)/2 * sizeof(double));
-      memset(cumsums, 0.0, n*(n-1)/2 * sizeof(double));
-      for (l = 0 ; l < n*(n-1)/2; l++) {
-         if (l > 0) cumsums[l] = cumsums[l-1];
-         for (k = 0 ; k < m ; k++) {
-            cumsums[l] += obs[k][indices[l]] / weights[k][indices[l]];
-         }
-      }
-      double fullsum = cumsums[n*(n-1)/2-1];
-
-      //memset(skip, 1, n*n * sizeof(int));
-      //n_to_process = 0;
-      max_tad_size = 0;
-      for (l = 0 ; l < n*(n-1)/2 ; l++) {
-         int i0 = indices[l] % n;
-         int j0 = indices[l] / n;
-         if ((j0 - i0) > max_tad_size) max_tad_size = j0 - i0;
-
-         for (i = i0 ; i < j0 ; i++) {
-         for (j = i+1 ; j < j0 ; j++) {
-            if (skip[i+j*n]) n_to_process++;
-            skip[i+j*n] = 0;
-         }
-         }
-
-         if (cumsums[l] / fullsum > 0.9) break;
-      }
-      printf("max_tad_size set to %d\n", max_tad_size);
-
-      free(cumsums);
-      free(indices);
-      */
-
-   } // End of heuristic pre-screen.
+   } // End of heuristic 'max_tad_size' definition.
 
    for (i = 0 ; i < n-3 ; i++) {
    for (j = i+3 ; j < n ; j++) {
@@ -753,9 +597,10 @@ tadbit(
    thread_arg arg = {
       .n = n,
       .m = m,
-      .obs = obs,
-      .dist = dist,
-      .log_gamma = log_gamma,
+      .k = obs,
+      .d = dist,
+      .w = weights,
+      .lg = log_gamma,
       .skip = skip,
       .llikmat = llikmat,
       .verbose = verbose,

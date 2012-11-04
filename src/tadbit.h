@@ -20,13 +20,13 @@ typedef struct {
 typedef struct {
    int n;
    int m;
-   double **obs;
-   double *dist;
-   double **log_gamma;
+   double **k;
+   double *d;
+   double **w;
+   double **lg;
    int *skip;
    double *llikmat;
    int verbose;
-   int speed;
 } thread_arg;
 
 
