@@ -69,7 +69,7 @@ def read_matrix(things):
         return matrices, sizes[0]
     raise Exception('All matrices must have the same size (same chromosome and same bins).')
 
-def tadbit(x, n_cpus=None, verbose=True, speed=0, heuristic=True):
+def tadbit(x, n_cpus=None, verbose=True, max_tad_size=None, heuristic=True):
     """
     The tadbit algorithm works on raw chromosome interaction count data.
     Not only is normalization not necessary, it is also not recommended
@@ -91,7 +91,8 @@ def tadbit(x, n_cpus=None, verbose=True, speed=0, heuristic=True):
     x might be either a list of list, a file or a file handler
     :argument None n_cpus: The number of CPUs to allocate to tadbit. The value default
     is the total number of CPUs minus 1.
-    :argument 0 speed: can be 0, 2, 3 or 4. Divide the calculated area by 2**(speed-1)
+    :argument None max_tad_size: an integer defining maximum size of TAD.
+    Default defines it to the number of rows/columns.
     :argument True heuristic: whether to use or not some heuristics
 
     :returns: the list of topologically associated domains' boundaries, and the
@@ -99,24 +100,25 @@ def tadbit(x, n_cpus=None, verbose=True, speed=0, heuristic=True):
     """
     nums, size = read_matrix(x)
     del(x)
-    print 'running {0} matrices of length {1}'.format(len(nums), size)
-    _, nbks, likmat, _, bkpts = _tadbit_wrapper(nums,          # list of big lists representing the matrices
-                                                size,          # size of one row/column
-                                                len(nums),     # number of matrices
-                                                n_cpus or 0,   # number of threads
-                                                int(verbose),  # verbose 0/1
-                                                speed,         # speed
-                                                int(heuristic) # heuristic 0/1
-                                                )
+    max_tad_size = max_tad_size or size
+    _, nbks, passages, _, _, bkpts = _tadbit_wrapper(nums,          # list of big lists representing the matrices
+                                                     size,          # size of one row/column
+                                                     len(nums),     # number of matrices
+                                                     n_cpus or 0,   # number of threads
+                                                     int(verbose),  # verbose 0/1
+                                                     max_tad_size,  # max_tad_size
+                                                     int(heuristic) # heuristic 0/1
+                                                     )
 
     dim     = nbks*size
     breaks  = [i for i in xrange(size) if bkpts[i+dim]==1]
-    llikmat = [likmat[i*size:i*size+size] for i in xrange(size)]
-    start   = [0]+[b+1 for b in breaks]
-    end     = breaks[:]+[size-1]
-    scores  = [llikmat[end[i  ]][start[i  ]] + \
-               llikmat[end[i+1]][start[i+1]] - \
-               llikmat[end[i+1]][start[i  ]] for i in xrange(len(breaks))]
+    #llikmat = [likmat[i*size:i*size+size] for i in xrange(size)]
+    #start   = [0]+[b+1 for b in breaks]
+    #end     = breaks[:]+[size-1]
+    #scores  = [llikmat[end[i  ]][start[i  ]] + \
+    #           llikmat[end[i+1]][start[i+1]] - \
+    #           llikmat[end[i+1]][start[i  ]] for i in xrange(len(breaks))]
+    scores = [p for p in passages if p > 0]
     
     return breaks, scores
 

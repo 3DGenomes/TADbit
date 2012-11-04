@@ -7,7 +7,7 @@ x = as.matrix(read.delim('chrT/chrT_A.tsv', row.names=1))
 # Plot a heatmap of the hiC map.
 # Call tadbit
 # output_slow = tadbit(x)
-output_fast = tadbit(x, speed=4, heuristic=TRUE)
+output_fast = tadbit(x, max_tad_size=4, heuristic=TRUE)
 print(output_fast)
 
 image(log2(x))
@@ -17,7 +17,7 @@ for (l in output_fast[1]){
 }
 
 # You can also call a batch tadbit on all 4 files at the same time
-batch_output = batch_tadbit('chrT/', speed=2,  n_CPU=1, heuristic=TRUE,
+batch_output = batch_tadbit('chrT/', max_tad_size=4,  n_CPU=1, heuristic=TRUE,
   read_options=list(row.names=1))
 print (batch_output)
 

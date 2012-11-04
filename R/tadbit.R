@@ -1,4 +1,4 @@
-tadbit <- function(x, n_CPU="auto", verbose=TRUE, speed=0,
+tadbit <- function(x, n_CPU="auto", verbose=TRUE, max_tad_size="auto",
    heuristic=TRUE) {
 
    # Validate input type or stop with meaningful error message.
@@ -10,11 +10,11 @@ tadbit <- function(x, n_CPU="auto", verbose=TRUE, speed=0,
          x <- list(x)
       }
    }
-   #if (!max_size == "auto" && !is.numeric(max_size)) {
-   #   stop("'max_size' must be \"auto\" or a number")
-   #}
    if (!n_CPU=="auto" && !is.numeric(n_CPU)) {
       stop("'n_CPU' must be \"auto\" or a number")
+   }
+   if (!max_tad_size == "auto" && !is.numeric(max_tad_size)) {
+      stop("'max_tad_size' must be \"auto\" or a number")
    }
    if (!all(sapply(x, is.matrix))) {
       stop("all the elements of 'x' must be matrices")
@@ -35,29 +35,22 @@ tadbit <- function(x, n_CPU="auto", verbose=TRUE, speed=0,
    x <- lapply(x, function(y) { y + double(1) })
 
    # Assign automatic variables and coerce to proper type.
-   #max_size <- as.double(ifelse (max_size == "auto", .1, max_size))
    n_CPU <- as.integer(ifelse(n_CPU == "auto", 0, n_CPU))
    verbose <- as.logical(verbose)
-   speed <- as.integer(speed)
+   max_tad_size <- as.integer(ifelse(max_tad_size == "auto",
+      ref_dim[1], max_tad_size))
+   print(max_tad_size);
    heuristic <- as.integer(heuristic)
 
    tadbit_c_out <- (.Call("tadbit_R_call", x, n_CPU, verbose,
-      speed, heuristic))
+      max_tad_size, heuristic))
 
    opt_nbreaks <- tadbit_c_out[[1]]
    llik_mat <- tadbit_c_out[[2]]
 
    position <- which(tadbit_c_out[[4]][,opt_nbreaks] == 1)
-   score <- NA * position
-   
-   n <- ref_dim[1]
-   end <- c(position, n)
-   start <- c(1, position+1)
-   for (i in 1:length(score)) {
-      score[i] <- llik_mat[start[i],end[i]] +
-         llik_mat[start[i+1],end[i+1]] - llik_mat[start[i],end[i+1]]
-   }
+   score <- tadbit_c_out[[5]][tadbit_c_out[[5]] > 0]
 
-   return (list(position, score))
+   return (list(position=position, score=score))
 
 }
