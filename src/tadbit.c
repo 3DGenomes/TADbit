@@ -40,11 +40,12 @@ calcfg(
         double *g
 ){
 // SYNOPSIS:                                                            
-//   Subfroutine of 'poiss_reg' that computes 'f' and 'g' in Newton-    
-//   Raphson cycles.                                                    
+//   Subfroutine of 'll' that computes 'f' and 'g' for Newton-Raphson   
+//   cycles.                                                            
 //                                                                      
 // ARGUMENTS:                                                           
-//   '*blk': the block to fit by Poisson regression.                    
+//   See the function 'll' for the description of 'n', 'i_', '_i',      
+//      'j_', '_j', 'diag', 'k', 'd', and 'w'.                          
 //   'a': parameter 'a' of the Poisson regression (see 'poiss_reg').    
 //   'b': parameter 'b' of the Poisson regression (see 'poiss_reg').    
 //   'da': computed differential of 'a' (see 'poiss_reg').              
@@ -52,7 +53,7 @@ calcfg(
 //        -- output arguments --                                        
 //   'f': first function to zero, recomputed by the routine.            
 //   'g': second function to zero, recomputed by the routine.           
-// TODO Update arguments.
+//   'c': address of an array of double for caching.                    
 //                                                                      
 // RETURN:                                                              
 //   'void'                                                             
@@ -68,19 +69,22 @@ calcfg(
    long double tmp;
    int i;
    int j;
+   int index;
 
    *f = 0.0; *g = 0.0;
-   for (i = 0 ; i < n ; i++) c[i] = NAN;
+   for (index = 0 ; index < n ; index++) c[index] = NAN;
    // Only the boundaries change for the diagonal half-block.
    // The computations are the same in both cases.
+   // XXX The repetition of code is not very DRY.
    if (diag) {
       for (j = j_+1 ; j < _j+1 ; j++) {
       for (i = i_ ; i < j ; i++) {
          // Retrive value of the exponential from cache.
-         if (isnan(c[_cache_index[i+j*n]])) {
-            c[_cache_index[i+j*n]] = exp(a+da+(b+db)*d[i+j*n]);
+         index = _cache_index[i+j*n];
+         if (isnan(c[index])) {
+            c[index] = exp(a+da+(b+db)*d[i+j*n]);
          }
-         tmp  =  w[i+j*n] * c[_cache_index[i+j*n]] - k[i+j*n];
+         tmp  =  w[i+j*n] * c[index] - k[i+j*n];
          *f  +=  tmp;
          *g  +=  tmp * d[i+j*n];
       }
@@ -90,10 +94,11 @@ calcfg(
       for (j = j_ ; j < _j+1 ; j++) {
       for (i = i_ ; i < _i+1 ; i++) {
          // Retrive value of the exponential from cache.
-         if (isnan(c[_cache_index[i+j*n]])) {
-            c[_cache_index[i+j*n]] = exp(a+da+(b+db)*d[i+j*n]);
+         index = _cache_index[i+j*n];
+         if (isnan(c[index])) {
+            c[index] = exp(a+da+(b+db)*d[i+j*n]);
          }
-         tmp  =  w[i+j*n] * c[_cache_index[i+j*n]] - k[i+j*n];
+         tmp  =  w[i+j*n] * c[index] - k[i+j*n];
          *f  +=  tmp;
          *g  +=  tmp * d[i+j*n];
       }
@@ -126,7 +131,17 @@ ll(
 //      - w_i exp(a + b*d_i) + k_i(log(w_i) + a + b*d_i) - log(k_i!)    
 //                                                                      
 // ARGUMENTS:                                                           
-// TODO: Describe the arguments.
+//   'n': row/column number of the counts.                              
+//   'i_': first value of index i (row).                                
+//   '_i': last value of index i (row).                                 
+//   'j_': first value of index j (column).                             
+//   '_j': last value of index j (column).                              
+//   'diag': whether the block is half-diagonal (middle block).         
+//   'k': raw hiC counts as double.                                     
+//   'd': distances from diagonal in log.                               
+//   'w': weights measuring hiC bias.                                   
+//   'lg': log-gamma terms.                                             
+//   'c': address of an array of double for caching.                    
 //                                                                      
 // RETURN:                                                              
 //   The maximum log-likelihood of a block of hiC data.                 
@@ -136,6 +151,7 @@ ll(
 
    int i;
    int j;
+   int index;
    int iter = 0;
    double denom;
    double oldgrad;
@@ -158,36 +174,43 @@ ll(
    // The gradient function is the square norm 'f*f + g*g'.
    while ((oldgrad = f*f + g*g) > TOLERANCE && iter++ < MAXITER) {
 
-      for (i = 0 ; i < n ; i++) c[i] = NAN;
+      for (index = 0 ; index < n ; index++) c[index] = NAN;
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
       // Only the boundaries change for the diagonal half-block.
       // The computations are the same in both cases.
+      // XXX The repetition of code is not very DRY.
       if (diag) {
          for (j = j_+1 ; j < _j+1 ; j++) {
          for (i = i_ ; i < j ; i++) {
+            index = _cache_index[i+j*n];
             // Retrive value of the exponential from cache.
-            if (isnan(c[_cache_index[i+j*n]])) {
-               c[_cache_index[i+j*n]] = exp(a+b*d[i+j*n]);
+            if (isnan(c[index])) {
+               c[index] = exp(a+b*d[i+j*n]);
             }
-            tmp   =   w[i+j*n] * c[_cache_index[i+j*n]];
+            tmp   =   w[i+j*n] * c[index];
             dfda +=   tmp;
-            dgda +=   tmp * d[i+j*n];
-            dgdb +=   tmp * d[i+j*n]*d[i+j*n];
+            tmp  *=   d[i+j*n];
+            dgda +=   tmp;
+            tmp  *=   d[i+j*n];
+            dgdb +=   tmp;
          }
          }
       }
       else {
          for (j = j_ ; j < _j+1 ; j++) {
          for (i = i_ ; i < _i+1 ; i++) {
+            index = _cache_index[i+j*n];
             // Retrive value of the exponential from cache.
-            if (isnan(c[_cache_index[i+j*n]])) {
-               c[_cache_index[i+j*n]] = exp(a+b*d[i+j*n]);
+            if (isnan(c[index])) {
+               c[index] = exp(a+b*d[i+j*n]);
             }
-            tmp   =   w[i+j*n] * c[_cache_index[i+j*n]];
+            tmp   =   w[i+j*n] * c[index];
             dfda +=   tmp;
-            dgda +=   tmp * d[i+j*n];
-            dgdb +=   tmp * d[i+j*n]*d[i+j*n];
+            tmp  *=   d[i+j*n];
+            dgda +=   tmp;
+            tmp  *=   d[i+j*n];
+            dgdb +=   tmp;
          }
          }
       }
@@ -221,17 +244,25 @@ ll(
 
    // Compute log-likelihood (using 'dfda').
    double llik = 0.0;
+
+   // **   IMPORTANT NOTE   **  //
+   // Rhe last call to 'calcfg' has set the cache to the right values.
+   // No need to reset the cache.
    if (diag) {
       for (j = j_+1 ; j < _j+1 ; j++) {
       for (i = i_ ; i < j ; i++) {
-         llik += exp(a+b*d[i+j*n]) + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
+         index = _cache_index[i+j*n];
+         // Retrive value of the exponential from cache.
+         llik += c[index] + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
       }
       }
    } 
    else {
       for (j = j_ ; j < _j+1 ; j++) {
       for (i = i_ ; i < _i+1 ; i++) {
-         llik += exp(a+b*d[i+j*n]) + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
+         index = _cache_index[i+j*n];
+         // Retrive value of the exponential from cache.
+         llik += c[index] + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
       }
       }
    } 
@@ -548,9 +579,7 @@ tadbit(
       // Compute scalar product.
       for (j = 0 ; j < n ; j++) {
       for (i = 0 ; i < n ; i++) {
-         // TODO implement the following weights.
-         // weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
-         weights[l][i+j*n] = sqrt(obs[l][i+i*n]*obs[l][j+j*n]);
+         weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
       }
       }
    }
