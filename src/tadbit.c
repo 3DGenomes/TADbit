@@ -69,17 +69,25 @@ calcfg(
    long double tmp;
    int i;
    int j;
+   int i_low;
+   int i_high;
+   int j_low;
+   int j_high;
    int index;
 
    *f = 0.0; *g = 0.0;
+   // Initialize cache.
    for (index = 0 ; index < n ; index++) c[index] = NAN;
-   // Only the boundaries change for the diagonal half-block.
-   // The computations are the same in both cases.
-   // XXX The repetition of code is not very DRY.
-   if (diag) {
-      for (j = j_+1 ; j < _j+1 ; j++) {
-      for (i = i_ ; i < j ; i++) {
-         // Retrive value of the exponential from cache.
+
+   // Set boundaries of the double 'for' loop.
+   i_low = i_;
+   j_high = _j+1;
+   j_low = diag ? j_+1 : j_;
+
+   for (j = j_low ; j < j_high ; j++) {
+      i_high = diag ? j : _i+1;
+      for (i = i_low ; i < i_high ; i++) {
+         // Retrieve value of the exponential from cache.
          index = _cache_index[i+j*n];
          if (isnan(c[index])) {
             c[index] = exp(a+da+(b+db)*d[i+j*n]);
@@ -87,21 +95,6 @@ calcfg(
          tmp  =  w[i+j*n] * c[index] - k[i+j*n];
          *f  +=  tmp;
          *g  +=  tmp * d[i+j*n];
-      }
-      }
-   }
-   else {
-      for (j = j_ ; j < _j+1 ; j++) {
-      for (i = i_ ; i < _i+1 ; i++) {
-         // Retrive value of the exponential from cache.
-         index = _cache_index[i+j*n];
-         if (isnan(c[index])) {
-            c[index] = exp(a+da+(b+db)*d[i+j*n]);
-         }
-         tmp  =  w[i+j*n] * c[index] - k[i+j*n];
-         *f  +=  tmp;
-         *g  +=  tmp * d[i+j*n];
-      }
       }
    }
 
@@ -151,6 +144,10 @@ ll(
 
    int i;
    int j;
+   int i_low;
+   int i_high;
+   int j_low;
+   int j_high;
    int index;
    int iter = 0;
    double denom;
@@ -177,12 +174,15 @@ ll(
       for (index = 0 ; index < n ; index++) c[index] = NAN;
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
-      // Only the boundaries change for the diagonal half-block.
-      // The computations are the same in both cases.
-      // XXX The repetition of code is not very DRY.
-      if (diag) {
-         for (j = j_+1 ; j < _j+1 ; j++) {
-         for (i = i_ ; i < j ; i++) {
+
+      // Set the boundary conditions of the double 'for' loop.
+      i_low = i_;
+      j_high = _j+1;
+      j_low = diag ? j_+1 : j_;
+
+      for (j = j_low ; j < j_high ; j++) {
+         i_high = diag ? j : _i+1;
+         for (i = i_low ; i < i_high ; i++) {
             index = _cache_index[i+j*n];
             // Retrive value of the exponential from cache.
             if (isnan(c[index])) {
@@ -194,24 +194,6 @@ ll(
             dgda +=   tmp;
             tmp  *=   d[i+j*n];
             dgdb +=   tmp;
-         }
-         }
-      }
-      else {
-         for (j = j_ ; j < _j+1 ; j++) {
-         for (i = i_ ; i < _i+1 ; i++) {
-            index = _cache_index[i+j*n];
-            // Retrive value of the exponential from cache.
-            if (isnan(c[index])) {
-               c[index] = exp(a+b*d[i+j*n]);
-            }
-            tmp   =   w[i+j*n] * c[index];
-            dfda +=   tmp;
-            tmp  *=   d[i+j*n];
-            dgda +=   tmp;
-            tmp  *=   d[i+j*n];
-            dgdb +=   tmp;
-         }
          }
       }
       dfdb = dgda;
@@ -248,24 +230,14 @@ ll(
    // **   IMPORTANT NOTE   **  //
    // Rhe last call to 'calcfg' has set the cache to the right values.
    // No need to reset the cache.
-   if (diag) {
-      for (j = j_+1 ; j < _j+1 ; j++) {
-      for (i = i_ ; i < j ; i++) {
+   for (j = j_low ; j < j_high ; j++) {
+      i_high = diag ? j : _i+1;
+      for (i = i_low ; i < i_high ; i++) {
          index = _cache_index[i+j*n];
          // Retrive value of the exponential from cache.
          llik += c[index] + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
       }
-      }
-   } 
-   else {
-      for (j = j_ ; j < _j+1 ; j++) {
-      for (i = i_ ; i < _i+1 ; i++) {
-         index = _cache_index[i+j*n];
-         // Retrive value of the exponential from cache.
-         llik += c[index] + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
-      }
-      }
-   } 
+   }
 
    return llik;
 
@@ -276,7 +248,6 @@ mlwalk(
   /* input */
   const double *llik_mat,
   const int n,
-  const int m,
   const int maxbreaks,
   /* output */
   double *mllik,
@@ -616,6 +587,40 @@ tadbit(
    }
 
    if (heuristic) {
+      // XXX Dynamic programming heuristic.
+      double *SC = (double *) malloc(n*n * sizeof(double));
+      memset(SC, 0, n*n * sizeof(double));
+      for (j = 1 ; j < n ; j++) {
+      for (i = 0 ; i < n-j ; i++) {
+         double value = 0.0;
+         for (l = 0 ; l < m ; l++)
+            value += obs[l][i+(i+j)*n]/weights[l][i+(i+j)*n];
+         // TODO Use the weighted values.
+         SC[i+(i+j)*n] = SC[i+(i+j-1)*n] + SC[i+1+(i+j)*n] -
+            SC[i+1+(i+j-1)*n] + value;
+      }
+      }
+
+      double *means = (double *) malloc(n*n * sizeof(double));
+      for (j = 1 ; j < n ; j++) {
+      for (i = 0 ; i < n-j ; i++) {
+         means[i+(i+j)*n] = SC[i+(i+j)*n] *2 /(j-i)/(j-i+1);
+      }
+      }
+
+      int hmaxbreaks = n/4;
+      double *hmllik = (double *) malloc(hmaxbreaks * sizeof(double));
+      int *hbkpts = (int *) malloc(hmaxbreaks*n * sizeof(int));
+      mlwalk(means, n, hmaxbreaks, hmllik, hbkpts);
+
+      free(means);
+      free(hmllik);
+      free(hbkpts);
+      free(SC);
+
+      fprintf(stderr, "passed\n");
+
+
       // Determine TAD size.
       double total = 0.0;
       for (l = 0 ; l < m ; l++)
@@ -698,7 +703,7 @@ tadbit(
    double *mllik = (double *) malloc(maxbreaks * sizeof(double));
    int *bkpts = (int *) malloc(n*maxbreaks * sizeof(int));
 
-   mlwalk(llikmat, n, m, maxbreaks, mllik, bkpts);
+   mlwalk(llikmat, n, maxbreaks, mllik, bkpts);
 
    // Get optimal number of breaks by AIC.
    double AIC = -INFINITY;
@@ -733,7 +738,7 @@ tadbit(
             passages[j] += bkpts[j+nbreaks_opt*n];
          }
       }
-      mlwalk(llikmatcpy, n, m, maxbreaks, mllikcpy, bkptscpy);
+      mlwalk(llikmatcpy, n, maxbreaks, mllikcpy, bkptscpy);
    }
 
    free(llikmatcpy);
