@@ -11,6 +11,7 @@
 
 // Globals variables. //
 
+int *_cache_index;
 int n_processed;              // Number of slices processed so far.
 int n_to_process;             // Total number of slices to process.
 int taskQ_i;                  // Index used for task queue.
@@ -18,7 +19,7 @@ pthread_mutex_t tadbit_lock;  // Mutex to access task queue.
 
 
 void
-calc_fg(
+calcfg(
   /* input */
   const int    n,
   const int    i_,
@@ -33,9 +34,10 @@ calc_fg(
   const double b,
   const double da,
   const double db,
+        double *c,
   /* output */
-  double *f,
-  double *g
+        double *f,
+        double *g
 ){
 // SYNOPSIS:                                                            
 //   Subfroutine of 'poiss_reg' that computes 'f' and 'g' in Newton-    
@@ -68,13 +70,17 @@ calc_fg(
    int j;
 
    *f = 0.0; *g = 0.0;
+   for (i = 0 ; i < n ; i++) c[i] = NAN;
    // Only the boundaries change for the diagonal half-block.
    // The computations are the same in both cases.
    if (diag) {
       for (j = j_+1 ; j < _j+1 ; j++) {
       for (i = i_ ; i < j ; i++) {
-         // TODO Cache the values 'exp(a+da+(b+db)*d[i+j*n])'.
-         tmp  =  w[i+j*n] * exp(a+da+(b+db)*d[i+j*n]) - k[i+j*n];
+         // Retrive value of the exponential from cache.
+         if (isnan(c[_cache_index[i+j*n]])) {
+            c[_cache_index[i+j*n]] = exp(a+da+(b+db)*d[i+j*n]);
+         }
+         tmp  =  w[i+j*n] * c[_cache_index[i+j*n]] - k[i+j*n];
          *f  +=  tmp;
          *g  +=  tmp * d[i+j*n];
       }
@@ -83,7 +89,11 @@ calc_fg(
    else {
       for (j = j_ ; j < _j+1 ; j++) {
       for (i = i_ ; i < _i+1 ; i++) {
-         tmp  =  w[i+j*n] * exp(a+da+(b+db)*d[i+j*n]) - k[i+j*n];
+         // Retrive value of the exponential from cache.
+         if (isnan(c[_cache_index[i+j*n]])) {
+            c[_cache_index[i+j*n]] = exp(a+da+(b+db)*d[i+j*n]);
+         }
+         tmp  =  w[i+j*n] * c[_cache_index[i+j*n]] - k[i+j*n];
          *f  +=  tmp;
          *g  +=  tmp * d[i+j*n];
       }
@@ -105,7 +115,8 @@ ll(
   const double *k,
   const double *d,
   const double *w,
-  const double *lg
+  const double *lg,
+        double *c
 ){
 // SYNOPSIS:                                                            
 //   The fitted model (by maximum likelihood) is Poisson with lambda    
@@ -138,15 +149,16 @@ ll(
    double dfdb = 0.0;
    double dgda = 0.0;
    double dgdb = 0.0;
-   // See the comment about 'tmp' in 'calc_fg'.
+   // See the comment about 'tmp' in 'calcfg'.
    long double tmp; 
 
-   calc_fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, &f, &g);
+   calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
 
    // Newton-Raphson until gradient function is less than TOLERANCE.
    // The gradient function is the square norm 'f*f + g*g'.
    while ((oldgrad = f*f + g*g) > TOLERANCE && iter++ < MAXITER) {
 
+      for (i = 0 ; i < n ; i++) c[i] = NAN;
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
       // Only the boundaries change for the diagonal half-block.
@@ -154,7 +166,11 @@ ll(
       if (diag) {
          for (j = j_+1 ; j < _j+1 ; j++) {
          for (i = i_ ; i < j ; i++) {
-            tmp   =   w[i+j*n] * exp(a+b*d[i+j*n]);
+            // Retrive value of the exponential from cache.
+            if (isnan(c[_cache_index[i+j*n]])) {
+               c[_cache_index[i+j*n]] = exp(a+b*d[i+j*n]);
+            }
+            tmp   =   w[i+j*n] * c[_cache_index[i+j*n]];
             dfda +=   tmp;
             dgda +=   tmp * d[i+j*n];
             dgdb +=   tmp * d[i+j*n]*d[i+j*n];
@@ -164,7 +180,11 @@ ll(
       else {
          for (j = j_ ; j < _j+1 ; j++) {
          for (i = i_ ; i < _i+1 ; i++) {
-            tmp   =   w[i+j*n] * exp(a+b*d[i+j*n]);
+            // Retrive value of the exponential from cache.
+            if (isnan(c[_cache_index[i+j*n]])) {
+               c[_cache_index[i+j*n]] = exp(a+b*d[i+j*n]);
+            }
+            tmp   =   w[i+j*n] * c[_cache_index[i+j*n]];
             dfda +=   tmp;
             dgda +=   tmp * d[i+j*n];
             dgdb +=   tmp * d[i+j*n]*d[i+j*n];
@@ -177,7 +197,7 @@ ll(
       da = (f*dgdb - g*dfdb) / denom;
       db = (g*dfda - f*dgda) / denom;
 
-      calc_fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, &f, &g);
+      calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
 
       // Traceback if we are not going down the gradient. Cut the
       // length of the steps in half until this step goes down
@@ -185,7 +205,7 @@ ll(
       while (f*f + g*g > oldgrad) {
          da /= 2;
          db /= 2;
-         calc_fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, &f, &g);
+         calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
       }
 
       // Update 'a' and 'b'.
@@ -372,6 +392,10 @@ fill_llikmat(
    int j;
    int l;
 
+   // Cache to speed up computation.
+   double *c= (double *) malloc(n * sizeof(double));
+   memset(c, 0.0, n * sizeof(double));
+
    int job_index;
    
    // Break out of the loop when task queue is empty.
@@ -399,9 +423,9 @@ fill_llikmat(
       llikmat[i+j*n] = 0.0;
       for (l = 0 ; l < m ; l++) {
          llikmat[i+j*n] += 
-            ll(n, 0, i-1, i, j, 0, k[l], d, w[l], lg[l]) +
-            ll(n, i,   j, i, j, 1, k[l], d, w[l], lg[l]) +
-            ll(n, j+1, n, i, j, 0, k[l], d, w[l], lg[l]);
+            ll(n, 0, i-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2 +
+            ll(n, i,   j, i, j, 1, k[l], d, w[l], lg[l], c) +
+            ll(n, j+1, n, i, j, 0, k[l], d, w[l], lg[l], c) / 2;
       }
       n_processed++;
       if (verbose) {
@@ -410,6 +434,7 @@ fill_llikmat(
       }
    }
 
+   free(c);
    return NULL;
 
 }
@@ -472,6 +497,7 @@ tadbit(
       n -= remove[i];
    }
 
+   _cache_index = (int *) malloc(n*n * sizeof(int));
    // Allocate and copy.
    double **log_gamma = (double **) malloc(m * sizeof(double *));
    double **new_obs = (double **) malloc(m * sizeof(double *));
@@ -485,6 +511,7 @@ tadbit(
          if (remove[i] || remove[j]) {
             continue;
          }
+         _cache_index[l] = i > j ? i-j : j-i;
          log_gamma[k][l] = lgamma(obs[k][i+j*N]+1);
          new_obs[k][l] = obs[k][i+j*N];
          dist[l] = init_dist[i+j*N];
