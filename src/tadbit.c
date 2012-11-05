@@ -69,20 +69,15 @@ calcfg(
    long double tmp;
    int i;
    int j;
-   int i_low;
-   int i_high;
-   int j_low;
-   int j_high;
+   int i_low = i_;
+   int i_high = -1;
+   int j_low = diag ? j_+1 : j_;
+   int j_high = _j+1;
    int index;
 
    *f = 0.0; *g = 0.0;
    // Initialize cache.
    for (index = 0 ; index < n ; index++) c[index] = NAN;
-
-   // Set boundaries of the double 'for' loop.
-   i_low = i_;
-   j_high = _j+1;
-   j_low = diag ? j_+1 : j_;
 
    for (j = j_low ; j < j_high ; j++) {
       i_high = diag ? j : _i+1;
@@ -144,10 +139,10 @@ ll(
 
    int i;
    int j;
-   int i_low;
-   int i_high;
-   int j_low;
-   int j_high;
+   int i_low = i_;
+   int i_high = -1;
+   int j_low = diag ? j_+1 : j_;
+   int j_high = _j+1;
    int index;
    int iter = 0;
    double denom;
@@ -174,11 +169,6 @@ ll(
       for (index = 0 ; index < n ; index++) c[index] = NAN;
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
-
-      // Set the boundary conditions of the double 'for' loop.
-      i_low = i_;
-      j_high = _j+1;
-      j_low = diag ? j_+1 : j_;
 
       for (j = j_low ; j < j_high ; j++) {
          i_high = diag ? j : _i+1;
@@ -586,25 +576,24 @@ tadbit(
    }
    }
 
-   if (heuristic) {
       // XXX Dynamic programming heuristic.
       double *SC = (double *) malloc(n*n * sizeof(double));
       memset(SC, 0, n*n * sizeof(double));
       for (j = 1 ; j < n ; j++) {
       for (i = 0 ; i < n-j ; i++) {
-         double value = 0.0;
+         double weighted_value = 0.0;
          for (l = 0 ; l < m ; l++)
-            value += obs[l][i+(i+j)*n]/weights[l][i+(i+j)*n];
-         // TODO Use the weighted values.
+            weighted_value += obs[l][i+(i+j)*n]/weights[l][i+(i+j)*n];
          SC[i+(i+j)*n] = SC[i+(i+j-1)*n] + SC[i+1+(i+j)*n] -
-            SC[i+1+(i+j-1)*n] + value;
+            SC[i+1+(i+j-1)*n] + weighted_value;
       }
       }
 
       double *means = (double *) malloc(n*n * sizeof(double));
+      for (i = 0 ; i < n*n ; i++) means[i] = NAN;
       for (j = 1 ; j < n ; j++) {
-      for (i = 0 ; i < n-j ; i++) {
-         means[i+(i+j)*n] = SC[i+(i+j)*n] *2 /(j-i)/(j-i+1);
+      for (i = 0 ; i < j ; i++) {
+        means[i+j*n] = log(SC[i+j*n]);
       }
       }
 
@@ -613,13 +602,32 @@ tadbit(
       int *hbkpts = (int *) malloc(hmaxbreaks*n * sizeof(int));
       mlwalk(means, n, hmaxbreaks, hmllik, hbkpts);
 
-      free(means);
-      free(hmllik);
-      free(hbkpts);
-      free(SC);
+      int nbreaks_opt;
+      double score;
+      double total = SC[0+(n-1)*n];
+      for (j = 1 ; j < hmaxbreaks ; j++) {
+         score = 0;
+         int start = 0;
+         for (i = 0 ; i < n ; i++) {
+            if (hbkpts[i+j*n]) {
+              score += SC[start+i*n];
+              start = i+1;
+            }
+         }
+         fprintf(stderr, "%.6f, ", score/total);
+      }
+      fprintf(stderr, "\n");
+
+//      free(means);
+//      free(hmllik);
+//      free(hbkpts);
+//      free(SC);
+
+//////////////////////////////////////////////////////////////////////////
+/*
+   if (heuristic) {
 
       fprintf(stderr, "passed\n");
-
 
       // Determine TAD size.
       double total = 0.0;
@@ -740,13 +748,22 @@ tadbit(
       }
       mlwalk(llikmatcpy, n, maxbreaks, mllikcpy, bkptscpy);
    }
-
    free(llikmatcpy);
    free(mllikcpy);
    free(bkptscpy);
+*/
+//////////////////////////////////////////////////////////////////////////
+   
+   // XXX TEST
+   int maxbreaks = hmaxbreaks;
+   int *bkpts = hbkpts;
+   double *mllik = hmllik;
+   llikmat = means;
+   //
 
    // Resize output to match original.
    int *resized_bkpts = (int *) malloc(N*maxbreaks * sizeof(int));
+   int *passages = (int *) malloc(n * sizeof(int));
    int *resized_passages = (int *) malloc(N * sizeof(int));
    memset(resized_bkpts, 0, N*maxbreaks * sizeof(int));
    memset(resized_passages, 0, N * sizeof(int));
