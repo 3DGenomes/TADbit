@@ -51,7 +51,7 @@ tadbit(
   const int verbose,
   //const int speed,
   const int max_tad_size,
-  const int heuristic,
+  const int do_not_use_heuristic,
   /* output */
   tadbit_output *seg
 );

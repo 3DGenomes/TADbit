@@ -29,7 +29,7 @@ tadbit_R_call(
   SEXP n_threads,
   SEXP verbose,
   SEXP max_tad_size,
-  SEXP heuristic
+  SEXP do_not_use_heuristic
 ){
 
 /*
@@ -80,7 +80,7 @@ tadbit_R_call(
    
    // Call 'tadbit'.
    tadbit(obs, n, m, INTEGER(n_threads)[0], INTEGER(verbose)[0],
-         INTEGER(max_tad_size)[0], INTEGER(heuristic)[0], seg);
+         INTEGER(max_tad_size)[0], INTEGER(do_not_use_heuristic)[0], seg);
 
    int maxbreaks = seg->maxbreaks;
 
