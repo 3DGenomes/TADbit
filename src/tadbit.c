@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 #include <pthread.h>
 #include <ctype.h>
@@ -217,9 +216,10 @@ ll(
    // Compute log-likelihood (using 'dfda').
    double llik = 0.0;
 
-   // **   IMPORTANT NOTE   **  //
-   // Rhe last call to 'calcfg' has set the cache to the right values.
-   // No need to reset the cache.
+   //////////////////////////////////////////////////////////////////////
+   // The last call to 'calcfg' has set the cache to the right values. //
+   // No need to reset the cache.                                      //
+   //////////////////////////////////////////////////////////////////////
    for (j = j_low ; j < j_high ; j++) {
       i_high = diag ? j : _i+1;
       for (i = i_low ; i < i_high ; i++) {
@@ -248,15 +248,15 @@ DPwalk(
 //   of breakpoints given a matrix of slice maximum log-likelihood.     
 //                                                                      
 // PARAMETERS:                                                          
-//   '*llik_mat' : matrix of maximum log-likelihood values.             
-//   'n' : row/col number of 'llik_mat'.                                
-//   'm' : number of replicates.                                        
+//   '*llik_mat': matrix of maximum log-likelihood values.              
+//   'n': row/col number of 'llik_mat'.                                 
+//   'MAXBREAKS': The maximum number of breakpoints.                    
 //        -- output arguments --                                        
-//   '*mllik' : maximum log-likelihood of the segmentations.            
-//   '*breakpoints' : optimal breakpoints per number of breaks.         
+//   '*mllik': maximum log-likelihood of the segmentations.             
+//   '*breakpoints': optimal breakpoints per number of breaks.          
 //                                                                      
 // RETURN:                                                              
-//   The optimal number of breakpoints.                                 
+//   'void'                                                             
 //                                                                      
 // SIDE-EFFECTS:                                                        
 //   Update 'breakpoints' in place.                                     
@@ -279,7 +279,7 @@ DPwalk(
    // 'breakpoints' is a 'n' x 'MAXBREAKS' array. The first index (row)
    // is 1 if there is a breakpoint at that location, the second index
    // (column) is the number of breakpoints.
-   memset(breakpoints, 0, n*MAXBREAKS * sizeof(int));
+   for (i = 0 ; i < n*MAXBREAKS ; i++) breakpoints[i] = 0;
 
    for (i = 0 ; i < n*n ; i++) {
       new_bkpt_list[i] = 0;
@@ -360,10 +360,10 @@ fill_llikmat(
 //   triangular part is left out.                                       
 //                                                                      
 // PARAMETERS:                                                          
-// TODO Describe the parameters.
+//   'arg': thread arguments (see header file for definition).          
 //                                                                      
 // RETURN:                                                              
-//   void                                                               
+//   'void'                                                             
 //                                                                      
 // SIDE-EFFECTS:                                                        
 //   Update 'llikmat' in place.                                         
@@ -386,7 +386,7 @@ fill_llikmat(
 
    // Cache to speed up computation.
    double *c= (double *) malloc(n * sizeof(double));
-   memset(c, 0.0, n * sizeof(double));
+   for (i = 0 ; i < n ; i++) c[i] = 0.0;
 
    int job_index;
    
@@ -438,6 +438,24 @@ allocate_task(
   const int j0,
   const int n
 ){
+// SYNOPSIS:                                                            
+//   Create or update thread jobs. For an approximate TAD defined by    
+//   ('i0', 'j0'), create jobs that will compute the log-likelihood of  
+//   this TAD, and all single splits of this TAD.                       
+//                                                                      
+// PARAMETERS:                                                          
+//   'skip': the job matrix to update in place.                         
+//   'i0': start position of the approximate TAD.                       
+//   'j0': end position of the approximate TAD.                         
+//   'n': number of rows/columns of the hiC matrix (or 'skip').         
+//                                                                      
+// RETURN:                                                              
+//   'void'                                                             
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'skip' in place.                                            
+//                                                                      
+
    int i;
    int j;
 
@@ -455,7 +473,6 @@ tadbit(
   const int m,
   int n_threads,
   const int verbose,
-  //const int max_tad_size,
   int max_tad_size,
   const int do_not_use_heuristic,
   /* output */
@@ -512,7 +529,7 @@ tadbit(
       n -= remove[i];
    }
 
-   const int MAXBREAKS = n/20;
+   const int MAXBREAKS = n/5;
 
    _cache_index = (int *) malloc(n*n * sizeof(int));
    // Allocate and copy.
@@ -546,7 +563,7 @@ tadbit(
    double **rowsums = (double **) malloc(m * sizeof(double *));
    for (k = 0 ; k < m ; k++) {
       rowsums[k] = (double *) malloc(n * sizeof(double));
-      memset(rowsums[k], 0.0, n * sizeof(double));
+      for (i = 0 ; i < n ; i++) rowsums[k][i] = 0.0;
    }
    for (i = 0 ; i < n ; i++)
    for (k = 0 ; k < m ; k++)
@@ -557,7 +574,7 @@ tadbit(
    double **weights = (double **) malloc(m * sizeof(double *));
    for (l = 0 ; l < m ; l++) {
       weights[l] = (double *) malloc(n*n * sizeof(double));
-      memset(weights[l], 0.0, n*n * sizeof(double));
+      for (i = 0 ; i < n*n ; i++) weights[l][i] = 0.0;
       // Compute scalar product.
       for (j = 0 ; j < n ; j++)
       for (i = 0 ; i < n ; i++)
@@ -576,17 +593,23 @@ tadbit(
 
    int *skip = (int *) malloc(n*n *sizeof(int));
 
+   // Use the heuristic by default (hence the name of the parameter).
+   // The parameter 'max_tad_size' is needed only in case the heuristic
+   // is not used.
    if (do_not_use_heuristic) {
       for (j = 0 ; j < n ; j++)
       for (i = 0 ; i < n ; i++)
          skip[i+j*n] = (j-i) > max_tad_size ? 1 : 0;
    }
    else {
+      if (verbose) {
+         fprintf(stderr, "applying heuristic pruning\n");
+      }
       // 'S[i+j*n]' is the weighted sum of reads within the triangle
       // defined by ('i','j') in the upper triangular matrix of
       // observations.
       double *S = (double *) malloc(n*n * sizeof(double));
-      memset(S, 0.0, n*n * sizeof(double));
+      for (i = 0 ; i < n*n ; i++) S[i] = 0.0;
       for (j = 1 ; j < n ; j++) {
       for (i = 0 ; i < n-j ; i++) {
          double weighted_value = 0.0;
@@ -604,6 +627,10 @@ tadbit(
         heur_score[i+j*n] = log(S[i+j*n]);
 
       // Use dynamic programming to find approximate break points.
+      // The matrix 'mllik' is used only to make the function call valid
+      // (it is updated in place, but the value is disregarded), and
+      // the heuristic score 'heur_score' plays the role of the
+      // log-likelihood 'llikmat'.
       DPwalk(heur_score, n, MAXBREAKS, mllik, bkpts);
 
       free(heur_score);
@@ -611,8 +638,8 @@ tadbit(
 
       int i0;
       int j0;
-      // For every approximate break point allocate an accurate
-      // estimation of the log likelihood in the neighborhood.
+      // Create a thread job for each approximate TAD. (see
+      // 'allocate_task').
       for (i = 0 ; i < n*n ; i++) skip[i] = 1;
       for (j = 1 ; j < MAXBREAKS ; j++) {
          i0 = 0;
@@ -626,17 +653,18 @@ tadbit(
       }
 
       // Allocate estimation of the log likelihood for all small
-      // TADs (less than 5 bins).
-      for (j = 5 ; j < n ; j++)
-      for (i = j-5 ; i < j-3 ; i++)
+      // TADs (less than 3 bins).
+      for (j = 6 ; j < n ; j++)
+      for (i = j-6 ; i < j-3 ; i++)
          skip[i+j*n] = 0;
 
-      // Allocate estimation of the log likelihood for the ends.
-      for (j = 1 ; j < 30 ; j++)
+      // Allocate jobs at the ends of the chromosomes/units because
+      // these regions are a bit noisier.
+      for (j = 1 ; j < 101 ; j++)
       for (i = 0 ; i < j-3 ; i++)
          skip[i+j*n] = 0;
-      for (j = n-30 ; j < n ; j++)
-      for (i = n-30 ; i < j-3 ; i++)
+      for (j = n-101 ; j < n ; j++)
+      for (i = n-101 ; i < j-3 ; i++)
          skip[i+j*n] = 0;
 
    } // End of heuristic task allocation.
@@ -669,7 +697,8 @@ tadbit(
    for (i = 0 ; i < n*n ; i++) n_to_process += (1-skip[i]);
    taskQ_i = 0;
 
-   memset(tid, 0, (1 + n_threads) * sizeof(pthread_t *));
+   // Instantiate threads and start running jobs.
+   for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
    for (i = 1 ; i < 1 + n_threads ; i++) {
       errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
       if (errno) {
@@ -689,10 +718,10 @@ tadbit(
    pthread_mutex_destroy(&tadbit_lock);
    free(skip);
    free(tid);
+   free(_cache_index);
 
    // The matrix 'llikmat' now contains the log-likelihood of the
    // segments. The breakpoints are found by dynamic programming.
-
    DPwalk(llikmat, n, MAXBREAKS, mllik, bkpts);
 
    // Get optimal number of breaks by AIC.
@@ -710,22 +739,26 @@ tadbit(
    }
    nbreaks_opt -= 1;
 
-   // XXX Implementation of the quality score.
+   // Compute breakpoint confidence by penalized dynamic progamming.
    double *llikmatcpy = (double *) malloc (n*n * sizeof(double));
    double *mllikcpy = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkptscpy = (int *) malloc(n*MAXBREAKS * sizeof(int));
    int *passages = (int *) malloc(n * sizeof(int));
-   memcpy(llikmatcpy, llikmat, n*n * sizeof(double));
-   memcpy(bkptscpy, bkpts, n*MAXBREAKS * sizeof(int));
-   memset(passages, 0, n * sizeof(int));
+   for (i = 0 ; i < n ; i++) passages[i] = 0;
+   for (i = 0 ; i < n*MAXBREAKS ; i++) bkptscpy[i] = bkpts[i];
+   for (i = 0 ; i < n*n ; i++) llikmatcpy[i] = llikmat[i];
 
    for (l = 0 ; l < 10 ; l++) {
       i = 0;
       for (j = 0 ; j < n ; j++) {
          if (bkptscpy[j+nbreaks_opt*n]) {
+            // Apply a constant penalty every time a TAD is present
+            // in the final decomposition. The penalty is set to
+            // '6*m' because it is the expected log-likelihood gain
+            // for adding a new TAD around the optimum log-likelihood.
             llikmatcpy[i+j*n] -= m*6;
-            i = j+1;
             passages[j] += bkpts[j+nbreaks_opt*n];
+            i = j+1;
          }
       }
       DPwalk(llikmatcpy, n, MAXBREAKS, mllikcpy, bkptscpy);
@@ -737,8 +770,8 @@ tadbit(
    // Resize output to match original.
    int *resized_bkpts = (int *) malloc(N*MAXBREAKS * sizeof(int));
    int *resized_passages = (int *) malloc(N * sizeof(int));
-   memset(resized_bkpts, 0, N*MAXBREAKS * sizeof(int));
-   memset(resized_passages, 0, N * sizeof(int));
+   for (i = 0 ; i < N*MAXBREAKS ; i++) resized_bkpts[i] = 0;
+   for (i = 0 ; i < N ; i++) resized_passages[i] = 0;
 
    for (l = 0, i = 0 ; i < N ; i++) {
       if (!remove[i]) {
@@ -749,6 +782,7 @@ tadbit(
          l++;
       }
    }
+
 
    free(passages);
    free(bkpts);
@@ -779,8 +813,6 @@ tadbit(
    free(new_obs);
    free(log_gamma);
    free(dist);
-
-   
 
    // Update output struct.
    seg->maxbreaks = MAXBREAKS;

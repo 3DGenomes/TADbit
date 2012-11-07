@@ -24,7 +24,7 @@ typedef struct {
    double *d;
    double **w;
    double **lg;
-   int *skip;
+   int * skip;
    double *llikmat;
    int verbose;
 } thread_arg;
