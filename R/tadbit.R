@@ -28,11 +28,10 @@ tadbit <- function(x, n_CPU="auto", verbose=TRUE, max_tad_size="auto",
          stop("all the matrices in 'x' must have same dimensions")
       }
    }
-   # Make sure values in 'x' are double.
-   # NOTE: calling the C function 'FLOAT' on integers passed from R
-   # is not reliable (values differ a bit) and can cause segmentation
-   # faults.
-   x <- lapply(x, function(y) { y + double(1) })
+   # Make sure values in 'x' are integer.
+   for (i in 1:length(x)) {
+      storage.mode(x[[i]]) <- "integer"
+   }
 
    # Assign automatic variables and coerce to proper type.
    n_CPU <- as.integer(ifelse(n_CPU == "auto", 0, n_CPU))

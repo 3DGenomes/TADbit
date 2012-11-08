@@ -49,10 +49,10 @@ tadbit_R_call(
    PROTECT(dim = allocVector(INTSXP, 2));
 
    // Convert 'obs_list' to pointer of pointer to double.
-   double **obs = (double **) malloc(m * sizeof(double **));
+   int **obs = (int **) malloc(m * sizeof(int **));
    for (i = 0 ; i < m ; i++) {
       // This fails if list element is not numeric.
-      obs[i] = REAL(coerceVector(VECTOR_ELT(list, i), REALSXP));
+      obs[i] = INTEGER(coerceVector(VECTOR_ELT(list, i), INTSXP));
       // Check that input is a matrix.
       if (!isMatrix(VECTOR_ELT(list, i))) {
          error("input must be square matrix");

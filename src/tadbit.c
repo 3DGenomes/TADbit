@@ -27,7 +27,7 @@ calcfg(
   const int    j_,
   const int    _j,
   const int    diag,
-  const double *k,
+  const int *k,
   const double *d,
   const double *w,
   const double a,
@@ -105,7 +105,7 @@ ll(
   const int    j_,
   const int    _j,
   const int    diag,
-  const double *k,
+  const int    *k,
   const double *d,
   const double *w,
   const double *lg,
@@ -125,7 +125,7 @@ ll(
 //   'j_': first value of index j (column).                             
 //   '_j': last value of index j (column).                              
 //   'diag': whether the block is half-diagonal (middle block).         
-//   'k': raw hiC counts as double.                                     
+//   'k': raw hiC counts.                                               
 //   'd': distances from diagonal in log.                               
 //   'w': weights measuring hiC bias.                                   
 //   'lg': log-gamma terms.                                             
@@ -373,7 +373,7 @@ fill_llikmat(
    thread_arg *myargs = (thread_arg *) arg;
    const int n = myargs->n;
    const int m = myargs->m;
-   const double **k = (const double **) myargs->k;
+   const int **k = (const int **) myargs->k;
    const double *d = (const double*) myargs->d;
    const double **w = (const double **) myargs->w;
    const double **lg= (const double **) myargs->lg;
@@ -532,7 +532,7 @@ allocate_new_jobs(
 void
 tadbit(
   /* input */
-  double **obs,
+  int **obs,
   int n,
   const int m,
   int n_threads,
@@ -599,12 +599,12 @@ tadbit(
    _cache_index = (int *) malloc(n*n * sizeof(int));
    // Allocate and copy.
    double **log_gamma = (double **) malloc(m * sizeof(double *));
-   double **new_obs = (double **) malloc(m * sizeof(double *));
+   int **new_obs = (int **) malloc(m * sizeof(int *));
    double *dist = (double *) malloc(n*n * sizeof(double));
    for (k = 0 ; k < m ; k++) {
       l = 0;
       log_gamma[k] = (double *) malloc(n*n * sizeof(double));
-      new_obs[k] = (double *) malloc(n*n * sizeof(double));
+      new_obs[k] = (int *) malloc(n*n * sizeof(int));
       for (j = 0 ; j < N ; j++) {
       for (i = 0 ; i < N ; i++) {
          if (remove[i] || remove[j]) {

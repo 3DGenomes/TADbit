@@ -20,7 +20,7 @@ typedef struct {
 typedef struct {
    int n;
    int m;
-   double **k;
+   int **k;
    double *d;
    double **w;
    double **lg;
@@ -44,7 +44,7 @@ typedef struct {
 void
 tadbit(
   /* input */
-  double **obs,
+  int **obs,
   int n,
   const int m,
   int n_threads,
