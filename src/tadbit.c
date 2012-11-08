@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <float.h>
 
 #include "tadbit.h"
 
@@ -376,7 +377,7 @@ fill_llikmat(
    const double *d = (const double*) myargs->d;
    const double **w = (const double **) myargs->w;
    const double **lg= (const double **) myargs->lg;
-   const int *skip = (const int *) myargs->skip;
+   const char *skip = (const char *) myargs->skip;
    double *llikmat = myargs->llikmat;
    const int verbose = myargs->verbose;
 
@@ -432,16 +433,14 @@ fill_llikmat(
 }
 
 void
-allocate_task(
-  int *skip,
+allocate_heur_job(
+  char *skip,
   const int i0,
   const int j0,
   const int n
 ){
 // SYNOPSIS:                                                            
-//   Create or update thread jobs. For an approximate TAD defined by    
-//   ('i0', 'j0'), create jobs that will compute the log-likelihood of  
-//   this TAD, and all single splits of this TAD.                       
+//   Create or update thread jobs (used in pre-heuristic).
 //                                                                      
 // PARAMETERS:                                                          
 //   'skip': the job matrix to update in place.                         
@@ -459,10 +458,75 @@ allocate_task(
    int i;
    int j;
 
-   for (j = i0 ; j < j0 ; j++)
-      skip[i0+j*n] = 0;
-   for (i = i0 ; i < j0 ; i++)
-      skip[i+j0*n] = 0;
+   for (j = j0-2 ; j < j0+3 ; j++)
+   for (i = i0-2 ; i < i0+3 ; i++)
+      if ((i+j*n > 0) && (i+j*n < n*n)) skip[i+j*n] = 0;
+
+}
+
+void
+allocate_new_jobs(
+  char *skip,
+  const int *bkpts,
+  const int MAXBREAKS,
+  const int nbreaks_opt,
+  const int n
+){
+// SYNOPSIS:                                                            
+//   Create or update thread jobs. For an approximate TAD defined by    
+//   ('i0', 'j0'), create jobs that will compute the log-likelihood of  
+//   this TAD, and all single splits of this TAD.                       
+//                                                                      
+// PARAMETERS:                                                          
+// TODO Update parameters
+//   'skip': the job matrix to update in place.                         
+//   'n': number of rows/columns of the hiC matrix (or 'skip').         
+//                                                                      
+// RETURN:                                                              
+//   'void'                                                             
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'skip' in place.                                            
+//                                                                      
+
+   int i;
+   int j;
+   int i0;
+   int j0;
+   int shift;
+   char *starts = (char*) malloc(n* sizeof(char));
+   char *ends = (char*) malloc(n* sizeof(char));
+   for (i = 0 ; i < n ; i++) {
+      starts[i] = 0;
+      ends[i] = 0;
+   }
+   
+   for (shift = -10 ; shift < 11 ; shift++) {
+      for (i0 = 0, j0 = 0 ; j0 < n ; j0++) {
+         if (bkpts[j0+(shift+nbreaks_opt)*n]) {
+
+            // Jobs for splitting the TAD.
+            for (j = i0 ; j < j0 ; j++)
+               skip[i0+j*n] = 0;
+            for (i = i0 ; i < j0 ; i++)
+               skip[i+j0*n] = 0;
+
+            starts[i0] = 1;
+            ends[j0] = 1;
+            i0 = j0+1;
+         }
+      }
+   }
+
+   // Jobs for merging the TADs.
+   for (i = 0 ; i < n ; i++)
+   for (j = 0 ; j < n ; j++)
+      if (starts[i] && ends[j] && (j-i < 500) && (i < j))
+         skip[i+j*n] = 0;
+
+   free(starts);
+   free(ends);
+
 }
 
 void
@@ -495,6 +559,7 @@ tadbit(
    int j;
    int k;
    int l;
+   int i0;
 
 
    // Allocate memory and initialize variables. The distance
@@ -591,7 +656,8 @@ tadbit(
    for (i = 0 ; i < n*n ; i++)
       llikmat[i] = NAN;
 
-   int *skip = (int *) malloc(n*n *sizeof(int));
+   // 'skip' will contain only 0 or 1 and can be stored as 'char'.
+   char *skip = (char *) malloc(n*n *sizeof(char));
 
    // Use the heuristic by default (hence the name of the parameter).
    // The parameter 'max_tad_size' is needed only in case the heuristic
@@ -603,7 +669,7 @@ tadbit(
    }
    else {
       if (verbose) {
-         fprintf(stderr, "applying heuristic pruning\n");
+         fprintf(stderr, "running pre-heuristic\n");
       }
       // 'S[i+j*n]' is the weighted sum of reads within the triangle
       // defined by ('i','j') in the upper triangular matrix of
@@ -636,17 +702,13 @@ tadbit(
       free(heur_score);
       free(S);
 
-      int i0;
-      int j0;
-      // Create a thread job for each approximate TAD. (see
-      // 'allocate_task').
+      // Create a thread job for each approximate TAD.
       for (i = 0 ; i < n*n ; i++) skip[i] = 1;
       for (j = 1 ; j < MAXBREAKS ; j++) {
          i0 = 0;
          for (i = 0 ; i < n ; i++) {
             if (bkpts[i+j*n]) {
-               j0 = i;
-               allocate_task(skip, i0, j0, n);
+               allocate_heur_job(skip, i0, i, n);
                i0 = i+1;
             }
          }
@@ -660,14 +722,19 @@ tadbit(
 
       // Allocate jobs at the ends of the chromosomes/units because
       // these regions are a bit noisier.
-      for (j = 1 ; j < 101 ; j++)
+      for (j = 1 ; j < 51 ; j++)
       for (i = 0 ; i < j-3 ; i++)
          skip[i+j*n] = 0;
-      for (j = n-101 ; j < n ; j++)
-      for (i = n-101 ; i < j-3 ; i++)
+      for (j = n-51 ; j < n ; j++)
+      for (i = n-51 ; i < j-3 ; i++)
          skip[i+j*n] = 0;
 
-   } // End of heuristic task allocation.
+      // Reset lower triangular part of 'skip'.
+      for (j = 0 ; j < n ; j++)
+      for (i = j ; i < n ; i++)
+         skip[i+j*n] = 1;
+
+   } // End of pre-heuristic.
 
 
    // Allocate 'tid'.
@@ -691,53 +758,72 @@ tadbit(
       return;
    }
 
-   // Initialize task queue.
-   n_processed = 0;
-   n_to_process = 0;
-   for (i = 0 ; i < n*n ; i++) n_to_process += (1-skip[i]);
-   taskQ_i = 0;
+   int n_params;
+   int nbreaks_opt;
+   double AIC = -INFINITY;
+   double newAIC = -DBL_MAX;
+   while (newAIC > AIC) {
 
-   // Instantiate threads and start running jobs.
-   for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
-   for (i = 1 ; i < 1 + n_threads ; i++) {
-      errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
-      if (errno) {
-         fprintf(stderr, "error creating thread (%d)\n", errno);
-         return;
+      if (verbose) {
+         fprintf(stderr, "starting new cycle\n");
       }
+
+      AIC = newAIC;
+
+      // Initialize task queue.
+      n_to_process = 0;
+      for (i = 0 ; i < n*n ; i++) {
+         if (!isnan(llikmat[i])) skip[i] = 1;
+         n_to_process += (1-skip[i]);
+      }
+      n_processed = 0;
+      taskQ_i = 0;
+      
+      // Instantiate threads and start running jobs.
+      for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
+      for (i = 1 ; i < 1 + n_threads ; i++) {
+         errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
+         if (errno) {
+            fprintf(stderr, "error creating thread (%d)\n", errno);
+            return;
+         }
+      }
+
+      // Wait for threads to return.
+      for (i = 1 ; i < 1 + n_threads ; i++) {
+         pthread_join(tid[i], NULL);
+      }
+      if (verbose) {
+         fprintf(stderr, "computing likelihood (100%% done)\n");
+      }
+
+      // The matrix 'llikmat' now contains the log-likelihood of the
+      // segments. The breakpoints are found by dynamic programming.
+      DPwalk(llikmat, n, MAXBREAKS, mllik, bkpts);
+
+      // Get optimal number of breaks by AIC.
+      newAIC = -INFINITY;
+      for (nbreaks_opt = 1 ; nbreaks_opt  < MAXBREAKS ; nbreaks_opt++) {
+         n_params = nbreaks_opt + m*(8 + nbreaks_opt*6);
+         if (newAIC > mllik[nbreaks_opt] - n_params) {
+            break;
+         }
+         else {
+            newAIC = mllik[nbreaks_opt] - n_params;
+         }
+      }
+      nbreaks_opt -= 1;
+
+      allocate_new_jobs(skip, bkpts, MAXBREAKS, nbreaks_opt, n);
+
    }
 
-   // Wait for threads to return.
-   for (i = 1 ; i < 1 + n_threads ; i++) {
-      pthread_join(tid[i], NULL);
-   }
-   if (verbose) {
-      fprintf(stderr, "computing likelihood (100%% done)\n");
-   }
+   AIC = newAIC;
 
    pthread_mutex_destroy(&tadbit_lock);
    free(skip);
    free(tid);
    free(_cache_index);
-
-   // The matrix 'llikmat' now contains the log-likelihood of the
-   // segments. The breakpoints are found by dynamic programming.
-   DPwalk(llikmat, n, MAXBREAKS, mllik, bkpts);
-
-   // Get optimal number of breaks by AIC.
-   double AIC = -INFINITY;
-   int n_params;
-   int nbreaks_opt;
-   for (nbreaks_opt = 1 ; nbreaks_opt  < MAXBREAKS ; nbreaks_opt++) {
-      n_params = nbreaks_opt + m*(8 + nbreaks_opt*6);
-      if (AIC > mllik[nbreaks_opt] - n_params) {
-         break;
-      }
-      else {
-         AIC = mllik[nbreaks_opt] - n_params;
-      }
-   }
-   nbreaks_opt -= 1;
 
    // Compute breakpoint confidence by penalized dynamic progamming.
    double *llikmatcpy = (double *) malloc (n*n * sizeof(double));
