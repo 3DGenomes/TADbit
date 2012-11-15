@@ -20,8 +20,8 @@ pthread_mutex_t tadbit_lock;  // Mutex to access task queue.
 
 
 void
-calcfg(
-  /* input */
+fg(
+  // input //
   const int    n,
   const int    i_,
   const int    _i,
@@ -36,7 +36,7 @@ calcfg(
   const double da,
   const double db,
         double *c,
-  /* output */
+  // output //
         double *f,
         double *g
 ){
@@ -165,10 +165,10 @@ ll(
    double dfdb = 0.0;
    double dgda = 0.0;
    double dgdb = 0.0;
-   // See the comment about 'tmp' in 'calcfg'.
+   // See the comment about 'tmp' in 'fg'.
    long double tmp; 
 
-   calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+   fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
 
    // Newton-Raphson until gradient function is less than TOLERANCE.
    // The gradient function is the square norm 'f*f + g*g'.
@@ -200,15 +200,15 @@ ll(
       da = (f*dgdb - g*dfdb) / denom;
       db = (g*dfda - f*dgda) / denom;
 
-      calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+      fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
 
       // Traceback if we are not going down the gradient. Cut the
       // length of the steps in half until this step goes down
       // the gradient.
-      while (f*f + g*g > oldgrad) {
+      for (i = 0 ; (i < 20) && (f*f + g*g > oldgrad) ; i++) {
          da /= 2;
          db /= 2;
-         calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+         fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
       }
 
       // Update 'a' and 'b'.
@@ -226,7 +226,7 @@ ll(
    double llik = 0.0;
 
    //////////////////////////////////////////////////////////////////////
-   // The last call to 'calcfg' has set the cache to the right values. //
+   // The last call to 'fg' has set the cache to the right values. //
    // No need to reset the cache.                                      //
    //////////////////////////////////////////////////////////////////////
    for (j = j_low ; j < j_high ; j++) {
@@ -312,12 +312,12 @@ fill_DP(
 
 void
 DPwalk(
-  /* input */
+  // input //
   const double *llikmat,
   const int n,
   const int MAXBREAKS,
   int n_threads,
-  /* output */
+  // output //
   double *mllik,
   int *breakpoints
 ){
@@ -630,7 +630,7 @@ allocate_new_jobs(
 
 void
 tadbit(
-  /* input */
+  // input //
   int **obs,
   int n,
   const int m,
@@ -638,7 +638,7 @@ tadbit(
   const int verbose,
   int max_tad_size,
   const int do_not_use_heuristic,
-  /* output */
+  // output //
   tadbit_output *seg
 ){
    time_t t;
