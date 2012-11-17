@@ -278,6 +278,7 @@ fill_DP(
          pthread_mutex_unlock(&tadbit_lock);
          break;
       }
+      // A task gives an end point 'j'.
       int j = taskQ_i;
       taskQ_i++;
       pthread_mutex_unlock(&tadbit_lock);
@@ -374,9 +375,9 @@ DPwalk(
       new_llik[i] = -INFINITY;
    }
 
-   int errno = pthread_mutex_init(&tadbit_lock, NULL);
-   if (errno) {
-      fprintf(stderr, "error initializing mutex (%d)\n", errno);
+   int err = pthread_mutex_init(&tadbit_lock, NULL);
+   if (err) {
+      fprintf(stderr, "error initializing mutex (%d)\n", err);
       return;
    }
 
@@ -393,9 +394,9 @@ DPwalk(
    pthread_t *tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
    for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
    for (i = 0 ; i < n_threads ; i++) {
-      errno = pthread_create(&(tid[i]), NULL, &fill_DP, &arg);
-      if (errno) {
-         fprintf(stderr, "error creating thread (%d)\n", errno);
+      err = pthread_create(&(tid[i]), NULL, &fill_DP, &arg);
+      if (err) {
+         fprintf(stderr, "error creating thread (%d)\n", err);
          return;
       }
    }
@@ -412,9 +413,9 @@ DPwalk(
 
       for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
       for (i = 0 ; i < n_threads ; i++) {
-         errno = pthread_create(&(tid[i]), NULL, &fill_DP, &arg);
-         if (errno) {
-            fprintf(stderr, "error creating thread (%d)\n", errno);
+         err = pthread_create(&(tid[i]), NULL, &fill_DP, &arg);
+         if (err) {
+            fprintf(stderr, "error creating thread (%d)\n", err);
             return;
          }
       }
@@ -480,10 +481,6 @@ fill_llikmat(
 
    // Cache to speed up computation. Get the max of '_cache_index'
    // in order to allocate the right size.
-   _max_cache_index = 0;
-   for (i = 0 ; i < n*n ; i++)
-      if (_cache_index[i] > _max_cache_index)
-         _max_cache_index = _cache_index[i];
    double *c= (double *) malloc(_max_cache_index * sizeof(double));
    for (i = 0 ; i < _max_cache_index ; i++) c[i] = 0.0;
 
@@ -641,11 +638,6 @@ tadbit(
   // output //
   tadbit_output *seg
 ){
-   time_t t;
-   time(&t);
-   if (verbose) {
-      fprintf(stderr, "start time: %s\n",ctime(&t));
-   }
 
    // Get thread number if set to 0 (automatic).
    if (n_threads < 1) {
@@ -657,7 +649,7 @@ tadbit(
    }
 
    const int N = n; // Original size.
-   int errno;       // Used for error checking.
+   int err;       // Used for error checking.
 
    int i;
    int j;
@@ -701,6 +693,7 @@ tadbit(
    const int MAXBREAKS = n/5;
 
    _cache_index = (int *) malloc(n*n * sizeof(int));
+   _max_cache_index = N+1;
    // Allocate and copy.
    double **log_gamma = (double **) malloc(m * sizeof(double *));
    int **new_obs = (int **) malloc(m * sizeof(int *));
@@ -711,9 +704,7 @@ tadbit(
       new_obs[k] = (int *) malloc(n*n * sizeof(int));
       for (j = 0 ; j < N ; j++) {
       for (i = 0 ; i < N ; i++) {
-         if (remove[i] || remove[j]) {
-            continue;
-         }
+         if (remove[i] || remove[j]) continue;
          _cache_index[l] = i > j ? i-j : j-i;
          log_gamma[k][l] = lgamma(obs[k][i+j*N]+1);
          new_obs[k][l] = obs[k][i+j*N];
@@ -864,9 +855,9 @@ tadbit(
       .verbose = verbose,
    };
 
-   errno = pthread_mutex_init(&tadbit_lock, NULL);
-   if (errno) {
-      fprintf(stderr, "error initializing mutex (%d)\n", errno);
+   err = pthread_mutex_init(&tadbit_lock, NULL);
+   if (err) {
+      fprintf(stderr, "error initializing mutex (%d)\n", err);
       return;
    }
 
@@ -896,9 +887,9 @@ tadbit(
       // Instantiate threads and start running jobs.
       for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
       for (i = 0 ; i < n_threads ; i++) {
-         errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
-         if (errno) {
-            fprintf(stderr, "error creating thread (%d)\n", errno);
+         err = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
+         if (err) {
+            fprintf(stderr, "error creating thread (%d)\n", err);
             return;
          }
       }
@@ -962,6 +953,7 @@ tadbit(
             i = j+1;
          }
       }
+      if (i < n) llikmatcpy[i+(n-1)*n] -= m*6;
       DPwalk(llikmatcpy, n, nbreaks_opt+1, n_threads, mllikcpy, bkptscpy);
    }
    free(llikmatcpy);
@@ -1022,11 +1014,6 @@ tadbit(
    seg->llikmat = resized_llikmat;
    seg->mllik = mllik;
    seg->bkpts = resized_bkpts;
-
-   time(&t);
-   if (verbose) {
-      fprintf(stderr, "end time: %s",ctime(&t));
-   }
 
    return;
 
