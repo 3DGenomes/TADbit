@@ -12,7 +12,6 @@
 // Global variables. //
 
 int *_cache_index;
-int _max_cache_index;
 int n_processed;              // Number of slices processed so far.
 int n_to_process;             // Total number of slices to process.
 int taskQ_i;                  // Index used for task queue.
@@ -20,8 +19,8 @@ pthread_mutex_t tadbit_lock;  // Mutex to access task queue.
 
 
 void
-fg(
-  // input //
+calcfg(
+  /* input */
   const int    n,
   const int    i_,
   const int    _i,
@@ -36,7 +35,7 @@ fg(
   const double da,
   const double db,
         double *c,
-  // output //
+  /* output */
         double *f,
         double *g
 ){
@@ -78,14 +77,14 @@ fg(
 
    *f = 0.0; *g = 0.0;
    // Initialize cache.
-   for (index = 0 ; index < _max_cache_index ; index++) c[index] = NAN;
+   for (index = 0 ; index < n ; index++) c[index] = NAN;
 
    for (j = j_low ; j < j_high ; j++) {
       i_high = diag ? j : _i+1;
       for (i = i_low ; i < i_high ; i++) {
          // Retrieve value of the exponential from cache.
          index = _cache_index[i+j*n];
-         if (c[index] != c[index]) {
+         if (isnan(c[index])) {
             c[index] = exp(a+da+(b+db)*d[i+j*n]);
          }
          tmp  =  w[i+j*n] * c[index] - k[i+j*n];
@@ -136,14 +135,7 @@ ll(
 //   The maximum log-likelihood of a block of hiC data.                 
 //                                                                      
 
-   // For slices at the border of the hiC matrix, the top or bottom
-   // blocks have 0 height. Returning 0.0 makes the summation at
-   // the line labelled "slice ll summation" still valid.
    if ((i_ >= _i) || (j_ >= _j)) return 0.0;
-   // For slices of length 2, the diagonal block has only 1 value,
-   // which creates an infinite loop (because there are two parameters
-   // to fit). Return NAN because estimation is impossible.
-   if ((_i < i_+2) || (_j < j_+2)) return NAN;
 
    int i;
    int j;
@@ -155,8 +147,8 @@ ll(
    int iter = 0;
    double denom;
    double oldgrad;
-   double f = INFINITY;
-   double g = INFINITY;
+   double f;
+   double g;
    double a = 0.0;
    double b = 0.0;
    double da = 0.0;
@@ -165,16 +157,16 @@ ll(
    double dfdb = 0.0;
    double dgda = 0.0;
    double dgdb = 0.0;
-   // See the comment about 'tmp' in 'fg'.
+   // See the comment about 'tmp' in 'calcfg'.
    long double tmp; 
 
-   fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+   calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
 
    // Newton-Raphson until gradient function is less than TOLERANCE.
    // The gradient function is the square norm 'f*f + g*g'.
    while ((oldgrad = f*f + g*g) > TOLERANCE && iter++ < MAXITER) {
 
-      for (index = 0 ; index < _max_cache_index ; index++) c[index] = NAN;
+      for (index = 0 ; index < n ; index++) c[index] = NAN;
       // Compute the derivatives.
       dfda = dfdb = dgda = dgdb = 0.0;
 
@@ -183,7 +175,7 @@ ll(
          for (i = i_low ; i < i_high ; i++) {
             index = _cache_index[i+j*n];
             // Retrive value of the exponential from cache.
-            if (c[index] != c[index]) { // ERROR.
+            if (isnan(c[index])) {
                c[index] = exp(a+b*d[i+j*n]);
             }
             tmp   =   w[i+j*n] * c[index];
@@ -200,15 +192,15 @@ ll(
       da = (f*dgdb - g*dfdb) / denom;
       db = (g*dfda - f*dgda) / denom;
 
-      fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+      calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
 
       // Traceback if we are not going down the gradient. Cut the
       // length of the steps in half until this step goes down
       // the gradient.
-      for (i = 0 ; (i < 20) && (f*f + g*g > oldgrad) ; i++) {
+      while (f*f + g*g > oldgrad) {
          da /= 2;
          db /= 2;
-         fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+         calcfg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
       }
 
       // Update 'a' and 'b'.
@@ -226,7 +218,7 @@ ll(
    double llik = 0.0;
 
    //////////////////////////////////////////////////////////////////////
-   // The last call to 'fg' has set the cache to the right values. //
+   // The last call to 'calcfg' has set the cache to the right values. //
    // No need to reset the cache.                                      //
    //////////////////////////////////////////////////////////////////////
    for (j = j_low ; j < j_high ; j++) {
@@ -278,7 +270,6 @@ fill_DP(
          pthread_mutex_unlock(&tadbit_lock);
          break;
       }
-      // A task gives an end point 'j'.
       int j = taskQ_i;
       taskQ_i++;
       pthread_mutex_unlock(&tadbit_lock);
@@ -313,12 +304,12 @@ fill_DP(
 
 void
 DPwalk(
-  // input //
+  /* input */
   const double *llikmat,
   const int n,
   const int MAXBREAKS,
   int n_threads,
-  // output //
+  /* output */
   double *mllik,
   int *breakpoints
 ){
@@ -375,9 +366,9 @@ DPwalk(
       new_llik[i] = -INFINITY;
    }
 
-   int err = pthread_mutex_init(&tadbit_lock, NULL);
-   if (err) {
-      fprintf(stderr, "error initializing mutex (%d)\n", err);
+   int errno = pthread_mutex_init(&tadbit_lock, NULL);
+   if (errno) {
+      fprintf(stderr, "error initializing mutex (%d)\n", errno);
       return;
    }
 
@@ -391,37 +382,31 @@ DPwalk(
       .old_bkpt_list = old_bkpt_list,
    };
 
-   pthread_t *tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
-   for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
-   for (i = 0 ; i < n_threads ; i++) {
-      err = pthread_create(&(tid[i]), NULL, &fill_DP, &arg);
-      if (err) {
-         fprintf(stderr, "error creating thread (%d)\n", err);
-         return;
-      }
-   }
+   pthread_t *tid = (pthread_t *) malloc((1+n_threads)*sizeof(pthread_t));
 
    // Dynamic programming.
    for (nbreaks = 1 ; nbreaks < MAXBREAKS ; nbreaks++) {
 
       arg.nbreaks = nbreaks;
+
       // Update breakpoint lists.
       for (i = 0 ; i < n*n ; i++) {
          old_bkpt_list[i] = new_bkpt_list[i];
       }
+
       taskQ_i = 3 * nbreaks + 2;
 
       for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
-      for (i = 0 ; i < n_threads ; i++) {
-         err = pthread_create(&(tid[i]), NULL, &fill_DP, &arg);
-         if (err) {
-            fprintf(stderr, "error creating thread (%d)\n", err);
+      for (i = 1 ; i < 1 + n_threads ; i++) {
+         errno = pthread_create(&(tid[i]), NULL, &fill_DP, &arg);
+         if (errno) {
+            fprintf(stderr, "error creating thread (%d)\n", errno);
             return;
          }
       }
 
       // Wait for threads to return.
-      for (i = 0 ; i < n_threads ; i++) {
+      for (i = 1 ; i < 1 + n_threads ; i++) {
          pthread_join(tid[i], NULL);
       }
 
@@ -479,10 +464,9 @@ fill_llikmat(
    int j;
    int l;
 
-   // Cache to speed up computation. Get the max of '_cache_index'
-   // in order to allocate the right size.
-   double *c= (double *) malloc(_max_cache_index * sizeof(double));
-   for (i = 0 ; i < _max_cache_index ; i++) c[i] = 0.0;
+   // Cache to speed up computation.
+   double *c= (double *) malloc(n * sizeof(double));
+   for (i = 0 ; i < n ; i++) c[i] = 0.0;
 
    int job_index;
    
@@ -510,7 +494,6 @@ fill_llikmat(
       // Distinct parts of the array, no lock needed.
       llikmat[i+j*n] = 0.0;
       for (l = 0 ; l < m ; l++) {
-         // This is the slice ll summation.
          llikmat[i+j*n] += 
             ll(n, 0, i-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2 +
             ll(n, i,   j, i, j, 1, k[l], d, w[l], lg[l], c) +
@@ -598,8 +581,6 @@ allocate_new_jobs(
    }
    
    for (shift = -10 ; shift < 11 ; shift++) {
-      if (shift+nbreaks_opt < 0) continue;
-      if (shift+nbreaks_opt > MAXBREAKS-1) break;
       for (i0 = 0, j0 = 0 ; j0 < n ; j0++) {
          if (bkpts[j0+(shift+nbreaks_opt)*n]) {
 
@@ -629,7 +610,7 @@ allocate_new_jobs(
 
 void
 tadbit(
-  // input //
+  /* input */
   int **obs,
   int n,
   const int m,
@@ -637,7 +618,7 @@ tadbit(
   const int verbose,
   int max_tad_size,
   const int do_not_use_heuristic,
-  // output //
+  /* output */
   tadbit_output *seg
 ){
 
@@ -651,7 +632,7 @@ tadbit(
    }
 
    const int N = n; // Original size.
-   int err;       // Used for error checking.
+   int errno;       // Used for error checking.
 
    int i;
    int j;
@@ -675,11 +656,11 @@ tadbit(
    }
 
    // Simplify input. Remove line and column if 0 on the diagonal.
-   char *remove = (char *) malloc (N * sizeof(char));
+   int remove[N];
    for (i = 0 ; i < N ; i++) {
       remove[i] = 0;
       for (k = 0 ; k < m ; k++) {
-         if (obs[k][i+i*N] < 1) {
+         if (obs[k][i+i*N] < 1.0) {
             remove[i] = 1;
          }
       }
@@ -695,7 +676,6 @@ tadbit(
    const int MAXBREAKS = n/5;
 
    _cache_index = (int *) malloc(n*n * sizeof(int));
-   _max_cache_index = N+1;
    // Allocate and copy.
    double **log_gamma = (double **) malloc(m * sizeof(double *));
    int **new_obs = (int **) malloc(m * sizeof(int *));
@@ -706,7 +686,9 @@ tadbit(
       new_obs[k] = (int *) malloc(n*n * sizeof(int));
       for (j = 0 ; j < N ; j++) {
       for (i = 0 ; i < N ; i++) {
-         if (remove[i] || remove[j]) continue;
+         if (remove[i] || remove[j]) {
+            continue;
+         }
          _cache_index[l] = i > j ? i-j : j-i;
          log_gamma[k][l] = lgamma(obs[k][i+j*N]+1);
          new_obs[k][l] = obs[k][i+j*N];
@@ -754,7 +736,7 @@ tadbit(
       llikmat[i] = NAN;
 
    // 'skip' will contain only 0 or 1 and can be stored as 'char'.
-   char *skip = (char *) malloc(n*n * sizeof(char));
+   char *skip = (char *) malloc(n*n *sizeof(char));
 
    // Use the heuristic by default (hence the name of the parameter).
    // The parameter 'max_tad_size' is needed only in case the heuristic
@@ -768,9 +750,6 @@ tadbit(
       if (verbose) {
          fprintf(stderr, "running pre-heuristic\n");
       }
-
-      for (i = 0 ; i < n*n ; i++) skip[i] = 1;
-
       // 'S[i+j*n]' is the weighted sum of reads within the triangle
       // defined by ('i','j') in the upper triangular matrix of
       // observations.
@@ -814,11 +793,6 @@ tadbit(
          }
       }
 
-      // Erase the lower triangular part of 'skip'.
-      for (j = 0 ; j < n ; j++)
-      for (i = j ; i < n ; i++)
-         skip[i+j*n] = 1;
-
       // Allocate estimation of the log likelihood for all small
       // TADs (less than 3 bins).
       for (j = 6 ; j < n ; j++)
@@ -843,7 +817,7 @@ tadbit(
 
 
    // Allocate 'tid'.
-   pthread_t *tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
+   pthread_t *tid = (pthread_t *) malloc((1+n_threads)*sizeof(pthread_t));
 
    llworker_arg arg = {
       .n = n,
@@ -857,17 +831,16 @@ tadbit(
       .verbose = verbose,
    };
 
-   err = pthread_mutex_init(&tadbit_lock, NULL);
-   if (err) {
-      fprintf(stderr, "error initializing mutex (%d)\n", err);
+   errno = pthread_mutex_init(&tadbit_lock, NULL);
+   if (errno) {
+      fprintf(stderr, "error initializing mutex (%d)\n", errno);
       return;
    }
 
    int n_params;
-   int nbreaks_opt = 0;
+   int nbreaks_opt;
    double AIC = -INFINITY;
    double newAIC = -DBL_MAX;
-
    while (newAIC > AIC) {
 
       if (verbose) {
@@ -879,7 +852,6 @@ tadbit(
       // Initialize task queue.
       n_to_process = 0;
       for (i = 0 ; i < n*n ; i++) {
-         // Skip all computation done in previous cycles.
          if (!isnan(llikmat[i])) skip[i] = 1;
          n_to_process += (1-skip[i]);
       }
@@ -888,16 +860,16 @@ tadbit(
       
       // Instantiate threads and start running jobs.
       for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
-      for (i = 0 ; i < n_threads ; i++) {
-         err = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
-         if (err) {
-            fprintf(stderr, "error creating thread (%d)\n", err);
+      for (i = 1 ; i < 1 + n_threads ; i++) {
+         errno = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
+         if (errno) {
+            fprintf(stderr, "error creating thread (%d)\n", errno);
             return;
          }
       }
 
       // Wait for threads to return.
-      for (i = 0 ; i < n_threads ; i++) {
+      for (i = 1 ; i < 1 + n_threads ; i++) {
          pthread_join(tid[i], NULL);
       }
       if (verbose) {
@@ -906,16 +878,18 @@ tadbit(
 
       // The matrix 'llikmat' now contains the log-likelihood of the
       // segments. The breakpoints are found by dynamic programming.
-      int maxbreaks = nbreaks_opt ? nbreaks_opt + 11 : MAXBREAKS;
-      if (maxbreaks > MAXBREAKS) maxbreaks = MAXBREAKS;
-      DPwalk(llikmat, n, maxbreaks, n_threads, mllik, bkpts);
+      DPwalk(llikmat, n, MAXBREAKS, n_threads, mllik, bkpts);
 
       // Get optimal number of breaks by AIC.
       newAIC = -INFINITY;
-      for (nbreaks_opt = 1 ; nbreaks_opt < MAXBREAKS ; nbreaks_opt++) {
+      for (nbreaks_opt = 1 ; nbreaks_opt  < MAXBREAKS ; nbreaks_opt++) {
          n_params = nbreaks_opt + m*(8 + nbreaks_opt*6);
-         if (newAIC > mllik[nbreaks_opt] - n_params) break;
-         newAIC = mllik[nbreaks_opt] - n_params;
+         if (newAIC > mllik[nbreaks_opt] - n_params) {
+            break;
+         }
+         else {
+            newAIC = mllik[nbreaks_opt] - n_params;
+         }
       }
       nbreaks_opt -= 1;
 
@@ -935,9 +909,9 @@ tadbit(
    double *mllikcpy = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkptscpy = (int *) malloc(n*MAXBREAKS * sizeof(int));
    int *passages = (int *) malloc(n * sizeof(int));
+   for (i = 0 ; i < n ; i++) passages[i] = 0;
    for (i = 0 ; i < n*MAXBREAKS ; i++) bkptscpy[i] = bkpts[i];
    for (i = 0 ; i < n*n ; i++) llikmatcpy[i] = llikmat[i];
-   for (i = 0 ; i < n ; i++) passages[i] = 0;
 
    for (l = 0 ; l < 10 ; l++) {
       i = 0;
@@ -945,15 +919,14 @@ tadbit(
          if (bkptscpy[j+nbreaks_opt*n]) {
             // Apply a constant penalty every time a TAD is present
             // in the final decomposition. The penalty is set to
-            // 'm*6' because it is the expected log-likelihood gain
+            // '6*m' because it is the expected log-likelihood gain
             // for adding a new TAD around the optimum log-likelihood.
             llikmatcpy[i+j*n] -= m*6;
             passages[j] += bkpts[j+nbreaks_opt*n];
             i = j+1;
          }
       }
-      if (i < n) llikmatcpy[i+(n-1)*n] -= m*6;
-      DPwalk(llikmatcpy, n, nbreaks_opt+1, n_threads, mllikcpy, bkptscpy);
+      DPwalk(llikmatcpy, n, MAXBREAKS, n_threads, mllikcpy, bkptscpy);
    }
    free(llikmatcpy);
    free(mllikcpy);
@@ -966,12 +939,15 @@ tadbit(
    for (i = 0 ; i < N ; i++) resized_passages[i] = 0;
 
    for (l = 0, i = 0 ; i < N ; i++) {
-      if (remove[i]) continue;
-      resized_passages[i] = passages[l];
-      for (j = 0 ; j < MAXBREAKS ; j++)
-         resized_bkpts[i+j*N] = bkpts[l+j*n];
-      l++;
+      if (!remove[i]) {
+         resized_passages[i] = passages[l];
+         for (j = 0 ; j < MAXBREAKS ; j++) {
+            resized_bkpts[i+j*N] = bkpts[l+j*n];
+         }
+         l++;
+      }
    }
+
 
    free(passages);
    free(bkpts);
@@ -1002,7 +978,6 @@ tadbit(
    free(new_obs);
    free(log_gamma);
    free(dist);
-   free(remove);
 
    // Update output struct.
    seg->maxbreaks = MAXBREAKS;

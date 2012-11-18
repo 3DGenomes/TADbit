@@ -24,7 +24,7 @@ batch_tadbit <- function(directory=getwd(), sep='_',
 
    # Get file names and unit (chromosome) names.
    fname <- dir(directory, recursive=TRUE, full.names=TRUE)
-   unit <- sapply(strsplit(basename(fname), sep, fixe=TRUE), "[", 1)
+   unit <- sapply(strsplit(basename(fname), sep, fixed=TRUE), "[", 1)
    fname_list <- tapply(X=fname, INDEX=unit, c)
 
    # Cycle through units (chromosomes).
@@ -34,14 +34,20 @@ batch_tadbit <- function(directory=getwd(), sep='_',
          cat(paste("processing", unit, "\n"))
       }
       # Embed the following in a 'try' for batch robustness.
-      tryCatch(
-         break_list[[unit]] <- tadbit_on_files(fname_list[[unit]]),
-         error = function(e) {
-            cat(paste("error with", unit, "(skipping)\n"))
-         }
+      exitstatus <- tryCatch(
+         tadbit_output <- tadbit_on_files(fname_list[[unit]]),
+         error = function(e) e,
+         finally = gc()
       )
+      if (inherits(exitstatus, "error")) {
+         cat(paste("error with", unit, "(skipping)\n"))
+      }
+      else {
+         tadbit_output <- data.frame(seqname=unit, tadbit_output)
+         break_list[[unit]] <- tadbit_output
+      }
    }
 
-   return (break_list)
+   return (Reduce(rbind, break_list))
 
 }

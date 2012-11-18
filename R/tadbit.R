@@ -1,5 +1,5 @@
 tadbit <- function(x, n_CPU="auto", verbose=TRUE, max_tad_size="auto",
-   heuristic=TRUE) {
+   no_heuristic=FALSE) {
 
    # Validate input type or stop with meaningful error message.
    if (!is.list(x)) {
@@ -28,28 +28,30 @@ tadbit <- function(x, n_CPU="auto", verbose=TRUE, max_tad_size="auto",
          stop("all the matrices in 'x' must have same dimensions")
       }
    }
-   # Make sure values in 'x' are double.
-   # NOTE: calling the C function 'FLOAT' on integers passed from R
-   # is not reliable (values differ a bit) and can cause segmentation
-   # faults.
-   x <- lapply(x, function(y) { y + double(1) })
+   # Make sure values in 'x' are integer.
+   for (i in 1:length(x)) {
+      storage.mode(x[[i]]) <- "integer"
+   }
 
    # Assign automatic variables and coerce to proper type.
    n_CPU <- as.integer(ifelse(n_CPU == "auto", 0, n_CPU))
    verbose <- as.logical(verbose)
    max_tad_size <- as.integer(ifelse(max_tad_size == "auto",
       ref_dim[1], max_tad_size))
-   heuristic <- as.integer(heuristic)
+   do_not_use_heuristic <- as.integer(no_heuristic)
 
    tadbit_c_out <- (.Call("tadbit_R_call", x, n_CPU, verbose,
-      max_tad_size, heuristic))
+      max_tad_size, do_not_use_heuristic))
 
    opt_nbreaks <- tadbit_c_out[[1]]
    llik_mat <- tadbit_c_out[[2]]
 
    position <- which(tadbit_c_out[[4]][,opt_nbreaks] == 1)
    score <- tadbit_c_out[[5]][tadbit_c_out[[5]] > 0]
+   end <- c(position, ref_dim[1])
+   start <- c(1, position+1)
 
-   return (list(position=position, score=score))
+   # Assign NA to the score of the last boundary.
+   return (data.frame(start=start, end=end, score=c(score, NA)))
 
 }
