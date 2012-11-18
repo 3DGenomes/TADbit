@@ -598,6 +598,8 @@ allocate_new_jobs(
    }
    
    for (shift = -10 ; shift < 11 ; shift++) {
+      if (shift+nbreaks_opt < 0) continue;
+      if (shift+nbreaks_opt > MAXBREAKS-1) break;
       for (i0 = 0, j0 = 0 ; j0 < n ; j0++) {
          if (bkpts[j0+(shift+nbreaks_opt)*n]) {
 
@@ -673,11 +675,11 @@ tadbit(
    }
 
    // Simplify input. Remove line and column if 0 on the diagonal.
-   int remove[N];
+   char *remove = (char *) malloc (N * sizeof(char));
    for (i = 0 ; i < N ; i++) {
       remove[i] = 0;
       for (k = 0 ; k < m ; k++) {
-         if (obs[k][i+i*N] < 1.0) {
+         if (obs[k][i+i*N] < 1) {
             remove[i] = 1;
          }
       }
@@ -905,18 +907,15 @@ tadbit(
       // The matrix 'llikmat' now contains the log-likelihood of the
       // segments. The breakpoints are found by dynamic programming.
       int maxbreaks = nbreaks_opt ? nbreaks_opt + 11 : MAXBREAKS;
+      if (maxbreaks > MAXBREAKS) maxbreaks = MAXBREAKS;
       DPwalk(llikmat, n, maxbreaks, n_threads, mllik, bkpts);
 
       // Get optimal number of breaks by AIC.
       newAIC = -INFINITY;
       for (nbreaks_opt = 1 ; nbreaks_opt < MAXBREAKS ; nbreaks_opt++) {
          n_params = nbreaks_opt + m*(8 + nbreaks_opt*6);
-         if (newAIC > mllik[nbreaks_opt] - n_params) {
-            break;
-         }
-         else {
-            newAIC = mllik[nbreaks_opt] - n_params;
-         }
+         if (newAIC > mllik[nbreaks_opt] - n_params) break;
+         newAIC = mllik[nbreaks_opt] - n_params;
       }
       nbreaks_opt -= 1;
 
@@ -936,9 +935,9 @@ tadbit(
    double *mllikcpy = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkptscpy = (int *) malloc(n*MAXBREAKS * sizeof(int));
    int *passages = (int *) malloc(n * sizeof(int));
-   for (i = 0 ; i < n ; i++) passages[i] = 0;
    for (i = 0 ; i < n*MAXBREAKS ; i++) bkptscpy[i] = bkpts[i];
    for (i = 0 ; i < n*n ; i++) llikmatcpy[i] = llikmat[i];
+   for (i = 0 ; i < n ; i++) passages[i] = 0;
 
    for (l = 0 ; l < 10 ; l++) {
       i = 0;
@@ -946,7 +945,7 @@ tadbit(
          if (bkptscpy[j+nbreaks_opt*n]) {
             // Apply a constant penalty every time a TAD is present
             // in the final decomposition. The penalty is set to
-            // '6*m' because it is the expected log-likelihood gain
+            // 'm*6' because it is the expected log-likelihood gain
             // for adding a new TAD around the optimum log-likelihood.
             llikmatcpy[i+j*n] -= m*6;
             passages[j] += bkpts[j+nbreaks_opt*n];
@@ -967,15 +966,12 @@ tadbit(
    for (i = 0 ; i < N ; i++) resized_passages[i] = 0;
 
    for (l = 0, i = 0 ; i < N ; i++) {
-      if (!remove[i]) {
-         resized_passages[i] = passages[l];
-         for (j = 0 ; j < MAXBREAKS ; j++) {
-            resized_bkpts[i+j*N] = bkpts[l+j*n];
-         }
-         l++;
-      }
+      if (remove[i]) continue;
+      resized_passages[i] = passages[l];
+      for (j = 0 ; j < MAXBREAKS ; j++)
+         resized_bkpts[i+j*N] = bkpts[l+j*n];
+      l++;
    }
-
 
    free(passages);
    free(bkpts);
@@ -1006,6 +1002,7 @@ tadbit(
    free(new_obs);
    free(log_gamma);
    free(dist);
+   free(remove);
 
    // Update output struct.
    seg->maxbreaks = MAXBREAKS;

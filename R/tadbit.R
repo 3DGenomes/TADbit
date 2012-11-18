@@ -48,7 +48,10 @@ tadbit <- function(x, n_CPU="auto", verbose=TRUE, max_tad_size="auto",
 
    position <- which(tadbit_c_out[[4]][,opt_nbreaks] == 1)
    score <- tadbit_c_out[[5]][tadbit_c_out[[5]] > 0]
+   end <- c(position, ref_dim[1])
+   start <- c(1, position+1)
 
-   return (list(position=position, score=score))
+   # Assign NA to the score of the last boundary.
+   return (data.frame(start=start, end=end, score=c(score, NA)))
 
 }

@@ -34,15 +34,20 @@ batch_tadbit <- function(directory=getwd(), sep='_',
          cat(paste("processing", unit, "\n"))
       }
       # Embed the following in a 'try' for batch robustness.
-      tryCatch(
-         break_list[[unit]] <- tadbit_on_files(fname_list[[unit]]),
-         error = function(e) {
-            cat(paste("error with", unit, "(skipping)\n"))
-         }
+      exitstatus <- tryCatch(
+         tadbit_output <- tadbit_on_files(fname_list[[unit]]),
+         error = function(e) e,
+         finally = gc()
       )
-      gc()
+      if (inherits(exitstatus, "error")) {
+         cat(paste("error with", unit, "(skipping)\n"))
+      }
+      else {
+         tadbit_output <- data.frame(seqname=unit, tadbit_output)
+         break_list[[unit]] <- tadbit_output
+      }
    }
 
-   return (break_list)
+   return (Reduce(rbind, break_list))
 
 }
