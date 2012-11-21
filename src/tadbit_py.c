@@ -18,7 +18,7 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
     :argument 0 n_threads: number of threads to use\n\
     :argument 0 verbose: whether to display more/less information about process\n\
     :argument 0 max_tad_size: an integer defining maximum size of TAD. Default defines it to the number of rows/columns.\n\
-    :argument 0 heuristic: whether to use or not some heuristics\n\
+    :argument 1 do_not_use_heuristic: whether to use or not some heuristics\n\
     :returns: a python list with each\n");
 
 
@@ -30,52 +30,26 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   int n_threads=0;
   const int verbose=0;
   const int max_tad_size=0;
-  const int heuristic=0;
+  const int do_not_use_heuristic=0;
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "Oiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &heuristic))
+  if (!PyArg_ParseTuple(args, "Oiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &do_not_use_heuristic))
     return NULL;
 
   // convert list of lists to pointer o pointers
   // if something goes wrong, it is probably from there :S
   int i, j;
-  double ** list;
-  list = malloc(m * sizeof(double*));
+  int ** list;
+  list = malloc(m * sizeof(int*));
   for (i = 0 ; i < m ; i++ )
-    list[i] = malloc(n*n * sizeof(double));
+    list[i] = malloc(n*n * sizeof(int));
   for (i = 0 ; i < m ; i++)
     for (j = 0 ; j < n*n ; j++)
-      list[i][j] =  PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
-
-  /* the same for debugging..
-  int i, j;
-  double ** list;
-  list = malloc(m * sizeof(double **));
-  for (i = 0 ; i < m ; i++ )
-    list[i] = malloc(n*n * sizeof(double*));
-  for (i = 0 ; i < m ; i++){
-    PyObject * tmplist = PyList_GET_ITEM(obs, i);
-    if(!PyTuple_Check(tmplist)){
-      printf("this is not a tuple!\n");
-      printf(" -> matrix %d\n", i);
-    }
-    for (j = 0 ; j < n*n ; j++){
-      PyObject * py_float = PyTuple_GetItem(tmplist, j);
-      if(!PyFloat_Check(py_float)){
-	printf("this is not a list!\n");
-	printf(" -> matrix %d, cell %d\n", i, j);
-      }
-      list[i][j] =  PyFloat_AsDouble(py_float);
-      if (list[i][j] < 0){
-	printf("%f\n", list[i][j]);
-      }
-    }
-  }
-  */
+      list[i][j] = PyInt_AS_LONG(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
 
   // run tadbit
-  tadbit(list, n, m, n_threads, verbose, max_tad_size, heuristic, seg);
+  tadbit(list, n, m, n_threads, verbose, max_tad_size, do_not_use_heuristic, seg);
 
   // store each tadbit output
   int mbreaks      = seg->maxbreaks;
@@ -115,8 +89,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
     PyList_SetItem(py_passages, i, PyFloat_FromDouble(passages[i]));
 
   // get llikmat
-  py_llikmat = PyList_New(n*n+n);
-  for(i = 0 ; i < n*n+n; i++)
+  py_llikmat = PyList_New(n*n);
+  for(i = 0 ; i < n*n; i++)
     PyList_SetItem(py_llikmat, i, PyFloat_FromDouble(llikmat[i]));
 
   // get mllik
