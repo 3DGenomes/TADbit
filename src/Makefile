@@ -4,7 +4,6 @@ all: tadbit.so
 
 clean:
 	rm -f $(OBJECTS)
-	rm -rf build/
 
 tadbit.so: tadbit.o tadbit_R.c tadbit.h
 	R CMD SHLIB tadbit_R.c tadbit.o -o tadbit.so -lm

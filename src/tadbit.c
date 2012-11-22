@@ -829,10 +829,10 @@ tadbit(
       // these regions are a bit noisier.
       for (j = 1 ; j < 51 ; j++)
       for (i = 0 ; i < j-3 ; i++)
-         skip[i+j*n] = 0;
+         if (i < n && j < n) skip[i+j*n] = 0;
       for (j = n-51 ; j < n ; j++)
       for (i = n-51 ; i < j-3 ; i++)
-         skip[i+j*n] = 0;
+         if (i > 0 && j > 0) skip[i+j*n] = 0;
 
       // Reset lower triangular part of 'skip'.
       for (j = 0 ; j < n ; j++)
