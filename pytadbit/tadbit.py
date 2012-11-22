@@ -5,6 +5,7 @@
 """
 
 from os import path, listdir
+from math import sqrt
 from pytadbit.tadbit_py import _tadbit_wrapper
 
 
@@ -14,21 +15,30 @@ def _read_matrix(f_h):
     reads from file
     """
     nums = []
-    size = 0
-    values = f_h.next().split()
-    size = len(values)
+    while True:
+        values = f_h.next().split()
+        if values[0].startswith('#'):
+            # skip comments
+            continue
+        break
     # check if we have headers/row-names in the file
     start = 1
     if values[0].isdigit():
-        nums.append([int(v) for v in values])
+        try:
+            nums.append([int(v) for v in values])
+        except ValueError:
+            nums.append([int(float(v)) for v in values])
         start = 0
     # parse the rest of the file
     for line in f_h:
         values = line.split()[start:]
-        nums.append([int(v) for v in values])
+        try:
+            nums.append([int(v) for v in values])
+        except ValueError:
+            nums.append([int(float(v)) for v in values])
     f_h.close()
-    size = size if size else len(values)
-    return reduce(lambda x,y: x+y, zip(*nums)), size
+    size = len(nums)
+    return tuple([nums[j][i] for i in xrange(size) for j in xrange(size)]), size
 
 
 def read_matrix(things):
@@ -61,6 +71,14 @@ def read_matrix(things):
                 matrices.append(reduce(lambda x, y: x+y, thing))
                 sizes.append(len(thing))
             raise Exception('must be list of lists, all with same length.')
+        elif type(thing) is tuple:
+            # case we know what we are doing and passing directly list of tuples
+            matrices.append(thing)
+            siz = sqrt(len(thing))
+            if int(siz) != siz:
+                raise Exception('Error: matrix should be square.')
+            print int(siz)
+            sizes.append(int(siz))
         elif 'matrix' in str(type(thing)):
             try:
                 r, c = thing.shape
@@ -131,7 +149,7 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto", no_heuristic=False
     return result
 
 
-def batch_tadbit(directory, sep='_', **kwargs):
+def batch_tadbit(directory, sep='_', parser=None, **kwargs):
     """
     Use tadbit on directories of data files
     All files in the specified directory will be considered data file. The
@@ -168,7 +186,11 @@ def batch_tadbit(directory, sep='_', **kwargs):
     for f_name in listdir(directory):
         if f_name.startswith('.'): continue
         f_name = path.join(directory, f_name)
-        if not path.isfile(f_name):
+        if parser:
+            print 'loading file:', f_name
+            matrix.append(parser(f_name))
+            continue
+        elif not path.isfile(f_name):
             continue
         print 'loading file:', f_name
         matrix.append(f_name)
