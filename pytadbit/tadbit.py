@@ -51,7 +51,6 @@ def read_matrix(things):
     :returns: the corresponding matrix concatenated into a huge list, also
     returns number or rows
 
-    TODO: find something better without using numpy matrices
     """
     if type(things) is not list:
         things = [things]
@@ -77,7 +76,6 @@ def read_matrix(things):
             siz = sqrt(len(thing))
             if int(siz) != siz:
                 raise Exception('Error: matrix should be square.')
-            print int(siz)
             sizes.append(int(siz))
         elif 'matrix' in str(type(thing)):
             try:
@@ -175,6 +173,9 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
     :argument _ sep: A character specifying how to identify unit/chormosome names
     (see below).
     :argument kwargs: arguments passed to :py:func:pytadbit:`tadbit` function.
+    :argument None parser: a parser function that takes file name as input and
+    returns a tuple representing the matrix of data. Tuple is a concatenation of
+    column1 + column2 + column3 + ...
 
     :returns: A \code{list} where each element has the name of the unit/chromosome,
     and is the output of \code{tadbit} run on the corresponding files
@@ -197,10 +198,17 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
     return tadbit(matrix, **kwargs)
 
 
-def print_result_R(result):
-    print '{:<6}{:>6}{:>6}{:>6}'.format('#','start','end','score')
+def print_result_R(result, sep=' '*6, write=True):
+    """
+    """
+    table = ''
+    table += '{:<6}{:>6}{:>6}{:>6}\n'.format('#','start','end','score')
     for i in xrange(len(result['end'])):
-        print '{:<6}{:>6}{:>6}{:>6}'.format(i+1,
-                                            result['start'][i]+1,
-                                            result['end'][i]+1,
-                                            result['score'][i])
+        table += '{:<6}{:>6}{:>6}{:>6}\n'.format(i+1,
+                                                 result['start'][i]+1,
+                                                 result['end'][i]+1,
+                                                 result['score'][i])
+    if write:
+        print table
+    else:
+        return table
