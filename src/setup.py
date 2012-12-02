@@ -13,7 +13,7 @@ setup(
     description = 'Identify TADs in hi-C data',
     ext_modules = [pytadbit_module],
     package_dir = {'pytadbit': '../pytadbit'},
-    packages    = ['pytadbit'],
+    packages    = ['pytadbit', 'pytadbit.parsers', 'pytadbit.tads_aligner'],
     py_modules  = ["pytadbit"],
 )
 
