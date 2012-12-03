@@ -44,11 +44,13 @@ class Chromosome():
             self.add_experiment(f_name, name)
 
 
-    def align_experiments(self, experiment1, experiment2, penalty=-0.1,
-                          max_dist=500000, verbose=False, randomize=False):
+    def align_experiments(self, names=None, verbose=False, randomize=False,
+                          **kwargs):
         """
         Align prediction of boundaries of two different experiments
 
+        :argument None names: list of names of experiments to align. If None
+        align all.
         :argument experiment1: name of the first experiment to align
         :argument experiment2: name of the second experiment to align
         :argument -0.1 penalty: penalty of inserting a gap in the alignment
@@ -59,20 +61,43 @@ class Chromosome():
         the p-value of accepting that observed alignment is not better than random
         alignment
         """
-        tads1 = self.experiments[experiment1]['brks']
-        tads2 = self.experiments[experiment2]['brks']
-        align1, align2, score = align(tads1, tads2, bin_size=self.resolution,
-                                      chr_len=self.r_size, penalty=penalty,
-                                      max_dist=max_dist, verbose=verbose)
-        self.experiments[experiment1]['align'] = align1
-        self.experiments[experiment2]['align'] = align2
+        experiments = names or self.experiments.keys()
+        tads = []
+        for exp in experiments:
+            tads.append(self.experiments[exp]['brks'])
+        aligneds, score = align(tads, bin_size=self.resolution,
+                                chr_len=self.r_size)
+        for exp, ali in zip(experiments, aligneds):
+            self.experiments[exp]['align'] = ali
+            self.experiments[exp]['align'] = ali
+        if verbose:
+            self.print_alignment(experiments)
         if not randomize:
-            return score
-        mean, std = get_tads_mean_std(tads1, tads2, self.resolution)
+            return self.get_alignment(names), score
+        if len(tads) != 2:
+            raise Exception('radomization is only available for pairwise alignment\n')
+        mean, std = get_tads_mean_std(tads[0], tads[1], self.resolution)
         p_value = randomization_test(mean, std, score, self.r_size,
                                      self.resolution, num=1000, verbose=verbose)
         return score, p_value
 
+
+    def print_alignment(self, names=None):
+        names = names or self.experiments.keys()
+        print 'Alignment (%s TADs)' % (len(names))
+        for exp in names:
+            if not 'align' in self.experiments[exp]:
+                continue
+            print '%10s :' % (exp),
+            print '|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-' * 3)\
+                            for x in self.experiments[exp]['align']])
+
+
+    def get_alignment(self, names=None):
+        names = names or self.experiments.keys()
+        return dict([(exp, self.experiments[exp]['align']) \
+                     for exp in names if 'align' in self.experiments[exp]])
+                    
 
     def add_experiment(self, f_name, name=None):
         """
@@ -95,22 +120,6 @@ class Chromosome():
         if not self.size:
             self.size = tads[max(tads)]['end'] * self.resolution
         self.r_size = self.size - len(self.forbidden) * self.resolution
-
-
-    def __str__(self):
-        """
-        none sense now
-        """
-        string = 'Topologically Associated Domains\' boundaries:\n'
-        string += 'FOUND: '
-        string += '|'.join(['%4s' % str(self.tads[x]['end'])[:-2] \
-                            for x in self.tads])
-        string += '\n'
-        string += 'VALID: '
-        string += '|'.join(['%4s' % (str(self.tads[x]['brk'])[:-2] \
-                                     if self.tads[x]['brk'] else '-'*3) \
-                            for x in self.tads])
-        return string
 
 
 def get_tads_mean_std(tads1, tads2, bin_size):
@@ -174,30 +183,12 @@ def randomization_test(mean, std, score, chr_len, bin_size, num=1000,
 def main():
     """
     main function
-
-    sample1 = 'chr21/chr21.H1.hESC.rep1.20000.tsv'
-    sample2 = 'chr21/chr21.H1.hESC.rep2.20000.tsv'
-    
-    sample1 = 'chr21/chr21.H1.hESC.rep1.20000.tsv'
-    sample2 = 'chr21/chr21.IMR90.rep1.20000.tsv'
-    
-    sample1 = '/home/fransua/scratch/helping_marc/chr19/chr19.hindIII.rep2.20000.tsv'
-    sample2 = '/home/fransua/scratch/helping_marc/chr19/chr19.cortex.rep2.20000.tsv'
-    
-    sample1 = '/home/fransua/scratch/helping_marc/chr19/chr19.hindIII.rep2.20000.tsv'
-    sample2 = '/home/fransua/scratch/helping_marc/chr19/chr19.J1_mESC_NcoI.20000.tsv'
-    
-    sample1 = '/home/fransua/scratch/helping_marc/chr1/chr1.J1.mESC.NcoI.20000.tsv'
-    sample2 = '/home/fransua/scratch/helping_marc/chr1/chr1.hindIII.rep2.20000.tsv'
-
-    sample1 = 'chr21/chr21.H1.hESC.test.20000.tsv'
-
     """
 
-    sample1 = '/home/francisco/scratch/pytadbit_tries/chr21/chr21.H1.hESC.rep1.20000.tsv'
-    sample2 = '/home/francisco/scratch/pytadbit_tries/chr21/chr21.IMR90.rep1.20000.tsv'
-    sample3 = '/home/francisco/scratch/pytadbit_tries/chr21/chr21.H1.hESC.rep2.20000.tsv'
-    sample4 = '/home/francisco/scratch/pytadbit_tries/chr21/chr21.IMR90.rep2.20000.tsv'
+    sample1 = 'chr21/chr21.H1.hESC.rep1.20000.tsv'
+    sample2 = 'chr21/chr21.IMR90.rep1.20000.tsv'
+    sample3 = 'chr21/chr21.H1.hESC.rep2.20000.tsv'
+    sample4 = 'chr21/chr21.IMR90.rep2.20000.tsv'
     chr_len  = 48000000
     bin_size = 20000
     # given that mean TAD size around 1Mb we set:
@@ -210,24 +201,10 @@ def main():
                                            'hESC.rep2','IMR90.rep2'],
                        max_tad_size=max_size, chr_len=chr_len)
 
-    chr21.align_experiments('hESC.rep1', 'IMR90.rep1', verbose=True)
+    chr21.align_experiments(['hESC.rep1', 'IMR90.rep1'], verbose=True)
 
-    sequences = []
-    sequences.append(chr21.experiments['hESC.rep1' ]['brks'][:])
-    sequences.append(chr21.experiments['hESC.rep2' ]['brks'][:])
-    sequences.append(chr21.experiments['IMR90.rep1']['brks'][:])
-    sequences.append(chr21.experiments['IMR90.rep2']['brks'][:])
-    names = ['hESC.rep1' , 'hESC.rep2', 'IMR90.rep1', 'IMR90.rep2']
-
-    align(sequences, method='global', bin_size=20000, chr_len=chr_len, penalty=-0.1,
-          max_dist=500000, verbose=False)
-    
-
-    for ali, name in zip(aligneds, names):
-        print '%10s :' % (name) +'|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-'*3) for x in ali])
-        
-    print 'TADS 1: '+'|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-'*3) for x in reference])
-    print 'TADS 1: '+'|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-'*3) for x in align1])
+    chr21.align_experiments(method='global', bin_size=20000, chr_len=chr_len, penalty=-0.1,
+                            max_dist=500000, verbose=True)
     
 if __name__ == "__main__":
     exit(main())

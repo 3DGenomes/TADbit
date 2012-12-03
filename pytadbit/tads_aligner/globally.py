@@ -6,7 +6,8 @@ global aligner for Topologically Associated Domains
 from math import log
 
 
-def needleman_wunsch(tads, **kwargs):
+def needleman_wunsch(tads1, tads2, bin_size=None, chr_len=None, penalty=-0.1,
+                     max_dist=500000, verbose=False):
     """
     Align two lists of TAD's boundaries.
     
@@ -25,27 +26,6 @@ def needleman_wunsch(tads, **kwargs):
     alignment of boundaries
     :return: the max score in the Needleman-Wunsch score matrix.
     """
-    if 'bin_size' in kwargs:
-        bin_size = kwargs['bin_size']
-    else:
-        bin_size=None
-    if 'chr_len' in kwargs:
-        chr_len = kwargs['chr_len']
-    else:
-        chr_len=None
-    if 'penalty' in kwargs:
-        penalty = kwargs['penalty']
-    else:
-        penalty = -0.1
-    if 'max_dist' in kwargs:
-        max_dist = kwargs['max_dist']
-    else:
-        max_dist = 500000
-    if 'verbose' in kwargs:
-        verbose = kwargs['verbose']
-    else:
-        verbose = False
-    tads1, tads2 = tads
     tads1 = [0.0] + tads1
     tads2 = [0.0] + tads2
     l_tads1  = len(tads1)
