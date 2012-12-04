@@ -122,13 +122,15 @@ class Chromosome():
         self.r_size = self.size - len(self.forbidden) * self.resolution
 
 
-def get_tads_mean_std(tads, bin_size):
+def get_tads_mean_std(tads, bin_size, max_tad_size=3000000):
     """
     returns mean and standard deviation of TAD lengths. Value is for both TADs
     """
     norm_tads = []
     for tad in tads:
-        norm_tads += [(tad[t] - tad[t-1]) * bin_size for t in xrange(1, len(tad))]
+        norm_tads += [(tad[t] - tad[t-1]) * bin_size \
+                      for t in xrange(1, len(tad)) \
+                      if (tad[t] - tad[t-1]) * bin_size < max_tad_size]
     length = len(norm_tads)
     mean   = sum(norm_tads)/length
     std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
@@ -172,7 +174,7 @@ def randomization_test(mean, std, score, chr_len, bin_size, num=1000,
                                  generate_random_tads(chr_len, mean,
                                                       std, bin_size)],
                                 bin_size=bin_size, chr_len=chr_len,
-                                verbose=False)[1])
+                                verbose=True)[1])
     if verbose:
         print '\n Randomization Finished.'
     print score, min(rand_distr), max(rand_distr)

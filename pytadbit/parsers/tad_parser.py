@@ -25,6 +25,4 @@ def parse_tads(f_name, max_size=3000000, bin_size=1):
         if diff * bin_size > max_size:
             forbidden += range(int(start), int(end+1))
             tads[pos]['brk'] = None
-    # remove also last position
-    tads[pos]['brk'] = None
     return tads, set(forbidden)
