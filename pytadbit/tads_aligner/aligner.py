@@ -24,6 +24,9 @@ def align(sequences, method='global', **kwargs):
     """
     Align Topologically associated domains. Supports multiple alignment by
     building a consensus TAD and aligning each TAD to it.
+    Note: as long as we are using multiple alignments in an iterative way,
+    the order of sequences we be relevant. Here TADs are sorted in order to try
+    to reduce this problem.
 
     :argument global method: method used to align.
     """
@@ -32,11 +35,21 @@ def align(sequences, method='global', **kwargs):
     if len(sequences) == 2:
         return aligner(sequences[0], sequences[1], **kwargs)
     if len(sequences) > 2:
-        reference = sequences[0]
+        dico = {}
+        reference = None
+        others = []
+        for j, (i, seq) in enumerate(sorted(enumerate(sequences),
+                                            key=lambda x: x[1])):
+            if not reference:
+                reference = seq
+            else:
+                others.append(seq)
+            dico[j] = {'sort':i,
+                       'seq' :seq}
         aligneds = []
         scores = 0
-        for other in sequences[1:]:
-            [align1, align2], score = needleman_wunsch(reference, other,
+        for other in xrange(1, len(sequences)):
+            [align1, align2], score = needleman_wunsch(reference, dico[other]['seq'],
                                                        **kwargs)
             scores += score
             if len(reference) != len(align1):
@@ -53,5 +66,8 @@ def align(sequences, method='global', **kwargs):
                 aligneds.append(align1)
             aligneds.append(align2)
             reference = consensusize(align1, align2)
-        return aligneds, scores
-        
+        sort_alis = [[] for _ in xrange(len(dico))]
+        for seq in xrange(len(dico)):
+            sort_alis[dico[seq]['sort']] = aligneds[seq][:]
+        return sort_alis, scores
+

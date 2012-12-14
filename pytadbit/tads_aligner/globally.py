@@ -7,7 +7,7 @@ from math import log
 
 
 def needleman_wunsch(tads1, tads2, bin_size=None, chr_len=None, penalty=-0.1,
-                     max_dist=500000, verbose=False):
+                     max_dist=500000, verbose=False, **kwargs):
     """
     Align two lists of TAD's boundaries.
     
@@ -26,6 +26,10 @@ def needleman_wunsch(tads1, tads2, bin_size=None, chr_len=None, penalty=-0.1,
     alignment of boundaries
     :return: the max score in the Needleman-Wunsch score matrix.
     """
+    # TODO: solve this problem of needing to give positive penalty
+    # -> find better normalizer than log
+    penalty += 0.2
+    ##############
     tads1 = [0.0] + tads1
     tads2 = [0.0] + tads2
     l_tads1  = len(tads1)

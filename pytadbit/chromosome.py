@@ -4,11 +4,13 @@
 
 """
 
-from random import gauss
-from math import sqrt
+from math import sqrt, log, exp
 from sys import stdout
 from pytadbit.parsers.tad_parser import parse_tads
 from pytadbit.tads_aligner.aligner import align
+
+from scipy.stats import lognorm
+
 
 class Chromosome():
     """
@@ -66,7 +68,7 @@ class Chromosome():
         for exp in experiments:
             tads.append(self.experiments[exp]['brks'])
         aligneds, score = align(tads, bin_size=self.resolution,
-                                chr_len=self.r_size)
+                                chr_len=self.r_size, **kwargs)
         for exp, ali in zip(experiments, aligneds):
             self.experiments[exp]['align'] = ali
             self.experiments[exp]['align'] = ali
@@ -74,23 +76,27 @@ class Chromosome():
             self.print_alignment(experiments)
         if not randomize:
             return self.get_alignment(names), score
-        if len(tads) != 2:
-            raise Exception('radomization is only available for pairwise alignment\n')
-        mean, std = get_tads_mean_std(tads, self.resolution)
-        p_value = randomization_test(mean, std, score, self.r_size,
-                                     self.resolution, **kwargs)
+        mean, std = self.get_tads_mean_std(experiments)
+        print 'mean', mean, 'std', std, self.r_size, self.r_size/mean
+        p_value = randomization_test(len(experiments), mean, std, score,
+                                     self.r_size, self.resolution,
+                                     verbose=verbose, **kwargs)
         return score, p_value
 
 
-    def print_alignment(self, names=None):
+    def print_alignment(self, names=None, string=False):
         names = names or self.experiments.keys()
-        print 'Alignment (%s TADs)' % (len(names))
+        length = max([len(n) for n in names])
+        out = 'Alignment (%s TADs)\n' % (len(names))
         for exp in names:
             if not 'align' in self.experiments[exp]:
                 continue
-            print '%10s :' % (exp),
-            print '|'.join(['%4s' % (str(x)[:-2] if x!='-' else '-' * 3)\
-                            for x in self.experiments[exp]['align']])
+            out += '{1:{0}}:'.format(length, exp)
+            out += '|'.join(['%5s' % (str(x)[:-2] if x!='-' else '-' * 4)\
+                             for x in self.experiments[exp]['align']]) + '\n'
+        if string:
+            return out
+        print out
 
 
     def get_alignment(self, names=None):
@@ -108,7 +114,8 @@ class Chromosome():
         """
         name = name or f_name
         self.experiments[name] = {}
-        tads, forbidden = parse_tads(f_name, self.max_tad_size, self.resolution)
+        tads, forbidden = parse_tads(f_name, max_size=self.max_tad_size,
+                                     bin_size=self.resolution)
         brks = [t['brk'] for t in tads.values() if t['brk']]
         self.experiments[name] = {'tads': tads,
                                   'brks': brks}
@@ -122,46 +129,44 @@ class Chromosome():
         self.r_size = self.size - len(self.forbidden) * self.resolution
 
 
-def get_tads_mean_std(tads, bin_size, max_tad_size=3000000):
-    """
-    returns mean and standard deviation of TAD lengths. Value is for both TADs
-    """
-    norm_tads = []
-    for tad in tads:
-        norm_tads += [(tad[t] - tad[t-1]) * bin_size \
-                      for t in xrange(1, len(tad)) \
-                      if (tad[t] - tad[t-1]) * bin_size < max_tad_size]
-    length = len(norm_tads)
-    mean   = sum(norm_tads)/length
-    std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
-    return mean, std
+    def get_tads_mean_std(self, experiments):
+        """
+        returns mean and standard deviation of TAD lengths. Value is for both TADs
+        """
+        norm_tads = []
+        for tad in experiments:
+            for brk in self.experiments[tad]['tads'].values():
+                if not brk['brk']:
+                    continue
+                norm_tads.append(log((brk['end'] - brk['start']) * self.resolution))
+        length = len(norm_tads)
+        mean   = sum(norm_tads)/length
+        std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
+        return mean, std
 
 
-def my_gauss(mean, sigma, minimum=0):
-    """
-    returns random gaussian value according to mean and sigma
-    """
-    while True:
-        val = gauss(mean, sigma)
-        if val > minimum:
-            return val
-
-
-def generate_random_tads(chr_len, mean, sigma, bin_size, start=0):
-    """
-    """
+def generate_random_tads(chr_len, mean, sigma, bin_size,
+                         max_tad_size=3000000, start=0):
     pos = start
     tads = []
+    dist = lognorm(sigma, scale=exp(mean))
     while True:
-        pos += my_gauss(mean, sigma, minimum=bin_size)
-        if pos > chr_len: break
-        tads.append(float(int(pos/bin_size)))
+        val = dist.rvs()
+        if val > max_tad_size:
+            continue
+        pos += val
+        if pos > chr_len:
+            tads.append(float(int(chr_len/bin_size)))
+            break
+        tads.append(float(int(pos/bin_size+.5)))
     return tads
 
 
-def randomization_test(mean, std, score, chr_len, bin_size, num=1000,
-                       max_dist=500000, verbose=False):
+def randomization_test(num_sequences, mean, std, score, chr_len, bin_size,
+                       num=1000, verbose=False):
     rand_distr = []
+    rand_len = []
+    best = (None, None)
     for n in xrange(num):
         if verbose:
             n = float(n)
@@ -169,16 +174,25 @@ def randomization_test(mean, std, score, chr_len, bin_size, num=1000,
                 stdout.write('\r' + ' ' * 10 + \
                              ' randomizing: {:.2%} completed'.format(n/num))
                 stdout.flush()
-        rand_distr.append(align([generate_random_tads(chr_len, mean,
-                                                      std, bin_size),
-                                 generate_random_tads(chr_len, mean,
-                                                      std, bin_size)],
+        random_tads = [generate_random_tads(chr_len, mean,
+                                            std, bin_size) \
+                       for _ in xrange(num_sequences)]
+        rand_len.append(float(sum([len(r) for r in random_tads]))/len(random_tads))
+        rand_distr.append(align(random_tads,
                                 bin_size=bin_size, chr_len=chr_len,
-                                verbose=True)[1])
-    if verbose:
-        print '\n Randomization Finished.'
-    print score, min(rand_distr), max(rand_distr)
+                                verbose=False)[1])
+        if rand_distr[-1] > best[0]:
+            best = rand_distr[-1], random_tads
+    align(random_tads, bin_size=bin_size, chr_len=chr_len, verbose=True)
     p_value = float(len([n for n in rand_distr if n > score]))/len(rand_distr)
+    if verbose:
+        stdout.write('\n {} randomizations finished.'.format(num))
+        stdout.flush()
+        print 'Observed alignment score: {}'.format(score)
+        print '  Randomized scores between {} and {}'.format(min(rand_distr),
+                                                             max(rand_distr))
+        print 'p-value: {}'.format(p_value if p_value else '<{}'.format(1./num))
+        print sum(rand_len)/len(rand_len)
     return p_value    
 
 
@@ -188,10 +202,13 @@ def main():
     main function
     """
 
-    sample1 = 'chr21/chr21.H1.hESC.rep1.20000.tsv'
-    sample2 = 'chr21/chr21.IMR90.rep1.20000.tsv'
-    sample3 = 'chr21/chr21.H1.hESC.rep2.20000.tsv'
-    sample4 = 'chr21/chr21.IMR90.rep2.20000.tsv'
+    from pytadbit import Chromosome
+    from itertools import combinations
+    path = '/home/fransua/db/hi-c/dixon_hsap-mmus/hsap/20Kb/'
+    sample1 = path + 'chr21/chr21.H1.hESC.rep1.20000.txt'
+    sample2 = path + 'chr21/chr21.IMR90.rep1.20000.txt'
+    sample3 = path + 'chr21/chr21.H1.hESC.rep2.20000.txt'
+    sample4 = path + 'chr21/chr21.IMR90.rep2.20000.txt'
     chr_len  = 48000000
     bin_size = 20000
     # given that mean TAD size around 1Mb we set:
@@ -204,10 +221,29 @@ def main():
                                            'hESC.rep2','IMR90.rep2'],
                        max_tad_size=max_size, chr_len=chr_len)
 
-    chr21.align_experiments(['hESC.rep1', 'IMR90.rep1'], verbose=True)
+    names = ['hESC.rep1','IMR90.rep1', 'hESC.rep2','IMR90.rep2']
+    for experiments in combinations(names, 2):
+        print [len(chr21.experiments[n]['brks']) for n in experiments]
+        print '-'.join(experiments)
+        print '', chr21.align_experiments(experiments, verbose=True,
+                                          randomize=True, num=10000)
+        print float(sum([len(chr21.experiments[n]['brks']) for n in experiments]))/2
+        print '='*80
 
-    chr21.align_experiments(method='global', bin_size=20000, chr_len=chr_len, penalty=-0.1,
-                            max_dist=500000, verbose=True)
+    for experiments in combinations(names, 3):
+        print '-'.join(experiments)
+        print '', chr21.align_experiments(experiments, verbose=True,
+                                          randomize=True, num=10000)
+        print '='*80
+
+    for experiments in combinations(names, 4):
+        print '-'.join(experiments)
+        print '', chr21.align_experiments(experiments, verbose=True,
+                                          randomize=True, num=10000)
+        print '='*80
+
+    chr21.align_experiments(method='global', bin_size=20000, chr_len=chr_len,
+                            penalty=-0.1, max_dist=500000, verbose=True)
     
 if __name__ == "__main__":
     exit(main())
