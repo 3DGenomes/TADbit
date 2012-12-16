@@ -5,7 +5,7 @@ unittest for pytadbit functions
 """
 
 import unittest
-from pytadbit import tadbit, batch_tadbit
+from pytadbit import tadbit, batch_tadbit, Chromosome
 
 
 class TestTadbit(unittest.TestCase):
@@ -30,6 +30,21 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(out['start'], breaks)
         self.assertEqual(out['score'], scores)
 
+    def test_tad_aligner(self):
+        exp1 = tadbit('chrT/chrT_A.tsv', max_tad_size="auto",
+                     verbose=False, no_heuristic=False)
+        exp2 = tadbit('chrT/chrT_B.tsv', max_tad_size="auto",
+                     verbose=False, no_heuristic=False)
+        exp3 = tadbit('chrT/chrT_C.tsv', max_tad_size="auto",
+                     verbose=False, no_heuristic=False)
+        exp4 = tadbit('chrT/chrT_D.tsv', max_tad_size="auto",
+                     verbose=False, no_heuristic=False)
+        test_chr = Chromosome(name='Test Chromosome', resolution=20000,
+                              experiment_files=[exp1, exp2, exp3, exp4],
+                              experiment_names=['exp1', 'exp2', 'exp3', 'exp4'])
+        alignment = test_chr.align_experiments(verbose=True, randomize=True)
+        self.assertEqual(round(19.555803, 3), round(alignment[0],3))
+        self.assertEqual(round(0.4, 1), round(alignment[1],1))
         
 if __name__ == "__main__":
     unittest.main()

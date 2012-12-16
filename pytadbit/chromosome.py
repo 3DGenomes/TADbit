@@ -10,7 +10,8 @@ from pytadbit.parsers.tad_parser import parse_tads
 from pytadbit.tads_aligner.aligner import align
 
 from scipy.stats import lognorm
-
+from scipy.interpolate import interp1d
+from random import random
 
 class Chromosome():
     """
@@ -76,15 +77,23 @@ class Chromosome():
             self.print_alignment(experiments)
         if not randomize:
             return self.get_alignment(names), score
-        mean, std = self.get_tads_mean_std(experiments)
-        print 'mean', mean, 'std', std, self.r_size, self.r_size/mean
-        p_value = randomization_test(len(experiments), mean, std, score,
-                                     self.r_size, self.resolution,
-                                     verbose=verbose, **kwargs)
+        #mean, std = self.get_tads_mean_std(experiments)
+        #print 'mean', mean, 'std', std, self.r_size, self.r_size/mean
+        #p_value = randomization_test(len(experiments), mean, std, score,
+        #                             self.r_size, self.resolution,
+        #                             verbose=verbose, **kwargs)
+        distr = self.interpolation(experiments)
+        p_value = self.randomization_test(len(experiments), distr, score,
+                                          verbose=verbose, **kwargs)
         return score, p_value
 
 
     def print_alignment(self, names=None, string=False):
+        """
+        print alignment
+        :argument None names: if None print all experiments
+        :argument False string: return string instead of printing
+        """
         names = names or self.experiments.keys()
         length = max([len(n) for n in names])
         out = 'Alignment (%s TADs)\n' % (len(names))
@@ -100,6 +109,11 @@ class Chromosome():
 
 
     def get_alignment(self, names=None):
+        """
+        Return dictionary corresponding to alignment of experiments
+        :argument None names: if None print all experiments
+        :return: alignment as dict
+        """
         names = names or self.experiments.keys()
         return dict([(exp, self.experiments[exp]['align']) \
                      for exp in names if 'align' in self.experiments[exp]])
@@ -129,9 +143,47 @@ class Chromosome():
         self.r_size = self.size - len(self.forbidden) * self.resolution
 
 
+    def interpolation(self, experiments):
+        """
+        calculate the distribution of TAD lengths, and interpolate it using
+        interp1d function from scipy.
+        :arguments experiments: names of experiments included in the
+        distribution
+        :return: function to interpolate a given TAD length according to a
+        probability value
+        """
+        # get all TAD lengths and multiply it by bin size of the experiment
+        norm_tads = []
+        for tad in experiments:
+            for brk in self.experiments[tad]['tads'].values():
+                if not brk['brk']:
+                    continue
+                norm_tads.append((brk['end'] - brk['start']) * self.resolution)
+        x = [0.0]
+        y = [0.0]
+        max_d = max(norm_tads)
+        # we ask here for a mean number of 20 values per bin 
+        bin_s = int(max_d / (float(len(norm_tads)) / 20))
+        for b in range(0, int(max_d) + bin_s, bin_s):
+            x.append(len([i for i in norm_tads if b < i <= b + bin_s]) + x[-1])
+            y.append(b + float(bin_s))
+        x = [float(v) / max(x) for v in x]
+        ## to see the distribution and its interpolation
+        #distr = interp1d(x, y)
+        #from matplotlib import pyplot as plt
+        #plt.plot([distr(float(i)/1000) for i in xrange(1000)],
+        #         [float(i)/1000 for i in xrange(1000)])
+        #plt.hist(norm_tads, normed=True, bins=20, cumulative=True)
+        #plt.show()
+        return interp1d(x, y)
+        
+
     def get_tads_mean_std(self, experiments):
         """
-        returns mean and standard deviation of TAD lengths. Value is for both TADs
+        returns mean and standard deviation of TAD lengths. Value is for both
+        TADs.
+
+        Note: no longer used in core functions
         """
         norm_tads = []
         for tad in experiments:
@@ -145,7 +197,50 @@ class Chromosome():
         return mean, std
 
 
-def generate_random_tads(chr_len, mean, sigma, bin_size,
+    def randomization_test(self, num_sequences, distr, score=None,
+                           num=1000, verbose=False):
+        """
+        Return the probability that original alignment is better than an
+        alignment of randomized boundaries.
+        :argument num_sequences: number of sequences aligned
+        :argument distr: the function to interpolate TAD lengths from
+        probability
+        :argument None score: just to print it when verbose
+        :argument 1000 num: number of random alignment to generate for
+        comparison
+        :argument False verbose: to print something nice
+        """
+        rand_distr = []
+        rand_len = []
+        for n in xrange(num):
+            if verbose:
+                n = float(n)
+                if not n / num * 100 % 5:
+                    stdout.write('\r' + ' ' * 10 + \
+                                 ' randomizing: {:.2%} completed'.format(n/num))
+                    stdout.flush()
+            random_tads = [generate_random_tads(self.r_size, distr, self.resolution) \
+                           for _ in xrange(num_sequences)]
+            rand_len.append(float(sum([len(r) for r in random_tads]))/len(random_tads))
+            rand_distr.append(align(random_tads,
+                                    bin_size=self.resolution, chr_len=self.r_size,
+                                    verbose=False)[1])
+        p_value = float(len([n for n in rand_distr if n > score]))/len(rand_distr)
+        if verbose:
+            stdout.write('\n {} randomizations finished.'.format(num))
+            stdout.flush()
+            print '  Observed alignment score: {}'.format(score)
+            print '  Mean number of boundaries: {}; observed: {}'.format(\
+                sum(rand_len)/len(rand_len),
+                str([len(self.experiments[e]['brks']) \
+                     for e in self.experiments]))
+            print 'Randomized scores between {} and {}; observed: {}'.format(\
+                min(rand_distr), max(rand_distr), score)
+            print 'p-value: {}'.format(p_value if p_value else '<{}'.format(1./num))
+        return p_value    
+
+
+def generate_random_tads_lognotm(chr_len, mean, sigma, bin_size,
                          max_tad_size=3000000, start=0):
     pos = start
     tads = []
@@ -156,13 +251,27 @@ def generate_random_tads(chr_len, mean, sigma, bin_size,
             continue
         pos += val
         if pos > chr_len:
-            tads.append(float(int(chr_len/bin_size)))
+            tads.append(float(int(chr_len / bin_size)))
             break
         tads.append(float(int(pos/bin_size+.5)))
     return tads
 
 
-def randomization_test(num_sequences, mean, std, score, chr_len, bin_size,
+def generate_random_tads(chr_len, distr, bin_size,
+                         max_tad_size=3000000, start=0):
+    pos = start
+    tads = []
+    while True:
+        pos += distr(random())
+        if pos > chr_len:
+            #tads.append(float(int(chr_len / bin_size)))
+            break
+        tads.append(float(int(pos / bin_size + .5)))
+    return tads
+
+
+
+def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
                        num=1000, verbose=False):
     rand_distr = []
     rand_len = []
@@ -183,11 +292,11 @@ def randomization_test(num_sequences, mean, std, score, chr_len, bin_size,
                                 verbose=False)[1])
         if rand_distr[-1] > best[0]:
             best = rand_distr[-1], random_tads
-    align(random_tads, bin_size=bin_size, chr_len=chr_len, verbose=True)
     p_value = float(len([n for n in rand_distr if n > score]))/len(rand_distr)
     if verbose:
         stdout.write('\n {} randomizations finished.'.format(num))
         stdout.flush()
+        align(best[-1], bin_size=bin_size, chr_len=chr_len, verbose=True)
         print 'Observed alignment score: {}'.format(score)
         print '  Randomized scores between {} and {}'.format(min(rand_distr),
                                                              max(rand_distr))
