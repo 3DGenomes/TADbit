@@ -42,7 +42,7 @@ class TestTadbit(unittest.TestCase):
         test_chr = Chromosome(name='Test Chromosome', resolution=20000,
                               experiment_files=[exp1, exp2, exp3, exp4],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'])
-        alignment = test_chr.align_experiments(verbose=True, randomize=True)
+        alignment = test_chr.align_experiments(verbose=False, randomize=True)
         self.assertEqual(round(19.555803, 3), round(alignment[0],3))
         self.assertEqual(round(0.4, 1), round(alignment[1],1))
         
