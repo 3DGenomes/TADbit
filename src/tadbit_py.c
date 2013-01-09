@@ -52,12 +52,12 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   tadbit(list, n, m, n_threads, verbose, max_tad_size, do_not_use_heuristic, seg);
 
   // store each tadbit output
-  int mbreaks      = seg->maxbreaks;
-  int nbreaks_opt  = seg->nbreaks_opt;
-  int * passages   = seg->passages;
-  double * llikmat = seg->llikmat;
-  double * mllik   = seg->mllik;
-  int    * bkpts   = seg->bkpts;
+  int      mbreaks     = seg->maxbreaks;
+  int      nbreaks_opt = seg->nbreaks_opt;
+  int    * passages    = seg->passages;
+  double * llikmat     = seg->llikmat;
+  double * mllik       = seg->mllik;
+  int    * bkpts       = seg->bkpts;
 
   // declare python objects to store lists
   PyObject * py_bkpts;

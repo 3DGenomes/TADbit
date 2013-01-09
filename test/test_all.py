@@ -21,6 +21,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(out['start'], breaks)
         self.assertEqual(out['score'], scores)
 
+
     def test_batch_tadbit(self):
         out = batch_tadbit('chrT/', max_tad_size=20, verbose=False,
                            no_heuristic=True)
@@ -29,6 +30,7 @@ class TestTadbit(unittest.TestCase):
                   10.0,  5.0,  3.0,  6.0,  None]
         self.assertEqual(out['start'], breaks)
         self.assertEqual(out['score'], scores)
+
 
     def test_tad_aligner(self):
         exp1 = tadbit('chrT/chrT_A.tsv', max_tad_size="auto",
@@ -40,11 +42,12 @@ class TestTadbit(unittest.TestCase):
         exp4 = tadbit('chrT/chrT_D.tsv', max_tad_size="auto",
                      verbose=False, no_heuristic=False)
         test_chr = Chromosome(name='Test Chromosome', resolution=20000,
-                              experiment_files=[exp1, exp2, exp3, exp4],
+                              experiments=[exp1, exp2, exp3, exp4],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'])
-        alignment = test_chr.align_experiments(verbose=False, randomize=True)
-        self.assertEqual(round(19.555803, 3), round(alignment[0],3))
-        self.assertEqual(round(0.4, 1), round(alignment[1],1))
+        score, pval = test_chr.align_experiments(verbose=False, randomize=True)
+        self.assertEqual(round(19.555803, 3), round(score,3))
+        self.assertEqual(round(0.4, 1), round(pval,1))
+
         
 if __name__ == "__main__":
     unittest.main()

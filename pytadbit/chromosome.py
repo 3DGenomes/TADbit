@@ -23,14 +23,14 @@ class Chromosome():
     predictions from different experiments, in different cell types and compare
     them.
     """
-    def __init__(self, name, resolution, experiment_files=None, experiment_names=None,
+    def __init__(self, name, resolution, experiments=None, experiment_names=None,
                  max_tad_size=3000000, chr_len=None):
         """
         :argument name: name of the chromosome
         :argument resolution: resolution of the experiments. All experiments may have
         the same resolution
-        :argument None experiment_files: list of paths to files containing the
-        definition of TADs corresponding to different experiments
+        :argument None experiments: list of paths to files containing the definition
+        of TADs corresponding to different experiments (or output of tadbit)
         :argument None experiment_names: list of names for each experiment
         :argument 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than
         this will not be considered, and relative chromosome size will be reduced
@@ -46,7 +46,7 @@ class Chromosome():
         self.resolution = resolution
         self.forbidden = {}
         self.experiments = {}
-        for i, f_name in enumerate(experiment_files):
+        for i, f_name in enumerate(experiments):
             name = experiment_names[i] if experiment_names else None
             self.add_experiment(f_name, name)
 
@@ -272,7 +272,6 @@ def generate_random_tads(chr_len, distr, bin_size,
             break
         tads.append(float(int(pos / bin_size + .5)))
     return tads
-
 
 
 def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,

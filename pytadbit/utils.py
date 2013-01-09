@@ -26,3 +26,31 @@ class Interpolate(object):
     def __call__(self, x):
         i = bisect_left(self.x_list, x) - 1
         return self.y_list[i] + self.slopes[i] * (x - self.x_list[i])
+
+
+class matrix(object):
+    """
+    simple object to store hi-c matrices. Only keeps half matrix
+    values MUST be integers
+    matrices MUST be symetric
+    """
+    def __init__(self, nums, size):
+        """
+        
+        """
+        self.values = reduce_matrix(nums, size)
+        self.nrows  = size
+
+
+    def rebuild_matrix(self):
+        values = [[[] for _ in xrange(self.nrows)] for _ in xrange(self.nrows)]
+        for i in xrange(self.nrows):
+            for j in xrange(self.nrows):
+                values[i][j] = self.values[i*(j-i)]
+        return values
+
+
+def reduce_matrix(nums, size):
+    return tuple([nums[i*j] for i in xrange(size) for j in xrange(i, size)])
+
+        
