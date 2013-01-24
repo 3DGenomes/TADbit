@@ -7,3 +7,4 @@ Tadbit's Reference Guide
    
    reference_chromosome
    reference_tadbit
+   reference_clustering

@@ -15,9 +15,13 @@ Contents:
 
    install
 
+   install_r
+
    tutorial
 
    reference/index
+
+   r_tadbit
 
 
 Indices and tables

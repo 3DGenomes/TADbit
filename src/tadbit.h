@@ -39,6 +39,7 @@ typedef struct {
    double *llikmat;
    double *mllik;
    int *bkpts;
+   double **weights;
 } tadbit_output;
 
 

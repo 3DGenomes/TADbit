@@ -53,6 +53,7 @@ class Chromosome():
         self.resolution = resolution
         self.forbidden = {}
         self.experiments = {}
+        experiments = experiments or []
         for i, f_name in enumerate(experiments):
             name = experiment_names[i] if experiment_names else None
             if type(f_name) is dict:
@@ -81,6 +82,8 @@ class Chromosome():
         experiments = names or self.experiments.keys()
         tads = []
         for e in experiments:
+            if not self.experiments[e]['tads']:
+                raise Exception('No TADs defined, use find_TAD function.\n')
             tads.append(self.experiments[e]['brks'])
         aligneds, score = align(tads, bin_size=self.resolution,
                                 chr_len=self.r_size, **kwargs)
@@ -91,7 +94,7 @@ class Chromosome():
             self.print_alignment(experiments)
         if not randomize:
             return self.get_alignment(names), score
-        #mean, std = self.get_tads_mean_std(experiments)
+        #mean, std = self._get_tads_mean_std(experiments)
         #print 'mean', mean, 'std', std, self.r_size, self.r_size/mean
         #p_value = randomization_test(len(experiments), mean, std, score,
         #                             self.r_size, self.resolution,
@@ -133,13 +136,22 @@ class Chromosome():
                      for e in names if 'align' in self.experiments[e]])
                     
 
-    def add_experiment(self, f_name, name):
+    def add_experiment(self, f_name, name, force=False):
         """
         Add Hi-C experiment to Chromosome
         """
         nums, size = read_matrix(f_name)
-        self.experiments[name] = {'hi-c': nums, 'size': size,
-                                  'tads': None, 'brks': None}
+        if name in self.experiments:
+            if 'hi-c' in self.experiments[name] and not force:
+                raise Exception(\
+                    '''Hi-C data already loaded under the name: {}.
+                    Force loading or use an other name.\n'''.format(name))
+            self.experiments[name]['hi-c'] = nums
+            self.experiments[name]['size'] = size
+        else:
+            self.experiments[name] = {'hi-c': nums, 'size': size,
+                                      'tads': None, 'brks': None,
+                                      'wght': None}
 
 
     def find_TAD(self, experiments, n_cpus=None, verbose=True,
@@ -160,11 +172,12 @@ class Chromosome():
         
         """
         for experiment in experiments:
-            self.add_TAD_def(tadbit(self.experiments[experiment]['hi-c'],
-                                    n_cpus=n_cpus, verbose=verbose,
-                                    max_tad_size=max_tad_size,
-                                    no_heuristic=no_heuristic),
-                             name=experiment)
+            result, weights = tadbit(self.experiments[experiment]['hi-c'],
+                                     n_cpus=n_cpus, verbose=verbose,
+                                     max_tad_size=max_tad_size,
+                                     no_heuristic=no_heuristic,
+                                     get_weights=True)
+            self.add_TAD_def(result, name=experiment, weights=weights)
         
 
     def visualize(self, name):
@@ -182,7 +195,7 @@ class Chromosome():
         plt.show()
 
 
-    def add_TAD_def(self, f_name, name=None):
+    def add_TAD_def(self, f_name, name=None, weights=None):
         """
         Add Topologically Associated Domains defintinion detection to chromosome
 
@@ -196,9 +209,12 @@ class Chromosome():
         brks = [t['brk'] for t in tads.values() if t['brk']]
         if not name in self.experiments:
             self.experiments[name] = {'hi-c': None, 'size': None,
-                                      'tads': None, 'brks': None}
+                                      'tads': None, 'brks': None,
+                                      'wght': None}
         self.experiments[name]['tads'] = tads
         self.experiments[name]['brks'] = brks
+        if weights:
+            self.experiments[name]['wght'] = weights
         if not self.forbidden:
             self.forbidden = dict([(f, None) for f in forbidden])
         else:
@@ -244,7 +260,7 @@ class Chromosome():
         return interp1d(x, y)
         
 
-    def get_tads_mean_std(self, experiments):
+    def _get_tads_mean_std(self, experiments):
         """
         returns mean and standard deviation of TAD lengths. Value is for both
         TADs.
@@ -304,6 +320,38 @@ class Chromosome():
                 min(rand_distr), max(rand_distr), score)
             print 'p-value: {}'.format(p_value if p_value else '<{}'.format(1./num))
         return p_value
+
+
+    def get_tad_hic(self, tad, x_name, normed=True):
+        """
+        retrieve the Hi-C data matrix corresponding to ma given TAD
+        """
+        beg, end = int(tad['start']), int(tad['end'])
+        xpr = self.experiments[x_name]
+        size = xpr['size']
+        matrix = [[[] for _ in xrange(beg, end)]\
+                  for _ in xrange(beg, end)]
+        for i, ii in enumerate(xrange(beg - 1, end - 1)):
+            for j, jj in enumerate(xrange(beg, end)):
+                matrix[j][i] = float(xpr['hi-c'][0][ii * size + jj])
+                if not normed:
+                    continue
+                try:
+                    matrix[j][i] = matrix[j][i] / xpr['wght'][0][ii * size + jj]
+                except ZeroDivisionError:
+                    matrix[j][i] = 0.0
+        return matrix
+
+
+    def iter_tads(self, x_name, normed=True):
+        """
+        iterate over tads corresponding to a given experiment
+        """
+        if not self.experiments[x_name]['hi-c']:
+            raise Exception('No Hi-c data for {} experiment\n'.format(x_name))
+        for tad in self.experiments[x_name]['tads']:
+            yield self.get_tad_hic(self.experiments[x_name]['tads'][tad],
+                                   x_name, normed=normed)
 
 
 def generate_random_tads_lognotm(chr_len, mean, sigma, bin_size,

@@ -1,6 +1,6 @@
 
-Tadbit with Python
-******************
+Tadbit with R
+*************
 
 .. contents::
 

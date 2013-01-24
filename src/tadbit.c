@@ -960,6 +960,24 @@ tadbit(
    free(bkptscpy);
    
    // Resize output to match original.
+   int p;
+   double **resized_weights = (double **) malloc(m * sizeof(double *));
+   for (l = 0 ; l < m ; l++) {
+      resized_weights[l] = (double *) malloc(N*N * sizeof(double));
+      for (i = 0 ; i < N*N ; i++) resized_weights[l][i] = 0.0;
+   }
+   for (k = 0 ; k < m ; k++) {
+      for (l = 0, i = 0 ; i < N ; i++) {
+         if (remove[i]) continue;
+         for (p = 0, j = 0 ; j < N ; j++) {
+            if (remove[j]) continue;
+            resized_weights[k][i+j*N] = weights[k][l+p*n];
+	    p++;
+	 }
+	 l++;
+      }
+   }
+
    int *resized_bkpts = (int *) malloc(N*MAXBREAKS * sizeof(int));
    int *resized_passages = (int *) malloc(N * sizeof(int));
    for (i = 0 ; i < N*MAXBREAKS ; i++) resized_bkpts[i] = 0;
@@ -1007,6 +1025,7 @@ tadbit(
    // Update output struct.
    seg->maxbreaks = MAXBREAKS;
    seg->nbreaks_opt = nbreaks_opt;
+   seg->weights = resized_weights;
    seg->passages = resized_passages;
    seg->llikmat = resized_llikmat;
    seg->mllik = mllik;

@@ -9,7 +9,8 @@ from pytadbit.parsers.hic_parser import read_matrix
 from pytadbit.tadbit_py import _tadbit_wrapper
 
 
-def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto", no_heuristic=False):
+def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
+           no_heuristic=False, get_weights=False):
     """
     The tadbit algorithm works on raw chromosome interaction count data.
     Not only is normalization not necessary, it is also not recommended
@@ -40,14 +41,14 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto", no_heuristic=False
     """
     nums, size = read_matrix(x)
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
-    _, nbks, passages, _, _, bkpts = _tadbit_wrapper(nums,             # list of big lists representing the matrices
-                                                     size,             # size of one row/column
-                                                     len(nums),        # number of matrices
-                                                     n_cpus or 0,      # number of threads
-                                                     int(verbose),     # verbose 0/1
-                                                     max_tad_size,     # max_tad_size
-                                                     int(no_heuristic) # heuristic 0/1
-                                                     )
+    _, nbks, passages, _, _, bkpts, weights = _tadbit_wrapper(nums,             # list of big lists representing the matrices
+                                                              size,             # size of one row/column
+                                                              len(nums),        # number of matrices
+                                                              n_cpus or 0,      # number of threads
+                                                              int(verbose),     # verbose 0/1
+                                                              max_tad_size,     # max_tad_size
+                                                              int(no_heuristic) # heuristic 0/1
+                                                              )
 
     dim     = nbks*size
     breaks  = [i for i in xrange(size) if bkpts[i+dim]==1]
@@ -58,7 +59,9 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto", no_heuristic=False
         result['start'].append((breaks[i-1] + 1) if i > 0 else 0)
         result['end'  ].append(breaks[i] if i < len(breaks) else size - 1)
         result['score'].append(scores[i] if i < len(breaks) else None)
-        
+
+    if get_weights:
+        return result, weights
     return result
 
 

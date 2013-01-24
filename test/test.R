@@ -5,7 +5,7 @@ library(tadbit)
 
 ## TEST TADBIT
 x = as.matrix(read.delim('chrT/chrT_A.tsv', row.names=1))
-output_fast = tadbit(x, max_tad_size=4, no_heuristic=TRUE)
+output_fast = tadbit(x)
 exp.pos <- c(8, 14, 19, 34, 39, 44, 50, 62, 67, 72, 90)
 exp.scr <- c(3, 6, 7, 4, 4, 8, 9, 6, 8, 7, 9)
 if ((output_fast$position==exp.pos) && (output_fast$score==exp.scr)) {

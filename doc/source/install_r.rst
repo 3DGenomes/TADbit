@@ -1,5 +1,5 @@
-Download and Install Tadbit for Python
-**************************************
+Download and Install Tadbit for R
+*********************************
 
 .. contents::
 
@@ -8,31 +8,9 @@ Download and Install Tadbit for Python
 GNU/Linux
 =========
 
-Tadbit requires python>=2.7 as well as several dependencies:
+Tadbit requires R>=??? as well as several dependencies:
 
 * **blablaabl**
-
----------------------------------------------------------
-
-Only needed for drawing graph:
-
-* **python-matplotlib**
-* **python-numpy**
-
-Install Python libraries:
--------------------------
-
-**Required:**
-::
-
-  apt-get install python-scipy
-
-Accessory:
-
-::
-
-  apt-get install python-matplotlib python-scipy
-
 
 
 Installing Tadbit
@@ -52,7 +30,7 @@ once done, go in the tadbit/src directory and install it:
 
 ::
 
-  sudo python setup.py install
+  sudo R CMD INSTALL /full_path_to_tadbit
 
 finally it is a good thing to test if every thing is working fine.
 
@@ -60,5 +38,5 @@ Go to the test directory and run:
 
 ::
 
-  python test_all.py
+  R --vanilla < test.R 
 

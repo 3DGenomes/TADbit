@@ -56,6 +56,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   int      nbreaks_opt = seg->nbreaks_opt;
   int    * passages    = seg->passages;
   double * llikmat     = seg->llikmat;
+  double ** weights    = seg->weights;
   double * mllik       = seg->mllik;
   int    * bkpts       = seg->bkpts;
 
@@ -65,6 +66,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject * py_mllik;
   PyObject * py_result;
   PyObject * py_passages;
+  PyObject * py_weights;
+  PyObject * temp;
 
   // get bkpts
   int dim = nbreaks_opt*n;
@@ -93,13 +96,23 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   for(i = 0 ; i < n*n; i++)
     PyList_SetItem(py_llikmat, i, PyFloat_FromDouble(llikmat[i]));
 
+  // get weights
+  py_weights = PyList_New(m);
+  for(i = 0 ; i < m; i++){
+    temp = PyList_New(n*n);
+    PyList_SetItem(py_weights, i, temp);
+    for(j = 0 ; j < n*n; j++){
+      PyList_SetItem(temp, j, PyFloat_FromDouble(weights[i][j]));
+    }
+  }
+
   // get mllik
   py_mllik = PyList_New(mbreaks);
   for(i = 0 ; i < mbreaks ; i++)
     PyList_SetItem(py_mllik, i, PyFloat_FromDouble(mllik[i]));
 
   // group results into a python list
-  py_result = PyList_New(6);
+  py_result = PyList_New(7);
 
   PyList_SetItem(py_result, 0, PyInt_FromLong(mbreaks));
   PyList_SetItem(py_result, 1, PyInt_FromLong(nbreaks_opt));
@@ -107,6 +120,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyList_SetItem(py_result, 3, py_llikmat);
   PyList_SetItem(py_result, 4, py_mllik);
   PyList_SetItem(py_result, 5, py_bkpts);
+  PyList_SetItem(py_result, 6, py_weights);
+
 
   return py_result;
 }
