@@ -25,21 +25,20 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto", no_heuristic=False
     site densities and 'mappability' of the reads in case a bin contains
     repeated regions.
 
-    :argument x: A square matrix of interaction counts in hi-C data or a list of
-    such matrices for replicated experiments. The counts must be evenly sampled
-    and not normalized.
+    :argument x: A square matrix of interaction counts in hi-C data or a list of \
+    such matrices for replicated experiments. The counts must be evenly sampled \
+    and not normalized.\
     x might be either a list of list, a path to a file or a file handler
-    :argument None n_cpus: The number of CPUs to allocate to tadbit. The value default
+    :argument None n_cpus: The number of CPUs to allocate to tadbit. The value default\
     is the total number of CPUs minus 1.
-    :argument auto max_tad_size: an integer defining maximum size of TAD.
+    :argument auto max_tad_size: an integer defining maximum size of TAD.\
     Default (auto) defines it to the number of rows/columns.
     :argument False no_heuristic: whether to use or not some heuristics
 
-    :returns: the list of topologically associated domains' boundaries, and the
+    :returns: the list of topologically associated domains' boundaries, and the\
     corresponding list associated log likelihoods.
     """
     nums, size = read_matrix(x)
-    del(x)
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
     _, nbks, passages, _, _, bkpts = _tadbit_wrapper(nums,             # list of big lists representing the matrices
                                                      size,             # size of one row/column
@@ -75,7 +74,7 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
     experiments or any other organization. Data files that should be
     considered replicates have to start with the same characters, until
     the character sep. For instance, all replicates of the unit
-    'chr1' should start with 'chr1_', using the default value of sep.
+    'chr1' should start with 'chr1\_', using the default value of sep.
     
     The data files are read through read.delim. You can pass options
     to read.delim through the list read_options. For instance
@@ -86,15 +85,15 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
     passed to \code{tadbit}.
   
     :argument directory: The directory containing the data files.
-    :argument _ sep: A character specifying how to identify unit/chormosome names
+    :argument _ sep: A character specifying how to identify unit/chormosome names\
     (see below).
-    :argument kwargs: arguments passed to :py:func:pytadbit:`tadbit` function.
-    :argument None parser: a parser function that takes file name as input and
-    returns a tuple representing the matrix of data. Tuple is a concatenation of
+    :argument kwargs: arguments passed to :func:`pytadbit.tadbit.tadbit` function.
+    :argument None parser: a parser function that takes file name as input and\
+    returns a tuple representing the matrix of data. Tuple is a concatenation of\
     column1 + column2 + column3 + ...
 
-    :returns: A \code{list} where each element has the name of the unit/chromosome,
-    and is the output of \code{tadbit} run on the corresponding files
+    :returns: A \code{list} where each element has the name of the unit/chromosome,\
+    and is the output of \code{tadbit} run on the corresponding files\
     assumed to be replicates.
 
     """

@@ -8,14 +8,21 @@ from math import sqrt, log, exp
 from sys import stdout
 from pytadbit.parsers.tad_parser import parse_tads
 from pytadbit.tads_aligner.aligner import align
+from pytadbit.parsers.hic_parser import read_matrix
+from pytadbit import tadbit
+from pytadbit.tad_clustering.tad_cmo import optimal_cmo
+
 
 try:
     from scipy.stats import lognorm
     from scipy.interpolate import interp1d
+    from numpy import log2
+    from matplotlib import pyplot as plt
 except ImportError:
     from pytadbit.utils import Interpolate as interp1d
 
 from random import random
+
 
 class Chromosome():
     """
@@ -27,15 +34,15 @@ class Chromosome():
                  max_tad_size=3000000, chr_len=None):
         """
         :argument name: name of the chromosome
-        :argument resolution: resolution of the experiments. All experiments may have
+        :argument resolution: resolution of the experiments. All experiments may have\
         the same resolution
-        :argument None experiments: list of paths to files containing the definition
+        :argument None experiments: list of paths to files containing the definition\
         of TADs corresponding to different experiments (or output of tadbit)
         :argument None experiment_names: list of names for each experiment
-        :argument 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than
-        this will not be considered, and relative chromosome size will be reduced
+        :argument 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than\
+        this will not be considered, and relative chromosome size will be reduced\
         accordingly
-        :argument None chr_len: size of the chromosome in bp. By default it will be
+        :argument None chr_len: size of the chromosome in bp. By default it will be\
         inferred from the distribution of TADs.
 
         :return: Chromosome object
@@ -48,7 +55,10 @@ class Chromosome():
         self.experiments = {}
         for i, f_name in enumerate(experiments):
             name = experiment_names[i] if experiment_names else None
-            self.add_experiment(f_name, name)
+            if type(f_name) is dict:
+                self.add_TAD_def(f_name, name)
+            else:
+                self.add_experiment(f_name, name)
 
 
     def align_experiments(self, names=None, verbose=False, randomize=False,
@@ -56,27 +66,27 @@ class Chromosome():
         """
         Align prediction of boundaries of two different experiments
 
-        :argument None names: list of names of experiments to align. If None
+        :argument None names: list of names of experiments to align. If None\
         align all.
         :argument experiment1: name of the first experiment to align
         :argument experiment2: name of the second experiment to align
         :argument -0.1 penalty: penalty of inserting a gap in the alignment
         :argument 500000 max_dist: Maximum distance between 2 boundaries allowing match
         :argument False verbose: print somethings
-        :argument False randomize: check alignment quality by comparing randomization
-        of boundaries over chromosomes of same size. This will return a extra value,
-        the p-value of accepting that observed alignment is not better than random
+        :argument False randomize: check alignment quality by comparing randomization\
+        of boundaries over chromosomes of same size. This will return a extra value,\
+        the p-value of accepting that observed alignment is not better than random\
         alignment
         """
         experiments = names or self.experiments.keys()
         tads = []
-        for exp in experiments:
-            tads.append(self.experiments[exp]['brks'])
+        for e in experiments:
+            tads.append(self.experiments[e]['brks'])
         aligneds, score = align(tads, bin_size=self.resolution,
                                 chr_len=self.r_size, **kwargs)
-        for exp, ali in zip(experiments, aligneds):
-            self.experiments[exp]['align'] = ali
-            self.experiments[exp]['align'] = ali
+        for e, ali in zip(experiments, aligneds):
+            self.experiments[e]['align'] = ali
+            self.experiments[e]['align'] = ali
         if verbose:
             self.print_alignment(experiments)
         if not randomize:
@@ -101,12 +111,12 @@ class Chromosome():
         names = names or self.experiments.keys()
         length = max([len(n) for n in names])
         out = 'Alignment (%s TADs)\n' % (len(names))
-        for exp in names:
-            if not 'align' in self.experiments[exp]:
+        for e in names:
+            if not 'align' in self.experiments[e]:
                 continue
-            out += '{1:{0}}:'.format(length, exp)
+            out += '{1:{0}}:'.format(length, e)
             out += '|'.join(['%5s' % (str(x)[:-2] if x!='-' else '-' * 4)\
-                             for x in self.experiments[exp]['align']]) + '\n'
+                             for x in self.experiments[e]['align']]) + '\n'
         if string:
             return out
         print out
@@ -119,24 +129,76 @@ class Chromosome():
         :return: alignment as dict
         """
         names = names or self.experiments.keys()
-        return dict([(exp, self.experiments[exp]['align']) \
-                     for exp in names if 'align' in self.experiments[exp]])
+        return dict([(e, self.experiments[e]['align']) \
+                     for e in names if 'align' in self.experiments[e]])
                     
 
-    def add_experiment(self, f_name, name=None):
+    def add_experiment(self, f_name, name):
         """
-        Add experiment of Topologically Associated Domains detection to chromosome
+        Add Hi-C experiment to Chromosome
+        """
+        nums, size = read_matrix(f_name)
+        self.experiments[name] = {'hi-c': nums, 'size': size,
+                                  'tads': None, 'brks': None}
+
+
+    def find_TAD(self, experiments, n_cpus=None, verbose=True,
+                 max_tad_size="auto", no_heuristic=False):
+        """
+        Call tadbit function to calculate the position of Topologically associated
+        domains
+        
+        :argument experiment: A square matrix of interaction counts in hi-C data or a list of\
+        such matrices for replicated experiments. The counts must be evenly sampled\
+        and not normalized.\
+        'experiment' might be either a list of list, a path to a file or a file handler
+        :argument None n_cpus: The number of CPUs to allocate to tadbit. The value default\
+        is the total number of CPUs minus 1.
+        :argument auto max_tad_size: an integer defining maximum size of TAD.\
+        Default (auto) defines it to the number of rows/columns.
+        :argument False no_heuristic: whether to use or not some heuristics
+        
+        """
+        for experiment in experiments:
+            self.add_TAD_def(tadbit(self.experiments[experiment]['hi-c'],
+                                    n_cpus=n_cpus, verbose=verbose,
+                                    max_tad_size=max_tad_size,
+                                    no_heuristic=no_heuristic),
+                             name=experiment)
+        
+
+    def visualize(self, name):
+        """
+        Visualize the matrix of Hi-C interactions
+
+        :argument name: name of the experiment to visualize
+        
+        """
+        size = self.experiments[name]['size']
+        matrix = [[self.experiments[name]['hi-c'][0][i+size*j] \
+                   for i in xrange(size)] \
+                  for j in xrange(size)]
+        plt.imshow(log2(matrix), origin='lower')
+        plt.show()
+
+
+    def add_TAD_def(self, f_name, name=None):
+        """
+        Add Topologically Associated Domains defintinion detection to chromosome
 
         :argument f_name: path to file
         :argument None name: name of the experiment, if None f_name will be used:
+
         """
         name = name or f_name
-        self.experiments[name] = {}
         tads, forbidden = parse_tads(f_name, max_size=self.max_tad_size,
                                      bin_size=self.resolution)
         brks = [t['brk'] for t in tads.values() if t['brk']]
-        self.experiments[name] = {'tads': tads,
-                                  'brks': brks}
+        if not name in self.experiments:
+            self.experiments[name] = {'hi-c': None, 'size': None,
+                                      'tads': None, 'brks': None}
+        self.experiments[name]['tads'] = tads
+        self.experiments[name]['brks'] = brks
         if not self.forbidden:
             self.forbidden = dict([(f, None) for f in forbidden])
         else:
@@ -207,10 +269,10 @@ class Chromosome():
         Return the probability that original alignment is better than an
         alignment of randomized boundaries.
         :argument num_sequences: number of sequences aligned
-        :argument distr: the function to interpolate TAD lengths from
+        :argument distr: the function to interpolate TAD lengths from\
         probability
         :argument None score: just to print it when verbose
-        :argument 1000 num: number of random alignment to generate for
+        :argument 1000 num: number of random alignment to generate for\
         comparison
         :argument False verbose: to print something nice
         """
@@ -241,7 +303,7 @@ class Chromosome():
             print 'Randomized scores between {} and {}; observed: {}'.format(\
                 min(rand_distr), max(rand_distr), score)
             print 'p-value: {}'.format(p_value if p_value else '<{}'.format(1./num))
-        return p_value    
+        return p_value
 
 
 def generate_random_tads_lognotm(chr_len, mean, sigma, bin_size,
