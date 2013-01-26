@@ -10,3 +10,5 @@ src/build/*
 build
 src/pytadbit.py
 src/pytadbit_wrap.c
+.project
+.pydevproject
