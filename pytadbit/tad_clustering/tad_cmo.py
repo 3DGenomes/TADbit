@@ -88,7 +88,12 @@ def optimal_cmo(tad1, tad2, num_v=None):
             vec2p = vec2[:, :num]
             if factors[-1] == 1:
                 p_scores = prescoring(vec1p, vec2p, l_p1, l_p2)
-            else:
+            else: 
+                # here we take advantage of previous calculation of p_scores
+                # as product function is returning the last element of factors
+                # alternatively 1 and -1.
+                # This saves 50% of time and 30-40% of total computation time
+                # It might be extended for other cases
                 p_scores[-1] = prescoring(vec1p, vec2p, l_p1, l_p2, l_p1-1)[0]
             penalty = min([min(s) for s in p_scores] + [0.0])
             align1, align2 = core_nw(p_scores, penalty, l_p1, l_p2)
