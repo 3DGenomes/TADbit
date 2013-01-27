@@ -4,17 +4,15 @@
 
 """
 
-from math import sqrt, log, exp
+from math import sqrt, log
 from sys import stdout
 from pytadbit.parsers.tad_parser import parse_tads
 from pytadbit.tads_aligner.aligner import align
 from pytadbit.parsers.hic_parser import read_matrix
 from pytadbit import tadbit
-from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 
 
 try:
-    from scipy.stats import lognorm
     from scipy.interpolate import interp1d
     from numpy import log2
     from matplotlib import pyplot as plt
@@ -30,7 +28,8 @@ class Chromosome():
     predictions from different experiments, in different cell types and compare
     them.
     """
-    def __init__(self, name, resolution, experiments=None, experiment_names=None,
+    def __init__(self, name, resolution, experiments=None, 
+                 experiment_names=None,
                  max_tad_size=3000000, chr_len=None):
         """
         :argument name: name of the chromosome
@@ -57,7 +56,7 @@ class Chromosome():
         for i, f_name in enumerate(experiments):
             name = experiment_names[i] if experiment_names else None
             if type(f_name) is dict:
-                self.add_TAD_def(f_name, name)
+                self.add_tad_def(f_name, name)
             else:
                 self.add_experiment(f_name, name)
 
@@ -83,10 +82,10 @@ class Chromosome():
         tads = []
         for e in experiments:
             if not self.experiments[e]['tads']:
-                raise Exception('No TADs defined, use find_TAD function.\n')
+                raise Exception('No TADs defined, use find_tad function.\n')
             tads.append(self.experiments[e]['brks'])
         aligneds, score = align(tads, bin_size=self.resolution,
-                                chr_len=self.r_size, **kwargs)
+                                max_dist=self.max_tad_size, **kwargs)
         for e, ali in zip(experiments, aligneds):
             self.experiments[e]['align'] = ali
             self.experiments[e]['align'] = ali
@@ -154,7 +153,7 @@ class Chromosome():
                                       'wght': None}
 
 
-    def find_TAD(self, experiments, n_cpus=None, verbose=True,
+    def find_tad(self, experiments, n_cpus=None, verbose=True,
                  max_tad_size="auto", no_heuristic=False):
         """
         Call tadbit function to calculate the position of Topologically associated
@@ -177,7 +176,7 @@ class Chromosome():
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
-            self.add_TAD_def(result, name=experiment, weights=weights)
+            self.add_tad_def(result, name=experiment, weights=weights)
         
 
     def visualize(self, name):
@@ -195,7 +194,7 @@ class Chromosome():
         plt.show()
 
 
-    def add_TAD_def(self, f_name, name=None, weights=None):
+    def add_tad_def(self, f_name, name=None, weights=None):
         """
         Add Topologically Associated Domains defintinion detection to chromosome
 
@@ -227,11 +226,11 @@ class Chromosome():
 
     def interpolation(self, experiments):
         """
-        calculate the distribution of TAD lengths, and interpolate it using
+        calculate the distribution of TAD lengths, and interpolate it using\
         interp1d function from scipy.
-        :arguments experiments: names of experiments included in the
+        :arguments experiments: names of experiments included in the\
         distribution
-        :return: function to interpolate a given TAD length according to a
+        :return: function to interpolate a given TAD length according to a\
         probability value
         """
         # get all TAD lengths and multiply it by bin size of the experiment
@@ -292,39 +291,47 @@ class Chromosome():
         comparison
         :argument False verbose: to print something nice
         """
-        rand_distr = []
-        rand_len = []
-        for n in xrange(num):
+        rnd_distr = []
+        rnd_len = []
+        for val in xrange(num):
             if verbose:
-                n = float(n)
-                if not n / num * 100 % 5:
+                val = float(val)
+                if not val / num * 100 % 5:
                     stdout.write('\r' + ' ' * 10 + \
-                                 ' randomizing: {:.2%} completed'.format(n/num))
+                                 ' randomizing: '
+                                 '{:.2%} completed'.format(val/num))
                     stdout.flush()
-            random_tads = [generate_random_tads(self.r_size, distr, self.resolution) \
+            rnd_tads = [generate_rnd_tads(self.r_size, distr, self.resolution) \
                            for _ in xrange(num_sequences)]
-            rand_len.append(float(sum([len(r) for r in random_tads]))/len(random_tads))
-            rand_distr.append(align(random_tads,
-                                    bin_size=self.resolution, chr_len=self.r_size,
+            rnd_len.append(float(sum([len(r) for r in rnd_tads])) \
+                           / len(rnd_tads))
+            rnd_distr.append(align(rnd_tads,
+                                    bin_size=self.resolution,
                                     verbose=False)[1])
-        p_value = float(len([n for n in rand_distr if n > score]))/len(rand_distr)
+        pval = float(len([n for n in rnd_distr if n > score])) / len(rnd_distr)
         if verbose:
             stdout.write('\n {} randomizations finished.'.format(num))
             stdout.flush()
             print '  Observed alignment score: {}'.format(score)
             print '  Mean number of boundaries: {}; observed: {}'.format(\
-                sum(rand_len)/len(rand_len),
+                sum(rnd_len)/len(rnd_len),
                 str([len(self.experiments[e]['brks']) \
                      for e in self.experiments]))
             print 'Randomized scores between {} and {}; observed: {}'.format(\
-                min(rand_distr), max(rand_distr), score)
-            print 'p-value: {}'.format(p_value if p_value else '<{}'.format(1./num))
-        return p_value
+                min(rnd_distr), max(rnd_distr), score)
+            print 'p-value: {}'.format(pval if pval else '<{}'.format(1./num))
+        return pval
 
 
     def get_tad_hic(self, tad, x_name, normed=True):
         """
-        retrieve the Hi-C data matrix corresponding to ma given TAD
+        Retrieve the Hi-C data matrix corresponding to ma given TAD.
+        
+        :argument tad: a given TAD -> dict
+        :argument x_name: name og the experiment
+        :argument True normed: if Hi-C data has to be normalized
+        
+        :returns: Hi-C data matrix for the given TAD
         """
         beg, end = int(tad['start']), int(tad['end'])
         xpr = self.experiments[x_name]
@@ -332,12 +339,13 @@ class Chromosome():
         matrix = [[[] for _ in xrange(beg, end)]\
                   for _ in xrange(beg, end)]
         for i, ii in enumerate(xrange(beg - 1, end - 1)):
+            ii = ii * size
             for j, jj in enumerate(xrange(beg, end)):
-                matrix[j][i] = float(xpr['hi-c'][0][ii * size + jj])
+                matrix[j][i] = float(xpr['hi-c'][0][ii + jj])
                 if not normed:
                     continue
                 try:
-                    matrix[j][i] = matrix[j][i] / xpr['wght'][0][ii * size + jj]
+                    matrix[j][i] = matrix[j][i] / xpr['wght'][0][ii + jj]
                 except ZeroDivisionError:
                     matrix[j][i] = 0.0
         return matrix
@@ -345,7 +353,12 @@ class Chromosome():
 
     def iter_tads(self, x_name, normed=True):
         """
-        iterate over tads corresponding to a given experiment
+        Iterate over TADs corresponding to a given experiment.
+        
+        :argument x_name: name of the experiment
+        :argument True normed: normalize Hi-C data returned
+        
+        :yields: Hi-C data corresponding to each TAD
         """
         if not self.experiments[x_name]['hi-c']:
             raise Exception('No Hi-c data for {} experiment\n'.format(x_name))
@@ -354,31 +367,23 @@ class Chromosome():
                                    x_name, normed=normed)
 
 
-def generate_random_tads_lognotm(chr_len, mean, sigma, bin_size,
-                         max_tad_size=3000000, start=0):
-    pos = start
-    tads = []
-    dist = lognorm(sigma, scale=exp(mean))
-    while True:
-        val = dist.rvs()
-        if val > max_tad_size:
-            continue
-        pos += val
-        if pos > chr_len:
-            tads.append(float(int(chr_len / bin_size)))
-            break
-        tads.append(float(int(pos/bin_size+.5)))
-    return tads
-
-
-def generate_random_tads(chr_len, distr, bin_size,
-                         max_tad_size=3000000, start=0):
+def generate_rnd_tads(chr_len, distr, bin_size, start=0):
+    """
+    Generates random TADs over a chromosome of a given size according to \
+    a given distribution of lengths of TADs.
+    
+    :argument chr_len: length of the chromosome
+    :argument distr: function that returns a TAD length depending on a p value
+    :argument bin_size: size of the bin of the Hi-C experiment
+    :argument 0 start: starting position in the chromosome
+    
+    :returns: list of TADs
+    """
     pos = start
     tads = []
     while True:
         pos += distr(random())
         if pos > chr_len:
-            #tads.append(float(int(chr_len / bin_size)))
             break
         tads.append(float(int(pos / bin_size + .5)))
     return tads
@@ -386,6 +391,11 @@ def generate_random_tads(chr_len, distr, bin_size,
 
 def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
                        num=1000, verbose=False):
+    """
+    No longer used
+    
+    TODO: use Guillaume idea.
+    """
     rand_distr = []
     rand_len = []
     best = (None, None)
@@ -396,7 +406,7 @@ def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
                 stdout.write('\r' + ' ' * 10 + \
                              ' randomizing: {:.2%} completed'.format(n/num))
                 stdout.flush()
-        random_tads = [generate_random_tads(chr_len, mean,
+        random_tads = [generate_rnd_tads(chr_len, mean,
                                             std, bin_size) \
                        for _ in xrange(num_sequences)]
         rand_len.append(float(sum([len(r) for r in random_tads]))/len(random_tads))
@@ -416,56 +426,4 @@ def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
         print 'p-value: {}'.format(p_value if p_value else '<{}'.format(1./num))
         print sum(rand_len)/len(rand_len)
     return p_value    
-
-
-def main():
-    """
-    main function
-    """
-
-    from pytadbit import Chromosome
-    from itertools import combinations
-    path = '/home/fransua/db/hi-c/dixon_hsap-mmus/hsap/20Kb/'
-    sample1 = path + 'chr21/chr21.H1.hESC.rep1.20000.txt'
-    sample2 = path + 'chr21/chr21.IMR90.rep1.20000.txt'
-    sample3 = path + 'chr21/chr21.H1.hESC.rep2.20000.txt'
-    sample4 = path + 'chr21/chr21.IMR90.rep2.20000.txt'
-    chr_len  = 48000000
-    bin_size = 20000
-    # given that mean TAD size around 1Mb we set:
-    max_size = 3000000
-    max_dist = 500000
-    
-    chr21 = Chromosome('chr21', 20000,
-                       experiment_files = [sample1, sample2, sample3, sample4],
-                       experiment_names = ['hESC.rep1','IMR90.rep1',
-                                           'hESC.rep2','IMR90.rep2'],
-                       max_tad_size=max_size, chr_len=chr_len)
-
-    names = ['hESC.rep1','IMR90.rep1', 'hESC.rep2','IMR90.rep2']
-    for experiments in combinations(names, 2):
-        print [len(chr21.experiments[n]['brks']) for n in experiments]
-        print '-'.join(experiments)
-        print '', chr21.align_experiments(experiments, verbose=True,
-                                          randomize=True, num=10000)
-        print float(sum([len(chr21.experiments[n]['brks']) for n in experiments]))/2
-        print '='*80
-
-    for experiments in combinations(names, 3):
-        print '-'.join(experiments)
-        print '', chr21.align_experiments(experiments, verbose=True,
-                                          randomize=True, num=10000)
-        print '='*80
-
-    for experiments in combinations(names, 4):
-        print '-'.join(experiments)
-        print '', chr21.align_experiments(experiments, verbose=True,
-                                          randomize=True, num=10000)
-        print '='*80
-
-    chr21.align_experiments(method='global', bin_size=20000, chr_len=chr_len,
-                            penalty=-0.1, max_dist=500000, verbose=True)
-    
-if __name__ == "__main__":
-    exit(main())
 

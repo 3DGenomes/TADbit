@@ -49,7 +49,8 @@ def align(sequences, method='global', **kwargs):
         aligneds = []
         scores = 0
         for other in xrange(1, len(sequences)):
-            [align1, align2], score = needleman_wunsch(reference, dico[other]['seq'],
+            [align1, align2], score = needleman_wunsch(reference, 
+                                                       dico[other]['seq'],
                                                        **kwargs)
             scores += score
             if len(reference) != len(align1):
