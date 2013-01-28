@@ -56,7 +56,7 @@ class TestTadbit(unittest.TestCase):
         test_chr.add_experiment('chrT/chrT_A.tsv', name='exp1')
         test_chr.find_tad(['exp1'])
         all_tads = list(test_chr.iter_tads('exp1'))
-        align1, align2 = optimal_cmo(all_tads[4], all_tads[8], 9)
+        align1, align2, _ = optimal_cmo(all_tads[4], all_tads[8], 9)
         self.assertEqual(align1,
                          [0, '-', '-', 1, '-', 2, 3, 4, 5, 6, 7, '-', 8])
         self.assertEqual(align2,

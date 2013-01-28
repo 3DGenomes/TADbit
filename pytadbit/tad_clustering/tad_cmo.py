@@ -67,6 +67,7 @@ def optimal_cmo(tad1, tad2, num_v=None):
 
     l_p1 = len(tad1)
     l_p2 = len(tad2)
+    num_v = num_v or min(l_p1, l_p2)
     val1, vec1 = eig(tad1)
     val2, vec2 = eig(tad2)
     #
@@ -90,10 +91,13 @@ def optimal_cmo(tad1, tad2, num_v=None):
             p_scores = prescoring(vec1p, vec2p, l_p1, l_p2)
             penalty = min([npmin(p_scores)] + [0.0])
             align1, align2 = core_nw(p_scores, penalty, l_p1, l_p2)
-            score = get_score(align1, align2, tad1, tad2)
-            if score > best_sc:
-                best_sc = score
-                best_alis = [align1, align2]
+            try:
+                score = get_score(align1, align2, tad1, tad2)
+                if score > best_sc:
+                    best_sc = score
+                    best_alis = [align1, align2]
+            except IndexError:
+                pass
     try:
         align1, align2 = best_alis
     except ValueError:
@@ -104,7 +108,7 @@ def optimal_cmo(tad1, tad2, num_v=None):
     print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
                                         if x!='-' else '-'*3) for x in align2])
 
-    return align1, align2
+    return align1, align2, best_sc
     
 
 def virgin_score(penalty, l_p1, l_p2):

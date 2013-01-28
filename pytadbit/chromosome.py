@@ -179,20 +179,37 @@ class Chromosome():
             self.add_tad_def(result, name=experiment, weights=weights)
         
 
-    def visualize(self, name):
+    def visualize(self, name, tad=None, paint_tads=False, ax=None):
         """
         Visualize the matrix of Hi-C interactions
 
         :argument name: name of the experiment to visualize
         
         """
+        vmin = log2(min(self.experiments[name]['hi-c'][0]) or 1)
+        vmax = log2(max(self.experiments[name]['hi-c'][0]))
         size = self.experiments[name]['size']
-        matrix = [[self.experiments[name]['hi-c'][0][i+size*j] \
-                   for i in xrange(size)] \
-                  for j in xrange(size)]
-        plt.imshow(log2(matrix), origin='lower')
-        plt.show()
-
+        if not ax:
+            ax = plt.subplot(111)
+        if tad:
+            matrix = [[self.experiments[name]['hi-c'][0][i+size*j] \
+                       for i in xrange(int(tad['start']), int(tad['end']))] \
+                      for j in xrange(int(tad['start']), int(tad['end']))]
+        else:
+            matrix = [[self.experiments[name]['hi-c'][0][i+size*j] \
+                       for i in xrange(size)] \
+                      for j in xrange(size)]
+        ax.imshow(log2(matrix), origin='lower', vmin=vmin, vmax=vmax,
+                  interpolation="nearest")
+        if not paint_tads:            
+            return
+        for i, tad in self.experiments[name]['tads'].iteritems():
+            ax.hlines(tad['start'], tad['start'], tad['end'], colors='k')
+            ax.hlines(tad['end'], tad['start'], tad['end'], colors='k')
+            ax.vlines(tad['start'], tad['start'], tad['end'], colors='k')
+            ax.vlines(tad['end'], tad['start'], tad['end'], colors='k')
+            ax.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
+                    tad['start'] + abs(tad['start']-tad['end'])/2 - 1, str(i))
 
     def add_tad_def(self, f_name, name=None, weights=None):
         """

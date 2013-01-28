@@ -22,7 +22,7 @@ def main():
     num_v = min(size1, size2)
     #align1a, align2a, scorea = run_aleigen(contacts1,
     #                                       contacts2, num_v)
-    align1, align2 = optimal_cmo(tad1, tad2, num_v)
+    align1, align2, score = optimal_cmo(tad1, tad2, num_v)
     align1b = []
     align2b = []
     for c in xrange(len(align1)):
