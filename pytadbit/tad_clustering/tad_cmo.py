@@ -5,8 +5,9 @@
 """
 
 from numpy import array, sqrt, corrcoef
+from numpy import min as npmin
 from numpy.linalg import eig
-from itertools import product
+from itertools import product, combinations
 
 
 def core_nw(p_scores, penalty, l_p1, l_p2):
@@ -86,16 +87,8 @@ def optimal_cmo(tad1, tad2, num_v=None):
         for factors in product([1, -1], repeat=num):
             vec1p = factors * vec1[:, :num]
             vec2p = vec2[:, :num]
-            if factors[-1] == 1:
-                p_scores = prescoring(vec1p, vec2p, l_p1, l_p2)
-            else: 
-                # here we take advantage of previous calculation of p_scores
-                # as product function is returning the last element of factors
-                # alternatively 1 and -1.
-                # This saves 50% of time and 30-40% of total computation time
-                # It might be extended for other cases
-                p_scores[-1] = prescoring(vec1p, vec2p, l_p1, l_p2, l_p1-1)[0]
-            penalty = min([min(s) for s in p_scores] + [0.0])
+            p_scores = prescoring(vec1p, vec2p, l_p1, l_p2)
+            penalty = min([npmin(p_scores)] + [0.0])
             align1, align2 = core_nw(p_scores, penalty, l_p1, l_p2)
             score = get_score(align1, align2, tad1, tad2)
             if score > best_sc:
@@ -124,12 +117,12 @@ def virgin_score(penalty, l_p1, l_p2):
            [[penalty * i] + zeros for i in xrange(1, l_p1)]
 
 
-def prescoring(vc1, vc2, l_p1, l_p2, start=0):
+def prescoring(vc1, vc2, l_p1, l_p2):
     """
-    yes... this is the bottle neck, half of the time spent here
+    yes... this is the bottle neck, almost 2/3 of the time spent here
     """
     p_score = []
-    for i in xrange(start, l_p1):
+    for i in xrange(l_p1):
         vci = vc1[i].__mul__
         p_score.append([vci(vc2[j]).sum() for j in xrange(l_p2)])
     return p_score
@@ -139,6 +132,7 @@ def prescoring(vc1, vc2, l_p1, l_p2, start=0):
 def get_score(align1, align2, tad1, tad2):
     """
     using Spearman Rho value
+    TODO: perhaps use the gapped matrices instead.
     """
     map1 = []
     map2 = []
@@ -146,8 +140,8 @@ def get_score(align1, align2, tad1, tad2):
         if j != '-' and i != '-':
             map1.append(i)
             map2.append(j)
-    pp1 = [tad1[i][j] for i in map1 for j in map1]
-    pp2 = [tad2[i][j] for i in map2 for j in map2]
+    pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
+    pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
     return corrcoef(pp1, pp2, rowvar=0)[1, 0]
 
 
