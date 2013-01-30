@@ -40,3 +40,10 @@ Links
            ?branch=master
    :target: http://travis-ci.org/fransua/tadbit
    :alt: Build Status
+
+To Do list
+----------
+
+* add function set_resolution to Chromosome.
+* segregate clusters, using spearman p-value?
+
