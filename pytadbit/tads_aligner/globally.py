@@ -10,20 +10,20 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
     """
     Align two lists of TAD's boundaries.
     
-    :argument tads1: list of boundaries for one chromosome under one condition
-    :argument tads2: list of boundaries for the same chromosome under other
-    conditions
-    :argument None bin_size: resolution at which TADs are predicted in number
-    of bases. Default is 1
-    :argument None chr_len: length of input chromosome. Default set to the
-    maximum value of tads1 and tads2.
-    :argument -0.1 penalty: penalty to open a gap in the alignment of
-    boundaries
-    :argument 500000 max_dist: distance from which match are denied.
-    a bin_size of 20Kb the number of bins corresponding to 0.5Mb is 25.
-    :argument False verbose: print the Needleman-Wunsch score matrix, and the
-    alignment of boundaries
-    :return: the max score in the Needleman-Wunsch score matrix.
+    :param tads1: list of boundaries for one chromosome under one condition
+    :param tads2: list of boundaries for the same chromosome under other
+        conditions
+    :param None bin_size: resolution at which TADs are predicted in number of
+        bases. Default is 1
+    :param None chr_len: length of input chromosome. Default set to the maximum
+        value of tads1 and tads2.
+    :param -0.1 penalty: penalty to open a gap in the alignment of boundaries
+    :param 500000 max_dist: distance from which match are denied. A bin_size
+        of 20Kb the number of bins corresponding to 0.5Mb is 25.
+    :param False verbose: print the Needleman-Wunsch score matrix, and the
+        alignment of boundaries
+
+    :returns: the max score in the Needleman-Wunsch score matrix.
     """
     ##############
     tads1 = [0.0] + tads1

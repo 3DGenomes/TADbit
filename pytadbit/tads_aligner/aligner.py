@@ -28,7 +28,7 @@ def align(sequences, method='global', **kwargs):
     the order of sequences we be relevant. Here TADs are sorted in order to try
     to reduce this problem.
 
-    :argument global method: method used to align.
+    :param global method: method used to align.
     """
     if method=='global':
         aligner = needleman_wunsch

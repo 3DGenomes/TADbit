@@ -9,7 +9,7 @@ Bioinformatics (Oxford, England), 26(18), 2250-8. doi:10.1093/bioinformatics/btq
 
 """
 
-from numpy import array, sqrt, corrcoef
+from numpy import array, sqrt#, corrcoef
 from numpy import min as npmin
 from numpy.linalg import eig
 from scipy.stats import spearmanr
@@ -63,15 +63,15 @@ def equal(a, b, cut_off=1e-9):
 
 def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False):
     """
-    :argument tad1: first matrix to align
-    :argument tad2: second matrix to align
-    :argument None num_v: number of eigen vectors to consider, max is:\
-                          max(min(len(tad1), len(tad2)))
-    :argument None max_num_v: maximum number of eigen vectors to consider.
+    :param tad1: first matrix to align
+    :param tad2: second matrix to align
+    :param None num_v: number of eigen vectors to consider, max is:
+        max(min(len(tad1), len(tad2)))
+    :param None max_num_v: maximum number of eigen vectors to consider.
 
-    :return: 2 lists, one per aligned matrix, plus a dict summarizing the\
-    goodness of the alignment with the distance between matrices, their \
-    Spearman correlation Rho value and pvalue.
+    :returns: 2 lists, one per aligned matrix, plus a dict summarizing the
+        goodness of the alignment with the distance between matrices, their 
+        Spearman correlation Rho value and pvalue.
     """
 
     l_p1 = len(tad1)

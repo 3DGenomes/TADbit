@@ -37,28 +37,43 @@ def _read_matrix(f_h):
     return tuple([nums[j][i] for i in xrange(size) for j in xrange(size)]), size
 
 
-def read_matrix(things):
+def read_matrix(things, parser=None):
     """
     reads and checks matrix from file or list
 
-    :argument things: might be either a file name, a file handler, a list of
-    them or a list of list (all with same length)
+    :param things: might be either a file name, a file handler, a list of them
+        or a list of list (all with same length)
+    :param None parser: a parser function that returns a tuple of lists representing the data matrix,
+        with this file example.tsv:
+        ::
+        
+          chrT_001	chrT_002	chrT_003	chrT_004
+          chrT_001	629	164	88	105
+          chrT_002	86	612	175	110
+          chrT_003	159	216	437	105
+          chrT_004	100	111	146	278
+
+        the output of parser('example.tsv') might be:
+        ``([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105, 110,
+        105, 278])``
+
 
     :returns: the corresponding matrix concatenated into a huge list, also
-    returns number or rows
+        returns number or rows
 
     """
+    parser = parser or _read_matrix
     if type(things) is not list:
         things = [things]
     matrices = []
     sizes    = []
     for thing in things:
         if type(thing) is file:
-            matrix, size = _read_matrix(thing)
+            matrix, size = parser(thing)
             matrices.append(matrix)
             sizes.append(size)
         elif type(thing) is str:
-            matrix, size = _read_matrix(open(thing))
+            matrix, size = parser(open(thing))
             matrices.append(matrix)
             sizes.append(size)
         elif type(thing) is list:

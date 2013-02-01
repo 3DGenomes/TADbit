@@ -7,6 +7,24 @@
 from os.path import isfile
 
 def parse_tads(f_name, max_size=3000000, bin_size=1):
+    """
+    Parse a tsv file that contains the list of TADs of a given experiment.
+    This file might have been generated whith the
+    pytadbit.tadbit.print_result_R or with the R binding for tadbit
+
+    :param f_name: path to file
+    :param 3000000 max_size: maximum size allowed for a TAD
+    :param 1 bin_size: resolution of the experiment
+
+    :returns: list of TADs, each TAD being a dict of type:
+
+    ::
+    
+      {TAD_num: {'start': start,
+                 'end'  : end,
+                 'brk'  : end,
+                 'score': score}}
+    """
     tads = {}
     forbidden = []
     if type(f_name) is dict:

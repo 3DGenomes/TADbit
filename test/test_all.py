@@ -46,19 +46,24 @@ class TestTadbit(unittest.TestCase):
                               experiments=[exp1, exp2, exp3, exp4],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'])
         test_chr.align_experiments(verbose=True, randomize=False)
-        score, pval = test_chr.align_experiments(verbose=False, randomize=True)
-        self.assertEqual(round(9.569707498, 3), round(score, 3))
-        self.assertEqual(round(0.066, 1), round(pval, 1))
+        score1, pval1 = test_chr.align_experiments(verbose=True, randomize=True)
+        _, pval2 = test_chr.align_experiments(verbose=True, randomize=True,
+                                                 rnd_method='shuffle')
+        self.assertEqual(round(9.569707498, 3), round(score1, 3))
+        self.assertEqual(round(0.066, 1), round(pval1, 1))
+        self.assertEqual(round(0.175, 1), round(pval2, 1))
 
 
     def test_tad_clustering(self):
         test_chr = Chromosome(name='Test Chromosome', resolution=20000)
         test_chr.add_experiment('chrT/chrT_A.tsv', name='exp1')
         test_chr.find_tad(['exp1'])
-        all_tads = list(test_chr.iter_tads('exp1'))
+        all_tads = []
+        for _, tad in test_chr.iter_tads('exp1'):
+            all_tads.append(tad)
         align1, align2, _ = optimal_cmo(all_tads[4], all_tads[8], 9)
         self.assertEqual(align1,
-                         [0, '-', '-', 1, '-', 2, 3, 4, 5, 6, 7, '-', 8])
+                         [0, '-', 1, '-', '-', 2, 3, 4, 5, 6,'-', 7, 8])
         self.assertEqual(align2,
                          [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
         

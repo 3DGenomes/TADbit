@@ -19,7 +19,7 @@ try:
 except ImportError:
     from pytadbit.utils import Interpolate as interp1d
 
-from random import random
+from random import random, shuffle
 
 
 class Chromosome():
@@ -27,32 +27,36 @@ class Chromosome():
     Chromosome object designed to deal with Topologically associated domains
     predictions from different experiments, in different cell types and compare
     them.
-    """
-    def __init__(self, name, resolution, experiments=None, 
-                 experiment_names=None,
-                 max_tad_size=3000000, chr_len=None):
-        """
-        :argument name: name of the chromosome
-        :argument resolution: resolution of the experiments. All experiments may have\
+
+    :param name: name of the chromosome
+    :param resolution: resolution of the experiments. All experiments may have
         the same resolution
-        :argument None experiments: list of paths to files containing the definition\
+    :param None experiments: list of paths to files containing the definition
         of TADs corresponding to different experiments (or output of tadbit)
-        :argument None experiment_names: list of names for each experiment
-        :argument 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than\
-        this will not be considered, and relative chromosome size will be reduced\
-        accordingly
-        :argument None chr_len: size of the chromosome in bp. By default it will be\
+    :param None experiment_names: list of names for each experiment
+    :param None wanted_resoultion: change the resolution of the experiment
+       loaded. This with :func:`set_resolution`
+    :param 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than
+        this will not be considered, and relative chromosome size will be
+        reduced accordingly
+    :param None chr_len: size of the chromosome in bp. By default it will be
         inferred from the distribution of TADs.
 
-        :return: Chromosome object
-        """
-        self.name = name
-        self.max_tad_size = max_tad_size
-        self.size = self.r_size = chr_len
-        self.resolution = resolution
-        self.forbidden = {}
-        self.experiments = {}
-        experiments = experiments or []
+    :return: Chromosome object
+
+    """
+    def __init__(self, name, resolution, experiments=None, 
+                 experiment_names=None, wanted_resoultion=None,
+                 max_tad_size=3000000, chr_len=None):
+        self.name             = name
+        self.max_tad_size     = max_tad_size
+        self.size             = self.r_size = chr_len
+        self.resolution       = resolution
+        self._ori_resolution  = resolution
+        self.forbidden        = {}
+        self.experiments      = {}
+        self._ori_experiments = {}
+        experiments           = experiments or []
         for i, f_name in enumerate(experiments):
             name = experiment_names[i] if experiment_names else None
             if type(f_name) is dict:
@@ -61,45 +65,88 @@ class Chromosome():
                 self.add_experiment(f_name, name)
 
 
+    def set_resolution(self, resolution, keep_original=True):
+        """
+        Set a new value for resolution. copy original data into
+        Chromsome.ori_experiments and replaces the Chromosome.experiments
+        with the data corresponding to new data.
+
+        :param resolution: an integer, representing resolution. This number must
+            be a multiple of the original resolution, and higher than it.
+        :param True keep_original: either to keep or not the original data
+        """
+        if resolution < self._ori_resolution:
+            raise Exception('New resolution might be higher than original.')
+        if resolution % self._ori_resolution:
+            raise Exception('New resolution might be a mulitple original...\n' +
+                            '  otherwise it is too complicated for me :P')
+        # if we want to go back to original resolution
+        if resolution == self._ori_resolution:
+            self.experiments = self._ori_experiments
+            self.resolution = self._ori_resolution
+            return
+        # if we already changed resolution before
+        if self.resolution == self._ori_resolution:
+            self._ori_experiments = self.experiments
+        self.resolution = resolution
+        self.experiments = {}
+        fact = self.resolution / self._ori_resolution
+        # super for!
+        for x_name, x_p in self._ori_experiments.iteritems():
+            size = x_p['size']
+            self.experiments[x_name] = {'hi-c':[[]], 'size': size/fact}
+            for i in xrange(0, size - fact/2, fact):
+                for j in xrange(0, size - fact/2, fact):
+                    val = 0
+                    for k in xrange(fact):
+                        for l in  xrange(fact):
+                            val += x_p['hi-c'][0][(i + k) * size + j + l]
+                    self.experiments[x_name]['hi-c'][0].append(val)
+        if not keep_original:
+            del(self._ori_experiments)
+
+
     def align_experiments(self, names=None, verbose=False, randomize=False,
-                          **kwargs):
+                          rnd_method='interpolate', **kwargs):
         """
         Align prediction of boundaries of two different experiments
 
-        :argument None names: list of names of experiments to align. If None\
-        align all.
-        :argument experiment1: name of the first experiment to align
-        :argument experiment2: name of the second experiment to align
-        :argument -0.1 penalty: penalty of inserting a gap in the alignment
-        :argument 500000 max_dist: Maximum distance between 2 boundaries allowing match
-        :argument False verbose: print somethings
-        :argument False randomize: check alignment quality by comparing randomization\
-        of boundaries over chromosomes of same size. This will return a extra value,\
-        the p-value of accepting that observed alignment is not better than random\
-        alignment
+        :param None names: list of names of experiments to align. If None
+            align all.
+        :param experiment1: name of the first experiment to align
+        :param experiment2: name of the second experiment to align
+        :param -0.1 penalty: penalty of inserting a gap in the alignment
+        :param 500000 max_dist: Maximum distance between 2 boundaries allowing
+            match
+        :param False verbose: print somethings
+        :param False randomize: check alignment quality by comparing
+            randomization of boundaries over chromosomes of same size. This will
+            return a extra value, the p-value of accepting that observed
+            alignment is not better than random alignment
+        :param interpolate rnd_method: when radomizinf use interpolation of TAD
+           distribution. Alternative is 'shuffle' where TADs are simply shuffled
         """
-        experiments = names or self.experiments.keys()
+        xpers = names or self.experiments.keys()
         tads = []
-        for e in experiments:
+        for e in xpers:
             if not self.experiments[e]['tads']:
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append(self.experiments[e]['brks'])
         aligneds, score = align(tads, bin_size=self.resolution,
                                 max_dist=self.max_tad_size, **kwargs)
-        for e, ali in zip(experiments, aligneds):
+        for e, ali in zip(xpers, aligneds):
             self.experiments[e]['align'] = ali
             self.experiments[e]['align'] = ali
         if verbose:
-            self.print_alignment(experiments)
+            self.print_alignment(xpers)
         if not randomize:
             return self.get_alignment(names), score
-        #mean, std = self._get_tads_mean_std(experiments)
+        #mean, std = self._get_tads_mean_std(xpers)
         #print 'mean', mean, 'std', std, self.r_size, self.r_size/mean
-        #p_value = randomization_test(len(experiments), mean, std, score,
+        #p_value = randomization_test(len(xpers), mean, std, score,
         #                             self.r_size, self.resolution,
         #                             verbose=verbose, **kwargs)
-        distr = self.interpolation(experiments)
-        p_value = self.randomization_test(len(experiments), distr, score,
+        p_value = self.randomization_test(xpers, score=score, method=rnd_method,
                                           verbose=verbose, **kwargs)
         return score, p_value
 
@@ -107,8 +154,8 @@ class Chromosome():
     def print_alignment(self, names=None, string=False):
         """
         print alignment
-        :argument None names: if None print all experiments
-        :argument False string: return string instead of printing
+        :param None names: if None print all experiments
+        :param False string: return string instead of printing
         """
         names = names or self.experiments.keys()
         length = max([len(n) for n in names])
@@ -127,7 +174,7 @@ class Chromosome():
     def get_alignment(self, names=None):
         """
         Return dictionary corresponding to alignment of experiments
-        :argument None names: if None print all experiments
+        :param None names: if None print all experiments
         :return: alignment as dict
         """
         names = names or self.experiments.keys()
@@ -135,11 +182,30 @@ class Chromosome():
                      for e in names if 'align' in self.experiments[e]])
                     
 
-    def add_experiment(self, f_name, name, force=False):
+    def add_experiment(self, f_name, name, force=False, parser=None):
         """
         Add Hi-C experiment to Chromosome
+        
+        :param f_name: path to tsv file
+        :param name: name of the experiment
+        :param False force: overwrite experiments loaded under the same name
+        :param None parser: a parser function that returns a tuple of lists
+           representing the data matrix, with this file example.tsv:
+
+           ::
+           
+             chrT_001	chrT_002	chrT_003	chrT_004
+             chrT_001	629	164	88	105
+             chrT_002	86	612	175	110
+             chrT_003	159	216	437	105
+             chrT_004	100	111	146	278
+           
+           the output of parser('example.tsv') might be:
+           ``([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
+           110, 105, 278])``
+        
         """
-        nums, size = read_matrix(f_name)
+        nums, size = read_matrix(f_name, parser=parser)
         if name in self.experiments:
             if 'hi-c' in self.experiments[name] and not force:
                 raise Exception(\
@@ -156,18 +222,18 @@ class Chromosome():
     def find_tad(self, experiments, n_cpus=None, verbose=True,
                  max_tad_size="auto", no_heuristic=False):
         """
-        Call tadbit function to calculate the position of Topologically associated
-        domains
+        Call tadbit function to calculate the position of Topologically
+        associated domains
         
-        :argument experiment: A square matrix of interaction counts in hi-C data or a list of\
-        such matrices for replicated experiments. The counts must be evenly sampled\
-        and not normalized.\
-        'experiment' might be either a list of list, a path to a file or a file handler
-        :argument None n_cpus: The number of CPUs to allocate to tadbit. The value default\
-        is the total number of CPUs minus 1.
-        :argument auto max_tad_size: an integer defining maximum size of TAD.\
-        Default (auto) defines it to the number of rows/columns.
-        :argument False no_heuristic: whether to use or not some heuristics
+        :param experiment: A square matrix of interaction counts in hi-C
+            data or a list of such matrices for replicated experiments. The
+            counts must be evenly sampled and not normalized. 'experiment'
+            might be either a list of list, a path to a file or a file handler
+        :param None n_cpus: The number of CPUs to allocate to tadbit. The
+            value default is the total number of CPUs minus 1.
+        :param auto max_tad_size: an integer defining maximum size of TAD.
+            Default (auto) defines it to the number of rows/columns.
+        :param False no_heuristic: whether to use or not some heuristics
         
         """
         for experiment in experiments:
@@ -183,7 +249,7 @@ class Chromosome():
         """
         Visualize the matrix of Hi-C interactions
 
-        :argument name: name of the experiment to visualize
+        :param name: name of the experiment to visualize
         
         """
         vmin = log2(min(self.experiments[name]['hi-c'][0]) or 1)
@@ -211,13 +277,17 @@ class Chromosome():
             ax.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
                     tad['start'] + abs(tad['start']-tad['end'])/2 - 1, str(i))
 
+
     def add_tad_def(self, f_name, name=None, weights=None):
         """
         Add Topologically Associated Domains defintinion detection to chromosome
 
-        :argument f_name: path to file
-        :argument None name: name of the experiment, if None f_name will be used:
-
+        :param f_name: path to file
+        :param None name: name of the experiment, if None f_name will be
+            used
+        :param None weights: Store information about the weights, corresponding
+            to the normalization of the Hi-C data (see tadbit function
+            documentation)
         """
         name = name or f_name
         tads, forbidden = parse_tads(f_name, max_size=self.max_tad_size,
@@ -241,14 +311,15 @@ class Chromosome():
         self.r_size = self.size - len(self.forbidden) * self.resolution
 
 
-    def interpolation(self, experiments):
+    def _interpolation(self, experiments):
         """
-        calculate the distribution of TAD lengths, and interpolate it using\
+        Calculate the distribution of TAD lengths, and interpolate it using
         interp1d function from scipy.
-        :arguments experiments: names of experiments included in the\
-        distribution
-        :return: function to interpolate a given TAD length according to a\
-        probability value
+        
+        :param experiments: names of experiments included in the
+            distribution
+        :return: function to interpolate a given TAD length according to a
+            probability value
         """
         # get all TAD lengths and multiply it by bin size of the experiment
         norm_tads = []
@@ -276,55 +347,55 @@ class Chromosome():
         return interp1d(x, y)
         
 
-    def _get_tads_mean_std(self, experiments):
-        """
-        returns mean and standard deviation of TAD lengths. Value is for both
-        TADs.
-
-        Note: no longer used in core functions
-        """
-        norm_tads = []
-        for tad in experiments:
-            for brk in self.experiments[tad]['tads'].values():
-                if not brk['brk']:
-                    continue
-                norm_tads.append(log((brk['end'] - brk['start']) * self.resolution))
-        length = len(norm_tads)
-        mean   = sum(norm_tads)/length
-        std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
-        return mean, std
-
-
-    def randomization_test(self, num_sequences, distr, score=None,
-                           num=1000, verbose=False):
+    def randomization_test(self, xpers, score=None, num=1000, verbose=False,
+                           method='interpolate'):
         """
         Return the probability that original alignment is better than an
         alignment of randomized boundaries.
-        :argument num_sequences: number of sequences aligned
-        :argument distr: the function to interpolate TAD lengths from\
-        probability
-        :argument None score: just to print it when verbose
-        :argument 1000 num: number of random alignment to generate for\
-        comparison
-        :argument False verbose: to print something nice
+        
+        :param tads: original TADs of each experiment to align
+        :param distr: the function to interpolate TAD lengths from probability
+        :param None score: just to print it when verbose
+        :param 1000 num: number of random alignment to generate for comparison
+        :param False verbose: to print something nice
+        :param interpolate method: how to generate random tads (alternative is
+           'shuffle').
         """
+        if not method in ['interpolate', 'shuffle']:
+            raise Exception('method should be either "interpolate" or ' +
+                            '"shuffle"\n')
+        tads = []
+        for e in xpers:
+            if not self.experiments[e]['tads']:
+                raise Exception('No TADs defined, use find_tad function.\n')
+            tads.append([t['end']-t['start']for t in self.experiments[e]['tads'].values()])
         rnd_distr = []
         rnd_len = []
+        distr = self._interpolation(xpers) if method is 'interpolate' else None
+        num_sequences = len(tads)
+        rnd_exp = lambda : tads[int(random() * num_sequences)]
         for val in xrange(num):
             if verbose:
                 val = float(val)
                 if not val / num * 100 % 5:
-                    stdout.write('\r' + ' ' * 10 + \
+                    stdout.write('\r' + ' ' * 10 + 
                                  ' randomizing: '
                                  '{:.2%} completed'.format(val/num))
                     stdout.flush()
-            rnd_tads = [generate_rnd_tads(self.r_size, distr, self.resolution) \
-                           for _ in xrange(num_sequences)]
-            rnd_len.append(float(sum([len(r) for r in rnd_tads])) \
-                           / len(rnd_tads))
+            if method is 'interpolate':
+                rnd_tads = [generate_rnd_tads(self.r_size, distr,
+                                              self.resolution)\
+                            for _ in xrange(num_sequences)]
+                rnd_len.append(float(sum([len(r) for r in rnd_tads])) \
+                               / len(rnd_tads))
+            else:
+                rnd_tads = [generate_shuffle_tads(rnd_exp()) \
+                            for _ in xrange(num_sequences)]
+                rnd_len.append(num_sequences)
             rnd_distr.append(align(rnd_tads,
-                                    bin_size=self.resolution,
-                                    verbose=False)[1])
+                                   bin_size=self.resolution,
+                                   verbose=True)[1])
+                
         pval = float(len([n for n in rnd_distr if n > score])) / len(rnd_distr)
         if verbose:
             stdout.write('\n {} randomizations finished.'.format(num))
@@ -344,9 +415,9 @@ class Chromosome():
         """
         Retrieve the Hi-C data matrix corresponding to ma given TAD.
         
-        :argument tad: a given TAD -> dict
-        :argument x_name: name og the experiment
-        :argument True normed: if Hi-C data has to be normalized
+        :param tad: a given TAD -> dict
+        :param x_name: name og the experiment
+        :param True normed: if Hi-C data has to be normalized
         
         :returns: Hi-C data matrix for the given TAD
         """
@@ -372,16 +443,36 @@ class Chromosome():
         """
         Iterate over TADs corresponding to a given experiment.
         
-        :argument x_name: name of the experiment
-        :argument True normed: normalize Hi-C data returned
+        :param x_name: name of the experiment
+        :param True normed: normalize Hi-C data returned
         
         :yields: Hi-C data corresponding to each TAD
         """
         if not self.experiments[x_name]['hi-c']:
             raise Exception('No Hi-c data for {} experiment\n'.format(x_name))
-        for tad in self.experiments[x_name]['tads']:
-            yield self.get_tad_hic(self.experiments[x_name]['tads'][tad],
-                                   x_name, normed=normed)
+        for name, ref in self.experiments[x_name]['tads'].iteritems():
+            if not ref['brk']:
+                continue
+            yield name, self.get_tad_hic(ref, x_name, normed=normed)
+
+
+    def _get_tads_mean_std(self, experiments):
+        """
+        returns mean and standard deviation of TAD lengths. Value is for both
+        TADs.
+
+        ..Note: no longer used in core functions
+        """
+        norm_tads = []
+        for tad in experiments:
+            for brk in self.experiments[tad]['tads'].values():
+                if not brk['brk']:
+                    continue
+                norm_tads.append(log((brk['end'] - brk['start']) * self.resolution))
+        length = len(norm_tads)
+        mean   = sum(norm_tads)/length
+        std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
+        return mean, std
 
 
 def generate_rnd_tads(chr_len, distr, bin_size, start=0):
@@ -389,10 +480,10 @@ def generate_rnd_tads(chr_len, distr, bin_size, start=0):
     Generates random TADs over a chromosome of a given size according to \
     a given distribution of lengths of TADs.
     
-    :argument chr_len: length of the chromosome
-    :argument distr: function that returns a TAD length depending on a p value
-    :argument bin_size: size of the bin of the Hi-C experiment
-    :argument 0 start: starting position in the chromosome
+    :param chr_len: length of the chromosome
+    :param distr: function that returns a TAD length depending on a p value
+    :param bin_size: size of the bin of the Hi-C experiment
+    :param 0 start: starting position in the chromosome
     
     :returns: list of TADs
     """
@@ -405,6 +496,23 @@ def generate_rnd_tads(chr_len, distr, bin_size, start=0):
         tads.append(float(int(pos / bin_size + .5)))
     return tads
 
+
+def generate_shuffle_tads(tads):
+    """
+    Returns a shuffle version of a given list of TADs
+
+    :param tads: list of TADs
+
+    :returns: list of shuffled TADs
+    """
+    rnd_tads = tads[:]
+    shuffle(rnd_tads)
+    tads = []
+    for t in rnd_tads:
+        if tads:
+            t += tads[-1]
+        tads.append(t)
+    return tads
 
 def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
                        num=1000, verbose=False):

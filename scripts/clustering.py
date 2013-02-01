@@ -9,29 +9,56 @@ from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from scipy.cluster.hierarchy import linkage
-
+import multiprocessing as mu
 
 PATH = '../test/'
 
-def get_distances(all_tads, tad_matrices):
-    tads = []
-    to_del = []
-    for i, tad in all_tads.iteritems():
-        if abs(tad['end'] - tad['start']) < 2:
-            to_del.append(i)
-            continue
-        tads.append({i: tad})
-    to_del.reverse()
-    for i in to_del:
-        tad_matrices.pop(i)
-    num = len(tads)
+
+def main():
+    test_chr = Chromosome(name='Test Chromosome', resolution=20000)
+    test_chr.add_experiment(PATH + 'chrT/chrT_B.tsv', name='exp1')
+    test_chr.find_tad(['exp1'])
+    tad_names = []
+    tad_matrices = []
+    for name, matrix in test_chr.iter_tads('exp1'):
+        tad_names.append(name)
+        tad_matrices.append(matrix)
+    num = len(tad_names)
+    distances, cci = get_distances(tad_matrices, max_num_v=10)
+    results, clusters = pre_cluster(distances, cci, num)
+    paint_clustering(results, clusters, num, test_chr)
+    plt.show()
+
+
+def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
+    """
+    Calculates distances between all pair of tads in the chromosome.
+    several CPUs can be used.
+    :param tad_matrices: all tads in form {1:[hi-c_list], 2:[hi-c_list]...}
+    :param 6 num_v: maximum number of eigenvector to use in the alignment (the
+       more the slower... but the better the approximation). Number higher than
+       15 should not be considered.
+    :param 4 n_cpus: number of CPUs to use
+    
+    :returns: a dict of distances
+    """
+    num = len(tad_matrices)
     distances = {}
     cci = {}
+    jobs = {}
+    pool = mu.Pool(n_cpus)
     for i in xrange(num):
         for j in xrange(i+1, num):
-            _, _ , sc = optimal_cmo(tad_matrices[i],
-                                    tad_matrices[j], max_num_v=8)
-            if sc['pval'] < 0.0001:
+            jobs[(i, j)] = pool.apply_async(optimal_cmo,
+                                            args=(tad_matrices[i],
+                                                  tad_matrices[j]),
+                                            kwds={'max_num_v': max_num_v})
+    pool.close()
+    pool.join()
+    for i in xrange(num):
+        for j in xrange(i+1, num):
+            _, _, sc = jobs[(i, j)].get()
+            if sc['pval'] < 0.05:
                 cci.setdefault(i, []).append(j)
                 print '  --> ', i, j
                 distances[(i, j)] = sc['dist']
@@ -41,6 +68,16 @@ def get_distances(all_tads, tad_matrices):
 
 
 def pre_cluster(distances, cci, num):
+    """
+    ======
+    ######|
+    ######|
+    ######|
+    ######|
+    ||||||||||||||||||||||||||||||||||||||||||||||||||
+    ||||||||||||||||||||||||||||||||||||||||||||||||||
+    
+    """
     clusters = []
     list_nodes = cci.keys()
     while list_nodes:
@@ -107,19 +144,6 @@ def paint_clustering(results, clusters, num, chrom):
     ax4 = plt.subplot2grid((num, 9),(0, 5), rowspan=num, colspan=4)
     chrom.visualize('exp1', paint_tads=True, ax=ax4)
     plt.draw()
-
-
-def main():
-    test_chr = Chromosome(name='Test Chromosome', resolution=20000)
-    test_chr.add_experiment(PATH + 'chrT/chrT_B.tsv', name='exp1')
-    test_chr.find_tad(['exp1'])
-    tad_names = list(test_chr.iter_tads('exp1'))
-    all_tads = test_chr.experiments['exp1']['tads']
-    num = len(all_tads)
-    distances, cci = get_distances(all_tads, tad_names)
-    results, clusters = pre_cluster(distances, cci, num)
-    paint_clustering(results, clusters, num, test_chr)
-    plt.show()
 
 
 if __name__ == "__main__":
