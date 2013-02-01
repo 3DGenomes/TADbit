@@ -10,7 +10,8 @@ from pytadbit.parsers.tad_parser import parse_tads
 from pytadbit.tads_aligner.aligner import align
 from pytadbit.parsers.hic_parser import read_matrix
 from pytadbit import tadbit
-
+from string import ascii_lowercase as letters
+from warnings import warn
 
 try:
     from scipy.interpolate import interp1d
@@ -47,7 +48,7 @@ class Chromosome():
     """
     def __init__(self, name, resolution, experiments=None, 
                  experiment_names=None, wanted_resoultion=None,
-                 max_tad_size=3000000, chr_len=None):
+                 max_tad_size=3000000, chr_len=None, parser=None):
         self.name             = name
         self.max_tad_size     = max_tad_size
         self.size             = self.r_size = chr_len
@@ -62,7 +63,9 @@ class Chromosome():
             if type(f_name) is dict:
                 self.add_tad_def(f_name, name)
             else:
-                self.add_experiment(f_name, name)
+                self.add_experiment(f_name, name, parser=parser)
+        if wanted_resoultion:
+            self.set_resolution(wanted_resoultion)
 
 
     def set_resolution(self, resolution, keep_original=True):
@@ -190,7 +193,8 @@ class Chromosome():
         :param name: name of the experiment
         :param False force: overwrite experiments loaded under the same name
         :param None parser: a parser function that returns a tuple of lists
-           representing the data matrix, with this file example.tsv:
+           representing the data matrix, and the length of a row/column, with
+           this file example.tsv:
 
            ::
            
@@ -201,11 +205,15 @@ class Chromosome():
              chrT_004	100	111	146	278
            
            the output of parser('example.tsv') might be:
-           ``([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
-           110, 105, 278])``
+           ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
+           110, 105, 278]), 4]``
         
         """
         nums, size = read_matrix(f_name, parser=parser)
+        if not name:
+            name = ''.join([letters[int(random() * len(letters))] \
+                            for _ in xrange(5)])
+            warn('No name provided, random name generated: {}\n'.format(name))
         if name in self.experiments:
             if 'hi-c' in self.experiments[name] and not force:
                 raise Exception(\
@@ -262,7 +270,7 @@ class Chromosome():
                        for i in xrange(int(tad['start']), int(tad['end']))] \
                       for j in xrange(int(tad['start']), int(tad['end']))]
         else:
-            matrix = [[self.experiments[name]['hi-c'][0][i+size*j] \
+            matrix = [[self.experiments[name]['hi-c'][0][i+size*j]\
                        for i in xrange(size)] \
                       for j in xrange(size)]
         ax.imshow(log2(matrix), origin='lower', vmin=vmin, vmax=vmax,
@@ -276,6 +284,9 @@ class Chromosome():
             ax.vlines(tad['end'], tad['start'], tad['end'], colors='k')
             ax.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
                     tad['start'] + abs(tad['start']-tad['end'])/2 - 1, str(i))
+            if not tad['brk']:
+                for j in xrange(int(tad['start']), int(tad['end']), 4):
+                    ax.hlines(j, tad['start'], tad['end'], colors='k')
 
 
     def add_tad_def(self, f_name, name=None, weights=None):

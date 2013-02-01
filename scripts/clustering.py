@@ -1,6 +1,7 @@
 """
 28 Jan 2013
 
+Sample script in order to analyze and compare the topology of TADs.
 
 """
 
@@ -11,12 +12,13 @@ from scipy.cluster.hierarchy import dendrogram
 from scipy.cluster.hierarchy import linkage
 import multiprocessing as mu
 
-PATH = '../test/'
+PATH =  'sample_data/'
 
 
 def main():
-    test_chr = Chromosome(name='Test Chromosome', resolution=20000)
-    test_chr.add_experiment(PATH + 'chrT/chrT_B.tsv', name='exp1')
+    test_chr = Chromosome(name='Test Chromosome', resolution=100000)
+    test_chr.add_experiment(PATH + 'HIC_gm06690_chr19_chr19_100000_obs.txt',
+                            name='exp1')
     test_chr.find_tad(['exp1'])
     tad_names = []
     tad_matrices = []
@@ -26,7 +28,7 @@ def main():
     num = len(tad_names)
     distances, cci = get_distances(tad_matrices, max_num_v=10)
     results, clusters = pre_cluster(distances, cci, num)
-    paint_clustering(results, clusters, num, test_chr)
+    paint_clustering(results, clusters, num, test_chr, tad_names)
     plt.show()
 
 
@@ -49,9 +51,8 @@ def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
     pool = mu.Pool(n_cpus)
     for i in xrange(num):
         for j in xrange(i+1, num):
-            jobs[(i, j)] = pool.apply_async(optimal_cmo,
-                                            args=(tad_matrices[i],
-                                                  tad_matrices[j]),
+            jobs[(i, j)] = pool.apply_async(optimal_cmo, args=(tad_matrices[i],
+                                                               tad_matrices[j]),
                                             kwds={'max_num_v': max_num_v})
     pool.close()
     pool.join()
@@ -112,7 +113,7 @@ def pre_cluster(distances, cci, num):
     return results, clusters
 
 
-def paint_clustering(results, clusters, num, chrom):
+def paint_clustering(results, clusters, num, chrom, tad_names):
     dendros = []
     axes = []
     prev = 0
@@ -126,7 +127,7 @@ def paint_clustering(results, clusters, num, chrom):
         dendros += reversed(list([clusters[i][n] for n in tmp]))
         axes.append(plt.subplot2grid((num, 9),(prev, 0), rowspan=len(result),
                                      colspan=4))
-        dendrogram(clust, orientation='right', labels=clusters[i])
+        dendrogram(clust, orientation='right', labels=[tad_names[c] for c in clusters[i]])
         if xlim[0] < axes[-1].get_xlim()[0]:
             xlim[0] = axes[-1].get_xlim()[0]
         if xlim[1] > axes[-1].get_xlim()[1]:
@@ -138,7 +139,7 @@ def paint_clustering(results, clusters, num, chrom):
     for i, j in enumerate(dendros):
         axes.append(plt.subplot2grid((num, 9),(i, 4)))#gs1[i]))
         chrom.visualize('exp1',
-                        tad=chrom.experiments['exp1']['tads'][j],
+                        tad=chrom.experiments['exp1']['tads'][tad_names[j]],
                         ax=axes[-1])
         axes[-1].set_axis_off()
     ax4 = plt.subplot2grid((num, 9),(0, 5), rowspan=num, colspan=4)

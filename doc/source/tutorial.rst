@@ -32,9 +32,58 @@ However, the number of extra columns or rows amy vary as no convention as been p
   # load Hi-C data
   test_chr.add_experiment("/some_path/hi-c_data.tsv", name='First Hi-C experiment')
 
+Strange data format
+-------------------
 
-In the case Tadbit is not able to parse the input file, user can create its own parser as pass it to Chromosome:
+In the case Tadbit is not able to parse the input file, user can create its own parser as pass it to Chromosome. For example one might be interested in using [Dixon2012]_ data that appears like this:
 
 ::
 
+  chr21	0	20000	0	0	0	0	0	0	0	0
+  chr21	20000	40000	0	0	0	0	0	0	0	0
+  chr21	40000	60000	0	0	0	0	0	0	0	0
+  chr21	60000	80000	0	0	0	0	0	0	0	0
+  chr21	80000	100000	0	0	0	0	0	0	0	0
+  chr21	100000	120000	0	0	0	0	0	0	0	0
+  chr21	120000	140000	0	0	0	0	0	0	0	0
+  chr21	140000	160000	0	0	0	0	0	0	0	0
   
+
+In this case we could implement a simple parser like this one:
+
+::
+
+  def read_dixon_matrix(f_handle):
+      """
+      reads from file handler (already openned)
+      """
+      nums = []
+      start = 3
+      for line in f_handle:
+          values = line.split()[start:]
+          nums.append([int(v) for v in values])
+      f_handle.close()
+      return tuple([nums[j][i] for i in xrange(len(nums)) for j in xrange(len(nums))]), len(nums)
+  
+And call it as follow:
+
+::
+  
+  test_chr.add_experiment("/some_path/hi-c_data.tsv", name='First Hi-C experiment', 
+                           parser=read_dixon_matrix)
+
+
+Run Tadbit core function
+========================
+
+Once loaded the location of topologically associating domains (TADs) can be estimated.
+
+::
+
+  test_chr.find_tads('First Hi-C experiment')
+
+
+References
+==========
+
+.. [Dixon2012] Dixon, J. R., Selvaraj, S., Yue, F., Kim, A., Li, Y., Shen, Y., Hu, M., et al. (2012). Topological domains in mammalian genomes identified by analysis of chromatin interactions. Nature, 485(7398), 376–80. doi:10.1038/nature11082
