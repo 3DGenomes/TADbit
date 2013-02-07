@@ -6,7 +6,7 @@ Sample script in order to analyze and compare the topology of TADs.
 """
 
 from pytadbit import Chromosome
-from pytadbit.tad_clustering.tad_cmo import optimal_cmo
+from pytadbit.tad_clustering.tad_cmo import optimal_cmo, matrix2binnary_contacts, run_aleigen
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from scipy.cluster.hierarchy import linkage
@@ -27,9 +27,25 @@ def main():
         tad_matrices.append(matrix)
     num = len(tad_names)
     distances, cci = get_distances(tad_matrices, max_num_v=10)
+    #distances, cci = get_aleigen(tad_matrices, max_num_v=10)
     results, clusters = pre_cluster(distances, cci, num)
     paint_clustering(results, clusters, num, test_chr, tad_names)
     plt.show()
+
+
+def get_aleigen(tad_matrices, max_num_v=6):
+    num = len(tad_matrices)
+    distances = {}
+    cci = {}
+    for i in xrange(num):
+        for j in xrange(i+1, num):
+            num_v = min(len(tad_matrices[i]), len(tad_matrices[j]), max_num_v)
+            contacts1, contacts2 = matrix2binnary_contacts(tad_matrices[i],
+                                                           tad_matrices[j])
+            _, _, sc = run_aleigen(contacts1, contacts2, num_v)
+            distances[(i, j)] = sc[0]
+            cci.setdefault(i, []).append(j)
+    return distances, cci
 
 
 def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
@@ -62,22 +78,12 @@ def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
             if sc['pval'] < 0.05:
                 cci.setdefault(i, []).append(j)
                 print '  --> ', i, j
-                distances[(i, j)] = sc['dist']
-            else:
-                distances[(i, j)] = 1
+            distances[(i, j)] = sc['dist']
     return distances, cci
 
 
 def pre_cluster(distances, cci, num):
     """
-    ======
-    ######|
-    ######|
-    ######|
-    ######|
-    ||||||||||||||||||||||||||||||||||||||||||||||||||
-    ||||||||||||||||||||||||||||||||||||||||||||||||||
-    
     """
     clusters = []
     list_nodes = cci.keys()

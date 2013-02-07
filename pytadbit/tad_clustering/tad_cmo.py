@@ -9,11 +9,17 @@ Bioinformatics (Oxford, England), 26(18), 2250-8. doi:10.1093/bioinformatics/btq
 
 """
 
-from numpy import array, sqrt#, corrcoef
+from numpy import array, sqrt, corrcoef
 from numpy import min as npmin
 from numpy.linalg import eig
 from scipy.stats import spearmanr
 from itertools import product, combinations
+
+# for aleigen:
+from numpy import median
+
+import re
+from subprocess import Popen, PIPE
 
 
 def core_nw(p_scores, penalty, l_p1, l_p2):
@@ -61,7 +67,8 @@ def equal(a, b, cut_off=1e-9):
     return abs(a - b) < cut_off
 
 
-def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False):
+def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
+                method='tadbit'):
     """
     :param tad1: first matrix to align
     :param tad2: second matrix to align
@@ -148,7 +155,6 @@ def prescoring(vc1, vc2, l_p1, l_p2):
 def get_dist(align1, align2, tad1, tad2):
     """
     Frobenius norm
-    
     """
     map1 = []
     map2 = []
@@ -158,8 +164,8 @@ def get_dist(align1, align2, tad1, tad2):
             map2.append(j)
     pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
     pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
-    return sum([(pp - pp2[p])**2 for p, pp in enumerate(pp1)])
-    # return corrcoef(pp1, pp2, rowvar=0)[1, 0]
+    return sum([(pp - pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1)
+    #return corrcoef(pp1, pp2, rowvar=0)[1, 0]
 
     
 def get_score(align1, align2, tad1, tad2):
@@ -196,4 +202,63 @@ def get_OLD_score(align1, align2, p1, p2):
     cmo = sum([1 - abs(pp2[i][j] - pp1[i][j]) \
                for i in xrange(com) for j in xrange(i + 1, com)])
     return float(2 * cmo)/(cm1+cm2)
+
+
+###
+# Following is for aleigen
+
+
+def matrix2binnary_contacts(tad1, tad2):
+    cutoff = median(tad1)
+    contacts1 = []
+    contacts2 = []
+    for i in xrange(len(tad1)):
+        for j in xrange(i, len(tad1)):
+            if tad1[i][j] > cutoff:
+                contacts1.append((i, j))
+    cutoff = median(tad2)
+    for i in xrange(len(tad2)):
+        for j in xrange(i, len(tad2)):
+            if tad2[i][j] > cutoff:
+                contacts2.append((i, j))
+    return contacts1, contacts2
+
+
+def run_aleigen(contacts1, contacts2, num_v):
+    """
+
+    * c1, c2 = number of contacts of the first and seconf contact map
+               (after removing non-matching columns/rows)
+    * cmo = total number of matching contacts (above the first diagonal)
+      of the computed overlap
+    * score = 2*CMO/(C1+C2)
+
+    """
+    f_string = '/tmp/lala{}.txt'
+    f_name1 = f_string.format(1)
+    f_name2 = f_string.format(2)
+    write_contacts(contacts1, contacts2, f_string)
+    sc_str = re.compile('Score\s+C1\s+C2\s+CMO\n([0-9.]+)\s+[0-9]+\s+.*')
+    out = Popen('aleigen {} {} {}'.format(f_name1, f_name2, num_v),
+                shell=True, stdout=PIPE).communicate()[0]
+    score = [float(c) for c in re.findall(sc_str, out)]
+    print out
+    align1 = []
+    align2 = []
+    for line in out.split('\n')[2:]:
+        if not re.match('[0-9]+\s+[0-9]+', line):
+            continue
+        el1, el2 = [int(c) for c in line.split()]
+        align1.append(el1)
+        align2.append(el2)
+    return align1, align2, score
+
+
+def write_contacts(contacts1, contacts2, f_string):
+    for i, contacts in enumerate([contacts1, contacts2]):
+        out = open(f_string.format(i+1), 'w')
+        out.write(str(max([max(c) for c in contacts])+1) + '\n')
+        out.write('\n'.join([str(c1) + ' ' + str(c2) for c1, c2 in contacts]))
+        out.write('\n')
+        out.close()
 
