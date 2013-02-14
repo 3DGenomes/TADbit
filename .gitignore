@@ -12,3 +12,4 @@ src/pytadbit.py
 src/pytadbit_wrap.c
 .project
 .pydevproject
+imp

@@ -5,7 +5,7 @@ Sample script in order to analyze and compare the topology of TADs.
 
 """
 
-from pytadbit import Chromosome
+from pytadbit import Slice
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo, matrix2binnary_contacts, run_aleigen
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
@@ -16,7 +16,7 @@ PATH =  'sample_data/'
 
 
 def main():
-    test_chr = Chromosome(name='Test Chromosome', resolution=100000)
+    test_chr = Slice(name='Test Chromosome', resolution=100000)
     test_chr.add_experiment(PATH + 'HIC_gm06690_chr19_chr19_100000_obs.txt',
                             name='exp1')
     test_chr.find_tad(['exp1'])

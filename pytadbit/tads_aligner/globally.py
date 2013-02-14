@@ -10,12 +10,12 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
     """
     Align two lists of TAD's boundaries.
     
-    :param tads1: list of boundaries for one chromosome under one condition
-    :param tads2: list of boundaries for the same chromosome under other
+    :param tads1: list of boundaries for one slice under one condition
+    :param tads2: list of boundaries for the same slice under other
         conditions
     :param None bin_size: resolution at which TADs are predicted in number of
         bases. Default is 1
-    :param None chr_len: length of input chromosome. Default set to the maximum
+    :param None chr_len: length of input slice. Default set to the maximum
         value of tads1 and tads2.
     :param -0.1 penalty: penalty to open a gap in the alignment of boundaries
     :param 500000 max_dist: distance from which match are denied. A bin_size

@@ -102,4 +102,5 @@ def read_matrix(things, parser=None):
             raise Exception('Unable to read this file or whatever it is :)')
     if all([s==sizes[0] for s in sizes]):
         return matrices, sizes[0]
-    raise Exception('All matrices must have the same size (same chromosome and same bins).')
+    raise Exception('All matrices must have the same size ' +
+                    '(same slice and same bins).')

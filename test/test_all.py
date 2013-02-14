@@ -5,7 +5,7 @@ unittest for pytadbit functions
 """
 
 import unittest
-from pytadbit import tadbit, batch_tadbit, Chromosome
+from pytadbit import tadbit, batch_tadbit, Slice
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 
 
@@ -42,12 +42,12 @@ class TestTadbit(unittest.TestCase):
                      verbose=False, no_heuristic=False)
         exp4 = tadbit('chrT/chrT_D.tsv', max_tad_size="auto",
                      verbose=False, no_heuristic=False)
-        test_chr = Chromosome(name='Test Chromosome', resolution=20000,
+        test_chr = Slice(name='Test Chromosome', resolution=20000,
                               experiments=[exp1, exp2, exp3, exp4],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'])
-        test_chr.align_experiments(verbose=True, randomize=False)
-        score1, pval1 = test_chr.align_experiments(verbose=True, randomize=True)
-        _, pval2 = test_chr.align_experiments(verbose=True, randomize=True,
+        test_chr.align_experiments(verbose=False, randomize=False)
+        score1, pval1 = test_chr.align_experiments(verbose=False, randomize=True)
+        _, pval2 = test_chr.align_experiments(verbose=False, randomize=True,
                                                  rnd_method='shuffle')
         self.assertEqual(round(9.569707498, 3), round(score1, 3))
         self.assertEqual(round(0.066, 1), round(pval1, 1))
@@ -55,7 +55,7 @@ class TestTadbit(unittest.TestCase):
 
 
     def test_tad_clustering(self):
-        test_chr = Chromosome(name='Test Chromosome', resolution=20000)
+        test_chr = Slice(name='Test Chromosome', resolution=20000)
         test_chr.add_experiment('chrT/chrT_A.tsv', name='exp1')
         test_chr.find_tad(['exp1'])
         all_tads = []

@@ -52,13 +52,13 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   tadbit(list, n, m, n_threads, verbose, max_tad_size, do_not_use_heuristic, seg);
 
   // store each tadbit output
-  int      mbreaks     = seg->maxbreaks;
-  int      nbreaks_opt = seg->nbreaks_opt;
-  int    * passages    = seg->passages;
-  double * llikmat     = seg->llikmat;
+  int       mbreaks     = seg->maxbreaks;
+  int       nbreaks_opt = seg->nbreaks_opt;
+  int    *  passages    = seg->passages;
+  double *  llikmat     = seg->llikmat;
   double ** weights    = seg->weights;
-  double * mllik       = seg->mllik;
-  int    * bkpts       = seg->bkpts;
+  double *  mllik       = seg->mllik;
+  int    *  bkpts       = seg->bkpts;
 
   // declare python objects to store lists
   PyObject * py_bkpts;
@@ -122,6 +122,21 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyList_SetItem(py_result, 5, py_bkpts);
   PyList_SetItem(py_result, 6, py_weights);
 
+  // free many things... no leaks here!!
+  //free(obs);
+  free(list);
+  free(seg);
+  free(passages);
+  free(llikmat);
+  free(weights);
+  free(mllik);
+  free(bkpts);
+  //free(py_bkpts);
+  //free(py_llikmat);
+  //free(py_mllik);
+  //free(py_result);
+  //free(py_passages);
+  //free(py_weights);
 
   return py_result;
 }
