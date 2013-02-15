@@ -35,9 +35,14 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
     :param auto max_tad_size: an integer defining maximum size of TAD. Default
         (auto) defines it to the number of rows/columns.
     :param False no_heuristic: whether to use or not some heuristics
+    :param False get_weights: either to return the weights corresponding to the
+       Hi-C count (weights are a normalization dependent of the count of each
+       columns).
 
-    :returns: the list of topologically associated domains' boundaries, and the
-        corresponding list associated log likelihoods.
+    :returns: the :py:func:`list` of topologically associated domains'
+       boundaries, and the corresponding list associated log likelihoods.
+       Depending on the value of the get_weights parameter, may also return
+       weights.
     """
     nums, size = read_matrix(x)
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
@@ -82,22 +87,24 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
     The data files are read through read.delim. You can pass options
     to read.delim through the list read_options. For instance
     if the files have no header, use read_options=list(header=FALSE) and if
-    they also have row names,
-    \code{read_options=list(header=FALSE, row.names=1)}.
+    they also have row names, read_options=list(header=FALSE, row.names=1).
     
-    Other arguments such as \code{max_size}, \code{n_CPU} and \code{verbose} are
-    passed to \code{tadbit}.
+    Other arguments such as max_size, n_CPU and verbose are passed to
+    :func:`tadbit`.
   
     :param directory: The directory containing the data files.
     :param _ sep: A character specifying how to identify unit/chormosome names
         (see below).
+        
+        .. note::
+          not yet used.
     :param kwargs: arguments passed to :func:`tadbit` function.
     :param None parser: a parser function that takes file name as input and
         returns a tuple representing the matrix of data. Tuple is a
         concatenation of column1 + column2 + column3 + ...
 
-    :returns: A \code{list} where each element has the name of the
-        unit/chromosome, and is the output of \code{tadbit} run on the
+    :returns: A :py:func:`list` where each element has the name of the
+        unit/chromosome, and is the output of :func:`tadbit` run on the
         corresponding files assumed to be replicates.
 
     """
@@ -119,6 +126,15 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
 
 def print_result_R(result, sep=' '*6, write=True):
     """
+    print a table summarizing the TADs found by tadbit. This function outputs
+    something similar to the R function.
+
+    :param result: the :py:class:`dict` that returns :func:`tadbit`
+    :param sep: string that separates columns (default is 6 spaces)
+    :param True write: print table. If False, returns the string
+
+    :returns: if write is False, returns a string corresponding to the table of
+       results
     """
     table = ''
     table += '{:<6}{:>6}{:>6}{:>6}\n'.format('#','start','end','score')

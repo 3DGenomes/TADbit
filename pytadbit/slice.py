@@ -59,9 +59,10 @@ class Slice():
     :param name: name of the slice (might be a chromosome name for example).
     :param None resolution: resolution of the experiments. All experiments may
         have the same resolution
-    :param None experiments: list of paths to files containing the definition
-        of TADs corresponding to different experiments (or output of tadbit)
-    :param None experiment_names: list of names for each experiment
+    :param None experiments: :py:func:`list` of paths to files containing the
+        definition of TADs corresponding to different experiments (or output
+        of tadbit)
+    :param None experiment_names: :py:func:`list` of names for each experiment
     :param None wanted_resoultion: change the resolution of the experiment
        loaded. This with :func:`set_resolution`
     :param 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than
@@ -100,6 +101,11 @@ class Slice():
 
     def save_slice(self, out_f):
         """
+        Save Slice object to file (it uses :py:func:`pickle.load` from the
+        :py:mod:`cPickle`). Once saved, the object may be loaded through
+        :func:`load_slice`.
+
+        :param out_f: path to file to dump the :py:mod:`cPickle` object.
         """
         dico = {}
         dico['experiments']     = self.experiments
@@ -205,6 +211,7 @@ class Slice():
     def print_alignment(self, names=None, string=False):
         """
         print alignment
+        
         :param None names: if None print all experiments
         :param False string: return string instead of printing
         """
@@ -225,8 +232,9 @@ class Slice():
     def get_alignment(self, names=None):
         """
         Return dictionary corresponding to alignment of experiments
+        
         :param None names: if None print all experiments
-        :return: alignment as dict
+        :returns: alignment as :py:class:`dict`
         """
         names = names or self.experiments.keys()
         return dict([(e, self.experiments[e]['align']) \
@@ -278,8 +286,8 @@ class Slice():
     def find_tad(self, experiments, n_cpus=None, verbose=True,
                  max_tad_size="auto", no_heuristic=False, batch_mode=False):
         """
-        Call tadbit function to calculate the position of Topologically
-        associated domains
+        Call :func:`pytadbit.tadbit.tadbit` function to calculate the position
+        of Topologically associated domains
         
         :param experiment: A square matrix of interaction counts in hi-C
             data or a list of such matrices for replicated experiments. The
@@ -292,7 +300,7 @@ class Slice():
         :param False no_heuristic: whether to use or not some heuristics
         :param False batch_mode: if True, all experiments will be concatenated
             into one for the search of TADs. The resulting TADs found are stored
-            under the name 'batch_' plus a concatenation of the experiment names
+            under the name 'batch' plus a concatenation of the experiment names
             passed (i.e.: if experiments=['exp1', 'exp2'], the name would be:
             'batch_exp1_exp2').
         
@@ -496,7 +504,7 @@ class Slice():
         """
         Retrieve the Hi-C data matrix corresponding to ma given TAD.
         
-        :param tad: a given TAD -> dict
+        :param tad: a given TAD -> :py:class:`dict`
         :param x_name: name og the experiment
         :param True normed: if Hi-C data has to be normalized
         

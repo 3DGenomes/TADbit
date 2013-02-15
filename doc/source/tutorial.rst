@@ -24,10 +24,10 @@ However, the number of extra columns or rows amy vary as no convention as been p
 
 ::
 
-  from pytadbit import Chromosome
+  from pytadbit import Slice
   
-  # initiate a chromosome object that will store all Hi-C data and analysis
-  my_chrom = Chromosome(name='My fisrt chromsome', resolution=20000)
+  # initiate a slice object that will store all Hi-C data and analysis
+  my_chrom = Slice(name='My fisrt chromsome', resolution=20000)
 
   # load Hi-C data
   test_chr.add_experiment("/some_path/hi-c_data.tsv", name='First Hi-C experiment')
@@ -35,7 +35,7 @@ However, the number of extra columns or rows amy vary as no convention as been p
 Strange data format
 -------------------
 
-In the case Tadbit is not able to parse the input file, user can create its own parser as pass it to Chromosome. For example one might be interested in using [Dixon2012]_ data that appears like this:
+In the case Tadbit is not able to parse the input file, user can create its own parser as pass it to Slice. For example one might be interested in using [Dixon2012]_ data that appears like this:
 
 ::
 
