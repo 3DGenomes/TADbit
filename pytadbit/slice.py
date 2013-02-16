@@ -584,26 +584,26 @@ class Slice():
             if sum(hic[raw:raw+size]) != 0 and beg:
                 end = pos
                 break
-        if not beg:
+        if not beg or not end:
             return
         tads = self.experiments[x_name]['tads']
         # in case we already have a centromere defined, check it can be reduced
         if self._centromere:
             if beg > self._centromere[0]:
                 for tad in tads:
-                    if tad['end'] == self._centromere[0]:
-                        tad['end'] = beg
+                    if tads[tad]['end'] == self._centromere[0]:
+                        tads[tad]['end'] = beg
                         self._centromere[0] = beg
             if end < self._centromere[1]:
                 for tad in tads:
-                    if tad['beg'] == self._centromere[1]:
-                        tad['start'] = end
+                    if tads[tad]['beg'] == self._centromere[1]:
+                        tads[tad]['start'] = end
                         self._centromere[1] = end
         else:
             self._centromere = [beg, end]
             tad = len(tads)
             plus = 0
-            while tad >= 0:
+            while tad + plus >= 1:
                 start = tads[tad - 1 + plus]['start']
                 final = tads[tad - 1 + plus]['end']
                 # centromere found?
