@@ -14,7 +14,6 @@ from string import ascii_lowercase as letters
 from warnings import warn
 from copy import deepcopy as copy
 from cPickle import load, dump
-from os.path import isfile
 
 
 try:
@@ -309,7 +308,7 @@ class Slice():
             matrix = []
             name = 'batch'
             for xpr in experiments:
-                matrix.append(self.experiments[xpr]['hi-c'])
+                matrix.append(self.experiments[xpr]['hi-c'][0])
                 name += '_' + xpr
             result, weights = tadbit(matrix,
                                      n_cpus=n_cpus, verbose=verbose,
