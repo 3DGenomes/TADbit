@@ -8,6 +8,8 @@ before_install:
 install:
   - cd src
   - sudo python setup.py install
+  - python setup.py install
+  - sudo python setup.py install
   - cd ..
 
 before_script:
