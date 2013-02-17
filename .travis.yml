@@ -4,12 +4,12 @@ python:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 before_install:
-  - sudo apt-get install python-scipy python-numpy
+  - easy_install python-scipy 
+  - easy_install python-numpy
+
 install:
   - cd src
-  - sudo python setup.py install
   - python setup.py install
-  - sudo python setup.py install
   - cd ..
 
 before_script:
