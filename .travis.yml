@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get install python-scipy python-numpy
 install:
   - cd src
-  - /usr/bin/yes | sudo python setup.py install 2>&1 | tail
+  - sudo python setup.py install
   - cd ..
 
 before_script:
