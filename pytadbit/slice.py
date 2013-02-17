@@ -596,7 +596,7 @@ class Slice():
                         self._centromere[0] = beg
             if end < self._centromere[1]:
                 for tad in tads:
-                    if tads[tad]['beg'] == self._centromere[1]:
+                    if tads[tad]['start'] == self._centromere[1]:
                         tads[tad]['start'] = end
                         self._centromere[1] = end
         else:
