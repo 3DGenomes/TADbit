@@ -123,12 +123,17 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyList_SetItem(py_result, 6, py_weights);
 
   // free many things... no leaks here!!
-  //free(obs);
-  free(list);
   free(seg);
   free(passages);
   free(llikmat);
+  for (k = 0 ; k < m ; k++){
+    free(obs[k]);
+    free(weights[k]);
+    free(list[k]);
+  }
+  free(obs);
   free(weights);
+  free(list);
   free(mllik);
   free(bkpts);
   //free(py_bkpts);
