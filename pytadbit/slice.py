@@ -580,9 +580,9 @@ class Slice():
         hic = self.experiments[x_name]['hi-c'][0]
         for pos, raw in enumerate(xrange(0, size*size, size)):
             if sum(hic[raw:raw+size]) == 0 and not beg:
-                beg = pos
+                beg = float(pos)
             if sum(hic[raw:raw+size]) != 0 and beg:
-                end = pos
+                end = float(pos)
                 break
         if not beg or not end:
             return
