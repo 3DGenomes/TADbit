@@ -48,7 +48,7 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
     i = l_tads1 -1
     j = l_tads2 -1
     max_score = None
-    while i or j:
+    while i and j:
         score      = scores[i][j]
         if score > max_score:
             if i and j:
