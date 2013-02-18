@@ -126,12 +126,13 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   free(seg);
   free(passages);
   free(llikmat);
+  int k;
   for (k = 0 ; k < m ; k++){
-    free(obs[k]);
+    //free(obs[k]);
     free(weights[k]);
     free(list[k]);
   }
-  free(obs);
+  //free(obs);
   free(weights);
   free(list);
   free(mllik);
