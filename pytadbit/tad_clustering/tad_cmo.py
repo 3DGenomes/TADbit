@@ -86,6 +86,9 @@ def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
     num_v = num_v or min(l_p1, l_p2)
     if max_num_v:
         num_v = min(max_num_v, num_v)
+    if num_v > l_p1 or num_v > l_p2:
+        raise Exception('\nnum_v should be at most {}\n'.format(min(l_p1,
+                                                                    l_p2)))
     val1, vec1 = eig(tad1)
     val2, vec2 = eig(tad2)
     #

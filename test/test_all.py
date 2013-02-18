@@ -56,16 +56,16 @@ class TestTadbit(unittest.TestCase):
 
     def test_tad_clustering(self):
         test_chr = Slice(name='Test Chromosome', resolution=20000)
-        test_chr.add_experiment('chrT/chrT_A.tsv', name='exp1')
+        test_chr.add_experiment('chrT/chrT_D.tsv', name='exp1')
         test_chr.find_tad(['exp1'])
         all_tads = []
         for _, tad in test_chr.iter_tads('exp1'):
             all_tads.append(tad)
-        align1, align2, _ = optimal_cmo(all_tads[4], all_tads[8], 9)
+        align1, align2, _ = optimal_cmo(all_tads[9], all_tads[10], 11)
         self.assertEqual(align1,
-                         [0, '-', 1, '-', '-', 2, 3, 4, 5, 6,'-', 7, 8])
+                         [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
         self.assertEqual(align2,
-                         [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+                         [0, 1, '-', 2, '-', 3, 4, 5, 6, 7, 8, 9, 10])
         
         
 
