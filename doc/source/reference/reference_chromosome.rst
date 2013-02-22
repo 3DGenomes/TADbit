@@ -1,13 +1,13 @@
-.. currentmodule:: pytadbit.slice
+.. currentmodule:: pytadbit.chromosome
 
-Slice class
-===========
+Chromosome class
+================
 
-.. autoclass:: Slice
+.. autoclass:: Chromosome
    :members:
    :no-undoc-members:
 
-Load slice
-----------
+Load chromosome
+---------------
 
-.. autofunction:: load_slice
+.. autofunction:: load_chromosome

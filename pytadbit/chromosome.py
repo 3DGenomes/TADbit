@@ -6,10 +6,9 @@
 
 from math import sqrt, log
 from sys import stdout
-from pytadbit.parsers.tad_parser import parse_tads
 from pytadbit.tads_aligner.aligner import align
-from pytadbit.parsers.hic_parser import read_matrix
 from pytadbit import tadbit
+from pytadbit.experiment import Experiment
 from string import ascii_lowercase as letters
 from warnings import warn
 from copy import deepcopy as copy
@@ -27,20 +26,25 @@ from random import random, shuffle
 
 
 
-def load_slice(in_f):
+def load_chromosome(in_f):
     """
-    Load Slice from file. Slice might have been saved through the
-    :func:`Slice.save_slice`.
+    Load Chromosome from file. Chromosome might have been saved through the
+    :func:`Chromosome.save_chromosome`.
     
-    :para in_f: path to a saved Slice file
+    :para in_f: path to a saved Chromosome file
     
-    :returns: Slice object
+    :returns: Chromosome object
     """
     dico = load(open(in_f))
-    slicy = Slice(dico['name'], resolution=dico['resolution'])
-    slicy.experiments     = dico['experiments']
-    slicy.resolution      = dico['resolution']
-    slicy._ori_resolution = dico['_ori_resolution']
+    slicy = Chromosome(dico['name'], resolution=dico['resolution'])
+    for name in dico['experiments']:
+        xpr = Experiment(name, dico['resolution'], no_warn=True)
+        xpr.tads     = dico['experiments'][name]['tads']
+        xpr.wght     = dico['experiments'][name]['wght']
+        xpr.hix_data = dico['experiments'][name]['hi-c']
+        xpr.brks     = dico['experiments'][name]['brks']
+        xpr.size     = dico['experiments'][name]['size']
+        slicy.experiments[name] = xpr
     slicy.size            = dico['size']
     slicy.r_size          = dico['r_size']
     slicy.max_tad_size    = dico['max_tad_size']
@@ -49,68 +53,102 @@ def load_slice(in_f):
     return slicy
 
 
-class Slice():
+class Chromosome(object):
     """
-    Slice object designed to deal with Topologically Associating Domains
+    Chromosome object designed to deal with Topologically Associating Domains
     predictions from different experiments, in different cell types for a given
-    slice of DNA, and compare them.
+    chromosome of DNA, and compare them.
 
-    :param name: name of the slice (might be a chromosome name for example).
+    :param name: name of the chromosome (might be a chromosome name for example).
     :param None resolution: resolution of the experiments. All experiments may
         have the same resolution
-    :param None experiments: :py:func:`list` of paths to files containing the
+    :param None experiment_handlers: :py:func:`list` of paths to files containing the
         definition of TADs corresponding to different experiments (or output
         of tadbit)
     :param None experiment_names: :py:func:`list` of names for each experiment
     :param None wanted_resoultion: change the resolution of the experiment
        loaded. This with :func:`set_resolution`
     :param 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than
-        this will not be considered, and relative slice size will be reduced
+        this will not be considered, and relative chromosome size will be reduced
         accordingly
-    :param None chr_len: size of the DNA slice in bp. By default it will be
+    :param None chr_len: size of the DNA chromosome in bp. By default it will be
         inferred from the distribution of TADs.
 
-    :return: Slice object
+    :return: Chromosome object
 
     """
-    def __init__(self, name, resolution=None, experiments=None, 
-                 experiment_names=None, wanted_resoultion=None,
-                 max_tad_size=3000000, chr_len=None, parser=None):
+    def __init__(self, name, resolution=None, tad_handlers=None,
+                 experiment_handlers=None, experiment_names=None,
+                 wanted_resoultion=None, max_tad_size=3000000,
+                 chr_len=None, parser=None):
         self.name             = name
         self.max_tad_size     = max_tad_size
         self.size             = self.r_size = chr_len
-        if not resolution:
-            raise Exception ('ERROR: please provide a resolution value\n')
-        self.resolution       = resolution
-        self._ori_resolution  = resolution
         self.forbidden        = {}
         self.experiments      = {}
-        self._ori_experiments = {}
         self._centromere      = None
-        experiments           = experiments or []
-        for i, f_name in enumerate(experiments):
-            name = experiment_names[i] if experiment_names else None
-            if type(f_name) is dict:
-                self.add_tad_def(f_name, name)
-            else:
-                self.add_experiment(f_name, name, parser=parser)
+        self.alignment        = {}
+        if tad_handlers:
+            for i, handler in enumerate(tad_handlers or []):
+                name = experiment_names[i] if experiment_names else None
+                self.add_experiment(name, resolution, tad_handler=handler,
+                                    parser=parser)
+                self._get_forbidden_region(self.experiments[name])
+        if experiment_handlers:
+            for i, handler in enumerate(experiment_handlers or []):
+                name = experiment_names[i] if experiment_names else None
+                if type(handler) == Experiment:
+                    self.experiments[handler.name] = handler
+                else:
+                    self.add_experiment(name, resolution, xp_handler=handler,
+                                        parser=parser)
         if wanted_resoultion:
             self.set_resolution(wanted_resoultion)
 
 
-    def save_slice(self, out_f):
+    def _get_forbidden_region(self, xpr):
         """
-        Save Slice object to file (it uses :py:func:`pickle.load` from the
+        """
+        forbidden = []
+        for pos in xrange(len(xpr.tads)):
+            start = float(xpr.tads[pos]['start'])
+            end   = float(xpr.tads[pos]['end'])
+            diff  = end - start
+            if diff * xpr.resolution > self.max_tad_size:
+                forbidden += range(int(start), int(end+1))
+                xpr.tads[pos]['brk'] = None
+        if not self.forbidden:
+            self.forbidden = dict([(f, None) for f in forbidden])
+        else:
+            self.forbidden = dict([(f, None) for f in 
+                                   set(forbidden).intersection(self.forbidden)])
+        if not self.size:
+            self.size = xpr.tads[max(xpr.tads)]['end'] * xpr.resolution
+        self.r_size = self.size - len(self.forbidden) * xpr.resolution            
+
+
+    def save_chromosome(self, out_f):
+        """
+        Save Chromosome object to file (it uses :py:func:`pickle.load` from the
         :py:mod:`cPickle`). Once saved, the object may be loaded through
-        :func:`load_slice`.
+        :func:`load_chromosome`.
 
         :param out_f: path to file to dump the :py:mod:`cPickle` object.
         """
         dico = {}
-        dico['experiments']     = self.experiments
+        dico['experiments'] = {}
+        for name in self.experiments:
+            dico['experiments'][name] = {
+                'wght'      : self.experiments[name].wght,
+                'hi-c'      : self.experiments[name].hic_data,
+                'size'      : self.experiments[name].size,
+                'brks'      : self.experiments[name].brks,
+                'tads'      : self.experiments[name].tads,
+                'resolution': self.experiments[name].resolution}
+        # this about resolution has to be removed soon....
+        dico['resolution']      = self.experiments[self.experiments.keys()[0]].resolution
+        # this not
         dico['name']            = self.name
-        dico['resolution']      = self.resolution
-        dico['_ori_resolution'] = self._ori_resolution
         dico['size']            = self.size
         dico['r_size']          = self.r_size
         dico['max_tad_size']    = self.max_tad_size
@@ -124,12 +162,14 @@ class Slice():
     def set_resolution(self, resolution, keep_original=True):
         """
         Set a new value for resolution. copy original data into
-        Slice.ori_experiments and replaces the Slice.experiments
+        Chromosome.ori_experiments and replaces the Chromosome.experiments
         with the data corresponding to new data.
 
         :param resolution: an integer, representing resolution. This number must
             be a multiple of the original resolution, and higher than it.
         :param True keep_original: either to keep or not the original data
+
+        TODO: something
         """
         if resolution < self._ori_resolution:
             raise Exception('New resolution might be higher than original.')
@@ -139,7 +179,7 @@ class Slice():
         # if we want to go back to original resolution
         if resolution == self._ori_resolution:
             self.experiments = self._ori_experiments
-            self.resolution = self._ori_resolution
+            self.resolution  = self._ori_resolution
             return
         # if we already changed resolution before
         if self.resolution == self._ori_resolution:
@@ -165,7 +205,12 @@ class Slice():
     def align_experiments(self, names=None, verbose=False, randomize=False,
                           rnd_method='interpolate', **kwargs):
         """
-        Align prediction of boundaries of two different experiments
+        Align prediction of boundaries of two different experiments. Resulting
+        alignment will be stored in the self.experiment dictionary. For example,
+        aligning exp1 and exp2 wil result in
+        self.experiments['exp1']['align']['exp1_exp2']
+        and
+        self.experiments['exp2']['align']['exp1_exp2']
 
         :param None names: list of names of experiments to align. If None
             align all.
@@ -176,7 +221,7 @@ class Slice():
             match
         :param False verbose: print somethings
         :param False randomize: check alignment quality by comparing
-            randomization of boundaries over Slices of same size. This will
+            randomization of boundaries over Chromosomes of same size. This will
             return a extra value, the p-value of accepting that observed
             alignment is not better than random alignment
         :param interpolate rnd_method: when radomizinf use interpolation of TAD
@@ -184,15 +229,19 @@ class Slice():
         """
         xpers = names or self.experiments.keys()
         tads = []
-        for e in xpers:
-            if not self.experiments[e]['tads']:
+        resolution = self.experiments[xpers[0]].resolution
+        for xpr in (self.experiments[x] for x in xpers):
+            if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
-            tads.append(self.experiments[e]['brks'])
-        aligneds, score = align(tads, bin_size=self.resolution,
+            if resolution != xpr.resolution:
+                raise Exception('Experiments of different resolutions can ' +
+                                'not be laigned... yet.\n')
+            tads.append(xpr.brks)
+        aligneds, score = align(tads, bin_size=resolution,
                                 max_dist=self.max_tad_size, **kwargs)
+        self.alignment[tuple(sorted(xpers))] = {}
         for e, ali in zip(xpers, aligneds):
-            self.experiments[e]['align'] = ali
-            self.experiments[e]['align'] = ali
+            self.alignment[tuple(sorted(xpers))][e] = ali
         if verbose:
             self.print_alignment(xpers)
         if not randomize:
@@ -203,11 +252,12 @@ class Slice():
         #                             self.r_size, self.resolution,
         #                             verbose=verbose, **kwargs)
         p_value = self.randomization_test(xpers, score=score, method=rnd_method,
-                                          verbose=verbose, **kwargs)
+                                          verbose=verbose, resolution=resolution,
+                                          **kwargs)
         return score, p_value
 
 
-    def print_alignment(self, names=None, string=False):
+    def print_alignment(self, names=None, xpers=None, string=False):
         """
         print alignment
         
@@ -215,20 +265,22 @@ class Slice():
         :param False string: return string instead of printing
         """
         names = names or self.experiments.keys()
+        if not xpers:
+            xpers = self.alignment.keys()[0]
         length = max([len(n) for n in names])
         out = 'Alignment (%s TADs)\n' % (len(names))
         for e in names:
-            if not 'align' in self.experiments[e]:
+            if not e in self.alignment[xpers]:
                 continue
             out += '{1:{0}}:'.format(length, e)
             out += '|'.join(['%5s' % (str(x)[:-2] if x!='-' else '-' * 4)\
-                             for x in self.experiments[e]['align']]) + '\n'
+                             for x in self.alignment[xpers][e]]) + '\n'
         if string:
             return out
         print out
 
 
-    def get_alignment(self, names=None):
+    def get_alignment(self, names=None, xpers=None):
         """
         Return dictionary corresponding to alignment of experiments
         
@@ -236,17 +288,20 @@ class Slice():
         :returns: alignment as :py:class:`dict`
         """
         names = names or self.experiments.keys()
-        return dict([(e, self.experiments[e]['align']) \
-                     for e in names if 'align' in self.experiments[e]])
+        if not xpers:
+            xpers = self.alignment.keys()[0]
+        return dict([(e, self.alignment[xpers][e]) \
+                     for e in names if e in self.alignment[xpers]])
                     
 
-    def add_experiment(self, f_name, name, force=False, parser=None):
+    def add_experiment(self, name, resolution, tad_handler=None,
+                       xp_handler=None, replace=False, parser=None):
         """
-        Add Hi-C experiment to Slice
+        Add Hi-C experiment to Chromosome
         
-        :param f_name: path to tsv file
         :param name: name of the experiment
-        :param False force: overwrite experiments loaded under the same name
+        :param handler: path to tsv file
+        :param False replace: overwrite experiments loaded under the same name
         :param None parser: a parser function that returns a tuple of lists
            representing the data matrix, and the length of a row/column, with
            this file example.tsv:
@@ -264,22 +319,19 @@ class Slice():
            110, 105, 278]), 4]``
         
         """
-        nums, size = read_matrix(f_name, parser=parser)
         if not name:
             name = ''.join([letters[int(random() * len(letters))] \
                             for _ in xrange(5)])
             warn('No name provided, random name generated: {}\n'.format(name))
         if name in self.experiments:
-            if 'hi-c' in self.experiments[name] and not force:
-                raise Exception(\
-                    '''Hi-C data already loaded under the name: {}.
-                    Force loading or use an other name.\n'''.format(name))
-            self.experiments[name]['hi-c'] = nums
-            self.experiments[name]['size'] = size
-        else:
-            self.experiments[name] = {'hi-c': nums, 'size': size,
-                                      'tads': None, 'brks': None,
-                                      'wght': None}
+            if 'hi-c' in self.experiments[name] and not replace:
+                warn('''Hi-C data already loaded under the name: {}.
+                This experiment wiil be kept under {}.\n'''.format(name,
+                                                                   name + '_'))
+                name += '_'
+        self.experiments[name] = Experiment(name, resolution, xp_handler,
+                                            tad_handler, parser=parser,
+                                            max_tad_size=self.max_tad_size)
 
 
     def find_tad(self, experiments, n_cpus=None, verbose=True,
@@ -307,25 +359,40 @@ class Slice():
         if batch_mode:
             matrix = []
             name = 'batch'
-            for xpr in experiments:
-                matrix.append(self.experiments[xpr]['hi-c'][0])
-                name += '_' + xpr
+            resolution = self.experiments.values()[0].resolution
+            for xpr in self.experiments.values():
+                if xpr.resolution != resolution:
+                    raise Exception('All Experiments might have the same ' +
+                                    'resolution\n')
+                matrix.append(xpr.hic_data[0])
+                name += '_' + xpr.name
             result, weights = tadbit(matrix,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
-            self.add_tad_def(result, name=name, weights=weights)
+            experiment = Experiment(name, resolution, xp_handler=matrix,
+                                    tad_handler=result,
+                                    max_tad_size=self.max_tad_size)
+            self.experiments[experiment.name] = experiment
+            self._get_forbidden_region(experiment)
             return
         for experiment in experiments:
-            result, weights = tadbit(self.experiments[experiment]['hi-c'],
+            xpr = self.experiments[experiment]
+            result, weights = tadbit(xpr.hic_data,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
-            self.add_tad_def(result, name=experiment, weights=weights)
+            xpr.load_tad_def(result, weights=weights,
+                                         max_tad_size=self.max_tad_size)
+            self._get_forbidden_region(xpr)
+            if not self.size:
+                self.size = xpr.tads[max(xpr.tads)]['end'] * xpr.resolution
+            self.r_size = self.size - len(self.forbidden) * xpr.resolution
+
             # search for centromere
-            self._search_centromere(experiment)
+            self._search_centromere(xpr)
         
 
     def visualize(self, name, tad=None, paint_tads=False, ax=None, show=False):
@@ -366,39 +433,6 @@ class Slice():
             plt.show()
 
 
-    def add_tad_def(self, f_name, name=None, weights=None):
-        """
-        Add Topologically Associated Domains defintinion detection to Slice
-
-        :param f_name: path to file
-        :param None name: name of the experiment, if None f_name will be
-            used
-        :param None weights: Store information about the weights, corresponding
-            to the normalization of the Hi-C data (see tadbit function
-            documentation)
-        """
-        name = name or f_name
-        tads, forbidden = parse_tads(f_name, max_size=self.max_tad_size,
-                                     bin_size=self.resolution)
-        brks = [t['brk'] for t in tads.values() if t['brk']]
-        if not name in self.experiments:
-            self.experiments[name] = {'hi-c': None, 'size': None,
-                                      'tads': None, 'brks': None,
-                                      'wght': None}
-        self.experiments[name]['tads'] = tads
-        self.experiments[name]['brks'] = brks
-        if weights:
-            self.experiments[name]['wght'] = weights
-        if not self.forbidden:
-            self.forbidden = dict([(f, None) for f in forbidden])
-        else:
-            self.forbidden = dict([(f, None) for f in \
-                                   forbidden.intersection(self.forbidden)])
-        if not self.size:
-            self.size = tads[max(tads)]['end'] * self.resolution
-        self.r_size = self.size - len(self.forbidden) * self.resolution
-
-
     def _interpolation(self, experiments):
         """
         Calculate the distribution of TAD lengths, and interpolate it using
@@ -411,11 +445,14 @@ class Slice():
         """
         # get all TAD lengths and multiply it by bin size of the experiment
         norm_tads = []
+        resolution = self.experiments[experiments[0]].resolution
         for tad in experiments:
-            for brk in self.experiments[tad]['tads'].values():
+            for brk in self.experiments[tad].tads.values():
                 if not brk['brk']:
                     continue
-                norm_tads.append((brk['end'] - brk['start']) * self.resolution)
+                if resolution != self.experiments[tad].resolution:
+                    raise Exception('These experiments should have same resolution\n')
+                norm_tads.append((brk['end'] - brk['start']) * resolution)
         x = [0.0]
         y = [0.0]
         max_d = max(norm_tads)
@@ -436,7 +473,7 @@ class Slice():
         
 
     def randomization_test(self, xpers, score=None, num=1000, verbose=False,
-                           method='interpolate'):
+                           resolution=None, method='interpolate'):
         """
         Return the probability that original alignment is better than an
         alignment of randomized boundaries.
@@ -454,9 +491,9 @@ class Slice():
                             '"shuffle"\n')
         tads = []
         for e in xpers:
-            if not self.experiments[e]['tads']:
+            if not self.experiments[e].tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
-            tads.append([t['end']-t['start']for t in self.experiments[e]['tads'].values()])
+            tads.append([t['end']-t['start']for t in self.experiments[e].tads.values()])
         rnd_distr = []
         rnd_len = []
         distr = self._interpolation(xpers) if method is 'interpolate' else None
@@ -472,7 +509,7 @@ class Slice():
                     stdout.flush()
             if method is 'interpolate':
                 rnd_tads = [generate_rnd_tads(self.r_size, distr,
-                                              self.resolution)\
+                                              resolution)\
                             for _ in xrange(num_sequences)]
                 rnd_len.append(float(sum([len(r) for r in rnd_tads])) \
                                / len(rnd_tads))
@@ -481,7 +518,7 @@ class Slice():
                             for _ in xrange(num_sequences)]
                 rnd_len.append(num_sequences)
             rnd_distr.append(align(rnd_tads,
-                                   bin_size=self.resolution,
+                                   bin_size=resolution,
                                    verbose=False)[1])
                 
         pval = float(len([n for n in rnd_distr if n > score])) / len(rnd_distr)
@@ -491,7 +528,7 @@ class Slice():
             print '  Observed alignment score: {}'.format(score)
             print '  Mean number of boundaries: {}; observed: {}'.format(\
                 sum(rnd_len)/len(rnd_len),
-                str([len(self.experiments[e]['brks']) \
+                str([len(self.experiments[e].brks) \
                      for e in self.experiments]))
             print 'Randomized scores between {} and {}; observed: {}'.format(\
                 min(rnd_distr), max(rnd_distr), score)
@@ -511,17 +548,17 @@ class Slice():
         """
         beg, end = int(tad['start']), int(tad['end'])
         xpr = self.experiments[x_name]
-        size = xpr['size']
+        size = xpr.size
         matrix = [[[] for _ in xrange(beg, end)]\
                   for _ in xrange(beg, end)]
         for i, ii in enumerate(xrange(beg - 1, end - 1)):
             ii = ii * size
             for j, jj in enumerate(xrange(beg, end)):
-                matrix[j][i] = float(xpr['hi-c'][0][ii + jj])
+                matrix[j][i] = float(xpr.hic_data[0][ii + jj])
                 if not normed:
                     continue
                 try:
-                    matrix[j][i] = matrix[j][i] / xpr['wght'][0][ii + jj]
+                    matrix[j][i] = matrix[j][i] / xpr.wght[0][ii + jj]
                 except ZeroDivisionError:
                     matrix[j][i] = 0.0
         return matrix
@@ -536,9 +573,9 @@ class Slice():
         
         :yields: Hi-C data corresponding to each TAD
         """
-        if not self.experiments[x_name]['hi-c']:
+        if not self.experiments[x_name].hic_data:
             raise Exception('No Hi-c data for {} experiment\n'.format(x_name))
-        for name, ref in self.experiments[x_name]['tads'].iteritems():
+        for name, ref in self.experiments[x_name].tads.iteritems():
             if not ref['brk']:
                 continue
             yield name, self.get_tad_hic(ref, x_name, normed=normed)
@@ -566,9 +603,9 @@ class Slice():
                     self.experiments[xpr]['brks'].append(tads[tad]['brk'])
             
 
-    def _search_centromere(self, x_name):
+    def _search_centromere(self, xpr):
         """
-        Search for centromere in slice, presuposing that slice corresponds to a
+        Search for centromere in chromosome, presuposing that chromosome corresponds to a
         chromosome.
         Add a boundary to all experiments where the centromere is.
          * A centromere is defined as the area where the rows/columns of the
@@ -576,17 +613,17 @@ class Slice():
         """
         beg = 0
         end = 0
-        size = self.experiments[x_name]['size']
-        hic = self.experiments[x_name]['hi-c'][0]
-        for pos, raw in enumerate(xrange(0, size*size, size)):
-            if sum(hic[raw:raw+size]) == 0 and not beg:
+        size = xpr.size
+        hic = xpr.hic_data[0]
+        for pos, raw in enumerate(xrange(0, size * size, size)):
+            if sum(hic[raw:raw + size]) == 0 and not beg:
                 beg = float(pos)
-            if sum(hic[raw:raw+size]) != 0 and beg:
+            if sum(hic[raw:raw + size]) != 0 and beg:
                 end = float(pos)
                 break
         if not beg or not end:
             return
-        tads = self.experiments[x_name]['tads']
+        tads = xpr.tads
         # in case we already have a centromere defined, check it can be reduced
         if self._centromere:
             if beg > self._centromere[0]:
@@ -627,10 +664,10 @@ class Slice():
                 else:
                     tads[tad] = copy(tads[tad - 1 + plus])
                 tad -= 1
-        self.experiments[x_name]['brks'] = []
+        xpr.brks = []
         for tad in tads:
             if tads[tad]['brk']:
-                self.experiments[x_name]['brks'].append(tads[tad]['brk'])
+                xpr.brks.append(tads[tad]['brk'])
 
 
     def _get_tads_mean_std(self, experiments):
@@ -652,15 +689,15 @@ class Slice():
         return mean, std
 
 
-def generate_rnd_tads(slice_len, distr, bin_size, start=0):
+def generate_rnd_tads(chromosome_len, distr, bin_size, start=0):
     """
-    Generates random TADs over a slice of a given size according to a given
+    Generates random TADs over a chromosome of a given size according to a given
     distribution of lengths of TADs.
     
-    :param slice_len: length of the slice
+    :param chromosome_len: length of the chromosome
     :param distr: function that returns a TAD length depending on a p value
     :param bin_size: size of the bin of the Hi-C experiment
-    :param 0 start: starting position in the slice
+    :param 0 start: starting position in the chromosome
     
     :returns: list of TADs
     """
@@ -668,7 +705,7 @@ def generate_rnd_tads(slice_len, distr, bin_size, start=0):
     tads = []
     while True:
         pos += distr(random())
-        if pos > slice_len:
+        if pos > chromosome_len:
             break
         tads.append(float(int(pos / bin_size + .5)))
     return tads

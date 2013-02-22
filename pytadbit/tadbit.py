@@ -114,12 +114,10 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
         if f_name.startswith('.'): continue
         f_name = path.join(directory, f_name)
         if parser:
-            print 'loading file:', f_name
             matrix.append(parser(f_name))
             continue
         elif not path.isfile(f_name):
             continue
-        print 'loading file:', f_name
         matrix.append(f_name)
     return tadbit(matrix, **kwargs)
 

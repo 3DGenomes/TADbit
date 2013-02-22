@@ -52,5 +52,16 @@ class matrix(object):
 
 def reduce_matrix(nums, size):
     return tuple([nums[i*j] for i in xrange(size) for j in xrange(i, size)])
-
         
+
+def nicer(res):
+    """
+    writes resolution number for human beings.
+    """
+    if not res % 1000000000:
+        return str(res)[:-9] + 'Gb'
+    if not res % 1000000:
+        return str(res)[:-6] + 'Mb'
+    if not res % 1000:
+        return str(res)[:-3] + 'Kb'
+    return str(res) + 'b'
