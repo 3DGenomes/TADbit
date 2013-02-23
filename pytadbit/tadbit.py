@@ -46,31 +46,31 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
     """
     nums, size = read_matrix(x)
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
-    _, nbks, passages, _, _, bkpts, weights = _tadbit_wrapper(nums,             # list of big lists representing the matrices
-                                                              size,             # size of one row/column
-                                                              len(nums),        # number of matrices
-                                                              n_cpus or 0,      # number of threads
-                                                              int(verbose),     # verbose 0/1
-                                                              max_tad_size,     # max_tad_size
-                                                              int(no_heuristic) # heuristic 0/1
-                                                              )
+    _, nbks, passages, _, _, bkpts, weights = \
+       _tadbit_wrapper(nums,             # list of lists representing matrices
+                       size,             # size of one row/column
+                       len(nums),        # number of matrices
+                       n_cpus or 0,      # number of threads
+                       int(verbose),     # verbose 0/1
+                       max_tad_size,     # max_tad_size
+                       int(no_heuristic) # heuristic 0/1
+                       )
 
-    dim     = nbks*size
-    breaks  = [i for i in xrange(size) if bkpts[i+dim]==1]
+    breaks = [i for i in xrange(size) if bkpts[i + nbks * size] == 1]
     scores = [p for p in passages if p > 0]
 
     result = {'start': [], 'end'  : [], 'score': []}
-    for i in xrange(len(breaks)+1):
-        result['start'].append((breaks[i-1] + 1) if i > 0 else 0)
-        result['end'  ].append(breaks[i] if i < len(breaks) else size - 1)
-        result['score'].append(scores[i] if i < len(breaks) else None)
+    for brk in xrange(len(breaks)+1):
+        result['start'].append((breaks[brk-1] + 1) if brk > 0 else 0)
+        result['end'  ].append(breaks[brk] if brk < len(breaks) else size - 1)
+        result['score'].append(scores[brk] if brk < len(breaks) else None)
 
     if get_weights:
         return result, weights
     return result
 
 
-def batch_tadbit(directory, sep='_', parser=None, **kwargs):
+def batch_tadbit(directory, parser=None, **kwargs):
     """
     Use tadbit on directories of data files
     All files in the specified directory will be considered data file. The
@@ -93,11 +93,6 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
     :func:`tadbit`.
   
     :param directory: The directory containing the data files.
-    :param _ sep: A character specifying how to identify unit/chormosome names
-        (see below).
-        
-        .. note::
-          not yet used.
     :param kwargs: arguments passed to :func:`tadbit` function.
     :param None parser: a parser function that takes file name as input and
         returns a tuple representing the matrix of data. Tuple is a
@@ -111,7 +106,8 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
 
     matrix = []
     for f_name in listdir(directory):
-        if f_name.startswith('.'): continue
+        if f_name.startswith('.'):
+            continue
         f_name = path.join(directory, f_name)
         if parser:
             matrix.append(parser(f_name))
@@ -122,20 +118,19 @@ def batch_tadbit(directory, sep='_', parser=None, **kwargs):
     return tadbit(matrix, **kwargs)
 
 
-def print_result_R(result, sep=' '*6, write=True):
+def print_result_r(result, write=True):
     """
     print a table summarizing the TADs found by tadbit. This function outputs
     something similar to the R function.
 
     :param result: the :py:class:`dict` that returns :func:`tadbit`
-    :param sep: string that separates columns (default is 6 spaces)
     :param True write: print table. If False, returns the string
 
     :returns: if write is False, returns a string corresponding to the table of
        results
     """
     table = ''
-    table += '{:<6}{:>6}{:>6}{:>6}\n'.format('#','start','end','score')
+    table += '{:<6}{:>6}{:>6}{:>6}\n'.format('#', 'start', 'end', 'score')
     for i in xrange(len(result['end'])):
         table += '{:<6}{:>6}{:>6}{:>6}\n'.format(i+1,
                                                  result['start'][i]+1,

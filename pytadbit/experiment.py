@@ -59,7 +59,8 @@ class Experiment(object):
 
     def __repr__(self):
         return 'Experiment {} (resolution: {}, TADs: {}, Hi-C rows: {})'.format(
-            self.name, nicer(self.resolution), len(self.tads) or None, self.size)
+            self.name, nicer(self.resolution), len(self.tads) or None,
+            self.size)
 
 
     def load_experiment(self, handler, parser=None):

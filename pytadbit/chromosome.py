@@ -79,7 +79,7 @@ class Chromosome(object):
     """
     def __init__(self, name, resolution=None, tad_handlers=None,
                  experiment_handlers=None, experiment_names=None,
-                 wanted_resoultion=None, max_tad_size=3000000,
+                 max_tad_size=3000000, #wanted_resoultion=None
                  chr_len=None, parser=None):
         self.name             = name
         self.max_tad_size     = max_tad_size
@@ -102,12 +102,13 @@ class Chromosome(object):
                 else:
                     self.add_experiment(name, resolution, xp_handler=handler,
                                         parser=parser)
-        if wanted_resoultion:
-            self.set_resolution(wanted_resoultion)
+        # if wanted_resoultion:
+        #     self.set_resolution(wanted_resoultion)
 
 
     def _get_forbidden_region(self, xpr):
         """
+        find regions where there is no info in any of the experiments
         """
         forbidden = []
         for pos in xrange(len(xpr.tads)):
@@ -124,7 +125,7 @@ class Chromosome(object):
                                    set(forbidden).intersection(self.forbidden)])
         if not self.size:
             self.size = xpr.tads[max(xpr.tads)]['end'] * xpr.resolution
-        self.r_size = self.size - len(self.forbidden) * xpr.resolution            
+        self.r_size = self.size - len(self.forbidden) * xpr.resolution
 
 
     def save_chromosome(self, out_f):
@@ -146,7 +147,7 @@ class Chromosome(object):
                 'tads'      : self.experiments[name].tads,
                 'resolution': self.experiments[name].resolution}
         # this about resolution has to be removed soon....
-        dico['resolution']      = self.experiments[self.experiments.keys()[0]].resolution
+        dico['resolution']      = self.experiments.values()[0].resolution
         # this not
         dico['name']            = self.name
         dico['size']            = self.size
@@ -159,47 +160,47 @@ class Chromosome(object):
         out.close()
 
 
-    def set_resolution(self, resolution, keep_original=True):
-        """
-        Set a new value for resolution. copy original data into
-        Chromosome.ori_experiments and replaces the Chromosome.experiments
-        with the data corresponding to new data.
+    # def set_resolution(self, resolution, keep_original=True):
+    #     """
+    #     Set a new value for resolution. copy original data into
+    #     Chromosome.ori_experiments and replaces the Chromosome.experiments
+    #     with the data corresponding to new data.
 
-        :param resolution: an integer, representing resolution. This number must
-            be a multiple of the original resolution, and higher than it.
-        :param True keep_original: either to keep or not the original data
+    #     :param resolution: an integer, representing resolution. This numbemust
+    #         be a multiple of the original resolution, and higher than it.
+    #     :param True keep_original: either to keep or not the original data
 
-        TODO: something
-        """
-        if resolution < self._ori_resolution:
-            raise Exception('New resolution might be higher than original.')
-        if resolution % self._ori_resolution:
-            raise Exception('New resolution might be a mulitple original...\n' +
-                            '  otherwise it is too complicated for me :P')
-        # if we want to go back to original resolution
-        if resolution == self._ori_resolution:
-            self.experiments = self._ori_experiments
-            self.resolution  = self._ori_resolution
-            return
-        # if we already changed resolution before
-        if self.resolution == self._ori_resolution:
-            self._ori_experiments = self.experiments
-        self.resolution = resolution
-        self.experiments = {}
-        fact = self.resolution / self._ori_resolution
-        # super for!
-        for x_name, x_p in self._ori_experiments.iteritems():
-            size = x_p['size']
-            self.experiments[x_name] = {'hi-c':[[]], 'size': size/fact}
-            for i in xrange(0, size - fact/2, fact):
-                for j in xrange(0, size - fact/2, fact):
-                    val = 0
-                    for k in xrange(fact):
-                        for l in  xrange(fact):
-                            val += x_p['hi-c'][0][(i + k) * size + j + l]
-                    self.experiments[x_name]['hi-c'][0].append(val)
-        if not keep_original:
-            del(self._ori_experiments)
+    #     TODO: something
+    #     """
+    #     if resolution < self._ori_resolution:
+    #         raise Exception('New resolution might be higher than original.')
+    #     if resolution % self._ori_resolution:
+    #         raise Exception('New resolution might be a mulitple original.\n' +
+    #                         '  otherwise it is too complicated for me :P')
+    #     # if we want to go back to original resolution
+    #     if resolution == self._ori_resolution:
+    #         self.experiments = self._ori_experiments
+    #         self.resolution  = self._ori_resolution
+    #         return
+    #     # if we already changed resolution before
+    #     if self.resolution == self._ori_resolution:
+    #         self._ori_experiments = self.experiments
+    #     self.resolution = resolution
+    #     self.experiments = {}
+    #     fact = self.resolution / self._ori_resolution
+    #     # super for!
+    #     for x_name, x_p in self._ori_experiments.iteritems():
+    #         size = x_p['size']
+    #         self.experiments[x_name] = {'hi-c':[[]], 'size': size/fact}
+    #         for i in xrange(0, size - fact/2, fact):
+    #             for j in xrange(0, size - fact/2, fact):
+    #                 val = 0
+    #                 for k in xrange(fact):
+    #                     for l in  xrange(fact):
+    #                         val += x_p['hi-c'][0][(i + k) * size + j + l]
+    #                 self.experiments[x_name]['hi-c'][0].append(val)
+    #     if not keep_original:
+    #         del(self._ori_experiments)
 
 
     def align_experiments(self, names=None, verbose=False, randomize=False,
@@ -240,8 +241,8 @@ class Chromosome(object):
         aligneds, score = align(tads, bin_size=resolution,
                                 max_dist=self.max_tad_size, **kwargs)
         self.alignment[tuple(sorted(xpers))] = {}
-        for e, ali in zip(xpers, aligneds):
-            self.alignment[tuple(sorted(xpers))][e] = ali
+        for xpr, ali in zip(xpers, aligneds):
+            self.alignment[tuple(sorted(xpers))][xpr] = ali
         if verbose:
             self.print_alignment(xpers)
         if not randomize:
@@ -252,8 +253,8 @@ class Chromosome(object):
         #                             self.r_size, self.resolution,
         #                             verbose=verbose, **kwargs)
         p_value = self.randomization_test(xpers, score=score, method=rnd_method,
-                                          verbose=verbose, resolution=resolution,
-                                          **kwargs)
+                                          verbose=verbose,
+                                          resolution=resolution, **kwargs)
         return score, p_value
 
 
@@ -269,12 +270,12 @@ class Chromosome(object):
             xpers = self.alignment.keys()[0]
         length = max([len(n) for n in names])
         out = 'Alignment (%s TADs)\n' % (len(names))
-        for e in names:
-            if not e in self.alignment[xpers]:
+        for xpr in names:
+            if not xpr in self.alignment[xpers]:
                 continue
-            out += '{1:{0}}:'.format(length, e)
+            out += '{1:{0}}:'.format(length, xpr)
             out += '|'.join(['%5s' % (str(x)[:-2] if x!='-' else '-' * 4)\
-                             for x in self.alignment[xpers][e]]) + '\n'
+                             for x in self.alignment[xpers][xpr]]) + '\n'
         if string:
             return out
         print out
@@ -395,7 +396,7 @@ class Chromosome(object):
             self._search_centromere(xpr)
         
 
-    def visualize(self, name, tad=None, paint_tads=False, ax=None, show=False):
+    def visualize(self, name, tad=None, paint_tads=False, axe=None, show=False):
         """
         Visualize the matrix of Hi-C interactions
 
@@ -405,8 +406,8 @@ class Chromosome(object):
         vmin = log2(min(self.experiments[name]['hi-c'][0]) or 1)
         vmax = log2(max(self.experiments[name]['hi-c'][0]))
         size = self.experiments[name]['size']
-        if not ax:
-            ax = plt.subplot(111)
+        if not axe:
+            axe = plt.subplot(111)
         if tad:
             matrix = [[self.experiments[name]['hi-c'][0][i+size*j] \
                        for i in xrange(int(tad['start']), int(tad['end']))] \
@@ -415,20 +416,20 @@ class Chromosome(object):
             matrix = [[self.experiments[name]['hi-c'][0][i+size*j]\
                        for i in xrange(size)] \
                       for j in xrange(size)]
-        ax.imshow(log2(matrix), origin='lower', vmin=vmin, vmax=vmax,
+        axe.imshow(log2(matrix), origin='lower', vmin=vmin, vmax=vmax,
                   interpolation="nearest")
         if not paint_tads:            
             return
         for i, tad in self.experiments[name]['tads'].iteritems():
-            ax.hlines(tad['start'], tad['start'], tad['end'], colors='k')
-            ax.hlines(tad['end'], tad['start'], tad['end'], colors='k')
-            ax.vlines(tad['start'], tad['start'], tad['end'], colors='k')
-            ax.vlines(tad['end'], tad['start'], tad['end'], colors='k')
-            ax.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
+            axe.hlines(tad['start'], tad['start'], tad['end'], colors='k')
+            axe.hlines(tad['end'], tad['start'], tad['end'], colors='k')
+            axe.vlines(tad['start'], tad['start'], tad['end'], colors='k')
+            axe.vlines(tad['end'], tad['start'], tad['end'], colors='k')
+            axe.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
                     tad['start'] + abs(tad['start']-tad['end'])/2 - 1, str(i))
             if not tad['brk']:
                 for j in xrange(int(tad['start']), int(tad['end']), 4):
-                    ax.hlines(j, tad['start'], tad['end'], colors='k')
+                    axe.hlines(j, tad['start'], tad['end'], colors='k')
         if show:
             plt.show()
 
@@ -451,17 +452,19 @@ class Chromosome(object):
                 if not brk['brk']:
                     continue
                 if resolution != self.experiments[tad].resolution:
-                    raise Exception('These experiments should have same resolution\n')
+                    raise Exception('These experiments should have same ' +
+                                    'resolution\n')
                 norm_tads.append((brk['end'] - brk['start']) * resolution)
-        x = [0.0]
-        y = [0.0]
+        win = [0.0]
+        cnt = [0.0]
         max_d = max(norm_tads)
         # we ask here for a mean number of 20 values per bin 
         bin_s = int(max_d / (float(len(norm_tads)) / 20))
-        for b in range(0, int(max_d) + bin_s, bin_s):
-            x.append(len([i for i in norm_tads if b < i <= b + bin_s]) + x[-1])
-            y.append(b + float(bin_s))
-        x = [float(v) / max(x) for v in x]
+        for bee in range(0, int(max_d) + bin_s, bin_s):
+            win.append(len([i for i in norm_tads
+                            if bee < i <= bee + bin_s]) + win[-1])
+            cnt.append(bee + float(bin_s))
+        win = [float(v) / max(win) for v in win]
         ## to see the distribution and its interpolation
         #distr = interp1d(x, y)
         #from matplotlib import pyplot as plt
@@ -469,7 +472,7 @@ class Chromosome(object):
         #         [float(i)/1000 for i in xrange(1000)])
         #plt.hist(norm_tads, normed=True, bins=20, cumulative=True)
         #plt.show()
-        return interp1d(x, y)
+        return interp1d(win, cnt)
         
 
     def randomization_test(self, xpers, score=None, num=1000, verbose=False,
@@ -490,15 +493,15 @@ class Chromosome(object):
             raise Exception('method should be either "interpolate" or ' +
                             '"shuffle"\n')
         tads = []
-        for e in xpers:
-            if not self.experiments[e].tads:
+        for xpr in xpers:
+            if not self.experiments[xpr].tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
-            tads.append([t['end']-t['start']for t in self.experiments[e].tads.values()])
+            tads.append([t['end'] - t['start']
+                         for t in self.experiments[xpr].tads.values()])
         rnd_distr = []
-        rnd_len = []
+        # rnd_len = []
         distr = self._interpolation(xpers) if method is 'interpolate' else None
-        num_sequences = len(tads)
-        rnd_exp = lambda : tads[int(random() * num_sequences)]
+        rnd_exp = lambda : tads[int(random() * len(tads))]
         for val in xrange(num):
             if verbose:
                 val = float(val)
@@ -508,17 +511,15 @@ class Chromosome(object):
                                  '{:.2%} completed'.format(val/num))
                     stdout.flush()
             if method is 'interpolate':
-                rnd_tads = [generate_rnd_tads(self.r_size, distr,
-                                              resolution)\
-                            for _ in xrange(num_sequences)]
-                rnd_len.append(float(sum([len(r) for r in rnd_tads])) \
-                               / len(rnd_tads))
+                rnd_tads = [generate_rnd_tads(self.r_size, distr, resolution)
+                            for _ in xrange(len(tads))]
+                # rnd_len.append(float(sum([len(r) for r in rnd_tads]))
+                #                / len(rnd_tads))
             else:
-                rnd_tads = [generate_shuffle_tads(rnd_exp()) \
-                            for _ in xrange(num_sequences)]
-                rnd_len.append(num_sequences)
-            rnd_distr.append(align(rnd_tads,
-                                   bin_size=resolution,
+                rnd_tads = [generate_shuffle_tads(rnd_exp())
+                            for _ in xrange(len(tads))]
+                # rnd_len.append(len(tads))
+            rnd_distr.append(align(rnd_tads, bin_size=resolution,
                                    verbose=False)[1])
                 
         pval = float(len([n for n in rnd_distr if n > score])) / len(rnd_distr)
@@ -526,10 +527,10 @@ class Chromosome(object):
             stdout.write('\n {} randomizations finished.'.format(num))
             stdout.flush()
             print '  Observed alignment score: {}'.format(score)
-            print '  Mean number of boundaries: {}; observed: {}'.format(\
-                sum(rnd_len)/len(rnd_len),
-                str([len(self.experiments[e].brks) \
-                     for e in self.experiments]))
+            # print '  Mean number of boundaries: {}; observed: {}'.format(\
+            #     sum(rnd_len)/len(rnd_len),
+            #     str([len(self.experiments[e].brks) \
+            #          for e in self.experiments]))
             print 'Randomized scores between {} and {}; observed: {}'.format(\
                 min(rnd_distr), max(rnd_distr), score)
             print 'p-value: {}'.format(pval if pval else '<{}'.format(1./num))
@@ -551,14 +552,14 @@ class Chromosome(object):
         size = xpr.size
         matrix = [[[] for _ in xrange(beg, end)]\
                   for _ in xrange(beg, end)]
-        for i, ii in enumerate(xrange(beg - 1, end - 1)):
-            ii = ii * size
-            for j, jj in enumerate(xrange(beg, end)):
-                matrix[j][i] = float(xpr.hic_data[0][ii + jj])
+        for i, tadi in enumerate(xrange(beg - 1, end - 1)):
+            tadi = tadi * size
+            for j, tadj in enumerate(xrange(beg, end)):
+                matrix[j][i] = float(xpr.hic_data[0][tadi + tadj])
                 if not normed:
                     continue
                 try:
-                    matrix[j][i] = matrix[j][i] / xpr.wght[0][ii + jj]
+                    matrix[j][i] = matrix[j][i] / xpr.wght[0][tadi + tadj]
                 except ZeroDivisionError:
                     matrix[j][i] = 0.0
         return matrix
@@ -589,18 +590,17 @@ class Chromosome(object):
         :param 3000000 value: an int
         """
         self.max_tad_size = value
-        for xpr in self.experiments:
-            tads = self.experiments[xpr]['tads']
-            for tad in tads:
-                if (tads[tad]['end'] - tads[tad]['start']) \
-                   * self.resolution < self.max_tad_size:
-                    tads[tad]['brk'] = tads[tad]['end']
+        for xpr in self.experiments.values():
+            for tad in xpr.tads:
+                if (xpr.tads[tad]['end'] - xpr.tads[tad]['start']) \
+                   * xpr.resolution < self.max_tad_size:
+                    xpr.tads[tad]['brk'] = xpr.tads[tad]['end']
                 else:
-                    tads[tad]['brk'] = None
-            self.experiments[xpr]['brks'] = []
-            for tad in tads:
-                if tads[tad]['brk']:
-                    self.experiments[xpr]['brks'].append(tads[tad]['brk'])
+                    xpr.tads[tad]['brk'] = None
+            xpr.brks = []
+            for tad in xpr.tads:
+                if xpr.tads[tad]['brk']:
+                    xpr.brks.append(xpr.tads[tad]['brk'])
             
 
     def _search_centromere(self, xpr):
@@ -648,7 +648,7 @@ class Chromosome(object):
                     tads[tad]     = copy(tads[tad - 1])
                     tads[tad]['start'] = end
                     if (tads[tad]['end'] - tads[tad]['start']) \
-                           * self.resolution > self.max_tad_size:
+                           * xpr.resolution > self.max_tad_size:
                         tads[tad]['brk'] = None
                     else:
                         tads[tad]['brk'] = tads[tad]['end']
@@ -656,7 +656,7 @@ class Chromosome(object):
                     tads[tad] = copy(tads[tad])
                     tads[tad]['end'] = beg
                     if (tads[tad]['end'] - tads[tad]['start']) \
-                           * self.resolution > self.max_tad_size:
+                           * xpr.resolution > self.max_tad_size:
                         tads[tad]['brk'] = None
                     else:
                         tads[tad]['brk'] = tads[tad]['end']
@@ -682,7 +682,8 @@ class Chromosome(object):
             for brk in self.experiments[tad]['tads'].values():
                 if not brk['brk']:
                     continue
-                norm_tads.append(log((brk['end'] - brk['start']) * self.resolution))
+                norm_tads.append(log((brk['end'] - brk['start']) *
+                                     self.experiments[tad].resolution))
         length = len(norm_tads)
         mean   = sum(norm_tads)/length
         std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
@@ -722,47 +723,48 @@ def generate_shuffle_tads(tads):
     rnd_tads = tads[:]
     shuffle(rnd_tads)
     tads = []
-    for t in rnd_tads:
+    for tad in rnd_tads:
         if tads:
-            t += tads[-1]
-        tads.append(t)
+            tad += tads[-1]
+        tads.append(tad)
     return tads
 
-def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
-                       num=1000, verbose=False):
-    """
-    No longer used
-    
-    TODO: use Guillaume idea.
-    """
-    rand_distr = []
-    rand_len = []
-    best = (None, None)
-    for n in xrange(num):
-        if verbose:
-            n = float(n)
-            if not n / num * 100 % 5:
-                stdout.write('\r' + ' ' * 10 + \
-                             ' randomizing: {:.2%} completed'.format(n/num))
-                stdout.flush()
-        random_tads = [generate_rnd_tads(chr_len, mean,
-                                            std, bin_size) \
-                       for _ in xrange(num_sequences)]
-        rand_len.append(float(sum([len(r) for r in random_tads]))/len(random_tads))
-        rand_distr.append(align(random_tads,
-                                bin_size=bin_size, chr_len=chr_len,
-                                verbose=False)[1])
-        if rand_distr[-1] > best[0]:
-            best = rand_distr[-1], random_tads
-    p_value = float(len([n for n in rand_distr if n > score]))/len(rand_distr)
-    if verbose:
-        stdout.write('\n {} randomizations finished.'.format(num))
-        stdout.flush()
-        align(best[-1], bin_size=bin_size, chr_len=chr_len, verbose=True)
-        print 'Observed alignment score: {}'.format(score)
-        print '  Randomized scores between {} and {}'.format(min(rand_distr),
-                                                             max(rand_distr))
-        print 'p-value: {}'.format(p_value if p_value else '<{}'.format(1./num))
-        print sum(rand_len)/len(rand_len)
-    return p_value    
+
+# def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
+#                        num=1000, verbose=False):
+#     """
+#     No longer used
+#     """
+#     rand_distr = []
+#     rand_len = []
+#     best = (None, None)
+#     for n in xrange(num):
+#         if verbose:
+#             n = float(n)
+#             if not n / num * 100 % 5:
+#                 stdout.write('\r' + ' ' * 10 + \
+#                              ' randomizing: {:.2%} completed'.format(n/num))
+#                 stdout.flush()
+#         random_tads = [generate_rnd_tads(chr_len, mean,
+#                                             std, bin_size) \
+#                        for _ in xrange(num_sequences)]
+#         rand_len.append(float(sum([len(r)
+#                                    for r in random_tads])) / len(random_tads))
+#         rand_distr.append(align(random_tads,
+#                                 bin_size=bin_size, chr_len=chr_len,
+#                                 verbose=False)[1])
+#         if rand_distr[-1] > best[0]:
+#             best = rand_distr[-1], random_tads
+#     p_value = float(len([n for n in rand_distr if n > score]))/len(rand_distr)
+#     if verbose:
+#         stdout.write('\n {} randomizations finished.'.format(num))
+#         stdout.flush()
+#         align(best[-1], bin_size=bin_size, chr_len=chr_len, verbose=True)
+#         print 'Observed alignment score: {}'.format(score)
+#         print '  Randomized scores between {} and {}'.format(min(rand_distr),
+#                                                              max(rand_distr))
+#         print 'p-value: {}'.format(p_value if p_value
+#                                    else '<{}'.format(1. / num))
+#         print sum(rand_len)/len(rand_len)
+#     return p_value    
 
