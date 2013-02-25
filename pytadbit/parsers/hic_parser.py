@@ -90,13 +90,13 @@ def read_matrix(things, parser=None):
             sizes.append(int(siz))
         elif 'matrix' in str(type(thing)):
             try:
-                r, c = thing.shape
-                if r!=c:
+                row, col = thing.shape
+                if row != col:
                     raise Exception('matrix needs to be square.')
                 matrices.append(thing.reshape(-1).tolist()[0])
-                sizes.append(r)
-            except Exception as e:
-                print 'Error found:', e
+                sizes.append(row)
+            except Exception as exc:
+                print 'Error found:', exc
         else:
             raise Exception('Unable to read this file or whatever it is :)')
     if all([s==sizes[0] for s in sizes]):

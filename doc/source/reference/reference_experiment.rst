@@ -1,4 +1,4 @@
-.. currentmodule:: pytadbit.chromosome
+.. currentmodule:: pytadbit.experiment
 
 Experiment class
 ================

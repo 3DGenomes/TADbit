@@ -3,9 +3,10 @@
 
 global aligner for Topologically Associated Domains
 """
+from math import log
 
 
-def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
+def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
                      max_dist=500000, verbose=False):
     """
     Align two lists of TAD's boundaries.
@@ -13,10 +14,6 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
     :param tads1: list of boundaries for one chromosome under one condition
     :param tads2: list of boundaries for the same chromosome under other
         conditions
-    :param None bin_size: resolution at which TADs are predicted in number of
-        bases. Default is 1
-    :param None chr_len: length of input chromosome. Default set to the maximum
-        value of tads1 and tads2.
     :param -0.1 penalty: penalty to open a gap in the alignment of boundaries
     :param 500000 max_dist: distance from which match are denied. A bin_size
         of 20Kb the number of bins corresponding to 0.5Mb is 25.
@@ -30,18 +27,23 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
     tads2 = [0.0] + tads2
     l_tads1  = len(tads1)
     l_tads2  = len(tads2)
-    bin_size = bin_size or 1
-    dister = lambda x, y: 10000. / (bin_size * (abs(x - y) + 1))
+    dister = lambda x, y: log(1. / (abs(x - y) + 1))
     scores = virgin_score(penalty, l_tads1, l_tads2)
+    pen = penalty
     for i in xrange(1, l_tads1):
         for j in xrange(1, l_tads2):
             d_dist = dister(tads2[j], tads1[i])
             match  = d_dist + scores[i-1][j-1]
-            insert = scores[i-1][j] + penalty
-            delete = scores[i][j-1] + penalty
+            insert = scores[i-1][j] + pen
+            delete = scores[i][j-1] + pen
             if d_dist > max_dist:
                 scores[i][j] = max((insert, delete))
+                pen = ext_pen
             else:
+                if match >= max(insert, delete):
+                    pen = ext_pen
+                else:
+                    pen = ext_pen
                 scores[i][j] = max((match, insert, delete))
     align1 = []
     align2 = []
@@ -51,8 +53,7 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
     while i and j:
         score      = scores[i][j]
         if score > max_score:
-            if i and j:
-                max_score = score
+            max_score = score
         d_dist     = dister(tads2[j], tads1[i])
         value      = scores[i-1][j-1] + d_dist
         if equal(score, value):
@@ -64,7 +65,15 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
             align1.insert(0, tads1[i])
             align2.insert(0, '-')
             i -= 1
+        elif equal(score, scores[i-1][j] + ext_pen):
+            align1.insert(0, tads1[i])
+            align2.insert(0, '-')
+            i -= 1
         elif equal(score, scores[i][j-1] + penalty):
+            align1.insert(0, '-')
+            align2.insert(0, tads2[j])
+            j -= 1
+        elif equal(score, scores[i][j-1] + ext_pen):
             align1.insert(0, '-')
             align2.insert(0, tads2[j])
             j -= 1
@@ -73,6 +82,15 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
                 print ' '.join(['%6s' % (round(y, 2)) for y in scr])
             raise Exception('Something  is failing and it is my fault...',
                             i, j, tads1[i], tads2[j])
+    while i:
+        align1.insert(0, tads1[i])
+        align2.insert(0, '-')
+        i -= 1
+    while j:
+        align1.insert(0, '-')
+        align2.insert(0, tads2[j])
+        j -= 1
+        
     if verbose:
         print '\n Alignment:'
         print 'TADS 1: '+'|'.join(['%4s' % (str(int(x)) if x!='-' else '-'*3) \
@@ -83,10 +101,16 @@ def needleman_wunsch(tads1, tads2, bin_size=None, penalty=-0.1,
 
 
 def virgin_score(penalty, l_tads1, l_tads2):
+    """
+    create empty matrix
+    """
     zeros    = [0.0 for _ in xrange(l_tads2)]
     return [[penalty * j for j in xrange(l_tads2)]] + \
            [[penalty * i] + zeros for i in xrange(1, l_tads1)]
 
 
 def equal(a, b, cut_off=1e-9):
+    """
+    is equal?
+    """
     return abs(a-b) < cut_off

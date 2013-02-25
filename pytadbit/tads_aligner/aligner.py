@@ -6,12 +6,19 @@
 from pytadbit.tads_aligner.globally import needleman_wunsch
 
 
-def consensusize(ali1, ali2):
+def consensusize(ali1, ali2, passed):
+    """
+    :param ali1: first aligned sequence
+    :param ali1: second aligned sequence
+    :param passed: in case first aligned sequence is already a consensus, it
+       might be weighted
+    :returns: consensus sequence corresponding to ali1 and ali2
+    """
     consensus = []
     for pos in xrange(len(ali1)):
         if ali1[pos] != ali2[pos]:
             try:
-                bound = (ali1[pos]+ali2[pos])/2
+                bound = (ali1[pos] * passed + ali2[pos]) / (1 + passed)
             except TypeError:
                 bound = ali1[pos] if type(ali1[pos]) is float else ali2[pos]
         else:
@@ -30,20 +37,14 @@ def align(sequences, method='global', **kwargs):
 
     :param global method: method used to align.
     """
-    if method=='global':
+    if method == 'global':
         aligner = needleman_wunsch
-    if len(sequences) == 2:
-        return aligner(sequences[0], sequences[1], **kwargs)
     if len(sequences) > 2:
         dico = {}
         reference = None
-        others = []
         for j, (i, seq) in enumerate(sorted(enumerate(sequences),
                                             key=lambda x: x[1])):
-            if not reference:
-                reference = seq
-            else:
-                others.append(seq)
+            reference = reference or seq
             dico[j] = {'sort':i,
                        'seq' :seq}
         aligneds = []
@@ -66,9 +67,11 @@ def align(sequences, method='global', **kwargs):
             if not aligneds:
                 aligneds.append(align1)
             aligneds.append(align2)
-            reference = consensusize(align1, align2)
+            reference = consensusize(align1, align2, other)
+            
         sort_alis = [[] for _ in xrange(len(dico))]
         for seq in xrange(len(dico)):
             sort_alis[dico[seq]['sort']] = aligneds[seq][:]
         return sort_alis, scores
+    return aligner(sequences[0], sequences[1], **kwargs)
 
