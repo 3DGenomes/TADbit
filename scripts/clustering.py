@@ -5,8 +5,9 @@ Sample script in order to analyze and compare the topology of TADs.
 
 """
 
-from pytadbit import Slice
-from pytadbit.tad_clustering.tad_cmo import optimal_cmo, matrix2binnary_contacts, run_aleigen
+from pytadbit import Chromosome
+from pytadbit.tad_clustering.tad_cmo import optimal_cmo, matrix2binnary_contacts
+from pytadbit.tad_clustering.tad_cmo import run_aleigen
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from scipy.cluster.hierarchy import linkage
@@ -16,9 +17,9 @@ PATH =  'sample_data/'
 
 
 def main():
-    test_chr = Slice(name='Test Chromosome', resolution=100000)
-    test_chr.add_experiment(PATH + 'HIC_gm06690_chr19_chr19_100000_obs.txt',
-                            name='exp1')
+    test_chr = Chromosome(name='Test Chromosome')
+    test_chr.add_experiment('exp1', 100000, xp_handler=PATH +
+                            'HIC_gm06690_chr19_chr19_100000_obs.txt')
     test_chr.find_tad(['exp1'])
     tad_names = []
     tad_matrices = []
@@ -26,8 +27,7 @@ def main():
         tad_names.append(name)
         tad_matrices.append(matrix)
     num = len(tad_names)
-    distances, cci = get_distances(tad_matrices, max_num_v=10)
-    #distances, cci = get_aleigen(tad_matrices, max_num_v=10)
+    distances, cci = get_distances(tad_matrices, max_num_v=2)
     results, clusters = pre_cluster(distances, cci, num)
     paint_clustering(results, clusters, num, test_chr, tad_names)
     plt.show()
@@ -67,9 +67,9 @@ def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
     pool = mu.Pool(n_cpus)
     for i in xrange(num):
         for j in xrange(i+1, num):
-            jobs[(i, j)] = pool.apply_async(optimal_cmo, args=(tad_matrices[i],
-                                                               tad_matrices[j]),
-                                            kwds={'max_num_v': max_num_v})
+            jobs[(i, j)] = pool.apply_async(
+                optimal_cmo, args=(tad_matrices[i], tad_matrices[j]),
+                kwds={'max_num_v': max_num_v})
     pool.close()
     pool.join()
     for i in xrange(num):
@@ -108,14 +108,17 @@ def pre_cluster(distances, cci, num):
                 break
             else:
                 break
-    results = [[[0 for _ in xrange(len(i))] for _ in xrange(len(i))] for i in clusters]
+    results = [[[0 for _ in xrange(len(i))] for _ in xrange(len(i))] \
+               for i in clusters]
     for k, cluster in enumerate(clusters):
         trans = [i for i in xrange(num) if i in cluster]
         for i in xrange(num):
             for j in xrange(i + 1, num):
                 if i in cluster and j in cluster:
-                    results[k][trans.index(i)][trans.index(j)] = distances[(i, j)]
-                    results[k][trans.index(j)][trans.index(i)] = distances[(i, j)]
+                    results[k][trans.index(i)][trans.index(j)] = distances[(i,
+                                                                            j)]
+                    results[k][trans.index(j)][trans.index(i)] = distances[(i,
+                                                                            j)]
     return results, clusters
 
 
@@ -133,7 +136,8 @@ def paint_clustering(results, clusters, num, chrom, tad_names):
         dendros += reversed(list([clusters[i][n] for n in tmp]))
         axes.append(plt.subplot2grid((num, 9),(prev, 0), rowspan=len(result),
                                      colspan=4))
-        dendrogram(clust, orientation='right', labels=[tad_names[c] for c in clusters[i]])
+        dendrogram(clust, orientation='right',
+                   labels=[tad_names[c] for c in clusters[i]])
         if xlim[0] < axes[-1].get_xlim()[0]:
             xlim[0] = axes[-1].get_xlim()[0]
         if xlim[1] > axes[-1].get_xlim()[1]:
@@ -145,11 +149,11 @@ def paint_clustering(results, clusters, num, chrom, tad_names):
     for i, j in enumerate(dendros):
         axes.append(plt.subplot2grid((num, 9),(i, 4)))#gs1[i]))
         chrom.visualize('exp1',
-                        tad=chrom.experiments['exp1']['tads'][tad_names[j]],
-                        ax=axes[-1])
+                        tad=chrom.experiments['exp1'].tads[tad_names[j]],
+                        axe=axes[-1])
         axes[-1].set_axis_off()
     ax4 = plt.subplot2grid((num, 9),(0, 5), rowspan=num, colspan=4)
-    chrom.visualize('exp1', paint_tads=True, ax=ax4)
+    chrom.visualize('exp1', paint_tads=True, axe=ax4)
     plt.draw()
 
 

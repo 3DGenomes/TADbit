@@ -404,24 +404,24 @@ class Chromosome(object):
         :param name: name of the experiment to visualize
         
         """
-        vmin = log2(min(self.experiments[name]['hi-c'][0]) or 1)
-        vmax = log2(max(self.experiments[name]['hi-c'][0]))
-        size = self.experiments[name]['size']
+        vmin = log2(min(self.experiments[name].hic_data[0]) or 1)
+        vmax = log2(max(self.experiments[name].hic_data[0]))
+        size = self.experiments[name].size
         if not axe:
             axe = plt.subplot(111)
         if tad:
-            matrix = [[self.experiments[name]['hi-c'][0][i+size*j] \
+            matrix = [[self.experiments[name].hic_data[0][i+size*j] \
                        for i in xrange(int(tad['start']), int(tad['end']))] \
                       for j in xrange(int(tad['start']), int(tad['end']))]
         else:
-            matrix = [[self.experiments[name]['hi-c'][0][i+size*j]\
+            matrix = [[self.experiments[name].hic_data[0][i+size*j]\
                        for i in xrange(size)] \
                       for j in xrange(size)]
         axe.imshow(log2(matrix), origin='lower', vmin=vmin, vmax=vmax,
                   interpolation="nearest")
         if not paint_tads:            
             return
-        for i, tad in self.experiments[name]['tads'].iteritems():
+        for i, tad in self.experiments[name].tads.iteritems():
             axe.hlines(tad['start'], tad['start'], tad['end'], colors='k')
             axe.hlines(tad['end'], tad['start'], tad['end'], colors='k')
             axe.vlines(tad['start'], tad['start'], tad['end'], colors='k')
