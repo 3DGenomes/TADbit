@@ -17,9 +17,9 @@ class TestTadbit(unittest.TestCase):
     def test_tadbit(self):
         out = tadbit('20Kb/chrT/chrT_A.tsv', max_tad_size="auto",
                      verbose=False, no_heuristic=False)
-        breaks = [0, 3, 9, 14, 20, 30, 38, 44, 50, 67, 72, 77, 82, 89, 94]
-        scores = [10.0, 10.0, 8.0, 10.0, 10.0, 6.0, 8.0, 5.0,
-                  10.0, 10.0, 10.0, 10.0, 10.0, 10.0, None]
+        breaks = [0, 3, 9, 17, 22, 29, 36, 44, 50, 62, 67, 76, 90, 95]
+        scores = [5.0, 10.0, 4.0, 8.0, 9.0, 5.0, 9.0, 9.0, 9.0, 10.0, 6.0, 5.0,
+                  3.0, None]
         self.assertEqual(out['start'], breaks)
         self.assertEqual(out['score'], scores)
 
@@ -27,9 +27,9 @@ class TestTadbit(unittest.TestCase):
     def test_batch_tadbit(self):
         out = batch_tadbit('20Kb/chrT/', max_tad_size=20, verbose=False,
                            no_heuristic=True)
-        breaks = [0, 3, 9, 14, 20, 36, 41, 46, 51, 56, 62, 67, 74, 79, 84]
-        scores = [8.0,  10.0,  7.0,  7.0,  5.0,  5.0,  7.0,  7.0,  9.0,  10.0,
-                  10.0,  5.0,  3.0,  6.0,  None]
+        breaks = [0, 4, 9, 15, 20, 33, 38, 44, 50, 62, 67, 76, 90, 95]
+        scores = [4.0, 7.0, 3.0, 7.0, 3.0, 3.0, 10.0, 7.0, 10.0, 10.0, 9.0, 8.0,
+                  5.0, None]
         self.assertEqual(out['start'], breaks)
         self.assertEqual(out['score'], scores)
 
@@ -67,8 +67,8 @@ class TestTadbit(unittest.TestCase):
                          experiment_names=['exp1', 'exp2', 'exp3'])
         test_chr.find_tad(['exp1', 'exp2', 'exp3'], batch_mode=True,
                           verbose=False)
-        self.assertEqual([2.0, 8.0, 19.0, 35.0, 40.0, 45.0, 50.0, 55.0, 61.0,
-                          66.0, 73.0, 78.0, 83.0, 88.0, 93.0, 99.0],
+        self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 33.0, 38.0, 43.0, 49.0,
+                          61.0, 66.0, 75.0, 89.0, 99.0],
                          test_chr.experiments['batch_exp3_exp2_exp1'].brks)
 
 
@@ -91,11 +91,11 @@ class TestTadbit(unittest.TestCase):
         all_tads = []
         for _, tad in test_chr.iter_tads('exp1'):
             all_tads.append(tad)
-        align1, align2, _ = optimal_cmo(all_tads[9], all_tads[10], 11)
+        align1, align2, _ = optimal_cmo(all_tads[4], all_tads[11], 10)
         self.assertEqual(align1,
-                         [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, '-'])
         self.assertEqual(align2,
-                         [0, 1, '-', 2, '-', 3, 4, 5, 6, 7, 8, 9, 10])
+                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
         
         
 
