@@ -68,10 +68,10 @@ class Chromosome(object):
 
     :param name: name of the chromosome (might be a chromosome name for example).
     :param None resolution: resolution of the experiments. All experiments may
-        have the same resolution
-    :param None experiment_handlers: :py:func:`list` of paths to files containing the
-        definition of TADs corresponding to different experiments (or output
-        of tadbit)
+       have the same resolution
+    :param None experiment_handlers: :py:func:`list` of paths to files
+       containing the definition of TADs corresponding to different experiments
+       (or output of tadbit)
     :param None experiment_names: :py:func:`list` of names for each experiment
     :param None wanted_resoultion: change the resolution of the experiment
        loaded. This with :func:`set_resolution`
@@ -539,7 +539,7 @@ class Chromosome(object):
         return pval
 
 
-    def get_tad_hic(self, tad, x_name, normed=True):
+    def get_tad_hic(self, tad, x_name, normed=True, matrix_num=0):
         """
         Retrieve the Hi-C data matrix corresponding to ma given TAD.
         
@@ -557,7 +557,7 @@ class Chromosome(object):
         for i, tadi in enumerate(xrange(beg - 1, end - 1)):
             tadi = tadi * size
             for j, tadj in enumerate(xrange(beg, end)):
-                matrix[j][i] = float(xpr.hic_data[0][tadi + tadj])
+                matrix[j][i] = float(xpr.hic_data[matrix_num][tadi + tadj])
                 if not normed:
                     continue
                 try:
@@ -607,8 +607,8 @@ class Chromosome(object):
 
     def _search_centromere(self, xpr):
         """
-        Search for centromere in chromosome, presuposing that chromosome corresponds to a
-        chromosome.
+        Search for centromere in chromosome, presuposing that chromosome
+        corresponds to a chromosome.
         Add a boundary to all experiments where the centromere is.
          * A centromere is defined as the area where the rows/columns of the
            Hi-C matrix is empty.

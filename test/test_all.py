@@ -65,7 +65,8 @@ class TestTadbit(unittest.TestCase):
                                               '20Kb/chrT/chrT_D.tsv',
                                               '20Kb/chrT/chrT_C.tsv'],
                          experiment_names=['exp1', 'exp2', 'exp3'])
-        test_chr.find_tad(['exp1', 'exp2', 'exp3'], batch_mode=True, verbose=False)
+        test_chr.find_tad(['exp1', 'exp2', 'exp3'], batch_mode=True,
+                          verbose=False)
         self.assertEqual([2.0, 8.0, 19.0, 35.0, 40.0, 45.0, 50.0, 55.0, 61.0,
                           66.0, 73.0, 78.0, 83.0, 88.0, 93.0, 99.0],
                          test_chr.experiments['batch_exp3_exp2_exp1'].brks)
