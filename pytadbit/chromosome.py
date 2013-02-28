@@ -48,7 +48,7 @@ def load_chromosome(in_f):
                              no_warn=True)
         xpr.tads     = dico['experiments'][name]['tads']
         xpr.wght     = dico['experiments'][name]['wght']
-        xpr.hix_data = dico['experiments'][name]['hi-c']
+        xpr.hic_data = dico['experiments'][name]['hi-c']
         xpr.brks     = dico['experiments'][name]['brks']
         xpr.size     = dico['experiments'][name]['size']
         slicy.experiments[name] = xpr
@@ -374,7 +374,7 @@ class Chromosome(object):
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
             experiment = Experiment(name, resolution, xp_handler=matrix,
-                                    tad_handler=result,
+                                    tad_handler=result, weights=weights,
                                     max_tad_size=self.max_tad_size)
             self.experiments[experiment.name] = experiment
             self._get_forbidden_region(experiment)

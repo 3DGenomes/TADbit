@@ -4,6 +4,8 @@
 
 """
 from bisect import bisect_left
+from numpy import mean, std
+from math import log10
 
 class Interpolate(object):
     """
@@ -52,7 +54,21 @@ class matrix(object):
 
 def reduce_matrix(nums, size):
     return tuple([nums[i*j] for i in xrange(size) for j in xrange(i, size)])
-        
+
+
+def zscore(values):
+    vals = []
+    for v in values:
+        if v > 0:
+            vals.append(log10(v))
+    mean_v = mean(vals)
+    std_v = std(vals)
+    for i in xrange(len(values)):
+        if values[i] > 0:
+            values[i] = (log10(values[i])-mean_v)/std_v
+        else:
+            values[i] = -99
+
 
 def nicer(res):
     """

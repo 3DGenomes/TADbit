@@ -5,11 +5,10 @@
 """
 
 from pytadbit.parsers.hic_parser import read_matrix
-from pytadbit.utils import nicer
+from pytadbit.utils import nicer, zscore
 from pytadbit.parsers.tad_parser import parse_tads
 from warnings import warn
 from math import sqrt, log10
-from scipy.stats.mstats import zscore
 
 
 class Experiment(object):
@@ -43,7 +42,7 @@ class Experiment(object):
 
 
     def __init__(self, name, resolution, xp_handler=None, tad_handler=None,
-                 parser=None, max_tad_size=None, no_warn=False):
+                 parser=None, max_tad_size=None, no_warn=False, weights=None):
         self.name       = name
         self.resolution = resolution
         self.hic_data   = None
@@ -51,10 +50,13 @@ class Experiment(object):
         self.tads       = {}
         self.brks       = []
         self.wght       = None
+        self._zeros     = None
+        self._zscores   = {}
         if xp_handler:
             self.load_experiment(xp_handler, parser)
         if tad_handler:
-            self.load_tad_def(tad_handler, max_tad_size=max_tad_size)
+            self.load_tad_def(tad_handler, max_tad_size=max_tad_size,
+                              weights=weights)
         elif not xp_handler and not no_warn:
             warn('WARNING: this is an empty shell, no data here.\n')
 
@@ -92,7 +94,10 @@ class Experiment(object):
         nums, size = read_matrix(handler, parser=parser)
         self.hic_data = nums
         self.size     = size
-        
+        self._zeros   = [float(pos) for pos, raw in enumerate(
+            xrange(0, self.size**2, self.size))
+                         if sum(self.hic_data[0][raw:raw + self.size]) == 0]
+
 
     def load_tad_def(self, handler, weights=None, max_tad_size=None):
         """
@@ -107,13 +112,31 @@ class Experiment(object):
         
         """
         tads = parse_tads(handler, max_size=max_tad_size,
-                                     bin_size=self.resolution)
+                          bin_size=self.resolution)
         self.tads = tads
         self.brks = [t['brk'] for t in tads.values() if t['brk']]
         self.wght  = weights or None
         
 
     def normalize_hic(self):
+        if not self.hic_data:
+            raise Exception('ERROR: No Hi-C data loaded\n')
+        if self.wght:
+            warn('WARNING: removing previous weights\n')
+        rowsums = []
+        for i in xrange(self.size):
+            i *= self.size
+            rowsums.append(0)
+            for j in xrange(self.size):
+                rowsums[-1] += self.hic_data[0][i + j]
+        total = sum(rowsums)
+        self.wght = [[0 for _ in xrange(self.size * self.size)]]
+        for i in xrange(self.size):
+            for j in xrange(self.size):
+                self.wght[0][i * self.size + j] = float(rowsums[i] * rowsums[j]) / total
+
+
+    def normalize_hic_OLD(self):
         """
         Normalize Hi-C data. This normalize step is an exact replicate of what
         is done inside :func:`pytadbit.tadbit.tadbit`,
@@ -154,57 +177,75 @@ class Experiment(object):
                 self.wght[0][i * self.size + j] = sqrt(rowsums[i] * rowsums[j])
 
 
+
+    def get_hic_zscores(self, normalized=True, zscored=True):
+        values = []
+        if normalized:
+            for i in xrange(self.size):
+                if i in self._zeros:
+                    continue
+                for j in xrange(self.size):
+                    try:
+                        values.append(
+                            self.hic_data[0][i * self.size + j] /\
+                            self.wght[0][i * self.size + j])
+                    except ZeroDivisionError:
+                        values.append(0.0)
+        else:
+            for i in xrange(self.size):
+                if i in self._zeros:
+                    continue
+                for j in xrange(self.size):
+                    values.append(self.hic_data[0][i * self.size + j])
+        # compute Z-score
+        if zscored:
+            zscore(values)
+        iterval = values.__iter__()
+        for i in xrange(self.size):
+            if i in self._zeros:
+                continue
+            for j in xrange(self.size):
+                zsc = iterval.next()
+                self._zscores.setdefault(i, {})
+                self._zscores[i][j] = zsc
+                self._zscores.setdefault(j, {})
+                self._zscores[j][i] = zsc
+
+
     def write_interaction_pairs(self, fname, normalized=True, zscored=True):
         """
         Creates a tab separated file with all interactions
         
         :param fname: file name to write the interactions pairs 
-        :param True zscored: computes the zscore of the log10(data)
+        :param True zscored: computes the z-score of the log10(data)
         :param True normalized: use weights to normalize data
         """
-        zeros =  [float(pos) for pos, raw in enumerate(xrange(0, self.size**2,
-                                                              self.size))
-                  if sum(self.hic_data[0][raw:raw + self.size]) == 0]
-        values = []
-        if normalized:
-            for i in xrange(self.size):
-                if i in zeros:
-                    continue
-                for j in xrange(self.size):
-                    values.append(self.hic_data[0][i * self.size + j] *\
-                                  self.wght[0][i * self.size + j])
-        else:
-            for i in xrange(self.size):
-                if i in zeros:
-                    continue
-                for j in xrange(self.size):
-                    values.append(self.hic_data[0][i * self.size + j])
-        # remove negative values from list
-        notin = []
-        yesin = []
-        for i, val in enumerate(values):
-            if val < 0:
-                notin.append(i)
-            else:
-                yesin.append(val)
-        # compute Z-score
-        if zscored:
-            values = list(zscore([log10(v) if v > 0 else -99.0 if v else 0.0 \
-                                  for v in yesin]))
-        # put back negative values
-        for i in notin:
-            values.insert(i, -99)
+        if not self._zscores:
+            self.get_hic_zscores(normalized=normalized, zscored=zscored)
         # write to file
         out = open(fname, 'w')
-        if normalized:
-            out.write('elt1\telt2\tnorm_count\n')
-        else:
-            out.write('elt1\telt2\tcount\n')
-        iterval = values.__iter__()
+        out.write('elt1\telt2\tzscore\n')
         for i in xrange(self.size):
-            if i in zeros:
+            if i in self._zeros:
                 continue
             for j in xrange(self.size):
-                out.write('{}\t{}\t{}\n'.format(
-                    i + 1, j + 1, iterval.next()))
+                if self._zscores[i][j] == -99:
+                    continue
+                out.write('{}\t{}\t{}\n'.format(i + 1, j + 1,
+                                                self._zscores[i][j]))
         out.close()
+
+
+    def generate_densities(self):
+        """
+        Related to the generation of 3D models.
+        In the case of Hi-C data, the density is equal to the number of
+        nucleotides in a bin, that is equal to the resolution
+        """
+        dens = {}
+        for i in self.size:
+            dens[i] = self.resolution
+        return dens
+
+      
+
