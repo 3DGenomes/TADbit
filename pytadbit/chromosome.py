@@ -167,49 +167,6 @@ class Chromosome(object):
         out.close()
 
 
-    # def set_resolution(self, resolution, keep_original=True):
-    #     """
-    #     Set a new value for resolution. copy original data into
-    #     Chromosome.ori_experiments and replaces the Chromosome.experiments
-    #     with the data corresponding to new data.
-
-    #     :param resolution: an integer, representing resolution. This numbemust
-    #         be a multiple of the original resolution, and higher than it.
-    #     :param True keep_original: either to keep or not the original data
-
-    #     TODO: something
-    #     """
-    #     if resolution < self._ori_resolution:
-    #         raise Exception('New resolution might be higher than original.')
-    #     if resolution % self._ori_resolution:
-    #         raise Exception('New resolution might be a mulitple original.\n' +
-    #                         '  otherwise it is too complicated for me :P')
-    #     # if we want to go back to original resolution
-    #     if resolution == self._ori_resolution:
-    #         self.experiments = self._ori_experiments
-    #         self.resolution  = self._ori_resolution
-    #         return
-    #     # if we already changed resolution before
-    #     if self.resolution == self._ori_resolution:
-    #         self._ori_experiments = self.experiments
-    #     self.resolution = resolution
-    #     self.experiments = {}
-    #     fact = self.resolution / self._ori_resolution
-    #     # super for!
-    #     for x_name, x_p in self._ori_experiments.iteritems():
-    #         size = x_p['size']
-    #         self.experiments[x_name] = {'hi-c':[[]], 'size': size/fact}
-    #         for i in xrange(0, size - fact/2, fact):
-    #             for j in xrange(0, size - fact/2, fact):
-    #                 val = 0
-    #                 for k in xrange(fact):
-    #                     for l in  xrange(fact):
-    #                         val += x_p['hi-c'][0][(i + k) * size + j + l]
-    #                 self.experiments[x_name]['hi-c'][0].append(val)
-    #     if not keep_original:
-    #         del(self._ori_experiments)
-
-
     def align_experiments(self, names=None, verbose=False, randomize=False,
                           rnd_method='interpolate', **kwargs):
         """

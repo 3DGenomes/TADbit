@@ -43,15 +43,17 @@ class Experiment(object):
 
     def __init__(self, name, resolution, xp_handler=None, tad_handler=None,
                  parser=None, max_tad_size=None, no_warn=False, weights=None):
-        self.name       = name
-        self.resolution = resolution
-        self.hic_data   = None
-        self.size       = None
-        self.tads       = {}
-        self.brks       = []
-        self.wght       = None
-        self._zeros     = None
-        self._zscores   = {}
+        self.name            = name
+        self.resolution      = resolution
+        self._ori_resolution = resolution
+        self.hic_data        = None
+        self._ori_hic        = None
+        self.size            = None
+        self.tads            = {}
+        self.brks            = []
+        self.wght            = None
+        self._zeros          = None
+        self._zscores        = {}
         if xp_handler:
             self.load_experiment(xp_handler, parser)
         if tad_handler:
@@ -66,6 +68,72 @@ class Experiment(object):
             self.name, nicer(self.resolution), len(self.tads) or None,
             self.size)
 
+
+    def __add__(self, other):
+        """
+        TODO: test
+        """
+        reso1, reso2 = self.resolution, other.resolution
+        if self.resolution == other.resolution:
+            resolution = self.resolution
+        else:
+            resolution = max(reso1, reso2)
+            self._set_resolution(resolution)
+            other._set_resolution(resolution)
+            
+        xpr = Experiment(name='{}+{}'.format(self.name, other.name),
+                         resolution=resolution,
+                         xp_handler=tuple([i + j for i, j in zip(
+                             self.hic_data[0], other.hic_data[0])]))
+        self._set_resolution(reso1)
+        other._set_resolution(reso2)
+        return xpr
+
+
+    def _set_resolution(self, resolution, keep_original=True):
+        """
+        Set a new value for resolution. copy original data into
+        Experiment._ori_hic and replaces the Experiment.hic_data
+        with the data corresponding to new data.
+
+        :param resolution: an integer, representing resolution. This numbemust
+            be a multiple of the original resolution, and higher than it.
+        :param True keep_original: either to keep or not the original data
+
+        """
+        if resolution < self._ori_resolution:
+            raise Exception('New resolution might be higher than original.')
+        if resolution % self._ori_resolution:
+            raise Exception('New resolution might be a mulitple original.\n' +
+                            '  otherwise it is too complicated for me :P')
+        if resolution == self.resolution:
+            return
+        # if we want to go back to original resolution
+        if resolution == self._ori_resolution:
+            self.hic_data   = self._ori_hic
+            self.size       = self.resolution / self._ori_resolution * self.size
+            self.resolution = self._ori_resolution
+            return
+        # if we already changed resolution before
+        if self.resolution == self._ori_resolution:
+            self._ori_hic = self.hic_data
+        self.resolution = resolution
+        fact = self.resolution / self._ori_resolution
+        # super for!
+        size = self.size
+        self.hic_data = [[]]
+        self.size     = size / fact
+        for i in xrange(0, size - fact/2, fact):
+            for j in xrange(0, size - fact/2, fact):
+                val = 0
+                for k in xrange(fact):
+                    for l in  xrange(fact):
+                        val += self._ori_hic[0][(i + k) * size + j + l]
+                self.hic_data[0].append(val)
+        if not keep_original:
+            del(self._ori_hic)
+        
+    
 
     def load_experiment(self, handler, parser=None):
         """
