@@ -85,7 +85,7 @@ def nicer(res):
 
 COLOR = {0 : '\033[34m',
          1 : '\033[34m',
-         2 : '\033[36m',
+         2 : '\033[34m',
          3 : '\033[36m',
          4 : '\033[0m',
          5 : '\033[1m',
@@ -97,4 +97,13 @@ COLOR = {0 : '\033[34m',
 
 
 def colorize(string, num):
-    return '{}{}\033[m'.format(COLOR[num or 0], string)
+    """
+    Colorize with ANSII colors a string for printing in shell. this acording to
+    a given number between 0 and 10
+
+    :param string: the string to colorize
+    :param num: a number between 0 and 10 (if None, number will be equal to 10)
+
+    :returns: the string 'decorated' with ANSII color code
+    """
+    return '{}{}\033[m'.format(COLOR[num if num >= 0 else 10], string)

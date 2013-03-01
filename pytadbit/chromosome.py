@@ -37,9 +37,9 @@ def load_chromosome(in_f):
     """
     dico = load(open(in_f))
     try:
-        slicy = Chromosome(dico['name'], resolution=dico['resolution'])
+        crm = Chromosome(dico['name'], resolution=dico['resolution'])
     except TypeError:
-        slicy = Chromosome(dico['name'])
+        crm = Chromosome(dico['name'])
     for name in dico['experiments']:
         try:
             xpr = Experiment(name, dico['resolution'], no_warn=True)
@@ -51,13 +51,13 @@ def load_chromosome(in_f):
         xpr.hic_data = dico['experiments'][name]['hi-c']
         xpr.brks     = dico['experiments'][name]['brks']
         xpr.size     = dico['experiments'][name]['size']
-        slicy.experiments[name] = xpr
-    slicy.size            = dico['size']
-    slicy.r_size          = dico['r_size']
-    slicy.max_tad_size    = dico['max_tad_size']
-    slicy.forbidden       = dico['forbidden']
-    slicy._centromere     = dico['_centromere']
-    return slicy
+        crm.experiments[name] = xpr
+    crm.size            = dico['size']
+    crm.r_size          = dico['r_size']
+    crm.max_tad_size    = dico['max_tad_size']
+    crm.forbidden       = dico['forbidden']
+    crm._centromere     = dico['_centromere']
+    return crm
 
 
 class Chromosome(object):
@@ -206,7 +206,7 @@ class Chromosome(object):
         for xpr, ali in zip(xpers, aligneds):
             self.alignment[tuple(sorted(xpers))][xpr] = ali
         if verbose:
-            self.print_alignment(xpers=tuple(sorted(xpers)))
+            self.print_alignment(name=tuple(sorted(xpers)))
         if not randomize:
             return self.get_alignment(names), score
         #mean, std = self._get_tads_mean_std(xpers)
@@ -219,26 +219,27 @@ class Chromosome(object):
         return score, p_value
 
 
-    def print_alignment(self, names=None, xpers=None, string=False):
+    def print_alignment(self, name=None, xpers=None, string=False):
         """
         print alignment
         
         :param None names: if None print all experiments
+        :param None xpers: if None print all experiments
         :param False string: return string instead of printing
         """
-        names = names or self.experiments.keys()
-        if not xpers:
-            xpers = self.alignment.keys()[0]
-        length = max([len(n) for n in names])
-        out = 'Alignment shown in Kb (%s TADs) (' % (len(names))
+        xpers = xpers or self.experiments.keys()
+        if not name:
+            name = self.alignment.keys()[0]
+        length = max([len(n) for n in xpers])
+        out = 'Alignment shown in Kb (%s experiments) (' % (len(xpers))
         out += 'scores: {})\n'.format(' '.join(
             [colorize(x, x) for x in range(11)]))
-        for xpr in names:
-            if not xpr in self.alignment[xpers]:
+        for xpr in xpers:
+            if not xpr in self.alignment[name]:
                 continue
             ali = []
             i = 0
-            for x in self.alignment[xpers][xpr]:
+            for x in self.alignment[name][xpr]:
                 if x == '-':
                     ali.append(' ' + '-'*4)
                     continue
@@ -255,19 +256,39 @@ class Chromosome(object):
         print out
 
 
-    def get_alignment(self, names=None, xpers=None):
+    def get_alignment(self, name=None, xpers=None, scores=False):
         """
         Return dictionary corresponding to alignment of experiments
         
         :param None names: if None print all experiments
+        :param False scores: gives also the scores
+        
         :returns: alignment as :py:class:`dict`
         """
-        names = names or self.experiments.keys()
-        if not xpers:
-            xpers = self.alignment.keys()[0]
-        return dict([(e, self.alignment[xpers][e]) \
-                     for e in names if e in self.alignment[xpers]])
-                    
+        xpers = xpers or self.experiments.keys()
+        if not name:
+            name = self.alignment.keys()[0]
+        if not scores:
+            return dict([(e, self.alignment[name][e]) \
+                         for e in xpers if e in self.alignment[name]])
+        alignment = {}
+        for xpr in xpers:
+            if not xpr in self.alignment[name]:
+                continue
+            ali = []
+            i = 0
+            for x in self.alignment[name][xpr]:
+                if x == '-':
+                    ali.append((x, -1.0))
+                    continue
+                cell = x
+                scr = self.experiments[xpr].tads[i]['score']
+                scr = scr if scr >= 0 else 10.0
+                ali.append((cell, scr))
+                i += 1
+            alignment[xpr] = ali
+        return alignment
+
 
     def add_experiment(self, name, resolution, tad_handler=None,
                        xp_handler=None, replace=False, parser=None):
@@ -365,7 +386,6 @@ class Chromosome(object):
             if not self.size:
                 self.size = xpr.tads[max(xpr.tads)]['end'] * xpr.resolution
             self.r_size = self.size - len(self.forbidden) * xpr.resolution
-
             # search for centromere
             self._search_centromere(xpr)
         

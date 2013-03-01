@@ -186,25 +186,7 @@ class Experiment(object):
         self.wght  = weights or None
         
 
-    def normalize_hic(self):
-        if not self.hic_data:
-            raise Exception('ERROR: No Hi-C data loaded\n')
-        if self.wght:
-            warn('WARNING: removing previous weights\n')
-        rowsums = []
-        for i in xrange(self.size):
-            i *= self.size
-            rowsums.append(0)
-            for j in xrange(self.size):
-                rowsums[-1] += self.hic_data[0][i + j]
-        total = sum(rowsums)
-        self.wght = [[0 for _ in xrange(self.size * self.size)]]
-        for i in xrange(self.size):
-            for j in xrange(self.size):
-                self.wght[0][i * self.size + j] = float(rowsums[i] * rowsums[j]) / total
-
-
-    def normalize_hic_OLD(self):
+    def normalize_hic(self, method='sqrt'):
         """
         Normalize Hi-C data. This normalize step is an exact replicate of what
         is done inside :func:`pytadbit.tadbit.tadbit`,
@@ -215,19 +197,40 @@ class Experiment(object):
         square root of the product of the sum of the column i by the sum of row
         j.
 
-        the weight of the Hi-C count in row I, column J of the Hi-C matrix
-        would be:
-        ::
-           
-                                _________________________________________
-                      \        / N                    N                  |
-                       \      / ___                  ___             
-         weight(I,J) =  \    /  \                    \           
-                         \  /   /__ (matrix(J, i)) * /__  (matrix(j, I))
-                          \/    i=0                  j=0
+        :param sqrt method: either 'sqrt' or 'over_tot'. Depending on this param
+           the weight of the Hi-C count in row I, column J of the Hi-C matrix
+           would be, under 'sqrt':
+           ::
+              
+                                   _________________________________________
+                         \        / N                    N                  |
+                          \      / ___                  ___             
+            weight(I,J) =  \    /  \                    \           
+                            \  /   /__ (matrix(J, i)) * /__  (matrix(j, I))
+                             \/    i=0                  j=0
 
-        
-        N being the number or rows/columns of the Hi-C matrix
+           and under 'over_tot': 
+           ::
+   
+                             N                    N                 
+                            ___                  ___                
+                            \                    \                  
+                            /__ (matrix(i, J)) * /__  (matrix(I, j))
+                            i=0                  j=0                
+            weight(I,J) =  -----------------------------------------         
+                                     N     N                                 
+                                    ___   ___                                
+                                    \     \                                  
+                                    /__   /__ (matrix(i, j))
+                                    j=0   i=0                                
+   
+   
+           
+           N being the number or rows/columns of the Hi-C matrix in both cases.
+
+           Note that the default behaviour (also used in
+           :func:`pytadbit.tadbit.tadbit`)
+           corresponds to method='sqrt'.
         """
         if not self.hic_data:
             raise Exception('ERROR: No Hi-C data loaded\n')
@@ -240,13 +243,26 @@ class Experiment(object):
             for j in xrange(self.size):
                 rowsums[-1] += self.hic_data[0][i + j]
         self.wght = [[0 for _ in xrange(self.size * self.size)]]
+        if method == 'bytot':
+            total = sum(rowsums)
+            func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
+        else:
+            func = lambda x, y: sqrt(rowsums[x] * rowsums[y])
         for i in xrange(self.size):
             for j in xrange(self.size):
-                self.wght[0][i * self.size + j] = sqrt(rowsums[i] * rowsums[j])
-
+                self.wght[0][i * self.size + j] = func(i, j, total)
 
 
     def get_hic_zscores(self, normalized=True, zscored=True):
+        """
+        Computes a normalization of Hi-C raw data. Result will be stored into
+        the private Experiment._zscore list
+
+        :param True normalized: whether to normalize the result using the
+           weights (see :func:`normalize_hic`)
+        :param True zscored: apply a z-score trandform over the data.
+        
+        """
         values = []
         if normalized:
             for i in xrange(self.size):
