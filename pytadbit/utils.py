@@ -81,3 +81,20 @@ def nicer(res):
     if not res % 1000:
         return str(res)[:-3] + 'Kb'
     return str(res) + 'b'
+
+
+COLOR = {0 : '\033[34m',
+         1 : '\033[34m',
+         2 : '\033[36m',
+         3 : '\033[36m',
+         4 : '\033[0m',
+         5 : '\033[1m',
+         6 : '\033[33m',
+         7 : '\033[33m',
+         8 : '\033[35m',
+         9 : '\033[35m',
+         10: '\033[31m'}
+
+
+def colorize(string, num):
+    return '{}{}\033[m'.format(COLOR[num or 0], string)

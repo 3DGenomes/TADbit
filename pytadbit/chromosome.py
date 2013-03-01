@@ -13,7 +13,7 @@ from string import ascii_lowercase as letters
 from warnings import warn
 from copy import deepcopy as copy
 from cPickle import load, dump
-
+from pytadbit.utils import colorize
 
 try:
     from scipy.interpolate import interp1d
@@ -105,7 +105,8 @@ class Chromosome(object):
             for i, handler in enumerate(experiment_handlers or []):
                 name = experiment_names[i] if experiment_names else None
                 if type(handler) == Experiment:
-                    self.experiments[handler.name] = handler
+                    name = name or handler.name
+                    self.experiments[name] = handler
                 else:
                     self.add_experiment(name, experiment_resolutions[i],
                                         xp_handler=handler, parser=parser)
@@ -191,6 +192,8 @@ class Chromosome(object):
             alignment is not better than random alignment
         :param interpolate rnd_method: when radomizinf use interpolation of TAD
            distribution. Alternative is 'shuffle' where TADs are simply shuffled
+
+        :returns: the alignment and the score of the alignment (by default)
         """
         xpers = names or self.experiments.keys()
         tads = []
@@ -227,13 +230,26 @@ class Chromosome(object):
         if not xpers:
             xpers = self.alignment.keys()[0]
         length = max([len(n) for n in names])
-        out = 'Alignment shown in Kb (%s TADs)\n' % (len(names))
+        out = 'Alignment shown in Kb (%s TADs) (' % (len(names))
+        out += 'scores: {})\n'.format(' '.join(
+            [colorize(x, x) for x in range(11)]))
         for xpr in names:
             if not xpr in self.alignment[xpers]:
                 continue
+            ali = []
+            i = 0
+            for x in self.alignment[xpers][xpr]:
+                if x == '-':
+                    ali.append(' ' + '-'*4)
+                    continue
+                cell = str(x/1000)[:-2]
+                spaces = ' ' * (5 - len(cell))
+                ali.append(colorize(cell,
+                                    self.experiments[xpr].tads[i]['score']))
+                ali[-1] = spaces + ali[-1]
+                i += 1
             out += '{1:{0}}:'.format(length, xpr)
-            out += '|'.join(['%5s' % (str(x/1000)[:-2] if x!='-' else '-' * 4)\
-                             for x in self.alignment[xpers][xpr]]) + '\n'
+            out += '|'.join(ali) + '\n'
         if string:
             return out
         print out
