@@ -82,6 +82,7 @@ class TestTadbit(unittest.TestCase):
         test_chr.save_chromosome('lolo')
         test_chr = load_chromosome('lolo')
         system('rm -f lolo')
+        system('rm -f lolo_hic')
 
 
     def test_tad_clustering(self):
