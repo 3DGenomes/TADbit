@@ -180,12 +180,12 @@ class Chromosome(object):
             if divide:
                 dicp[nam] = {
                     'wght': self.experiments[nam].wght,
-                    'hi-c': self.experiments[nam].hic_dat}
+                    'hi-c': self.experiments[nam].hic_data}
                 dico['experiments'][nam]['wght'] = out_f + '_hic'
                 dico['experiments'][nam]['hi-c'] = out_f + '_hic'
             else:
                 dico['experiments'][nam]['wght'] = self.experiments[nam].wght
-                dico['experiments'][nam]['hi-c'] = self.experiments[nam].hic_dat
+                dico['experiments'][nam]['hi-c'] = self.experiments[nam].hic_data
 
         # this about resolution has to be removed soon....
         dico['resolution']      = self.experiments.values()[0].resolution
