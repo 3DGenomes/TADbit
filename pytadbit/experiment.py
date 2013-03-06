@@ -8,7 +8,7 @@ from pytadbit.parsers.hic_parser import read_matrix
 from pytadbit.utils import nicer, zscore
 from pytadbit.parsers.tad_parser import parse_tads
 from warnings import warn
-from math import sqrt, log10
+from math import sqrt
 
 
 class Experiment(object):

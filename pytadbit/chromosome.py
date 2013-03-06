@@ -26,16 +26,19 @@ from random import random, shuffle
 
 
 
-def load_chromosome(in_f):
+def load_chromosome(in_f, fast=False):
     """
     Load Chromosome from file. Chromosome might have been saved through the
     :func:`Chromosome.save_chromosome`.
     
-    :para in_f: path to a saved Chromosome file
+    :param in_f: path to a saved Chromosome file
+    :param False fast: if True do not load Hi-C data (in the case that they were
+       saved in a separate file see :func:`Chromosome.save_chromosome`)
     
     :returns: Chromosome object
     """
     dico = load(open(in_f))
+    name = ''
     try:
         crm = Chromosome(dico['name'], resolution=dico['resolution'])
     except TypeError:
@@ -57,6 +60,17 @@ def load_chromosome(in_f):
     crm.max_tad_size    = dico['max_tad_size']
     crm.forbidden       = dico['forbidden']
     crm._centromere     = dico['_centromere']
+    if type(dico['experiments'][name]['hi-c']) == str and not fast:
+        try:
+            dicp = load(open(dico['experiments'][name]['hi-c']))
+        except IOError:
+            raise Exception('ERROR: file {} not found\n'.format(
+                dico['experiments'][name]['hi-c']))
+        for name in dico['experiments']:
+            crm.experiments[name].hic_data = dicp[name]['hi-c']
+            crm.experiments[name].wght     = dicp[name]['wght']
+    elif not fast:
+        warn('WARNING: data not saved correctly for fast loading.\n')
     return crm
 
 
@@ -136,24 +150,43 @@ class Chromosome(object):
         self.r_size = self.size - len(self.forbidden) * xpr.resolution
 
 
-    def save_chromosome(self, out_f):
+    def save_chromosome(self, out_f, fast=False, divide=True):
         """
         Save Chromosome object to file (it uses :py:func:`pickle.load` from the
         :py:mod:`cPickle`). Once saved, the object may be loaded through
         :func:`load_chromosome`.
 
         :param out_f: path to file to dump the :py:mod:`cPickle` object.
+        :param False fast: if True, skips Hi-D data and weights
+        :param True divide: if True writes 2 pickles, one with what would result
+           by using the fast option, and the second with Hi-C and weights data.
+           Second file name will be extended by '_hic' (ie: with
+           out_f='chromosome12.pik' we would obtain chromosome12.pik and
+           chromosome12.pik_hic). When loaded :func:`load_chromosome` will
+           automatically search for both files.
         """
         dico = {}
         dico['experiments'] = {}
-        for name in self.experiments:
-            dico['experiments'][name] = {
-                'wght'      : self.experiments[name].wght,
-                'hi-c'      : self.experiments[name].hic_data,
-                'size'      : self.experiments[name].size,
-                'brks'      : self.experiments[name].brks,
-                'tads'      : self.experiments[name].tads,
-                'resolution': self.experiments[name].resolution}
+        if divide:
+            dicp = {}
+        for nam in self.experiments:
+            dico['experiments'][nam] = {
+                'size'      : self.experiments[nam].size,
+                'brks'      : self.experiments[nam].brks,
+                'tads'      : self.experiments[nam].tads,
+                'resolution': self.experiments[nam].resolution}
+            if fast:
+                continue
+            if divide:
+                dicp[nam] = {
+                    'wght': self.experiments[nam].wght,
+                    'hi-c': self.experiments[nam].hic_dat}
+                dico['experiments'][nam]['wght'] = out_f + '_hic'
+                dico['experiments'][nam]['hi-c'] = out_f + '_hic'
+            else:
+                dico['experiments'][nam]['wght'] = self.experiments[nam].wght
+                dico['experiments'][nam]['hi-c'] = self.experiments[nam].hic_dat
+
         # this about resolution has to be removed soon....
         dico['resolution']      = self.experiments.values()[0].resolution
         # this not
@@ -166,6 +199,10 @@ class Chromosome(object):
         out = open(out_f, 'w')
         dump(dico, out)
         out.close()
+        out = open(out_f + '_hic', 'w')
+        dump(dicp, out)
+        out.close()
+        
 
 
     def align_experiments(self, names=None, verbose=False, randomize=False,
@@ -237,20 +274,18 @@ class Chromosome(object):
         for xpr in xpers:
             if not xpr in self.alignment[name]:
                 continue
-            ali = []
+            tads = self.experiments[xpr].tads
+            out += '{1:{0}}:'.format(length, xpr)
             i = 0
             for x in self.alignment[name][xpr]:
+                out += '|'
                 if x == '-':
-                    ali.append(' ' + '-'*4)
+                    out += ' ' + '-'*4
                     continue
-                cell = str(x/1000)[:-2]
-                spaces = ' ' * (5 - len(cell))
-                ali.append(colorize(cell,
-                                    self.experiments[xpr].tads[i]['score']))
-                ali[-1] = spaces + ali[-1]
+                cell = str(int(x/1000))
+                out += ' ' * (5 - len(cell)) + colorize(cell, tads[i]['score'])
                 i += 1
-            out += '{1:{0}}:'.format(length, xpr)
-            out += '|'.join(ali) + '\n'
+            out += '\n'
         if string:
             return out
         print out

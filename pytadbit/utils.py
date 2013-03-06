@@ -83,17 +83,18 @@ def nicer(res):
     return str(res) + 'b'
 
 
-COLOR = {0 : '\033[34m',
-         1 : '\033[34m',
-         2 : '\033[34m',
-         3 : '\033[36m',
-         4 : '\033[0m',
-         5 : '\033[1m',
-         6 : '\033[33m',
-         7 : '\033[33m',
-         8 : '\033[35m',
-         9 : '\033[35m',
-         10: '\033[31m'}
+COLOR = {None: '\033[31m',
+         0   : '\033[34m',
+         1   : '\033[34m',
+         2   : '\033[34m',
+         3   : '\033[36m',
+         4   : '\033[0m' ,
+         5   : '\033[1m' ,
+         6   : '\033[33m',
+         7   : '\033[33m',
+         8   : '\033[35m',
+         9   : '\033[35m',
+         10  : '\033[31m'}
 
 
 def colorize(string, num):
@@ -106,4 +107,4 @@ def colorize(string, num):
 
     :returns: the string 'decorated' with ANSII color code
     """
-    return '{}{}\033[m'.format(COLOR[num if num >= 0 else 10], string)
+    return '{}{}\033[m'.format(COLOR[num], string)
