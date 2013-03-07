@@ -325,12 +325,14 @@ class Chromosome(object):
         return alignment
 
 
-    def add_experiment(self, name, resolution, tad_handler=None,
+    def add_experiment(self, name, resolution=None, tad_handler=None,
                        xp_handler=None, replace=False, parser=None):
         """
         Add Hi-C experiment to Chromosome
         
-        :param name: name of the experiment
+        :param name: name of the experiment or Experiment object
+        :param resolution: resolution of the experiment (need if name is not an
+           Experiment)
         :param handler: path to tsv file
         :param False replace: overwrite experiments loaded under the same name
         :param None parser: a parser function that returns a tuple of lists
@@ -360,9 +362,14 @@ class Chromosome(object):
                 This experiment wiil be kept under {}.\n'''.format(name,
                                                                    name + '_'))
                 name += '_'
-        self.experiments[name] = Experiment(name, resolution, xp_handler,
-                                            tad_handler, parser=parser,
-                                            max_tad_size=self.max_tad_size)
+        if type(name) == Experiment:
+            self.experiments[name.name] = name
+        elif resolution:
+            self.experiments[name] = Experiment(name, resolution, xp_handler,
+                                                tad_handler, parser=parser,
+                                                max_tad_size=self.max_tad_size)
+        else:
+            raise Exception('resolution param is needed\n')
 
 
     def find_tad(self, experiments, n_cpus=None, verbose=True,
