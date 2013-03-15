@@ -37,17 +37,23 @@ class Experiment(object):
        ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
        110, 105, 278]), 4]``
     :param None max_tad_size: filter TADs longer than this value
+    :param None conditions: :py:func:`list` of experimental conditions, can be 
+       the cell type, the enzyme... (i.e.: ['HindIII', 'cortex', 'treatment']).
+       This parameter may be used to compare the effect of this conditions on
+       the TADs.
        
     """
 
 
     def __init__(self, name, resolution, xp_handler=None, tad_handler=None,
-                 parser=None, max_tad_size=None, no_warn=False, weights=None):
+                 parser=None, max_tad_size=None, no_warn=False, weights=None,
+                 conditions=None):
         self.name            = name
         self.resolution      = resolution
         self._ori_resolution = resolution
         self.hic_data        = None
         self._ori_hic        = None
+        self.conditions      = sorted(conditions) if conditions else []
         self.size            = None
         self.tads            = {}
         self.brks            = []
@@ -94,7 +100,8 @@ class Experiment(object):
         """
         Set a new value for resolution. copy original data into
         Experiment._ori_hic and replaces the Experiment.hic_data
-        with the data corresponding to new data.
+        with the data corresponding to new data 
+        (:func:`pytadbit.Chromosome.compare_condition`).
 
         :param resolution: an integer, representing resolution. This numbemust
             be a multiple of the original resolution, and higher than it.

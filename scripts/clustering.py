@@ -149,7 +149,7 @@ def paint_clustering(results, clusters, num, chrom, tad_names):
     for i, j in enumerate(dendros):
         axes.append(plt.subplot2grid((num, 9),(i, 4)))#gs1[i]))
         chrom.visualize('exp1',
-                        tad=chrom.experiments['exp1'].tads[tad_names[j]],
+                        tad=chrom.get_experiment('exp1').tads[tad_names[j]],
                         axe=axes[-1])
         axes[-1].set_axis_off()
     ax4 = plt.subplot2grid((num, 9),(0, 5), rowspan=num, colspan=4)

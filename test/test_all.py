@@ -69,7 +69,7 @@ class TestTadbit(unittest.TestCase):
                           verbose=False)
         self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 33.0, 38.0, 43.0, 49.0,
                           61.0, 66.0, 75.0, 89.0, 99.0],
-                         test_chr.experiments['batch_exp3_exp2_exp1'].brks)
+                         test_chr.get_experiment('batch_exp1_exp2_exp3').brks)
 
 
     def test_save_load(self):

@@ -6,7 +6,7 @@
 
 from math import sqrt, log
 from sys import stdout
-from pytadbit.tads_aligner.aligner import align
+from pytadbit.boundary_aligner.aligner import align
 from pytadbit import tadbit
 from pytadbit.experiment import Experiment
 from string import ascii_lowercase as letters
@@ -39,22 +39,16 @@ def load_chromosome(in_f, fast=False):
     """
     dico = load(open(in_f))
     name = ''
-    try:
-        crm = Chromosome(dico['name'], resolution=dico['resolution'])
-    except TypeError:
-        crm = Chromosome(dico['name'])
+    crm = Chromosome(dico['name'])
     for name in dico['experiments']:
-        try:
-            xpr = Experiment(name, dico['resolution'], no_warn=True)
-        except TypeError:
-            xpr = Experiment(name, dico['experiments'][name]['resolution'],
-                             no_warn=True)
+        xpr = Experiment(name, dico['experiments'][name]['resolution'], 
+                         no_warn=True)
         xpr.tads     = dico['experiments'][name]['tads']
         xpr.wght     = dico['experiments'][name]['wght']
         xpr.hic_data = dico['experiments'][name]['hi-c']
         xpr.brks     = dico['experiments'][name]['brks']
         xpr.size     = dico['experiments'][name]['size']
-        crm.experiments[name] = xpr
+        crm.experiments.append(xpr)
     crm.size            = dico['size']
     crm.r_size          = dico['r_size']
     crm.max_tad_size    = dico['max_tad_size']
@@ -67,8 +61,8 @@ def load_chromosome(in_f, fast=False):
             raise Exception('ERROR: file {} not found\n'.format(
                 dico['experiments'][name]['hi-c']))
         for name in dico['experiments']:
-            crm.experiments[name].hic_data = dicp[name]['hi-c']
-            crm.experiments[name].wght     = dicp[name]['wght']
+            crm.get_experiment(name).hic_data = dicp[name]['hi-c']
+            crm.get_experiment(name).wght     = dicp[name]['wght']
     elif not fast:
         warn('WARNING: data not saved correctly for fast loading.\n')
     return crm
@@ -106,7 +100,7 @@ class Chromosome(object):
         self.max_tad_size     = max_tad_size
         self.size             = self.r_size = chr_len
         self.forbidden        = {}
-        self.experiments      = {}
+        self.experiments      = ExperimentList([])
         self._centromere      = None
         self.alignment        = {}
         if tad_handlers:
@@ -114,13 +108,13 @@ class Chromosome(object):
                 name = experiment_names[i] if experiment_names else None
                 self.add_experiment(name, experiment_resolutions[i],
                                     tad_handler=handler, parser=parser)
-                self._get_forbidden_region(self.experiments[name])
+                self._get_forbidden_region(self.get_experiment(name))
         if experiment_handlers:
             for i, handler in enumerate(experiment_handlers or []):
                 name = experiment_names[i] if experiment_names else None
                 if type(handler) == Experiment:
                     name = name or handler.name
-                    self.experiments[name] = handler
+                    self.experiments.append(handler)
                 else:
                     self.add_experiment(name, experiment_resolutions[i],
                                         xp_handler=handler, parser=parser)
@@ -150,6 +144,51 @@ class Chromosome(object):
         self.r_size = self.size - len(self.forbidden) * xpr.resolution
 
 
+    def compare_condition(self, condition1, condition2=None, xpers=None):
+        """
+        Check how experimental conditions may affect the definition of TADs.
+        
+        :param condition1: Experimental condition to compare.
+        :param None condition2: condition to compare with. If None condition1 
+           is compared to all remaining conditions.
+        :param None xpers: a list of experiment names or objects to compare.
+        
+        :returns: TODO
+        """
+        if xpers:
+            if type(xpers[0]) == Experiment:
+                xnames = [x.name for x in xpers]
+            else:
+                xnames = xpers
+                xpers = [self.get_experiment(x) for x in xpers]
+        else:
+            xpers = self.experiments
+        # define a set of conditions
+        condset = set(reduce(lambda x, y: x + y, 
+                             [x.conditions for x in xpers \
+                              if condition in x.conditions]))
+        if not condition1 in condset:
+            raise Exception('ERROR: condition ' + 
+                            '{} not found.\n'.format(condition))
+        # Align if not aligned
+        if not tuple(sorted(xnames)) in self.alignment:
+            self.align_experiments(names=xnames)
+        
+        
+    def get_experiment(self, name):
+        """
+        This can also be done directly through Chromosome.experiments[name].
+        
+        :param name: name of the wanted experiment
+        :returns: :class:`pytadbit.Experiment`
+        """
+        for x in self.experiments:
+            if x.name == name:
+                return x
+        raise Exception('ERROR: experiment ' +
+                        '{} not found\n'.format(name))
+                
+
     def save_chromosome(self, out_f, fast=False, divide=True):
         """
         Save Chromosome object to file (it uses :py:func:`pickle.load` from the
@@ -169,27 +208,23 @@ class Chromosome(object):
         dico['experiments'] = {}
         if divide:
             dicp = {}
-        for nam in self.experiments:
-            dico['experiments'][nam] = {
-                'size'      : self.experiments[nam].size,
-                'brks'      : self.experiments[nam].brks,
-                'tads'      : self.experiments[nam].tads,
-                'resolution': self.experiments[nam].resolution}
+        for xpr in self.experiments:
+            dico['experiments'][xpr.name] = {
+                'size'      : xpr.size,
+                'brks'      : xpr.brks,
+                'tads'      : xpr.tads,
+                'resolution': xpr.resolution}
             if fast:
                 continue
             if divide:
-                dicp[nam] = {
-                    'wght': self.experiments[nam].wght,
-                    'hi-c': self.experiments[nam].hic_data}
-                dico['experiments'][nam]['wght'] = out_f + '_hic'
-                dico['experiments'][nam]['hi-c'] = out_f + '_hic'
+                dicp[xpr.name] = {
+                    'wght': xpr.wght,
+                    'hi-c': xpr.hic_data}
+                dico['experiments'][xpr.name]['wght'] = out_f + '_hic'
+                dico['experiments'][xpr.name]['hi-c'] = out_f + '_hic'
             else:
-                dico['experiments'][nam]['wght'] = self.experiments[nam].wght
-                dico['experiments'][nam]['hi-c'] = self.experiments[nam].hic_data
-
-        # this about resolution has to be removed soon....
-        dico['resolution']      = self.experiments.values()[0].resolution
-        # this not
+                dico['experiments'][xpr.name]['wght'] = xpr.wght
+                dico['experiments'][xpr.name]['hi-c'] = xpr.hic_data
         dico['name']            = self.name
         dico['size']            = self.size
         dico['r_size']          = self.r_size
@@ -209,12 +244,8 @@ class Chromosome(object):
                           rnd_method='interpolate', **kwargs):
         """
         Align prediction of boundaries of two different experiments. Resulting
-        alignment will be stored in the self.experiment dictionary. For example,
-        aligning exp1 and exp2 wil result in
-        self.experiments['exp1']['align']['exp1_exp2']
-        and
-        self.experiments['exp2']['align']['exp1_exp2']
-
+        alignment will be stored in the self.experiment list.
+        
         :param None names: list of names of experiments to align. If None
             align all.
         :param experiment1: name of the first experiment to align
@@ -232,9 +263,12 @@ class Chromosome(object):
 
         :returns: the alignment and the score of the alignment (by default)
         """
-        xpers = names or self.experiments.keys()
+        if names:
+            xpers = [self.get_experiment(n) for n in names]
+        else:
+            xpers = self.experiments
         tads = []
-        for xpr in (self.experiments[x] for x in xpers):
+        for xpr in xpers:
             if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([x * xpr.resolution for x in xpr.brks])
@@ -264,17 +298,20 @@ class Chromosome(object):
         :param None xpers: if None print all experiments
         :param False string: return string instead of printing
         """
-        xpers = xpers or self.experiments.keys()
+        if xpers:
+            xpers = [self.get_experiment(n) for n in xpers]
+        else:
+            xpers = self.experiments
         if not name:
             name = self.alignment.keys()[0]
-        length = max([len(n) for n in xpers])
+        length = max([len(n.name) for n in xpers])
         out = 'Alignment shown in Kb (%s experiments) (' % (len(xpers))
         out += 'scores: {})\n'.format(' '.join(
             [colorize(x, x) for x in range(11)]))
         for xpr in xpers:
             if not xpr in self.alignment[name]:
                 continue
-            tads = self.experiments[xpr].tads
+            tads = self.get_experiment(xpr).tads
             out += '{1:{0}}:'.format(length, xpr)
             i = 0
             for x in self.alignment[name][xpr]:
@@ -300,15 +337,18 @@ class Chromosome(object):
         
         :returns: alignment as :py:class:`dict`
         """
-        xpers = xpers or self.experiments.keys()
+        if xpers:
+            xpers = [self.get_experiment(n) for n in xpers]
+        else:
+            xpers = self.experiments
         if not name:
             name = self.alignment.keys()[0]
         if not scores:
             return dict([(e, self.alignment[name][e]) \
-                         for e in xpers if e in self.alignment[name]])
+                         for e in xpers if e.name in self.alignment[name]])
         alignment = {}
         for xpr in xpers:
-            if not xpr in self.alignment[name]:
+            if not xpr.name in self.alignment[name]:
                 continue
             ali = []
             i = 0
@@ -317,7 +357,7 @@ class Chromosome(object):
                     ali.append((x, -1.0))
                     continue
                 cell = x
-                scr = self.experiments[xpr].tads[i]['score']
+                scr = xpr.tads[i]['score']
                 scr = scr if scr >= 0 else 10.0
                 ali.append((cell, scr))
                 i += 1
@@ -357,17 +397,17 @@ class Chromosome(object):
                             for _ in xrange(5)])
             warn('No name provided, random name generated: {}\n'.format(name))
         if name in self.experiments:
-            if 'hi-c' in self.experiments[name] and not replace:
+            if 'hi-c' in self.get_experiment(name) and not replace:
                 warn('''Hi-C data already loaded under the name: {}.
                 This experiment wiil be kept under {}.\n'''.format(name,
                                                                    name + '_'))
                 name += '_'
         if type(name) == Experiment:
-            self.experiments[name.name] = name
+            self.experiments.append(name)
         elif resolution:
-            self.experiments[name] = Experiment(name, resolution, xp_handler,
-                                                tad_handler, parser=parser,
-                                                max_tad_size=self.max_tad_size)
+            self.experiments.append(Experiment(name, resolution, xp_handler,
+                                               tad_handler, parser=parser,
+                                               max_tad_size=self.max_tad_size))
         else:
             raise Exception('resolution param is needed\n')
 
@@ -397,8 +437,8 @@ class Chromosome(object):
         if batch_mode:
             matrix = []
             name = 'batch'
-            resolution = self.experiments.values()[0].resolution
-            for xpr in self.experiments.values():
+            resolution = self.experiments[0].resolution
+            for xpr in sorted(self.experiments, key=lambda x: x.name):
                 if xpr.resolution != resolution:
                     raise Exception('All Experiments might have the same ' +
                                     'resolution\n')
@@ -412,11 +452,11 @@ class Chromosome(object):
             experiment = Experiment(name, resolution, xp_handler=matrix,
                                     tad_handler=result, weights=weights,
                                     max_tad_size=self.max_tad_size)
-            self.experiments[experiment.name] = experiment
+            self.experiments.append(experiment)
             self._get_forbidden_region(experiment)
             return
         for experiment in experiments:
-            xpr = self.experiments[experiment]
+            xpr = self.get_experiment(experiment)
             result, weights = tadbit(xpr.hic_data,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
@@ -432,31 +472,42 @@ class Chromosome(object):
             self._search_centromere(xpr)
         
 
-    def visualize(self, name, tad=None, paint_tads=False, axe=None, show=False):
+    def visualize(self, name, tad=None, paint_tads=False, axe=None, show=False,
+                  logarithm=True):
         """
         Visualize the matrix of Hi-C interactions
 
         :param name: name of the experiment to visualize
+        :param True logarithm: show logarithm
         
         """
-        vmin = log2(min(self.experiments[name].hic_data[0]) or 1)
-        vmax = log2(max(self.experiments[name].hic_data[0]))
-        size = self.experiments[name].size
+        xper = self.get_experiment(name)
+        if logarithm:
+            fun = log2
+        else:
+            fun = lambda x: x
+        vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
+        vmax = fun(max(xper.hic_data[0]))
+        size = xper.size
         if not axe:
             axe = plt.subplot(111)
+        cmap = axe.get_cmap()
+        cmap.set_bad(color = 'k', alpha = 1.)
         if tad:
-            matrix = [[self.experiments[name].hic_data[0][i+size*j] \
+            matrix = [[xper.hic_data[0][i+size*j] \
                        for i in xrange(int(tad['start']), int(tad['end']))] \
                       for j in xrange(int(tad['start']), int(tad['end']))]
         else:
-            matrix = [[self.experiments[name].hic_data[0][i+size*j]\
+            matrix = [[xper.hic_data[0][i+size*j]\
                        for i in xrange(size)] \
                       for j in xrange(size)]
-        axe.imshow(log2(matrix), origin='lower', vmin=vmin, vmax=vmax,
-                  interpolation="nearest")
+        img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
+                         interpolation="nearest", cmap=cmap)
         if not paint_tads:            
-            return
-        for i, tad in self.experiments[name].tads.iteritems():
+            if show:
+                plt.show()
+            return img
+        for i, tad in xper.tads.iteritems():
             axe.hlines(tad['start'], tad['start'], tad['end'], colors='k')
             axe.hlines(tad['end'], tad['start'], tad['end'], colors='k')
             axe.vlines(tad['start'], tad['start'], tad['end'], colors='k')
@@ -482,7 +533,7 @@ class Chromosome(object):
         """
         # get all TAD lengths and multiply it by bin size of the experiment
         norm_tads = []
-        for tad in [self.experiments[x] for x in experiments]:
+        for tad in experiments:
             for brk in tad.tads.values():
                 if not brk['brk']:
                     continue
@@ -526,11 +577,10 @@ class Chromosome(object):
                             '"shuffle"\n')
         tads = []
         for xpr in xpers:
-            if not self.experiments[xpr].tads:
+            if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([(t['end'] - t['start']) * \
-                         self.experiments[xpr].resolution
-                         for t in self.experiments[xpr].tads.values()])
+                         xpr.resolution for t in xpr.tads.values()])
         rnd_distr = []
         # rnd_len = []
         distr = self._interpolation(xpers) if method is 'interpolate' else None
@@ -585,7 +635,7 @@ class Chromosome(object):
         :returns: Hi-C data matrix for the given TAD
         """
         beg, end = int(tad['start']), int(tad['end'])
-        xpr = self.experiments[x_name]
+        xpr = self.get_experiment(x_name)
         size = xpr.size
         matrix = [[[] for _ in xrange(beg, end)]\
                   for _ in xrange(beg, end)]
@@ -611,9 +661,9 @@ class Chromosome(object):
         
         :yields: Hi-C data corresponding to each TAD
         """
-        if not self.experiments[x_name].hic_data:
+        if not self.get_experiment(x_name).hic_data:
             raise Exception('No Hi-c data for {} experiment\n'.format(x_name))
-        for name, ref in self.experiments[x_name].tads.iteritems():
+        for name, ref in self.get_experiment(x_name).tads.iteritems():
             if not ref['brk']:
                 continue
             yield name, self.get_tad_hic(ref, x_name, normed=normed)
@@ -627,7 +677,7 @@ class Chromosome(object):
         :param 3000000 value: an int
         """
         self.max_tad_size = value
-        for xpr in self.experiments.values():
+        for xpr in self.experiments:
             for tad in xpr.tads:
                 if (xpr.tads[tad]['end'] - xpr.tads[tad]['start']) \
                    * xpr.resolution < self.max_tad_size:
@@ -707,24 +757,24 @@ class Chromosome(object):
                 xpr.brks.append(tads[tad]['brk'])
 
 
-    def _get_tads_mean_std(self, experiments):
-        """
-        returns mean and standard deviation of TAD lengths. Value is for both
-        TADs.
+    # def _get_tads_mean_std(self, experiments):
+    #     """
+    #     returns mean and standard deviation of TAD lengths. Value is for both
+    #     TADs.
 
-        ..Note: no longer used in core functions
-        """
-        norm_tads = []
-        for tad in experiments:
-            for brk in self.experiments[tad]['tads'].values():
-                if not brk['brk']:
-                    continue
-                norm_tads.append(log((brk['end'] - brk['start']) *
-                                     self.experiments[tad].resolution))
-        length = len(norm_tads)
-        mean   = sum(norm_tads)/length
-        std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
-        return mean, std
+    #     ..Note: no longer used in core functions
+    #     """
+    #     norm_tads = []
+    #     for tad in experiments:
+    #         for brk in self.experiments[tad]['tads'].values():
+    #             if not brk['brk']:
+    #                 continue
+    #             norm_tads.append(log((brk['end'] - brk['start']) *
+    #                                  self.experiments[tad].resolution))
+    #     length = len(norm_tads)
+    #     mean   = sum(norm_tads)/length
+    #     std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
+    #     return mean, std
 
 
 def generate_rnd_tads(chromosome_len, distr, start=0):
@@ -765,6 +815,16 @@ def generate_shuffle_tads(tads):
             tad += tads[-1]
         tads.append(tad)
     return tads
+
+
+class ExperimentList(list):
+    def __getitem__(self, i):
+        try:
+            return super(ExperimentList, self).__getitem__(i)
+        except TypeError:
+            for nam in self:
+                if nam.name == i:
+                    return nam
 
 
 # def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,

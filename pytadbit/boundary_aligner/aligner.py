@@ -3,7 +3,7 @@
 
 
 """
-from pytadbit.tads_aligner.globally import needleman_wunsch
+from pytadbit.boundary_aligner.globally import needleman_wunsch
 
 
 def consensusize(ali1, ali2, passed):

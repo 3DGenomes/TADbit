@@ -70,6 +70,9 @@ def equal(a, b, cut_off=1e-9):
 def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
                 method='tadbit'):
     """
+
+    Note: penalty is defined as the minimum value of the pre-scoring matrix
+    
     :param tad1: first matrix to align
     :param tad2: second matrix to align
     :param None num_v: number of eigen vectors to consider, max is:
@@ -103,7 +106,7 @@ def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
     #
     vec1 = array([val1[i] * vec1[:, i] for i in xrange(num_v)]).transpose()
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
-    nearest = 1000
+    nearest = 10000
     best_alis = []
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):

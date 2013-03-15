@@ -13,3 +13,5 @@ src/pytadbit_wrap.c
 .project
 .pydevproject
 imp
+*.pik
+*.pik_hic
