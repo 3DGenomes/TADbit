@@ -9,7 +9,7 @@ Bioinformatics (Oxford, England), 26(18), 2250-8. doi:10.1093/bioinformatics/btq
 
 """
 
-from numpy import array, sqrt, corrcoef
+from numpy import array, sqrt#, corrcoef
 from numpy import min as npmin
 from numpy.linalg import eig
 from scipy.stats import spearmanr
@@ -106,7 +106,7 @@ def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
     #
     vec1 = array([val1[i] * vec1[:, i] for i in xrange(num_v)]).transpose()
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
-    nearest = 10000
+    nearest = 100000
     best_alis = []
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):

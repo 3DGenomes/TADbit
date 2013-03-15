@@ -4,7 +4,6 @@
 
 """
 
-from math import sqrt, log
 from sys import stdout
 from pytadbit.boundary_aligner.aligner import align
 from pytadbit import tadbit
