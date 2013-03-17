@@ -106,7 +106,7 @@ def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
     #
     vec1 = array([val1[i] * vec1[:, i] for i in xrange(num_v)]).transpose()
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
-    nearest = 100000
+    nearest = 10000000000
     best_alis = []
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):
