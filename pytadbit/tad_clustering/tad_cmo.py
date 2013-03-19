@@ -95,10 +95,12 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                                                                     l_p2)))
     val1, vec1 = eig(hic1)
     if npsum(vec1).imag:
-        raise Exception("ERROR: Hi-C data is not symmetric.\n")
+        raise Exception("ERROR: Hi-C data is not symmetric.\n" +
+                        '{}\n\n{}'.format(hic1, vec1))
     val2, vec2 = eig(hic2)
     if npsum(vec2).imag:
-        raise Exception("ERROR: Hi-C data is not symmetric.\n")
+        raise Exception("ERROR: Hi-C data is not symmetric.\n" +
+                        '{}\n\n{}'.format(hic2, vec2))
     #
     val1 = array([sqrt(abs(v)) for v in val1])
     val2 = array([sqrt(abs(v)) for v in val2])
