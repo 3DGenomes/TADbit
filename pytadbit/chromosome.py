@@ -636,9 +636,9 @@ class Chromosome(object):
         beg, end = int(tad['start']), int(tad['end'])
         xpr = self.get_experiment(x_name)
         size = xpr.size
-        matrix = [[[] for _ in xrange(beg, end)]\
+        matrix = [[0 for _ in xrange(beg, end)]\
                   for _ in xrange(beg, end)]
-        for i, tadi in enumerate(xrange(beg - 1, end - 1)):
+        for i, tadi in enumerate(xrange(beg, end)):
             tadi = tadi * size
             for j, tadj in enumerate(xrange(beg, end)):
                 matrix[j][i] = float(xpr.hic_data[matrix_num][tadi + tadj])

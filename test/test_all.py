@@ -94,9 +94,9 @@ class TestTadbit(unittest.TestCase):
             all_tads.append(tad)
         align1, align2, _ = optimal_cmo(all_tads[4], all_tads[11], 10)
         self.assertEqual(align1,
-                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, '-'])
+                         [1, 2  , 3, 4, 5, 6, '-', 7, 8, 9, 10, 11, '-', '-'])
         self.assertEqual(align2,
-                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+                         [0, '-', 1, 2, 3, 4, 5, 6  , 7, 8, 9, 10, 11, 12 ])
         
         
 

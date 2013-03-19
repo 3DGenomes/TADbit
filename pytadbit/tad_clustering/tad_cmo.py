@@ -11,6 +11,7 @@ Bioinformatics (Oxford, England), 26(18), 2250-8. doi:10.1093/bioinformatics/btq
 
 from numpy import array, sqrt#, corrcoef
 from numpy import min as npmin
+from numpy import sum as npsum
 from numpy.linalg import eig
 from scipy.stats import spearmanr
 from itertools import product, combinations
@@ -67,16 +68,16 @@ def equal(a, b, cut_off=1e-9):
     return abs(a - b) < cut_off
 
 
-def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
+def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                 method='tadbit'):
     """
 
     Note: penalty is defined as the minimum value of the pre-scoring matrix
     
-    :param tad1: first matrix to align
-    :param tad2: second matrix to align
+    :param hic1: first matrix to align
+    :param hic2: second matrix to align
     :param None num_v: number of eigen vectors to consider, max is:
-        max(min(len(tad1), len(tad2)))
+        max(min(len(hic1), len(hic2)))
     :param None max_num_v: maximum number of eigen vectors to consider.
 
     :returns: 2 lists, one per aligned matrix, plus a dict summarizing the
@@ -84,16 +85,20 @@ def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
         Spearman correlation Rho value and pvalue.
     """
 
-    l_p1 = len(tad1)
-    l_p2 = len(tad2)
+    l_p1 = len(hic1)
+    l_p2 = len(hic2)
     num_v = num_v or min(l_p1, l_p2)
     if max_num_v:
         num_v = min(max_num_v, num_v)
     if num_v > l_p1 or num_v > l_p2:
         raise Exception('\nnum_v should be at most {}\n'.format(min(l_p1,
                                                                     l_p2)))
-    val1, vec1 = eig(tad1)
-    val2, vec2 = eig(tad2)
+    val1, vec1 = eig(hic1)
+    if npsum(vec1).imag:
+        raise Exception("ERROR: Hi-C data is not symmetric.\n")
+    val2, vec2 = eig(hic2)
+    if npsum(vec2).imag:
+        raise Exception("ERROR: Hi-C data is not symmetric.\n")
     #
     val1 = array([sqrt(abs(v)) for v in val1])
     val2 = array([sqrt(abs(v)) for v in val2])
@@ -106,7 +111,7 @@ def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
     #
     vec1 = array([val1[i] * vec1[:, i] for i in xrange(num_v)]).transpose()
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
-    nearest = 10000000000
+    nearest = 100000000000
     best_alis = []
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):
@@ -116,10 +121,11 @@ def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
             penalty = min([npmin(p_scores)] + [0.0])
             align1, align2 = core_nw(p_scores, penalty, l_p1, l_p2)
             try:
-                dist = get_dist(align1, align2, tad1, tad2)
+                dist = get_dist(align1, align2, hic1, hic2)
                 if dist < nearest:
                     nearest = dist
                     best_alis = [align1, align2]
+                    best_pen = penalty
             except IndexError:
                 pass
     try:
@@ -132,7 +138,9 @@ def optimal_cmo(tad1, tad2, num_v=None, max_num_v=None, verbose=False,
                                             if x!='-' else '-'*3) for x in align1])
         print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
                                             if x!='-' else '-'*3) for x in align2])
-    rho, pval = get_score(align1, align2, tad1, tad2)
+    rho, pval = get_score(align1, align2, hic1, hic2)
+    if not best_pen:
+        print 'WARNING: penalty NULL!!!\n\n'
     return align1, align2, {'dist': nearest, 'rho': rho, 'pval': pval}
     
 
