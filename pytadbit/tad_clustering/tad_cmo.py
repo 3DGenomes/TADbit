@@ -119,7 +119,6 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
     nearest = 100000000000
     best_alis = []
-    dister = get_dist if dist == 'frobenius' else lambda x: x
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):
             vec1p = factors * vec1[:, :num]
@@ -128,7 +127,8 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
             penalty = min([npmin(p_scores)] + [0.0])
             align1, align2, dist = core_nw(p_scores, penalty, l_p1, l_p2)
             try:
-                dist = dister(align1, align2, hic1, hic2)
+                if dist == 'frobenius':
+                    dist = get_dist(align1, align2, hic1, hic2)
                 if dist < nearest:
                     nearest = dist
                     best_alis = [align1, align2]
