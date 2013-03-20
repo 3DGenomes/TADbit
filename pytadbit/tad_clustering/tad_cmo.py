@@ -58,7 +58,7 @@ def core_nw(p_scores, penalty, l_p1, l_p2):
             for scr in scores:
                 print ' '.join(['%7s' % (round(y, 4)) for y in scr])
             raise Exception('Something  is failing and it is my fault...')
-    return align1, align2
+    return align1, align2, score
 
 
 def equal(a, b, cut_off=1e-9):
@@ -69,7 +69,7 @@ def equal(a, b, cut_off=1e-9):
 
 
 def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
-                method='tadbit'):
+                dist='score'):
     """
 
     Note: penalty is defined as the minimum value of the pre-scoring matrix
@@ -79,6 +79,10 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     :param None num_v: number of eigen vectors to consider, max is:
         max(min(len(hic1), len(hic2)))
     :param None max_num_v: maximum number of eigen vectors to consider.
+    :param score dist: distance function to use as alignment score. if 'score'
+       distance will be the result of the last value of the Needleman-Wunsch
+       algorithm. If 'frobenius' a modification of the Frobenius distance will
+       be used.
 
     :returns: 2 lists, one per aligned matrix, plus a dict summarizing the
         goodness of the alignment with the distance between matrices, their 
@@ -115,15 +119,16 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
     nearest = 100000000000
     best_alis = []
+    dister = get_dist if dist == 'frobenius' else lambda x: x
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):
             vec1p = factors * vec1[:, :num]
             vec2p = vec2[:, :num]
             p_scores = prescoring(vec1p, vec2p, l_p1, l_p2)
             penalty = min([npmin(p_scores)] + [0.0])
-            align1, align2 = core_nw(p_scores, penalty, l_p1, l_p2)
+            align1, align2, dist = core_nw(p_scores, penalty, l_p1, l_p2)
             try:
-                dist = get_dist(align1, align2, hic1, hic2)
+                dist = dister(align1, align2, hic1, hic2)
                 if dist < nearest:
                     nearest = dist
                     best_alis = [align1, align2]
@@ -141,6 +146,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
         print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
                                             if x!='-' else '-'*3) for x in align2])
     rho, pval = get_score(align1, align2, hic1, hic2)
+    print penalty
     if not best_pen:
         print 'WARNING: penalty NULL!!!\n\n'
     return align1, align2, {'dist': nearest, 'rho': rho, 'pval': pval}
@@ -174,14 +180,31 @@ def get_dist(align1, align2, tad1, tad2):
     """
     map1 = []
     map2 = []
+    # ext = 0
     for i, j in zip(align1, align2):
-        if j != '-' and i != '-':
+        if i != '-' and j != '-':
             map1.append(i)
             map2.append(j)
+        elif i == '-':
+            map1.append(0)
+            map2.append(j)
+        else:
+            map1.append(i)
+            map2.append(0)
+        #     ext += 1
+        #     continue
+        # if ext < 3:
+        #     while ext:
+        #         map1.pop(-1)
+        #         map2.pop(-1)
+        #         ext -= 1
+        # else:
+        #     ext = 0
     pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
     pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
     return sum([(pp - pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1)
     #return corrcoef(pp1, pp2, rowvar=0)[1, 0]
+
 
     
 def get_score(align1, align2, tad1, tad2):
