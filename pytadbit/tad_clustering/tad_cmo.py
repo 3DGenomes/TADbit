@@ -69,7 +69,7 @@ def equal(a, b, cut_off=1e-9):
 
 
 def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
-                dist='score'):
+                method='score'):
     """
 
     Note: penalty is defined as the minimum value of the pre-scoring matrix
@@ -79,7 +79,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     :param None num_v: number of eigen vectors to consider, max is:
         max(min(len(hic1), len(hic2)))
     :param None max_num_v: maximum number of eigen vectors to consider.
-    :param score dist: distance function to use as alignment score. if 'score'
+    :param score method: distance function to use as alignment score. if 'score'
        distance will be the result of the last value of the Needleman-Wunsch
        algorithm. If 'frobenius' a modification of the Frobenius distance will
        be used.
@@ -127,8 +127,10 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
             penalty = min([npmin(p_scores)] + [0.0])
             align1, align2, dist = core_nw(p_scores, penalty, l_p1, l_p2)
             try:
-                if dist == 'frobenius':
+                if method == 'frobenius':
                     dist = get_dist(align1, align2, hic1, hic2)
+                else:
+                    dist = -dist
                 if dist < nearest:
                     nearest = dist
                     best_alis = [align1, align2]
@@ -146,7 +148,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
         print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
                                             if x!='-' else '-'*3) for x in align2])
     rho, pval = get_score(align1, align2, hic1, hic2)
-    print penalty
+    print best_pen
     if not best_pen:
         print 'WARNING: penalty NULL!!!\n\n'
     return align1, align2, {'dist': nearest, 'rho': rho, 'pval': pval}
@@ -155,7 +157,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
 def virgin_score(penalty, l_p1, l_p2):
     """
     Fill a matrix with zeros, except first row and first column filled with \
-    multiple values of penalty. 
+    multiple values of penalty.
     """
     zeros    = [0.0 for _ in xrange(l_p2)]
     return [[penalty * j for j in xrange(l_p2)]] + \
@@ -180,17 +182,22 @@ def get_dist(align1, align2, tad1, tad2):
     """
     map1 = []
     map2 = []
-    # ext = 0
+    ext = 0
     for i, j in zip(align1, align2):
         if i != '-' and j != '-':
             map1.append(i)
             map2.append(j)
+            ext = 0
         elif i == '-':
-            map1.append(0)
-            map2.append(j)
+            if ext > 1:
+                map1.append(0)
+                map2.append(j)
+            ext += 1
         else:
-            map1.append(i)
-            map2.append(0)
+            if ext > 1:
+                map1.append(i)
+                map2.append(0)
+            ext += 1
         #     ext += 1
         #     continue
         # if ext < 3:
