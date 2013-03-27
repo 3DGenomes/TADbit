@@ -490,8 +490,6 @@ class Chromosome(object):
         size = xper.size
         if not axe:
             axe = plt.subplot(111)
-        cmap = axe.get_cmap()
-        cmap.set_bad(color = 'k', alpha = 1.)
         if tad:
             matrix = [[xper.hic_data[0][i+size*j] \
                        for i in xrange(int(tad['start']), int(tad['end']))] \
@@ -501,7 +499,7 @@ class Chromosome(object):
                        for i in xrange(size)] \
                       for j in xrange(size)]
         img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
-                         interpolation="nearest", cmap=cmap)
+                         interpolation="nearest")
         if not paint_tads:            
             if show:
                 plt.show()

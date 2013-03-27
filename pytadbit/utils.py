@@ -61,6 +61,8 @@ def zscore(values):
     for v in values:
         if v > 0:
             vals.append(log10(v))
+        elif v == 0:
+            vals.append(0.0)
     mean_v = mean(vals)
     std_v = std(vals)
     for i in xrange(len(values)):

@@ -11,10 +11,12 @@ Bioinformatics (Oxford, England), 26(18), 2250-8. doi:10.1093/bioinformatics/btq
 
 from numpy import array, sqrt#, corrcoef
 from numpy import min as npmin
+from numpy import max as npmax
 from numpy import sum as npsum
 from numpy.linalg import eig
 from scipy.stats import spearmanr
-from itertools import product, combinations
+from itertools import product#, combinations
+from itertools import combinations_with_replacement as combinations
 
 # for aleigen:
 from numpy import median
@@ -58,7 +60,7 @@ def core_nw(p_scores, penalty, l_p1, l_p2):
             for scr in scores:
                 print ' '.join(['%7s' % (round(y, 4)) for y in scr])
             raise Exception('Something  is failing and it is my fault...')
-    return align1, align2, score
+    return align1, align2, scores[i][j]
 
 
 def equal(a, b, cut_off=1e-9):
@@ -117,14 +119,14 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     #
     vec1 = array([val1[i] * vec1[:, i] for i in xrange(num_v)]).transpose()
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
-    nearest = 100000000000
+    nearest = float('inf')
     best_alis = []
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):
             vec1p = factors * vec1[:, :num]
             vec2p = vec2[:, :num]
             p_scores = prescoring(vec1p, vec2p, l_p1, l_p2)
-            penalty = min([npmin(p_scores)] + [0.0])
+            penalty = min([npmin(p_scores)] + [-npmax(p_scores)])
             align1, align2, dist = core_nw(p_scores, penalty, l_p1, l_p2)
             try:
                 if method == 'frobenius':
@@ -132,6 +134,9 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                 else:
                     dist = -dist
                 if dist < nearest:
+                    if not penalty:
+                        for scr in p_scores:
+                            print ' '.join(['%7s' % (round(y, 2)) for y in scr])
                     nearest = dist
                     best_alis = [align1, align2]
                     best_pen = penalty
@@ -182,42 +187,33 @@ def get_dist(align1, align2, tad1, tad2):
     """
     map1 = []
     map2 = []
+    extras = 0
     ext = 0
     for i, j in zip(align1, align2):
         if i != '-' and j != '-':
             map1.append(i)
             map2.append(j)
             ext = 0
-        elif i == '-':
-            if ext > 1:
-                map1.append(0)
-                map2.append(j)
-            ext += 1
-        else:
-            if ext > 1:
-                map1.append(i)
-                map2.append(0)
-            ext += 1
+        # elif i == '-':
+        #     if ext < 3: # favour long gaps: stop penalizing if GAP lon enough
+        #         extras += sum([-tad2[i][t] for t in xrange(len(tad1))])
         #     ext += 1
-        #     continue
-        # if ext < 3:
-        #     while ext:
-        #         map1.pop(-1)
-        #         map2.pop(-1)
-        #         ext -= 1
         # else:
-        #     ext = 0
+        #     if ext < 3:
+        #         extras += sum([-tad1[i][t] for t in xrange(len(tad1))])
+        #     ext += 1
+    # print map1
+    # print map2
     pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
     pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
-    return sum([(pp - pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1)
-    #return corrcoef(pp1, pp2, rowvar=0)[1, 0]
+    return sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1)+extras
 
 
-    
 def get_score(align1, align2, tad1, tad2):
     """
-    using Spearman Rho value
-    TODO: perhaps use the gapped matrices instead.
+    Using Spearman Rho correation value, between matrices.
+    Computed only in half of the matrix, and without the diagonal
+    
     """
     map1 = []
     map2 = []
@@ -225,8 +221,8 @@ def get_score(align1, align2, tad1, tad2):
         if j != '-' and i != '-':
             map1.append(i)
             map2.append(j)
-    pp1 = [[tad1[i][j] for j in map1] for i in map1]
-    pp2 = [[tad2[i][j] for j in map2] for i in map2]
+    pp1 = [[tad1[i][j] for j in map1] for i in map1] # do not use 
+    pp2 = [[tad2[i][j] for j in map2] for i in map2] # diagonal?
     return spearmanr(pp1, pp2, axis=None)
 
 

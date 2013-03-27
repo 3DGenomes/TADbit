@@ -169,9 +169,9 @@ class Experiment(object):
         nums, size = read_matrix(handler, parser=parser)
         self.hic_data = nums
         self.size     = size
-        self._zeros   = [float(pos) for pos, raw in enumerate(
+        self._zeros   = [int(pos) for pos, raw in enumerate(
             xrange(0, self.size**2, self.size))
-                         if sum(self.hic_data[0][raw:raw + self.size]) == 0]
+                         if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
 
 
     def load_tad_def(self, handler, weights=None, max_tad_size=None):
@@ -257,7 +257,7 @@ class Experiment(object):
             func = lambda x, y: sqrt(rowsums[x] * rowsums[y])
         for i in xrange(self.size):
             for j in xrange(self.size):
-                self.wght[0][i * self.size + j] = func(i, j, total)
+                self.wght[0][i * self.size + j] = func(i, j)
 
 
     def get_hic_zscores(self, normalized=True, zscored=True):
@@ -276,6 +276,8 @@ class Experiment(object):
                 if i in self._zeros:
                     continue
                 for j in xrange(self.size):
+                    if j in self._zeros:
+                        continue
                     try:
                         values.append(
                             self.hic_data[0][i * self.size + j] /\
@@ -287,6 +289,8 @@ class Experiment(object):
                 if i in self._zeros:
                     continue
                 for j in xrange(self.size):
+                    if j in self._zeros:
+                        continue
                     values.append(self.hic_data[0][i * self.size + j])
         # compute Z-score
         if zscored:
@@ -296,6 +300,8 @@ class Experiment(object):
             if i in self._zeros:
                 continue
             for j in xrange(self.size):
+                if j in self._zeros:
+                    continue
                 zsc = iterval.next()
                 self._zscores.setdefault(i, {})
                 self._zscores[i][j] = zsc
@@ -312,7 +318,10 @@ class Experiment(object):
         :param True normalized: use weights to normalize data
         """
         if not self._zscores:
-            self.get_hic_zscores(normalized=normalized, zscored=zscored)
+            for i in xrange(self.size):
+                for j in xrange(self.size):
+                    self._zscores.setdefault(i, {})
+                    self._zscores[i][j] = self.hic_data[0][i * self.size + j]
         # write to file
         out = open(fname, 'w')
         out.write('elt1\telt2\tzscore\n')
@@ -320,6 +329,8 @@ class Experiment(object):
             if i in self._zeros:
                 continue
             for j in xrange(self.size):
+                if j in self._zeros:
+                    continue
                 if self._zscores[i][j] == -99:
                     continue
                 out.write('{}\t{}\t{}\n'.format(i + 1, j + 1,
