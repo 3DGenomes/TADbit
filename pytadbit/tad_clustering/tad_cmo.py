@@ -13,6 +13,7 @@ from numpy import array, sqrt#, corrcoef
 from numpy import min as npmin
 from numpy import max as npmax
 from numpy import sum as npsum
+from numpy import mean, exp
 from numpy.linalg import eig
 from scipy.stats import spearmanr
 from itertools import product#, combinations
@@ -23,6 +24,114 @@ from numpy import median
 
 import re
 from subprocess import Popen, PIPE
+
+
+def _sort_match(matches):
+    return sorted([(a, b) for a, b in enumerate(matches)],
+                  key=lambda x: x[1], reverse=True)
+
+def core_nw_long(p_scores, penalty, l_p1, l_p2):
+    """
+    Core of the Needleman-Wunsch algorithm 
+    """
+    scores = virgin_score(penalty, l_p1 + 1, l_p2 + 1)
+    ins = rmv = 0
+    lpen = 4
+    # pens = [penalty-penalty*(1-1/exp(i**2)) for i in xrange(0, 2 * (lpen + 1), 2)]
+    pens = [penalty - penalty / (2 * lpen) * i for i in xrange(lpen + 1)]
+    # pens = [penalty, penalty, penalty, penalty/1.2, 0]
+    # pens = [penalty, penalty*1.5, penalty*2, penalty, penalty]
+    for i in xrange(1, l_p1 + 1):
+        for j in xrange(1, l_p2 + 1):
+            mmax = max((ins, rmv))
+            match  = p_scores[i - 1][j - 1] + scores[i - 1][j - 1]
+            insert = scores[i - 1][j] + pens[mmax]
+            delete = scores[i][j - 1] + pens[mmax]
+            tmp = _sort_match((match, insert, delete))
+            if tmp[0][0] == 1:
+                if ins < lpen:
+                    ins += 1
+                rmv = 0
+            elif tmp[0][0] == 2:
+                if rmv < lpen:
+                    rmv += 1
+                ins = 0
+            else:
+                ins = rmv = 0
+            scores[i][j] = tmp[0][1]
+    align1 = []
+    align2 = []
+    i = l_p1 
+    j = l_p2
+    while i and j:
+        score = scores[i][j]
+        value = scores[i - 1][j - 1] + p_scores[i - 1][j - 1]
+        if equal(score, value):
+            i -= 1
+            j -= 1
+            align1.insert(0, i)
+            align2.insert(0, j)
+            ins = rmv = 0
+            continue
+        if equal(score, scores[i - 1][j] + pens[0]):
+            i -= 1
+            align1.insert(0, i)
+            align2.insert(0, '-')
+            continue
+        if equal(score, scores[i][j - 1] + pens[0]):
+            j -= 1
+            align1.insert(0, '-')
+            align2.insert(0, j)
+            continue
+        if equal(score, scores[i - 1][j] + pens[1]):
+            i -= 1
+            align1.insert(0, i)
+            align2.insert(0, '-')
+            continue
+        if equal(score, scores[i][j - 1] + pens[1]):
+            j -= 1
+            align1.insert(0, '-')
+            align2.insert(0, j)
+            continue
+        if equal(score, scores[i - 1][j] + pens[2]):
+            i -= 1
+            align1.insert(0, i)
+            align2.insert(0, '-')
+            continue
+        if equal(score, scores[i][j - 1] + pens[2]):
+            j -= 1
+            align1.insert(0, '-')
+            align2.insert(0, j)
+            continue
+        if equal(score, scores[i - 1][j] + pens[3]):
+            i -= 1
+            align1.insert(0, i)
+            align2.insert(0, '-')
+            continue
+        if equal(score, scores[i][j - 1] + pens[3]):
+            j -= 1
+            align1.insert(0, '-')
+            align2.insert(0, j)
+            continue
+        if equal(score, scores[i - 1][j] + pens[4]):
+            i -= 1
+            align1.insert(0, i)
+            align2.insert(0, '-')
+            continue
+        if equal(score, scores[i][j - 1] + pens[4]):
+            j -= 1
+            align1.insert(0, '-')
+            align2.insert(0, j)
+            continue
+        print score
+        print value
+        print scores[i-1][j]
+        print scores[i][j-1]
+        print penalty, ins, rmv
+        for scr in scores:
+            print ' '.join(['%7s' % (round(y, 4)) for y in scr])
+        raise Exception('Something  is failing and it is my fault...')
+    return align1, align2, scores[i][j]
 
 
 def core_nw(p_scores, penalty, l_p1, l_p2):
@@ -71,7 +180,7 @@ def equal(a, b, cut_off=1e-9):
 
 
 def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
-                method='score'):
+                method='score', long_nw=True, long_dist=True):
     """
 
     Note: penalty is defined as the minimum value of the pre-scoring matrix
@@ -120,6 +229,8 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     vec1 = array([val1[i] * vec1[:, i] for i in xrange(num_v)]).transpose()
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
     nearest = float('inf')
+    nw = core_nw_long if long_nw else core_nw
+    dister = get_dist_long if long_dist else get_dist
     best_alis = []
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):
@@ -127,10 +238,10 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
             vec2p = vec2[:, :num]
             p_scores = prescoring(vec1p, vec2p, l_p1, l_p2)
             penalty = min([npmin(p_scores)] + [-npmax(p_scores)])
-            align1, align2, dist = core_nw(p_scores, penalty, l_p1, l_p2)
+            align1, align2, dist = nw(p_scores, penalty, l_p1, l_p2)
             try:
                 if method == 'frobenius':
-                    dist = get_dist(align1, align2, hic1, hic2)
+                    dist = dister(align1, align2, hic1, hic2)
                 else:
                     dist = -dist
                 if dist < nearest:
@@ -140,7 +251,8 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                     nearest = dist
                     best_alis = [align1, align2]
                     best_pen = penalty
-            except IndexError:
+            except IndexError as e:
+                print e
                 pass
     try:
         align1, align2 = best_alis
@@ -187,26 +299,48 @@ def get_dist(align1, align2, tad1, tad2):
     """
     map1 = []
     map2 = []
-    extras = 0
-    ext = 0
     for i, j in zip(align1, align2):
         if i != '-' and j != '-':
             map1.append(i)
             map2.append(j)
-            ext = 0
-        # elif i == '-':
-        #     if ext < 3: # favour long gaps: stop penalizing if GAP lon enough
-        #         extras += sum([-tad2[i][t] for t in xrange(len(tad1))])
-        #     ext += 1
-        # else:
-        #     if ext < 3:
-        #         extras += sum([-tad1[i][t] for t in xrange(len(tad1))])
-        #     ext += 1
+    pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
+    pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
+    return sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1)
+
+
+def get_dist_long(align1, align2, tad1, tad2):
+    """
+    Frobenius norm
+    """
+    map1 = []
+    map2 = []
+    # etad1 = [[0.0] * (len(tad1) + 1)] + [t + [0.] for t in tad1]
+    # etad2 = [[0.0] * (len(tad2) + 1)] + [t + [0.] for t in tad2]
+    pen = ((mean(tad2) + mean(tad1)) / 2) * len(align1)
+    extras = 0
+    ext = 1
+    for i, j in zip(align1, align2):
+        if i != '-' and j != '-':
+            map1.append(i)
+            map2.append(j)
+            ext = 1
+        elif i == '-':
+            # if ext < 2: # favour long gaps: stop penalizing if GAP lon enough
+            extras += pen / ext
+            # map1.append(0)
+            # map2.append(j + 1)
+            ext += 1
+        else:
+            # if ext < 2:
+            extras += pen / ext
+            # map1.append(i + 1)
+            # map2.append(0)
+            ext += 1
     # print map1
     # print map2
     pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
     pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
-    return sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1)+extras
+    return sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1) + extras
 
 
 def get_score(align1, align2, tad1, tad2):

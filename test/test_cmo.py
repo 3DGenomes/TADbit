@@ -96,7 +96,7 @@ def generate_random_contacts(size=None, tad1=None, prob=0.5,
                     contacts2[(i, my_j)] = generate_1_interaction(i==my_j)
                     contacts2[(my_j, i)] = contacts2[(i, my_j)]
         elif rnd > 1 - p_delete:
-            my_j = min(my_j, size2 - 1)
+            my_j = min(my_j, size2 - ext)
             for _ in xrange(ext):
                 size2 -= 1
                 indels.append(-(my_j + 1))
@@ -129,9 +129,9 @@ def generate_random_contacts(size=None, tad1=None, prob=0.5,
             contacts2[(i, i)] = generate_1_interaction(True)
     tad1 = contact2matrix(contacts1, size1)
     tad2 = contact2matrix(contacts2, size2)
-    for t in tad1: print '\t'.join(['{:.1f}'.format(i) for i in t]) + '\n'
+    for t in tad1: print '\t'.join(['{:.1f}'.format(i) for i in t])# + '\n'
     print '-'*20
-    for t in tad2: print '\t'.join(['{:.1f}'.format(i) for i in t]) + '\n'
+    for t in tad2: print '\t'.join(['{:.1f}'.format(i) for i in t])# + '\n'
     return tad1, tad2, indels#, contacts1, contacts2
 
 
@@ -196,13 +196,80 @@ def main():
     main function
     """
 
-    size = 12
-    tad1, tad2, indels = generate_random_contacts(prob=0.2, indel=1,
-                                                  size=size)
-    # tad1 = tad1[::-1]
-    # tad2 = tad2[::-1]
-    aliF = optimal_cmo(tad1, tad2, max_num_v=12, method='frobenius', verbose=True)
-    # aliS = optimal_cmo(tad1, tad2, max_num_v=9, method='score', verbose=True)
+    results = {'nw-ext frob-ext': [],
+               'nw-ext frob-sam': [],
+               'nw-sam frob-ext': [],
+               'nw-sam frob-sam': []}
+    for II in xrange(100):
+
+        print II,'='*80
+        size = 11
+        ext = 1
+        tad1, tad2, indels = generate_random_contacts(prob=0.0, indel=3,
+                                                      size=size, ext=ext,
+                                                      p_insert=0.5)
+
+
+        align1 = range(size)
+        align2 = range(size)
+        ali1 = 0
+        ali2 = 0
+        for i in sorted(indels, key=abs):
+            if i > 0:
+                align1.insert(i-1+ali2, '-')
+                ali2 += 1
+            else:
+                align2.insert(abs(i)-1, '-')
+                ali2 -= 1
+        plus = len(align2) - align2.count('-')
+        if ali2 > 0:
+            align2 += range(plus, plus+ali2)
+        else:
+            align2 = align2[:ali2]
+        # align1 = []
+        # align2 = []
+        # j1 = 0
+        # j2 = 0
+        # for i in range(size + 1):
+        #     if i in [a - 1 for a in indels if a > 0]:
+        #         align1 += ['-']
+        #         j2 -= 1
+        #     if size > i:
+        #         align1.append(i)
+        #     if i + j2 in [abs(a) - 1 for a in indels if a < 0]:
+        #         align2 += ['-']
+        #         j1 -= 1
+        #     if size + (j1-j2) > i:
+        #         align2.append(i)
+        print '|'.join(['{:^3}'.format(a) for a in align1])
+        print '|'.join(['{:^3}'.format(a) for a in align2])
+        
+       # tad1 = tad1[::-1]
+        # tad2 = tad2[::-1]
+        aliF1 = optimal_cmo(tad1, tad2, max_num_v=12, long_nw=True,
+                            long_dist=True, method='frobenius', verbose=True)
+        aliF2 = optimal_cmo(tad2, tad1, max_num_v=12, long_nw=True,
+                            long_dist=True, method='frobenius', verbose=True)
+        aliF = list(min((aliF1, aliF2), key=lambda x: x[2]['dist']))
+        if aliF == list(aliF2):
+            aliF[0], aliF[1] = aliF[1], aliF[0]
+        print align1
+        print aliF[0]
+        print align2
+        print aliF[1]
+        results['nw-ext frob-ext'].append(align1==aliF[0] and align2==aliF[1])
+        aliF = optimal_cmo(tad1, tad2, max_num_v=12, long_nw=True,
+                           long_dist=False, method='frobenius', verbose=True)
+        results['nw-ext frob-sam'].append(align1==aliF[0] and align2==aliF[1])
+        aliF = optimal_cmo(tad1, tad2, max_num_v=12, long_nw=False,
+                           long_dist=True, method='frobenius', verbose=True)
+        results['nw-sam frob-ext'].append(align1==aliF[0] and align2==aliF[1])
+        aliF = optimal_cmo(tad1, tad2, max_num_v=12, long_nw=False,
+                           long_dist=False, method='frobenius', verbose=True)
+        results['nw-sam frob-sam'].append(align1==aliF[0] and align2==aliF[1])
+    for r in results:
+        print r, results[r].count(True), '/', len(results[r])
+
 
     matrix1, matrix2, matrixF = merge_tads(tad1, tad2, aliF)
     cmap = plt.get_cmap()
@@ -227,23 +294,23 @@ def main():
     plt.show()
 
 
-align1 = aliF[0]
+# align1 = aliF[0]
 align1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-align1 = [0, 1, 2, 3, 4, 5, 6, 7, '-', 8, 9]
-# align1 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-align2 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+# align1 = [0, 1, 2, 3, 4, 5, 6, 7, '-', 8, 9]
+# # align1 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+# align2 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 align2 = [0, '-', 1, 2, 3, 4, 5, 6, 7, 8]
-align2 = [0, 1, '-', 2, 3, 4, 5, 6, 7, 8]
-align2 = [0, 1, 2, '-', 3, 4, 5, 6, 7, 8]
-align2 = [0, 1, 2, 3, '-', 4, 5, 6, 7, 8]
-align2 = [0, 1, 2, 3, 4, '-', 5, 6, 7, 8]
-align2 = [0, 1, 2, 3, 4, 5, 6, '-', 7, 8]
-align2 = [0, 1, 2, 3, 4, 5, 6, 7, '-', 8]
-print get_dist(align1, align2, tad1, tad2)
+# align2 = [0, 1, '-', 2, 3, 4, 5, 6, 7, 8]
+# align2 = [0, 1, 2, '-', 3, 4, 5, 6, 7, 8]
+# align2 = [0, 1, 2, 3, '-', 4, 5, 6, 7, 8]
+# align2 = [0, 1, 2, 3, 4, '-', 5, 6, 7, 8]
+# align2 = [0, 1, 2, 3, 4, 5, 6, '-', 7, 8]
+# align2 = [0, 1, 2, 3, 4, 5, 6, 7, '-', 8]
+# print get_dist(align1, align2, tad1, tad2)
 
-out = open('/home/fransua/Projects/tad-ledily/scripts/lala.pik')
-tad1m = load(out)
-out.close()
+# out = open('/home/fransua/Projects/tad-ledily/scripts/lala.pik')
+# tad1m = load(out)
+# out.close()
 
 
 
