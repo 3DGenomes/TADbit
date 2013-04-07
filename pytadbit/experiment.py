@@ -196,7 +196,7 @@ class Experiment(object):
     def normalize_hic(self, method='sqrt'):
         """
         Normalize Hi-C data. This normalize step is an exact replicate of what
-        is done inside :func:`pytadbit.tadbit.tadbit`,
+        is done inside :func:`pytadbit.tadbit.tadbit` (default parameters),
 
         It fills the Experiment.wght variable.
 
@@ -336,6 +336,18 @@ class Experiment(object):
                 out.write('{}\t{}\t{}\n'.format(i + 1, j + 1,
                                                 self._zscores[i][j]))
         out.close()
+
+
+    def get_hic_matrix(self):
+        """
+        Returns the Hi-C matrix
+
+        :returns: list of lists representing Hi-C data matrix of current
+           experiment
+        """
+        siz = self.size
+        hic = self.hic_data[0]
+        return [[hic[i+siz * j] for i in xrange(siz)] for j in xrange(siz)]
 
 
     def generate_densities(self):

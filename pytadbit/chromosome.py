@@ -454,6 +454,8 @@ class Chromosome(object):
             self.experiments.append(experiment)
             self._get_forbidden_region(experiment)
             return
+        if type(experiments) is not list:
+            experiments = [experiments]
         for experiment in experiments:
             xpr = self.get_experiment(experiment)
             result, weights = tadbit(xpr.hic_data,
@@ -639,11 +641,11 @@ class Chromosome(object):
         for i, tadi in enumerate(xrange(beg, end)):
             tadi = tadi * size
             for j, tadj in enumerate(xrange(beg, end)):
-                matrix[j][i] = float(xpr.hic_data[matrix_num][tadi + tadj])
+                matrix[j][i] = xpr.hic_data[matrix_num][tadi + tadj]
                 if not normed:
                     continue
                 try:
-                    matrix[j][i] = matrix[j][i] / xpr.wght[0][tadi + tadj]
+                    matrix[j][i] = float(matrix[j][i]) / xpr.wght[0][tadi + tadj]
                 except ZeroDivisionError:
                     matrix[j][i] = 0.0
         return matrix

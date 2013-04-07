@@ -9,15 +9,15 @@ Bioinformatics (Oxford, England), 26(18), 2250-8. doi:10.1093/bioinformatics/btq
 
 """
 
-from numpy import array, sqrt#, corrcoef
-from numpy import min as npmin
-from numpy import max as npmax
-from numpy import sum as npsum
-from numpy import mean, exp
+from numpy        import array, sqrt
+from numpy        import min as npmin
+from numpy        import max as npmax
+from numpy        import sum as npsum
+from numpy        import mean
 from numpy.linalg import eig
-from scipy.stats import spearmanr
-from itertools import product#, combinations
-from itertools import combinations_with_replacement as combinations
+from scipy.stats  import spearmanr
+from itertools    import product
+from itertools    import combinations_with_replacement as combinations
 
 # for aleigen:
 from numpy import median
@@ -37,8 +37,8 @@ def core_nw_long(p_scores, penalty, l_p1, l_p2):
     scores = virgin_score(penalty, l_p1 + 1, l_p2 + 1)
     ins = rmv = 0
     lpen = 4
-    # pens = [penalty-penalty*(1-1/exp(i**2)) for i in xrange(0, 2 * (lpen + 1), 2)]
-    pens = [penalty - penalty / (2 * lpen) * i for i in xrange(lpen + 1)]
+    # pens=[penalty-penalty*(1-1/exp(i**2)) for i in xrange(0, 2 * (lpen+ 1),2)]
+    pens = [penalty - penalty / (2 * lpen) * i for i in xrange(lpen + 1)] # BEST
     # pens = [penalty, penalty, penalty, penalty/1.2, 0]
     # pens = [penalty, penalty*1.5, penalty*2, penalty, penalty]
     for i in xrange(1, l_p1 + 1):
@@ -314,33 +314,23 @@ def get_dist_long(align1, align2, tad1, tad2):
     """
     map1 = []
     map2 = []
-    # etad1 = [[0.0] * (len(tad1) + 1)] + [t + [0.] for t in tad1]
-    # etad2 = [[0.0] * (len(tad2) + 1)] + [t + [0.] for t in tad2]
-    pen = ((mean(tad2) + mean(tad1)) / 2) * len(align1)
-    extras = 0
-    ext = 1
+    pen  = ((mean(tad2) + mean(tad1)) / 2) * len(align1)
+    xpen = 0
+    ext  = 1
     for i, j in zip(align1, align2):
         if i != '-' and j != '-':
             map1.append(i)
             map2.append(j)
             ext = 1
-        elif i == '-':
-            # if ext < 2: # favour long gaps: stop penalizing if GAP lon enough
-            extras += pen / ext
-            # map1.append(0)
-            # map2.append(j + 1)
+        elif i == '-': # favour long gaps: stop penalizing if GAP lon enough
+            xpen += pen / ext
             ext += 1
         else:
-            # if ext < 2:
-            extras += pen / ext
-            # map1.append(i + 1)
-            # map2.append(0)
+            xpen += pen / ext
             ext += 1
-    # print map1
-    # print map2
     pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
     pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
-    return sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1) + extras
+    return sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1) + xpen
 
 
 def get_score(align1, align2, tad1, tad2):

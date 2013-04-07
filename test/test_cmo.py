@@ -10,6 +10,7 @@ from scipy.interpolate import interp1d
 from cPickle import load
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 from matplotlib import pyplot as plt
+from scipy.stats import zscore
 
 inf = open('tad_distr.pik')
 WINA, CNTA, WIND, CNTD = load(inf)
@@ -191,6 +192,17 @@ def merge_tads(tad1, tad2, ali):
     return matrix1, matrix2, matrixm
 
 
+def to_binary(tad1, tad2):
+    cells = []
+    for i in range(len(tad1)):
+        for j in range(i, len(tad1)):
+            cells.append(tad1[i][j])
+    for i in range(len(tad2)):
+        for j in range(i, len(tad2)):
+            cells.append(tad1[i][j])
+    cells = zscore(cells)
+            
+
 def main():
     """
     main function
@@ -199,7 +211,8 @@ def main():
     results = {'nw-ext frob-ext': [],
                'nw-ext frob-sam': [],
                'nw-sam frob-ext': [],
-               'nw-sam frob-sam': []}
+               'nw-sam frob-sam': [],
+               'binary frob'}
     for II in xrange(100):
 
         print II,'='*80
@@ -219,8 +232,9 @@ def main():
                 align1.insert(i-1+ali2, '-')
                 ali2 += 1
             else:
-                align2.insert(abs(i)-1, '-')
-                ali2 -= 1
+                align2.insert(abs(i)-1 + ali1, '-')
+                ali1 += 1
+                # ali2 -= 1
         plus = len(align2) - align2.count('-')
         if ali2 > 0:
             align2 += range(plus, plus+ali2)
