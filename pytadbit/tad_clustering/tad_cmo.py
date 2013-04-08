@@ -14,7 +14,7 @@ from numpy        import min as npmin
 from numpy        import max as npmax
 from numpy        import sum as npsum
 from numpy        import mean
-from numpy.linalg import eig
+from numpy.linalg import eigh # eigh is for symmetric matrices
 from scipy.stats  import spearmanr
 from itertools    import product
 from itertools    import combinations_with_replacement as combinations
@@ -208,11 +208,11 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     if num_v > l_p1 or num_v > l_p2:
         raise Exception('\nnum_v should be at most {}\n'.format(min(l_p1,
                                                                     l_p2)))
-    val1, vec1 = eig(hic1)
+    val1, vec1 = eigh(hic1)
     if npsum(vec1).imag:
         raise Exception("ERROR: Hi-C data is not symmetric.\n" +
                         '{}\n\n{}'.format(hic1, vec1))
-    val2, vec2 = eig(hic2)
+    val2, vec2 = eigh(hic2)
     if npsum(vec2).imag:
         raise Exception("ERROR: Hi-C data is not symmetric.\n" +
                         '{}\n\n{}'.format(hic2, vec2))
