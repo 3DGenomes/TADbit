@@ -253,8 +253,10 @@ class Experiment(object):
         if method == 'bytot':
             total = sum(rowsums)
             func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
-        else:
+        elif method == 'sqrt':
             func = lambda x, y: sqrt(rowsums[x] * rowsums[y])
+        else:
+            raise LookupError('Only "sqrt" and "bytot" methods are implemented')
         for i in xrange(self.size):
             for j in xrange(self.size):
                 self.wght[0][i * self.size + j] = func(i, j)
@@ -294,7 +296,7 @@ class Experiment(object):
                     values.append(self.hic_data[0][i * self.size + j])
         # compute Z-score
         if zscored:
-            zscore(values)
+            zscore(values, self.size)
         iterval = values.__iter__()
         for i in xrange(self.size):
             if i in self._zeros:
@@ -309,7 +311,8 @@ class Experiment(object):
                 self._zscores[j][i] = zsc
 
 
-    def write_interaction_pairs(self, fname, normalized=True, zscored=True):
+    def write_interaction_pairs(self, fname, normalized=True, zscored=True,
+                                diagonal=False):
         """
         Creates a tab separated file with all interactions
         
@@ -324,7 +327,9 @@ class Experiment(object):
                     self._zscores[i][j] = self.hic_data[0][i * self.size + j]
         # write to file
         out = open(fname, 'w')
-        out.write('elt1\telt2\tzscore\n')
+        out.write('elt1\telt2\t{}\n'.format('zscore' if zscored else \
+                                            'normalized hi-c' if normalized \
+                                            else 'raw hi-c'))
         for i in xrange(self.size):
             if i in self._zeros:
                 continue
@@ -332,6 +337,8 @@ class Experiment(object):
                 if j in self._zeros:
                     continue
                 if self._zscores[i][j] == -99:
+                    continue
+                if diagonal and i==j:
                     continue
                 out.write('{}\t{}\t{}\n'.format(i + 1, j + 1,
                                                 self._zscores[i][j]))

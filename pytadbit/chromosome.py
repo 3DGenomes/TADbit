@@ -42,11 +42,12 @@ def load_chromosome(in_f, fast=False):
     for name in dico['experiments']:
         xpr = Experiment(name, dico['experiments'][name]['resolution'], 
                          no_warn=True)
-        xpr.tads     = dico['experiments'][name]['tads']
-        xpr.wght     = dico['experiments'][name]['wght']
-        xpr.hic_data = dico['experiments'][name]['hi-c']
-        xpr.brks     = dico['experiments'][name]['brks']
-        xpr.size     = dico['experiments'][name]['size']
+        xpr.tads       = dico['experiments'][name]['tads']
+        xpr.wght       = dico['experiments'][name]['wght']
+        xpr.hic_data   = dico['experiments'][name]['hi-c']
+        xpr.brks       = dico['experiments'][name]['brks']
+        xpr.conditions = dico['experiments'][name]['cond']
+        xpr.size       = dico['experiments'][name]['size']
         crm.experiments.append(xpr)
     crm.size            = dico['size']
     crm.r_size          = dico['r_size']
@@ -159,13 +160,13 @@ class Chromosome(object):
                 xnames = [x.name for x in xpers]
             else:
                 xnames = xpers
-                xpers = [self.get_experiment(x) for x in xpers]
+                xpers = [self.get_experiment(x) for x in xnames]
         else:
             xpers = self.experiments
         # define a set of conditions
         condset = set(reduce(lambda x, y: x + y, 
                              [x.conditions for x in xpers \
-                              if condition in x.conditions]))
+                              if condition1 in x.conditions]))
         if not condition1 in condset:
             raise Exception('ERROR: condition ' + 
                             '{} not found.\n'.format(condition))
@@ -211,6 +212,7 @@ class Chromosome(object):
             dico['experiments'][xpr.name] = {
                 'size'      : xpr.size,
                 'brks'      : xpr.brks,
+                'cond'      : xpr.conditions,
                 'tads'      : xpr.tads,
                 'resolution': xpr.resolution}
             if fast:
@@ -272,11 +274,12 @@ class Chromosome(object):
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([x * xpr.resolution for x in xpr.brks])
         aligneds, score = align(tads, max_dist=self.max_tad_size, **kwargs)
-        self.alignment[tuple(sorted(xpers))] = {}
+        aliname = tuple(sorted([x.name for x in xpers]))
+        self.alignment[aliname] = {}
         for xpr, ali in zip(xpers, aligneds):
-            self.alignment[tuple(sorted(xpers))][xpr] = ali
+            self.alignment[aliname][xpr.name] = ali
         if verbose:
-            self.print_alignment(name=tuple(sorted(xpers)))
+            self.print_alignment(name=aliname)
         if not randomize:
             return self.get_alignment(names), score
         #mean, std = self._get_tads_mean_std(xpers)
@@ -298,7 +301,7 @@ class Chromosome(object):
         :param False string: return string instead of printing
         """
         if xpers:
-            xpers = [self.get_experiment(n) for n in xpers]
+            xpers = [self.get_experiment(n.name) for n in xpers]
         else:
             xpers = self.experiments
         if not name:
@@ -308,18 +311,17 @@ class Chromosome(object):
         out += 'scores: {})\n'.format(' '.join(
             [colorize(x, x) for x in range(11)]))
         for xpr in xpers:
-            if not xpr in self.alignment[name]:
+            if not xpr.name in self.alignment[name]:
                 continue
-            tads = self.get_experiment(xpr).tads
-            out += '{1:{0}}:'.format(length, xpr)
+            out += '{1:{0}}:'.format(length, xpr.name)
             i = 0
-            for x in self.alignment[name][xpr]:
+            for x in self.alignment[name][xpr.name]:
                 out += '|'
                 if x == '-':
                     out += ' ' + '-'*4
                     continue
                 cell = str(int(x/1000))
-                out += ' ' * (5 - len(cell)) + colorize(cell, tads[i]['score'])
+                out += ' ' * (5 - len(cell)) + colorize(cell, xpr.tads[i]['score'])
                 i += 1
             out += '\n'
         if string:
@@ -337,13 +339,13 @@ class Chromosome(object):
         :returns: alignment as :py:class:`dict`
         """
         if xpers:
-            xpers = [self.get_experiment(n) for n in xpers]
+            xpers = [self.get_experiment(n.name) for n in xpers]
         else:
             xpers = self.experiments
         if not name:
             name = self.alignment.keys()[0]
         if not scores:
-            return dict([(e, self.alignment[name][e]) \
+            return dict([(e.name, self.alignment[name][e.name]) \
                          for e in xpers if e.name in self.alignment[name]])
         alignment = {}
         for xpr in xpers:
@@ -365,7 +367,8 @@ class Chromosome(object):
 
 
     def add_experiment(self, name, resolution=None, tad_handler=None,
-                       xp_handler=None, replace=False, parser=None):
+                       xp_handler=None, replace=False, parser=None,
+                       conditions=None):
         """
         Add Hi-C experiment to Chromosome
         
@@ -406,7 +409,8 @@ class Chromosome(object):
         elif resolution:
             self.experiments.append(Experiment(name, resolution, xp_handler,
                                                tad_handler, parser=parser,
-                                               max_tad_size=self.max_tad_size))
+                                               max_tad_size=self.max_tad_size,
+                                               conditions=conditions))
         else:
             raise Exception('resolution param is needed\n')
 

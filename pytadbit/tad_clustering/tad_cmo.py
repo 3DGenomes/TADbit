@@ -314,23 +314,26 @@ def get_dist_long(align1, align2, tad1, tad2):
     """
     map1 = []
     map2 = []
-    pen  = ((mean(tad2) + mean(tad1)) / 2) * len(align1)
+    pen  = ((float(mean(tad2)) + mean(tad1)) / 2) * len(align1)
     xpen = 0
-    ext  = 1
+    exti = extd = 1
     for i, j in zip(align1, align2):
         if i != '-' and j != '-':
             map1.append(i)
             map2.append(j)
-            ext = 1
+            exti = extd = 1
         elif i == '-': # favour long gaps: stop penalizing if GAP lon enough
-            xpen += pen / ext
-            ext += 1
+            xpen += pen / exti
+            exti += 1
+            extd = 1
         else:
-            xpen += pen / ext
-            ext += 1
+            xpen += pen / extd
+            extd += 1
+            exti = 1
     pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
     pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
-    return sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1) + xpen
+    return float(sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)]))\
+           / ((len(pp1)**2 - len(pp1))/2+1) + xpen
 
 
 def get_score(align1, align2, tad1, tad2):

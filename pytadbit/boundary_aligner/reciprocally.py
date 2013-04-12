@@ -14,7 +14,7 @@ def find_closest(num, tads1):
             closest = n
         elif diff != inf:
             break
-    return closest, diff
+    return closest
 
 
 def find_closest_reciprocal(num, tads1, tads2, start=0):
@@ -26,13 +26,32 @@ def find_closest_reciprocal(num, tads1, tads2, start=0):
     for n in tads2:
         if n < start: continue
         if abs(n - num) < diff:
-            other_num, _ = find_closest(n, tads1)
+            other_num = find_closest(n, tads1)
+            print n, num, other_num
             if num == other_num:
                 diff = abs(n - num)
                 closest = n
+            else:
+                print 'gap', num, other_num
         elif diff != inf:
             break
     if diff == inf:
         return '---', None
     #return None, None
     return closest, diff
+
+
+def reciprocal(tads1, tads2):
+    start = 0
+    diffs = []
+    align1 = []
+    align2 = []
+    for t in tads1:
+        closest, diff = find_closest_reciprocal(t, tads1, tads2, start=start)
+        if closest != '---':
+            start=closest
+        print t, closest
+        diffs.append(diff)
+        align1.append(t)
+        align2.append(closest)
+        

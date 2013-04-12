@@ -80,7 +80,8 @@ def read_matrix(things, parser=None):
             if all([len(thing)==len(l) for l in thing]):
                 matrices.append(reduce(lambda x, y: x+y, thing))
                 sizes.append(len(thing))
-            raise Exception('must be list of lists, all with same length.')
+            else:
+                raise Exception('must be list of lists, all with same length.')
         elif type(thing) is tuple:
             # case we know what we are doing and passing directly list of tuples
             matrices.append(thing)

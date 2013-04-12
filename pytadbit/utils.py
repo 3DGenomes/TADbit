@@ -56,19 +56,26 @@ def reduce_matrix(nums, size):
     return tuple([nums[i*j] for i in xrange(size) for j in xrange(i, size)])
 
 
-def zscore(values):
+def zscore(values, size):
+    nop = dict([(i + size * i,  None) for i in xrange(size)])
     vals = []
     for v in values:
-        if v > 0:
+        if v > 0 and not v in nop:
             vals.append(log10(v))
         elif v == 0:
             vals.append(0.0)
     mean_v = mean(vals)
     std_v = std(vals)
     for i in xrange(len(values)):
+        # if i in nop:
+        #     values[i] = float('nan')
+        #     continue
         if values[i] > 0:
             values[i] = (log10(values[i])-mean_v)/std_v
+        elif values[i] == 0:
+            values[i] = -1
         else:
+            print 'hola', values[i]
             values[i] = -99
 
 
@@ -85,18 +92,19 @@ def nicer(res):
     return str(res) + 'b'
 
 
-COLOR = {None: '\033[31m',
-         0   : '\033[34m',
-         1   : '\033[34m',
-         2   : '\033[34m',
-         3   : '\033[36m',
-         4   : '\033[0m' ,
-         5   : '\033[1m' ,
-         6   : '\033[33m',
-         7   : '\033[33m',
-         8   : '\033[35m',
-         9   : '\033[35m',
-         10  : '\033[31m'}
+COLOR = {None: '\033[31m', # red
+         0   : '\033[34m', # blue
+         1   : '\033[34m', # blue
+         2   : '\033[34m', # blue
+         3   : '\033[36m', # cyan
+         4   : '\033[0m' , # white
+         5   : '\033[1m' , # bold white
+         6   : '\033[33m', # yellow
+         7   : '\033[33m', # yellow
+         8   : '\033[35m', # purple
+         9   : '\033[35m', # purple
+         10  : '\033[31m'  # red
+         }
 
 
 def colorize(string, num):
