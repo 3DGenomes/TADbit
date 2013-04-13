@@ -305,7 +305,8 @@ def get_dist(align1, align2, tad1, tad2):
             map2.append(j)
     pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
     pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
-    return sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)])/(len(pp1)+1)
+    return float(sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)]))\
+           / (len(pp1)+1)
 
 
 def get_dist_long(align1, align2, tad1, tad2):
@@ -333,7 +334,7 @@ def get_dist_long(align1, align2, tad1, tad2):
     pp1 = [tad1[i][j] for i, j in combinations(map1, 2)]
     pp2 = [tad2[i][j] for i, j in combinations(map2, 2)]
     return float(sum([(pp-pp2[p])**2 for p, pp in enumerate(pp1)]))\
-           / ((len(pp1)**2 - len(pp1))/2+1) + xpen
+           / (len(pp1)+1) + xpen
 
 
 def get_score(align1, align2, tad1, tad2):
