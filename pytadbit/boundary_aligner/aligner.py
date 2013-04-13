@@ -3,7 +3,8 @@
 
 
 """
-from pytadbit.boundary_aligner.globally import needleman_wunsch
+from pytadbit.boundary_aligner.globally     import needleman_wunsch
+from pytadbit.boundary_aligner.reciprocally import reciprocal
 
 
 def consensusize(ali1, ali2, passed):
@@ -39,6 +40,11 @@ def align(sequences, method='global', **kwargs):
     """
     if method == 'global':
         aligner = needleman_wunsch
+    elif method == 'reciprocal':
+        aligner = reciprocal
+    else:
+        raise NotImplementedError(('Only "global" and "reciprocal" are ' +
+                                   'implemented right now.\n'))
     if len(sequences) > 2:
         dico = {}
         reference = None
@@ -50,9 +56,8 @@ def align(sequences, method='global', **kwargs):
         aligneds = []
         scores = 0
         for other in xrange(1, len(sequences)):
-            [align1, align2], score = needleman_wunsch(reference, 
-                                                       dico[other]['seq'],
-                                                       **kwargs)
+            [align1, align2], score = aligner(reference, dico[other]['seq'],
+                                              **kwargs)
             scores += score
             if len(reference) != len(align1):
                 for pos in xrange(len(align1)):

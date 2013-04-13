@@ -93,9 +93,9 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
         
     if verbose:
         print '\n Alignment:'
-        print 'TADS 1: '+'|'.join(['%4s' % (str(int(x)) if x!='-' else '-'*3) \
+        print 'TADS 1: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
                                    for x in align1])
-        print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) if x!='-' else '-'*3) \
+        print 'TADS 2: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
                                    for x in align2])
     return [align1, align2], max_score
 

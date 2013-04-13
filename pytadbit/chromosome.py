@@ -203,6 +203,9 @@ class Chromosome(object):
            out_f='chromosome12.pik' we would obtain chromosome12.pik and
            chromosome12.pik_hic). When loaded :func:`load_chromosome` will
            automatically search for both files.
+
+        FIXME: out_f that is stored here should be changed... when copied
+        elsewhere loading will not work
         """
         dico = {}
         dico['experiments'] = {}
@@ -273,7 +276,8 @@ class Chromosome(object):
             if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([x * xpr.resolution for x in xpr.brks])
-        aligneds, score = align(tads, max_dist=self.max_tad_size, **kwargs)
+        aligneds, score = align(tads, max_dist=self.max_tad_size,
+                                verbose=verbose, **kwargs)
         aliname = tuple(sorted([x.name for x in xpers]))
         self.alignment[aliname] = {}
         for xpr, ali in zip(xpers, aligneds):

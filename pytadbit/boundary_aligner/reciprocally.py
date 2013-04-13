@@ -17,22 +17,22 @@ def find_closest(num, tads1):
     return closest
 
 
-def find_closest_reciprocal(num, tads1, tads2, penalty, start=0):
+def find_closest_reciprocal(t1, tads1, tads2, penalty, start=0):
     """
     function to check the needleman_wunsch algorithm.
     """
     closest = None
     diff = inf = float('inf')
     gap = 0
-    for n in tads2:
-        if n < start: continue
-        if abs(n - num) < diff:
-            other_num = find_closest(n, tads1)
-            if num == other_num:
-                diff = abs(n - num)
+    for t2 in tads2:
+        if t2 < start: continue
+        if abs(t2 - t1) < diff:
+            t1prim = find_closest(t2, tads1)
+            if t1 == t1prim:
+                diff = abs(t2 - t1)
                 if closest > -1:
                     gap += 1
-                closest = n
+                closest = t2
         elif diff != inf:
             break
     if diff == inf:
@@ -41,18 +41,21 @@ def find_closest_reciprocal(num, tads1, tads2, penalty, start=0):
     return closest, gap, diff
 
 
-def reciprocal(tads1, tads2, penalty=None, verbose=False):
+def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=None):
     """
 
     :argument None penalty: if 
     
     tads1 = [1, 5, 6, 9, 18, 22, 33, 34, 36]
     tads2 = [0, 1, 7, 9, 17, 21, 26, 29, 35]
+    penalty = None
     """
     if not penalty:
         # set penalty to the average length of a TAD
-        penalty = float(reduce(lambda x, y: abs(x - y), tads1))/len(tads1)
-        penalty += float(reduce(lambda x, y: abs(x - y), tads2))/len(tads2)
+        penalty  = float(reduce(lambda x, y: abs(x - y),
+                                tads1)) / len(tads1)
+        penalty += float(reduce(lambda x, y: abs(x - y),
+                                tads2)) / len(tads2)
     start = 0
     diffs = []
     align1 = []
@@ -62,7 +65,10 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False):
         closest, gap, diff = find_closest_reciprocal(t, tads1, tads2,
                                                      penalty, start=start)
         if closest != '-':
-            start=closest
+            start = closest + 1 # FIXME!!!!!
+            if diff > max_dist:
+                # FIXME
+                pass
         diffs.append(diff)
         while gap:
             align1.append('-')
@@ -71,9 +77,13 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False):
             gap -= 1
         align1.append(t)
         align2.append(closest)
-        i += 1
+        if closest != '-':
+            i += 1
     if verbose:
-        print 'TAD1: ' + '|'.join(['{:>3}'.format(a) for a in align1])
-        print 'TAD2: ' + '|'.join(['{:>3}'.format(a) for a in align2])
-    return align1, align2, float(sum(diffs))/len(align1)
+        print '\n Alignment:'
+        print 'TADS 1: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
+                                   for x in align1])
+        print 'TADS 2: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
+                                   for x in align2])
+    return [align1, align2], float(sum(diffs))/len(align1)
         
