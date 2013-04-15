@@ -10,3 +10,5 @@ Tadbit's Reference Guide
    reference_tadbit
    reference_clustering
    reference_parser
+   reference_aligner
+

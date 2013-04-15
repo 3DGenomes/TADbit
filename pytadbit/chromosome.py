@@ -5,6 +5,7 @@
 """
 
 from sys import stdout
+from os.path import exists
 from pytadbit.boundary_aligner.aligner import align
 from pytadbit import tadbit
 from pytadbit.experiment import Experiment
@@ -32,7 +33,8 @@ def load_chromosome(in_f, fast=False):
     
     :param in_f: path to a saved Chromosome file
     :param False fast: if True do not load Hi-C data (in the case that they were
-       saved in a separate file see :func:`Chromosome.save_chromosome`)
+       saved in a separate file see :func:`Chromosome.save_chromosome`). If fast
+       is equal to 2, weight would be skipped from load in order to save memory.
     
     :returns: Chromosome object
     """
@@ -62,7 +64,8 @@ def load_chromosome(in_f, fast=False):
                 dico['experiments'][name]['hi-c']))
         for name in dico['experiments']:
             crm.get_experiment(name).hic_data = dicp[name]['hi-c']
-            crm.get_experiment(name).wght     = dicp[name]['wght']
+            if fast != 2:
+                crm.get_experiment(name).wght     = dicp[name]['wght']
     elif not fast:
         warn('WARNING: data not saved correctly for fast loading.\n')
     return crm
@@ -207,6 +210,8 @@ class Chromosome(object):
         FIXME: out_f that is stored here should be changed... when copied
         elsewhere loading will not work
         """
+        while exists(out_f):
+            out_f += '_'
         dico = {}
         dico['experiments'] = {}
         if divide:
