@@ -21,7 +21,7 @@ def consensusize(ali1, ali2, passed):
             try:
                 bound = (ali1[pos] * passed + ali2[pos]) / (1 + passed)
             except TypeError:
-                bound = ali1[pos] if type(ali1[pos]) is float else ali2[pos]
+                bound = ali1[pos] if type(ali1[pos]) is not str else ali2[pos]
         else:
             bound = ali1[pos]
         consensus.append(bound)

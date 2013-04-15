@@ -283,9 +283,9 @@ class Chromosome(object):
         for xpr, ali in zip(xpers, aligneds):
             self.alignment[aliname][xpr.name] = ali
         if verbose:
-            self.print_alignment(name=aliname)
+            self.print_alignment(xpers=xpers)
         if not randomize:
-            return self.get_alignment(names), score
+            return self.get_alignment(aliname), score
         #mean, std = self._get_tads_mean_std(xpers)
         #print 'mean', mean, 'std', std, self.r_size, self.r_size/mean
         #p_value = randomization_test(len(xpers), mean, std, score,

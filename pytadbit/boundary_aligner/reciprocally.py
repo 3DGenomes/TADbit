@@ -5,10 +5,11 @@ Aligner based on reciprocal closest hits for Topologically Associated Domains
 """
 
 
-def find_closest(num, tads1):
+def find_closest(num, tads1, start=0):
     closest = 0
     diff = inf = float('inf')
     for n in tads1:
+        if n < start: continue
         if abs(n - num) < diff:
             diff = abs(n - num)
             closest = n
@@ -17,7 +18,7 @@ def find_closest(num, tads1):
     return closest
 
 
-def find_closest_reciprocal(t1, tads1, tads2, penalty, start=0):
+def find_closest_reciprocal(t1, tads1, tads2, start=0):
     """
     function to check the needleman_wunsch algorithm.
     """
@@ -25,20 +26,19 @@ def find_closest_reciprocal(t1, tads1, tads2, penalty, start=0):
     diff = inf = float('inf')
     gap = 0
     for t2 in tads2:
-        if t2 < start: continue
+        if t2 <= start: continue
         if abs(t2 - t1) < diff:
-            t1prim = find_closest(t2, tads1)
+            t1prim = find_closest(t2, tads1, start=t1)
             if t1 == t1prim:
-                diff = abs(t2 - t1)
-                if closest > -1:
+                if diff != inf:
                     gap += 1
+                diff = abs(t2 - t1)
                 closest = t2
         elif diff != inf:
             break
-    if diff == inf:
-        return '-', None, penalty
-    #return None, None
-    return closest, gap, diff
+    else:
+        return '-', 0
+    return closest, gap
 
 
 def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=None):
@@ -48,6 +48,8 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=None):
     
     tads1 = [1, 5, 6, 9, 18, 22, 33, 34, 36]
     tads2 = [0, 1, 7, 9, 17, 21, 26, 29, 35]
+    tads1 = [15560, 17240, 18680, 18960, 19100, 19220]
+    tads2 = [15600, 17200, 18680, 18980, 19340]
     penalty = None
     """
     if not penalty:
@@ -62,15 +64,19 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=None):
     align2 = []
     i = 0
     for t in tads1:
-        closest, gap, diff = find_closest_reciprocal(t, tads1, tads2,
-                                                     penalty, start=start)
+        closest, gap = find_closest_reciprocal(t, tads1, tads2,
+                                               start=start)
+        diff = penalty
         if closest != '-':
-            start = closest + 1 # FIXME!!!!!
+            diff = abs(t - closest)
             if diff > max_dist:
-                # FIXME
-                pass
+                print 'MAAAAX: ', t, closest, diff, max_dist
+                closest = '-'
+                diff = penalty
+            else:
+                start = closest
         diffs.append(diff)
-        while gap:
+        while gap > 0:
             align1.append('-')
             align2.append(tads2[i])
             i += 1
