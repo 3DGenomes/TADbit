@@ -27,6 +27,7 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
     tads2 = [0.0] + tads2
     l_tads1  = len(tads1)
     l_tads2  = len(tads2)
+    max_dist = log(1. / (abs(max_dist) + 1))
     dister = lambda x, y: log(1. / (abs(x - y) + 1))
     scores = virgin_score(penalty, l_tads1, l_tads2)
     pen = penalty
@@ -36,7 +37,7 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
             match  = d_dist + scores[i-1][j-1]
             insert = scores[i-1][j] + pen
             delete = scores[i][j-1] + pen
-            if d_dist > max_dist:
+            if d_dist < max_dist:
                 scores[i][j] = max((insert, delete))
                 pen = ext_pen
             else:

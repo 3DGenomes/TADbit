@@ -106,8 +106,22 @@ COLOR = {None: '\033[31m', # red
          10  : '\033[31m'  # red
          }
 
+COLORHTML = {None: '<span style="color:red;">'       , # red
+             0   : '<span>'                          , # blue
+             1   : '<span style="color:blue;">'      , # blue
+             2   : '<span style="color:blue;">'      , # blue
+             3   : '<span style="color:purple;">'    , # purple
+             4   : '<span style="color:purple;">'    , # purple
+             5   : '<span style="color:teal;">'      , # cyan
+             6   : '<span style="color:teal;">'      , # cyan
+             7   : '<span style="color:olive;">'     , # yellow
+             8   : '<span style="color:olive;">'     , # yellow
+             9   : '<span style="color:red;">'       , # red
+             10  : '<span style="color:red;">'         # red
+             }
 
-def colorize(string, num):
+
+def colorize(string, num, ftype='ansi'):
     """
     Colorize with ANSII colors a string for printing in shell. this acording to
     a given number between 0 and 10
@@ -117,4 +131,6 @@ def colorize(string, num):
 
     :returns: the string 'decorated' with ANSII color code
     """
-    return '{}{}\033[m'.format(COLOR[num], string)
+    color = COLOR if ftype=='ansi' else COLORHTML
+    return '{}{}{}'.format(color[num], string,
+                           '\033[m' if ftype=='ansi' else '</span>')

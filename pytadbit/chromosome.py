@@ -26,13 +26,13 @@ from random import random, shuffle
 
 
 
-def load_chromosome(in_f, fast=False):
+def load_chromosome(in_f, fast=0):
     """
     Load Chromosome from file. Chromosome might have been saved through the
     :func:`Chromosome.save_chromosome`.
     
     :param in_f: path to a saved Chromosome file
-    :param False fast: if True do not load Hi-C data (in the case that they were
+    :param 0 fast: if fast=1 do not load Hi-C data (in the case that they were
        saved in a separate file see :func:`Chromosome.save_chromosome`). If fast
        is equal to 2, weight would be skipped from load in order to save memory.
     
@@ -56,7 +56,7 @@ def load_chromosome(in_f, fast=False):
     crm.max_tad_size    = dico['max_tad_size']
     crm.forbidden       = dico['forbidden']
     crm._centromere     = dico['_centromere']
-    if type(dico['experiments'][name]['hi-c']) == str and not fast:
+    if type(dico['experiments'][name]['hi-c']) == str and fast!= int(1):
         try:
             dicp = load(open(dico['experiments'][name]['hi-c']))
         except IOError:
@@ -260,8 +260,8 @@ class Chromosome(object):
         :param experiment1: name of the first experiment to align
         :param experiment2: name of the second experiment to align
         :param -0.1 penalty: penalty of inserting a gap in the alignment
-        :param 500000 max_dist: Maximum distance between 2 boundaries allowing
-            match
+        :param 100000 max_dist: Maximum distance between 2 boundaries allowing
+            match (100Kb seems fair with HUMAN chromosomes)
         :param False verbose: print somethings
         :param False randomize: check alignment quality by comparing
             randomization of boundaries over Chromosomes of same size. This will
@@ -281,8 +281,7 @@ class Chromosome(object):
             if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([x * xpr.resolution for x in xpr.brks])
-        aligneds, score = align(tads, max_dist=self.max_tad_size,
-                                verbose=verbose, **kwargs)
+        aligneds, score = align(tads, verbose=verbose, **kwargs)
         aliname = tuple(sorted([x.name for x in xpers]))
         self.alignment[aliname] = {}
         for xpr, ali in zip(xpers, aligneds):
@@ -301,13 +300,15 @@ class Chromosome(object):
         return score, p_value
 
 
-    def print_alignment(self, name=None, xpers=None, string=False):
+    def print_alignment(self, name=None, xpers=None, string=False,
+                        title='', ftype='ansi'):
         """
         print alignment
         
         :param None names: if None print all experiments
         :param None xpers: if None print all experiments
         :param False string: return string instead of printing
+        :param ansi ftype: display colors in ansi or html format
         """
         if xpers:
             xpers = [self.get_experiment(n.name) for n in xpers]
@@ -316,23 +317,46 @@ class Chromosome(object):
         if not name:
             name = self.alignment.keys()[0]
         length = max([len(n.name) for n in xpers])
-        out = 'Alignment shown in Kb (%s experiments) (' % (len(xpers))
+        if ftype == 'html':
+            out = '''<?xml version="1.0" encoding="UTF-8" ?>
+            <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+            <!-- This file was created with the aha Ansi HTML Adapter. http://ziz.delphigl.com/tool_aha.php -->
+            <html xmlns="http://www.w3.org/1999/xhtml">
+            <head>
+            <meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8" />
+            <title>stdin</title>
+            </head>
+            <h1>{}</h1>
+            <body>
+            <pre>'''.format(title)
+        elif ftype == 'ansi':
+            out = title + '\n' if title else ''
+        else:
+            raise NotImplementedError('Only ansi and html ftype implemented.\n')
+        out += 'Alignment shown in Kb (%s experiments) (' % (len(xpers))
         out += 'scores: {})\n'.format(' '.join(
-            [colorize(x, x) for x in range(11)]))
+            [colorize(x, x, ftype) for x in range(11)]))
         for xpr in xpers:
             if not xpr.name in self.alignment[name]:
                 continue
             out += '{1:{0}}:'.format(length, xpr.name)
-            i = 0
+            i = 0 # we are working with the end position
             for x in self.alignment[name][xpr.name]:
-                out += '|'
                 if x == '-':
-                    out += ' ' + '-'*4
+                    out += '| ' + '-' * 4 + ' '
+                    continue
+                try:
+                    while xpr.tads[i]['brk'] < 0:
+                        i += 1
+                except KeyError:
                     continue
                 cell = str(int(x/1000))
-                out += ' ' * (5 - len(cell)) + colorize(cell, xpr.tads[i]['score'])
+                out += ('|' + ' ' * (6 - len(cell)) +
+                        colorize(cell, xpr.tads[i]['score'], ftype))
                 i += 1
             out += '\n'
+        if ftype == 'html':
+            out += '</pre></body></html>'
         if string:
             return out
         print out
@@ -362,7 +386,7 @@ class Chromosome(object):
                 continue
             ali = []
             i = 0
-            for x in self.alignment[name][xpr]:
+            for x in self.alignment[name][xpr.name]:
                 if x == '-':
                     ali.append((x, -1.0))
                     continue
@@ -371,7 +395,7 @@ class Chromosome(object):
                 scr = scr if scr >= 0 else 10.0
                 ali.append((cell, scr))
                 i += 1
-            alignment[xpr] = ali
+            alignment[xpr.name] = ali
         return alignment
 
 
@@ -493,7 +517,8 @@ class Chromosome(object):
 
         :param name: name of the experiment to visualize
         :param True logarithm: show logarithm
-        
+
+        TODO: plot normalized data
         """
         xper = self.get_experiment(name)
         if logarithm:
