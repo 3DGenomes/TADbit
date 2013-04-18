@@ -1,5 +1,5 @@
-TAD clustering functions
-========================
+TAD clustering
+==============
 
 .. currentmodule:: pytadbit.tad_clustering.tad_cmo
 

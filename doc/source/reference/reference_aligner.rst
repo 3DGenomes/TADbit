@@ -1,5 +1,5 @@
-Aligner
-=======
+Boundary Aligner
+================
 
 .. currentmodule:: pytadbit.boundary_aligner.aligner
 

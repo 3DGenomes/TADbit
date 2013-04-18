@@ -192,7 +192,7 @@ class Chromosome(object):
                         '{} not found\n'.format(name))
                 
 
-    def save_chromosome(self, out_f, fast=False, divide=True):
+    def save_chromosome(self, out_f, fast=False, divide=True, force=False):
         """
         Save Chromosome object to file (it uses :py:func:`pickle.load` from the
         :py:mod:`cPickle`). Once saved, the object may be loaded through
@@ -206,11 +206,12 @@ class Chromosome(object):
            out_f='chromosome12.pik' we would obtain chromosome12.pik and
            chromosome12.pik_hic). When loaded :func:`load_chromosome` will
            automatically search for both files.
+        :param False force: overwrite existing file.
 
         FIXME: out_f that is stored here should be changed... when copied
         elsewhere loading will not work
         """
-        while exists(out_f):
+        while exists(out_f) and not force:
             out_f += '_'
         dico = {}
         dico['experiments'] = {}
@@ -303,7 +304,9 @@ class Chromosome(object):
     def print_alignment(self, name=None, xpers=None, string=False,
                         title='', ftype='ansi'):
         """
-        print alignment
+        Print alignment of TAD boundaries between different experiments.
+           Alignment are displayed with colors according to the tadbit
+           confidence score for each boundary.
         
         :param None names: if None print all experiments
         :param None xpers: if None print all experiments
@@ -448,7 +451,7 @@ class Chromosome(object):
             raise Exception('resolution param is needed\n')
 
 
-    def find_tad(self, experiments, n_cpus=None, verbose=True,
+    def find_tad(self, experiments, name=None, n_cpus=None, verbose=True,
                  max_tad_size="auto", no_heuristic=False, batch_mode=False):
         """
         Call :func:`pytadbit.tadbit.tadbit` function to calculate the position
@@ -468,13 +471,16 @@ class Chromosome(object):
             under the name 'batch' plus a concatenation of the experiment names
             passed (i.e.: if experiments=['exp1', 'exp2'], the name would be:
             'batch_exp1_exp2').
+
+        TODO: check option -> name for bartch mode... some dirty changes....
         
         """
         if batch_mode:
             matrix = []
-            name = 'batch'
-            resolution = self.experiments[0].resolution
-            for xpr in sorted(self.experiments, key=lambda x: x.name):
+            name = 'batch' + name
+            experiments = experiments or self.experiments
+            resolution = experiments[0].resolution
+            for xpr in sorted(experiments, key=lambda x: x.name):
                 if xpr.resolution != resolution:
                     raise Exception('All Experiments might have the same ' +
                                     'resolution\n')
@@ -488,7 +494,7 @@ class Chromosome(object):
             experiment = Experiment(name, resolution, xp_handler=matrix,
                                     tad_handler=result, weights=weights,
                                     max_tad_size=self.max_tad_size)
-            self.experiments.append(experiment)
+            self.add_experiment(experiment)
             self._get_forbidden_region(experiment)
             return
         if type(experiments) is not list:

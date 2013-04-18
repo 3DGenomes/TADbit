@@ -6,4 +6,4 @@ Tadbit functions
 
 .. autofunction:: tadbit
 .. autofunction:: batch_tadbit
-.. autofunction:: print_result_R
+.. autofunction:: print_result_r
