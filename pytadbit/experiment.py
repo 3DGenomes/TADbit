@@ -130,13 +130,14 @@ class Experiment(object):
         size = self.size
         self.hic_data = [[]]
         self.size     = size / fact
-        for i in xrange(0, size - fact/2, fact):
-            for j in xrange(0, size - fact/2, fact):
+        for i in xrange(0, size - fact, fact):
+            for j in xrange(0, size - fact, fact):
                 val = 0
                 for k in xrange(fact):
                     for l in  xrange(fact):
                         val += self._ori_hic[0][(i + k) * size + j + l]
                 self.hic_data[0].append(val)
+        self.hic_data[0] = tuple(self.hic_data[0])
         if not keep_original:
             del(self._ori_hic)
         

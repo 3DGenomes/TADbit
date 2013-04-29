@@ -477,7 +477,8 @@ class Chromosome(object):
         """
         if batch_mode:
             matrix = []
-            name = 'batch' + name
+            if not name:
+                name = 'batch'
             experiments = experiments or self.experiments
             resolution = experiments[0].resolution
             for xpr in sorted(experiments, key=lambda x: x.name):
@@ -485,7 +486,8 @@ class Chromosome(object):
                     raise Exception('All Experiments might have the same ' +
                                     'resolution\n')
                 matrix.append(xpr.hic_data[0])
-                name += '_' + xpr.name
+                if name.startswith('batch'):
+                    name += '_' + xpr.name
             result, weights = tadbit(matrix,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
@@ -500,7 +502,8 @@ class Chromosome(object):
         if type(experiments) is not list:
             experiments = [experiments]
         for experiment in experiments:
-            xpr = self.get_experiment(experiment)
+            if not type(experiment) == Experiment:
+                xpr = self.get_experiment(experiment)
             result, weights = tadbit(xpr.hic_data,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
@@ -868,6 +871,13 @@ class ExperimentList(list):
             for nam in self:
                 if nam.name == i:
                     return nam
+    def __setitem__(self, i, exp):
+        try:
+            return super(ExperimentList, self).__setitem__(i, exp)
+        except TypeError:
+            for j, nam in enumerate(self):
+                if nam.name == i:
+                    self[j] = exp
 
 
 # def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
