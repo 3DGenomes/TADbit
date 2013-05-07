@@ -91,7 +91,7 @@ class TestTadbit(unittest.TestCase):
         all_tads = []
         for _, tad in test_chr.iter_tads('exp1'):
             all_tads.append(tad)
-        align1, align2, _ = optimal_cmo(all_tads[4], all_tads[7], 8)
+        align1, align2, _ = optimal_cmo(all_tads[4], all_tads[7], 9)
         self.assertEqual(align1,
                          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
         self.assertEqual(align2,
