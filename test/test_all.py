@@ -54,7 +54,7 @@ class TestTadbit(unittest.TestCase):
                                               rnd_method='shuffle')
         self.assertEqual(round(-26.095, 3), round(score1, 3))
         self.assertEqual(round(0.001, 1), round(pval1, 1))
-        self.assertEqual(round(0.175, 1), round(pval2, 1))
+        self.assertTrue(abs(0.175 - pval2) < 0.2)
 
 
     def test_04_chromosome_batch(self):
