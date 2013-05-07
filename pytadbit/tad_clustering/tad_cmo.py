@@ -265,7 +265,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
         print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
                                             if x!='-' else '-'*3) for x in align2])
     rho, pval = get_score(align1, align2, hic1, hic2)
-    print best_pen
+    # print best_pen
     if not best_pen:
         print 'WARNING: penalty NULL!!!\n\n'
     return align1, align2, {'dist': nearest, 'rho': rho, 'pval': pval}

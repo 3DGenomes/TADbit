@@ -26,15 +26,15 @@ from random import random, shuffle
 
 
 
-def load_chromosome(in_f, fast=0):
+def load_chromosome(in_f, fast=2):
     """
     Load Chromosome from file. Chromosome might have been saved through the
     :func:`Chromosome.save_chromosome`.
     
     :param in_f: path to a saved Chromosome file
-    :param 0 fast: if fast=1 do not load Hi-C data (in the case that they were
+    :param 2 fast: if fast=2 do not load Hi-C data (in the case that they were
        saved in a separate file see :func:`Chromosome.save_chromosome`). If fast
-       is equal to 2, weight would be skipped from load in order to save memory.
+       is equal to 1, weight would be skipped from load in order to save memory.
     
     :returns: Chromosome object
     """
@@ -56,7 +56,7 @@ def load_chromosome(in_f, fast=0):
     crm.max_tad_size    = dico['max_tad_size']
     crm.forbidden       = dico['forbidden']
     crm._centromere     = dico['_centromere']
-    if type(dico['experiments'][name]['hi-c']) == str and fast!= int(1):
+    if type(dico['experiments'][name]['hi-c']) == str and fast!= int(2):
         try:
             dicp = load(open(dico['experiments'][name]['hi-c']))
         except IOError:
@@ -64,7 +64,7 @@ def load_chromosome(in_f, fast=0):
                 dico['experiments'][name]['hi-c']))
         for name in dico['experiments']:
             crm.get_experiment(name).hic_data = dicp[name]['hi-c']
-            if fast != 2:
+            if fast != 1:
                 crm.get_experiment(name).wght     = dicp[name]['wght']
     elif not fast:
         warn('WARNING: data not saved correctly for fast loading.\n')
@@ -84,12 +84,10 @@ class Chromosome(object):
        containing the definition of TADs corresponding to different experiments
        (or output of tadbit)
     :param None experiment_names: :py:func:`list` of names for each experiment
-    :param None wanted_resoultion: change the resolution of the experiment
-       loaded. This with :func:`set_resolution`
     :param 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than
         this will not be considered, and relative chromosome size will be reduced
         accordingly
-    :param None chr_len: size of the DNA chromosome in bp. By default it will be
+    :param 0 chr_len: size of the DNA chromosome in bp. By default it will be
         inferred from the distribution of TADs.
 
     :return: Chromosome object
@@ -97,13 +95,14 @@ class Chromosome(object):
     """
     def __init__(self, name, experiment_resolutions=None, tad_handlers=None,
                  experiment_handlers=None, experiment_names=None,
-                 max_tad_size=3000000, #wanted_resoultion=None
-                 chr_len=None, parser=None):
+                 max_tad_size=3000000, chr_len=0, parser=None):
         self.name             = name
         self.max_tad_size     = max_tad_size
-        self.size             = self.r_size = chr_len
+        self.size             = self._given_size = self.r_size = chr_len
+        self.size             = ChromosomeSize(self.size)
+        self.r_size           = RelativeChromosomeSize(self.size)
         self.forbidden        = {}
-        self.experiments      = ExperimentList([])
+        self.experiments      = ExperimentList([], self)
         self._centromere      = None
         self.alignment        = {}
         if tad_handlers:
@@ -111,24 +110,30 @@ class Chromosome(object):
                 name = experiment_names[i] if experiment_names else None
                 self.add_experiment(name, experiment_resolutions[i],
                                     tad_handler=handler, parser=parser)
-                self._get_forbidden_region(self.get_experiment(name))
         if experiment_handlers:
             for i, handler in enumerate(experiment_handlers or []):
                 name = experiment_names[i] if experiment_names else None
+                try:
+                    xpr = self.get_experiment(name)
+                    xpr.load_experiment(handler)
+                    continue
+                except:
+                    pass
                 if type(handler) == Experiment:
                     name = name or handler.name
                     self.experiments.append(handler)
                 else:
                     self.add_experiment(name, experiment_resolutions[i],
                                         xp_handler=handler, parser=parser)
-        # if wanted_resoultion:
-        #     self.set_resolution(wanted_resoultion)
 
 
     def _get_forbidden_region(self, xpr):
         """
-        find regions where there is no info in any of the experiments
+        Find regions where there is no info in any of the experiments.
+        This is used to calculate relative chromosome size.
         """
+        if not xpr.tads:
+            return
         forbidden = []
         for pos in xrange(len(xpr.tads)):
             start = float(xpr.tads[pos]['start'])
@@ -142,9 +147,14 @@ class Chromosome(object):
         else:
             self.forbidden = dict([(f, None) for f in 
                                    set(forbidden).intersection(self.forbidden)])
-        if not self.size:
-            self.size = xpr.tads[max(xpr.tads)]['end'] * xpr.resolution
-        self.r_size = self.size - len(self.forbidden) * xpr.resolution
+        # search for centromere:
+        self._search_centromere(xpr)
+        # add centromere as forbidden region:
+        if self._centromere:
+            for pos in xrange(int(self._centromere[0]),
+                              int(self._centromere[1])):
+                self.forbidden[pos] = 'Centromere'
+        self.__update_size(xpr)
 
 
     def compare_condition(self, condition1, condition2=None, xpers=None):
@@ -156,7 +166,7 @@ class Chromosome(object):
            is compared to all remaining conditions.
         :param None xpers: a list of experiment names or objects to compare.
         
-        :returns: TODO
+        :returns: TODO ... all
         """
         if xpers:
             if type(xpers[0]) == Experiment:
@@ -192,14 +202,14 @@ class Chromosome(object):
                         '{} not found\n'.format(name))
                 
 
-    def save_chromosome(self, out_f, fast=False, divide=True, force=False):
+    def save_chromosome(self, out_f, fast=True, divide=True, force=False):
         """
         Save Chromosome object to file (it uses :py:func:`pickle.load` from the
         :py:mod:`cPickle`). Once saved, the object may be loaded through
         :func:`load_chromosome`.
 
         :param out_f: path to file to dump the :py:mod:`cPickle` object.
-        :param False fast: if True, skips Hi-D data and weights
+        :param True fast: if True, skips Hi-D data and weights
         :param True divide: if True writes 2 pickles, one with what would result
            by using the fast option, and the second with Hi-C and weights data.
            Second file name will be extended by '_hic' (ie: with
@@ -223,7 +233,9 @@ class Chromosome(object):
                 'brks'      : xpr.brks,
                 'cond'      : xpr.conditions,
                 'tads'      : xpr.tads,
-                'resolution': xpr.resolution}
+                'resolution': xpr.resolution,
+                'hi-c'      : None,
+                'wght'      : None}
             if fast:
                 continue
             if divide:
@@ -244,10 +256,10 @@ class Chromosome(object):
         out = open(out_f, 'w')
         dump(dico, out)
         out.close()
-        out = open(out_f + '_hic', 'w')
-        dump(dicp, out)
-        out.close()
-        
+        if not fast:
+            out = open(out_f + '_hic', 'w')
+            dump(dicp, out)
+            out.close()
 
 
     def align_experiments(self, names=None, verbose=False, randomize=False,
@@ -268,7 +280,7 @@ class Chromosome(object):
             randomization of boundaries over Chromosomes of same size. This will
             return a extra value, the p-value of accepting that observed
             alignment is not better than random alignment
-        :param interpolate rnd_method: when radomizinf use interpolation of TAD
+        :param interpolate rnd_method: by default uses interpolation of TAD
            distribution. Alternative is 'shuffle' where TADs are simply shuffled
 
         :returns: the alignment and the score of the alignment (by default)
@@ -291,11 +303,6 @@ class Chromosome(object):
             self.print_alignment(xpers=xpers)
         if not randomize:
             return self.get_alignment(aliname), score
-        #mean, std = self._get_tads_mean_std(xpers)
-        #print 'mean', mean, 'std', std, self.r_size, self.r_size/mean
-        #p_value = randomization_test(len(xpers), mean, std, score,
-        #                             self.r_size, self.resolution,
-        #                             verbose=verbose, **kwargs)
         p_value = self.randomization_test(xpers, score=score, method=rnd_method,
                                           verbose=verbose, **kwargs)
         return score, p_value
@@ -311,7 +318,7 @@ class Chromosome(object):
         :param None names: if None print all experiments
         :param None xpers: if None print all experiments
         :param False string: return string instead of printing
-        :param ansi ftype: display colors in ansi or html format
+        :param ansi ftype: display colors in 'ansi' or 'html' format
         """
         if xpers:
             xpers = [self.get_experiment(n.name) for n in xpers]
@@ -421,13 +428,13 @@ class Chromosome(object):
            
              chrT_001	chrT_002	chrT_003	chrT_004
              chrT_001	629	164	88	105
-             chrT_002	86	612	175	110
-             chrT_003	159	216	437	105
-             chrT_004	100	111	146	278
+             chrT_002	164	612	175	110
+             chrT_003	88	175	437	100
+             chrT_004	105	110	100	278
            
            the output of parser('example.tsv') might be:
-           ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
-           110, 105, 278]), 4]``
+           ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
+           110, 100, 278]), 4]``
         
         """
         if not name:
@@ -445,7 +452,6 @@ class Chromosome(object):
         elif resolution:
             self.experiments.append(Experiment(name, resolution, xp_handler,
                                                tad_handler, parser=parser,
-                                               max_tad_size=self.max_tad_size,
                                                conditions=conditions))
         else:
             raise Exception('resolution param is needed\n')
@@ -472,7 +478,7 @@ class Chromosome(object):
             passed (i.e.: if experiments=['exp1', 'exp2'], the name would be:
             'batch_exp1_exp2').
 
-        TODO: check option -> name for bartch mode... some dirty changes....
+        TODO: check option -> name for batch mode... some dirty changes....
         
         """
         if batch_mode:
@@ -480,8 +486,12 @@ class Chromosome(object):
             if not name:
                 name = 'batch'
             experiments = experiments or self.experiments
-            resolution = experiments[0].resolution
-            for xpr in sorted(experiments, key=lambda x: x.name):
+            xprs = []
+            for xpr in experiments:
+                if not type(xpr) == Experiment:
+                    xprs.append(self.get_experiment(xpr))
+            resolution = xprs[0].resolution
+            for xpr in sorted(xprs, key=lambda x: x.name):
                 if xpr.resolution != resolution:
                     raise Exception('All Experiments might have the same ' +
                                     'resolution\n')
@@ -494,10 +504,8 @@ class Chromosome(object):
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
             experiment = Experiment(name, resolution, xp_handler=matrix,
-                                    tad_handler=result, weights=weights,
-                                    max_tad_size=self.max_tad_size)
+                                    tad_handler=result, weights=weights)
             self.add_experiment(experiment)
-            self._get_forbidden_region(experiment)
             return
         if type(experiments) is not list:
             experiments = [experiments]
@@ -509,22 +517,44 @@ class Chromosome(object):
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
-            xpr.load_tad_def(result, weights=weights,
-                                         max_tad_size=self.max_tad_size)
-            self._get_forbidden_region(xpr)
-            if not self.size:
-                self.size = xpr.tads[max(xpr.tads)]['end'] * xpr.resolution
-            self.r_size = self.size - len(self.forbidden) * xpr.resolution
-            # search for centromere
-            self._search_centromere(xpr)
-        
+            xpr.load_tad_def(result, weights=weights)
 
-    def visualize(self, name, tad=None, paint_tads=False, axe=None, show=False,
+
+    def __update_size(self, xpr):
+        """
+        Update chromosome size and relative size after loading new Hi-C
+        experiments.
+
+        Unless Chromosome size was defined by hand.
+        
+        """
+        if self._given_size:
+            return
+        self.size = max(xpr.tads[max(xpr.tads)]['end'] * xpr.resolution,
+                        self.size)
+        self.r_size = self.size - len(self.forbidden) * xpr.resolution
+        self.size   = ChromosomeSize(self.size)
+        self.r_size = RelativeChromosomeSize(self.size)
+
+
+    def visualize(self, name, tad=None, paint_tads=False, axe=None, show=True,
                   logarithm=True):
         """
         Visualize the matrix of Hi-C interactions
 
         :param name: name of the experiment to visualize
+        :param None tad: a given TAD in the form:
+           ::
+           
+             {'start': start,
+              'end'  : end,
+              'brk'  : end,
+              'score': score}
+        :param False paint_tads: draw a box around TADs defined for this
+           experiment
+        :param None axe: an axe object from matplotlib can be passed in order to
+           customize the picture.
+        :param True show: either to pop-up matplotlib image or not
         :param True logarithm: show logarithm
 
         TODO: plot normalized data
@@ -675,7 +705,7 @@ class Chromosome(object):
         Retrieve the Hi-C data matrix corresponding to ma given TAD.
         
         :param tad: a given TAD -> :py:class:`dict`
-        :param x_name: name og the experiment
+        :param x_name: name of the experiment
         :param True normed: if Hi-C data has to be normalized
         
         :returns: Hi-C data matrix for the given TAD
@@ -738,16 +768,19 @@ class Chromosome(object):
 
     def _search_centromere(self, xpr):
         """
-        Search for centromere in chromosome, presuposing that chromosome
-        corresponds to a chromosome.
+        Search for centromere in chromosome, assuming that
+        :class:`Chromosome` corresponds to a real chromosome.
         Add a boundary to all experiments where the centromere is.
          * A centromere is defined as the area where the rows/columns of the
-           Hi-C matrix is empty.
+           Hi-C matrix are empty.
         """
         beg = 0
         end = 0
         size = xpr.size
-        hic = xpr.hic_data[0]
+        try:
+            hic = xpr.hic_data[0]
+        except TypeError:
+            return
         for pos, raw in enumerate(xrange(0, size * size, size)):
             if sum(hic[raw:raw + size]) == 0 and not beg:
                 beg = float(pos)
@@ -757,70 +790,53 @@ class Chromosome(object):
         if not beg or not end:
             return
         tads = xpr.tads
-        # in case we already have a centromere defined, check it can be reduced
+        # in case we already have a centromere defined, check if it can be reduced
         if self._centromere:
             if beg > self._centromere[0]:
+                # readjust TADs that have been split around the centromere
                 for tad in tads:
                     if tads[tad]['end'] == self._centromere[0]:
                         tads[tad]['end'] = beg
-                        self._centromere[0] = beg
+                self._centromere[0] = beg
             if end < self._centromere[1]:
+                # readjust TADs that have been split around the centromere
                 for tad in tads:
                     if tads[tad]['start'] == self._centromere[1]:
                         tads[tad]['start'] = end
-                        self._centromere[1] = end
+                self._centromere[1] = end
         else:
             self._centromere = [beg, end]
-            tad = len(tads)
-            plus = 0
-            while tad + plus >= 1:
-                start = tads[tad - 1 + plus]['start']
-                final = tads[tad - 1 + plus]['end']
-                # centromere found?
-                if start < beg < final and start < end < final:
-                    tads[tad]     = copy(tads[tad - 1])
-                    tads[tad]['start'] = end
-                    if (tads[tad]['end'] - tads[tad]['start']) \
-                           * xpr.resolution > self.max_tad_size:
-                        tads[tad]['brk'] = None
-                    else:
-                        tads[tad]['brk'] = tads[tad]['end']
-                    tad -= 1
-                    tads[tad] = copy(tads[tad])
-                    tads[tad]['end'] = beg
-                    if (tads[tad]['end'] - tads[tad]['start']) \
-                           * xpr.resolution > self.max_tad_size:
-                        tads[tad]['brk'] = None
-                    else:
-                        tads[tad]['brk'] = tads[tad]['end']
-                    plus = 1
+        # split TADs overlapping  with the centromere
+        tad  = len(tads)
+        plus = 0
+        while tad + plus >= 1:
+            start = tads[tad - 1 + plus]['start']
+            final = tads[tad - 1 + plus]['end']
+            # centromere found?
+            if start < beg < final and start < end < final:
+                tads[tad]     = copy(tads[tad - 1])
+                tads[tad]['start'] = end
+                if (tads[tad]['end'] - tads[tad]['start']) \
+                       * xpr.resolution > self.max_tad_size:
+                    tads[tad]['brk'] = None
                 else:
-                    tads[tad] = copy(tads[tad - 1 + plus])
+                    tads[tad]['brk'] = tads[tad]['end']
                 tad -= 1
+                tads[tad] = copy(tads[tad])
+                tads[tad]['end'] = beg
+                if (tads[tad]['end'] - tads[tad]['start']) \
+                       * xpr.resolution > self.max_tad_size:
+                    tads[tad]['brk'] = None
+                else:
+                    tads[tad]['brk'] = tads[tad]['end']
+                plus = 1
+            else:
+                tads[tad] = copy(tads[tad - 1 + plus])
+            tad -= 1
         xpr.brks = []
         for tad in tads:
             if tads[tad]['brk']:
                 xpr.brks.append(tads[tad]['brk'])
-
-
-    # def _get_tads_mean_std(self, experiments):
-    #     """
-    #     returns mean and standard deviation of TAD lengths. Value is for both
-    #     TADs.
-
-    #     ..Note: no longer used in core functions
-    #     """
-    #     norm_tads = []
-    #     for tad in experiments:
-    #         for brk in self.experiments[tad]['tads'].values():
-    #             if not brk['brk']:
-    #                 continue
-    #             norm_tads.append(log((brk['end'] - brk['start']) *
-    #                                  self.experiments[tad].resolution))
-    #     length = len(norm_tads)
-    #     mean   = sum(norm_tads)/length
-    #     std    = sqrt(sum([(t-mean)**2 for t in norm_tads])/length)
-    #     return mean, std
 
 
 def generate_rnd_tads(chromosome_len, distr, start=0):
@@ -864,6 +880,21 @@ def generate_shuffle_tads(tads):
 
 
 class ExperimentList(list):
+    """
+    :py:func:`list` of :class:`pytadbit.Experiment`
+    
+    Modified getitem, setitem, and append in order to be able to search
+    experiments by index or by name.
+
+    ExperimentList are linked to the Chromosome
+
+    linked to a :class:`pytadbit.Chromosome`
+    """
+    def __init__(self, thing, crm):
+        super(ExperimentList, self).__init__(thing)
+        self.crm = crm
+        
+
     def __getitem__(self, i):
         try:
             return super(ExperimentList, self).__getitem__(i)
@@ -871,50 +902,51 @@ class ExperimentList(list):
             for nam in self:
                 if nam.name == i:
                     return nam
+            raise KeyError('Experiment {} not found\n'.format(i))
+
+
     def __setitem__(self, i, exp):
         try:
-            return super(ExperimentList, self).__setitem__(i, exp)
+            super(ExperimentList, self).__setitem__(i, exp)
+            exp.crm = self.crm
+            self.crm._get_forbidden_region(exp)
         except TypeError:
             for j, nam in enumerate(self):
                 if nam.name == i:
+                    exp.crm = self.crm
                     self[j] = exp
+                    self.crm._get_forbidden_region(exp)
+                    break
+            else:
+                exp.crm = self.crm
+                self.append(exp)
+                self.crm._get_forbidden_region(exp)
 
 
-# def randomization_test_old(num_sequences, mean, std, score, chr_len, bin_size,
-#                        num=1000, verbose=False):
-#     """
-#     No longer used
-#     """
-#     rand_distr = []
-#     rand_len = []
-#     best = (None, None)
-#     for n in xrange(num):
-#         if verbose:
-#             n = float(n)
-#             if not n / num * 100 % 5:
-#                 stdout.write('\r' + ' ' * 10 + \
-#                              ' randomizing: {:.2%} completed'.format(n/num))
-#                 stdout.flush()
-#         random_tads = [generate_rnd_tads(chr_len, mean,
-#                                             std, bin_size) \
-#                        for _ in xrange(num_sequences)]
-#         rand_len.append(float(sum([len(r)
-#                                    for r in random_tads])) / len(random_tads))
-#         rand_distr.append(align(random_tads,
-#                                 bin_size=bin_size, chr_len=chr_len,
-#                                 verbose=False)[1])
-#         if rand_distr[-1] > best[0]:
-#             best = rand_distr[-1], random_tads
-#     p_value = float(len([n for n in rand_distr if n > score]))/len(rand_distr)
-#     if verbose:
-#         stdout.write('\n {} randomizations finished.'.format(num))
-#         stdout.flush()
-#         align(best[-1], bin_size=bin_size, chr_len=chr_len, verbose=True)
-#         print 'Observed alignment score: {}'.format(score)
-#         print '  Randomized scores between {} and {}'.format(min(rand_distr),
-#                                                              max(rand_distr))
-#         print 'p-value: {}'.format(p_value if p_value
-#                                    else '<{}'.format(1. / num))
-#         print sum(rand_len)/len(rand_len)
-#     return p_value    
+    def append(self, exp):
+        super(ExperimentList, self).append(exp)
+        self.crm._get_forbidden_region(exp)
+        exp.crm = self.crm
+
+
+class ChromosomeSize(int):
+    """
+    This is an integer.
+    
+    Chromosome size in base pairs
+    """
+    def __init__(self, thing):
+        super(ChromosomeSize, self).__init__(thing)
+
+
+class RelativeChromosomeSize(int):
+    """
+    This is an integer.
+    
+    Relative Chromosome size in base pairs. Equal to Chromosome size minus
+    forbidden regions (eg: the centromere)
+    """
+    def __init__(self, thing):
+        super(RelativeChromosomeSize, self).__init__(thing)
+
 

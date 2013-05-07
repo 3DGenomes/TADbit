@@ -7,14 +7,13 @@
 from os.path import isfile
 
 
-def parse_tads(handler, max_size=3000000, bin_size=1):
+def parse_tads(handler):
     """
     Parse a tsv file that contains the list of TADs of a given experiment.
     This file might have been generated whith the
     :func:`pytadbit.tadbit.print_result_R` or with the R binding for tadbit
 
     :param handler: path to file
-    :param 3000000 max_size: maximum size allowed for a TAD
     :param 1 bin_size: resolution of the experiment
 
     :returns: list of TADs, each TAD being a dict of type:
@@ -27,6 +26,9 @@ def parse_tads(handler, max_size=3000000, bin_size=1):
                  'score': score}}
     """
     tads = {}
+    weights = None
+    if type(handler) is tuple:
+        handler, weights = handler
     if type(handler) is dict:
         for pos in xrange(len(handler['end'])):
             start = float(handler['start'][pos])
@@ -56,4 +58,4 @@ def parse_tads(handler, max_size=3000000, bin_size=1):
                          'score': score}
     else:
         raise Exception('File {} not found\n'.format(handler))
-    return tads
+    return tads, weights

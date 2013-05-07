@@ -19,7 +19,7 @@ class Experiment(object):
     :param resolution: resolution of the experiment (size of a bin in bases)
     :param None xp_handler: whether a file or a list of lists corresponding to
        the hi-c data
-    :param None tad_handler: a file or a dict with pre-calculated TADs for this
+    :param None tad_handler: a file or a dict with precomputed TADs for this
        experiment
     :param None parser: a parser function that returns a tuple of lists
        representing the data matrix, and the length of a row/column, with
@@ -29,14 +29,13 @@ class Experiment(object):
        
          chrT_001	chrT_002	chrT_003	chrT_004
          chrT_001	629	164	88	105
-         chrT_002	86	612	175	110
-         chrT_003	159	216	437	105
-         chrT_004	100	111	146	278
-       
+         chrT_002	164	612	175	110
+         chrT_003	88	175	437	100
+         chrT_004	105	110	100	278
+
        the output of parser('example.tsv') might be:
-       ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
-       110, 105, 278]), 4]``
-    :param None max_tad_size: filter TADs longer than this value
+       ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
+       110, 100, 278]), 4]``
     :param None conditions: :py:func:`list` of experimental conditions, can be 
        the cell type, the enzyme... (i.e.: ['HindIII', 'cortex', 'treatment']).
        This parameter may be used to compare the effect of this conditions on
@@ -46,10 +45,11 @@ class Experiment(object):
 
 
     def __init__(self, name, resolution, xp_handler=None, tad_handler=None,
-                 parser=None, max_tad_size=None, no_warn=False, weights=None,
+                 parser=None, no_warn=False, weights=None,
                  conditions=None):
         self.name            = name
         self.resolution      = resolution
+        self.crm             = None
         self._ori_resolution = resolution
         self.hic_data        = None
         self._ori_hic        = None
@@ -63,8 +63,7 @@ class Experiment(object):
         if xp_handler:
             self.load_experiment(xp_handler, parser)
         if tad_handler:
-            self.load_tad_def(tad_handler, max_tad_size=max_tad_size,
-                              weights=weights)
+            self.load_tad_def(tad_handler, weights=weights)
         elif not xp_handler and not no_warn:
             warn('WARNING: this is an empty shell, no data here.\n')
 
@@ -77,7 +76,7 @@ class Experiment(object):
 
     def __add__(self, other):
         """
-        TODO: test
+        sum Hi-C data of experiments into a new one.
         """
         reso1, reso2 = self.resolution, other.resolution
         if self.resolution == other.resolution:
@@ -93,6 +92,7 @@ class Experiment(object):
                              self.hic_data[0], other.hic_data[0])]))
         self._set_resolution(reso1)
         other._set_resolution(reso2)
+        xpr.crm = self.crm
         return xpr
 
 
@@ -103,15 +103,15 @@ class Experiment(object):
         with the data corresponding to new data 
         (:func:`pytadbit.Chromosome.compare_condition`).
 
-        :param resolution: an integer, representing resolution. This numbemust
-            be a multiple of the original resolution, and higher than it.
+        :param resolution: an integer, representing resolution. This number
+           must be a multiple of the original resolution, and higher than it.
         :param True keep_original: either to keep or not the original data
 
         """
         if resolution < self._ori_resolution:
             raise Exception('New resolution might be higher than original.')
         if resolution % self._ori_resolution:
-            raise Exception('New resolution might be a mulitple original.\n' +
+            raise Exception('New resolution might be a multiple original.\n' +
                             '  otherwise it is too complicated for me :P')
         if resolution == self.resolution:
             return
@@ -143,7 +143,7 @@ class Experiment(object):
         
     
 
-    def load_experiment(self, handler, parser=None):
+    def load_experiment(self, handler, parser=None, resolution=None):
         """
         Add Hi-C experiment to Chromosome
         
@@ -165,17 +165,25 @@ class Experiment(object):
            the output of parser('example.tsv') might be:
            ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
            110, 105, 278]), 4]``
+        :param None resolution: resolution of the experiment in the file, it
+           will be adjusted to the resolution of the experiment. By default the
+           file is expected to contain an hi-c experiment at the same resolution
+           as the :class:`pytadbit.Experiment` created, and no change is made.
         
         """
         nums, size = read_matrix(handler, parser=parser)
         self.hic_data = nums
         self.size     = size
+        if resolution:
+            old_res = self.resolution
+            self.resolution = resolution
+            self._set_resolution(old_res, keep_original=False)
         self._zeros   = [int(pos) for pos, raw in enumerate(
             xrange(0, self.size**2, self.size))
                          if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
 
 
-    def load_tad_def(self, handler, weights=None, max_tad_size=None):
+    def load_tad_def(self, handler, weights=None):
         """
          Add Topologically Associated Domains definition detection to Slice
         
@@ -184,14 +192,12 @@ class Experiment(object):
         :param None weights: Store information about the weights, corresponding
            to the normalization of the Hi-C data (see tadbit function
            documentation)
-        :param None max_tad_size: filter TADs longer than this value
         
         """
-        tads = parse_tads(handler, max_size=max_tad_size,
-                          bin_size=self.resolution)
+        tads, wght = parse_tads(handler)
         self.tads = tads
         self.brks = [t['brk'] for t in tads.values() if t['brk']]
-        self.wght  = weights or None
+        self.wght  = weights or wght
         
 
     def normalize_hic(self, method='sqrt'):
@@ -236,7 +242,7 @@ class Experiment(object):
            
            N being the number or rows/columns of the Hi-C matrix in both cases.
 
-           Note that the default behaviour (also used in
+           Note that the default behavior (also used in
            :func:`pytadbit.tadbit.tadbit`)
            corresponds to method='sqrt'.
         """
@@ -270,7 +276,7 @@ class Experiment(object):
 
         :param True normalized: whether to normalize the result using the
            weights (see :func:`normalize_hic`)
-        :param True zscored: apply a z-score trandform over the data.
+        :param True zscored: apply a z-score transform over the data.
         
         """
         values = []
