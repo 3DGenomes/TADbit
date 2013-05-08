@@ -490,6 +490,8 @@ class Chromosome(object):
             for xpr in experiments:
                 if not type(xpr) == Experiment:
                     xprs.append(self.get_experiment(xpr))
+                else:
+                    xprs.append(xpr)
             resolution = xprs[0].resolution
             for xpr in sorted(xprs, key=lambda x: x.name):
                 if xpr.resolution != resolution:
