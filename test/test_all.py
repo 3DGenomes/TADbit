@@ -7,6 +7,7 @@ unittest for pytadbit functions
 import unittest
 from pytadbit import tadbit, batch_tadbit, Chromosome, load_chromosome
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
+from pytadbit.parsers.hic_parser import __check_hic as check_hic
 from os import system
 
 
@@ -16,6 +17,7 @@ class TestTadbit(unittest.TestCase):
     """
    
     def test_01_tadbit(self):
+
         global exp1, exp2, exp3, exp4
         exp1 = tadbit('40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
                      verbose=False, no_heuristic=False)
@@ -25,6 +27,7 @@ class TestTadbit(unittest.TestCase):
                      verbose=False, no_heuristic=False)
         exp4 = tadbit('20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
                      verbose=False, no_heuristic=False, get_weights=True)
+
         breaks = [0, 4, 10, 15, 23, 29, 38, 45]
         scores = [8.0, 7.0, 5.0, 7.0, 4.0, 7.0, 7.0, None]
         self.assertEqual(exp1['start'], breaks)
@@ -49,7 +52,8 @@ class TestTadbit(unittest.TestCase):
                               experiment_resolutions=[40000,20000,20000,20000])
 
         test_chr.align_experiments(verbose=False, randomize=False)
-        score1, pval1 = test_chr.align_experiments(verbose=False, randomize=True)
+        score1, pval1 = test_chr.align_experiments(verbose=False,
+                                                   randomize=True)
         _, pval2 = test_chr.align_experiments(verbose=False, randomize=True,
                                               rnd_method='shuffle')
         self.assertEqual(round(-26.095, 3), round(score1, 3))
@@ -82,7 +86,7 @@ class TestTadbit(unittest.TestCase):
         system('rm -f lolo_hic')
 
 
-    def test_07_tad_clustering(self):
+    def test_06_tad_clustering(self):
         test_chr = Chromosome(name='Test Chromosome',
                               tad_handlers=[exp4],
                               experiment_names=['exp1'],
@@ -92,12 +96,11 @@ class TestTadbit(unittest.TestCase):
         for _, tad in test_chr.iter_tads('exp1'):
             all_tads.append(tad)
         align1, align2, _ = optimal_cmo(all_tads[7], all_tads[10], 7)
-        self.assertEqual(align1,
-                         [0, 1, '-', 2, 3, '-', 4, 5, 6, 7, 8, 9, 10])
+        self.assertEqual(align1, [0, 1, '-', 2, 3, '-', 4, 5, 6, 7, 8, 9, 10])
         self.assertEqual(align2,[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
         
 
-    def test_06_forbidden_regions(self):
+    def test_07_forbidden_regions(self):
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
                                 xp_handler='20Kb/chrT/chrT_D.tsv')
@@ -107,11 +110,43 @@ class TestTadbit(unittest.TestCase):
         items2 = test_chr.forbidden.keys(), test_chr.forbidden.values()
         know1 = ([32, 33, 34, 38, 39, 19, 20, 21, 22,
                   23, 24, 25, 26, 27, 28, 29, 30, 31],
-                 [None, None, None, 'Centromere', 'Centromere', None, None, None,
-                  None, None, None, None, None, None, None, None, None, None])
+                 [None, None, None, 'Centromere', 'Centromere',
+                  None, None, None, None, None, None, None,
+                  None, None, None, None, None, None])
         know2 = ([38], ['Centromere'])
         self.assertEqual(items1, know1)
         self.assertEqual(items2, know2)
+
+
+    def test_08_changing_resolution(self):
+        test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
+        test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
+                                xp_handler='20Kb/chrT/chrT_D.tsv')
+        exp = test_chr.experiments['exp1']
+        sum20 = sum(exp.hic_data[0])
+        exp.set_resolution(80000)
+        sum80 = sum(exp.hic_data[0])
+        check_hic(exp.hic_data[0], exp.size)
+        exp.set_resolution(160000)
+        sum160 = sum(exp.hic_data[0])
+        check_hic(exp.hic_data[0], exp.size)
+        exp.set_resolution(360000)
+        sum360 = sum(exp.hic_data[0])
+        check_hic(exp.hic_data[0], exp.size)
+        exp.set_resolution(2400000)
+        sum2400 = sum(exp.hic_data[0])
+        check_hic(exp.hic_data[0], exp.size)
+        exp.set_resolution(40000)
+        sum40 = sum(exp.hic_data[0])
+        check_hic(exp.hic_data[0], exp.size)
+        exp.set_resolution(20000)
+        sum21 = sum(exp.hic_data[0])
+        check_hic(exp.hic_data[0], exp.size)
+        exp.set_resolution(40000)
+        sum41 = sum(exp.hic_data[0])
+        check_hic(exp.hic_data[0], exp.size)
+        self.assertTrue(sum20 == sum80 == sum160 == sum360 == sum40 \
+                        == sum21 == sum2400 == sum41)
 
 
 if __name__ == "__main__":

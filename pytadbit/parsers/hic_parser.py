@@ -87,7 +87,7 @@ def read_matrix(things, parser=None):
             matrices.append(thing)
             siz = sqrt(len(thing))
             if int(siz) != siz:
-                raise Exception('Error: matrix should be square.')
+                raise AttributeError('ERROR: matrix should be square.\n')
             sizes.append(int(siz))
         elif 'matrix' in str(type(thing)):
             try:
@@ -100,7 +100,19 @@ def read_matrix(things, parser=None):
                 print 'Error found:', exc
         else:
             raise Exception('Unable to read this file or whatever it is :)')
-    if all([s==sizes[0] for s in sizes]):
+    if all([s==sizes[0] for s in sizes]) and \
+           all([__check_hic(m, sizes[0]) for m in matrices]):
         return matrices, sizes[0]
     raise Exception('All matrices must have the same size ' +
                     '(same chromosome and same bins).')
+
+
+def __check_hic(hic, size):
+    """
+    check if hi-c data is symmetric
+    """
+    for i in xrange(size):
+        for j in xrange(i + 1, size):
+            if not hic[i * size + j] == hic[j * size + i]:
+                raise AttributeError('ERROR: matrix should be square.\n')
+    return True

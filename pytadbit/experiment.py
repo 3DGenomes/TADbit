@@ -83,20 +83,20 @@ class Experiment(object):
             resolution = self.resolution
         else:
             resolution = max(reso1, reso2)
-            self._set_resolution(resolution)
-            other._set_resolution(resolution)
+            self.set_resolution(resolution)
+            other.set_resolution(resolution)
             
         xpr = Experiment(name='{}+{}'.format(self.name, other.name),
                          resolution=resolution,
                          xp_handler=tuple([i + j for i, j in zip(
                              self.hic_data[0], other.hic_data[0])]))
-        self._set_resolution(reso1)
-        other._set_resolution(reso2)
+        self.set_resolution(reso1)
+        other.set_resolution(reso2)
         xpr.crm = self.crm
         return xpr
 
 
-    def _set_resolution(self, resolution, keep_original=True):
+    def set_resolution(self, resolution, keep_original=True):
         """
         Set a new value for resolution. copy original data into
         Experiment._ori_hic and replaces the Experiment.hic_data
@@ -121,27 +121,32 @@ class Experiment(object):
             self.size       = self.resolution / self._ori_resolution * self.size
             self.resolution = self._ori_resolution
             return
-        # if we already changed resolution before
+        # if current resolution is the original one
         if self.resolution == self._ori_resolution:
-            self._ori_hic = self.hic_data
+            self._ori_hic = self.hic_data[:]
         self.resolution = resolution
         fact = self.resolution / self._ori_resolution
         # super for!
-        size = self.size
+        size = int(sqrt(len(self._ori_hic[0])))
         self.hic_data = [[]]
         self.size     = size / fact
-        for i in xrange(0, size - fact, fact):
-            for j in xrange(0, size - fact, fact):
+        rest = size % fact
+        if rest:
+            self.size += 1
+        for i in xrange(0, size, fact):
+            for j in xrange(0, size, fact):
                 val = 0
                 for k in xrange(fact):
+                    if i + k >= size: break
                     for l in  xrange(fact):
+                        if j + l >= size: break
                         val += self._ori_hic[0][(i + k) * size + j + l]
                 self.hic_data[0].append(val)
+        # hic_data needs always to be stored as tuple
         self.hic_data[0] = tuple(self.hic_data[0])
         if not keep_original:
             del(self._ori_hic)
-        
-    
+
 
     def load_experiment(self, handler, parser=None, resolution=None):
         """
@@ -177,7 +182,7 @@ class Experiment(object):
         if resolution:
             old_res = self.resolution
             self.resolution = resolution
-            self._set_resolution(old_res, keep_original=False)
+            self.set_resolution(old_res, keep_original=False)
         self._zeros   = [int(pos) for pos, raw in enumerate(
             xrange(0, self.size**2, self.size))
                          if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
@@ -364,6 +369,24 @@ class Experiment(object):
         return [[hic[i+siz * j] for i in xrange(siz)] for j in xrange(siz)]
 
 
+    def print_hic_matrix(self, print_it=True):
+        """
+        Returns the Hi-C matrix as string
+
+        :returns: list of lists representing Hi-C data matrix of current
+           experiment
+        """
+        siz = self.size
+        hic = self.hic_data[0]
+        out = '\n'.join(['\t'.join([str(hic[i+siz * j]) \
+                                    for i in xrange(siz)]) \
+                         for j in xrange(siz)])
+        if print_it:
+            print out
+        else:
+            return out + '\n'
+
+
     def generate_densities(self):
         """
         Related to the generation of 3D models.
@@ -375,5 +398,5 @@ class Experiment(object):
             dens[i] = self.resolution
         return dens
 
-      
+
 
