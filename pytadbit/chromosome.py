@@ -773,22 +773,31 @@ class Chromosome(object):
         Search for centromere in chromosome, assuming that
         :class:`Chromosome` corresponds to a real chromosome.
         Add a boundary to all experiments where the centromere is.
-         * A centromere is defined as the area where the rows/columns of the
-           Hi-C matrix are empty.
+         * A centromere is defined as the largest area where the rows/columns of
+           the Hi-C matrix are empty.
         """
-        beg = 0
-        end = 0
+        beg = end = 0
         size = xpr.size
         try:
             hic = xpr.hic_data[0]
         except TypeError:
             return
+        # search for largest empty region of the chromosome
+        best = (0, 0, 0)
         for pos, raw in enumerate(xrange(0, size * size, size)):
             if sum(hic[raw:raw + size]) == 0 and not beg:
                 beg = float(pos)
             if sum(hic[raw:raw + size]) != 0 and beg:
                 end = float(pos)
-                break
+                if (end - beg) > best[0]:
+                    best = ((end - beg), beg, end)
+                beg = end = 0
+        # this is for weared cases where centromere is marking the end of Hi-C data
+        if beg and not end:
+            end = float(pos)
+            if (end - beg) > best[0]:
+                best = ((end - beg), beg, end)
+        beg, end = best[1:]
         if not beg or not end:
             return
         tads = xpr.tads

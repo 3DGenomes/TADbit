@@ -179,10 +179,8 @@ class Experiment(object):
         nums, size = read_matrix(handler, parser=parser)
         self.hic_data = nums
         self.size     = size
-        if resolution:
-            old_res = self.resolution
-            self.resolution = resolution
-            self.set_resolution(old_res, keep_original=False)
+        resolution = resolution or self.resolution
+        self.set_resolution(resolution, keep_original=False)
         self._zeros   = [int(pos) for pos, raw in enumerate(
             xrange(0, self.size**2, self.size))
                          if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
