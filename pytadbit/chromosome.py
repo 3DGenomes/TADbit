@@ -282,6 +282,10 @@ class Chromosome(object):
             alignment is not better than random alignment
         :param interpolate rnd_method: by default uses interpolation of TAD
            distribution. Alternative is 'shuffle' where TADs are simply shuffled
+        :param global method: if global, Needleman-Wunsch is used to align
+            (see :func:`pytadbit.boundary_aligner.globally.needleman_wunsch`);
+            if reciprocal, a method based on reciprocal closest boundaries is
+            used (see :func:`pytadbit.boundary_aligner.reciprocally.reciprocal`)
 
         :returns: the alignment and the score of the alignment (by default)
         """
