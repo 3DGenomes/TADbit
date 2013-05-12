@@ -35,6 +35,7 @@ def load_chromosome(in_f, fast=2):
     :param 2 fast: if fast=2 do not load Hi-C data (in the case that they were
        saved in a separate file see :func:`Chromosome.save_chromosome`). If fast
        is equal to 1, weight would be skipped from load in order to save memory.
+       Finally if fast=0, both weights and Hi-C data will be loaded.
     
     :returns: Chromosome object
     """
@@ -58,14 +59,14 @@ def load_chromosome(in_f, fast=2):
     crm._centromere     = dico['_centromere']
     if type(dico['experiments'][name]['hi-c']) == str and fast!= int(2):
         try:
-            dicp = load(open(dico['experiments'][name]['hi-c']))
+            dicp = load(open(in_f + '_hic'))
         except IOError:
             raise Exception('ERROR: file {} not found\n'.format(
                 dico['experiments'][name]['hi-c']))
         for name in dico['experiments']:
             crm.get_experiment(name).hic_data = dicp[name]['hi-c']
             if fast != 1:
-                crm.get_experiment(name).wght     = dicp[name]['wght']
+                crm.get_experiment(name).wght = dicp[name]['wght']
     elif not fast:
         warn('WARNING: data not saved correctly for fast loading.\n')
     return crm
@@ -218,8 +219,6 @@ class Chromosome(object):
            automatically search for both files.
         :param False force: overwrite existing file.
 
-        FIXME: out_f that is stored here should be changed... when copied
-        elsewhere loading will not work
         """
         while exists(out_f) and not force:
             out_f += '_'
@@ -242,8 +241,8 @@ class Chromosome(object):
                 dicp[xpr.name] = {
                     'wght': xpr.wght,
                     'hi-c': xpr.hic_data}
-                dico['experiments'][xpr.name]['wght'] = out_f + '_hic'
-                dico['experiments'][xpr.name]['hi-c'] = out_f + '_hic'
+                dico['experiments'][xpr.name]['wght'] = None
+                dico['experiments'][xpr.name]['hi-c'] = None
             else:
                 dico['experiments'][xpr.name]['wght'] = xpr.wght
                 dico['experiments'][xpr.name]['hi-c'] = xpr.hic_data
@@ -282,7 +281,7 @@ class Chromosome(object):
             alignment is not better than random alignment
         :param interpolate rnd_method: by default uses interpolation of TAD
            distribution. Alternative is 'shuffle' where TADs are simply shuffled
-        :param global method: if global, Needleman-Wunsch is used to align
+        :param reciprocal method: if global, Needleman-Wunsch is used to align
             (see :func:`pytadbit.boundary_aligner.globally.needleman_wunsch`);
             if reciprocal, a method based on reciprocal closest boundaries is
             used (see :func:`pytadbit.boundary_aligner.reciprocally.reciprocal`)
@@ -534,12 +533,11 @@ class Chromosome(object):
         Unless Chromosome size was defined by hand.
         
         """
-        if self._given_size:
-            return
-        self.size = max(xpr.tads[max(xpr.tads)]['end'] * xpr.resolution,
-                        self.size)
+        if not self._given_size:
+            self.size = max(xpr.tads[max(xpr.tads)]['end'] * xpr.resolution,
+                            self.size)
+            self.size   = ChromosomeSize(self.size)
         self.r_size = self.size - len(self.forbidden) * xpr.resolution
-        self.size   = ChromosomeSize(self.size)
         self.r_size = RelativeChromosomeSize(self.size)
 
 

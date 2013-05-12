@@ -149,6 +149,42 @@ class TestTadbit(unittest.TestCase):
                         == sum21 == sum2400 == sum41)
 
 
+    def test_09_hic_normalization(self):
+        """
+        TODO: check with Davide's script
+        """
+        test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
+        test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
+                                xp_handler='20Kb/chrT/chrT_D.tsv')
+        exp = test_chr.experiments[0]
+        exp.load_experiment('20Kb/chrT/chrT_A.tsv')
+        exp.get_hic_zscores()
+        exp.get_hic_zscores(zscored=False)
+        exp.get_hic_zscores(normalized=False)
+
+
+    def test_10_generate_weights(self):
+        """
+        TODO: using both formulas, the one from Guillaume and the one from Francois
+        method names are: 'sqrt' or 'over_tot'
+        """
+        pass
+
+
+    def test_11_write_interaction_pairs(self):
+        """
+        TODO: same as with test 09
+        """
+        pass
+
+
+    def test_12_3D_modelling(self):
+        """
+        quick test to generate 3D coordinates from 3? simple models???
+        """
+        pass
+
+
 if __name__ == "__main__":
     unittest.main()
     
