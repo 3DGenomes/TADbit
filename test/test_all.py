@@ -168,7 +168,14 @@ class TestTadbit(unittest.TestCase):
         TODO: using both formulas, the one from Guillaume and the one from Francois
         method names are: 'sqrt' or 'over_tot'
         """
-        pass
+        test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
+        test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
+                                xp_handler='20Kb/chrT/chrT_D.tsv')
+        exp = test_chr.experiments[0]
+        tadbit_weigths = exp.wght[:]
+        exp.wght = None
+        exp.normalize_hic()
+        self.assertEqual(tadbit_weigths[0], exp.wght[0])
 
 
     def test_11_write_interaction_pairs(self):

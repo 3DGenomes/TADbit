@@ -253,13 +253,17 @@ class Experiment(object):
             raise Exception('ERROR: No Hi-C data loaded\n')
         if self.wght:
             warn('WARNING: removing previous weights\n')
+        forbidden = [i for i in xrange(self.size) if not self.hic_data[0][i*self.size+i]]
         rowsums = []
         for i in xrange(self.size):
             i *= self.size
             rowsums.append(0)
+            if i in forbidden:
+                continue
             for j in xrange(self.size):
-                rowsums[-1] += self.hic_data[0][i + j]
-        self.wght = [[0 for _ in xrange(self.size * self.size)]]
+                if not j in forbidden:
+                    rowsums[-1] += self.hic_data[0][i + j]
+        self.wght = [[0. for _ in xrange(self.size * self.size)]]
         if method == 'bytot':
             total = sum(rowsums)
             func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
@@ -269,7 +273,10 @@ class Experiment(object):
             raise LookupError('Only "sqrt" and "bytot" methods are implemented')
         for i in xrange(self.size):
             for j in xrange(self.size):
-                self.wght[0][i * self.size + j] = func(i, j)
+                if i in forbidden or j in forbidden:
+                    self.wght[0][i * self.size + j] = 0.0
+                else:
+                    self.wght[0][i * self.size + j] = func(i, j)
 
 
     def get_hic_zscores(self, normalized=True, zscored=True):
