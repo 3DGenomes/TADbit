@@ -57,7 +57,6 @@ def load_chromosome(in_f, fast=2):
     crm.max_tad_size    = dico['max_tad_size']
     crm.forbidden       = dico['forbidden']
     crm._centromere     = dico['_centromere']
-    print dico['experiments'].keys()
     if type(dico['experiments'][name]['hi-c']) == str and fast!= int(2):
         try:
             dicp = load(open(in_f + '_hic'))
