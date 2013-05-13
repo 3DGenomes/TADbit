@@ -57,6 +57,7 @@ def load_chromosome(in_f, fast=2):
     crm.max_tad_size    = dico['max_tad_size']
     crm.forbidden       = dico['forbidden']
     crm._centromere     = dico['_centromere']
+    print dico['experiments'].keys()
     if type(dico['experiments'][name]['hi-c']) == str and fast!= int(2):
         try:
             dicp = load(open(in_f + '_hic'))
@@ -934,6 +935,18 @@ class ExperimentList(list):
                 exp.crm = self.crm
                 self.append(exp)
                 self.crm._get_forbidden_region(exp)
+
+
+    def __delitem__(self, i):
+        try:
+            return super(ExperimentList, self).__getitem__(i)
+        except TypeError:
+            for j, nam in enumerate(self):
+                if nam.name == i:
+                    del(self[j])
+                    break
+            else:
+                raise KeyError('Experiment {} not found\n'.format(i))
 
 
     def append(self, exp):
