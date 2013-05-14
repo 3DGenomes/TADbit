@@ -943,11 +943,12 @@ class ExperimentList(list):
 
     def __delitem__(self, i):
         try:
-            return super(ExperimentList, self).__getitem__(i)
+            super(ExperimentList, self).__delitem__(i)
         except TypeError:
             for j, nam in enumerate(self):
                 if nam.name == i:
-                    del(self[j])
+                    exp = self.pop(j)
+                    del(exp)
                     break
             else:
                 raise KeyError('Experiment {} not found\n'.format(i))
