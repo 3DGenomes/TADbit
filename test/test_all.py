@@ -165,7 +165,7 @@ class TestTadbit(unittest.TestCase):
 
     def test_10_generate_weights(self):
         """
-        TODO: using both formulas, the one from Guillaume and the one from Francois
+        TODO: using Francois' formula
         method names are: 'sqrt' or 'over_tot'
         """
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)

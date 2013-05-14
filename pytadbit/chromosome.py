@@ -954,9 +954,12 @@ class ExperimentList(list):
 
 
     def append(self, exp):
-        super(ExperimentList, self).append(exp)
-        self.crm._get_forbidden_region(exp)
-        exp.crm = self.crm
+        if exp.name in [e.name for e in self]:
+            self[exp.name] = exp
+        else:
+            super(ExperimentList, self).append(exp)
+            self.crm._get_forbidden_region(exp)
+            exp.crm = self.crm
 
 
 class ChromosomeSize(int):
