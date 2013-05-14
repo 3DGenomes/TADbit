@@ -163,35 +163,35 @@ class Chromosome(object):
         self.__update_size(xpr)
 
 
-    def compare_condition(self, condition1, condition2=None, xpers=None):
-        """
-        Check how experimental conditions may affect the definition of TADs.
+    # def compare_condition(self, condition1, condition2=None, xpers=None):
+    #     """
+    #     Check how experimental conditions may affect the definition of TADs.
         
-        :param condition1: Experimental condition to compare.
-        :param None condition2: condition to compare with. If None condition1 
-           is compared to all remaining conditions.
-        :param None xpers: a list of experiment names or objects to compare.
+    #     :param condition1: Experimental condition to compare.
+    #     :param None condition2: condition to compare with. If None condition1 
+    #        is compared to all remaining conditions.
+    #     :param None xpers: a list of experiment names or objects to compare.
         
-        :returns: TODO ... all
-        """
-        if xpers:
-            if type(xpers[0]) == Experiment:
-                xnames = [x.name for x in xpers]
-            else:
-                xnames = xpers
-                xpers = [self.get_experiment(x) for x in xnames]
-        else:
-            xpers = self.experiments
-        # define a set of conditions
-        condset = set(reduce(lambda x, y: x + y, 
-                             [x.conditions for x in xpers \
-                              if condition1 in x.conditions]))
-        if not condition1 in condset:
-            raise Exception('ERROR: condition ' + 
-                            '{} not found.\n'.format(condition))
-        # Align if not aligned
-        if not tuple(sorted(xnames)) in self.alignment:
-            self.align_experiments(names=xnames)
+    #     :returns:  ... all
+    #     """
+    #     if xpers:
+    #         if type(xpers[0]) == Experiment:
+    #             xnames = [x.name for x in xpers]
+    #         else:
+    #             xnames = xpers
+    #             xpers = [self.get_experiment(x) for x in xnames]
+    #     else:
+    #         xpers = self.experiments
+    #     # define a set of conditions
+    #     condset = set(reduce(lambda x, y: x + y, 
+    #                          [x.conditions for x in xpers \
+    #                           if condition1 in x.conditions]))
+    #     if not condition1 in condset:
+    #         raise Exception('ERROR: condition ' + 
+    #                         '{} not found.\n'.format(condition))
+    #     # Align if not aligned
+    #     if not tuple(sorted(xnames)) in self.alignment:
+    #         self.align_experiments(names=xnames)
         
         
     def get_experiment(self, name):
@@ -201,9 +201,9 @@ class Chromosome(object):
         :param name: name of the wanted experiment
         :returns: :class:`pytadbit.Experiment`
         """
-        for x in self.experiments:
-            if x.name == name:
-                return x
+        for exp in self.experiments:
+            if exp.name == name:
+                return exp
         raise Exception('ERROR: experiment ' +
                         '{} not found\n'.format(name))
                 
@@ -404,11 +404,11 @@ class Chromosome(object):
                 continue
             ali = []
             i = 0
-            for x in self.alignment[name][xpr.name]:
-                if x == '-':
-                    ali.append((x, -1.0))
+            for pos in self.alignment[name][xpr.name]:
+                if pos == '-':
+                    ali.append((pos, -1.0))
                     continue
-                cell = x
+                cell = pos
                 scr = xpr.tads[i]['score']
                 scr = scr if scr >= 0 else 10.0
                 ali.append((cell, scr))
@@ -691,7 +691,8 @@ class Chromosome(object):
             # aligns, sc = align(rnd_tads, verbose=False)
             # rnd_distr.append(sc)
             # for xpr in aligns:
-            #     print sc, '|'.join(['%5s' % (str(x/1000)[:-2] if x!='-' else '-' * 4)\
+            #     print sc, '|'.join(['%5s' % (str(x/1000)[:-2] \
+            # if x!='-' else '-' * 4)\
             #                         for x in xpr])
             # print ''
         pval = float(len([n for n in rnd_distr if n > score])) / len(rnd_distr)
@@ -731,7 +732,8 @@ class Chromosome(object):
                 if not normed:
                     continue
                 try:
-                    matrix[j][i] = float(matrix[j][i]) / xpr.wght[0][tadi + tadj]
+                    matrix[j][i] = float(matrix[j][i]) \
+                                   / xpr.wght[0][tadi + tadj]
                 except ZeroDivisionError:
                     matrix[j][i] = 0.0
         return matrix
@@ -791,6 +793,7 @@ class Chromosome(object):
             return
         # search for largest empty region of the chromosome
         best = (0, 0, 0)
+        pos = 0
         for pos, raw in enumerate(xrange(0, size * size, size)):
             if sum(hic[raw:raw + size]) == 0 and not beg:
                 beg = float(pos)
@@ -799,7 +802,7 @@ class Chromosome(object):
                 if (end - beg) > best[0]:
                     best = ((end - beg), beg, end)
                 beg = end = 0
-        # this is for weared cases where centromere is marking the end of Hi-C data
+        # this is for weared cases where centromere is at the end of Hi-C data
         if beg and not end:
             end = float(pos)
             if (end - beg) > best[0]:
@@ -808,7 +811,7 @@ class Chromosome(object):
         if not beg or not end:
             return
         tads = xpr.tads
-        # in case we already have a centromere defined, check if it can be reduced
+        # if we already have a centromere defined, check if it can be reduced
         if self._centromere:
             if beg > self._centromere[0]:
                 # readjust TADs that have been split around the centromere
