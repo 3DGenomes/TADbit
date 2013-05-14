@@ -38,6 +38,8 @@ def load_chromosome(in_f, fast=2):
        Finally if fast=0, both weights and Hi-C data will be loaded.
     
     :returns: Chromosome object
+
+    TODO: remove first try/except typeerror... this is loading old experiments
     """
     dico = load(open(in_f))
     name = ''
@@ -51,7 +53,10 @@ def load_chromosome(in_f, fast=2):
         xpr.brks       = dico['experiments'][name]['brks']
         xpr.conditions = dico['experiments'][name]['cond']
         xpr.size       = dico['experiments'][name]['size']
-        crm.experiments.append(xpr)
+        try:
+            crm.experiments.append(xpr)
+        except TypeError:
+            continue
     crm.size            = dico['size']
     crm.r_size          = dico['r_size']
     crm.max_tad_size    = dico['max_tad_size']
