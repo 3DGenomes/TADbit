@@ -851,7 +851,7 @@ class Chromosome(object):
                 else:
                     tads[tad]['brk'] = tads[tad]['end']
                 plus = 1
-            else:
+            elif plus:
                 tads[tad] = copy(tads[tad - 1 + plus])
             tad -= 1
         xpr.brks = []
