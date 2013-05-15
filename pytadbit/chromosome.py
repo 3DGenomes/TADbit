@@ -828,36 +828,39 @@ class Chromosome(object):
         else:
             self._centromere = [beg, end]
         # split TADs overlapping  with the centromere
-        tad  = len(tads)
-        plus = 0
-        while tad + plus >= 1:
-            start = tads[tad - 1 + plus]['start']
-            final = tads[tad - 1 + plus]['end']
-            # centromere found?
-            if start < beg < final and start < end < final:
-                tads[tad]     = copy(tads[tad - 1])
-                tads[tad]['start'] = end
-                if (tads[tad]['end'] - tads[tad]['start']) \
-                       * xpr.resolution > self.max_tad_size:
-                    tads[tad]['brk'] = None
+        if [True for t in tads.values() \
+            if t['start'] < beg < t['end'] \
+            and t['start'] < end < t['end']]:
+            tad  = len(tads)
+            plus = 0
+            while tad + plus >= 1:
+                start = tads[tad - 1 + plus]['start']
+                final = tads[tad - 1 + plus]['end']
+                # centromere found?
+                if start < beg < final and start < end < final:
+                    tads[tad]     = copy(tads[tad - 1])
+                    tads[tad]['start'] = end
+                    if (tads[tad]['end'] - tads[tad]['start']) \
+                           * xpr.resolution > self.max_tad_size:
+                        tads[tad]['brk'] = None
+                    else:
+                        tads[tad]['brk'] = tads[tad]['end']
+                    tad -= 1
+                    tads[tad] = copy(tads[tad])
+                    tads[tad]['end'] = beg
+                    if (tads[tad]['end'] - tads[tad]['start']) \
+                           * xpr.resolution > self.max_tad_size:
+                        tads[tad]['brk'] = None
+                    else:
+                        tads[tad]['brk'] = tads[tad]['end']
+                    plus = 1
                 else:
-                    tads[tad]['brk'] = tads[tad]['end']
+                    tads[tad] = copy(tads[tad - 1 + plus])
                 tad -= 1
-                tads[tad] = copy(tads[tad])
-                tads[tad]['end'] = beg
-                if (tads[tad]['end'] - tads[tad]['start']) \
-                       * xpr.resolution > self.max_tad_size:
-                    tads[tad]['brk'] = None
-                else:
-                    tads[tad]['brk'] = tads[tad]['end']
-                plus = 1
-            elif plus:
-                tads[tad] = copy(tads[tad - 1 + plus])
-            tad -= 1
-        xpr.brks = []
-        for tad in tads:
-            if tads[tad]['brk']:
-                xpr.brks.append(tads[tad]['brk'])
+            xpr.brks = []
+            for tad in tads:
+                if tads[tad]['brk']:
+                    xpr.brks.append(tads[tad]['brk'])
 
 
 def generate_rnd_tads(chromosome_len, distr, start=0):
