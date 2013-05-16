@@ -4,20 +4,23 @@
 
 """
 
-from os.path import exists
+from os.path                           import exists
 from pytadbit.boundary_aligner.aligner import align
-from pytadbit import tadbit
-from pytadbit.experiment import Experiment
-from string import ascii_lowercase as letters
-from warnings import warn
-from copy import deepcopy as copy
-from cPickle import load, dump
-from pytadbit.alignment import Alignment, randomization_test
+from pytadbit                          import tadbit
+from pytadbit.experiment               import Experiment
+from string                            import ascii_lowercase as letters
+from warnings                          import warn
+from copy                              import deepcopy as copy
+from cPickle                           import load, dump
+from pytadbit.alignment                import Alignment, randomization_test
+from numpy                             import log2
+from random                            import random
 
-from numpy import log2
-from matplotlib import pyplot as plt
+try:
+    from matplotlib import pyplot as plt
+except ImportError:
+    warn('matplotlib not found\n')
 
-from random import random, shuffle
 
 
 
