@@ -4,8 +4,14 @@
 
 """
 
-from sys import stdout
 from pytadbit.utils import colorize
+from random import random, shuffle
+from sys import stdout
+from pytadbit.boundary_aligner.aligner import align
+try:
+    from scipy.interpolate import interp1d
+except ImportError:
+    from pytadbit.utils import Interpolate as interp1d
 
 
 class Alignment(object):
@@ -15,9 +21,8 @@ class Alignment(object):
         self.__values = []        
         self.__keys = []
         self.__len = None
-        for exp in alignment:
-            self.add_aligned_exp(exp, alignment[exp])
-        print self.__values
+        for seq, exp in zip(alignment, experiments):
+            self.add_aligned_exp(exp.name, seq)
         self.score = score
 
 
@@ -29,15 +34,15 @@ class Alignment(object):
         """
         calls Alignment.print_alignment
         """
-        self.print_alignment(string=False)
+        return self.write_alignment(string=True)
 
 
     def __repr__(self):
         """
         Alignment description
         """
-        print ('Alignment of boundaries (length: %s, ' +
-               'number of experiments: %s)') % (len(self), len(self.__keys))
+        return ('Alignment of boundaries (length: %s, ' +
+                'number of experiments: %s)') % (len(self), len(self.__keys))
 
 
     def __getitem__(self, i):
@@ -104,7 +109,7 @@ class Alignment(object):
             yield col
 
 
-    def print_alignment(self, name=None, xpers=None, string=False,
+    def write_alignment(self, name=None, xpers=None, string=False,
                         title='', ftype='ansi'):
         """
         Print alignment of TAD boundaries between different experiments.
@@ -185,8 +190,7 @@ class Alignment(object):
            first element is the column number in the alignment and second
            element is the list of boundaries in this column.
 
-        Example
-        -------
+        **Example**
 
         ::
 
@@ -239,7 +243,8 @@ class Alignment(object):
                 scores.append(TAD((('brk', None),
                                    ('end', 0.0),
                                    ('score', 0.0),
-                                   ('start', 0.0)), i, name))
+                                   ('start', 0.0)), i,
+                                  self.__experiments[name]))
                 continue
             try:
                 while exp.tads[p]['brk'] < 0:
@@ -248,7 +253,7 @@ class Alignment(object):
                 continue
             if exp.tads[p]['score'] < 0:
                 exp.tads[p]['score'] = 10
-            scores.append(TAD(exp.tads[p], i, name))
+            scores.append(TAD(exp.tads[p], i, self.__experiments[name]))
             p += 1
         if not self.__len:
             self.__len = len(scores)
@@ -264,4 +269,151 @@ class TAD(dict):
         self.update(dict((('pos', i),('exp', exp))))
         
     def __repr__(self):
-        return '>' + (str(int(self['end'])) if int(self['end']) else '-') + '<'
+        return '>' + (str(int(self['end']) * self['exp'].resolution / 1000) \
+                      if int(self['end']) else '-') + '<'
+
+
+def _interpolation(experiments):
+    """
+    Calculate the distribution of TAD lengths, and interpolate it using
+    interp1d function from scipy.
+
+    :param experiments: names of experiments included in the
+        distribution
+    :return: function to interpolate a given TAD length according to a
+        probability value
+    """
+    # get all TAD lengths and multiply it by bin size of the experiment
+    norm_tads = []
+    for tad in experiments:
+        for brk in tad.tads.values():
+            if not brk['brk']:
+                continue
+            norm_tads.append((brk['end'] - brk['start']) * tad.resolution)
+    win = [0.0]
+    cnt = [0.0]
+    max_d = max(norm_tads)
+    # we ask here for a mean number of 20 values per bin 
+    bin_s = int(max_d / (float(len(norm_tads)) / 20))
+    for bee in range(0, int(max_d) + bin_s, bin_s):
+        win.append(len([i for i in norm_tads
+                        if bee < i <= bee + bin_s]) + win[-1])
+        cnt.append(bee + float(bin_s))
+    win = [float(v) / max(win) for v in win]
+    ## to see the distribution and its interpolation
+    #distr = interp1d(x, y)
+    #from matplotlib import pyplot as plt
+    #plt.plot([distr(float(i)/1000) for i in xrange(1000)],
+    #         [float(i)/1000 for i in xrange(1000)])
+    #plt.hist(norm_tads, normed=True, bins=20, cumulative=True)
+    #plt.show()
+    return interp1d(win, cnt)
+
+
+def randomization_test(xpers, score=None, num=1000, verbose=False,
+                       method='interpolate', r_size=None):
+    """
+    Return the probability that original alignment is better than an
+    alignment of randomized boundaries.
+
+    :param tads: original TADs of each experiment to align
+    :param distr: the function to interpolate TAD lengths from probability
+    :param None score: just to print it when verbose
+    :param 1000 num: number of random alignment to generate for comparison
+    :param False verbose: to print something nice
+    :param interpolate method: how to generate random tads (alternative is
+       'shuffle').
+    """
+    if not method in ['interpolate', 'shuffle']:
+        raise Exception('method should be either "interpolate" or ' +
+                        '"shuffle"\n')
+    if method == 'interpolate' and not r_size:
+        raise Exception('should provide Chromosome r_size if interpolate\n')
+    tads = []
+    for xpr in xpers:
+        if not xpr.tads:
+            raise Exception('No TADs defined, use find_tad function.\n')
+        tads.append([(t['end'] - t['start']) * \
+                     xpr.resolution for t in xpr.tads.values()])
+    rnd_distr = []
+    # rnd_len = []
+    distr = _interpolation(xpers) if method is 'interpolate' else None
+    rnd_exp = lambda : tads[int(random() * len(tads))]
+    for val in xrange(num):
+        if verbose:
+            val = float(val)
+            if not val / num * 100 % 5:
+                stdout.write('\r' + ' ' * 10 + 
+                             ' randomizing: '
+                             '{:.2%} completed'.format(val/num))
+                stdout.flush()
+        if method is 'interpolate':
+            rnd_tads = [generate_rnd_tads(r_size, distr)
+                        for _ in xrange(len(tads))]
+            # rnd_len.append(float(sum([len(r) for r in rnd_tads]))
+            #                / len(rnd_tads))
+        else:
+            rnd_tads = [generate_shuffle_tads(rnd_exp())
+                        for _ in xrange(len(tads))]
+            # rnd_len.append(len(tads))
+        rnd_distr.append(align(rnd_tads, verbose=False)[1])
+        # aligns, sc = align(rnd_tads, verbose=False)
+        # rnd_distr.append(sc)
+        # for xpr in aligns:
+        #     print sc, '|'.join(['%5s' % (str(x/1000)[:-2] \
+        # if x!='-' else '-' * 4)\
+        #                         for x in xpr])
+        # print ''
+    pval = float(len([n for n in rnd_distr if n > score])) / len(rnd_distr)
+    if verbose:
+        stdout.write('\n {} randomizations finished.'.format(num))
+        stdout.flush()
+        print '  Observed alignment score: {}'.format(score)
+        # print '  Mean number of boundaries: {}; observed: {}'.format(
+        #     sum(rnd_len)/len(rnd_len),
+        #     str([len(self.experiments[e].brks)
+        #          for e in self.experiments]))
+        print 'Randomized scores between {} and {}; observed: {}'.format(
+            min(rnd_distr), max(rnd_distr), score)
+        print 'p-value: {}'.format(pval if pval else '<{}'.format(1./num))
+    return pval
+
+
+def generate_rnd_tads(chromosome_len, distr, start=0):
+    """
+    Generates random TADs over a chromosome of a given size according to a given
+    distribution of lengths of TADs.
+    
+    :param chromosome_len: length of the chromosome
+    :param distr: function that returns a TAD length depending on a p value
+    :param bin_size: size of the bin of the Hi-C experiment
+    :param 0 start: starting position in the chromosome
+    
+    :returns: list of TADs
+    """
+    pos = start
+    tads = []
+    while True:
+        pos += distr(random())
+        if pos > chromosome_len:
+            break
+        tads.append(float(pos))
+    return tads
+
+
+def generate_shuffle_tads(tads):
+    """
+    Returns a shuffle version of a given list of TADs
+
+    :param tads: list of TADs
+
+    :returns: list of shuffled TADs
+    """
+    rnd_tads = tads[:]
+    shuffle(rnd_tads)
+    tads = []
+    for tad in rnd_tads:
+        if tads:
+            tad += tads[-1]
+        tads.append(tad)
+    return tads

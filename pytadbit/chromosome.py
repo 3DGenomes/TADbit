@@ -4,7 +4,6 @@
 
 """
 
-from sys import stdout
 from os.path import exists
 from pytadbit.boundary_aligner.aligner import align
 from pytadbit import tadbit
@@ -13,14 +12,10 @@ from string import ascii_lowercase as letters
 from warnings import warn
 from copy import deepcopy as copy
 from cPickle import load, dump
-from pytadbit.utils import colorize
+from pytadbit.alignment import Alignment, randomization_test
 
-try:
-    from scipy.interpolate import interp1d
-    from numpy import log2
-    from matplotlib import pyplot as plt
-except ImportError:
-    from pytadbit.utils import Interpolate as interp1d
+from numpy import log2
+from matplotlib import pyplot as plt
 
 from random import random, shuffle
 
@@ -163,37 +158,6 @@ class Chromosome(object):
         self.__update_size(xpr)
 
 
-    # def compare_condition(self, condition1, condition2=None, xpers=None):
-    #     """
-    #     Check how experimental conditions may affect the definition of TADs.
-        
-    #     :param condition1: Experimental condition to compare.
-    #     :param None condition2: condition to compare with. If None condition1 
-    #        is compared to all remaining conditions.
-    #     :param None xpers: a list of experiment names or objects to compare.
-        
-    #     :returns:  ... all
-    #     """
-    #     if xpers:
-    #         if type(xpers[0]) == Experiment:
-    #             xnames = [x.name for x in xpers]
-    #         else:
-    #             xnames = xpers
-    #             xpers = [self.get_experiment(x) for x in xnames]
-    #     else:
-    #         xpers = self.experiments
-    #     # define a set of conditions
-    #     condset = set(reduce(lambda x, y: x + y, 
-    #                          [x.conditions for x in xpers \
-    #                           if condition1 in x.conditions]))
-    #     if not condition1 in condset:
-    #         raise Exception('ERROR: condition ' + 
-    #                         '{} not found.\n'.format(condition))
-    #     # Align if not aligned
-    #     if not tuple(sorted(xnames)) in self.alignment:
-    #         self.align_experiments(names=xnames)
-        
-        
     def get_experiment(self, name):
         """
         This can also be done directly through Chromosome.experiments[name].
@@ -302,119 +266,26 @@ class Chromosome(object):
             if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([x * xpr.resolution for x in xpr.brks])
+        # new
         aligneds, score = align(tads, verbose=verbose, **kwargs)
-        aliname = tuple(sorted([x.name for x in xpers]))
-        self.alignment[aliname] = {}
-        for xpr, ali in zip(xpers, aligneds):
-            self.alignment[aliname][xpr.name] = ali
+        name = tuple(sorted([x.name for x in xpers]))
+        ali = Alignment(name, aligneds, xpers, score=score)
+        self.alignment[name] = ali
         if verbose:
-            self.print_alignment(xpers=xpers)
+            print self.alignment[name]
+        # old
+        # self.alignment[name] = {}
+        # for xpr, ali in zip(xpers, aligneds):
+        #     self.alignment[name][xpr.name] = ali
+        # if verbose:
+        #     self.print_alignment(xpers=xpers)
         if not randomize:
-            return self.get_alignment(aliname), score
-        p_value = self.randomization_test(xpers, score=score, method=rnd_method,
-                                          verbose=verbose, **kwargs)
+            # return self.get_alignment(name), score
+            return ali
+        p_value = randomization_test(xpers, score=score, method=rnd_method,
+                                     verbose=verbose, r_size=self.r_size,
+                                     **kwargs)
         return score, p_value
-
-
-    def print_alignment(self, name=None, xpers=None, string=False,
-                        title='', ftype='ansi'):
-        """
-        Print alignment of TAD boundaries between different experiments.
-           Alignment are displayed with colors according to the tadbit
-           confidence score for each boundary.
-        
-        :param None names: if None print all experiments
-        :param None xpers: if None print all experiments
-        :param False string: return string instead of printing
-        :param ansi ftype: display colors in 'ansi' or 'html' format
-        """
-        if xpers:
-            xpers = [self.get_experiment(n.name) for n in xpers]
-        else:
-            xpers = self.experiments
-        if not name:
-            name = self.alignment.keys()[0]
-        length = max([len(n.name) for n in xpers])
-        if ftype == 'html':
-            out = '''<?xml version="1.0" encoding="UTF-8" ?>
-            <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-            <!-- This file was created with the aha Ansi HTML Adapter. http://ziz.delphigl.com/tool_aha.php -->
-            <html xmlns="http://www.w3.org/1999/xhtml">
-            <head>
-            <meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8" />
-            <title>stdin</title>
-            </head>
-            <h1>{}</h1>
-            <body>
-            <pre>'''.format(title)
-        elif ftype == 'ansi':
-            out = title + '\n' if title else ''
-        else:
-            raise NotImplementedError('Only ansi and html ftype implemented.\n')
-        out += 'Alignment shown in Kb (%s experiments) (' % (len(xpers))
-        out += 'scores: {})\n'.format(' '.join(
-            [colorize(x, x, ftype) for x in range(11)]))
-        for xpr in xpers:
-            if not xpr.name in self.alignment[name]:
-                continue
-            out += '{1:{0}}:'.format(length, xpr.name)
-            i = 0 # we are working with the end position
-            for x in self.alignment[name][xpr.name]:
-                if x == '-':
-                    out += '| ' + '-' * 4 + ' '
-                    continue
-                try:
-                    while xpr.tads[i]['brk'] < 0:
-                        i += 1
-                except KeyError:
-                    continue
-                cell = str(int(x/1000))
-                out += ('|' + ' ' * (6 - len(cell)) +
-                        colorize(cell, xpr.tads[i]['score'], ftype))
-                i += 1
-            out += '\n'
-        if ftype == 'html':
-            out += '</pre></body></html>'
-        if string:
-            return out
-        print out
-
-
-    def get_alignment(self, name=None, xpers=None, scores=False):
-        """
-        Return dictionary corresponding to alignment of experiments
-        
-        :param None names: if None print all experiments
-        :param False scores: gives also the scores
-        
-        :returns: alignment as :py:class:`dict`
-        """
-        if xpers:
-            xpers = [self.get_experiment(n.name) for n in xpers]
-        else:
-            xpers = self.experiments
-        if not name:
-            name = self.alignment.keys()[0]
-        if not scores:
-            return dict([(e.name, self.alignment[name][e.name]) \
-                         for e in xpers if e.name in self.alignment[name]])
-        alignment = {}
-        for xpr in xpers:
-            if not xpr.name in self.alignment[name]:
-                continue
-            ali = []
-            i = 0
-            for pos in self.alignment[name][xpr.name]:
-                if pos == '-':
-                    ali.append((pos, -1.0))
-                    continue
-                cell = pos
-                scr = xpr.tads[i]['score']
-                scr = scr if scr >= 0 else 10.0
-                ali.append((cell, scr))
-                i += 1
-            alignment[xpr.name] = ali
-        return alignment
 
 
     def add_experiment(self, name, resolution=None, tad_handler=None,
@@ -606,110 +477,6 @@ class Chromosome(object):
             plt.show()
 
 
-    def _interpolation(self, experiments):
-        """
-        Calculate the distribution of TAD lengths, and interpolate it using
-        interp1d function from scipy.
-        
-        :param experiments: names of experiments included in the
-            distribution
-        :return: function to interpolate a given TAD length according to a
-            probability value
-        """
-        # get all TAD lengths and multiply it by bin size of the experiment
-        norm_tads = []
-        for tad in experiments:
-            for brk in tad.tads.values():
-                if not brk['brk']:
-                    continue
-                norm_tads.append((brk['end'] - brk['start']) * tad.resolution)
-        win = [0.0]
-        cnt = [0.0]
-        max_d = max(norm_tads)
-        # we ask here for a mean number of 20 values per bin 
-        bin_s = int(max_d / (float(len(norm_tads)) / 20))
-        for bee in range(0, int(max_d) + bin_s, bin_s):
-            win.append(len([i for i in norm_tads
-                            if bee < i <= bee + bin_s]) + win[-1])
-            cnt.append(bee + float(bin_s))
-        win = [float(v) / max(win) for v in win]
-        ## to see the distribution and its interpolation
-        #distr = interp1d(x, y)
-        #from matplotlib import pyplot as plt
-        #plt.plot([distr(float(i)/1000) for i in xrange(1000)],
-        #         [float(i)/1000 for i in xrange(1000)])
-        #plt.hist(norm_tads, normed=True, bins=20, cumulative=True)
-        #plt.show()
-        return interp1d(win, cnt)
-        
-
-    def randomization_test(self, xpers, score=None, num=1000, verbose=False,
-                           method='interpolate'):
-        """
-        Return the probability that original alignment is better than an
-        alignment of randomized boundaries.
-        
-        :param tads: original TADs of each experiment to align
-        :param distr: the function to interpolate TAD lengths from probability
-        :param None score: just to print it when verbose
-        :param 1000 num: number of random alignment to generate for comparison
-        :param False verbose: to print something nice
-        :param interpolate method: how to generate random tads (alternative is
-           'shuffle').
-        """
-        if not method in ['interpolate', 'shuffle']:
-            raise Exception('method should be either "interpolate" or ' +
-                            '"shuffle"\n')
-        tads = []
-        for xpr in xpers:
-            if not xpr.tads:
-                raise Exception('No TADs defined, use find_tad function.\n')
-            tads.append([(t['end'] - t['start']) * \
-                         xpr.resolution for t in xpr.tads.values()])
-        rnd_distr = []
-        # rnd_len = []
-        distr = self._interpolation(xpers) if method is 'interpolate' else None
-        rnd_exp = lambda : tads[int(random() * len(tads))]
-        for val in xrange(num):
-            if verbose:
-                val = float(val)
-                if not val / num * 100 % 5:
-                    stdout.write('\r' + ' ' * 10 + 
-                                 ' randomizing: '
-                                 '{:.2%} completed'.format(val/num))
-                    stdout.flush()
-            if method is 'interpolate':
-                rnd_tads = [generate_rnd_tads(self.r_size, distr)
-                            for _ in xrange(len(tads))]
-                # rnd_len.append(float(sum([len(r) for r in rnd_tads]))
-                #                / len(rnd_tads))
-            else:
-                rnd_tads = [generate_shuffle_tads(rnd_exp())
-                            for _ in xrange(len(tads))]
-                # rnd_len.append(len(tads))
-            rnd_distr.append(align(rnd_tads, verbose=False)[1])
-            # aligns, sc = align(rnd_tads, verbose=False)
-            # rnd_distr.append(sc)
-            # for xpr in aligns:
-            #     print sc, '|'.join(['%5s' % (str(x/1000)[:-2] \
-            # if x!='-' else '-' * 4)\
-            #                         for x in xpr])
-            # print ''
-        pval = float(len([n for n in rnd_distr if n > score])) / len(rnd_distr)
-        if verbose:
-            stdout.write('\n {} randomizations finished.'.format(num))
-            stdout.flush()
-            print '  Observed alignment score: {}'.format(score)
-            # print '  Mean number of boundaries: {}; observed: {}'.format(
-            #     sum(rnd_len)/len(rnd_len),
-            #     str([len(self.experiments[e].brks)
-            #          for e in self.experiments]))
-            print 'Randomized scores between {} and {}; observed: {}'.format(
-                min(rnd_distr), max(rnd_distr), score)
-            print 'p-value: {}'.format(pval if pval else '<{}'.format(1./num))
-        return pval
-
-
     def get_tad_hic(self, tad, x_name, normed=True, matrix_num=0):
         """
         Retrieve the Hi-C data matrix corresponding to ma given TAD.
@@ -863,46 +630,6 @@ class Chromosome(object):
                     xpr.brks.append(tads[tad]['brk'])
 
 
-def generate_rnd_tads(chromosome_len, distr, start=0):
-    """
-    Generates random TADs over a chromosome of a given size according to a given
-    distribution of lengths of TADs.
-    
-    :param chromosome_len: length of the chromosome
-    :param distr: function that returns a TAD length depending on a p value
-    :param bin_size: size of the bin of the Hi-C experiment
-    :param 0 start: starting position in the chromosome
-    
-    :returns: list of TADs
-    """
-    pos = start
-    tads = []
-    while True:
-        pos += distr(random())
-        if pos > chromosome_len:
-            break
-        tads.append(float(pos))
-    return tads
-
-
-def generate_shuffle_tads(tads):
-    """
-    Returns a shuffle version of a given list of TADs
-
-    :param tads: list of TADs
-
-    :returns: list of shuffled TADs
-    """
-    rnd_tads = tads[:]
-    shuffle(rnd_tads)
-    tads = []
-    for tad in rnd_tads:
-        if tads:
-            tad += tads[-1]
-        tads.append(tad)
-    return tads
-
-
 class ExperimentList(list):
     """
     :py:func:`list` of :class:`pytadbit.Experiment`
@@ -988,5 +715,3 @@ class RelativeChromosomeSize(int):
     """
     def __init__(self, thing):
         super(RelativeChromosomeSize, self).__init__(thing)
-
-
