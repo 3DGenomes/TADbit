@@ -108,7 +108,7 @@ class Chromosome(object):
         self.forbidden        = {}
         self.experiments      = ExperimentList([], self)
         self._centromere      = None
-        self.alignment        = {}
+        self.alignment        = AlignmentDict()
         if tad_handlers:
             for i, handler in enumerate(tad_handlers or []):
                 name = experiment_names[i] if experiment_names else None
@@ -698,6 +698,26 @@ class ExperimentList(list):
             super(ExperimentList, self).append(exp)
             self.crm._get_forbidden_region(exp)
             exp.crm = self.crm
+
+
+class AlignmentDict(dict):
+    """
+    :py:func:`dict` of :class:`pytadbit.Alignment`
+    
+    Modified getitem, setitem, and append in order to be able to search
+    experiments by index or by name.
+
+    linked to a :class:`pytadbit.Chromosome`
+    """
+
+    def __getitem__(self, nam):
+        try:
+            return super(AlignmentDict, self).__getitem__(nam)
+        except TypeError:
+            for i, key in enumerate(self):
+                if nam == i:
+                    return self[key]
+            raise KeyError('Alignment {} not found\n'.format(i))
 
 
 class ChromosomeSize(int):
