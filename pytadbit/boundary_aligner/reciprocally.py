@@ -105,9 +105,9 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
             i += 1
     if verbose:
         print '\n Alignment:'
-        print 'TADS 1: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
+        print 'TADS 1: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
                                    for x in align1])
-        print 'TADS 2: '+'|'.join(['%9s' % (str(int(x)) if x!='-' else '-'*3) \
+        print 'TADS 2: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
                                    for x in align2])
 
     return [align1, align2], float(sum(diffs))/len(align1)

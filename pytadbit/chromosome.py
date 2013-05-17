@@ -37,7 +37,7 @@ def load_chromosome(in_f, fast=2):
     
     :returns: Chromosome object
 
-    TODO: remove first try/except typeerror... this is loading old experiments
+    TODO: remove first try/except type error... this is loading old experiments
     """
     dico = load(open(in_f))
     name = ''
@@ -261,7 +261,8 @@ class Chromosome(object):
         :returns: the alignment and the score of the alignment (by default)
         """
         if names:
-            xpers = [self.get_experiment(n) for n in names]
+            xpers = ExperimentList([self.get_experiment(n) for n in names],
+                                   self)
         else:
             xpers = self.experiments
         tads = []

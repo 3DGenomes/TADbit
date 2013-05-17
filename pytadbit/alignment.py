@@ -152,20 +152,13 @@ class Alignment(object):
                 continue
             res = xpr.resolution / 1000
             out += '{1:{0}}:'.format(length, xpr.name)
-            i = 0 # we are working with the end position
             for x in self[xpr.name]:
                 if x['end'] == 0.0:
                     out += '| ' + '-' * 4 + ' '
                     continue
-                try:
-                    while xpr.tads[i]['brk'] < 0:
-                        i += 1
-                except KeyError:
-                    continue
                 cell = str(int(x['end'] * res))
                 out += ('|' + ' ' * (6 - len(cell)) +
-                        colorize(cell, xpr.tads[i]['score'], ftype))
-                i += 1
+                        colorize(cell, x['score'], ftype))
             out += '\n'
         if ftype == 'html':
             out += '</pre></body></html>'
@@ -251,9 +244,9 @@ class Alignment(object):
                     p += 1
             except KeyError:
                 continue
-            if exp.tads[p]['score'] < 0:
-                exp.tads[p]['score'] = 10
+            scr = exp.tads[p]['score'] if exp.tads[p]['score'] >= 0 else 10
             scores.append(TAD(exp.tads[p], i, self.__experiments[name]))
+            scores[-1]['score'] = scr
             p += 1
         if not self.__len:
             self.__len = len(scores)
