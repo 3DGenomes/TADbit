@@ -23,7 +23,7 @@ INSTALL:
 (1) Fujita, P. A., Rhead, B., Zweig, A. S., Hinrichs, A. S., Karolchik, D.,
     Cline, M. S., Goldman, M., et al. (2011).
     The UCSC Genome Browser database: update 2011.
-    Nucleic Acids Research, 39(Database issue), D876–82. doi:10.1093/nar/gkq963
+    Nucleic Acids Research, 39(Database issue), D876-82. doi:10.1093/nar/gkq963
     
 """
 
@@ -31,30 +31,27 @@ from subprocess import Popen, PIPE
 from os import system
 from random import random
 from optparse import OptionParser
-
-TMP_PATH = '/tmp/'
-LFT_PATH = '/home/fransua/Tools/liftOver/'
-CHN_PATH = '/home/fransua/Tools/liftOver/'
+from pytadbit import load_chromosome
 
 
-def liftover(coords):
-    tmp = open(TMP_PATH + 'tmp', 'w')
+def liftover(coords, tmp_path, lft_path, chn_path):
+    tmp = open(tmp_path + '/tmp', 'w')
     for coord in coords:
         tmp.write('chr{}\t{}\t{}\n'.format(coord[1], coord[2], coord[2]+1))
         tmp.write('chr{}\t{}\t{}\n'.format(coord[1], coord[3], coord[3]+1))
     tmp.close()
-    _, err = Popen((LFT_PATH + 'liftOver ' +
-                      TMP_PATH + 'tmp ' +
-                      CHN_PATH + 'hg18ToHg19.over.chain ' +
-                      TMP_PATH + '/out ' +
-                      TMP_PATH + '/out.log'
-                      ), shell =True, stdout=PIPE, stderr=PIPE).communicate()
+    _, err = Popen((lft_path + 'liftOver ' +
+                    tmp_path + '/tmp ' +
+                    chn_path + ' ' +
+                    tmp_path + '/out ' +
+                    tmp_path + '/out.log'
+                    ), shell =True, stdout=PIPE, stderr=PIPE).communicate()
     if (not 'Reading' in err) or (not 'Mapping' in err):
         raise Exception(err)
-    system('rm -f {}tmp'.format(TMP_PATH))
-    founds = [int(l.split()[1]) for l in open(TMP_PATH + 'out').readlines()]
-    missed = [int(l.split()[1]) for l in open(TMP_PATH + 'out.log').readlines()\
+    founds = [int(l.split()[1]) for l in open(tmp_path + '/out').readlines()]
+    missed = [int(l.split()[1]) for l in open(tmp_path + '/out.log').readlines()\
               if not l.startswith('#')]
+    system('rm -f {}/tmp'.format(tmp_path))
     relaunch = {}
     mapped = {}
     j = 0
@@ -72,7 +69,7 @@ def liftover(coords):
     return mapped, relaunch
     
     
-def remap_chr(crm_obj, crm):
+def remap_chr(crm_obj, crm, tmp, lft_path, chain_path):
     missed = 0
     found  = 0
     max_dist = 20
@@ -83,7 +80,7 @@ def remap_chr(crm_obj, crm):
             coords.append((t, crm,
                            int(exp.tads[t]['start'] * res),
                            int(exp.tads[t]['end']   * res)))
-        mapped, relaunch = liftover(coords)
+        mapped, relaunch = liftover(coords, tmp, lft_path, chain_path)
         if not relaunch:
             continue
         for i in xrange(2, max_dist):
@@ -96,7 +93,7 @@ def remap_chr(crm_obj, crm):
                 else:
                     coord = (key, crm, beg + res/10 * (i/2) * sign, end)
                 new_coords.append(coord)
-            new_mapped, relaunch = liftover(new_coords)
+            new_mapped, relaunch = liftover(new_coords, tmp, lft_path, chain_path)
             mapped.update(new_mapped)
             if not relaunch:
                 break
@@ -123,7 +120,14 @@ def main():
     """
     main function
     """
-    pass
+    opts = get_options()
+    crm_a = load_chromosome(opts.crm1)
+    crm_b = load_chromosome(opts.crm2)
+    system('mkdir -p ' + opts.tmp_path)
+    for exp in remap_chr(crm_b, opts.crm_name if opts.crm_name else  crm_b.name,
+                         opts.tmp_path, opts.lft_path, opts.chain_path):
+        crm_a.add_experiment(exp)
+    crm_a.save_chromosome(opts.out_path)
 
 
 def get_options():
@@ -131,23 +135,33 @@ def get_options():
     parse option from call
     '''
     parser = OptionParser(
-        usage="%prog [options] file [options [file ...]]",
-        )
+        usage=("%prog [options] file [options] file [options] " +
+               "file [options [file ...]]"))
     parser.add_option('--crm1', dest='crm1', metavar="PATH", 
-                      help='path to input file, a chromosome saved through tadbit')
+                      help='''path to input file, a chromosome saved through
+                      tadbit (required)''')
     parser.add_option('--crm2', dest='crm2', metavar="PATH", 
-                      help='path to second input file, a chromosome saved through tadbit')
+                      help='''path to second input file, a chromosome saved
+                      through tadbit (required)''')
+    parser.add_option('--chain', dest='chain_path', action="store", \
+                      help=
+                      '''path to UCSC chain file (required)''')
+    parser.add_option('-o', dest='out_path', metavar="PATH",
+                      default='./',
+                      help='''path to out file where merged tadbit chromosome
+                      will be stored''')
+    parser.add_option('--crm_name', dest='crm_name',
+                      default=None,
+                      help='''Chromosome name for crm1 (e.g. 21).''')
     parser.add_option('--tmp', dest='tmp_path', metavar="PATH",
                       default='./',
-                      help='path to temporary directory to store liftover outfiles')
+                      help='''path to temporary directory to store liftover
+                      outfiles''')
     parser.add_option('--liftover_path', 
                       dest='lft_path', default='/usr/local/bin',\
                       help=
                       '''path to liftover binary
                       ''')
-    parser.add_option('--chain', dest='chain_path', action="store", \
-                      help=
-                      '''path to UCSC chain file''')
     opts = parser.parse_args()[0]
     if not opts.crm1 or not opts.crm2 or not opts.chain_path:
         exit(parser.print_help())
