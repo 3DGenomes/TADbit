@@ -14,7 +14,7 @@ from scipy.cluster.hierarchy import linkage
 import multiprocessing as mu
 
 PATH =  'sample_data/'
-
+# rewrite get_distance looking at ledily compare_tads
 
 def main():
     test_chr = Chromosome(name='Test Chromosome')
@@ -73,12 +73,13 @@ def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
     pool.close()
     pool.join()
     for i in xrange(num):
-        for j in xrange(i+1, num):
+        for j in xrange(i + 1, num):
             _, _, sc = jobs[(i, j)].get()
-            if sc['pval'] < 0.05:
+            # 0.0001 has shown to be a fair cutoff for p-values for square matrix
+            # comparison
+            if sc['pval'] < 0.0001:
                 cci.setdefault(i, []).append(j)
-                print '  --> ', i, j
-            distances[(i, j)] = sc['dist']
+                distances[(i, j)] = sc['dist']
     return distances, cci
 
 
@@ -131,7 +132,7 @@ def paint_clustering(results, clusters, num, chrom, tad_names):
     for i, result in enumerate(results):
         if axes:
             axes[-1].set_xticklabels([], visible=False)
-        clust = linkage(result)
+        clust = linkage(result, method='ward')
         tmp = dendrogram(clust, orientation='right', no_plot=True)['leaves']
         dendros += reversed(list([clusters[i][n] for n in tmp]))
         axes.append(plt.subplot2grid((num, 9),(prev, 0), rowspan=len(result),
@@ -150,7 +151,7 @@ def paint_clustering(results, clusters, num, chrom, tad_names):
         axes.append(plt.subplot2grid((num, 9),(i, 4)))#gs1[i]))
         chrom.visualize('exp1',
                         tad=chrom.get_experiment('exp1').tads[tad_names[j]],
-                        axe=axes[-1])
+                        axe=axes[-1], show=False)
         axes[-1].set_axis_off()
     ax4 = plt.subplot2grid((num, 9),(0, 5), rowspan=num, colspan=4)
     chrom.visualize('exp1', paint_tads=True, axe=ax4)

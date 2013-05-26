@@ -327,7 +327,7 @@ class Chromosome(object):
         if name in self.experiments:
             if 'hi-c' in self.get_experiment(name) and not replace:
                 warn('''Hi-C data already loaded under the name: {}.
-                This experiment wiil be kept under {}.\n'''.format(name,
+                This experiment will be kept under {}.\n'''.format(name,
                                                                    name + '_'))
                 name += '_'
         if type(name) == Experiment:
@@ -403,6 +403,7 @@ class Chromosome(object):
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
             xpr.load_tad_def(result, weights=weights)
+            self._get_forbidden_region(xpr)
 
 
     def __update_size(self, xpr):
@@ -694,6 +695,7 @@ class ExperimentList(list):
     def append(self, exp):
         if exp.name in [e.name for e in self]:
             self[exp.name] = exp
+            self.crm._get_forbidden_region(exp)
         else:
             super(ExperimentList, self).append(exp)
             self.crm._get_forbidden_region(exp)
