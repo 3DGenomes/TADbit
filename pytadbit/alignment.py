@@ -248,6 +248,7 @@ class Alignment(object):
             scores.append(TAD(exp.tads[p], i, self.__experiments[name]))
             scores[-1]['score'] = scr
             p += 1
+        # print name, len(scores)
         if not self.__len:
             self.__len = len(scores)
         elif self.__len != len(scores):

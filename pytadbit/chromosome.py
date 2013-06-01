@@ -48,7 +48,6 @@ def load_chromosome(in_f, fast=2):
         xpr.tads       = dico['experiments'][name]['tads']
         xpr.wght       = dico['experiments'][name]['wght']
         xpr.hic_data   = dico['experiments'][name]['hi-c']
-        xpr.brks       = dico['experiments'][name]['brks']
         xpr.conditions = dico['experiments'][name]['cond']
         xpr.size       = dico['experiments'][name]['size']
         try:
@@ -145,7 +144,8 @@ class Chromosome(object):
             diff  = end - start
             if diff * xpr.resolution > self.max_tad_size:
                 forbidden += range(int(start), int(end+1))
-                xpr.tads[pos]['brk'] = None
+                if xpr.tads[pos]['score'] > 0:
+                    xpr.tads[pos]['score'] = -xpr.tads[pos]['score']
         if not self.forbidden:
             self.forbidden = dict([(f, None) for f in forbidden])
         else:
@@ -201,7 +201,6 @@ class Chromosome(object):
         for xpr in self.experiments:
             dico['experiments'][xpr.name] = {
                 'size'      : xpr.size,
-                'brks'      : xpr.brks,
                 'cond'      : xpr.conditions,
                 'tads'      : xpr.tads,
                 'resolution': xpr.resolution,
@@ -269,7 +268,8 @@ class Chromosome(object):
         for xpr in xpers:
             if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
-            tads.append([x * xpr.resolution for x in xpr.brks])
+            tads.append([xpr.tads[x]['brk'] * xpr.resolution \
+                         for x in xrange(len(xpr.tads))])
         # new
         aligneds, score = align(tads, verbose=verbose, **kwargs)
         name = tuple(sorted([x.name for x in xpers]))
@@ -475,7 +475,7 @@ class Chromosome(object):
             axe.vlines(tad['end'], tad['start'], tad['end'], colors='k')
             axe.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
                     tad['start'] + abs(tad['start']-tad['end'])/2 - 1, str(i))
-            if not tad['brk']:
+            if tad['score'] < 0:
                 for j in xrange(int(tad['start']), int(tad['end']), 4):
                     axe.hlines(j, tad['start'], tad['end'], colors='k')
         if show:
@@ -523,8 +523,6 @@ class Chromosome(object):
         if not self.get_experiment(x_name).hic_data:
             raise Exception('No Hi-c data for {} experiment\n'.format(x_name))
         for name, ref in self.get_experiment(x_name).tads.iteritems():
-            if not ref['brk']:
-                continue
             yield name, self.get_tad_hic(ref, x_name, normed=normed)
 
 
@@ -538,15 +536,11 @@ class Chromosome(object):
         self.max_tad_size = value
         for xpr in self.experiments:
             for tad in xpr.tads:
+                xpr.tads[tad]['brk'] = xpr.tads[tad]['end']
                 if (xpr.tads[tad]['end'] - xpr.tads[tad]['start']) \
                    * xpr.resolution < self.max_tad_size:
-                    xpr.tads[tad]['brk'] = xpr.tads[tad]['end']
-                else:
-                    xpr.tads[tad]['brk'] = None
-            xpr.brks = []
-            for tad in xpr.tads:
-                if xpr.tads[tad]['brk']:
-                    xpr.brks.append(xpr.tads[tad]['brk'])
+                    if xpr.tads[tad]['score'] > 0:
+                        xpr.tads[tad]['score'] = -xpr.tads[tad]['score']
             
 
     def _search_centromere(self, xpr):
@@ -614,25 +608,21 @@ class Chromosome(object):
                     tads[tad]['start'] = end
                     if (tads[tad]['end'] - tads[tad]['start']) \
                            * xpr.resolution > self.max_tad_size:
-                        tads[tad]['brk'] = None
-                    else:
-                        tads[tad]['brk'] = tads[tad]['end']
+                        if xpr.tads[tad]['score'] > 0:
+                            xpr.tads[tad]['score'] = -xpr.tads[tad]['score']
+                    tads[tad]['brk'] = tads[tad]['end']
                     tad -= 1
                     tads[tad] = copy(tads[tad])
                     tads[tad]['end'] = beg
                     if (tads[tad]['end'] - tads[tad]['start']) \
                            * xpr.resolution > self.max_tad_size:
-                        tads[tad]['brk'] = None
-                    else:
-                        tads[tad]['brk'] = tads[tad]['end']
+                        if xpr.tads[tad]['score'] > 0:
+                            xpr.tads[tad]['score'] = -xpr.tads[tad]['score']
+                    tads[tad]['brk'] = tads[tad]['end']
                     plus = 1
                 else:
                     tads[tad] = copy(tads[tad - 1 + plus])
                 tad -= 1
-            xpr.brks = []
-            for tad in tads:
-                if tads[tad]['brk']:
-                    xpr.brks.append(tads[tad]['brk'])
 
 
 class ExperimentList(list):

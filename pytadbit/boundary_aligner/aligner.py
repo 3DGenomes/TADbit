@@ -33,8 +33,9 @@ def align(sequences, method='global', **kwargs):
     Align Topologically associated domains. Supports multiple alignment by
     building a consensus TAD and aligning each TAD to it.
     Note: as long as we are using multiple alignments in an iterative way,
-    the order of sequences we be relevant. Here TADs are sorted in order to try
-    to reduce this problem.
+    the order of sequences we be relevant. Here experiments are sorted according
+    to the value of the first boundary found in order to try to reduce this
+    problem.
 
     :param global method: method used to align.
     """

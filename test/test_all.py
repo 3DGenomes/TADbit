@@ -70,9 +70,10 @@ class TestTadbit(unittest.TestCase):
                               experiment_names=['exp1', 'exp2', 'exp3'])
         test_chr.find_tad(['exp1', 'exp2', 'exp3'], batch_mode=True,
                           verbose=False)
+        tads = test_chr.get_experiment('batch_exp1_exp2_exp3').tads
+        found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
         self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 35.0, 43.0,
-                          49.0, 61.0, 66.0, 75.0, 89.0, 99.0],
-                         test_chr.get_experiment('batch_exp1_exp2_exp3').brks)
+                          49.0, 61.0, 66.0, 75.0, 89.0, 99.0], found)
 
 
     def test_05_save_load(self):
@@ -106,7 +107,9 @@ class TestTadbit(unittest.TestCase):
                                 xp_handler='20Kb/chrT/chrT_D.tsv')
         brks = [2.0, 7.0, 12.0, 18.0, 38.0, 43.0, 49.0,
                 61.0, 66.0, 75.0, 89.0, 94.0, 99.0]
-        self.assertEqual(brks, test_chr.experiments['exp1'].brks)
+        tads = test_chr.experiments['exp1'].tads
+        found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
+        self.assertEqual(brks, found)
         items1 = test_chr.forbidden.keys(), test_chr.forbidden.values()
         test_chr.add_experiment('exp2', 20000, tad_handler=exp3,
                                 xp_handler='20Kb/chrT/chrT_C.tsv')

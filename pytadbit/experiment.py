@@ -56,7 +56,6 @@ class Experiment(object):
         self.conditions      = sorted(conditions) if conditions else []
         self.size            = None
         self.tads            = {}
-        self.brks            = []
         self.wght            = None
         self._zeros          = None
         self._zscores        = {}
@@ -199,7 +198,6 @@ class Experiment(object):
         """
         tads, wght = parse_tads(handler)
         self.tads = tads
-        self.brks = [t['brk'] for t in tads.values() if t['brk']]
         self.wght  = weights or wght
         
 

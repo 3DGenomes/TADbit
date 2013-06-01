@@ -35,8 +35,8 @@ def parse_tads(handler):
             end   = float(handler['end'][pos])
             try:
                 score = float(handler['score'][pos])
-            except TypeError:
-                score = None
+            except TypeError: # last one
+                score = 10.0
             tads[pos] = {'start': start,
                          'end'  : end,
                          'brk'  : end,
@@ -50,8 +50,8 @@ def parse_tads(handler):
             pos   = int(pos)
             try:
                 score = float(score)
-            except ValueError:
-                score = None
+            except ValueError: # last one
+                score = 10.0
             tads[pos] = {'start': start,
                          'end'  : end,
                          'brk'  : end,

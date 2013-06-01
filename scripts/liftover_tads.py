@@ -31,7 +31,7 @@ from subprocess import Popen, PIPE
 from os import system
 from random import random
 from optparse import OptionParser
-from pytadbit import load_chromosome
+from pytadbit import load_chromosome, Experiment
 
 
 def liftover(coords, tmp_path, lft_path, chn_path):
@@ -48,7 +48,7 @@ def liftover(coords, tmp_path, lft_path, chn_path):
                     ), shell =True, stdout=PIPE, stderr=PIPE).communicate()
     if (not 'Reading' in err) or (not 'Mapping' in err):
         raise Exception(err)
-    founds = [int(l.split()[1]) for l in open(tmp_path + '/out').readlines()]
+    founds = [int(l.split()[0:1]) for l in open(tmp_path + '/out').readlines()]
     missed = [int(l.split()[1]) for l in open(tmp_path + '/out.log').readlines()\
               if not l.startswith('#')]
     system('rm -f {}/tmp'.format(tmp_path))
@@ -65,14 +65,15 @@ def liftover(coords, tmp_path, lft_path, chn_path):
             relaunch[i] = (i, crm, beg, end, 1)
             j += 2
             continue
-        mapped[i] = (crm, founds[k * 2 - j], founds[k * 2 + 1 - j])
+        mapped[i] = (founds[0][3:], founds[1][k * 2 - j], founds[1][k * 2 + 1 - j])
     return mapped, relaunch
     
     
-def remap_chr(crm_obj, crm, tmp, lft_path, chain_path):
+def remap_chr(crm_obj, crm, tmp, lft_path, chain_path, genome=None):
     missed = 0
     found  = 0
     max_dist = 20
+    genome = {} or genome
     for exp in crm_obj.experiments:
         coords = []
         res = exp.resolution
@@ -99,20 +100,23 @@ def remap_chr(crm_obj, crm, tmp, lft_path, chain_path):
                 break
         for t in mapped:
             try:
-                _, beg, end = mapped[t]
+                crm, beg, end = mapped[t]
+                if crm not in genome:
+                    genome[crm] = {}
                 if random() < .5:
-                    print exp.tads[t]['start'], float(int(beg/res + 0.5))
-                exp.tads[t]['start'] = float(int(beg/res + 0.5))
-                exp.tads[t]['end'] = float(int(end/res + 0.5))
+                    print exp.tads[t]['start'], float(int(beg / res + 0.5))
+                genome[crm].setdefault('start', []).append(float(int(beg / res + 0.5)))
+                genome[crm].setdefault('end', []).append(float(int(end / res + 0.5)))
                 if exp.tads[t]['brk'] >= 0:
-                    exp.tads[t]['brk'] = exp.tads[t]['end']
+                    genome[crm].setdefault('brk', []).append(genome['end'][-1])
+                else:
+                    genome[crm].setdefault('brk', []).append(None)
                 found += 1
             except TypeError:
                 missed += 1
-                exp.tads[t]['brk'] = None
-        exp.brks = [t['brk'] for t in exp.tads.values() if t['brk']]
-        yield exp
+                genome[crm].setdefault('brk', []).append(None)
     print 'missed: {}, found: {}'.format(missed, found)
+    return genome
 
 
 
@@ -124,9 +128,14 @@ def main():
     crm_a = load_chromosome(opts.crm1)
     crm_b = load_chromosome(opts.crm2)
     system('mkdir -p ' + opts.tmp_path)
-    for exp in remap_chr(crm_b, opts.crm_name if opts.crm_name else  crm_b.name,
-                         opts.tmp_path, opts.lft_path, opts.chain_path):
-        crm_a.add_experiment(exp)
+    genome = {}
+    genome = remap_chr(crm_b, opts.crm_name if opts.crm_name else  crm_b.name,
+                       opts.tmp_path, opts.lft_path, opts.chain_path, genome)
+    for crm in genome:
+        if crm == opts.crm_name:
+            tads = []
+            for t in genome[crm]:
+                crm_a.add_experiment(exp)
     crm_a.save_chromosome(opts.out_path)
 
 
