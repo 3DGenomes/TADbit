@@ -180,7 +180,7 @@ def equal(a, b, cut_off=1e-9):
 
 
 def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
-                method='score', long_nw=True, long_dist=True):
+                method='frobenius', long_nw=True, long_dist=True):
     """
 
     Note: penalty is defined as the minimum value of the pre-scoring matrix

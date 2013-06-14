@@ -6,8 +6,7 @@ Sample script in order to analyze and compare the topology of TADs.
 """
 
 from pytadbit import Chromosome
-from pytadbit.tad_clustering.tad_cmo import optimal_cmo, matrix2binnary_contacts
-from pytadbit.tad_clustering.tad_cmo import run_aleigen
+from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from scipy.cluster.hierarchy import linkage
@@ -19,36 +18,25 @@ PATH =  'sample_data/'
 def main():
     test_chr = Chromosome(name='Test Chromosome')
     test_chr.add_experiment('exp1', 100000, xp_handler=PATH +
-                            'HIC_gm06690_chr19_chr19_100000_obs.txt')
+                            'HIC_k562_chr19_chr19_100000_obs.txt')
     test_chr.find_tad(['exp1'])
     tad_names = []
     tad_matrices = []
     for name, matrix in test_chr.iter_tads('exp1'):
+        if test_chr.experiments['exp1'].tads[name]['score'] < 0:
+            continue
+        if (test_chr.experiments['exp1'].tads[name]['end'] -
+            test_chr.experiments['exp1'].tads[name]['start']) < 10:
+            continue
         tad_names.append(name)
         tad_matrices.append(matrix)
     num = len(tad_names)
-    distances, cci = get_distances(tad_matrices, max_num_v=2)
+    distances, cci = get_distances(tad_matrices, max_num_v=mu.cpu_count())
     results, clusters = pre_cluster(distances, cci, num)
     paint_clustering(results, clusters, num, test_chr, tad_names)
-    plt.show()
 
 
-def get_aleigen(tad_matrices, max_num_v=6):
-    num = len(tad_matrices)
-    distances = {}
-    cci = {}
-    for i in xrange(num):
-        for j in xrange(i+1, num):
-            num_v = min(len(tad_matrices[i]), len(tad_matrices[j]), max_num_v)
-            contacts1, contacts2 = matrix2binnary_contacts(tad_matrices[i],
-                                                           tad_matrices[j])
-            _, _, sc = run_aleigen(contacts1, contacts2, num_v)
-            distances[(i, j)] = sc[0]
-            cci.setdefault(i, []).append(j)
-    return distances, cci
-
-
-def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
+def get_distances(tad_matrices, max_num_v=8, n_cpus=8):
     """
     Calculates distances between all pair of tads in the chromosome.
     several CPUs can be used.
@@ -69,7 +57,7 @@ def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
         for j in xrange(i+1, num):
             jobs[(i, j)] = pool.apply_async(
                 optimal_cmo, args=(tad_matrices[i], tad_matrices[j]),
-                kwds={'max_num_v': max_num_v})
+                kwds={'max_num_v': max_num_v, 'method': 'frobenius'})
     pool.close()
     pool.join()
     for i in xrange(num):
@@ -77,6 +65,7 @@ def get_distances(tad_matrices, max_num_v=6, n_cpus=4):
             _, _, sc = jobs[(i, j)].get()
             # 0.0001 has shown to be a fair cutoff for p-values for square matrix
             # comparison
+            print i, j, sc
             if sc['pval'] < 0.0001:
                 cci.setdefault(i, []).append(j)
                 distances[(i, j)] = sc['dist']
@@ -115,11 +104,12 @@ def pre_cluster(distances, cci, num):
         trans = [i for i in xrange(num) if i in cluster]
         for i in xrange(num):
             for j in xrange(i + 1, num):
-                if i in cluster and j in cluster:
-                    results[k][trans.index(i)][trans.index(j)] = distances[(i,
-                                                                            j)]
-                    results[k][trans.index(j)][trans.index(i)] = distances[(i,
-                                                                            j)]
+                if not (i in cluster and j in cluster):
+                    continue
+                if not (i, j) in distances:
+                    continue
+                results[k][trans.index(i)][trans.index(j)] = distances[(i, j)]
+                results[k][trans.index(j)][trans.index(i)] = distances[(i, j)]
     return results, clusters
 
 
