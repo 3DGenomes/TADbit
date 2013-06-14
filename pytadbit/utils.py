@@ -7,57 +7,6 @@ from bisect import bisect_left
 from numpy import mean, std
 from math import log10
 
-try:
-    from matplotlib import pyplot as plt
-except ImportError:
-    pass
-
-
-def tad_breaker(tads, cluster, resolution, bins=20, show_plot=False,
-                title=None, max_tad_size=3000000, test=False):
-    """
-    Find out if TAD boundaries are breaking clusters of colocalizing
-    (epi)genetic elements.
-    
-    :param tads:
-    :param cluster: cluster of elements
-    :param title: for plotting
-    :param resolution: in bases
-    :param 20 bins: number of bins to use
-    :param False show_plot:
-    :para False test: for significant difference between extremes and center
-
-    :returns: list of counts for each bin
-    """
-    def arrange(beg, end, num):
-        step  = int((end - beg) / num)
-        for k in xrange(int(beg), int(end), step):
-            yield k
-        yield int(end)
-    brk_set = []
-    for t in xrange(len(tads['start'])):
-        #if not tads['score'][t] > 5:
-        #    continue
-        if tads['end'][t] - tads['start'][t] > max_tad_size:
-            continue
-        brk_set.append([b for b in arrange(tads['start'][t] * resolution,
-                                           tads['end'][t] * resolution, bins)])
-    counts = []
-    for b in range(bins + 1):
-        count = 0
-        for start, end in cluster:
-            for brk in brk_set:
-                if start < brk[b] < end:
-                    count += 1
-                    break
-        counts.append(1-float(count)/len(cluster))
-    print counts
-    if show_plot:
-        plt.bar(range(21), counts)
-        plt.title(title)
-        plt.show()
-    return counts
-
 
 class Interpolate(object):
     """
