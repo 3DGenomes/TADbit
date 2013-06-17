@@ -65,7 +65,6 @@ def get_distances(tad_matrices, max_num_v=8, n_cpus=8):
             _, _, sc = jobs[(i, j)].get()
             # 0.0001 has shown to be a fair cutoff for p-values for square matrix
             # comparison
-            print i, j, sc
             if sc['pval'] < 0.0001:
                 cci.setdefault(i, []).append(j)
                 distances[(i, j)] = sc['dist']

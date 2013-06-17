@@ -455,9 +455,12 @@ class Chromosome(object):
         if not axe:
             axe = plt.subplot(111)
         if tad:
-            matrix = [[xper.hic_data[0][i+size*j] \
-                       for i in xrange(int(tad['start']), int(tad['end']))] \
-                      for j in xrange(int(tad['start']), int(tad['end']))]
+            if type(tad) is dict:
+                matrix = [[xper.hic_data[0][i+size*j] \
+                           for i in xrange(int(tad['start']), int(tad['end']))] \
+                          for j in xrange(int(tad['start']), int(tad['end']))]
+            elif type(tad) is list:
+                matrix = tad
         else:
             matrix = [[xper.hic_data[0][i+size*j]\
                        for i in xrange(size)] \
