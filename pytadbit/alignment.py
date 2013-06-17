@@ -109,7 +109,7 @@ class Alignment(object):
             yield col
 
 
-    def write_alignment(self, name=None, xpers=None, string=False,
+    def write_alignment(self, names=None, xpers=None, string=False,
                         title='', ftype='ansi'):
         """
         Print alignment of TAD boundaries between different experiments.
@@ -125,9 +125,9 @@ class Alignment(object):
             xpers = [self.__experiments[n.name] for n in xpers]
         else:
             xpers = self.__experiments
-        if not name:
-            name = self.__keys[0]
-        length = max([len(n.name) for n in xpers])
+        if not names:
+            names = [n.name for n in xpers]
+        length = max([len(n) for n in names])
         if ftype == 'html':
             out = '''<?xml version="1.0" encoding="UTF-8" ?>
             <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -147,11 +147,11 @@ class Alignment(object):
         out += 'Alignment shown in Kb (%s experiments) (' % (len(xpers))
         out += 'scores: {})\n'.format(' '.join(
             [colorize(x, x, ftype) for x in range(11)]))
-        for xpr in xpers:
+        for i, xpr in enumerate(xpers):
             if not xpr.name in self.__keys:
                 continue
             res = xpr.resolution / 1000
-            out += '{1:{0}}:'.format(length, xpr.name)
+            out += '{1:{0}}:'.format(length, names[i])
             for x in self[xpr.name]:
                 if x['end'] == 0.0:
                     out += '| ' + '-' * 4 + ' '
