@@ -122,7 +122,7 @@ class Alignment(object):
         :param ansi ftype: display colors in 'ansi' or 'html' format
         """
         if xpers:
-            xpers = [self.__experiments(n.name) for n in xpers]
+            xpers = [self.__experiments[n.name] for n in xpers]
         else:
             xpers = self.__experiments
         if not name:
