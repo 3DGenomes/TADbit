@@ -5,7 +5,7 @@
 """
 
 from pytadbit.parsers.hic_parser import read_matrix
-from pytadbit.utils import nicer, zscore
+from pytadbit.utils import nicer, zscore, hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser import parse_tads
 from warnings import warn
 from math import sqrt
@@ -180,10 +180,11 @@ class Experiment(object):
         self.size     = size
         resolution = resolution or self.resolution
         self.set_resolution(resolution, keep_original=False)
-        self._zeros   = [int(pos) for pos, raw in enumerate(
-            xrange(0, self.size**2, self.size))
-                         if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
-
+        # self._zeros   = [int(pos) for pos, raw in enumerate(
+        #     xrange(0, self.size**2, self.size))
+        #                  if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
+        self._zeros = hic_filtering_for_modelling(self.get_hic_matrix())
+        
 
     def load_tad_def(self, handler, weights=None):
         """
@@ -249,6 +250,8 @@ class Experiment(object):
         """
         if not self.hic_data:
             raise Exception('ERROR: No Hi-C data loaded\n')
+        if not method in ['sqrt', 'bytot']:
+            raise LookupError('Only "sqrt" and "bytot" methods are implemented')
         if self.wght:
             warn('WARNING: removing previous weights\n')
         forbidden = [i for i in xrange(self.size) if not self.hic_data[0][i*self.size+i]]
@@ -267,8 +270,6 @@ class Experiment(object):
             func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
         elif method == 'sqrt':
             func = lambda x, y: sqrt(rowsums[x] * rowsums[y])
-        else:
-            raise LookupError('Only "sqrt" and "bytot" methods are implemented')
         for i in xrange(self.size):
             for j in xrange(self.size):
                 if i in forbidden or j in forbidden:
@@ -327,13 +328,18 @@ class Experiment(object):
 
 
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,
-                                diagonal=False):
+                                diagonal=False, cutoff=None,
+                                true_position=False, uniq=False):
         """
         Creates a tab separated file with all interactions
         
         :param fname: file name to write the interactions pairs 
         :param True zscored: computes the z-score of the log10(data)
         :param True normalized: use weights to normalize data
+        :param None cutoff: if defined, only zscores above the cutoff will be
+           writen to file
+        :param False uniq: only writes on representent of an interacting pair
+           
         """
         if not self._zscores:
             for i in xrange(self.size):
@@ -348,15 +354,23 @@ class Experiment(object):
         for i in xrange(self.size):
             if i in self._zeros:
                 continue
-            for j in xrange(self.size):
+            start = i if uniq else 0
+            for j in xrange(start, self.size):
                 if j in self._zeros:
+                    continue
+                if self._zscores[i][j] < cutoff:
                     continue
                 if self._zscores[i][j] == -99:
                     continue
                 if diagonal and i==j:
                     continue
-                out.write('{}\t{}\t{}\n'.format(i + 1, j + 1,
-                                                self._zscores[i][j]))
+                if true_position:
+                    out.write('{}\t{}\t{}\n'.format(self.resolution * (i + 1),
+                    self.resolution * (j + 1),
+                    self._zscores[i][j]))
+                else:
+                    out.write('{}\t{}\t{}\n'.format(i + 1, j + 1,
+                                                    self._zscores[i][j]))
         out.close()
 
 
