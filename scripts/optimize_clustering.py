@@ -61,7 +61,6 @@ def main():
     """
     n_pick = 4
     n_tot  = 10
-    kind   = 'exp'
     test_chr = Chromosome(name='Test Chromosome')
     test_chr.add_experiment('exp1', 100000, xp_handler=PATH +
                             'HIC_gm06690_chr19_chr19_100000_obs.txt')
@@ -78,7 +77,7 @@ def main():
     picked_keys = []
     for i in xrange(n_pick):
         key, new_tad = get_random_tad(real_tads)
-        while key in picked_keys and new_tad['end'] - new_tad['start'] < 10:
+        while key in picked_keys or (new_tad['end'] - new_tad['start'] < 15):
             key, new_tad = get_random_tad(real_tads)
         picked_tads.append(new_tad)
         picked_keys.append(key)
@@ -91,16 +90,17 @@ def main():
         tads[uppercase[i] + '_' + str(0)] = picked_tads[i]
         tad_names.append(uppercase[i] + '_' + str(0))
         for j in xrange(1, n_tot):
-            hic, indels = generate_random_contacts(tad1=picked_tads[i]['hic'],
-                                                   prob=0.1, ext=int(random()*4) + 1,
-                                                   indel=int(random()*4) + 1)[1:]
+            hic, indels = generate_random_contacts(
+                tad1=picked_tads[i]['hic'], prob=0.05, ext=int(random()*4) + 1,
+                indel=int(random() * 4) + 1)[1:]
             # indels = '|'.join([str(n-1) if n>0 else '-' + str((abs(n)-1)) for n in indels])
-            tads[uppercase[i] + '_' + str(j)] = {'hic': hic,
-                                                                'start': picked_tads[i]['start'],
-                                                                'end': picked_tads[i]['end']}
+            tads[uppercase[i] + '_' + str(j)] = {
+                'hic'  : hic,
+                'start': picked_tads[i]['start'],
+                'end'  : picked_tads[i]['end']}
             tad_matrices.append(hic)
             tad_names.append(uppercase[i] + '_' + str(j))
-    distances, cci = get_distances(tad_matrices, max_num_v=8,
+    distances, cci = get_distances(tad_matrices, max_num_v=4,
                                    n_cpus=mu.cpu_count())
     results, clusters = pre_cluster(distances, cci, len(tad_matrices))
     paint_clustering(results, clusters, len(tad_matrices), test_chr,
@@ -123,7 +123,8 @@ def get_hic_distr(tads):
     max_da = np.log(max(all_hic))
     bin_sa = max_da / 100
     binsa = [-bin_sa ] + \
-            [float(r)/100 for r in range(0, int(max_da*100), int(bin_sa*100))] + \
+            [float(r)/100 for r in range(0, int(max_da * 100),
+                                         int(bin_sa * 100))] + \
             [float('+inf')]
     for b in range(len(binsa)-1):
         wina.append(len([i for i in all_hic if \
@@ -149,7 +150,8 @@ def get_hic_distr(tads):
     max_dd = np.log(max(diag_hic))
     bin_sd = max_dd / 100
     binsd = [-bin_sd ] + \
-            [float(r)/100 for r in range(0, int(max_dd*100), int(bin_sd*100))] + \
+            [float(r)/100 for r in range(0, int(max_dd*100),
+                                         int(bin_sd*100))] + \
             [float('+inf')]
     for b in range(len(binsd)-1):
         wind.append(len([i for i in diag_hic if \
@@ -157,7 +159,6 @@ def get_hic_distr(tads):
         cntd.append(np.exp(binsd[b]))
     wind = [float(v) / sum(wind) for v in wind]
     wind = np.cumsum(wind)
-
     distra = interp1d(wina, cnta, kind='linear')
     distrd = interp1d(wind, cntd, kind='linear')
     return distra, distrd
