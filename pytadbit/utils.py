@@ -3,12 +3,17 @@
 
 
 """
-from bisect import bisect_left
-from numpy import std
-from math import log10
-from matplotlib import pyplot as plt
+from bisect   import bisect_left
+from numpy    import std
+from math     import log10
+from re       import sub
+from warnings import warn
 import numpy as np
-from re import sub
+
+try:
+    from matplotlib import pyplot as plt
+except ImportError:
+    warn('matplotlib not found\n')
 
 ###TEST to be removed
 
