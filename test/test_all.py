@@ -106,7 +106,7 @@ class TestTadbit(unittest.TestCase):
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
                                 xp_handler='20Kb/chrT/chrT_D.tsv')
-        brks = [2.0, 7.0, 12.0, 18.0, 38.0, 43.0, 49.0,
+        brks = [2.0, 7.0, 12.0, 18.0, 49.0,
                 61.0, 66.0, 75.0, 89.0, 94.0, 99.0]
         tads = test_chr.experiments['exp1'].tads
         found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]

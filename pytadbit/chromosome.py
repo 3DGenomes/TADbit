@@ -133,7 +133,7 @@ class Chromosome(object):
     def _get_forbidden_region(self, xpr):
         """
         Find regions where there is no info in any of the experiments.
-        This is used to calculate relative chromosome size.
+        This is used to infer the relative chromosome size.
         """
         if not xpr.tads:
             return
@@ -144,8 +144,7 @@ class Chromosome(object):
             diff  = end - start
             if diff * xpr.resolution > self.max_tad_size:
                 forbidden += range(int(start), int(end+1))
-                if xpr.tads[pos]['score'] > 0:
-                    xpr.tads[pos]['score'] = -xpr.tads[pos]['score']
+                xpr.tads[pos]['score'] = -abs(xpr.tads[pos]['score'])
         if not self.forbidden:
             self.forbidden = dict([(f, None) for f in forbidden])
         else:
@@ -476,11 +475,18 @@ class Chromosome(object):
             axe.hlines(tad['end'], tad['start'], tad['end'], colors='k')
             axe.vlines(tad['start'], tad['start'], tad['end'], colors='k')
             axe.vlines(tad['end'], tad['start'], tad['end'], colors='k')
-            axe.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
-                    tad['start'] + abs(tad['start']-tad['end'])/2 - 1, str(i))
+            if i % 2:
+                axe.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
+                         tad['start'] - 1, str(i), va='top')
+            else:
+                axe.text(tad['start'] + abs(tad['start']-tad['end'])/2 - 1,
+                         tad['end'] + 1, str(i), va='bottom')
             if tad['score'] < 0:
-                for j in xrange(int(tad['start']), int(tad['end']), 4):
-                    axe.hlines(j, tad['start'], tad['end'], colors='k')
+                for j in xrange(0, int(tad['end']) - int(tad['start']), 2):
+                    axe.plot((tad['start']    , tad['start'] + j),
+                             (tad['end']   - j, tad['end']      ), color='k')
+                    axe.plot((tad['end']      , tad['end']   - j),
+                             (tad['start'] + j, tad['start']    ), color='k')
         if show:
             plt.show()
 
@@ -542,8 +548,7 @@ class Chromosome(object):
                 xpr.tads[tad]['brk'] = xpr.tads[tad]['end']
                 if (xpr.tads[tad]['end'] - xpr.tads[tad]['start']) \
                    * xpr.resolution < self.max_tad_size:
-                    if xpr.tads[tad]['score'] > 0:
-                        xpr.tads[tad]['score'] = -xpr.tads[tad]['score']
+                    xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
             
 
     def _search_centromere(self, xpr):
@@ -607,20 +612,20 @@ class Chromosome(object):
                 final = tads[tad - 1 + plus]['end']
                 # centromere found?
                 if start < beg < final and start < end < final:
-                    tads[tad]     = copy(tads[tad - 1])
+                    tads[tad] = copy(tads[tad - 1])
                     tads[tad]['start'] = end
+                    tads[tad]['score'] = -abs(tads[tad]['score'])
                     if (tads[tad]['end'] - tads[tad]['start']) \
                            * xpr.resolution > self.max_tad_size:
-                        if xpr.tads[tad]['score'] > 0:
-                            xpr.tads[tad]['score'] = -xpr.tads[tad]['score']
+                        xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
                     tads[tad]['brk'] = tads[tad]['end']
                     tad -= 1
                     tads[tad] = copy(tads[tad])
+                    tads[tad]['score'] = -abs(tads[tad]['score'])
                     tads[tad]['end'] = beg
                     if (tads[tad]['end'] - tads[tad]['start']) \
                            * xpr.resolution > self.max_tad_size:
-                        if xpr.tads[tad]['score'] > 0:
-                            xpr.tads[tad]['score'] = -xpr.tads[tad]['score']
+                        xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
                     tads[tad]['brk'] = tads[tad]['end']
                     plus = 1
                 else:
