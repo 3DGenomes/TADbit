@@ -322,7 +322,9 @@ def zscore(values, size):
               /                     score
           ___/_________________________________
             /
+
     """
+    # do not take into acount the diagonal
     nop = dict([(i + size * i,  None) for i in xrange(size)])
     vals = []
     for v in values:

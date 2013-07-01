@@ -8,6 +8,12 @@ Chromosome class
    :no-undoc-members:
 
 
+Load chromosome
+---------------
+
+.. autofunction:: load_chromosome
+
+
 ExperimentList class
 ====================
 
@@ -15,7 +21,3 @@ ExperimentList class
    :members:
    :no-undoc-members:
 
-Load chromosome
----------------
-
-.. autofunction:: load_chromosome

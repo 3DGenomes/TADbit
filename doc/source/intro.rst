@@ -3,6 +3,7 @@ Introduction
 ************
 
 .. contents::
+   :depth: 3
 
 
 What is Tadbit?
@@ -11,7 +12,7 @@ What is Tadbit?
 
 
 Why? 
-====
+=====
 
 
 

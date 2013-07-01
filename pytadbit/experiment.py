@@ -291,6 +291,7 @@ class Experiment(object):
         values = []
         if normalized:
             for i in xrange(self.size):
+                # zeros are rows or columns having a zero in the diagonal
                 if i in self._zeros:
                     continue
                 for j in xrange(self.size):

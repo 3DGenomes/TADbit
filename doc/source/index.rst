@@ -6,28 +6,19 @@
 Welcome to Tadbit's documentation!
 ==================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
    
    intro
 
-   install
-
    install_r
+
+   r_tadbit
+
+   install
 
    tutorial
 
    reference/index
 
-   r_tadbit
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
