@@ -124,9 +124,9 @@ def filter_with_polynomial_fit(matrx, draw_hist=False):
         cols.append(sum(c))
     cols = np.array(cols)
     if draw_hist:
-        plt.figure(figsize=(12, 12))
+        plt.figure(figsize=(9, 9))
     median = np.median(cols)
-    mad = np.median([abs(median - c ) for c in cols])
+    # mad = np.median([abs(median - c ) for c in cols])
     best =(None, None, None, None)
     # bin the sum of columns
     xmin = min(cols)
@@ -151,9 +151,16 @@ def filter_with_polynomial_fit(matrx, draw_hist=False):
             hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
         xp = range(0, cols[-1])
     # find best polynomial fit in a given range
-    for order in range(4, 17):
+    for order in range(4, 14):
         z = np.polyfit(y, x, order)
-        root = np.roots(np.polyder(z))[-1]
+        zpp = np.roots(np.polyder(z, m=2))
+        roots = np.roots(np.polyder(z))
+        # check that we are concave down, otherwise take next root
+        pente = np.polyval(zpp, abs(roots[-2] - roots[-1]) / 2 + roots[-1])
+        if pente > 0:
+            root = roots[-1]
+        else:
+            root = roots[-2]
         # root must be higher than zero
         if root <= 0:
             continue
@@ -169,16 +176,23 @@ def filter_with_polynomial_fit(matrx, draw_hist=False):
         a = plt.plot(xp, p(xp), "--", color='k')
         b = plt.vlines(np.roots(np.polyder(z))[-1], 0, 110,
                        colors='r', linestyles='dashed')
-        c = plt.vlines(median - mad * 1.5, 0, 110, colors='g',
-                       linestyles='dashed')
-        plt.legend(a+[b]+[c], ['polyfit \n{}'.format(
+        # c = plt.vlines(median - mad * 1.5, 0, 110, colors='g',
+        #                linestyles='dashed')
+        plt.legend(a+[b], ['polyfit \n{}'.format(
             ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
                          '${}{:.1}x^{}$'.format('+' if j>0 else '', j,
                                                 '{' + str(i) + '}'))
                      for i, j in enumerate(list(p)[::-1])])),
-                               'first solution of polynomial derivation',
-                               'median - (1.5 * median absolute deviation)'],
+                               'first solution of polynomial derivation'],
                    fontsize='x-small')
+        # plt.legend(a+[b]+[c], ['polyfit \n{}'.format(
+        #     ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
+        #                  '${}{:.1}x^{}$'.format('+' if j>0 else '', j,
+        #                                         '{' + str(i) + '}'))
+        #              for i, j in enumerate(list(p)[::-1])])),
+        #                        'first solution of polynomial derivation',
+        #                        'median - (1.5 * median absolute deviation)'],
+        #            fontsize='x-small')
         plt.show()
     # label as bad the columns with sums lower than the root
     bads = []
@@ -291,6 +305,24 @@ def reduce_matrix(nums, size):
 
 
 def zscore(values, size):
+    """
+    _______________________/___
+                          /
+                         /
+                        /
+                       /
+                      /
+                     /
+                    /
+                   /
+                  /
+                 /
+                /
+               /
+              /                     score
+          ___/_________________________________
+            /
+    """
     nop = dict([(i + size * i,  None) for i in xrange(size)])
     vals = []
     for v in values:
@@ -326,18 +358,18 @@ def nicer(res):
     return str(res) + 'b'
 
 
-COLOR = {None: '\033[31m', # red
-         0   : '\033[34m', # blue
-         1   : '\033[34m', # blue
-         2   : '\033[34m', # blue
-         3   : '\033[36m', # cyan
-         4   : '\033[0m' , # white
-         5   : '\033[1m' , # bold white
-         6   : '\033[33m', # yellow
-         7   : '\033[33m', # yellow
-         8   : '\033[35m', # purple
-         9   : '\033[35m', # purple
-         10  : '\033[31m'  # red
+COLOR = {None: r'\033[31m', # red
+         0   : r'\033[34m', # blue
+         1   : r'\033[34m', # blue
+         2   : r'\033[34m', # blue
+         3   : r'\033[36m', # cyan
+         4   : r'\033[0m' , # white
+         5   : r'\033[1m' , # bold white
+         6   : r'\033[33m', # yellow
+         7   : r'\033[33m', # yellow
+         8   : r'\033[35m', # purple
+         9   : r'\033[35m', # purple
+         10  : r'\033[31m'  # red
          }
 
 COLORHTML = {None: '<span style="color:red;">'       , # red
@@ -367,4 +399,4 @@ def colorize(string, num, ftype='ansi'):
     """
     color = COLOR if ftype=='ansi' else COLORHTML
     return '{}{}{}'.format(color[num], string,
-                           '\033[m' if ftype=='ansi' else '</span>')
+                           r'\033[m' if ftype=='ansi' else '</span>')
