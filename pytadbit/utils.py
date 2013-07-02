@@ -360,18 +360,18 @@ def nicer(res):
     return str(res) + 'b'
 
 
-COLOR = {None: r'\033[31m', # red
-         0   : r'\033[34m', # blue
-         1   : r'\033[34m', # blue
-         2   : r'\033[34m', # blue
-         3   : r'\033[36m', # cyan
-         4   : r'\033[0m' , # white
-         5   : r'\033[1m' , # bold white
-         6   : r'\033[33m', # yellow
-         7   : r'\033[33m', # yellow
-         8   : r'\033[35m', # purple
-         9   : r'\033[35m', # purple
-         10  : r'\033[31m'  # red
+COLOR = {None: '\033[31m', # red
+         0   : '\033[34m', # blue
+         1   : '\033[34m', # blue
+         2   : '\033[34m', # blue
+         3   : '\033[36m', # cyan
+         4   : '\033[0m' , # white
+         5   : '\033[1m' , # bold white
+         6   : '\033[33m', # yellow
+         7   : '\033[33m', # yellow
+         8   : '\033[35m', # purple
+         9   : '\033[35m', # purple
+         10  : '\033[31m'  # red
          }
 
 COLORHTML = {None: '<span style="color:red;">'       , # red
@@ -401,4 +401,4 @@ def colorize(string, num, ftype='ansi'):
     """
     color = COLOR if ftype=='ansi' else COLORHTML
     return '{}{}{}'.format(color[num], string,
-                           r'\033[m' if ftype=='ansi' else '</span>')
+                           '\033[m' if ftype=='ansi' else '</span>')

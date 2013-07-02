@@ -28,7 +28,7 @@ def consensusize(ali1, ali2, passed):
     return consensus
 
 
-def align(sequences, method='global', **kwargs):
+def align(sequences, method='reciprocal', **kwargs):
     """
     Align Topologically associated domains. Supports multiple alignment by
     building a consensus TAD and aligning each TAD to it.
@@ -37,7 +37,7 @@ def align(sequences, method='global', **kwargs):
     to the value of the first boundary found in order to try to reduce this
     problem.
 
-    :param global method: method used to align.
+    :param reciprocal method: method used to align.
     """
     if method == 'global':
         aligner = needleman_wunsch

@@ -1,6 +1,8 @@
 
-General Tutorial
-****************
+.. _getting_start:
+
+Getting start
+*************
 
 .. contents::
    :depth: 3
@@ -22,17 +24,20 @@ Hi-C data is usually presented as a symmetric matrix in a tab separated file, us
   chrT_006	19	50	53	42	37	224
 
 
-However, the number of extra columns or rows amy vary as no convention as been proposed yet. The tadbit library allows to load most of this matrices. Classically a Hi-C matrix is load as this:
+However, the number of extra columns or rows may vary as no convention as been proposed yet. The tadbit library allows to load most of this matrices. Classically a Hi-C matrix is loaded as this:
+
+*Note: this example loads human 19th chromosome from* [Lieberman-Aiden2009]_ *results.*
+
 
 ::
 
   from pytadbit import Chromosome
   
   # initiate a chromosome object that will store all Hi-C data and analysis
-  my_chrom = Chromosome(name='My fisrt chromsome')
+  my_chrom = Chromosome(name='My fisrt chromosome')
 
   # load Hi-C data
-  my_chrom.add_experiment('First Hi-C experiment', xp_handler="/some_path/hi-c_data.tsv", resolution=20000)
+  my_chrom.add_experiment('First Hi-C experiment', xp_handler="sample_data/HIC_k562_chr19_chr19_100000_obs.txt", resolution=100000)
 
 Strange data format
 -------------------
@@ -94,6 +99,7 @@ a specific Experiment may be accessed either by its name or by its position in t
 
 Each Experiment is an independent object with a list of associated functions (see :class:`pytadbit.experiment.Experiment`)
 
+.. _run_tadbit:
 
 Run Tadbit core function
 ========================
@@ -104,14 +110,14 @@ Once loaded the location of topologically associating domains (TADs) can be esti
 
   my_chrom.find_tads('First Hi-C experiment')
 
-:func:`pytadbit.chromosome.Chromosome.find_tads` is called from our Chromosome object, however it is applied to a specific experiment. TADs found by tadbit will thus be associated to this experiment. They can be accessed like this:
+:func:`pytadbit.chromosome.Chromosome.find_tad` is called from our Chromosome object, however it is applied to a specific experiment. TADs found by tadbit will thus be associated to this experiment. They can be accessed like this:
 
 ::
 
   exp = my_chrom.experiments["First Hi-C experiment"]
   exp.tads
 
-"tads" returned in this example is a dictionary of TADs, each is inturn a new dictionary containing information about the start and end position of one TAD.
+"tads" returned in this example is a dictionary of TADs, each is in turn a new dictionary containing information about the start and end position of one TAD.
 
 ::
   
@@ -131,9 +137,69 @@ Once loaded the location of topologically associating domains (TADs) can be esti
 "start" and "end" values correspond respectively to the start and end position of the given TAD in the chromosome (note that this numbers have to be multiplied by the resolution of the experiment "exp.resolution"). "brk" key corresponds the value of "end", all "brk" together corresponds to all TADs' boundaries.
 
 
+Forbidden regions and centromere
+--------------------------------
+
+Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, Tadbit checks that they are not larger than a given value (3 Mb by default). If a TAD is larger than this value, it will be marked with a **negative score**, and will be automatically excluded from the main Tadbit functions.
+
+An other, check achieved by Tadbit, is the search for centromeric region. Tadbit assumes that the larger gap found in the Hi-C matrix corresponds to the centromere. This search is updated, and refined, each time a new experiment is linked to a given Chromosome. Typically, TADs calculated by the core :func:`pytadbit.tadbit.tadbit` function are including centromeric regions, what Tadbit will do if a centromere is found is to split the TAD that includes the centromere into two TADs (one ending before the centromere, and one starting after). As centromeric regions are not necessarily TAD boundaries, we mark both TADs surrounding with negative scores (just as forbidden regions).
+
+Data visualization
+==================
+
+Once loaded, Hi-C data can be visualized using the :func:`pytadbit.chromosome.Chromosome.visualize` function.
+
+*Note: only need to specify which experiment to show*
+
+Than, following with the example of human 19th chromosome from [Lieberman-Aiden2009]_:
+
+::
+  
+  my_chrom.visualize("First Hi-C experiment", show=True) 
 
 
-References
-==========
+.. figure::  pictures/hic_dixon19.png
+   :align:   center
 
-.. [Dixon2012] Dixon, J. R., Selvaraj, S., Yue, F., Kim, A., Li, Y., Shen, Y., Hu, M., et al. (2012). Topological domains in mammalian genomes identified by analysis of chromatin interactions. Nature, 485(7398), 376–80. doi:10.1038/nature11082
+In this plot are represented the log2 interaction counts, resulting from the given Hi-C experiment.
+
+If the steps corresponding to previous section (:ref:`run_tadbit`) have been done, and TADs are defined, we can also visualize them on the same kind of plot:
+
+::
+
+    my_chrom.visualize("First Hi-C experiment", paint_tads=True, show=True) 
+
+
+.. figure::  pictures/hic_dixon19_tads_zoom.png
+   :align:   center
+
+*Note: TADs number 19, corresponding to centromere is shaded, as well as TAD number 18, that size > 3 Mb.*
+
+
+Saving and restoring data
+=========================
+
+In order to avoid having to calculate TAD position each time, Tadbit allows to save/load Chromosome objects, with all associated experiments..
+
+::
+
+   my_chrom.save_chromosome("some_path.tdb")
+
+And to load again the chromosome, with the experiments:
+
+::
+
+   from pytadbit import load_chromosome
+
+   my_chrom = load_chromosome("some_path.tdb")
+
+*Note: While we do have saved and loaded information about TADs, raw Hi-C data is not stored in this way (this, in order to save space), and may be loaded again for each experiment:*
+
+::
+
+    expr = my_chrom.experiments["First Hi-C experiment"]
+
+    expr.load_experiment("sample_data/HIC_k562_chr19_chr19_100000_obs.txt")
+
+
+
