@@ -305,7 +305,7 @@ def _interpolation(experiments):
 
 
 def randomization_test(xpers, score=None, num=1000, verbose=False,
-                       method='interpolate', r_size=None):
+                       rnd_method='interpolate', r_size=None, method='reciprocal'):
     """
     Return the probability that original alignment is better than an
     alignment of randomized boundaries.
@@ -318,10 +318,10 @@ def randomization_test(xpers, score=None, num=1000, verbose=False,
     :param interpolate method: how to generate random tads (alternative is
        'shuffle').
     """
-    if not method in ['interpolate', 'shuffle']:
+    if not rnd_method in ['interpolate', 'shuffle']:
         raise Exception('method should be either "interpolate" or ' +
                         '"shuffle"\n')
-    if method == 'interpolate' and not r_size:
+    if rnd_method == 'interpolate' and not r_size:
         raise Exception('should provide Chromosome r_size if interpolate\n')
     tads = []
     for xpr in xpers:
@@ -331,7 +331,7 @@ def randomization_test(xpers, score=None, num=1000, verbose=False,
                      xpr.resolution for t in xpr.tads.values()])
     rnd_distr = []
     # rnd_len = []
-    distr = _interpolation(xpers) if method is 'interpolate' else None
+    distr = _interpolation(xpers) if rnd_method is 'interpolate' else None
     rnd_exp = lambda : tads[int(random() * len(tads))]
     for val in xrange(num):
         if verbose:
@@ -341,7 +341,7 @@ def randomization_test(xpers, score=None, num=1000, verbose=False,
                              ' randomizing: '
                              '{:.2%} completed'.format(val/num))
                 stdout.flush()
-        if method is 'interpolate':
+        if rnd_method is 'interpolate':
             rnd_tads = [generate_rnd_tads(r_size, distr)
                         for _ in xrange(len(tads))]
             # rnd_len.append(float(sum([len(r) for r in rnd_tads]))
@@ -350,7 +350,7 @@ def randomization_test(xpers, score=None, num=1000, verbose=False,
             rnd_tads = [generate_shuffle_tads(rnd_exp())
                         for _ in xrange(len(tads))]
             # rnd_len.append(len(tads))
-        rnd_distr.append(align(rnd_tads, verbose=False)[1])
+        rnd_distr.append(align(rnd_tads, verbose=False, method=method)[1])
         # aligns, sc = align(rnd_tads, verbose=False)
         # rnd_distr.append(sc)
         # for xpr in aligns:

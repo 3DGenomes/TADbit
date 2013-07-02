@@ -285,7 +285,7 @@ class Chromosome(object):
         if not randomize:
             # return self.get_alignment(name), score
             return ali
-        p_value = randomization_test(xpers, score=score, method=rnd_method,
+        p_value = randomization_test(xpers, score=score, rnd_method=rnd_method,
                                      verbose=verbose, r_size=self.r_size,
                                      **kwargs)
         return score, p_value
@@ -320,7 +320,7 @@ class Chromosome(object):
         
         """
         if not name:
-            name = ''.join([letters[int(random() * len(letters))] \
+            name = ''.join([letters[int(rand() * len(letters))] \
                             for _ in xrange(5)])
             warn('No name provided, random name generated: {}\n'.format(name))
         if name in self.experiments:
