@@ -28,3 +28,6 @@ ali = my_chrom.alignment[('First Hi-C experiment', 'Second Hi-C experiment')]
 
 
 print ali.write_alignment(ftype='html')
+
+score, pval = my_chrom.align_experiments(randomize=True)
+

@@ -63,7 +63,7 @@ Under the alignment dictionary attached to Chromosomes, are stored all the align
 Check alignment through randomization
 -------------------------------------
 
-
+In order to check that the alignment makes sense and that it do not corresponds to a random distribution of boundaries, 
 
 
 Alignment objects
