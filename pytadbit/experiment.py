@@ -213,7 +213,7 @@ class Experiment(object):
         square root of the product of the sum of the column i by the sum of row
         j.
 
-        :param sqrt method: either 'sqrt' or 'over_tot'. Depending on this param
+        :param sqrt method: either 'sqrt' or 'bytot'. Depending on this param
            the weight of the Hi-C count in row I, column J of the Hi-C matrix
            would be, under 'sqrt':
            ::
@@ -225,7 +225,7 @@ class Experiment(object):
                             \  /   /__ (matrix(J, i)) * /__  (matrix(j, I))
                              \/    i=0                  j=0
 
-           and under 'over_tot': 
+           and under 'bytot': 
            ::
    
                              N                    N                 
