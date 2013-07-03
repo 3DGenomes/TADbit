@@ -258,6 +258,12 @@ class Alignment(object):
 
 
 class TAD(dict):
+    """
+    Specific class of TADs, used only within Alignment objects.
+    It is directly inheriting from python dict.
+    a TAD these keys: 'start', 'end', 'score', 'brk', 'pos', 'exp'
+    
+    """
     def __init__(self, thing, i, exp):
         super(TAD, self).__init__(thing)
         self.update(dict((('pos', i),('exp', exp))))
@@ -304,7 +310,7 @@ def _interpolation(experiments):
     return interp1d(win, cnt)
 
 
-def randomization_test(xpers, score=None, num=1000, verbose=False,
+def randomization_test(xpers, score=None, num=1000, verbose=False, max_dist=100000,
                        rnd_method='interpolate', r_size=None, method='reciprocal'):
     """
     Return the probability that original alignment is better than an
@@ -316,7 +322,11 @@ def randomization_test(xpers, score=None, num=1000, verbose=False,
     :param 1000 num: number of random alignment to generate for comparison
     :param False verbose: to print something nice
     :param interpolate method: how to generate random tads (alternative is
-       'shuffle').
+       'shuffle'). 'interpolate' will calculate the distribution of TAD lengths,
+       and generate a random set of TADs according to this distribution (see
+       :func:`pytadbit.alignment.generate_rnd_tads`). In contrast, the 'shuffle'
+       method uses directly the set of observed TADs and shuffle them (see
+       :func:`pytadbit.alignment.generate_shuffle_tads`).
     """
     if not rnd_method in ['interpolate', 'shuffle']:
         raise Exception('method should be either "interpolate" or ' +
@@ -350,7 +360,8 @@ def randomization_test(xpers, score=None, num=1000, verbose=False,
             rnd_tads = [generate_shuffle_tads(rnd_exp())
                         for _ in xrange(len(tads))]
             # rnd_len.append(len(tads))
-        rnd_distr.append(align(rnd_tads, verbose=False, method=method)[1])
+        rnd_distr.append(align(rnd_tads, verbose=False, method=method,
+                               max_dist=max_dist)[1])
         # aligns, sc = align(rnd_tads, verbose=False)
         # rnd_distr.append(sc)
         # for xpr in aligns:

@@ -34,7 +34,7 @@ However, the number of extra columns or rows may vary as no convention as been p
   from pytadbit import Chromosome
   
   # initiate a chromosome object that will store all Hi-C data and analysis
-  my_chrom = Chromosome(name='My fisrt chromosome')
+  my_chrom = Chromosome(name='My first chromosome')
 
   # load Hi-C data
   my_chrom.add_experiment('First Hi-C experiment', xp_handler="sample_data/HIC_k562_chr19_chr19_100000_obs.txt", resolution=100000)

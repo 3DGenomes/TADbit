@@ -50,37 +50,35 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
 
     :argument tads1: list of boundaries
     :argument tads2: list of boundaries
-    :argument None penalty: if None, penalty will be calculated based on mean
-       distances between boundaries (for the current alignment).
-       FIXME: find something better.
+    :argument None penalty: if None, penalty will be two times max_dist
     :argument verbose: print alignment
     :argument 100000 max_dist: distance threshold from which two boundaries can
        not be aligned together.
+
+    :returns: the alignment and a score between 0 and 1 (0: bad, 1: good)
     """
 
     if not penalty:
         # set penalty to the average length of a TAD
-        penalty  = float(reduce(lambda x, y: abs(x - y),
-                                tads1)) / len(tads1)
-        penalty += float(reduce(lambda x, y: abs(x - y),
-                                tads2)) / len(tads2)
-    start = 0
-    diffs = []
+        penalty = 2 * max_dist
+    start  = 0
+    diffs  = []
     align1 = []
     align2 = []
-    i = 0
+    adj    = 0
     for t in tads1:
         closest, gap = find_closest_reciprocal(t, tads1, tads2,
                                                start=start)
+        diff = penalty
         while gap > 0:
             try:
-                align2.append(tads2[i])
+                align2.append(tads2[adj])
+                diffs.append(diff)
             except IndexError:
                 break
             align1.append('-')
-            i += 1
+            adj += 1
             gap -= 1
-        diff = penalty
         if closest != '-':
             start = closest
             diff  = abs(t - closest)
@@ -88,27 +86,28 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
                 # print 'MAAAAX: ', t, closest, diff, max_dist
                 if t > closest:
                     align2.append(closest)
-                    i += 1
+                    adj += 1
                     align1.append('-')
                     closest = '-'
                 else:
                     align1.append(t)
                     align2.append('-')
                     t = '-'
-                diff  = penalty
+                diff = penalty
         diffs.append(diff)
         #print 't2i {}; start {}; t1 {}; clos {}; gap {}'.format(
         #    tads2[i], start, t, closest, gap)
         align1.append(t)
         align2.append(closest)
         if closest != '-':
-            i += 1
+            adj += 1
     if verbose:
         print '\n Alignment:'
         print 'TADS 1: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
                                    for x in align1])
         print 'TADS 2: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
                                    for x in align2])
-
-    return [align1, align2], float(sum(diffs))/len(align1)
+    diff = len(align1) - len(diffs)
+    return ([align1, align2],
+            1 - (float(penalty * diff + sum(diffs))) / len(align1) / penalty)
         

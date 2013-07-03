@@ -1,5 +1,6 @@
-Alignment of TAD boundaries
-***************************
+=============================
+ Alignment of TAD boundaries
+=============================
 
 .. contents::
    :depth: 3
@@ -60,10 +61,18 @@ The result of the print statement is:
 Under the alignment dictionary attached to Chromosomes, are stored all the alignments done between the experiments belonging to this same chromosome. Each alignment is an object (see :class:`pytadbit.alignment.Alignment`)
 
 
-Check alignment through randomization
--------------------------------------
+Check alignment consistency through randomization
+-------------------------------------------------
 
-In order to check that the alignment makes sense and that it do not corresponds to a random distribution of boundaries, 
+In order to check that the alignment makes sense and that it do not corresponds to a random association of boundaries, we can set the "randomize" parameter to True when aligning.:
+
+::
+
+   score, pval = my_chrom.align_experiments(randomize=True, rnd_method="interpolate", rnd_num=1000)
+   
+For randomization two methodologies are available, "shuffle" or "interpolate" (the default). The first one, is based on shuffling the observed TADs while the former one draws the distribution of TAD lengths and generates random set of TADs according to this distribution (see:* :func:`pytadbit.alignment.randomization_test` *for more details).*
+
+In the case of our example, the score of the alignment is 0.27 and the might be p-value < 0.001.
 
 
 Alignment objects
@@ -98,13 +107,68 @@ The first function we may want to call in order to see how well does our Hi-C ex
 Here, in different colors (corresponding to tadbit confidence in the detection of the boundaries), we can see how conserved are the boundaries, in this case, between cell types.
 
 
+The get_column function
+-----------------------
 
+:func:`pytadbit.alignment.Alignment.get_column` allows to select specific columns of an alignment. 
 
-Main functions
---------------
+Let say that, for example, that we want the third column of an alignment:
 
-In order to select specific columns of the alignment some functions are available, let say that, for example, we want 
+::
 
+   ali.get_column(3)
 
+This will return:
+
+::
+
+   [(3, [>-<, >2600<])]
+
+The first element of the tuple corresponds to the column index, and the two values of the second element are the TADs associated to the aligned boundaries in that column. Note that TAD objects are represented between '>' and '<' (see: :class:`pytadbit.alignment.TAD`).
+
+Also :func:`pytadbit.alignment.Alignment.get_column` may take as argument specific function in order to test and select columns.
+
+For example, if we now want all boundaries with scores higher than 7, we might right this kind of function:
+
+::
+
+   cond1 = lambda x: x['score'] > 7
+   
+and apply it to the get_column call:
+
+::
+
+   ali.get_column(cond1=cond1)
+
+resulting in this 3 columns selected:
+
+::
+
+   [(24, [>19400<, >19400<]), (25, [>24400<, >24500<]), (54, [>63800<, >63800<])]
+
+We may also want to add a second condition, let say that we want only columns after 50th column of the alignment:
+
+::
+
+   cond2 = lambda x: x['pos'] > 50
+   ali.get_column(cond1=cond1, cond2=cond2)
+
+Resulting in:
+
+::
+
+   [(54, [>63800<, >63800<])]
+
+Finally, in order to be more flexible, we may want to apply this conditions to only a given number of experiments (of course, in this case, of a pairwise alignment, it does not make a lot of sense):
+
+::
+
+   ali.get_column(cond1=cond1, cond2=cond2, min_num=1)
+
+Will result in:
+
+::
+
+   [(52, [>60800<, >60800<]), (54, [>63800<, >63800<])]
 
 

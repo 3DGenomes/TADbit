@@ -232,7 +232,7 @@ class Chromosome(object):
 
 
     def align_experiments(self, names=None, verbose=False, randomize=False,
-                          rnd_method='interpolate', **kwargs):
+                          rnd_method='interpolate', rnd_num=1000, **kwargs):
         """
         Align prediction of boundaries of two different experiments. Resulting
         alignment will be stored in the self.experiment list.
@@ -251,6 +251,7 @@ class Chromosome(object):
             alignment is not better than random alignment
         :param interpolate rnd_method: by default uses interpolation of TAD
            distribution. Alternative is 'shuffle' where TADs are simply shuffled
+        :param 1000 rnd_num: number of randomizations to be done
         :param reciprocal method: if global, Needleman-Wunsch is used to align
             (see :func:`pytadbit.boundary_aligner.globally.needleman_wunsch`);
             if reciprocal, a method based on reciprocal closest boundaries is
@@ -287,7 +288,7 @@ class Chromosome(object):
             return ali
         p_value = randomization_test(xpers, score=score, rnd_method=rnd_method,
                                      verbose=verbose, r_size=self.r_size,
-                                     **kwargs)
+                                     num=rnd_num, **kwargs)
         return score, p_value
 
 
