@@ -14,7 +14,6 @@ from copy                              import deepcopy as copy
 from cPickle                           import load, dump
 from pytadbit.alignment                import Alignment, randomization_test
 from numpy                             import log2
-from random                            import random
 
 try:
     from matplotlib import pyplot as plt
