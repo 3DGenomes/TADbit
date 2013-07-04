@@ -18,6 +18,7 @@ from numpy.linalg import eigh # eigh is for symmetric matrices
 from scipy.stats  import spearmanr
 from itertools    import product
 from itertools    import combinations_with_replacement as combinations
+from copy         import deepcopy
 
 # for aleigen:
 from numpy import median
@@ -432,3 +433,49 @@ def write_contacts(contacts1, contacts2, f_string):
         out.write('\n')
         out.close()
 
+
+def merge_tads(tad1, tad2, ali1, ali2):
+    ali = []
+    ali.append(deepcopy(ali1))
+    ali.append(deepcopy(ali2))
+    for i in xrange(max(ali1[0], ali2[0]) - 1, -1, -1):
+        if ali[0][0]:
+            ali1.insert(0, i)
+            ali2.insert(0, '-')
+        elif ali[1][0]:
+            ali1.insert(0, '-')
+            ali2.insert(0, i)
+    size = len(ali1)
+    matrix1 = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
+    matrix2 = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
+    matrixm = [[0.1 for _ in xrange(size)] for _ in xrange(size)]
+    for i in xrange(size):
+        if ali1[i] == '-' or ali2[i] == '-':
+            matrixm[i] = [float('nan') for _ in xrange(size)]
+            if ali1[i] == '-':
+                matrix1[i]  = [float('nan') for _ in xrange(size)]
+                matrix2[i]  = [tad2[ali2[i]][ali2[j]] \
+                               if ali2[j] != '-' else float('nan')\
+                               for j in xrange(size)]
+            elif ali2[i] == '-':
+                matrix2[i]  = [float('nan') for _ in xrange(size)]
+                matrix1[i]  = [tad1[ali1[i]][ali1[j]] \
+                               if ali1[j] != '-' else float('nan')\
+                               for j in xrange(size)]
+            continue
+        for j in xrange(size):
+            if ali1[j] == '-' or ali2[j] == '-':
+                matrixm[i][j] = float('nan')
+                if ali1[j] == '-':
+                    matrix1[i][j] = float('nan')
+                    matrix2[i][j]  = tad2[ali2[i]][ali2[j]]
+                elif ali2[j] == '-':
+                    matrix2[i][j] = float('nan')
+                    matrix1[i][j] = tad1[ali1[i]][ali1[j]]
+                continue
+            matrix1[i][j]  = tad1[ali1[i]][ali1[j]]
+            matrix2[i][j]  = tad2[ali2[i]][ali2[j]]
+            matrixm[i][j]  = tad1[ali1[i]][ali1[j]]
+            matrixm[i][j] += tad2[ali2[i]][ali2[j]]
+            matrixm[i][j] /= 2
+    return matrix1, matrix2, matrixm

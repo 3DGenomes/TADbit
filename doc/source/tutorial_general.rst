@@ -142,7 +142,7 @@ Forbidden regions and centromere
 
 Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, Tadbit checks that they are not larger than a given value (3 Mb by default). If a TAD is larger than this value, it will be marked with a **negative score**, and will be automatically excluded from the main Tadbit functions.
 
-An other, check achieved by Tadbit, is the search for centromeric region. Tadbit assumes that the larger gap found in the Hi-C matrix corresponds to the centromere. This search is updated, and refined, each time a new experiment is linked to a given Chromosome. Typically, TADs calculated by the core :func:`pytadbit.tadbit.tadbit` function are including centromeric regions, what Tadbit will do if a centromere is found is to split the TAD that includes the centromere into two TADs (one ending before the centromere, and one starting after). As centromeric regions are not necessarily TAD boundaries, we mark both TADs surrounding with negative scores (just as forbidden regions).
+Another check achieved by Tadbit is the search for centromeric region. Tadbit assumes that the larger gap found in the Hi-C matrix corresponds to the centromere. This search is updated, and refined, each time a new experiment is linked to a given Chromosome. Typically, TADs calculated by the core :func:`pytadbit.tadbit.tadbit` function are including centromeric regions, what Tadbit will do if a centromere is found is to split the TAD that includes the centromere into two TADs (one ending before the centromere, and one starting after). As centromeric regions are not necessarily TAD boundaries, we mark both TADs surrounding with negative scores (just as forbidden regions).
 
 Data visualization
 ==================

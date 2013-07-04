@@ -64,3 +64,45 @@ print ali.get_column(cond1=cond1, cond2=cond2)
 
 print ali.get_column(cond1=cond1, cond2=cond2, min_num=1)
 
+
+exp = my_chrom.experiments[0]
+
+tad1 = list(my_chrom.iter_tads('First Hi-C experiment'))[41]
+tad2 = list(my_chrom.iter_tads('First Hi-C experiment'))[39]
+
+
+from pytadbit.tad_clustering.tad_cmo import optimal_cmo
+
+align1, align2, score = optimal_cmo(tad1[1], tad2[1], max_num_v=8, long_nw=True, long_dist=True, method='frobenius')
+
+
+from pytadbit.tad_clustering.tad_cmo import merge_tads
+
+
+matrix1, matrix2, matrix_merged = merge_tads(tad1[1], tad2[1], align1, align2)
+
+from matplotlib import pyplot as plt
+from numpy import log2
+
+
+cmap = plt.get_cmap()
+cmap.set_bad(color = 'k', alpha = .7)
+plt.subplot(2, 2, 2)
+plt.imshow(log2(matrix1), origin='lower', interpolation="nearest")
+plt.title('Original matrix')
+plt.subplot(2, 2, 3)
+plt.imshow(log2(matrix2), origin='lower', interpolation="nearest")
+plt.title('Changed Matrix (indels: {})'.format(indels))
+plt.subplot(2, 2, 1)
+plt.imshow(log2(matrixF), origin='lower', interpolation="nearest")
+plt.title('Merged Frobenius')
+plt.subplot(2, 2, 4)
+diff = len(tad1) - len(tad2)
+for i in xrange(len(tad2)):
+    tad2[i] += [0.]*diff
+for i in xrange(diff):
+    tad2.append([0.]*len(tad1))
+plt.imshow(log2(tad2), origin='lower', interpolation="nearest")
+plt.title('Changed Matrix')
+plt.show()
+
