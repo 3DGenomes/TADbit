@@ -12,7 +12,6 @@ src/pytadbit.py
 src/pytadbit_wrap.c
 .project
 .pydevproject
-imp
 *.pik
 *.pik_hic
 *.egg-info
