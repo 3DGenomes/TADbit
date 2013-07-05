@@ -33,7 +33,19 @@ Accessory:
 
   apt-get install python-matplotlib python-scipy
 
+IMP
+---
 
+Tadbit needs a specific version of IMP, to download it proceed as this:
+
+::
+
+   git clone https://github.com/salilab/imp
+   cd imp
+   git reset --hard 847e65d44da7d06718bcad366b09264c818752d5
+
+
+*Note: if you do not have git installed you can install it from your linux repositories (git-core)*
 
 Installing Tadbit
 ==================

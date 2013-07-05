@@ -14,7 +14,7 @@ setup(
     ext_modules = [pytadbit_module],
     package_dir = {'pytadbit': '../pytadbit'},
     packages    = ['pytadbit', 'pytadbit.parsers', 'pytadbit.boundary_aligner',
-                   'pytadbit.tad_clustering'],
+                   'pytadbit.tad_clustering', 'pytadbit.imp'],
     py_modules  = ["pytadbit"],
 )
 

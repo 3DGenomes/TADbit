@@ -3,6 +3,12 @@
 
 
 """
+from pytadbit.imp.CONFIG import *
+
+from sys import path
+
+path.insert(0, IMPATH)
+
 import IMP.core
 import IMP.container
 import IMP.algebra
@@ -10,7 +16,6 @@ import IMP.display
 import math
 from re import findall
 
-from CONFIG import *
 from scipy import polyfit
 
 
@@ -20,6 +25,7 @@ def parse_zscores(zscore_f, dens, close_bins=1):
     :param 1 close_bins: when to consider 2 bins as being close. 1 means only
        consecutive bins, while 2 means that we allow one bin in between (3 two
        bins, 4 three bins...)
+
     """
     zscores = {}
     loci   = []
@@ -45,7 +51,7 @@ def parse_zscores(zscore_f, dens, close_bins=1):
         # 
         if abs(x - y) <= close_bins:
             xarray.append(zscores[x][y])
-            yarray.append(0.005 * (dens[x] + dens[y]))
+            yarray.append(0.005 * (dens[x] + dens[y])) # no need to parse dens. dens[x] = dens[y] = exp.resolution
         zscores.setdefault(y, {})
         zscores[y][x] = z
     loci.sort()
@@ -55,7 +61,7 @@ def parse_zscores(zscore_f, dens, close_bins=1):
     index = loci[0]
     while index <= loci[nloci-1]:
         if loci[i] > index:
-            loci.insert( i, index )
+            loci.insert( i, index)
             nloci = nloci + 1
         index = index + 1
         i = i + 1
