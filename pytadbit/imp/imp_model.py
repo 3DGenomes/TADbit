@@ -13,6 +13,7 @@ import IMP.algebra
 import IMP.display
 from IMP import Model
 
+
 class IMPmodel(Model):
 
     def __init__(self, name, zscores, resolution, close_bins=1):
@@ -37,7 +38,8 @@ class IMPmodel(Model):
         self.rk = IMP.FloatKey("radius")
 
         Model.__init__(self)
-                
+
+
         self.ps = IMP.container.ListSingletonContainer(
             IMP.core.create_xyzr_particles(self, self.nloci, RADIUS, 1000))
         self.ps.set_name("")
@@ -82,7 +84,7 @@ class IMPmodel(Model):
 
         # Optimizer's parameters
         print "nrounds: %i, steps: %i, lsteps: %i" % (NROUNDS, STEPS, LSTEPS)
-
+        
         # Start optimization and save an VRML after 100 MC moves
         print "Start " + str(self.evaluate(False))
 
@@ -314,7 +316,7 @@ class IMPmodel(Model):
                     return
 
 
-    def addAllHarmonics(self, verbose=True):
+    def addAllHarmonics(self, verbose=False):
         for i in range(0, self.nloci):
             p1 = self.ps.get_particle(i)
             x = p1.get_name()

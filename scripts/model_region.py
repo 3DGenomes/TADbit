@@ -13,6 +13,7 @@ def main():
     """
     main function
     """
+
     crm  = '2R'
     xnam = 'TR2'
     crmbit = load_chromosome('/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/chr{0}.tdb'.format(crm))
@@ -30,7 +31,7 @@ def main():
     crmbit = Chromosome('lala')
     crmbit.add_experiment('exp1', xp_handler=[new_matrix], resolution=10000)
 
-    crmbit.visualize('exp1', show=True)
+    # crmbit.visualize('exp1', show=True)
 
     exp = crmbit.experiments[0]
 
@@ -39,14 +40,18 @@ def main():
     exp.normalize_hic(method='bytot')
     exp.get_hic_zscores()
 
-    plt.hist(reduce(lambda x, y: x+ y,
-                    [v.values() for v in exp._zscores.values()]), bins=50)
-    plt.show()
+    # plt.hist(reduce(lambda x, y: x+ y,
+    #                 [v.values() for v in exp._zscores.values()]), bins=50)
+    # plt.show()
 
 
     # here we are.
     # TODO: all this until here should be done by one simple matrix = exp.get_region()
 
+
+    from pytadbit.imp.imp_model import IMPmodel
+    
+    model = IMPmodel('lala', exp._zscores, 10000)
     
 
     out = open('today.xyz', 'w')
