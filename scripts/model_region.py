@@ -8,35 +8,20 @@ xnam = 'TR1'
 crmbit=Chromosome('2R')
 crmbit.add_experiment(xnam, resolution=10000, xp_handler='/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
 crmbit = load_chromosome('/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/chr{0}.tdb'.format(crm))
-exp = crmbit.experiments[xnam]
-# for xnam in ['TR2', 'TR1', 'BR']:
-#     crmbit.experiments[xnam].load_experiment('/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
-crmbit.experiments[xnam].load_experiment('/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
-exp = crmbit.experiments['TR1']# + crmbit.experiments['TR2'] + crmbit.experiments['BR']
+
+# crmbit.experiments[xnam].load_experiment('/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
+# exp = crmbit.experiments[xnam]
+
+for xnam in ['TR2', 'TR1', 'BR']:
+    crmbit.experiments[xnam].load_experiment('/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
+exp = crmbit.experiments['TR1'] + crmbit.experiments['TR2'] + crmbit.experiments['BR']
 
 
-# plt.hist(reduce(lambda x, y: x+ y,
-#                 [v.values() for v in exp._zscores.values()]), bins=50)
-# plt.show()
-
-
-# here we are.
-# TODO: all this until here should be done by one simple matrix = exp.get_region()
-
-
-
-from pytadbit.imp.imp_model import generate_3d_models
-
-models = exp.model_region(start=190, end=295, n_models=50, n_keep=50,
+models = exp.model_region(start=190, end=295, n_models=500, n_keep=100,
                           n_cpus=8, verbose=False, keep_all=True)
 
 
-# models = ThreeDeeModels(exp._zscores, 10000, n_models=1, n_keep=1,
-#                         n_cpus=8, verbose=True, keep_all=True)
-
-
 models.write_cmm(0, '.')
-
 
 models.cluster_models(dcutoff=200)
 
@@ -48,9 +33,9 @@ models.cluster_analysis_dendrogram(n_best_clusters=10)
 md1 = models.models[0]
 md2 = models.models[2]
 
-for m in range(16):
+for m in range(1, 100):
     m = models.fetch_model_by_rand_init(m, all_models=True)
-    models.write_cmm(m, '.')
+    models.write_xyz(m, '.')
 
 
 models.objective_function(5)

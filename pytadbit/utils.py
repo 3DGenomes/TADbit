@@ -448,8 +448,9 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score',
     return scores
 
 
-def augmented_dendrogram(my_count=None, dads=None, energy=None, color=False,
+def augmented_dendrogram(clust_count=None, dads=None, energy=None, color=False,
                          *args, **kwargs):
+
     from scipy.cluster.hierarchy import dendrogram
     fig = plt.figure()
     ddata = dendrogram(*args, **kwargs)
@@ -466,13 +467,17 @@ def augmented_dendrogram(my_count=None, dads=None, energy=None, color=False,
                    left=False, bottom=False)
     ax.tick_params(axis='both', direction='out', top=False, right=False,
                    left=False, bottom=False, which='minor')
+
+    # set dict to store data of each cluster (count and energy), depending on
+    # x position in graph.
     leaves = {}
     dist = ddata['icoord'][0][2] - ddata['icoord'][0][1]
     for i, x in enumerate(ddata['leaves']):
         leaves[dist*i + dist/2] = x
     minnrj = min(energy.values())-1
     maxnrj = max(energy.values())-1
-    total = sum(my_count.values())
+    difnrj = maxnrj - minnrj
+    total = sum(clust_count.values())
     if not kwargs.get('no_plot', False):
         for i, d, c in zip(ddata['icoord'], ddata['dcoord'],
                            ddata['color_list']):
@@ -483,45 +488,31 @@ def augmented_dendrogram(my_count=None, dads=None, energy=None, color=False,
             # for eaxch branch
             for i1, d1, d2 in zip(i[1:3], [d[0], d[3]], [d[1], d[2]]):
                 try:
-                    lw = float(my_count[leaves[i1]])/total*10*len(leaves)
+                    lw = float(clust_count[leaves[i1]])/total*10*len(leaves)
                 except KeyError:
                     lw = 1.0
-                nrj = energy[leaves[i1]] if leaves[i1] in energy else minnrj
-                plt.vlines(i1, d1-(nrj-minnrj), d2, lw=lw,
+                nrj = energy[leaves[i1]] if leaves[i1] in energy else maxnrj
+                plt.vlines(i1, d1-(difnrj-(nrj-minnrj)), d2, lw=lw,
                            color=(c if color else 'grey'))
                 if leaves[i1] in energy:
-                    plt.annotate("%.3g" % (leaves[i1]), (i1, d1-(nrj-minnrj)),
+                    plt.annotate("%.3g" % (leaves[i1]),
+                                 (i1, d1-(difnrj-(nrj-minnrj))),
                                  xytext=(0, -8),
                                  textcoords='offset points',
                                  va='top', ha='center')
             leaves[(i[1] + i[2])/2] = dads[leaves[i[1]]]
-    bot = -int(maxnrj-minnrj)/10000 * 10000
-    # plt.vlines(-dist/5*2, 0, bot)
-    # for i in xrange(0, -bot-bot/10, -bot/10):
-    #     plt.hlines(bot+i, -dist/5*2, -dist/5)
-    #     plt.hlines(bot+i, dist/5*2, plt.xlim()[1], color='grey', alpha=0.5, linestyle='--')
-    #     val = int(minnrj)/10000 * 10000  + i
-    #     plt.annotate("{:,}".format(val), (-dist/5*3, bot+i),
-    #                  va='center', ha='right', size='small')
+    bot = -int(difnrj)/10000 * 10000
     plt.yticks([bot+i for i in xrange(0, -bot-bot/10, -bot/10)],
                ["{:,}".format(int(minnrj)/10000 * 10000  + i)
                 for i in xrange(0, -bot-bot/10, -bot/10)], size='small')
     plt.ylabel('Minimum IMP objective function')
-    # plt.annotate('Minimum IMP objective function',
-    #              (-dist, bot/2),
-    #              ha='center', va='center',
-    #               xytext=(-8, 0),
-    #               textcoords='offset points',
-    #              rotation=90)
-    # plt.ylim((bot+bot/5, plt.ylim()[1]))
-    # plt.xlim((-4*dist, plt.xlim()[1] + dist))
     plt.xticks([])
+    plt.xlim((plt.xlim()[0] - 2, plt.xlim()[1]))
     fig.suptitle("Dendogram of clusters of 3D models")
     ax.set_title("Branch length proportional to model's energy\n" +
               "Branch width to the number of models in the cluster", size='small')
-    # plt.yticks([])
-    # plt.xlabel('Cluster number')
     plt.show()
+
     return ddata
 
 

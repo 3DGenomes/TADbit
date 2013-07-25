@@ -10,16 +10,19 @@ from subprocess import Popen, PIPE
 from math import sqrt
 from numpy import median as np_median
 from numpy import std as np_std
+from scipy.cluster.hierarchy import linkage
+
+from os import getcwd, chdir, path
 
 
-def load_threedeemodels(path):
+def load_threedeemodels(path_f):
     """
     
     :param path: to the pickled ThreeDeeModels object.
 
     :returns: a :class:`pytadbit.imp.imp_model.ThreeDeeModels`.
     """
-    return load(open(path))
+    return load(open(path_f))
 
 
 class ThreeDeeModels(object):
@@ -55,13 +58,21 @@ class ThreeDeeModels(object):
             raise KeyError('Model {} not found\n'.format(i))
 
 
+    def __iter__(self):
+        for m in self.__models:
+            yield self.__models[m]
+
+    def __len__(self):
+        return len(self.__models)
+
+
     def __repr__(self):
         return ('ThreeDeeModels with {} models (energy range: {}-{})\n' +
                 '   (corresponding to the best models out of {} models).\n' +
                 '  Models where clustered into {} clusters').format(
             len(self.__models),
-            self.__models[0]['energy'],
-            self.__models[len(self.__models) - 1]['energy'],
+            int(self.__models[0]['energy']),
+            int(self.__models[len(self.__models) - 1]['energy']),
             len(self.__models) + len(self._bad_models), len(self.clusters))
 
 
@@ -77,17 +88,18 @@ class ThreeDeeModels(object):
 
         :returns: index of 3d model
         """
-        for m in self.__models:
-            if self.__models[m]['rand_init'] == rand_init:
-                return m
+        for i, model in enumerate(self):
+            if model['rand_init'] == rand_init:
+                return i
         if all_models:
             for m in self._bad_models:
                 if self._bad_models[m]['rand_init'] == rand_init:
                     return m
-        raise IndexError('Model {} not found\n'.format(rand_init))
+        raise IndexError(('Model with initial random number: {}, not found\n' +
+                          '').format(rand_init))
 
 
-    def cluster_models(self, fact=0.75, dcutoff=200,
+    def cluster_models(self, fact=0.75, dcutoff=200, method='mcl',
                        mcl_bin='mcl', tmp_file='/tmp/tmp.xyz'):
         """
         Runs a clustering analysis avoer models. Clusters found will be stored
@@ -95,12 +107,19 @@ class ThreeDeeModels(object):
         
         :param 0.75 fact: Factor for equivalent positions
         :param 200 dcutoff: Distance Cut-off for TMScore.
+        :param 'mcl' method: clustering method to use, can be either 'mcl' or
+           'ward'. This last one uses scipy implementation.
         :param 'mcl' mcl_bin: path to MCL executable file
         :param '/tmp/tmp.xyz' tmp_file: path to a temporary file
         
         """
         scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, fact,
                                tmp_file=tmp_file)
+        if method == 'ward':
+            matrix = [[None for _ in len(self)] for _ in len(self)]
+            for i, j, score in scores:
+                matrix[i][j] = score
+        
         # this may disappear if we use ward clustering
         out_f = open(tmp_file, 'w')
         for score in scores:
@@ -109,20 +128,21 @@ class ThreeDeeModels(object):
         Popen('{0} {1} --abc -V all -o {1}.mcl'.format(
             mcl_bin, tmp_file, stdout=PIPE, stderr=PIPE),
               shell=True).communicate()
-        clusters= {}
+        self.clusters= {}
         for cluster, line in enumerate(open(tmp_file + '.mcl')):
-            clusters[cluster] = []
+            self.clusters[cluster] = []
             for model in line.split():
                 model = int(model.split('_')[1])
-                clusters[cluster].append(model)
+                self[model]['cluster'] = cluster
+                self.clusters[cluster].append(model)
         # sort clusters according to their lowest energy
-        for clt in clusters:
-            clusters[clt].sort()
-        for i, clt in enumerate(sorted(
-            clusters, key=lambda x: self[clusters[x][0]]['energy'])):
-            self.clusters[i] = clusters[clt]
-            for model in self.clusters[i]:
-                self.__models[model]['cluster'] = i
+        # for clt in clusters:
+        #     clusters[clt].sort()
+        # for i, clt in enumerate(sorted(
+        #     clusters, key=lambda x: self[clusters[x][0]]['energy'])):
+        #     self.clusters[i] = clusters[clt]
+        #     for model in self.clusters[i]:
+        #         self.__models[model]['cluster'] = i
 
 
     def _build_distance_matrix(self, n_best_clusters):
@@ -130,23 +150,26 @@ class ThreeDeeModels(object):
         """
         clusters = sorted(self.clusters.keys())[:n_best_clusters]
         matrix = [[0.0 for _ in clusters] for _ in clusters]
-        clust_count = dict([(c, len([m for m in self.__models if self.__models[m]['cluster'] == c])) for c in clusters])
-        energy = dict([(c, self.__models[[m for m in self.__models if self.__models[m]['cluster'] == c][0]]['log_energies'][-1]) for c in clusters])
+        clust_count = dict([(c, len([m for m in self if m['cluster']==c]))
+                            for c in clusters])
+        energy = dict([(c, [m for m in self if m['cluster']==c][0]['energy'])
+                       for c in clusters])
         for i, cl1 in enumerate(clusters):
+            md1 = md2 = None
             # find model with lowest energy for each cluster
-            for md1 in self.__models:
-                if self.__models[md1]['cluster'] == cl1:
+            for md1 in self:
+                if md1['cluster'] == cl1:
                     # the first on found is the best :)
                     break
             for j, cl2 in enumerate(clusters[i+1:]):
                 # find model with lowest energy for each cluster
-                for md2 in self.__models:
-                    if self.__models[md2]['cluster'] == cl2:
+                for md2 in self:
+                    if md2['cluster'] == cl2:
                         # the first on found is the best :)
                         break
-                matrix[i][j+i+1] = float(calc_eqv_rmsd({1: self.__models[md1],
-                                                        2: self.__models[md2]},
-                                                       self.nloci, var='drmsd')[0])
+                matrix[i][j+i+1] = float(calc_eqv_rmsd({1: md1, 2: md2},
+                                                       self.nloci,
+                                                       var='drmsd')[0])
         return clust_count, energy, matrix
 
 
@@ -165,7 +188,6 @@ class ThreeDeeModels(object):
 
         if not self.clusters:
             self.cluster_models()
-        from scipy.cluster.hierarchy import linkage
         if not n_best_clusters:
             n_best_clusters = len(self.clusters)
         clust_count, energy, matrix = self._build_distance_matrix(n_best_clusters)
@@ -177,18 +199,15 @@ class ThreeDeeModels(object):
         for i in z:
             i[2] = i[2]/maxz * val
 
-        dad = {}
+        dads = {}
         i = max(clust_count)
         for a, b, _, _ in z:
             i += 1
             clust_count[i] = clust_count[a] + clust_count[b]
-            dad[a] = i
-            dad[b] = i
+            dads[a] = i
+            dads[b] = i
 
-        my_count = {}
-        for i in range(max(clust_count)+1):
-            my_count[i] = clust_count[i]
-        d = augmented_dendrogram(my_count, dad, energy, color, z)
+        d = augmented_dendrogram(clust_count, dads, energy, color, z)
         return d
 
 
@@ -208,9 +227,9 @@ class ThreeDeeModels(object):
            estimation. By default 5 curves are drawn.
         :param False error: represent the error of the estimates.
         """
-        if len(steps) > 7:
+        if len(steps) > 6:
             raise Exception('Sorry not enough colors to do this.\n')
-        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred', 'red'][-len(steps):]
+        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred'][-len(steps):]
         dists = []
         for part1, part2 in zip(range(self.nloci - 1), range(1, self.nloci)):
             dists.append(self.average_3d_dist(part1, part2, models, cluster,
@@ -290,7 +309,7 @@ class ThreeDeeModels(object):
         :param None cluster: A number can be passed in order to calculate the
            distance between particles in all models corresponding to the cluster
            number 'cluster'
-        :param 150 cutoff: distance in nanometers from which it is considered
+        :param 150 cutoff: distance in nanometer from which it is considered
            that two particles are separated.
            
         """
@@ -315,6 +334,82 @@ class ThreeDeeModels(object):
         cbar.ax.set_yticklabels(['{:>3}%'.format(p) for p in range(0, 110, 10)])
         cbar.ax.set_ylabel('Percentage of models with particles closer than {} nm'.format(cutoff))
         plt.title('Contact map consistency')
+        plt.show()
+
+
+    def model_consistency(self, cutoffs=(50, 100, 150, 200),
+                          models=None, cluster=None, tmp_path='/tmp/tmp_cons',
+                          tmsc='/home/fransua/scratch/ToFS/scripts/consistency/TMscore_consistency'):
+        """
+        Plots the consistency of a given set of models, along the chromatine
+           fragment modelled. This plot can also be viewed as how well defined,
+           or how stable, is a given portion of the chromatine model.
+
+        :param (50, 100, 150, 200) cutoffs: list of cutoff values (in nanometer)
+           to plot. These distances are used to know when to consider two
+           particles as diferent.
+        :param None models: If None (default) will do calculate the distance
+           along all models. A list of numbers corresponding to a given set of
+           models can also be passed.
+        :param None cluster: A number can be passed in order to calculate the
+           distance between particles in all models corresponding to the cluster
+           number 'cluster'
+        :param '/tmp/tmp_cons' tmp_path: where to write input files for TM-score
+           program
+        :param '' tmsc: TODO: remove this
+        
+        """
+        if models:
+            models=models
+        elif cluster > -1:
+            models = self.clusters[cluster]
+        else:
+            models = self.__models
+        curp = getcwd()
+        Popen('mkdir -p {}'.format(tmp_path), shell=True).communicate()
+        lst_path = tmp_path + '.list'
+        out = open(lst_path, 'w')
+        for m in models:
+            out.write(self.write_xyz(m, tmp_path, get_path=True) + '\n')
+        out.close()
+        chdir(tmp_path + '/..')
+        consistencies = {}
+        for cut in cutoffs:
+            consistencies[cut] = []
+            out = Popen('{} -d {} -l {}'.format(tmsc, cut, path.split(lst_path)[-1]),
+                        shell=True, stdout=PIPE).communicate()[0]
+            for line in out.split('\n'):
+                if not line.startswith('  '):
+                    continue
+                consistencies[cut].append(float(line.split()[1]))
+        chdir(curp)
+        from matplotlib import pyplot as plt
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.patch.set_facecolor('lightgrey')
+        ax.patch.set_alpha(0.4)
+        ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+        ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+        ax.set_axisbelow(True)
+        ax.minorticks_on() # always on, not only for log
+        # remove tick marks
+        ax.tick_params(axis='both', direction='out', top=False, right=False,
+                       left=False, bottom=False)
+        ax.tick_params(axis='both', direction='out', top=False, right=False,
+                       left=False, bottom=False, which='minor')
+        # plot!
+        # colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred'][-len(cutoffs):]
+        plots = []
+        for i, cut in enumerate(cutoffs[::-1]):
+            plots += plt.plot(consistencies[cut], color='darkred',
+                              alpha= 1 - i / float(len(cutoffs)))
+        plt.legend(plots, ['{} nm'.format(k) for k in cutoffs[::-1]],
+                   fontsize='small')
+        plt.xlim((0, self.nloci))
+        plt.xlabel('Particle')
+        plt.ylabel('Consistency (%)')
+        plt.title('Model consistency')
         plt.show()
 
 
@@ -348,13 +443,13 @@ class ThreeDeeModels(object):
             models = self.clusters[cluster]
         else:
             models = self.__models
-        for model in models:
-            dists.append(sqrt((self.__models[model]['x'][part1] -
-                               self.__models[model]['x'][part2])**2 + 
-                              (self.__models[model]['y'][part1] -
-                               self.__models[model]['y'][part2])**2 +
-                              (self.__models[model]['z'][part1] -
-                               self.__models[model]['z'][part1])**2))
+        for mdl in models:
+            dists.append(
+                sqrt(
+                    (self[mdl]['x'][part1] - self[mdl]['x'][part2])**2 + 
+                    (self[mdl]['y'][part1] - self[mdl]['y'][part2])**2 +
+                    (self[mdl]['z'][part1] - self[mdl]['z'][part1])**2)
+                )
         if not plot:
             if median:
                 return np_median(dists)
@@ -371,7 +466,7 @@ class ThreeDeeModels(object):
         :param False log: to plot in log scale
         :param True smooth: to smooth the curve
         """
-        self.__models[model].objective_function(log=log, smooth=smooth)
+        self[model].objective_function(log=log, smooth=smooth)
         
 
     def write_cmm(self, model_num, directory, color=color_residues):
@@ -410,36 +505,41 @@ class ThreeDeeModels(object):
         out_f.close()
 
 
-    def write_xyz(self, model_num, directory):
+    def write_xyz(self, model_num, directory, get_path=False):
         """
         Writes xyz file containing the 3D coordinates of each particles.
         
         :param model: the number of the model to write
         :param directory: where to write the file (note: the name of the file
            will be model_1.cmm if model number is 1)
+        :param False get_path: whether to return, or not the full path where
+           the file has been written
         """
         try:
-            model = self.__models[model_num]
+            model = self[model_num]
         except KeyError:
             model = self._bad_models[model_num]
+        path_f = '{}/model_{}_rnd{}.xyz'.format(directory, model_num,
+                                              model['rand_init'])
         out = ''
         form = "{:>12}{:>12}{:>12.3f}{:>12.3f}{:>12.3f}\n"
         for n in xrange(self.nloci):
             out += form.format('p' + str(n + 1), n + 1, model['x'][n],
                                model['y'][n], model['z'][n])
-        out_f = open('{}/model_{}_rnd{}.cmm'.format(
-            directory, model_num, model['rand_init']), 'w')
+        out_f = open(path_f, 'w')
         out_f.write(out)
         out_f.close()
+        if get_path:
+            return path_f
 
 
-    def pickle_models(self, path):
+    def pickle_models(self, path_f):
         """
         Saves all models in pickle format (python object written to disk).
         
-        :param path: path to file where to pickle
+        :param path_f: path to file where to pickle
         """
-        out = open(path, 'w')
+        out = open(path_f, 'w')
         dump(self, out)
         out.close()
 

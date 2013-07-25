@@ -274,7 +274,7 @@ class IMPmodel(dict):
        - x 
        - y   }  3D coordinates of each particles (each of these is a list)
        - z 
-       
+    
     """
     def __repr__(self):
         try:
