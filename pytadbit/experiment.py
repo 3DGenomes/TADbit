@@ -7,9 +7,9 @@
 from pytadbit.parsers.hic_parser import read_matrix
 from pytadbit.utils import nicer, zscore, hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser import parse_tads
+from pytadbit.imp.imp_model import generate_3d_models
 from warnings import warn
 from math import sqrt
-
 
 class Experiment(object):
     """
@@ -254,7 +254,9 @@ class Experiment(object):
             raise LookupError('Only "sqrt" and "bytot" methods are implemented')
         if self.wght:
             warn('WARNING: removing previous weights\n')
-        forbidden = [i for i in xrange(self.size) if not self.hic_data[0][i*self.size+i]]
+        # removes columns where there is no data in the diagonal
+        forbidden = [i for i in xrange(self.size)
+                     if not self.hic_data[0][i*self.size+i]]
         rowsums = []
         for i in xrange(self.size):
             i *= self.size
@@ -278,7 +280,7 @@ class Experiment(object):
                     self.wght[0][i * self.size + j] = func(i, j)
 
 
-    def get_hic_zscores(self, normalized=True, zscored=True):
+    def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):
         """
         Computes a normalization of Hi-C raw data. Result will be stored into
         the private Experiment._zscore list
@@ -286,20 +288,28 @@ class Experiment(object):
         :param True normalized: whether to normalize the result using the
            weights (see :func:`normalize_hic`)
         :param True zscored: apply a z-score transform over the data.
+        :param True remove_zeros: remove null interactions.
         
         """
         values = []
+        zeros = {}
+        self._zscores = {}
         if normalized:
             for i in xrange(self.size):
                 # zeros are rows or columns having a zero in the diagonal
                 if i in self._zeros:
                     continue
-                for j in xrange(self.size):
+                for j in xrange(i + 1, self.size):
                     if j in self._zeros:
+                        continue
+                    if (not self.hic_data[0][i * self.size + j] 
+                        or not self.hic_data[0][i * self.size + j])\
+                        and remove_zeros:
+                        zeros[(i, j)] = None
                         continue
                     try:
                         values.append(
-                            self.hic_data[0][i * self.size + j] /\
+                            self.hic_data[0][i * self.size + j] /
                             self.wght[0][i * self.size + j])
                     except ZeroDivisionError:
                         values.append(0.0)
@@ -307,7 +317,7 @@ class Experiment(object):
             for i in xrange(self.size):
                 if i in self._zeros:
                     continue
-                for j in xrange(self.size):
+                for j in xrange(i + 1, self.size):
                     if j in self._zeros:
                         continue
                     values.append(self.hic_data[0][i * self.size + j])
@@ -318,19 +328,55 @@ class Experiment(object):
         for i in xrange(self.size):
             if i in self._zeros:
                 continue
-            for j in xrange(self.size):
+            for j in xrange(i + 1, self.size):
                 if j in self._zeros:
                     continue
+                if (i, j) in zeros and remove_zeros:
+                    continue
                 zsc = iterval.next()
-                self._zscores.setdefault(i, {})
-                self._zscores[i][j] = zsc
-                self._zscores.setdefault(j, {})
-                self._zscores[j][i] = zsc
+                self._zscores.setdefault(str(i), {})
+                self._zscores[str(i)][str(j)] = zsc
+                # self._zscores.setdefault(j, {})
+                # self._zscores[j][i] = zsc
 
+
+    def model_region(self, start, end, n_models=5000, n_keep=1000, n_cpus=1,
+                     verbose=False, keep_all=False, close_bins=1, outfile=None):
+        """
+
+        :param start: start of the region to model (bin number)
+        :param end: end of the region to model (bin number)
+        :param 10000 n_models: number of modes to generate.
+        :param 1000 n_keep: number of models to keep (models with lowest energy)
+        :param False keep_all: whether to keep the discarded models or not (if True,
+           they will be stored under ThreeDeeModels.bad_models).
+        :param 1 close_bins: number of particle away a particle may be to be
+           considered as a neighbor.
+        :param n_cpus: number of CPUs to use for the optimization of models
+        :param False verbose: verbosity
+        """
+        from pytadbit import Chromosome
+        matrix = self.get_hic_matrix()
+        new_matrix = [[] for _ in range(end-start)]
+        for i in xrange(start, end):
+            for j in xrange(start, end):
+                new_matrix[i - start].append(matrix[i][j])
+                
+        tmp = Chromosome('tmp')
+        tmp.add_experiment('exp1', xp_handler=[new_matrix],
+                              resolution=self.resolution)
+        exp = tmp.experiments[0]
+        exp.normalize_hic(method='bytot')
+        exp.get_hic_zscores(remove_zeros=True)
+        return generate_3d_models(exp._zscores, resolution=self.resolution,
+                                  n_models=n_models, outfile=outfile,
+                                  n_keep=n_keep, n_cpus=n_cpus, verbose=verbose,
+                                  keep_all=keep_all, close_bins=close_bins)
+        
 
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,
-                                diagonal=False, cutoff=None,
-                                true_position=False, uniq=False):
+                                diagonal=False, cutoff=None, header=False,
+                                true_position=False, uniq=True, remove_zeros=False):
         """
         Creates a tab separated file with all interactions
         
@@ -342,16 +388,19 @@ class Experiment(object):
         :param False uniq: only writes on representent of an interacting pair
            
         """
-        if not self._zscores:
+        if not self._zscores and zscored:
             for i in xrange(self.size):
                 for j in xrange(self.size):
                     self._zscores.setdefault(i, {})
                     self._zscores[i][j] = self.hic_data[0][i * self.size + j]
+        if not self.wght:
+            raise Exception('Experiment not normalized.')
         # write to file
         out = open(fname, 'w')
-        out.write('elt1\telt2\t{}\n'.format('zscore' if zscored else \
-                                            'normalized hi-c' if normalized \
-                                            else 'raw hi-c'))
+        if header:
+            out.write('elt1\telt2\t{}\n'.format('zscore' if zscored else 
+                                                'normalized hi-c' if normalized 
+                                                else 'raw hi-c'))
         for i in xrange(self.size):
             if i in self._zeros:
                 continue
@@ -359,19 +408,30 @@ class Experiment(object):
             for j in xrange(start, self.size):
                 if j in self._zeros:
                     continue
-                if self._zscores[i][j] < cutoff:
+                if not diagonal and i==j:
                     continue
-                if self._zscores[i][j] == -99:
-                    continue
-                if diagonal and i==j:
+                if zscored:
+                    try:
+                        if self._zscores[i][j] < cutoff:
+                            continue
+                        if self._zscores[i][j] == -99:
+                            continue
+                    except KeyError:
+                        continue
+                    val = self._zscores[i][j]
+                elif normalized:
+                    val = self.hic_data[0][self.size*i+j] / self.wght[0][self.size*i+j]
+                else:
+                    val = self.hic_data[0][self.size*i+j]
+                if remove_zeros and not val:
                     continue
                 if true_position:
                     out.write('{}\t{}\t{}\n'.format(self.resolution * (i + 1),
-                    self.resolution * (j + 1),
-                    self._zscores[i][j]))
+                                                    self.resolution * (j + 1),
+                                                    val))
                 else:
                     out.write('{}\t{}\t{}\n'.format(i + 1, j + 1,
-                                                    self._zscores[i][j]))
+                                                    val))
         out.close()
 
 

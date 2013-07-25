@@ -15,7 +15,7 @@ Load chromosome
 
 
 ExperimentList class
-====================
+--------------------
 
 .. autoclass:: ExperimentList
    :members:

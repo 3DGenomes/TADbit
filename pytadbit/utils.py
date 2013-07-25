@@ -9,6 +9,7 @@ from math     import log10
 from re       import sub
 from warnings import warn
 import numpy as np
+from subprocess import Popen, PIPE
 
 try:
     from matplotlib import pyplot as plt
@@ -236,7 +237,7 @@ def hic_filtering_for_modelling(matrx, method='mean'):
        calculation of the z-score
     """
     if method == 'mean':
-        bads = filter_by_mean(matrx)
+        bads = filter_by_mean(matrx, draw_hist=False)
     elif method == 'zeros':
         bads = filter_by_zero_count(matrx)
     elif method == 'mad':
@@ -317,27 +318,20 @@ def zscore(values, size):
             /
 
     """
-    # do not take into acount the diagonal
+    # do not take into account the diagonal
     nop = dict([(i + size * i,  None) for i in xrange(size)])
     minv = min([v for v in values if v]) / 2
-    vals = []
-    for v in values:
-        if v > 0 and not v in nop:
-            vals.append(log10(v))
-        elif v == 0:
-            vals.append(log10(minv))
+    # get the log10 of values
+    vals = [log10(v) if v > 0 and not v in nop else log10(minv) for v in values]
     mean_v = np.mean(vals)
     std_v = std(vals)
+    # replace values by z-score
     for i in xrange(len(values)):
-        # if i in nop:
-        #     values[i] = float('nan')
-        #     continue
         if values[i] > 0:
-            values[i] = (log10(values[i]) - mean_v) / std_v
+            values[i] = (vals[i] - mean_v) / std_v
         elif values[i] == 0:
             values[i] = (log10(minv) - mean_v) / std_v
         else:
-            print 'hola', values[i]
             values[i] = -99
 
 
@@ -396,3 +390,203 @@ def colorize(string, num, ftype='ansi'):
     color = COLOR if ftype=='ansi' else COLORHTML
     return '{}{}{}'.format(color[num], string,
                            '\033[m' if ftype=='ansi' else '</span>')
+
+
+def color_residues(n_part):
+    """
+    :param n_part: number of particles
+    
+    :returns: a list of rgb tuples (red, green, blue)
+    """
+    result = []
+    for n in xrange(n_part):
+        red = float(n + 1) / n_part
+        result.append((red, 1 - red, 0))
+    return result
+
+
+def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score',
+                  tmp_file='/tmp/tmp.xyz',
+                  tm_bin='/home/fransua/Downloads/ToFS/scripts/clustering/eqv-tmscore/eqv-drmsd-concat-xyz'):
+    """
+    :param score var: value to return.
+    
+    :returns: a score (depends on 'var' argument)
+    """
+    out = ''
+    form = "{:>12}{:>12}{:>12.3f}{:>12.3f}{:>12.3f}\n"
+    for model in models:
+        out += 'model_{}\n'.format(model)
+        for n in xrange(nloci):
+            out += form.format('p' + str(n + 1), n + 1,
+                               models[model]['x'][n],
+                               models[model]['y'][n],
+                               models[model]['z'][n])
+    out_f = open(tmp_file, 'w')
+    out_f.write(out)
+    out_f.close()
+    out = Popen(tm_bin + ' ' + tmp_file + ' {} {}'.format(nloci, dcutoff),
+                shell=True, stdout=PIPE).communicate()[0]
+    drmsds, rmsds = zip(*[(float(line.split()[3]), float(line.split()[4]))
+                          for line in out.split('\n') if line])
+    max_drmsd = max(drmsds)
+    max_rmsd  = max(rmsds)
+    scores = []
+    for line in out.split('\n'):
+        if not line:
+            continue
+        m1, m2, eqv, drmsd, rmsd = line.split()
+        if var=='score':
+            score = float(eqv) * ((float(drmsd) / max_drmsd) / (float(rmsd) / max_rmsd))
+        elif var=='drmsd':
+            scores.append(drmsd)
+            continue
+        if score > fact * nloci:
+            scores.append((m1, m2, score))
+        else:
+            scores.append((m1, m2, 0.0))
+    return scores
+
+
+def augmented_dendrogram(my_count=None, dads=None, energy=None, color=False,
+                         *args, **kwargs):
+    from scipy.cluster.hierarchy import dendrogram
+    fig = plt.figure()
+    ddata = dendrogram(*args, **kwargs)
+    plt.clf()
+    ax = fig.add_subplot(1, 1, 1)   # left, bottom, width, height:
+                                                # (adjust as necessary)
+    ax.patch.set_facecolor('lightgrey')
+    ax.patch.set_alpha(0.4)
+    ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+    ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+    ax.set_axisbelow(True)
+    # remove tick marks
+    ax.tick_params(axis='both', direction='out', top=False, right=False,
+                   left=False, bottom=False)
+    ax.tick_params(axis='both', direction='out', top=False, right=False,
+                   left=False, bottom=False, which='minor')
+    leaves = {}
+    dist = ddata['icoord'][0][2] - ddata['icoord'][0][1]
+    for i, x in enumerate(ddata['leaves']):
+        leaves[dist*i + dist/2] = x
+    minnrj = min(energy.values())-1
+    maxnrj = max(energy.values())-1
+    total = sum(my_count.values())
+    if not kwargs.get('no_plot', False):
+        for i, d, c in zip(ddata['icoord'], ddata['dcoord'],
+                           ddata['color_list']):
+            x = 0.5 * sum(i[1:3])
+            y = d[1]
+            # plt.plot(x, y, 'ro')
+            plt.hlines(y, i[1], i[2], lw=2, color='grey')
+            # for eaxch branch
+            for i1, d1, d2 in zip(i[1:3], [d[0], d[3]], [d[1], d[2]]):
+                try:
+                    lw = float(my_count[leaves[i1]])/total*10*len(leaves)
+                except KeyError:
+                    lw = 1.0
+                nrj = energy[leaves[i1]] if leaves[i1] in energy else minnrj
+                plt.vlines(i1, d1-(nrj-minnrj), d2, lw=lw,
+                           color=(c if color else 'grey'))
+                if leaves[i1] in energy:
+                    plt.annotate("%.3g" % (leaves[i1]), (i1, d1-(nrj-minnrj)),
+                                 xytext=(0, -8),
+                                 textcoords='offset points',
+                                 va='top', ha='center')
+            leaves[(i[1] + i[2])/2] = dads[leaves[i[1]]]
+    bot = -int(maxnrj-minnrj)/10000 * 10000
+    # plt.vlines(-dist/5*2, 0, bot)
+    # for i in xrange(0, -bot-bot/10, -bot/10):
+    #     plt.hlines(bot+i, -dist/5*2, -dist/5)
+    #     plt.hlines(bot+i, dist/5*2, plt.xlim()[1], color='grey', alpha=0.5, linestyle='--')
+    #     val = int(minnrj)/10000 * 10000  + i
+    #     plt.annotate("{:,}".format(val), (-dist/5*3, bot+i),
+    #                  va='center', ha='right', size='small')
+    plt.yticks([bot+i for i in xrange(0, -bot-bot/10, -bot/10)],
+               ["{:,}".format(int(minnrj)/10000 * 10000  + i)
+                for i in xrange(0, -bot-bot/10, -bot/10)], size='small')
+    plt.ylabel('Minimum IMP objective function')
+    # plt.annotate('Minimum IMP objective function',
+    #              (-dist, bot/2),
+    #              ha='center', va='center',
+    #               xytext=(-8, 0),
+    #               textcoords='offset points',
+    #              rotation=90)
+    # plt.ylim((bot+bot/5, plt.ylim()[1]))
+    # plt.xlim((-4*dist, plt.xlim()[1] + dist))
+    plt.xticks([])
+    fig.suptitle("Dendogram of clusters of 3D models")
+    ax.set_title("Branch length proportional to model's energy\n" +
+              "Branch width to the number of models in the cluster", size='small')
+    # plt.yticks([])
+    # plt.xlabel('Cluster number')
+    plt.show()
+    return ddata
+
+
+def plot_hist_box(data, part1, part2):
+    # setup the figure and axes
+    fig = plt.figure()
+    bpAx = fig.add_axes([0.2, 0.7, 0.7, 0.2])   # left, bottom, width, height:
+                                                # (adjust as necessary)
+    bpAx.patch.set_facecolor('lightgrey')
+    bpAx.patch.set_alpha(0.4)
+    bpAx.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+    bpAx.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+    bpAx.set_axisbelow(True)
+    bpAx.minorticks_on() # always on, not only for log
+    # remove tick marks
+    bpAx.tick_params(axis='both', direction='out', top=False, right=False,
+                   left=False, bottom=False)
+    bpAx.tick_params(axis='both', direction='out', top=False, right=False,
+                   left=False, bottom=False, which='minor')
+    # plot stuff
+    bp = bpAx.boxplot(data, vert=False)
+    plt.setp(bp['boxes'], color='black')
+    plt.setp(bp['whiskers'], color='black')
+    plt.setp(bp['medians'], color='darkred')
+    plt.setp(bp['fliers'], color='darkred', marker='+')
+    bpAx.plot(sum(data)/len(data), 1, 
+              color='w', marker='*', markeredgecolor='k')
+    bpAx.annotate('{:.4}'.format(bp['boxes'][0].get_xdata()[0]),
+                  (bp['boxes'][0].get_xdata()[0], bp['boxes'][0].get_ydata()[1]),
+                  va='bottom', ha='center', xytext=(0, 2),
+                  textcoords='offset points',
+                  size='small')
+    bpAx.annotate('{:.4}'.format(bp['boxes'][0].get_xdata()[2]),
+                  (bp['boxes'][0].get_xdata()[2], bp['boxes'][0].get_ydata()[1]),
+                  va='bottom', ha='center', xytext=(0, 2),
+                  textcoords='offset points',
+                  size='small')
+    bpAx.annotate('{:.4}'.format(bp['medians'][0].get_xdata()[0]),
+                  (bp['medians'][0].get_xdata()[0], bp['boxes'][0].get_ydata()[0]),
+                  va='top', ha='center', xytext=(0, -2),
+                  textcoords='offset points', color='darkred',
+                  size='small')
+    histAx = fig.add_axes([0.2, 0.2, 0.7, 0.5]) # left specs should match and
+                                                # bottom + height on this line should
+                                                # equal bottom on bpAx line
+    histAx.patch.set_facecolor('lightgrey')
+    histAx.patch.set_alpha(0.4)
+    histAx.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+    histAx.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+    histAx.set_axisbelow(True)
+    histAx.minorticks_on() # always on, not only for log
+    # remove tick marks
+    histAx.tick_params(axis='both', direction='out', top=False, right=False,
+                   left=False, bottom=False)
+    histAx.tick_params(axis='both', direction='out', top=False, right=False,
+                   left=False, bottom=False, which='minor')
+    h = histAx.hist(data, bins=20, alpha=0.5, color='darkgreen')
+    # confirm that the axes line up 
+    xlims = np.array([bpAx.get_xlim(), histAx.get_xlim()])
+    for ax in [bpAx, histAx]:
+        ax.set_xlim([xlims.min(), xlims.max()])
+    bpAx.set_xticklabels([])  # clear out overlapping xlabels
+    bpAx.set_yticks([])  # don't need that 1 tick mark
+    plt.xlabel('Distance between particles (nm)')
+    plt.ylabel('Number of observations')
+    bpAx.set_title('Histogram and boxplot of distances between particles {} and {}'.format(part1, part2))
+    plt.show()
+    

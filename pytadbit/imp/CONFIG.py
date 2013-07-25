@@ -36,5 +36,3 @@ NROUNDS   = 10000
 STEPS     = 1
 # number of local steps per round
 LSTEPS    = 5
-# save a conformation every "skip" iterations
-SKIP      = 0

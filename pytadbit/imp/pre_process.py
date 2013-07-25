@@ -19,7 +19,7 @@ from re import findall
 from scipy import polyfit
 
 
-def parse_zscores(zscore_f, dens, close_bins=1):
+def parse_zscores(zscore_f, close_bins=1): #, dens
     """
 
     :param 1 close_bins: when to consider 2 bins as being close. 1 means only
@@ -51,7 +51,7 @@ def parse_zscores(zscore_f, dens, close_bins=1):
         # 
         if abs(x - y) <= close_bins:
             xarray.append(zscores[x][y])
-            yarray.append(0.005 * (dens[x] + dens[y])) # no need to parse dens. dens[x] = dens[y] = exp.resolution
+            yarray.append(0.007*10000)# 0.005 * (dens[x] + dens[y])) # no need to parse dens. dens[x] = dens[y] = exp.resolution
         zscores.setdefault(y, {})
         zscores[y][x] = z
     loci.sort()
@@ -132,7 +132,6 @@ def get_loci(exp, close_bins=1):
     global NINTERCEPT
     NSLOPE, NINTERCEPT = polyfit(xarray, yarray, 1)
     
-    return zscores, loci, nloci
     
 
 def parse_densities(dens_f):
