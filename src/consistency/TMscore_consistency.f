@@ -97,7 +97,7 @@ ccc
       elseif(fnam.eq.'-l')then
          i=i+1
          call getarg(i,fnam)
-         read(fnam,*)pdblist
+         read(fnam,'(A)')pdblist
       elseif(fnam.eq.'-d')then
          m_fix=1
          i=i+1
@@ -390,7 +390,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       PARAMETER(nmax=3000)
 
       common/stru/xt(nmax),yt(nmax),zt(nmax),xb(nmax),yb(nmax),zb(nmax)
-      common/nres/nresA(nmax),nresB(nmax),nseqA,nseqB
+      common/nres/nresA(nmax),nresB(nmax),nseqA,nseqB,nali(nmax)
+c$$$      common/nres/nresA(nmax),nresB(nmax),nseqA,nseqB
       common/para/d,d0,d0_fix
       common/align/n_ali,iA(nmax),iB(nmax)
       common/nscore/i_ali(nmax),n_cut ![1,n_ali],align residues for the score

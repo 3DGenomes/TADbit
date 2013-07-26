@@ -87,7 +87,8 @@ def generate_3d_models(zscores, start=1, n_models=5000, n_keep=1000,
         dump((models, bad_models), out)
         out.close()
     else:
-        return ThreeDeeModels(NLOCI, models, bad_models, resolution)
+        return ThreeDeeModels(NLOCI, models, bad_models, resolution,
+                              zscores)
 
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):

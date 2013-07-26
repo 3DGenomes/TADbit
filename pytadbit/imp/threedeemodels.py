@@ -3,17 +3,16 @@
 
 
 """
-from pytadbit.utils import color_residues, calc_eqv_rmsd
-from pytadbit.utils import augmented_dendrogram, plot_hist_box
-from cPickle import load, dump
-from subprocess import Popen, PIPE
-from math import sqrt
-from numpy import median as np_median
-from numpy import std as np_std
+from pytadbit.utils          import color_residues, calc_eqv_rmsd
+from pytadbit.utils          import augmented_dendrogram, plot_hist_box
+from cPickle                 import load, dump
+from subprocess              import Popen, PIPE
+from math                    import sqrt
+from numpy                   import median as np_median
+from numpy                   import std as np_std
 from scipy.cluster.hierarchy import linkage
-
-from os import getcwd, chdir, path
-
+from scipy.stats             import spearmanr
+from matplotlib              import pyplot as plt
 
 def load_threedeemodels(path_f):
     """
@@ -39,13 +38,14 @@ class ThreeDeeModels(object):
 
     """
 
-    def __init__(self, nloci, models, bad_models, resolution):
+    def __init__(self, nloci, models, bad_models, resolution, original_data=None):
         
         self.__models = models
         self._bad_models = bad_models
         self.nloci = nloci
         self.clusters = {}
         self.resolution = float(resolution)
+        self._original_data = original_data
 
 
     def __getitem__(self, nam):
@@ -298,7 +298,7 @@ class ThreeDeeModels(object):
         plt.show()
 
 
-    def contact_map_consistency(self, models=None, cluster=None, cutoff=150):
+    def get_contact_matrix(self, models=None, cluster=None, cutoff=150):
         """
         Draws a heatmap representing the proportion of times two particles are
            closer than a given cutoff.
@@ -311,7 +311,8 @@ class ThreeDeeModels(object):
            number 'cluster'
         :param 150 cutoff: distance in nanometer from which it is considered
            that two particles are separated.
-           
+
+        :returns: matrix of contact counts
         """
         if models:
             models=models
@@ -319,27 +320,107 @@ class ThreeDeeModels(object):
             models = self.clusters[cluster]
         else:
             models = self.__models
-        matrix = [[100.0 for _ in xrange(self.nloci)] for _ in xrange(self.nloci)]
+        matrix = [[float('nan') for _ in xrange(self.nloci)] for _ in xrange(self.nloci)]
         for i in xrange(self.nloci):
             for j in xrange(i + 1, self.nloci):
                 val = len([k for k in self.average_3d_dist(i, j, plot=False,
                                                            median=False)
                            if k < cutoff])
                 matrix[i][j] = matrix[j][i] = float(val) / len(models) * 100
-        from matplotlib import pyplot as plt
-        ims = plt.imshow(matrix, origin='lower', interpolation="nearest")
-        plt.ylabel('Particles')
-        plt.xlabel('Particles')
-        cbar = plt.colorbar(ims)
+        return matrix
+        
+        
+    def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
+                    savefig=None):
+        """
+        Draws a heatmap representing the proportion of times two particles are
+           closer than a given cutoff.
+
+        :param None models: If None (default) will do calculate the distance
+           along all models. A list of numbers corresponding to a given set of
+           models can also be passed.
+        :param None cluster: A number can be passed in order to calculate the
+           distance between particles in all models corresponding to the cluster
+           number 'cluster'
+        :param 150 cutoff: distance in nanometer from which it is considered
+           that two particles are separated.
+        :param None axe: a matplotlib.axes.Axes object, using it allows to
+           redefine figure size, background etc...
+        :param None savefig: path to a file where to save the image generated
+           if None, the image will be shown using matplotlib GUI.
+           
+        """
+        matrix = self.get_contact_matrix(models, cluster, cutoff)
+        show=False
+        if not axe:
+            fig = plt.figure(figsize=(10, 10))
+            axe = fig.add_subplot(111)
+            show=True
+        ims = axe.imshow(matrix, origin='lower', interpolation="nearest")
+        axe.set_ylabel('Particles')
+        axe.set_xlabel('Particles')
+        cbar = axe.figure.colorbar(ims)
         cbar.ax.set_yticklabels(['{:>3}%'.format(p) for p in range(0, 110, 10)])
         cbar.ax.set_ylabel('Percentage of models with particles closer than {} nm'.format(cutoff))
-        plt.title('Contact map consistency')
-        plt.show()
+        axe.set_title('Contact map consistency')
+        if savefig:
+            plt.savefig(savefig)
+        elif show:
+            plt.show()
 
 
-    def model_consistency(self, cutoffs=(50, 100, 150, 200),
-                          models=None, cluster=None, tmp_path='/tmp/tmp_cons',
-                          tmsc='/home/fransua/scratch/ToFS/scripts/consistency/TMscore_consistency'):
+    def correlate_with_real_data(self, models=None, cluster=None,
+                                 cutoff=150, plot=False, savefig=None):
+        """
+        :param hic_matrix: a matrix representing the normalized count of Hi-C
+           interactions, used to generated these models.
+        :param None models: If None (default) will do calculate the distance
+           along all models. A list of numbers corresponding to a given set of
+           models can also be passed.
+        :param None cluster: A number can be passed in order to calculate the
+           distance between particles in all models corresponding to the cluster
+           number 'cluster'
+        :param 150 cutoff: distance in nanometer from which it is considered
+           that two particles are separated.
+        :returns: spearman correlation rho and p-value, between the two
+           matrices. Good correlation may have a Rho value upper than 0.7
+        :param None savefig: path to a file where to save the image generated
+           if None, the image will be shown using matplotlib GUI.
+        
+        """
+        model_matrix = self.get_contact_matrix(models, cluster, cutoff)
+        real_matrix = [[float('nan') for _ in xrange(self.nloci)]
+                       for _ in xrange(self.nloci)]
+        for i in self._original_data:
+            for j in self._original_data[i]:
+                real_matrix[int(i)][int(j)] = self._original_data[i][j]
+                real_matrix[int(j)][int(i)] = self._original_data[i][j]
+        corr = spearmanr(model_matrix, real_matrix, axis=None)
+        if not plot:
+            return corr
+
+        fig = plt.figure(figsize=(15, 5.5))
+        fig.suptitle('Correlation bettween real and modelled contact maps ' +
+                     '(correlation={:.4})'.format(corr[0]), size='x-large')
+        ax = fig.add_subplot(121)
+        self.contact_map(models, cluster, cutoff, axe=ax)
+        ax = fig.add_subplot(122)
+        ims = ax.imshow(real_matrix, origin='lower', interpolation="nearest")
+        ax.set_ylabel('Particles')
+        ax.set_xlabel('Particles')
+        ax.set_title('Z-scores of the observed Hi-C count')
+        cbar = ax.figure.colorbar(ims)
+        cbar.ax.set_ylabel('Z-score')
+        
+        if savefig:
+            plt.savefig(savefig)
+        else:
+            plt.show()
+
+
+    def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
+                          cluster=None, tmp_path='/tmp/tmp_cons',
+                          tmsc='TMscore_consistency'):
         """
         Plots the consistency of a given set of models, along the chromatine
            fragment modelled. This plot can also be viewed as how well defined,
@@ -356,7 +437,8 @@ class ThreeDeeModels(object):
            number 'cluster'
         :param '/tmp/tmp_cons' tmp_path: where to write input files for TM-score
            program
-        :param '' tmsc: TODO: remove this
+        :param '' tmsc: path to TMscore_consistency, by default it assumes that
+           it is installed
         
         """
         if models:
@@ -365,27 +447,24 @@ class ThreeDeeModels(object):
             models = self.clusters[cluster]
         else:
             models = self.__models
-        curp = getcwd()
         Popen('mkdir -p {}'.format(tmp_path), shell=True).communicate()
         lst_path = tmp_path + '.list'
         out = open(lst_path, 'w')
         for m in models:
             out.write(self.write_xyz(m, tmp_path, get_path=True) + '\n')
         out.close()
-        chdir(tmp_path + '/..')
         consistencies = {}
         for cut in cutoffs:
             consistencies[cut] = []
-            out = Popen('{} -d {} -l {}'.format(tmsc, cut, path.split(lst_path)[-1]),
+            out = Popen('{} -d {} -l {}'.format(tmsc, cut, lst_path),
                         shell=True, stdout=PIPE).communicate()[0]
             for line in out.split('\n'):
                 if not line.startswith('  '):
                     continue
                 consistencies[cut].append(float(line.split()[1]))
-        chdir(curp)
         from matplotlib import pyplot as plt
         
-        fig = plt.figure()
+        fig = plt.figure(figsize=(10, 4))
         ax = fig.add_subplot(111)
         ax.patch.set_facecolor('lightgrey')
         ax.patch.set_alpha(0.4)

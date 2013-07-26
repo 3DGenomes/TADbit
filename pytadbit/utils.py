@@ -406,8 +406,7 @@ def color_residues(n_part):
 
 
 def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score',
-                  tmp_file='/tmp/tmp.xyz',
-                  tm_bin='/home/fransua/Downloads/ToFS/scripts/clustering/eqv-tmscore/eqv-drmsd-concat-xyz'):
+                  tmp_file='/tmp/tmp.xyz', tm_bin='eqv-drmsd-concat-xyz'):
     """
     :param score var: value to return.
     
@@ -580,4 +579,4 @@ def plot_hist_box(data, part1, part2):
     plt.ylabel('Number of observations')
     bpAx.set_title('Histogram and boxplot of distances between particles {} and {}'.format(part1, part2))
     plt.show()
-    
+

@@ -35,7 +35,8 @@ md2 = models.models[2]
 
 for m in range(1, 100):
     m = models.fetch_model_by_rand_init(m, all_models=True)
-    models.write_xyz(m, '.')
+    # models.write_xyz(m, '.')
+    write_xyz(models,m, '/home/fransua/scratch/dbau_test/lalal/')
 
 
 models.objective_function(5)
