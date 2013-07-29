@@ -27,7 +27,7 @@ models.cluster_models(dcutoff=200)
 
 models.cluster_analysis_dendrogram(n_best_clusters=10)
 
-
+models.model_consistency()
 
 
 md1 = models.models[0]

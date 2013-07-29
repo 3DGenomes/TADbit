@@ -3,7 +3,7 @@
 
 
 """
-from pytadbit.utils          import color_residues, calc_eqv_rmsd
+from pytadbit.utils          import color_residues, calc_eqv_rmsd, calc_consistency
 from pytadbit.utils          import augmented_dendrogram, plot_hist_box
 from cPickle                 import load, dump
 from subprocess              import Popen, PIPE
@@ -113,8 +113,7 @@ class ThreeDeeModels(object):
         :param '/tmp/tmp.xyz' tmp_file: path to a temporary file
         
         """
-        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, fact,
-                               tmp_file=tmp_file)
+        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, fact)
         if method == 'ward':
             matrix = [[None for _ in len(self)] for _ in len(self)]
             for i, j, score in scores:
@@ -123,7 +122,7 @@ class ThreeDeeModels(object):
         # this may disappear if we use ward clustering
         out_f = open(tmp_file, 'w')
         for score in scores:
-            out_f.write('{}\t{}\t{}\n'.format(*score))
+            out_f.write('model_{}\tmodel_{}\t{}\n'.format(*score))
         out_f.close()
         Popen('{0} {1} --abc -V all -o {1}.mcl'.format(
             mcl_bin, tmp_file, stdout=PIPE, stderr=PIPE),
@@ -447,21 +446,24 @@ class ThreeDeeModels(object):
             models = self.clusters[cluster]
         else:
             models = self.__models
-        Popen('mkdir -p {}'.format(tmp_path), shell=True).communicate()
-        lst_path = tmp_path + '.list'
-        out = open(lst_path, 'w')
-        for m in models:
-            out.write(self.write_xyz(m, tmp_path, get_path=True) + '\n')
-        out.close()
+        # Popen('mkdir -p {}'.format(tmp_path), shell=True).communicate()
+        # lst_path = tmp_path + '.list'
+        # out = open(lst_path, 'w')
+        # for m in models:
+        #     out.write(self.write_xyz(m, tmp_path, get_path=True) + '\n')
+        # out.close()
+        # consistencies = {}
+        # for cut in cutoffs:
+        #     consistencies[cut] = []
+        #     out = Popen('{} -d {} -l {}'.format(tmsc, cut, lst_path),
+        #                 shell=True, stdout=PIPE).communicate()[0]
+        #     for line in out.split('\n'):
+        #         if not line.startswith('  '):
+        #             continue
+        #         consistencies[cut].append(float(line.split()[1]))
         consistencies = {}
         for cut in cutoffs:
-            consistencies[cut] = []
-            out = Popen('{} -d {} -l {}'.format(tmsc, cut, lst_path),
-                        shell=True, stdout=PIPE).communicate()[0]
-            for line in out.split('\n'):
-                if not line.startswith('  '):
-                    continue
-                consistencies[cut].append(float(line.split()[1]))
+            consistencies[cut] = calc_consistency(models, self.nloci, cut)
         from matplotlib import pyplot as plt
         
         fig = plt.figure(figsize=(10, 4))

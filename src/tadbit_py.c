@@ -56,7 +56,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   int       nbreaks_opt = seg->nbreaks_opt;
   int    *  passages    = seg->passages;
   double *  llikmat     = seg->llikmat;
-  double ** weights    = seg->weights;
+  double ** weights     = seg->weights;
   double *  mllik       = seg->mllik;
   int    *  bkpts       = seg->bkpts;
 

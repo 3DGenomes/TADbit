@@ -10,6 +10,9 @@ from re       import sub
 from warnings import warn
 import numpy as np
 from subprocess import Popen, PIPE
+from pytadbit.eqv_rms_drms import rmsdRMSD_wrapper
+from itertools import combinations
+
 
 try:
     from matplotlib import pyplot as plt
@@ -405,8 +408,59 @@ def color_residues(n_part):
     return result
 
 
-def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score',
-                  tmp_file='/tmp/tmp.xyz', tm_bin='eqv-drmsd-concat-xyz'):
+def calc_consistency(models, nloci, dcutoff=200):
+    combines = list(combinations(models, 2))
+    parts = [0 for _ in xrange(nloci)]
+    for md1, md2 in combines:
+        for i, p in enumerate(rmsdRMSD_wrapper(
+            [(models[md1]['x'][p], models[md1]['y'][p], models[md1]['z'][p])
+             for p in xrange(nloci)],
+            [(models[md2]['x'][p], models[md2]['y'][p], models[md2]['z'][p])
+             for p in xrange(nloci)],
+            nloci, dcutoff, 1)):
+            parts[i] += p
+    return [float(p)/len(combines) * 100 for p in parts]
+        
+
+def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score'):
+    """
+    :param score var: value to return.
+    
+    :returns: a score (depends on 'var' argument)
+    """
+    eqvs = []
+    nrms = []
+    drms = []
+    combines = list(combinations(models, 2))
+    for md1, md2 in combines:
+        eqv, drmsd, rmsd = rmsdRMSD_wrapper(
+            [(models[md1]['x'][p], models[md1]['y'][p], models[md1]['z'][p])
+             for p in xrange(nloci)],
+            [(models[md2]['x'][p], models[md2]['y'][p], models[md2]['z'][p])
+             for p in xrange(nloci)],
+            nloci, dcutoff, 0)
+        eqvs.append(eqv)
+        nrms.append(rmsd)
+        drms.append(drmsd)
+
+    max_drmsd = max(drms)
+    max_rmsd  = max(nrms)
+    scores = []
+    for i, (md1, md2) in enumerate(combines):
+        if var=='score':
+            score = float(eqvs[i]) * ((float(drms[i]) / max_drmsd) / (float(nrms[i]) / max_rmsd))
+        elif var=='drmsd':
+            scores.append(drmsd)
+            continue
+        if score > fact * nloci:
+            scores.append((md1, md2, score))
+        else:
+            scores.append((md1, md2, 0.0))
+    return scores
+
+
+def calc_eqv_rmsd_OLD(models, nloci, dcutoff=200, fact=0.75, var='score',
+                      tmp_file='/tmp/tmp.xyz', tm_bin='eqv-drmsd-concat-xyz'):
     """
     :param score var: value to return.
     

@@ -1,4 +1,5 @@
 #include "matrices.h"
+#include "matrices.cc"
 
 #include <iostream>
 #include <sstream>
@@ -43,9 +44,9 @@ void massCenter(float** xyz, int size) {
   }
 }
 
-void rmsdRMSD(float** xyzA, float** xyzB, int size, float d0, float thres) {
-  float dist, rms, drms;
-  int eqv, last;
+void rmsdRMSD(float** xyzA, float** xyzB, int size, float d0, float thres, int &eqv, float &rms, float &drms) {
+  float dist;// , rms, drms;
+  int last;// eqv, 
   dist = .0;
   rms = 0.;
   drms = .0;
@@ -409,7 +410,7 @@ int main (int argc, char **argv) {
     for ((it2=it1)++; it2!=xyzlist.end(); it2++) {
       cout << it1->first << " " << it2->first << " ";
       //cout << dRMSD(it1->second, it2->second, size) << "\n";
-      rmsdRMSD(it1->second, it2->second, size, d0, thres);
+      // rmsdRMSD(it1->second, it2->second, size, d0, thres);
       cout << "\n";
 //       for(int i=0; i<size; i++) {
 // 	for(int j=0; j<3; j++) {
