@@ -256,11 +256,5 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
     drms = sqrt(drms / (size*(size-1)/2));
     rms = sqrt(rms / size);
   }
-  for (int i=0; i<size; i++)
-    delete[] xyzA[i];
-  delete[] xyzA;
-  for (int i=0; i<size; i++)
-    delete[] xyzB[i];
-  delete[] xyzB;
 }
 

@@ -20,8 +20,8 @@ exp = crmbit.experiments['TR1'] + crmbit.experiments['TR2'] + crmbit.experiments
 models = exp.model_region(start=190, end=295, n_models=500, n_keep=100,
                           n_cpus=8, verbose=False, keep_all=True)
 
-
-models.write_cmm(0, '.')
+for i in range(16):
+    models.write_cmm(i, '.')
 
 models.cluster_models(dcutoff=200)
 

@@ -1,5 +1,8 @@
 #include "Python.h"
 #include "eqv-drmsd-tadbit.cpp"
+// #include <iostream>
+// using namespace std;
+//cout << "START" << endl << flush;
 
 /* The function doc string */
 PyDoc_STRVAR(rmsdRMSD_wrapper__doc__,
@@ -28,20 +31,24 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   if (!PyArg_ParseTuple(args, "OOifi", &py_xyzA, &py_xyzB, &size, &thres, &consistency))
     return NULL;
  
-  float **list1 = NULL;
-  float **list2 = NULL;
+  float **xyzA;
+  float **xyzB;
   int i, j;
-  list1 = (float**)malloc(size * sizeof(float*));
-  for (i = 0 ; i < size ; i++ )
-    list1[i] = (float*)malloc(3 * sizeof(float));
-  list2 = (float**)malloc(size * sizeof(float*));
-  for (i = 0 ; i < size ; i++ )
-    list2[i] = (float*)malloc(3 * sizeof(float));
+  xyzA = new float*[size];
+  for(int i=0; i<size; i++) {
+    xyzA[i] = new float[3];
+    memset(xyzA[i], 0, 3*sizeof(float));
+  }
+  xyzB = new float*[size];
+  for(int i=0; i<size; i++) {
+    xyzB[i] = new float[3];
+    memset(xyzB[i], 0, 3*sizeof(float));
+  }
 
   for (i=0; i<size; i++){
     for (j=0; j<=2; j++){
-      list1[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_xyzA, i), j));
-      list2[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_xyzB, i), j));
+      xyzA[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_xyzA, i), j));
+      xyzB[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_xyzB, i), j));
     }
   }
   float rms, drms;
@@ -50,7 +57,7 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   cons_list = new int[size];
 
   int eqv;
-  rmsdRMSD(list1, list2, size, thres, eqv, rms, drms, cons_list, consistency);
+  rmsdRMSD(xyzA, xyzB, size, thres, eqv, rms, drms, cons_list, consistency);
 
   PyObject * py_result = NULL;
   if (consistency){
@@ -64,7 +71,16 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
     PyList_SetItem(py_result, 2, PyFloat_FromDouble(drms));
   }
 
-  free(cons_list);
+  // free
+  delete[] cons_list;
+  for (int i=0; i<size; i++)
+    delete[] xyzA[i];
+  delete[] xyzA;
+  for (int i=0; i<size; i++)
+    delete[] xyzB[i];
+  delete[] xyzB;
+
+  // give it to me
   return py_result;
 }
  

@@ -266,15 +266,17 @@ def generate_IMPmodel(rand_init, verbose=False):
 class IMPmodel(dict):
     """
     A container for IMP modelling result.
+
     It is a dictionnary with this keys:
-       - log_energies: a list of enrgies found by IMP objective function
-       - energy: the last energy of previous list. The one associated to the
-          model, and used for model comparison.
-       - rand_init: The random initial value passed to IMP. An other
-          modelization with this same number should result in the same model
-       - x 
-       - y   }  3D coordinates of each particles (each of these is a list)
-       - z 
+    
+    - log_energies: a list of enrgies found by IMP objective function
+    - energy: the last energy of previous list. The one associated to the
+       model, and used for model comparison.
+    - rand_init: The random initial value passed to IMP. An other
+       modelization with this same number should result in the same model
+    - x 
+    - y   }  3D coordinates of each particles (each of these is a list)
+    - z 
     
     """
     def __repr__(self):

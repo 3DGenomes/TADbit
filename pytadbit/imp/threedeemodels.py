@@ -3,7 +3,8 @@
 
 
 """
-from pytadbit.utils          import color_residues, calc_eqv_rmsd, calc_consistency
+from pytadbit.utils          import color_residues
+from pytadbit.utils          import calc_eqv_rmsd, calc_consistency
 from pytadbit.utils          import augmented_dendrogram, plot_hist_box
 from cPickle                 import load, dump
 from subprocess              import Popen, PIPE
@@ -99,21 +100,33 @@ class ThreeDeeModels(object):
                           '').format(rand_init))
 
 
-    def cluster_models(self, fact=0.75, dcutoff=200, method='mcl',
+    def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
                        mcl_bin='mcl', tmp_file='/tmp/tmp.xyz'):
         """
         Runs a clustering analysis avoer models. Clusters found will be stored
            in ThreeDeeModels.clusters
         
         :param 0.75 fact: Factor for equivalent positions
-        :param 200 dcutoff: Distance Cut-off for TMScore.
+        :param 200 dcutoff: distance in nanometer from which it is considered
+           that two particles are separated.
+        :param 'score' var: value to return, can be either (i) 'drmsd' (symmetry
+           independent: mirrors will show no differences) (ii) 'score' that is:
+           
+           ::
+           
+                                    dRMSD[i] / max(dRMSD)
+              score[i] = eqvs[i] * -----------------------
+                                     RMSD[i] / max(RMSD)
+           
+           where eqvs[i] is the number of equivalent position for the ith
+           pairwise model comparison.
         :param 'mcl' method: clustering method to use, can be either 'mcl' or
            'ward'. This last one uses scipy implementation.
         :param 'mcl' mcl_bin: path to MCL executable file
         :param '/tmp/tmp.xyz' tmp_file: path to a temporary file
         
         """
-        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, fact)
+        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, fact, var)
         if method == 'ward':
             matrix = [[None for _ in len(self)] for _ in len(self)]
             for i, j, score in scores:
@@ -418,8 +431,7 @@ class ThreeDeeModels(object):
 
 
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
-                          cluster=None, tmp_path='/tmp/tmp_cons',
-                          tmsc='TMscore_consistency'):
+                          cluster=None):
         """
         Plots the consistency of a given set of models, along the chromatine
            fragment modelled. This plot can also be viewed as how well defined,
@@ -464,7 +476,6 @@ class ThreeDeeModels(object):
         consistencies = {}
         for cut in cutoffs:
             consistencies[cut] = calc_consistency(models, self.nloci, cut)
-        from matplotlib import pyplot as plt
         
         fig = plt.figure(figsize=(10, 4))
         ax = fig.add_subplot(111)

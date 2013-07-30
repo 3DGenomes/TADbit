@@ -424,8 +424,20 @@ def calc_consistency(models, nloci, dcutoff=200):
 
 def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score'):
     """
-    :param score var: value to return.
-    
+    :param nloci: number of particles per model
+    :param 200 dcutoff: distance in nanometer from which it is considered
+       that two particles are separated.
+    :param 0.75 fact: Factor for equivalent positions
+    :param 'score' var: value to return, can be either (i) 'drmsd' (symmetry
+       independent: mirrors will show no differences) (ii) 'score' that is:
+
+                             dRMSD[i] / max(dRMSD)
+       score[i] = eqvs[i] * -----------------------
+                              RMSD[i] / max(RMSD)
+
+       where eqvs[i] is the number of equivalent position for the ith
+       pairwise model comparison.
+                                           
     :returns: a score (depends on 'var' argument)
     """
     eqvs = []
@@ -448,7 +460,8 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score'):
     scores = []
     for i, (md1, md2) in enumerate(combines):
         if var=='score':
-            score = float(eqvs[i]) * ((float(drms[i]) / max_drmsd) / (float(nrms[i]) / max_rmsd))
+            score = (float(eqvs[i]) * ((float(drms[i]) / max_drmsd)
+                                       / (float(nrms[i]) / max_rmsd)))
         elif var=='drmsd':
             scores.append(drmsd)
             continue
@@ -456,48 +469,6 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score'):
             scores.append((md1, md2, score))
         else:
             scores.append((md1, md2, 0.0))
-    return scores
-
-
-def calc_eqv_rmsd_OLD(models, nloci, dcutoff=200, fact=0.75, var='score',
-                      tmp_file='/tmp/tmp.xyz', tm_bin='eqv-drmsd-concat-xyz'):
-    """
-    :param score var: value to return.
-    
-    :returns: a score (depends on 'var' argument)
-    """
-    out = ''
-    form = "{:>12}{:>12}{:>12.3f}{:>12.3f}{:>12.3f}\n"
-    for model in models:
-        out += 'model_{}\n'.format(model)
-        for n in xrange(nloci):
-            out += form.format('p' + str(n + 1), n + 1,
-                               models[model]['x'][n],
-                               models[model]['y'][n],
-                               models[model]['z'][n])
-    out_f = open(tmp_file, 'w')
-    out_f.write(out)
-    out_f.close()
-    out = Popen(tm_bin + ' ' + tmp_file + ' {} {}'.format(nloci, dcutoff),
-                shell=True, stdout=PIPE).communicate()[0]
-    drmsds, rmsds = zip(*[(float(line.split()[3]), float(line.split()[4]))
-                          for line in out.split('\n') if line])
-    max_drmsd = max(drmsds)
-    max_rmsd  = max(rmsds)
-    scores = []
-    for line in out.split('\n'):
-        if not line:
-            continue
-        m1, m2, eqv, drmsd, rmsd = line.split()
-        if var=='score':
-            score = float(eqv) * ((float(drmsd) / max_drmsd) / (float(rmsd) / max_rmsd))
-        elif var=='drmsd':
-            scores.append(drmsd)
-            continue
-        if score > fact * nloci:
-            scores.append((m1, m2, score))
-        else:
-            scores.append((m1, m2, 0.0))
     return scores
 
 
