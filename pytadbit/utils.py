@@ -422,7 +422,52 @@ def calc_consistency(models, nloci, dcutoff=200):
     return [float(p)/len(combines) * 100 for p in parts]
         
 
-def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score'):
+def calinski_harabasz(scores, clusters):
+    """
+    Implementation of the CH score [CalinskiHarabasz1974]_, that has shown to be
+    one the most accurate way to compare clustering methods
+    [MilliganCooper1985]_ [Tibshirani2001]_.
+       The CH score is:
+
+    .. math::
+
+        CH(k) = \\frac{B(k) / (k-1)}{W(k)/(n - k)}
+
+    Where :math:`B(k)` and :math:`W(k)` are between and within cluster sums of
+    squares, with :math:`k` clusters, and :math:`n` the total number of
+    points (models in this case).
+   
+    :param scores: a dict with, as keys, a tuple with a pair of models; and, as
+       value, the distance between these models.
+    :param clusters: a dict with, as key, the cluster number, and as value a
+       list of models
+    :param nmodels: total number of models
+
+    :returns: the CH score
+    """
+    cluster_list = [c for c in clusters if len(clusters[c]) > 1]
+    if len(cluster_list) <= 1:
+        return 0.0
+    nmodels = sum([len(clusters[c]) for c in cluster_list])
+
+    between_cluster = (sum([sum([sum([scores[(md1, md2)]**2
+                                      for md1 in clusters[cl1]])
+                                 for md2 in clusters[cl2]])
+                            / (len(clusters[cl1]) * len(clusters[cl2]))
+                            for cl1, cl2 in combinations(cluster_list, 2)])
+                       / ((len(cluster_list) - 1.0) / 2))
+    
+    within_cluster = (sum([sum([scores[(md1, md2)]**2
+                                for md1, md2 in combinations(clusters[cls], 2)])
+                           / (len(clusters[cls]) * (len(clusters[cls]) - 1.0) / 2)
+                           for cls in cluster_list]))
+    
+    return ((between_cluster / (len(cluster_list) - 1))
+            /
+            (within_cluster / (nmodels - len(cluster_list))))
+    
+
+def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score'):
     """
     :param nloci: number of particles per model
     :param 200 dcutoff: distance in nanometer from which it is considered
@@ -457,18 +502,16 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, fact=0.75, var='score'):
 
     max_drmsd = max(drms)
     max_rmsd  = max(nrms)
-    scores = []
-    for i, (md1, md2) in enumerate(combines):
-        if var=='score':
+    scores = {}
+    if var=='score':
+        for i, (md1, md2) in enumerate(combines):
             score = (float(eqvs[i]) * ((float(drms[i]) / max_drmsd)
                                        / (float(nrms[i]) / max_rmsd)))
-        elif var=='drmsd':
-            scores.append(drmsd)
-            continue
-        if score > fact * nloci:
-            scores.append((md1, md2, score))
-        else:
-            scores.append((md1, md2, 0.0))
+            scores[(md1, md2)] = score
+            scores[(md2, md1)] = score
+    elif var=='drmsd':
+        for i, (md1, md2) in enumerate(combines):
+            scores[(md2, md1)] = drms[i]
     return scores
 
 

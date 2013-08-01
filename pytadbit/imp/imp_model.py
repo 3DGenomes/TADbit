@@ -19,6 +19,7 @@ import IMP.display
 from IMP.container import ListSingletonContainer
 from IMP import Model
 from IMP import FloatKey
+import IMP.kernel
 
 IMP.set_check_level(IMP.NONE)
 IMP.set_log_level(IMP.SILENT)
@@ -154,7 +155,8 @@ def generate_IMPmodel(rand_init, verbose=False):
         p.set_value(model['rk'], newrk)
 
     # Restraints between pairs of LOCI proportional to the PDIST
-    model['pps']  = IMP.ParticlePairs()
+    # model['pps']  = IMP.ParticlePairs() # this was used for IMP version: 847e65d44da7d06718bcad366b09264c818752d5
+    model['pps']  = IMP.kernel.ParticlePairsTemp()
 
     addAllHarmonics(model, verbose=verbose)
 

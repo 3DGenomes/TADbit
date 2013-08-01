@@ -2,10 +2,21 @@
 
 from distutils.core import setup, Extension
 from os import path
+from distutils.spawn import find_executable
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
 def main():
+    # check if MCL is installed
+    if not find_executable('mcl'):
+        print('\nWARNING: It is HIGHLY RECOMMENDED to have MCL installed ' +
+              '(which do not seems to be).\nIf you are under Debian/Ubuntu' +
+              ' just run "apt-get-install mcl".')
+        follow = raw_input('\n  You still have the option to follow with the ' +
+                           'installation. Do you want to follow? [y/N]')
+        if follow.upper() != 'Y' :
+            exit('\n    Wise choice :)\n')
+    
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
                                 sources=['tadbit_py.c'])

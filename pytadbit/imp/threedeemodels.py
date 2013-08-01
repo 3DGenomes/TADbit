@@ -3,7 +3,7 @@
 
 
 """
-from pytadbit.utils          import color_residues
+from pytadbit.utils          import color_residues, calinski_harabasz
 from pytadbit.utils          import calc_eqv_rmsd, calc_consistency
 from pytadbit.utils          import augmented_dendrogram, plot_hist_box
 from cPickle                 import load, dump
@@ -11,7 +11,7 @@ from subprocess              import Popen, PIPE
 from math                    import sqrt
 from numpy                   import median as np_median
 from numpy                   import std as np_std
-from scipy.cluster.hierarchy import linkage
+from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.stats             import spearmanr
 from matplotlib              import pyplot as plt
 
@@ -121,40 +121,65 @@ class ThreeDeeModels(object):
            where eqvs[i] is the number of equivalent position for the ith
            pairwise model comparison.
         :param 'mcl' method: clustering method to use, can be either 'mcl' or
-           'ward'. This last one uses scipy implementation.
-        :param 'mcl' mcl_bin: path to MCL executable file
+           'ward'. Last one uses scipy implementation, and is NOT RECOMENDED.
+        :param 'mcl' mcl_bin: path to MCL executable file, in case 'mcl is not
+           in the PATH'
         :param '/tmp/tmp.xyz' tmp_file: path to a temporary file
         
         """
-        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, fact, var)
+        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, var)
         if method == 'ward':
-            matrix = [[None for _ in len(self)] for _ in len(self)]
-            for i, j, score in scores:
-                matrix[i][j] = score
-        
-        # this may disappear if we use ward clustering
-        out_f = open(tmp_file, 'w')
-        for score in scores:
-            out_f.write('model_{}\tmodel_{}\t{}\n'.format(*score))
-        out_f.close()
-        Popen('{0} {1} --abc -V all -o {1}.mcl'.format(
-            mcl_bin, tmp_file, stdout=PIPE, stderr=PIPE),
-              shell=True).communicate()
-        self.clusters= {}
-        for cluster, line in enumerate(open(tmp_file + '.mcl')):
-            self.clusters[cluster] = []
-            for model in line.split():
-                model = int(model.split('_')[1])
-                self[model]['cluster'] = cluster
-                self.clusters[cluster].append(model)
-        # sort clusters according to their lowest energy
-        # for clt in clusters:
-        #     clusters[clt].sort()
-        # for i, clt in enumerate(sorted(
-        #     clusters, key=lambda x: self[clusters[x][0]]['energy'])):
-        #     self.clusters[i] = clusters[clt]
-        #     for model in self.clusters[i]:
-        #         self.__models[model]['cluster'] = i
+
+            matrix = [[0.0 for _ in xrange(len(self))]
+                      for _ in xrange(len(self))]
+            for (i, j), score in scores.iteritems():
+                matrix[i][j] = score if score > fact * self.nloci else 0.0
+            clust = linkage(matrix, method='ward')
+            solutions = {}
+            # x = []
+            # y = []
+            for k in clust[:,2]:
+                clusters = {}
+                _ = [clusters.setdefault(j, []).append(i) for i, j in
+                     enumerate(fcluster(clust, k, criterion='distance'))]
+                solutions[k] = {'out': clusters}
+                solutions[k]['score'] = calinski_harabasz(scores, clusters)
+                # print len(a), k, solutions[k]['score']
+                # x.append(solutions[k]['score'])
+                # y.append(len(a))
+            # plt.plot(y,x)
+            # plt.show()
+            clusters = [solutions[s] for s in sorted(
+                solutions, key=lambda x: solutions[x]['score'])
+                         if solutions[s]['score']>0][-1]['out']
+            for cluster in clusters:
+                for model in clusters[cluster]:
+                    self[model]['cluster'] = cluster
+            self.clusters = clusters
+        else:
+            out_f = open(tmp_file, 'w')
+            for (md1, md2), score in scores.iteritems():
+                out_f.write('model_{}\tmodel_{}\t{}\n'.format(
+                    md1, md2, score if score > fact * self.nloci else 0.0))
+            out_f.close()
+            Popen('{0} {1} --abc -V all -o {1}.mcl'.format(
+                mcl_bin, tmp_file, stdout=PIPE, stderr=PIPE),
+                  shell=True).communicate()
+            self.clusters= {}
+            for cluster, line in enumerate(open(tmp_file + '.mcl')):
+                self.clusters[cluster] = []
+                for model in line.split():
+                    model = int(model.split('_')[1])
+                    self[model]['cluster'] = cluster
+                    self.clusters[cluster].append(model)
+            # sort clusters according to their lowest energy
+            # for clt in clusters:
+            #     clusters[clt].sort()
+            # for i, clt in enumerate(sorted(
+            #     clusters, key=lambda x: self[clusters[x][0]]['energy'])):
+            #     self.clusters[i] = clusters[clt]
+            #     for model in self.clusters[i]:
+            #         self.__models[model]['cluster'] = i
 
 
     def _build_distance_matrix(self, n_best_clusters):
