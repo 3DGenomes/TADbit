@@ -25,6 +25,10 @@ def main():
     models = exp.model_region(start=190, end=295, n_models=5000, n_keep=1000,
                               n_cpus=8, verbose=False, keep_all=True)
 
+
+    self = exp.model_region(start=190, end=295, n_models=50, n_keep=10,
+                            n_cpus=8, verbose=False, keep_all=True)
+
     for i in range(16):
         models.write_cmm(i, '.')
 

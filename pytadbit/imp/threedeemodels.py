@@ -369,9 +369,24 @@ class ThreeDeeModels(object):
 
     def define_best_models(self, nbest):
         """
-        Define the number of best models to keep, 
+        Define the number of best models to keep. If keep_all was True in
+        :func:`pytadbit.imp.imp_model.generate_3d_models` or in
+        :func:`pytadbit.experiment.Experiment.model_region` the full set of models
+        (n_models parameter) will be available, otherwise only the n_keep models.
+
+        :param nbest: number of models to consider as best models.
+           Usually 20% of the models generated are kept.
         """
-        pass
+        if nbest < len(self):
+            new_bads = len(self) - nbest
+            for i in xrange(len(self._bad_models) - 1, -1, -1):
+                self._bad_models[i + new_bads] = self._bad_models[i]
+            for i in xrange(new_bads, len(self)):
+                self._bad_models[i] = self.__models[i + new_bads]
+            self.__models = dict([(i, m) for i, m in enumerate(range(len(self)))
+                                  if i < nbest])
+        
+
         
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
                     savefig=None):

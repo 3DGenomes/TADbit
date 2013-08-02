@@ -5,6 +5,24 @@ from os import path
 from distutils.spawn import find_executable
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
+PYTHON_DEPENDENCIES = [
+    ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 0],
+    ["scipy"     , "Required for clustering and interpolation."],
+    ["matplotlib", "Required fot displaying plots."],
+    ["IMP"       , "Required for 3D modeling."]]
+
+
+print "Checking dependencies..."
+missing = False
+for mname, msg, ex in PYTHON_DEPENDENCIES:
+    if not can_import(mname):
+        print mname, "cannot be found in your python installation."
+        print msg
+        missing=True
+
+if missing:
+    exit("Essential dependencies missing, please review and install.\n")
+
 
 def main():
     # check if MCL is installed

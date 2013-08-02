@@ -37,7 +37,8 @@ def generate_3d_models(zscores, start=1, n_models=5000, n_keep=1000,
     :param resolution: of the Hi-C experiment, this will be the number of
        nucleotides in each particle of the models
     :param 10000 n_models: number of modes to generate.
-    :param 1000 n_keep: number of models to keep (models with lowest energy)
+    :param 1000 n_keep: number of models to keep (models with lowest energy).
+       Usually 20% of the models generated are kept.
     :param False keep_all: whether to keep the discarded models or not (if True,
        they will be stored under ThreeDeeModels.bad_models).
     :param 1 close_bins: number of particle away a particle may be to be
