@@ -81,14 +81,14 @@ From this Experiment object we can model a given region using IMP.
 The result of these few line is a ThreeDeeModels object, which will have all the function you asked me to implement (... yes will... like, in the future :S )
 
 
-.. code:: python
+::
 
     from pytadbit import Chromosome
 
 I define my chromosome
 
 
-.. code:: python
+::
 
     crm = '2R'
     crmbit = Chromosome('2R')
@@ -96,7 +96,7 @@ I define my chromosome
 I load all experiments done on Drosophila's chromosome 2R (Hi-C matrices), and sum the Hi-C matrices (Corces' technical and biolobical replicates) into a single experiment
 
 
-.. code:: python
+::
 
     for xnam in ['TR2', 'TR1', 'BR']:
         crmbit.add_experiment(xnam, resolution=10000, 
@@ -107,7 +107,7 @@ I load all experiments done on Drosophila's chromosome 2R (Hi-C matrices), and s
 Finally run the IMP modelling on a given region (this region crresponds to the one Davide shows at meeting with Guillaume)
 
 
-.. code:: python
+::
 
     models = exp.model_region(190, 295, n_models=500, n_keep=250, n_cpus=8)
 
@@ -129,7 +129,7 @@ models are stored in a dictionary which keys are number (the lowest the less ene
 Thus to have a look to the best model we just type:
 
 
-.. code:: python
+::
 
     print models
 
@@ -146,7 +146,7 @@ Each can be reached like this:
 
 
 
-.. code:: python
+::
 
     model = models[0]
     print model
@@ -173,7 +173,7 @@ Objective function
 We want to plot the objective function for this best model:
 
 
-.. code:: python
+::
 
     models.objective_function_model(0, log=False, smooth=False)
 
@@ -182,7 +182,7 @@ We want to plot the objective function for this best model:
 ... perhaps nicer with log (note that it can be done using the IMPmodel object directely):
 
 
-.. code:: python
+::
 
     model = models[0]
     model.objective_function(log=True, smooth=True)
@@ -197,7 +197,7 @@ Clustering models
 First we run the clustering. The result of this will be stored inside the ThreeDeeModels object.
 
 
-.. code:: python
+::
 
     models.cluster_models(fact=0.75, dcutoff=200)
     print models.clusters
@@ -215,7 +215,7 @@ Plot clusters
 We can plot everything (The 12 clusters found):
 
 
-.. code:: python
+::
 
     cl = models.cluster_analysis_dendrogram(color=True)
 
@@ -224,7 +224,7 @@ We can plot everything (The 12 clusters found):
 Or just 6 of them (without this colors that no one understands...)
 
 
-.. code:: python
+::
 
     cl = models.cluster_analysis_dendrogram(n_best_clusters=6)
 
@@ -238,7 +238,7 @@ Distance between 2 particles
 We can just quickly get a value of the distance between particle 13 and 23
 
 
-.. code:: python
+::
 
     models.average_3d_dist(13, 23, plot=False)
 
@@ -251,7 +251,7 @@ We can just quickly get a value of the distance between particle 13 and 23
 This by default, is calculated over the ensemble of models we have. Lets plot the distribution used to get this mean value:
 
 
-.. code:: python
+::
 
     models.average_3d_dist(13, 23, plot=True)
 
@@ -260,7 +260,7 @@ This by default, is calculated over the ensemble of models we have. Lets plot th
 We may also want to use only the 10 first models, or the models belonging to cluster number 0:
 
 
-.. code:: python
+::
 
     models.average_3d_dist(13, 23, models=range(10))
 
@@ -268,7 +268,7 @@ We may also want to use only the 10 first models, or the models belonging to clu
 
 
 
-.. code:: python
+::
 
     models.average_3d_dist(13, 23, plot=True, cluster=0)
 
@@ -282,7 +282,7 @@ Density plot
 Using distances between particle, we can plot now the density (bp per nm) of our chromosomic region.
 
 
-.. code:: python
+::
 
     models.density_plot(models=None)
 
@@ -290,7 +290,7 @@ Using distances between particle, we can plot now the density (bp per nm) of our
 
 
 
-.. code:: python
+::
 
     models.density_plot(cluster=0, error=True, steps=(5,20))
 
@@ -303,7 +303,7 @@ Contact Map
 
 
 
-.. code:: python
+::
 
     models.contact_map_consistency(models=None, cluster=None, cutoff=150)
 
@@ -316,7 +316,7 @@ Consistency Plot
 
 
 
-.. code:: python
+::
 
     models.model_consistency(cluster=0, cutoffs=(50, 100, 150, 200))
 
