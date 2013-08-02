@@ -4,6 +4,17 @@ from distutils.core import setup, Extension
 from os import path
 from distutils.spawn import find_executable
 
+
+def can_import(mname):
+    'Test if a module can be imported '
+    try:
+        __import__(mname)
+    except ImportError:
+        return None
+    else:
+        return True
+
+
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 PYTHON_DEPENDENCIES = [
     ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 0],
