@@ -427,7 +427,8 @@ def calinski_harabasz(scores, clusters):
     Implementation of the CH score [CalinskiHarabasz1974]_, that has shown to be
     one the most accurate way to compare clustering methods
     [MilliganCooper1985]_ [Tibshirani2001]_.
-       The CH score is:
+
+    The CH score is:
 
     .. math::
 

@@ -167,7 +167,6 @@ class TestTadbit(unittest.TestCase):
         exp.load_experiment('20Kb/chrT/chrT_A.tsv')
         exp.get_hic_zscores()
         exp.get_hic_zscores(zscored=False)
-        exp.get_hic_zscores(normalized=False)
 
 
     def test_10_generate_weights(self):

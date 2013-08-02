@@ -366,6 +366,12 @@ class ThreeDeeModels(object):
                 matrix[i][j] = matrix[j][i] = float(val) / len(models) * 100
         return matrix
         
+
+    def define_best_models(self, nbest):
+        """
+        Define the number of best models to keep, 
+        """
+        pass
         
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
                     savefig=None):

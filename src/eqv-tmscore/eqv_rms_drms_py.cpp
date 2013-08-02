@@ -26,7 +26,7 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   PyObject **py_xyzB;
   int size;
   float thres;
-  int consistency;
+  int consistency=0;
  
   if (!PyArg_ParseTuple(args, "OOifi", &py_xyzA, &py_xyzB, &size, &thres, &consistency))
     return NULL;
