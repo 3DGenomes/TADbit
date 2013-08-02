@@ -18,9 +18,9 @@ def can_import(mname):
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 PYTHON_DEPENDENCIES = [
     ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 0],
-    ["scipy"     , "Required for clustering and interpolation."],
-    ["matplotlib", "Required fot displaying plots."],
-    ["IMP"       , "Required for 3D modeling."]]
+    ["scipy"     , "Required for clustering and interpolation.", 0],
+    ["matplotlib", "Required fot displaying plots.", 0],
+    ["IMP"       , "Required for 3D modeling.", 0]]
 
 
 print "Checking dependencies..."
