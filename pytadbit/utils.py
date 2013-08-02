@@ -404,7 +404,7 @@ def color_residues(n_part):
     result = []
     for n in xrange(n_part):
         red = float(n + 1) / n_part
-        result.append((red, 1 - red, 0))
+        result.append((red, 0, 1 - red))
     return result
 
 
