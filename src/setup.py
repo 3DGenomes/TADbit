@@ -27,8 +27,8 @@ print "Checking dependencies..."
 missing = False
 for mname, msg, ex in PYTHON_DEPENDENCIES:
     if not can_import(mname):
-        print mname, "cannot be found in your python installation."
-        print msg
+        print "  *", mname, "cannot be found in your python installation."
+        print "   ->", msg
         missing=True
 
 if missing:
