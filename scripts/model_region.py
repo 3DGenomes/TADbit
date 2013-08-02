@@ -29,7 +29,7 @@ def main():
         zscores = parse_zscores(opts.inabc)
 
     models = generate_3d_models(zscores, start=1, n_models=10, n_keep=10,
-                                close_bins=1, n_cpus=8, keep_all=False, verbose=False,
+                                close_bins=1, n_cpus=8, keep_all=False, verbose=True,
                                 outfile=None, resolution=10000)
     
     for i in range(10):
@@ -55,7 +55,7 @@ def main():
 
 
     self = exp.model_region(start=190, end=295, n_models=10, n_keep=10,
-                            n_cpus=8, verbose=False, keep_all=True)
+                            n_cpus=8, verbose=True, keep_all=True)
 
     for i in range(10):
         models.write_cmm(i, '.')
