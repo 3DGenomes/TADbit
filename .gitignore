@@ -15,3 +15,5 @@ src/pytadbit_wrap.c
 *.pik
 *.pik_hic
 *.egg-info
+*.cmm
+script.cmd

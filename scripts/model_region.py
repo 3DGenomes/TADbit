@@ -2,12 +2,40 @@
 04 Jul 2013
 """
 from pytadbit import Chromosome
+from pytadbit.imp.imp_model import generate_3d_models
 from optparse   import OptionParser
 
+def parse_zscores(zscore_f):
+    """
+    """
+    zscores = {}
+    for line in open(zscore_f):
+        x, y, z = line.split()
+        z = float(z)
+        x = x
+        y = y
+        zscores.setdefault(x, {})
+        zscores[x][y] = z
+        # 
+        zscores.setdefault(y, {})
+        zscores[y][x] = z
+    return zscores
+    
 
 def main():
 
     opts = get_options()
+    if opts.inabc:
+        zscores = parse_zscores(opts.inabc)
+
+    models = generate_3d_models(zscores, start=1, n_models=10, n_keep=10,
+                                close_bins=1, n_cpus=8, keep_all=False, verbose=False,
+                                outfile=None, resolution=10000)
+    
+    for i in range(10):
+        models.write_cmm(i, '.')
+
+    exit()
     
     crm  = '2R'
     xnam = 'TR1'
@@ -26,12 +54,14 @@ def main():
                               n_cpus=8, verbose=False, keep_all=True)
 
 
-    self = exp.model_region(start=190, end=295, n_models=50, n_keep=10,
+    self = exp.model_region(start=190, end=295, n_models=10, n_keep=10,
                             n_cpus=8, verbose=False, keep_all=True)
 
-    for i in range(16):
+    for i in range(10):
         models.write_cmm(i, '.')
 
+    exit()
+    
     models.cluster_models(dcutoff=200)
 
     models.cluster_analysis_dendrogram(n_best_clusters=10)
@@ -64,9 +94,12 @@ def get_options():
     parser.add_option('--incrm', dest='incrm', metavar="PATH",
                       default=None,
                       help='''path to a hi-c matrix file.''')
+    parser.add_option('--inabc', dest='inabc', metavar="PATH",
+                      default=None,
+                      help='''path to a zscore file.''')
     opts = parser.parse_args()[0]
-    if not opts.incrm:
-        exit(parser.print_help())
+    # if not opts.incrm:
+    #     exit(parser.print_help())
     return opts
 
 

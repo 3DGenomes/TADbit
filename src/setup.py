@@ -14,25 +14,47 @@ def can_import(mname):
     else:
         return True
 
+def ask(string, valid_values, default=-1, case_sensitive=False):
+    """ Asks for a keyborad answer """
+    v = None
+    if not case_sensitive:
+        valid_values = [value.lower() for value in valid_values]
+    while v not in valid_values:
+        v = raw_input("%s [%s]" % (string,','.join(valid_values)))
+        if v == '' and default>=0:
+            v = valid_values[default]
+        if not case_sensitive:
+            v = v.lower()
+    return v
+
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 PYTHON_DEPENDENCIES = [
-    ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 0],
-    ["scipy"     , "Required for clustering and interpolation.", 0],
-    ["matplotlib", "Required fot displaying plots.", 0],
+    ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 1],
+    ["scipy"     , "Required for clustering and interpolation.", 1],
+    ["matplotlib", "Required fot displaying plots.", 1],
     ["IMP"       , "Required for 3D modeling.", 0]]
 
 
 print "Checking dependencies..."
 missing = False
+maybies = False
 for mname, msg, ex in PYTHON_DEPENDENCIES:
     if not can_import(mname):
         print "  *", mname, "cannot be found in your python installation."
         print "   ->", msg
-        missing=True
+        if ex:
+            missing=True
+        else:
+            maybies=True
 
 if missing:
     exit("Essential dependencies missing, please review and install.\n")
+if maybies:
+    print "\nHowever, you can still install Tadbit and try to fix it afterwards."
+    if ask( "Do you want to continue with the installation anyway?", 
+            ["y", "n"]) == "n":
+        exit()
 
 
 def main():

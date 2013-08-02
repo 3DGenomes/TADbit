@@ -607,7 +607,7 @@ class ThreeDeeModels(object):
         self[model].objective_function(log=log, smooth=smooth)
         
 
-    def write_cmm(self, model_num, directory, color=color_residues):
+    def write_cmm(self, model_num, directory, color=color_residues, rndname=True):
         """
         Writes cmm file read by Chimera (http://www.cgl.ucsf.edu/chimera).
         
@@ -637,13 +637,16 @@ class ThreeDeeModels(object):
             out += form.format(n, n + 1)
         out += '</marker_set>\n'
 
-        out_f = open('{}/model_{}_rnd{}.cmm'.format(
-            directory, model_num, model['rand_init']), 'w')
+        if rndname:
+            out_f = open('{}/model.{}.cmm'.format(directory, model['rand_init']), 'w')
+        else:
+            out_f = open('{}/model_{}_rnd{}.cmm'.format(directory, model_num,
+                                                        model['rand_init']), 'w')
         out_f.write(out)
         out_f.close()
 
 
-    def write_xyz(self, model_num, directory, get_path=False):
+    def write_xyz(self, model_num, directory, get_path=False, rndname=True):
         """
         Writes xyz file containing the 3D coordinates of each particles.
         
@@ -657,8 +660,11 @@ class ThreeDeeModels(object):
             model = self[model_num]
         except KeyError:
             model = self._bad_models[model_num]
-        path_f = '{}/model_{}_rnd{}.xyz'.format(directory, model_num,
-                                              model['rand_init'])
+        if rndname:
+            path_f = '{}/model.{}.xyz'.format(directory, model['rand_init'])
+        else:
+            path_f = '{}/model_{}_rnd{}.xyz'.format(directory, model_num,
+                                                    model['rand_init'])
         out = ''
         form = "{:>12}{:>12}{:>12.3f}{:>12.3f}{:>12.3f}\n"
         for n in xrange(self.nloci):
