@@ -624,7 +624,7 @@ class ThreeDeeModels(object):
             model = self._bad_models[model_num]
         if type(color) != list:
             color = color(self.nloci)
-        out = '<marker_set name=\"marker set $marker\">\n'
+        out = '<marker_set name=\"{}\">\n'.format(model['rand_init'])
         form = ('<marker id=\"{0}\" x=\"{1}\" y=\"{2}\" z=\"{3}\" r=\"{4}\" ' +
                 'g=\"{5}\" b=\"{6}\" radius=\"0.5\" note=\"{0}\"/>\n')
         for n in xrange(self.nloci):
