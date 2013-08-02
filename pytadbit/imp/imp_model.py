@@ -57,7 +57,7 @@ def generate_3d_models(zscores, start=1, n_models=5000, n_keep=1000,
     global NSLOPE, NINTERCEPT
     xarray = [zscores[i][j] for i in zscores for j in zscores[i]
               if abs(int(i) - int(j)) <= (close_bins + 1)]
-    yarray = [RADIUS * 0.01 for _ in xrange(len(xarray))]
+    yarray = [RADIUS for _ in xrange(len(xarray))]
     NSLOPE, NINTERCEPT = polyfit(xarray, yarray, 1)
 
     zsc = set([int (k) for k in zscores.keys()] +
