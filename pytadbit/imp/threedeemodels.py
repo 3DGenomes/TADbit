@@ -10,7 +10,7 @@ from cPickle                 import load, dump
 from subprocess              import Popen, PIPE
 from math                    import sqrt
 from numpy                   import median as np_median
-from numpy                   import std as np_std
+from numpy                   import std as np_std, log2
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.stats             import spearmanr
 from matplotlib              import pyplot as plt
@@ -22,7 +22,11 @@ def load_threedeemodels(path_f):
 
     :returns: a :class:`pytadbit.imp.imp_model.ThreeDeeModels`.
     """
-    return load(open(path_f))
+    svd = load(open(path_f))
+    return ThreeDeeModels(
+        nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
+        resolution=svd['resolution'], original_data=svd['original_data'],
+        clusters=svd['clusters'])
 
 
 class ThreeDeeModels(object):
@@ -39,15 +43,16 @@ class ThreeDeeModels(object):
 
     """
 
-    def __init__(self, nloci, models, bad_models, resolution, original_data=None):
+    def __init__(self, nloci, models, bad_models, resolution,
+                 original_data=None, clusters=None):
         
-        self.__models = models
-        self._bad_models = bad_models
-        self.nloci = nloci
-        self.clusters = {}
-        self.resolution = float(resolution)
+        self.__models       = models
+        self._bad_models    = bad_models
+        self.nloci          = nloci
+        self.clusters       = clusters or {}
+        self.resolution     = float(resolution)
         self._original_data = original_data
-
+        
 
     def __getitem__(self, nam):
         try:
@@ -204,13 +209,13 @@ class ThreeDeeModels(object):
                     if md2['cluster'] == cl2:
                         # the first on found is the best :)
                         break
-                matrix[i][j+i+1] = float(calc_eqv_rmsd({1: md1, 2: md2},
-                                                       self.nloci,
-                                                       var='drmsd')[0])
+                matrix[i][j+i+1] = calc_eqv_rmsd({1: md1, 2: md2}, self.nloci,
+                                                 var='drmsd', one=True)
         return clust_count, energy, matrix
 
 
-    def cluster_analysis_dendrogram(self, n_best_clusters=None, color=False):
+    def cluster_analysis_dendrogram(self, n_best_clusters=None, color=False,
+                                    axe=None, savefig=None):
         """
         Representation of clusters of models. The length of the leaves if
            proportional to the final energy of each model. Branch widths are
@@ -244,12 +249,13 @@ class ThreeDeeModels(object):
             dads[a] = i
             dads[b] = i
 
-        d = augmented_dendrogram(clust_count, dads, energy, color, z)
+        d = augmented_dendrogram(clust_count, dads, energy, color, 
+                                 axe, savefig, z)
         return d
 
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     error=False):
+                     error=False, axe=None):
         """
         Represents the number of nucletotide base pairs can be found in 1 nm of
            chromatine, this along strand modelled.
@@ -263,6 +269,8 @@ class ThreeDeeModels(object):
         :param (1, 2, 3, 4, 5) steps: how many particles to group for the
            estimation. By default 5 curves are drawn.
         :param False error: represent the error of the estimates.
+        
+        :returns: a matplotlib Axe object.
         """
         if len(steps) > 6:
             raise Exception('Sorry not enough colors to do this.\n')
@@ -301,38 +309,41 @@ class ThreeDeeModels(object):
                     errorn[-1].append(None)
                     errorp[-1].append(None)
         distsk = new_distsk
-        from matplotlib import pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.patch.set_facecolor('lightgrey')
-        ax.patch.set_alpha(0.4)
-        ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-        ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-        ax.set_axisbelow(True)
-        ax.minorticks_on() # always on, not only for log
-        # remove tick marks
-        ax.tick_params(axis='both', direction='out', top=False, right=False,
-                       left=False, bottom=False)
-        ax.tick_params(axis='both', direction='out', top=False, right=False,
-                       left=False, bottom=False, which='minor')
+        if axe:
+            ax = axe
+            fig = ax.get_figure()
+        else:
+            fig = plt.figure(figsize=(15, 5.5))
+            ax = fig.add_subplot(111)
+            ax.patch.set_facecolor('lightgrey')
+            ax.patch.set_alpha(0.4)
+            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+            ax.set_axisbelow(True)
+            ax.minorticks_on() # always on, not only for log
+            # remove tick marks
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False)
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False, which='minor')
         plots = []
         for k in steps:
-            plots += plt.plot(distsk[k], color=colors[steps.index(k)],
-                              lw=steps.index(k) + 1, alpha=0.5)
+            plots += ax.plot(distsk[k], color=colors[steps.index(k)],
+                             lw=steps.index(k) + 1, alpha=0.5)
         if error:
             for k in steps:
-                plots += plt.plot(errorp[k], color=colors[steps.index(k)], ls='--')
-                plt.plot(errorn[k], color=colors[steps.index(k)], ls='--')
-        plt.ylabel('Density (bp / nm)')
-        plt.xlabel('Particle number')
-        plt.legend(plots, ['Average for {} particle{}'.format(k,
+                plots += ax.plot(errorp[k], color=colors[steps.index(k)], ls='--')
+                ax.plot(errorn[k], color=colors[steps.index(k)], ls='--')
+        ax.set_ylabel('Density (bp / nm)')
+        ax.set_xlabel('Particle number')
+        ax.legend(plots, ['Average for {} particle{}'.format(k,
                                                              's' if k else '')
-                           for k in steps] + (
-                       ['+/- 2 standard deviations for {}'.format(k)
-                           for k in steps] if error else []), fontsize='small')
-        plt.xlim((0, self.nloci))
-        plt.title('Chromatine density')
-        plt.show()
+                          for k in steps] + (
+                      ['+/- 2 standard deviations for {}'.format(k)
+                       for k in steps] if error else []), fontsize='small')
+        ax.set_xlim((0, self.nloci))
+        ax.set_title('Chromatine density')
+        return ax
 
 
     def get_contact_matrix(self, models=None, cluster=None, cutoff=150):
@@ -360,8 +371,8 @@ class ThreeDeeModels(object):
         matrix = [[float('nan') for _ in xrange(self.nloci)] for _ in xrange(self.nloci)]
         for i in xrange(self.nloci):
             for j in xrange(i + 1, self.nloci):
-                val = len([k for k in self.average_3d_dist(i, j, plot=False,
-                                                           median=False)
+                val = len([k for k in self.average_3d_dist(
+                    i, j, plot=False, median=False, models=models)
                            if k < cutoff])
                 matrix[i][j] = matrix[j][i] = float(val) / len(models) * 100
         return matrix
@@ -377,17 +388,13 @@ class ThreeDeeModels(object):
         :param nbest: number of models to consider as best models.
            Usually 20% of the models generated are kept.
         """
-        if nbest < len(self):
-            new_bads = len(self) - nbest
-            for i in xrange(len(self._bad_models) - 1, -1, -1):
-                self._bad_models[i + new_bads] = self._bad_models[i]
-            for i in xrange(new_bads, len(self)):
-                self._bad_models[i] = self.__models[i + new_bads]
-            self.__models = dict([(i, m) for i, m in enumerate(range(len(self)))
-                                  if i < nbest])
-        
+        tmp_models = self.__models
+        tmp_models.update(self._bad_models)
+        self.__models = dict([(i, tmp_models[i]) for i in xrange(nbest)])
+        self._bad_models = dict([(i, tmp_models[i]) for i in
+                                 xrange(nbest, len(tmp_models))])
 
-        
+
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
                     savefig=None):
         """
@@ -409,11 +416,13 @@ class ThreeDeeModels(object):
            
         """
         matrix = self.get_contact_matrix(models, cluster, cutoff)
-        show=False
+        show = False
         if not axe:
             fig = plt.figure(figsize=(10, 10))
             axe = fig.add_subplot(111)
             show=True
+        else:
+            fig = axe.get_figure()
         ims = axe.imshow(matrix, origin='lower', interpolation="nearest")
         axe.set_ylabel('Particles')
         axe.set_xlabel('Particles')
@@ -422,13 +431,13 @@ class ThreeDeeModels(object):
         cbar.ax.set_ylabel('Percentage of models with particles closer than {} nm'.format(cutoff))
         axe.set_title('Contact map consistency')
         if savefig:
-            plt.savefig(savefig)
+            fig.savefig(savefig)
         elif show:
             plt.show()
 
 
-    def correlate_with_real_data(self, models=None, cluster=None,
-                                 cutoff=150, plot=False, savefig=None):
+    def correlate_with_real_data(self, models=None, cluster=None, cutoff=200,
+                                 plot=False, axe=None, savefig=None):
         """
         :param hic_matrix: a matrix representing the normalized count of Hi-C
            interactions, used to generated these models.
@@ -446,38 +455,40 @@ class ThreeDeeModels(object):
            if None, the image will be shown using matplotlib GUI.
         
         """
-        model_matrix = self.get_contact_matrix(models, cluster, cutoff)
-        real_matrix = [[float('nan') for _ in xrange(self.nloci)]
-                       for _ in xrange(self.nloci)]
-        for i in self._original_data:
-            for j in self._original_data[i]:
-                real_matrix[int(i)][int(j)] = self._original_data[i][j]
-                real_matrix[int(j)][int(i)] = self._original_data[i][j]
-        corr = spearmanr(model_matrix, real_matrix, axis=None)
+        model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
+                                               cutoff=cutoff)
+        corr = spearmanr(model_matrix, self._original_data, axis=None)
         if not plot:
             return corr
-
-        fig = plt.figure(figsize=(15, 5.5))
-        fig.suptitle('Correlation bettween real and modelled contact maps ' +
-                     '(correlation={:.4})'.format(corr[0]), size='x-large')
+        show = False
+        if not axe:
+            fig = plt.figure(figsize=(15, 5.5))
+            axe = fig.add_subplot(111)
+            show = True
+        else:
+            fig = axe.get_figure()
+        fig.suptitle('Correlation bettween normalized-real and modelled '
+                     + 'contact maps (correlation={:.4})'.format(corr[0]),
+                     size='x-large')
         ax = fig.add_subplot(121)
         self.contact_map(models, cluster, cutoff, axe=ax)
         ax = fig.add_subplot(122)
-        ims = ax.imshow(real_matrix, origin='lower', interpolation="nearest")
+        ims = ax.imshow(log2(self._original_data), origin='lower',
+                        interpolation="nearest")
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the observed Hi-C count')
         cbar = ax.figure.colorbar(ims)
-        cbar.ax.set_ylabel('Z-score')
+        cbar.ax.set_ylabel('Log2(Normalized Hi-C data)')
         
         if savefig:
-            plt.savefig(savefig)
-        else:
+            fig.savefig(savefig)
+        elif show:
             plt.show()
 
 
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
-                          cluster=None):
+                          cluster=None, axe=None, savefig=None):
         """
         Plots the consistency of a given set of models, along the chromatine
            fragment modelled. This plot can also be viewed as how well defined,
@@ -499,9 +510,10 @@ class ThreeDeeModels(object):
         
         """
         if models:
-            models=models
+            models = dict([(i, self[m]) for i, m in enumerate(models)])
         elif cluster > -1:
-            models = self.clusters[cluster]
+            models = dict([(i, self[m]) for i, m in
+                           enumerate(self.clusters[cluster])])
         else:
             models = self.__models
         # Popen('mkdir -p {}'.format(tmp_path), shell=True).communicate()
@@ -523,32 +535,41 @@ class ThreeDeeModels(object):
         for cut in cutoffs:
             consistencies[cut] = calc_consistency(models, self.nloci, cut)
         
-        fig = plt.figure(figsize=(10, 4))
-        ax = fig.add_subplot(111)
-        ax.patch.set_facecolor('lightgrey')
-        ax.patch.set_alpha(0.4)
-        ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-        ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-        ax.set_axisbelow(True)
-        ax.minorticks_on() # always on, not only for log
-        # remove tick marks
-        ax.tick_params(axis='both', direction='out', top=False, right=False,
-                       left=False, bottom=False)
-        ax.tick_params(axis='both', direction='out', top=False, right=False,
-                       left=False, bottom=False, which='minor')
+        show = False
+        if not axe:
+            fig = plt.figure(figsize=(10, 4))
+            axe = fig.add_subplot(111)
+            show=True
+            axe.patch.set_facecolor('lightgrey')
+            axe.patch.set_alpha(0.4)
+            axe.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+            axe.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+            axe.set_axisbelow(True)
+            axe.minorticks_on() # always on, not only for log
+            # remove tick marks
+            axe.tick_params(axis='both', direction='out', top=False,
+                            right=False, left=False, bottom=False)
+            axe.tick_params(axis='both', direction='out', top=False,
+                            right=False, left=False, bottom=False,
+                            which='minor')
+        else:
+            fig = axe.get_figure()
         # plot!
         # colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred'][-len(cutoffs):]
         plots = []
         for i, cut in enumerate(cutoffs[::-1]):
-            plots += plt.plot(consistencies[cut], color='darkred',
+            plots += axe.plot(consistencies[cut], color='darkred',
                               alpha= 1 - i / float(len(cutoffs)))
-        plt.legend(plots, ['{} nm'.format(k) for k in cutoffs[::-1]],
+        axe.legend(plots, ['{} nm'.format(k) for k in cutoffs[::-1]],
                    fontsize='small')
-        plt.xlim((0, self.nloci))
-        plt.xlabel('Particle')
-        plt.ylabel('Consistency (%)')
-        plt.title('Model consistency')
-        plt.show()
+        axe.set_xlim((0, self.nloci))
+        axe.set_xlabel('Particle')
+        axe.set_ylabel('Consistency (%)')
+        axe.set_title('Model consistency')
+        if savefig:
+            fig.savefig(savefig)
+        elif show:
+            plt.show()
 
 
     def average_3d_dist(self, part1, part2, models=None, cluster=None,
@@ -677,13 +698,22 @@ class ThreeDeeModels(object):
             return path_f
 
 
-    def pickle_models(self, path_f):
+    def save_models(self, path_f):
         """
         Saves all models in pickle format (python object written to disk).
         
         :param path_f: path to file where to pickle
         """
+        to_save = {}
+        
+        to_save['models']        = self.__models
+        to_save['bad_models']    = self._bad_models
+        to_save['nloci']         = self.nloci
+        to_save['clusters']      = self.clusters
+        to_save['resolution']    = self.resolution
+        to_save['original_data'] = self._original_data
+        
         out = open(path_f, 'w')
-        dump(self, out)
+        dump(to_save, out)
         out.close()
 

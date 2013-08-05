@@ -9,7 +9,6 @@ from math     import log10
 from re       import sub
 from warnings import warn
 import numpy as np
-from subprocess import Popen, PIPE
 from pytadbit.eqv_rms_drms import rmsdRMSD_wrapper
 from itertools import combinations
 
@@ -468,7 +467,7 @@ def calinski_harabasz(scores, clusters):
             (within_cluster / (nmodels - len(cluster_list))))
     
 
-def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score'):
+def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score', one=False):
     """
     :param nloci: number of particles per model
     :param 200 dcutoff: distance in nanometer from which it is considered
@@ -500,7 +499,8 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score'):
         eqvs.append(eqv)
         nrms.append(rmsd)
         drms.append(drmsd)
-
+    if one:
+        return drms[0]
     max_drmsd = max(drms)
     max_rmsd  = max(nrms)
     scores = {}
@@ -517,14 +517,13 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score'):
 
 
 def augmented_dendrogram(clust_count=None, dads=None, energy=None, color=False,
-                         *args, **kwargs):
+                         axe=None, savefig=None, *args, **kwargs):
 
     from scipy.cluster.hierarchy import dendrogram
     fig = plt.figure()
     ddata = dendrogram(*args, **kwargs)
     plt.clf()
-    ax = fig.add_subplot(1, 1, 1)   # left, bottom, width, height:
-                                                # (adjust as necessary)
+    ax = axe if axe else fig.add_subplot(1, 1, 1)
     ax.patch.set_facecolor('lightgrey')
     ax.patch.set_alpha(0.4)
     ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
@@ -560,23 +559,23 @@ def augmented_dendrogram(clust_count=None, dads=None, energy=None, color=False,
                 except KeyError:
                     lw = 1.0
                 nrj = energy[leaves[i1]] if leaves[i1] in energy else maxnrj
-                plt.vlines(i1, d1-(difnrj-(nrj-minnrj)), d2, lw=lw,
-                           color=(c if color else 'grey'))
+                ax.vlines(i1, d1-(difnrj-(nrj-minnrj)), d2, lw=lw,
+                          color=(c if color else 'grey'))
                 if leaves[i1] in energy:
-                    plt.annotate("%.3g" % (leaves[i1]),
-                                 (i1, d1-(difnrj-(nrj-minnrj))),
-                                 xytext=(0, -8),
-                                 textcoords='offset points',
-                                 va='top', ha='center')
+                    ax.annotate("%.3g" % (leaves[i1]),
+                                (i1, d1-(difnrj-(nrj-minnrj))),
+                                xytext=(0, -8),
+                                textcoords='offset points',
+                                va='top', ha='center')
             leaves[(i[1] + i[2])/2] = dads[leaves[i[1]]]
     bot = -int(difnrj)/10000 * 10000
     plt.yticks([bot+i for i in xrange(0, -bot-bot/10, -bot/10)],
                ["{:,}".format(int(minnrj)/10000 * 10000  + i)
                 for i in xrange(0, -bot-bot/10, -bot/10)], size='small')
-    plt.ylabel('Minimum IMP objective function')
-    plt.xticks([])
-    plt.xlim((plt.xlim()[0] - 2, plt.xlim()[1]))
-    fig.suptitle("Dendogram of clusters of 3D models")
+    ax.set_ylabel('Minimum IMP objective function')
+    ax.set_xticks([])
+    ax.set_xlim((plt.xlim()[0] - 2, plt.xlim()[1]))
+    ax.figure.suptitle("Dendogram of clusters of 3D models")
     ax.set_title("Branch length proportional to model's energy\n" +
               "Branch width to the number of models in the cluster", size='small')
     plt.show()

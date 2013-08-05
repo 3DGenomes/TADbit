@@ -345,7 +345,7 @@ class Experiment(object):
         """
 
         :param start: start of the region to model (bin number)
-        :param end: end of the region to model (bin number)
+        :param end: end of the region to model (bin number, both inclusive)
         :param 10000 n_models: number of modes to generate.
         :param 1000 n_keep: number of models to keep (models with lowest energy).
            Usually 20% of the models generated are kept.
@@ -358,6 +358,7 @@ class Experiment(object):
         """
         from pytadbit import Chromosome
         matrix = self.get_hic_matrix()
+        end += 1
         new_matrix = [[] for _ in range(end-start)]
         for i in xrange(start, end):
             for j in xrange(start, end):
@@ -369,7 +370,27 @@ class Experiment(object):
         exp = tmp.experiments[0]
         exp.normalize_hic(method='bytot')
         exp.get_hic_zscores(remove_zeros=True)
-        return generate_3d_models(exp._zscores, resolution=self.resolution,
+        values = [[float('nan') for _ in xrange(exp.size)]
+                  for _ in xrange(exp.size)]
+        for i in xrange(exp.size):
+            # zeros are rows or columns having a zero in the diagonal
+            if i in exp._zeros:
+                continue
+            for j in xrange(i + 1, exp.size):
+                if j in exp._zeros:
+                    continue
+                if (not exp.hic_data[0][i * exp.size + j] 
+                    or not exp.hic_data[0][i * exp.size + j]):
+                    continue
+                try:
+                    values[i][j] = (exp.hic_data[0][i * exp.size + j] /
+                                    exp.wght[0][i * exp.size + j])
+                    values[j][i] = (exp.hic_data[0][i * exp.size + j] /
+                                    exp.wght[0][i * exp.size + j])
+                except ZeroDivisionError:
+                    values[i][j] = 0.0
+                    values[j][i] = 0.0
+        return generate_3d_models(exp._zscores, self.resolution, values=values,
                                   n_models=n_models, outfile=outfile,
                                   n_keep=n_keep, n_cpus=n_cpus, verbose=verbose,
                                   keep_all=keep_all, close_bins=close_bins)
