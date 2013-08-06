@@ -5,6 +5,7 @@
 """
 from pytadbit.imp.CONFIG import CONFIG, NROUNDS, STEPS, LSTEPS
 from pytadbit.imp.threedeemodels import ThreeDeeModels
+from pytadbit.imp.impmodel import IMPmodel
 from scipy import polyfit
 import math
 from cPickle import load, dump
@@ -143,6 +144,13 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
     return models, bad_models
 
 
+def _do_it(num, verbose):
+    """
+    Workaround in order pass to the multiprocessing queue a pickable object.
+    """
+    return generate_IMPmodel(num, verbose)
+
+
 def generate_IMPmodel(rand_init, verbose=False):
     """
     :param rand_init: random number kept as model key, for reproducibility.
@@ -179,6 +187,7 @@ def generate_IMPmodel(rand_init, verbose=False):
     # version: 847e65d44da7d06718bcad366b09264c818752d5
     model['pps']  = IMP.kernel.ParticlePairsTemp()
 
+    # CALL BIG FUNCTION
     addAllHarmonics(model, verbose=verbose)
 
     # Setup an excluded volume restraint between a bunch of particles
@@ -294,93 +303,6 @@ def generate_IMPmodel(rand_init, verbose=False):
             print (part.get_name(), part.get_value(x), part.get_value(y),
                    part.get_value(z), part.get_value(radius))
     return result
-
-
-class IMPmodel(dict):
-    """
-    A container for IMP modelling result.
-
-    It is a dictionnary with this keys:
-    
-    - log_energies: a list of enrgies found by IMP objective function
-    - energy: the last energy of previous list. The one associated to the
-       model, and used for model comparison.
-    - rand_init: The random initial value passed to IMP. An other
-       modelization with this same number should result in the same model
-    - x 
-    - y   }  3D coordinates of each particles (each of these is a list)
-    - z 
-    
-    """
-    def __repr__(self):
-        try:
-            return ('IMP model of {} particles with: \n' +
-                    ' - Final energy: {}\n' +
-                    ' - random initial value: {}\n' +
-                    ' - first coordinates:\n'+
-                    '        X      Y      Z\n'+
-                    '  {:>7}{:>7}{:>7}\n'+
-                    '  {:>7}{:>7}{:>7}\n'+
-                    '  {:>7}{:>7}{:>7}\n').format(
-                len(self['x']), self['energy'], self['rand_init'],
-                int(self['x'][0]), int(self['y'][0]), int(self['z'][0]),
-                int(self['x'][1]), int(self['y'][1]), int(self['z'][1]),
-                int(self['x'][2]), int(self['y'][2]), int(self['z'][2]))
-        except IndexError:
-            return ('IMP model of {} particles with: \n' +
-                    ' - Final energy: {}\n' +
-                    ' - random initial value: {}\n' +
-                    ' - first coordinates:\n'+
-                    '      X    Y    Z\n'+
-                    '  {:>5}{:>5}{:>5}\n').format(
-                len(self['x']), self['energy'], self['rand_init'],
-                self['x'][0], self['y'][0], self['z'][0])
-
-
-    def objective_function(self, log=False, smooth=True):
-        """
-        Plots the fall in energy through the Monte-Carlo search.
-        
-        :param False log: to plot in log scale
-        :param True smooth: to smooth the curve
-        
-        """
-        from matplotlib import pyplot as plt
-        from scipy.interpolate import spline
-        from numpy import linspace
-        # make it nice
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.patch.set_facecolor('lightgrey')
-        ax.patch.set_alpha(0.4)
-        ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-        ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-        ax.set_axisbelow(True)
-        ax.minorticks_on() # always on, not only for log
-        # remove tick marks
-        ax.tick_params(axis='both', direction='out', top=False, right=False,
-                       left=False, bottom=False)
-        ax.tick_params(axis='both', direction='out', top=False, right=False,
-                       left=False, bottom=False, which='minor')
-        # text
-        plt.xlabel('Iteration number')
-        plt.ylabel('Energy')
-        plt.title('Objective function')
-        # smooth
-        nrjz = self['log_energies'][1:]
-        if smooth:
-            xnew = linspace(0, len(nrjz), 10000)
-            nrjz_smooth = spline(range(len(nrjz)), nrjz, xnew,
-                                 order=3)
-            ax.plot(xnew, nrjz_smooth, color='darkred')
-        else:
-            ax.plot(nrjz, color='darkred')
-        # plot
-        ax.plot(nrjz, color='darkred', marker='o', alpha=.5, ms=4, ls='None')
-        # log
-        if log:
-            ax.set_yscale('log')
-        plt.show()
 
 
 def addAllHarmonics(model, verbose=False):
@@ -668,10 +590,4 @@ def kForce(freq):
     """
     return math.pow(math.fabs(freq), 0.5 )
 
-
-def _do_it(num, verbose):
-    """
-    Workaround in order pass to the multiprocessing queue a pickable object.
-    """
-    return generate_IMPmodel(num, verbose)
 

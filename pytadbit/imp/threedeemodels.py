@@ -3,17 +3,19 @@
 
 
 """
-from pytadbit.utils          import color_residues, calinski_harabasz
-from pytadbit.utils          import calc_eqv_rmsd, calc_consistency
-from pytadbit.utils          import augmented_dendrogram, plot_hist_box
-from cPickle                 import load, dump
-from subprocess              import Popen, PIPE
-from math                    import sqrt
-from numpy                   import median as np_median
-from numpy                   import std as np_std, log2
-from scipy.cluster.hierarchy import linkage, fcluster
-from scipy.stats             import spearmanr
-from matplotlib              import pyplot as plt
+from pytadbit.utils.tadmaths   import calinski_harabasz, calc_eqv_rmsd
+from pytadbit.utils.tadmaths   import calc_consistency
+from pytadbit.utils.extraviews import color_residues
+from pytadbit.utils.extraviews import augmented_dendrogram, plot_hist_box
+from cPickle                   import load, dump
+from subprocess                import Popen, PIPE
+from math                      import sqrt
+from numpy                     import median as np_median
+from numpy                     import std as np_std, log2
+from scipy.cluster.hierarchy   import linkage, fcluster
+from scipy.stats               import spearmanr
+from matplotlib                import pyplot as plt
+
 
 def load_threedeemodels(path_f):
     """
@@ -255,7 +257,7 @@ class ThreeDeeModels(object):
 
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     error=False, axe=None):
+                     error=False, axe=None, savefig=None):
         """
         Represents the number of nucletotide base pairs can be found in 1 nm of
            chromatine, this along strand modelled.
@@ -270,7 +272,6 @@ class ThreeDeeModels(object):
            estimation. By default 5 curves are drawn.
         :param False error: represent the error of the estimates.
         
-        :returns: a matplotlib Axe object.
         """
         if len(steps) > 6:
             raise Exception('Sorry not enough colors to do this.\n')
@@ -343,7 +344,10 @@ class ThreeDeeModels(object):
                        for k in steps] if error else []), fontsize='small')
         ax.set_xlim((0, self.nloci))
         ax.set_title('Chromatine density')
-        return ax
+        if savefig:
+            fig.savefig(savefig)
+        elif not axe:
+            plt.show()
 
 
     def get_contact_matrix(self, models=None, cluster=None, cutoff=150):
@@ -418,7 +422,7 @@ class ThreeDeeModels(object):
         matrix = self.get_contact_matrix(models, cluster, cutoff)
         show = False
         if not axe:
-            fig = plt.figure(figsize=(10, 10))
+            fig = plt.figure(figsize=(8, 6))
             axe = fig.add_subplot(111)
             show=True
         else:
@@ -460,11 +464,8 @@ class ThreeDeeModels(object):
         corr = spearmanr(model_matrix, self._original_data, axis=None)
         if not plot:
             return corr
-        show = False
         if not axe:
             fig = plt.figure(figsize=(15, 5.5))
-            axe = fig.add_subplot(111)
-            show = True
         else:
             fig = axe.get_figure()
         fig.suptitle('Correlation bettween normalized-real and modelled '
@@ -483,7 +484,7 @@ class ThreeDeeModels(object):
         
         if savefig:
             fig.savefig(savefig)
-        elif show:
+        elif not axe:
             plt.show()
 
 
@@ -573,7 +574,7 @@ class ThreeDeeModels(object):
 
 
     def average_3d_dist(self, part1, part2, models=None, cluster=None,
-                        plot=True, median=True):
+                        plot=True, median=True, axe=None, savefig=None):
         """
         Computes the distance between two particles. This is done by averaging
            between a set of given models.
@@ -614,10 +615,11 @@ class ThreeDeeModels(object):
                 return np_median(dists)
             else:
                 return dists
-        plot_hist_box(dists, part1, part2)
+        plot_hist_box(dists, part1, part2, axe, savefig)
 
 
-    def objective_function_model(self, model, log=False, smooth=True):
+    def objective_function_model(self, model, log=False, smooth=True, axe=None,
+                                 savefig=None):
         """
         Plots the fall in energy through the Monte-Carlo search.
 
@@ -625,7 +627,8 @@ class ThreeDeeModels(object):
         :param False log: to plot in log scale
         :param True smooth: to smooth the curve
         """
-        self[model].objective_function(log=log, smooth=smooth)
+        self[model].objective_function(log=log, smooth=smooth, axe=axe,
+                                       savefig=savefig)
         
 
     def write_cmm(self, model_num, directory, color=color_residues, rndname=True):

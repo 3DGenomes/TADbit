@@ -5,11 +5,14 @@
 """
 
 from pytadbit.parsers.hic_parser import read_matrix
-from pytadbit.utils import nicer, zscore, hic_filtering_for_modelling
+from pytadbit.utils.extraviews import nicer
+from pytadbit.utils.tadmaths import zscore
+from pytadbit.utils.hic_filtering import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser import parse_tads
-from pytadbit.imp.imp_model import generate_3d_models
+from pytadbit.imp.imp_modelling import generate_3d_models
 from warnings import warn
 from math import sqrt
+
 
 class Experiment(object):
     """
@@ -136,9 +139,11 @@ class Experiment(object):
             for j in xrange(0, size, fact):
                 val = 0
                 for k in xrange(fact):
-                    if i + k >= size: break
+                    if i + k >= size:
+                        break
                     for l in  xrange(fact):
-                        if j + l >= size: break
+                        if j + l >= size:
+                            break
                         val += self._ori_hic[0][(i + k) * size + j + l]
                 self.hic_data[0].append(val)
         # hic_data needs always to be stored as tuple
@@ -398,7 +403,8 @@ class Experiment(object):
 
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,
                                 diagonal=False, cutoff=None, header=False,
-                                true_position=False, uniq=True, remove_zeros=False):
+                                true_position=False, uniq=True,
+                                remove_zeros=False):
         """
         Creates a tab separated file with all interactions
         
@@ -430,7 +436,7 @@ class Experiment(object):
             for j in xrange(start, self.size):
                 if j in self._zeros:
                     continue
-                if not diagonal and i==j:
+                if not diagonal and i == j:
                     continue
                 if zscored:
                     try:
@@ -442,7 +448,8 @@ class Experiment(object):
                         continue
                     val = self._zscores[i][j]
                 elif normalized:
-                    val = self.hic_data[0][self.size*i+j] / self.wght[0][self.size*i+j]
+                    val = (self.hic_data[0][self.size*i+j] /
+                           self.wght[0][self.size*i+j])
                 else:
                     val = self.hic_data[0][self.size*i+j]
                 if remove_zeros and not val:

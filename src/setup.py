@@ -82,7 +82,8 @@ def main():
         description = 'Identify TADs in hi-C data',
         ext_modules = [pytadbit_module, eqv_rmsd_module],
         package_dir = {'pytadbit': PATH + '/../pytadbit'},
-        packages    = ['pytadbit', 'pytadbit.parsers', 'pytadbit.boundary_aligner',
+        packages    = ['pytadbit', 'pytadbit.parsers',
+                       'pytadbit.boundary_aligner', 'pytadbit.utils',
                        'pytadbit.tad_clustering', 'pytadbit.imp'],
         py_modules  = ["pytadbit"]
     )

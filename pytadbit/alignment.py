@@ -4,14 +4,14 @@
 
 """
 
-from pytadbit.utils import colorize
+from pytadbit.utils.extraviews import colorize
 from random import random, shuffle
 from sys import stdout
 from pytadbit.boundary_aligner.aligner import align
 try:
     from scipy.interpolate import interp1d
 except ImportError:
-    from pytadbit.utils import Interpolate as interp1d
+    from pytadbit.utils.tadmaths import Interpolate as interp1d
 
 
 class Alignment(object):
