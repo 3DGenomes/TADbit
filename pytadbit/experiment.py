@@ -12,6 +12,7 @@ from pytadbit.parsers.tad_parser import parse_tads
 from pytadbit.imp.imp_modelling import generate_3d_models
 from warnings import warn
 from math import sqrt
+from pytadbit.imp.CONFIG import CONFIG
 
 
 class Experiment(object):
@@ -346,20 +347,62 @@ class Experiment(object):
 
 
     def model_region(self, start, end, n_models=5000, n_keep=1000, n_cpus=1,
-                     verbose=False, keep_all=False, close_bins=1, outfile=None):
+                     verbose=False, keep_all=False, close_bins=1, outfile=None,
+                     config=CONFIG['dmel_01']):
         """
 
         :param start: start of the region to model (bin number)
         :param end: end of the region to model (bin number, both inclusive)
         :param 10000 n_models: number of modes to generate.
-        :param 1000 n_keep: number of models to keep (models with lowest energy).
+        :param 1000 n_keep: number of models to keep (models with lowest energy)
            Usually 20% of the models generated are kept.
-        :param False keep_all: whether to keep the discarded models or not (if True,
-           they will be stored under ThreeDeeModels.bad_models).
+        :param False keep_all: whether to keep the discarded models or not (if
+           True, they will be stored under ThreeDeeModels.bad_models).
         :param 1 close_bins: number of particle away a particle may be to be
            considered as a neighbor.
         :param n_cpus: number of CPUs to use for the optimization of models
         :param False verbose: verbosity
+        :param CONFIG['dmel_01'] config: a dictionary containing the main
+           parameters used to optimize models. Dictionary should contain the
+           keys 'kforce', 'lowrdist', 'maxdist', 'upfreq' and 'lowfreq'.
+           Examples can be seen by doing:
+           
+           ::
+           
+             from pytadbit.imp.CONFIG import CONFIG
+
+           where CONFIG is a dictionarry of dictionnaries to be passed to this
+           function:
+           
+           :::
+           
+             CONFIG = {
+              'dmel_01': {
+                  # use these paramaters with the Hi-C data from:
+                  'reference' : 'victor corces dataset 2013',
+             
+                  # Force applied to the restraints inferred to neighbor particles
+                  'kforce'    : 5,
+             
+                  # Minimum distance between two non-bonded particles
+                  'lowrdist'  : 100,
+             
+                  # Maximum experimental contact distance
+                  'maxdist'   : 600, # OPTIMIZATION: 500-1200
+             
+                  # Maximum thresholds used to decide which experimental values have to be
+                  # included in the computation of restraints. Z-score values bigger than upfreq
+                  # and less that lowfreq will be include, whereas all the others will be rejected
+                  'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
+             
+                  # Minimum thresholds used to decide which experimental values have to be
+                  # included in the computation of restraints. Z-score values bigger than upfreq
+                  # and less that lowfreq will be include, whereas all the others will be rejected
+                  'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+             
+                  }
+              }
+
         """
         from pytadbit import Chromosome
         matrix = self.get_hic_matrix()
@@ -398,7 +441,8 @@ class Experiment(object):
         return generate_3d_models(exp._zscores, self.resolution, values=values,
                                   n_models=n_models, outfile=outfile,
                                   n_keep=n_keep, n_cpus=n_cpus, verbose=verbose,
-                                  keep_all=keep_all, close_bins=close_bins)
+                                  keep_all=keep_all, close_bins=close_bins,
+                                  config=config)
         
 
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,

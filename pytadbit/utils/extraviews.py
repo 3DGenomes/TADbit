@@ -163,7 +163,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
     if axe:
         fig = axe.get_figure()
     else:
-        fig = plt.figure()
+        fig = plt.figure(figsize=(6, 6))
     bpAx = fig.add_axes([0.2, 0.7, 0.7, 0.2])   # left, bottom, width, height:
                                                 # (adjust as necessary)
     bpAx.patch.set_facecolor('lightgrey')

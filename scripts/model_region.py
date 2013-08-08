@@ -120,7 +120,7 @@ def get_options():
                       choices=['dmel_01'],
                       help='''Show a given configuration and exit (available:
                       dmel_01).''')
-    parser.add_option('--consdist', dest='consdist',
+    parser.add_option('--maxdist', dest='maxdist',
                       default=None,
                       help="""Maximum experimental contact distance""")
     parser.add_option('--kforce', dest='kforce',
@@ -159,7 +159,7 @@ def get_options():
 
     if not opts.param:
         perso = {}
-        perso['consdist'] = opts.consdist
+        perso['maxdist']  = opts.maxdist
         perso['kforce']   = opts.kforce
         perso['lowrdist'] = opts.lowrdist
         perso['upfreq']   = opts.upfreq

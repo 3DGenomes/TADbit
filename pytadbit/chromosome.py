@@ -451,6 +451,7 @@ class Chromosome(object):
         vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
         vmax = fun(max(xper.hic_data[0]))
         size = xper.size
+        plt.figure(figsize=(8, 8))
         if not axe:
             axe = plt.subplot(111)
         if tad:
@@ -467,6 +468,8 @@ class Chromosome(object):
         img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
                          interpolation="nearest")
         if not paint_tads:            
+            axe.set_ylim(0, len(matrix))
+            axe.set_xlim(0, len(matrix))
             if show:
                 plt.show()
             return img
@@ -487,6 +490,8 @@ class Chromosome(object):
                              (tad['end']   - j, tad['end']      ), color='k')
                     axe.plot((tad['end']      , tad['end']   - j),
                              (tad['start'] + j, tad['start']    ), color='k')
+        axe.set_ylim(0, len(matrix))
+        axe.set_xlim(0, len(matrix))
         if show:
             plt.show()
 
@@ -635,14 +640,16 @@ class Chromosome(object):
 
 class ExperimentList(list):
     """
-    :py:func:`list` of :class:`pytadbit.Experiment`
+    Inherist from python built in :py:func:`list`, modified for tadbit
+    :class:`pytadbit.Experiment`.
     
-    Modified getitem, setitem, and append in order to be able to search
-    experiments by index or by name.
+    Mainly, `getitem`, `setitem`, and `append` where modified in order to
+    be able to search experiments by index or by name, and to add experiments
+    using simply Chromosome.experiments.append(Experiment).
 
-    ExperimentList are linked to the Chromosome
+    The whole ExperimentList object is linked to a Chromosome instance
+    (:class:`pytadbit.Chromosome`).
 
-    linked to a :class:`pytadbit.Chromosome`
     """
     def __init__(self, thing, crm):
         super(ExperimentList, self).__init__(thing)

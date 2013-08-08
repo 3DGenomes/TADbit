@@ -32,13 +32,12 @@ PATH = path.abspath(path.split(path.realpath(__file__))[0])
 PYTHON_DEPENDENCIES = [
     ["numpy"     , "Numpy is required arrays, 1 dimensional interpolation and polynomial fit.", 1],
     ["scipy"     , "Required for clustering and interpolation.", 1],
-    ["matplotlib", "Required fot displaying plots.", 1],
+    ["matplotlib", "Required fot displaying plots.", 0],
     ["IMP"       , "Required for 3D modeling.", 0]]
 
 
 print "Checking dependencies..."
 missing = False
-maybies = False
 for mname, msg, ex in PYTHON_DEPENDENCIES:
     if not can_import(mname):
         print "  *", mname, "cannot be found in your python installation."
@@ -46,15 +45,14 @@ for mname, msg, ex in PYTHON_DEPENDENCIES:
         if ex:
             missing=True
         else:
-            maybies=True
+            print ("\n  However, you can still install Tadbit and " +
+                   "try to fix it afterwards.")
+            if ask( "  -> Do you want to continue with the installation?",
+                    ["y", "n"]) == "n":
+                exit()
 
 if missing:
     exit("Essential dependencies missing, please review and install.\n")
-if maybies:
-    print "\nHowever, you can still install Tadbit and try to fix it afterwards."
-    if ask( "Do you want to continue with the installation anyway?", 
-            ["y", "n"]) == "n":
-        exit()
 
 
 def main():

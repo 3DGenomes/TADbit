@@ -4,9 +4,14 @@
 
 """
 
-from matplotlib import pyplot as plt
 from scipy.interpolate import spline
-from numpy import linspace
+from numpy             import linspace
+from warnings          import warn
+
+try:
+    from matplotlib import pyplot as plt
+except ImportError:
+    warn('matplotlib not found\n')
 
 
 class IMPmodel(dict):

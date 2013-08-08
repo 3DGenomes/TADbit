@@ -7,7 +7,7 @@ from pytadbit.imp.CONFIG import CONFIG, NROUNDS, STEPS, LSTEPS
 from pytadbit.imp.threedeemodels import ThreeDeeModels
 from pytadbit.imp.impmodel import IMPmodel
 from scipy import polyfit
-import math
+from math import fabs, pow as power
 from cPickle import load, dump
 import multiprocessing as mu
 from sys import stdout
@@ -46,10 +46,48 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
        considered as a neighbor.
     :param n_cpus: number of CPUs to use for the optimization of models
     :param False verbose: verbosity
-    :param CONFIG['dmel_01'] config: a dictionary containing the main parameters
-       used to optimize models.
     :param None values: a list of list (equivalent to a square matrix) of the
        normalized Hi-C data.
+    :param CONFIG['dmel_01'] config: a dictionary containing the main
+       parameters used to optimize models. Dictionary should contain the
+       keys 'kforce', 'lowrdist', 'maxdist', 'upfreq' and 'lowfreq'.
+       Examples can be seen by doing:
+
+       ::
+
+         from pytadbit.imp.CONFIG import CONFIG
+
+           where CONFIG is a dictionarry of dictionnaries to be passed to this
+           function:
+
+       :::
+
+         CONFIG = {
+          'dmel_01': {
+              # use these paramaters with the Hi-C data from:
+              'reference' : 'victor corces dataset 2013',
+
+              # Force applied to the restraints inferred to neighbor particles
+              'kforce'    : 5,
+
+              # Minimum distance between two non-bonded particles
+              'lowrdist'  : 100,
+
+              # Maximum experimental contact distance
+              'maxdist'   : 600, # OPTIMIZATION: 500-1200
+
+              # Maximum thresholds used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values bigger than upfreq
+              # and less that lowfreq will be include, whereas all the others will be rejected
+              'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
+
+              # Minimum thresholds used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values bigger than upfreq
+              # and less that lowfreq will be include, whereas all the others will be rejected
+              'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+
+              }
+          }
 
     :returns: a TheeDeeModels object
 
@@ -68,7 +106,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     zsc_vals = [zscores[i][j] for i in zscores for j in zscores[i]]
     zmin = min(zsc_vals)
     zmax = max(zsc_vals)
-    SLOPE, INTERCEPT   = polyfit([zmin, zmax], [CONFIG['consdist'],
+    SLOPE, INTERCEPT   = polyfit([zmin, zmax], [CONFIG['maxdist'],
                                                 CONFIG['lowrdist']], 1)
     # get SLOPE and regression for neighbors of the z-score data
     global NSLOPE, NINTERCEPT
@@ -109,7 +147,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
         out.close()
     else:
         return ThreeDeeModels(NLOCI, models, bad_models, resolution,
-                              original_data=values)
+                              original_data=values, config=CONFIG)
 
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
@@ -258,7 +296,7 @@ def generate_IMPmodel(rand_init, verbose=False):
         # Calculate the score variation and check if the optimization
         # can be stopped or not
         if lownrj > 0:
-            deltaE = math.fabs((log_energies[-1] - lownrj) / lownrj)
+            deltaE = fabs((log_energies[-1] - lownrj) / lownrj)
         else:
             deltaE = log_energies[-1]
         if (deltaE < endLoopValue and endLoopCount == stopCount):
@@ -588,6 +626,6 @@ def kForce(freq):
     Function to assign to each restraint a force proportional to the underlying
     experimental value.
     """
-    return math.pow(math.fabs(freq), 0.5 )
+    return power(fabs(freq), 0.5 )
 
 

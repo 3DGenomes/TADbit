@@ -14,7 +14,12 @@ from numpy                     import median as np_median
 from numpy                     import std as np_std, log2
 from scipy.cluster.hierarchy   import linkage, fcluster
 from scipy.stats               import spearmanr
-from matplotlib                import pyplot as plt
+from warnings                  import warn
+
+try:
+    from matplotlib import pyplot as plt
+except ImportError:
+    warn('matplotlib not found\n')
 
 
 def load_threedeemodels(path_f):
@@ -28,7 +33,7 @@ def load_threedeemodels(path_f):
     return ThreeDeeModels(
         nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
         resolution=svd['resolution'], original_data=svd['original_data'],
-        clusters=svd['clusters'])
+        clusters=svd['clusters'], config=svd['config'])
 
 
 class ThreeDeeModels(object):
@@ -46,7 +51,7 @@ class ThreeDeeModels(object):
     """
 
     def __init__(self, nloci, models, bad_models, resolution,
-                 original_data=None, clusters=None):
+                 original_data=None, clusters=None, config=None):
         
         self.__models       = models
         self._bad_models    = bad_models
@@ -54,6 +59,7 @@ class ThreeDeeModels(object):
         self.clusters       = clusters or {}
         self.resolution     = float(resolution)
         self._original_data = original_data
+        self._config        = config
         
 
     def __getitem__(self, nam):
@@ -77,11 +83,16 @@ class ThreeDeeModels(object):
     def __repr__(self):
         return ('ThreeDeeModels with {} models (energy range: {}-{})\n' +
                 '   (corresponding to the best models out of {} models).\n' +
+                '  IMP modelling used this parameters:\n' +
+                '{}\n' + 
                 '  Models where clustered into {} clusters').format(
             len(self.__models),
             int(self.__models[0]['energy']),
             int(self.__models[len(self.__models) - 1]['energy']),
-            len(self.__models) + len(self._bad_models), len(self.clusters))
+            len(self.__models) + len(self._bad_models),
+            '\n'.join(['   - {:<12}: {}'.format(k, v)
+                       for k, v in self._config.iteritems()]),
+            len(self.clusters))
 
 
     def fetch_model_by_rand_init(self, rand_init, all_models=False):
@@ -715,6 +726,7 @@ class ThreeDeeModels(object):
         to_save['clusters']      = self.clusters
         to_save['resolution']    = self.resolution
         to_save['original_data'] = self._original_data
+        to_save['config']        = self._config
         
         out = open(path_f, 'w')
         dump(to_save, out)

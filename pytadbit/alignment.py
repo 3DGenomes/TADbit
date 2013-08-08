@@ -261,12 +261,21 @@ class TAD(dict):
     """
     Specific class of TADs, used only within Alignment objects.
     It is directly inheriting from python dict.
-    a TAD these keys: 'start', 'end', 'score', 'brk', 'pos', 'exp'
+    a TAD these keys:
+
+     - 'start': position of the TAD
+     - 'end': position of the TAD
+     - 'score': of the prediction of boundary
+     - 'brk': same as 'end'
+     - 'pos': in the alignment (column number)
+     - 'exp': Experiment this TAD belongs to
+     - 'index': of this TAD within all TADs in the Experiment
     
     """
     def __init__(self, thing, i, exp):
         super(TAD, self).__init__(thing)
-        self.update(dict((('pos', i),('exp', exp))))
+        idx = [t for t in exp.tads if exp.tads[t]['start']==self['start']][0]
+        self.update(dict((('pos', i),('exp', exp), ('index', idx))))
         
     def __repr__(self):
         return '>' + (str(int(self['end']) * self['exp'].resolution / 1000) \

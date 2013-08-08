@@ -1,4 +1,4 @@
-.. currentmodule:: pytadbit.imp.imp_model
+.. currentmodule:: pytadbit.imp.imp_modelling
 
 
 Generate a 3D models
@@ -6,6 +6,8 @@ Generate a 3D models
 
 .. autofunction:: generate_3d_models
 
+
+.. currentmodule:: pytadbit.imp.impmodel
 
 IMPmodel class
 --------------
