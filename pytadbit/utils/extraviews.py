@@ -147,7 +147,7 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                 for i in xrange(0, -bot-bot/10, -bot/10)], size='small')
     ax.set_ylabel('Minimum IMP objective function')
     ax.set_xticks([])
-    ax.set_xlim((plt.xlim()[0] - 2, plt.xlim()[1]) + 2)
+    ax.set_xlim((plt.xlim()[0] - 2, plt.xlim()[1] + 2))
     ax.figure.suptitle("Dendogram of clusters of 3D models")
     ax.set_title("Branch length proportional to model's objective function " +
                  "final value\n" +
