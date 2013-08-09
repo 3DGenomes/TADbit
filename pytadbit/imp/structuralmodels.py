@@ -22,7 +22,7 @@ except ImportError:
     warn('matplotlib not found\n')
 
 
-def load_strcturalmodels(path_f):
+def load_structuralmodels(path_f):
     """
     
     :param path: to the pickled StructuralModels object.
@@ -478,7 +478,16 @@ class StructuralModels(object):
         """
         model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
                                                cutoff=cutoff)
-        corr = spearmanr(model_matrix, self._original_data, axis=None)
+        oridata = []
+        moddata = []
+        for i in xrange(len(self._original_data)):
+            for j in xrange(i + 1, len(self._original_data)):
+                if not self._original_data[i][j] > 0:
+                    continue
+                oridata.append(self._original_data[i][j])
+                moddata.append(model_matrix[i][j])
+        # corr = spearmanr(model_matrix, self._original_data, axis=None)
+        corr = spearmanr(moddata, oridata)
         if not plot:
             return corr
         if not axe:
