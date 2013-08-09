@@ -274,7 +274,7 @@ class StructuralModels(object):
 
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     error=False, axe=None, savefig=None):
+                     error=False, axe=None, savefig=None, outfile=None):
         """
         Represents the number of nucletotide base pairs can be found in 1 nm of
            chromatine, this along strand modelled.
@@ -288,6 +288,8 @@ class StructuralModels(object):
         :param (1, 2, 3, 4, 5) steps: how many particles to group for the
            estimation. By default 5 curves are drawn.
         :param False error: represent the error of the estimates.
+        :param None outfile: path to a file where to save the density data
+           generated (1 column per step + 1 for particle number).
         
         """
         if type(steps) == int:
@@ -329,6 +331,15 @@ class StructuralModels(object):
                     errorn[-1].append(None)
                     errorp[-1].append(None)
         distsk = new_distsk
+        # write consistencies to file
+        if outfile:
+            out = open(outfile, 'w')
+            out.write('#Particle\t{}'.format('\t'.join([c for c in steps])))
+            for part in xrange(self.nloci):
+                out.write('{}\t{}\n'.format(part + 1, '\t'.join(
+                    [distsk[c][part] for c in steps])))
+            out.close()
+        # plot
         if axe:
             ax = axe
             fig = ax.get_figure()
@@ -361,7 +372,7 @@ class StructuralModels(object):
                           for k in steps] + (
                       ['+/- 2 standard deviations for {}'.format(k)
                        for k in steps] if error else []), fontsize='small',
-                  bbox_to_anchor=(1,1.1))
+                  bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((0, self.nloci))
         ax.set_title('Chromatine density')
         if savefig:
@@ -596,7 +607,7 @@ class StructuralModels(object):
             plots += axe.plot(consistencies[cut], color='darkred',
                               alpha= 1 - i / float(len(cutoffs)))
         axe.legend(plots, ['{} nm'.format(k) for k in cutoffs[::-1]],
-                   fontsize='small', bbox_to_anchor=(1,1.1))
+                   fontsize='small', loc='center left', bbox_to_anchor=(1, 0.5))
         axe.set_xlim((0, self.nloci))
         axe.set_xlabel('Particle')
         axe.set_ylabel('Consistency (%)')
