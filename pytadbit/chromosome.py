@@ -467,6 +467,12 @@ class Chromosome(object):
                       for j in xrange(size)]
         img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
                          interpolation="nearest")
+        cbar = axe.figure.colorbar(img)
+        cbar.ax.set_ylabel(('Log2 Hi-C count for chromosome {} experiment {}' +
+                            ' {}').format(self.name, xper.name,
+                                          'TAD: ' + str(tad) if tad else ''))
+        axe.set_xlabel('Genomic bin (resolution: {})'.format(xper.resolution))
+        axe.set_ylabel('Genomic bin (resolution: {})'.format(xper.resolution))
         if not paint_tads:            
             axe.set_ylim(0, len(matrix))
             axe.set_xlim(0, len(matrix))
