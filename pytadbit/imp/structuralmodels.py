@@ -387,7 +387,7 @@ class StructuralModels(object):
         :returns: matrix of contact counts
         """
         if models:
-            models=models
+            models = models
         elif cluster > -1:
             models = self.clusters[cluster]
         else:
@@ -420,7 +420,7 @@ class StructuralModels(object):
 
 
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
-                    savefig=None):
+                    savefig=None, outfile=None):
         """
         Draws a heatmap representing the proportion of times two particles are
            closer than a given cutoff.
@@ -437,10 +437,20 @@ class StructuralModels(object):
            redefine figure size, background etc...
         :param None savefig: path to a file where to save the image generated
            if None, the image will be shown using matplotlib GUI.
+        :param None outfile: path to a file where to save the contact map data
+           generated (1 column particle1, 1 for particle2, one with the
+           percentage of models where this particles are close in space
            
         """
         matrix = self.get_contact_matrix(models, cluster, cutoff)
         show = False
+        if outfile:
+            out = open(outfile, 'w')
+            out.write('#Particle1\tParticle2\tModels_percentage\n')
+            for i in xrange(len(matrix)):
+                for j in xrange(i+1, len(matrix)):
+                    out.write('{}\t{}\t{}\n'.format(i, j, matrix[i][j]))
+            out.close()
         if not axe:
             fig = plt.figure(figsize=(8, 6))
             axe = fig.add_subplot(111)
@@ -518,7 +528,7 @@ class StructuralModels(object):
 
 
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
-                          cluster=None, axe=None, savefig=None):
+                          cluster=None, axe=None, savefig=None, outfile=None):
         """
         Plots the consistency of a given set of models, along the chromatine
            fragment modelled. This plot can also be viewed as how well defined,
@@ -537,6 +547,8 @@ class StructuralModels(object):
            program
         :param '' tmsc: path to TMscore_consistency, by default it assumes that
            it is installed
+        :param None outfile: path to a file where to save the consistency data
+           generated (1 column per cutoff + 1 for particle number).
         
         """
         if models:
@@ -549,7 +561,15 @@ class StructuralModels(object):
         consistencies = {}
         for cut in cutoffs:
             consistencies[cut] = calc_consistency(models, self.nloci, cut)
-        
+        # write consistencies to file
+        if outfile:
+            out = open(outfile, 'w')
+            out.write('#Particle\t{}'.format('\t'.join([c for c in cutoffs])))
+            for part in xrange(self.nloci):
+                out.write('{}\t{}\n'.format(part + 1, '\t'.join(
+                    [consistencies[c][part] for c in cutoffs])))
+            out.close()
+        # plot
         show = False
         if not axe:
             fig = plt.figure(figsize=(11, 5))
@@ -650,74 +670,120 @@ class StructuralModels(object):
                                        savefig=savefig)
         
 
-    def write_cmm(self, model_num, directory, color=color_residues, rndname=True):
+    def write_cmm(self, directory, model_num=None, models=None, cluster=None,
+                  color=color_residues, rndname=True):
         """
         Writes cmm file read by Chimera (http://www.cgl.ucsf.edu/chimera).
+
+        **Note: ** If none of model_num, models or cluster parameter are set,
+        ALL models will be writen.
         
-        :param model: the number of the model to write
         :param directory: where to write the file (note: the name of the file
            will be model_1.cmm if model number is 1)
+        :param None model_num: the number of the model to write.
+        :param None models: A list of numbers corresponding to a given set of
+           models to be written.
+        :param None cluster: A number can be passed in order to write models
+           corresponding to the cluster number 'cluster'
+        :param True rndname: If True, file names will be formated as:
+           model.RND.cmm, where RND is the random initial value used by IMP to
+           generate this model. If False, the format will be:
+           model_NUM_RND.cmm where NUM is the rank of the model in terms of
+           objective function value.
         :param color_residues color: either a coloring function like
            :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
            tuples (as long as the number of particles). 
         """
-        try:
-            model = self.__models[model_num]
-        except KeyError:
-            model = self._bad_models[model_num]
-        if type(color) != list:
-            color = color(self.nloci)
-        out = '<marker_set name=\"{}\">\n'.format(model['rand_init'])
-        form = ('<marker id=\"{0}\" x=\"{1}\" y=\"{2}\" z=\"{3}\" r=\"{4}\" ' +
-                'g=\"{5}\" b=\"{6}\" radius=\"0.5\" note=\"{0}\"/>\n')
-        for n in xrange(self.nloci):
-            out += form.format(n + 1,
-                               model['x'][n], model['y'][n], model['z'][n],
-                               color[n][0], color[n][1], color[n][2])
-        form = ('<link id1=\"{}\" id2=\"{}\" r=\"1\" ' +
-                'g=\"1\" b=\"1\" radius=\"0.1\"/>\n')
-        for n in xrange(1, self.nloci):
-            out += form.format(n, n + 1)
-        out += '</marker_set>\n'
-
-        if rndname:
-            out_f = open('{}/model.{}.cmm'.format(directory, model['rand_init']), 'w')
+        if model_num:
+            models = [model_num]
+        elif models:
+            models = models
+        elif cluster > -1:
+            models = self.clusters[cluster]
         else:
-            out_f = open('{}/model_{}_rnd{}.cmm'.format(directory, model_num,
-                                                        model['rand_init']), 'w')
-        out_f.write(out)
-        out_f.close()
+            models = self.__models        
+        for model in models:
+            try:
+                model = self.__models[model_num]
+            except KeyError:
+                model = self._bad_models[model_num]
+            if type(color) != list:
+                color = color(self.nloci)
+            out = '<marker_set name=\"{}\">\n'.format(model['rand_init'])
+            form = ('<marker id=\"{0}\" x=\"{1}\" y=\"{2}\" z=\"{3}\"' +
+                    ' r=\"{4}\" g=\"{5}\" b=\"{6}\" ' +
+                    'radius=\"0.5\" note=\"{0}\"/>\n')
+            for n in xrange(self.nloci):
+                out += form.format(n + 1,
+                                   model['x'][n], model['y'][n], model['z'][n],
+                                   color[n][0], color[n][1], color[n][2])
+            form = ('<link id1=\"{}\" id2=\"{}\" r=\"1\" ' +
+                    'g=\"1\" b=\"1\" radius=\"0.1\"/>\n')
+            for n in xrange(1, self.nloci):
+                out += form.format(n, n + 1)
+            out += '</marker_set>\n'
+
+            if rndname:
+                out_f = open('{}/model.{}.cmm'.format(
+                    directory, model['rand_init']), 'w')
+            else:
+                out_f = open('{}/model_{}_rnd{}.cmm'.format(
+                    directory, model_num, model['rand_init']), 'w')
+            out_f.write(out)
+            out_f.close()
 
 
-    def write_xyz(self, model_num, directory, get_path=False, rndname=True):
+    def write_xyz(self, directory, model_num=None, models=None, cluster=None,
+                  get_path=False, rndname=True):
         """
         Writes xyz file containing the 3D coordinates of each particles.
+
+        **Note: ** If none of model_num, models or cluster parameter are set,
+        ALL models will be writen.
         
-        :param model: the number of the model to write
         :param directory: where to write the file (note: the name of the file
-           will be model_1.cmm if model number is 1)
+           will be model.1.xyz if model number is 1)
+        :param None model_num: the number of the model to write.
+        :param None models: A list of numbers corresponding to a given set of
+           models to be written.
+        :param None cluster: A number can be passed in order to write models
+           corresponding to the cluster number 'cluster'
+        :param True rndname: If True, file names will be formated as:
+           model.RND.xyz, where RND is the random initial value used by IMP to
+           generate this model. If False, the format will be:
+           model_NUM_RND.xyz where NUM is the rank of the model in terms of
+           objective function value.
         :param False get_path: whether to return, or not the full path where
            the file has been written
         """
-        try:
-            model = self[model_num]
-        except KeyError:
-            model = self._bad_models[model_num]
-        if rndname:
-            path_f = '{}/model.{}.xyz'.format(directory, model['rand_init'])
+        if model_num:
+            models = [model_num]
+        elif models:
+            models = models
+        elif cluster > -1:
+            models = self.clusters[cluster]
         else:
-            path_f = '{}/model_{}_rnd{}.xyz'.format(directory, model_num,
-                                                    model['rand_init'])
-        out = ''
-        form = "{:>12}{:>12}{:>12.3f}{:>12.3f}{:>12.3f}\n"
-        for n in xrange(self.nloci):
-            out += form.format('p' + str(n + 1), n + 1, model['x'][n],
-                               model['y'][n], model['z'][n])
-        out_f = open(path_f, 'w')
-        out_f.write(out)
-        out_f.close()
-        if get_path:
-            return path_f
+            models = self.__models        
+        for model in models:
+            try:
+                model = self[model_num]
+            except KeyError:
+                model = self._bad_models[model_num]
+            if rndname:
+                path_f = '{}/model.{}.xyz'.format(directory, model['rand_init'])
+            else:
+                path_f = '{}/model_{}_rnd{}.xyz'.format(directory, model_num,
+                                                        model['rand_init'])
+            out = ''
+            form = "{:>12}{:>12}{:>12.3f}{:>12.3f}{:>12.3f}\n"
+            for n in xrange(self.nloci):
+                out += form.format('p' + str(n + 1), n + 1, model['x'][n],
+                                   model['y'][n], model['z'][n])
+            out_f = open(path_f, 'w')
+            out_f.write(out)
+            out_f.close()
+            if get_path:
+                return path_f
 
 
     def save_models(self, path_f):
