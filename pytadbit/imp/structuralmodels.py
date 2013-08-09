@@ -147,6 +147,11 @@ class StructuralModels(object):
         
         """
         scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, var)
+        from distutils.spawn import find_executable
+        if not find_executable(mcl_bin):
+            print('\nWARNING: MCL not found in path using WARD clustering\n')
+            method = 'ward'
+            
         if method == 'ward':
 
             matrix = [[0.0 for _ in xrange(len(self))]
