@@ -144,19 +144,20 @@ class Alignment(object):
             out = title + '\n' if title else ''
         else:
             raise NotImplementedError('Only ansi and html ftype implemented.\n')
-        out += 'Alignment shown in Kb (%s experiments) (' % (len(xpers))
+        out += 'Alignment shown in %s Kb (%s experiments) (' % (
+            int(xpers[0].resolution / 1000), len(xpers))
         out += 'scores: {})\n'.format(' '.join(
             [colorize(x, x, ftype) for x in range(11)]))
         for i, xpr in enumerate(xpers):
             if not xpr.name in self.__keys:
                 continue
-            res = xpr.resolution / 1000
+            # res = xpr.resolution / 1000
             out += '{1:{0}}:'.format(length, names[i])
             for x in self[xpr.name]:
                 if x['end'] == 0.0:
                     out += '| ' + '-' * 4 + ' '
                     continue
-                cell = str(int(x['end'] * res))
+                cell = str(int(x['end'])) # * res
                 out += ('|' + ' ' * (6 - len(cell)) +
                         colorize(cell, x['score'], ftype))
             out += '\n'
