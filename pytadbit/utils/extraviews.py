@@ -83,7 +83,7 @@ def color_residues(n_part):
     return result
 
 
-def augmented_dendrogram(clust_count=None, dads=None, energy=None, color=False,
+def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                          axe=None, savefig=None, *args, **kwargs):
 
     from scipy.cluster.hierarchy import dendrogram
@@ -114,8 +114,8 @@ def augmented_dendrogram(clust_count=None, dads=None, energy=None, color=False,
     dist = ddata['icoord'][0][2] - ddata['icoord'][0][1]
     for i, x in enumerate(ddata['leaves']):
         leaves[dist*i + dist/2] = x
-    minnrj = min(energy.values())-1
-    maxnrj = max(energy.values())-1
+    minnrj = min(objfun.values())-1
+    maxnrj = max(objfun.values())-1
     difnrj = maxnrj - minnrj
     total = sum(clust_count.values())
     if not kwargs.get('no_plot', False):
@@ -131,10 +131,10 @@ def augmented_dendrogram(clust_count=None, dads=None, energy=None, color=False,
                     lw = float(clust_count[leaves[i1]])/total*10*len(leaves)
                 except KeyError:
                     lw = 1.0
-                nrj = energy[leaves[i1]] if leaves[i1] in energy else maxnrj
+                nrj = objfun[leaves[i1]] if leaves[i1] in objfun else maxnrj
                 ax.vlines(i1, d1-(difnrj-(nrj-minnrj)), d2, lw=lw,
                           color=(c if color else 'grey'))
-                if leaves[i1] in energy:
+                if leaves[i1] in objfun:
                     ax.annotate("%.3g" % (leaves[i1]),
                                 (i1, d1-(difnrj-(nrj-minnrj))),
                                 xytext=(0, -8),
@@ -149,8 +149,10 @@ def augmented_dendrogram(clust_count=None, dads=None, energy=None, color=False,
     ax.set_xticks([])
     ax.set_xlim((plt.xlim()[0] - 2, plt.xlim()[1]))
     ax.figure.suptitle("Dendogram of clusters of 3D models")
-    ax.set_title("Branch length proportional to model's energy\n" +
-              "Branch width to the number of models in the cluster", size='small')
+    ax.set_title("Branch length proportional to model's objective function " +
+                 "final value\n" +
+                 "Branch width to the number of models in the cluster",
+                 size='small')
     if savefig:
         fig.savefig(savefig)
     elif not axe:

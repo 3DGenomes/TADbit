@@ -208,7 +208,7 @@ class StructuralModels(object):
         matrix = [[0.0 for _ in clusters] for _ in clusters]
         clust_count = dict([(c, len([m for m in self if m['cluster']==c]))
                             for c in clusters])
-        energy = dict([(c, [m for m in self if m['cluster']==c][0]['objfun'])
+        objfun = dict([(c, [m for m in self if m['cluster']==c][0]['objfun'])
                        for c in clusters])
         for i, cl1 in enumerate(clusters):
             md1 = md2 = None
@@ -225,7 +225,7 @@ class StructuralModels(object):
                         break
                 matrix[i][j+i+1] = calc_eqv_rmsd({1: md1, 2: md2}, self.nloci,
                                                  var='drmsd', one=True)
-        return clust_count, energy, matrix
+        return clust_count, objfun, matrix
 
 
     def cluster_analysis_dendrogram(self, n_best_clusters=None, color=False,
@@ -246,10 +246,10 @@ class StructuralModels(object):
             self.cluster_models()
         if not n_best_clusters:
             n_best_clusters = len(self.clusters)
-        clust_count, energy, matrix = self._build_distance_matrix(n_best_clusters)
+        clust_count, objfun, matrix = self._build_distance_matrix(n_best_clusters)
         z = linkage(matrix)
-        minnrj = min(energy.values()) - 1
-        maxnrj = max(energy.values()) - 1
+        minnrj = min(objfun.values()) - 1
+        maxnrj = max(objfun.values()) - 1
         val = (maxnrj-minnrj)
         maxz = max([i[2] for i in z])
         for i in z:
@@ -263,7 +263,7 @@ class StructuralModels(object):
             dads[a] = i
             dads[b] = i
 
-        d = augmented_dendrogram(clust_count, dads, energy, color, 
+        d = augmented_dendrogram(clust_count, dads, objfun, color, 
                                  axe, savefig, z)
         return d
 

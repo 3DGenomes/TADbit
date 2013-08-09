@@ -173,11 +173,11 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
     models = {}
     bad_models = {}
     for i, (_, m) in enumerate(
-        sorted(results, key=lambda x: x[1]['energy'])[:n_keep]):
+        sorted(results, key=lambda x: x[1]['objfun'])[:n_keep]):
         models[i] = m
     if keep_all:
         for i, (_, m) in enumerate(
-        sorted(results, key=lambda x: x[1]['energy'])[n_keep:]):
+        sorted(results, key=lambda x: x[1]['objfun'])[n_keep:]):
             bad_models[i+n_keep] = m
     return models, bad_models
 
@@ -193,8 +193,8 @@ def generate_IMPmodel(rand_init, verbose=False):
     """
     :param rand_init: random number kept as model key, for reproducibility.
 
-    :returns: a model, that is a dictionary with the log of the energy
-       optimization, and the coordinates of each particles.
+    :returns: a model, that is a dictionary with the log of the objective
+       function value optimization, and the coordinates of each particles.
 
     """
     if verbose:
@@ -325,13 +325,13 @@ def generate_IMPmodel(rand_init, verbose=False):
     x, y, z, radius = (FloatKey("x"), FloatKey("y"),
                        FloatKey("z"), FloatKey("radius"))
 
-    result = IMPmodel({'log_energies': log_energies,
-                       'energy'      : log_energies[-1],
-                       'x'           : [],
-                       'y'           : [],
-                       'z'           : [],
-                       'radius'      : [],
-                       'rand_init'   : rand_init})
+    result = IMPmodel({'log_objfun' : log_energies,
+                       'objfun'     : log_energies[-1],
+                       'x'          : [],
+                       'y'          : [],
+                       'z'          : [],
+                       'radius'     : [],
+                       'rand_init'  : rand_init})
     for part in model['ps'].get_particles():
         result['x'].append(part.get_value(x))
         result['y'].append(part.get_value(y))

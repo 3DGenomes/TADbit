@@ -20,9 +20,9 @@ class IMPmodel(dict):
 
     It is a dictionnary with this keys:
     
-    - log_energies: a list of enrgies found by IMP objective function
-    - energy: the last energy of previous list. The one associated to the
-       model, and used for model comparison.
+    - log_objfun: a list of objective function values found by IMP
+    - objfun: the last objective function value of previous list. The one
+       associated to the model, and used for model comparison.
     - rand_init: The random initial value passed to IMP. An other
        modelization with this same number should result in the same model
     - x 
@@ -33,32 +33,32 @@ class IMPmodel(dict):
     def __repr__(self):
         try:
             return ('IMP model of {} particles with: \n' +
-                    ' - Final energy: {}\n' +
+                    ' - Final objective function value: {}\n' +
                     ' - random initial value: {}\n' +
                     ' - first coordinates:\n'+
                     '        X      Y      Z\n'+
                     '  {:>7}{:>7}{:>7}\n'+
                     '  {:>7}{:>7}{:>7}\n'+
                     '  {:>7}{:>7}{:>7}\n').format(
-                len(self['x']), self['energy'], self['rand_init'],
+                len(self['x']), self['objfun'], self['rand_init'],
                 int(self['x'][0]), int(self['y'][0]), int(self['z'][0]),
                 int(self['x'][1]), int(self['y'][1]), int(self['z'][1]),
                 int(self['x'][2]), int(self['y'][2]), int(self['z'][2]))
         except IndexError:
             return ('IMP model of {} particles with: \n' +
-                    ' - Final energy: {}\n' +
+                    ' - Final objective function value: {}\n' +
                     ' - random initial value: {}\n' +
                     ' - first coordinates:\n'+
                     '      X    Y    Z\n'+
                     '  {:>5}{:>5}{:>5}\n').format(
-                len(self['x']), self['energy'], self['rand_init'],
+                len(self['x']), self['objfun'], self['rand_init'],
                 self['x'][0], self['y'][0], self['z'][0])
 
 
     def objective_function(self, log=False, smooth=True,
                            axe=None, savefig=None):
         """
-        Plots the fall in energy through the Monte-Carlo search.
+        Plots the fall in objective function value through the Monte-Carlo search.
         
         :param False log: to plot in log scale
         :param True smooth: to smooth the curve
@@ -85,10 +85,10 @@ class IMPmodel(dict):
             fig = axe.get_figure()
         # text
         plt.xlabel('Iteration number')
-        plt.ylabel('Energy')
+        plt.ylabel('Objective function value')
         plt.title('Objective function')
         # smooth
-        nrjz = self['log_energies'][1:]
+        nrjz = self['log_objfun'][1:]
         if smooth:
             xnew = linspace(0, len(nrjz), 10000)
             nrjz_smooth = spline(range(len(nrjz)), nrjz, xnew,
