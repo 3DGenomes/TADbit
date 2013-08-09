@@ -471,7 +471,9 @@ class Chromosome(object):
         cbar.ax.set_ylabel('Log2 Hi-C interactions count')
         axe.set_title(('Chromosome {} experiment {}' +
                        ' {}').format(self.name, xper.name,
-                                     'TAD: ' + str(tad) if tad else ''))
+                                     'TAD[{}-{}]'.format(
+                                         int(tad['start']),
+                                         int(tad['end'])) if tad else ''))
         axe.set_xlabel('Genomic bin (resolution: {})'.format(xper.resolution))
         axe.set_ylabel('Genomic bin (resolution: {})'.format(xper.resolution))
         if not paint_tads:            

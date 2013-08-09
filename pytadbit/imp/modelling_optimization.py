@@ -4,12 +4,44 @@
 
 """
 from pytadbit.imp.imp_modelling import generate_3d_models
+import numpy as np
 
 from scipy.optimize import fmin, fmin_slsqp, fmin_tnc, fmin_l_bfgs_b, anneal
 
 global COUNT
 COUNT = 0
 
+def grid_search(upfreq_range='auto', lowfreq_range='auto', freq_step=0.1,
+                maxdist_range=(400, 1500), maxdist_step=100, zscores=None,
+                resolution=None, values=None, n_models=500,
+                n_keep=100, n_cpus=1):
+    count = 0
+    results = []
+    for lowfreq in np.arange(lowfreq_range[0], lowfreq_range[1] + freq_step,
+                             freq_step):
+        for upfreq in np.arange(upfreq_range[0], upfreq_range[1] - freq_step,
+                                freq_step):
+            for maxdist in xrange(maxdist_range[0], maxdist_range[1],
+                                  maxdist_step):
+                tmp = {'kforce'   : 5,
+                       'lowrdist' : 100,
+                       'maxdist'  : maxdist,
+                       'upfreq'   : upfreq,
+                       'lowfreq'  : lowfreq}
+                tdm = generate_3d_models(zscores, resolution, n_models, n_keep,
+                                         config=tmp, n_cpus=n_cpus,
+                                         values=values)
+                count += 1
+                print '%5s  ' % (count), upfreq, lowfreq, maxdist,
+                try:
+                    result = tdm.correlate_with_real_data(cutoff=200)[0]
+                    print result
+                    results.append((result, (upfreq, lowfreq, maxdist)))
+                except:
+                    print 'ERROR'
+    return results
+
+            
 def to_optimize(params, zscores, resolution, values, n_models, n_keep,
                 n_cpus=1):
     upfreq, lowfreq, maxdist = params
@@ -110,3 +142,6 @@ for i in xrange(exp2.size):
 
 optimize(exp2._zscores, exp.resolution, values)
 
+grid_search(upfreq_range=(0,1), lowfreq_range=(-1,0), freq_step=0.1,
+            zscores=exp2._zscores, resolution=exp2.resolution, values=values,
+            n_cpus=2, n_models=10, n_keep=2)

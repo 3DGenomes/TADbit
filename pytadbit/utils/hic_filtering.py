@@ -129,17 +129,21 @@ def filter_by_mean(matrx, draw_hist=False):
     xp = range(0, cols[-1])
     # check if the binning is correct
     # we want at list half of the bins with some data
-    while list(x).count(0) > len(x)/2:
-        cols = cols[:-1]
-        xmin = min(cols)
-        xmax = max(cols)
-        y = np.linspace(xmin, xmax, nbins)
-        hist = np.digitize(cols, y)
-        x = [sum(hist == i) for i in range(1, nbins + 1)]
-        if draw_hist:
-            plt.clf()
-            hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
-        xp = range(0, cols[-1])
+    try:
+        while list(x).count(0) > len(x)/2:
+            cols = cols[:-1]
+            xmin = min(cols)
+            xmax = max(cols)
+            y = np.linspace(xmin, xmax, nbins)
+            hist = np.digitize(cols, y)
+            x = [sum(hist == i) for i in range(1, nbins + 1)]
+            if draw_hist:
+                plt.clf()
+                hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
+            xp = range(0, cols[-1])
+    except ValueError:
+        warn('WARNING: Too few data to filter columns. SKIPPING...')
+        return []
     # find best polynomial fit in a given range
     for order in range(4, 14):
         z = np.polyfit(y, x, order)
