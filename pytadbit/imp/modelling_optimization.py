@@ -74,14 +74,14 @@ def optimize(zscores, resolution, values):
     #
     print [(0.,uzsc),(lzsc,0.),(400, 1500)]
     #
-    # print anneal(to_optimize, (uzsc/2, lzsc/2, 700),
-    #              args=(zscores, resolution,
-    #                    values, 500, 100, 8),
-    #              lower=(0, lzsc, 400), upper=(uzsc, 0, 2000), full_output=True)
-    print fmin_tnc(to_optimize, (uzsc/2, lzsc/2, 700), args=(zscores, resolution,
-                                                       values, 8, 4, 8),
-                   bounds=((0.,uzsc),(lzsc,0.),(400, 2000)),
-                   approx_grad=True, epsilon=.01)
+    print anneal(to_optimize, (uzsc/2, lzsc/2, 700),
+                 args=(zscores, resolution,
+                       values, 500, 100, 8),
+                 lower=(0, lzsc, 400), upper=(uzsc, 0, 2000), full_output=True)
+    # print fmin_tnc(to_optimize, (uzsc/2, lzsc/2, 700), args=(zscores, resolution,
+    #                                                    values, 500, 100, 8),
+    #                bounds=((0.,uzsc),(lzsc,0.),(400, 2000)),
+    #                approx_grad=True, epsilon=.01)
     # print fmin_l_bfgs_b(to_optimize, (uzsc/2, lzsc/2, 700), args=(zscores, resolution,
     #                                                               values, 8, 4, 8),
     #                     bounds=((0.,uzsc),(lzsc,0.),(100, 2000)),
