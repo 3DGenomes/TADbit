@@ -85,8 +85,8 @@ class IMPmodel(dict):
             fig = axe.get_figure()
         # text
         plt.xlabel('Iteration number')
-        plt.ylabel('Objective function value')
-        plt.title('Objective function')
+        plt.ylabel('IMP Objective Function Value')
+        plt.title('Model ' + str(self['rand_init']))
         # smooth
         nrjz = self['log_objfun'][1:]
         if smooth:

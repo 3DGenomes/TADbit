@@ -290,6 +290,8 @@ class StructuralModels(object):
         :param False error: represent the error of the estimates.
         
         """
+        if type(steps) == int:
+            steps = (steps, )
         if len(steps) > 6:
             raise Exception('Sorry not enough colors to do this.\n')
         colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred'][-len(steps):]
@@ -445,12 +447,12 @@ class StructuralModels(object):
         else:
             fig = axe.get_figure()
         ims = axe.imshow(matrix, origin='lower', interpolation="nearest")
-        axe.set_ylabel('Particles')
-        axe.set_xlabel('Particles')
+        axe.set_ylabel('Particle')
+        axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
         cbar.ax.set_yticklabels(['{:>3}%'.format(p) for p in range(0, 110, 10)])
         cbar.ax.set_ylabel('Percentage of models with particles closer than {} nm'.format(cutoff))
-        axe.set_title('Contact map consistency')
+        axe.set_title('Contact map')
         if savefig:
             fig.savefig(savefig)
         elif show:
@@ -592,7 +594,12 @@ class StructuralModels(object):
         axe.set_xlim((0, self.nloci))
         axe.set_xlabel('Particle')
         axe.set_ylabel('Consistency (%)')
-        axe.set_title('Model consistency')
+        if cluster:
+            axe.set_title('Cluster {}'.format(cluster))
+        elif len(models) == len(self):
+            axe.set_title('All clusters')
+        else:
+            axe.set_title('Selected models')
         if savefig:
             fig.savefig(savefig)
         elif show:

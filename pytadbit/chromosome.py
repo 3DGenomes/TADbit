@@ -451,7 +451,7 @@ class Chromosome(object):
         vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
         vmax = fun(max(xper.hic_data[0]))
         size = xper.size
-        plt.figure(figsize=(8, 8))
+        plt.figure(figsize=(8, 6))
         if not axe:
             axe = plt.subplot(111)
         if tad:
@@ -468,9 +468,10 @@ class Chromosome(object):
         img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
                          interpolation="nearest")
         cbar = axe.figure.colorbar(img)
-        cbar.ax.set_ylabel(('Log2 Hi-C count for chromosome {} experiment {}' +
-                            ' {}').format(self.name, xper.name,
-                                          'TAD: ' + str(tad) if tad else ''))
+        cbar.ax.set_ylabel('Log2 Hi-C interactions count')
+        axe.set_title(('Chromosome {} experiment {}' +
+                       ' {}').format(self.name, xper.name,
+                                     'TAD: ' + str(tad) if tad else ''))
         axe.set_xlabel('Genomic bin (resolution: {})'.format(xper.resolution))
         axe.set_ylabel('Genomic bin (resolution: {})'.format(xper.resolution))
         if not paint_tads:            
