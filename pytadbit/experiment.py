@@ -354,10 +354,11 @@ class Experiment(object):
         :param start: start of the region to model (bin number)
         :param end: end of the region to model (bin number, both inclusive)
         :param 10000 n_models: number of modes to generate.
-        :param 1000 n_keep: number of models to keep (models with lowest energy)
-           Usually 20% of the models generated are kept.
+        :param 1000 n_keep: number of models to keep (models with lowest
+           objective function final value). Usually 20% of the models generated
+           are kept.
         :param False keep_all: whether to keep the discarded models or not (if
-           True, they will be stored under ThreeDeeModels.bad_models).
+           True, they will be stored under StructuralModels.bad_models).
         :param 1 close_bins: number of particle away a particle may be to be
            considered as a neighbor.
         :param n_cpus: number of CPUs to use for the optimization of models

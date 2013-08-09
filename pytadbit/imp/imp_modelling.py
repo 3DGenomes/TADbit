@@ -4,7 +4,7 @@
 
 """
 from pytadbit.imp.CONFIG import CONFIG, NROUNDS, STEPS, LSTEPS
-from pytadbit.imp.threedeemodels import ThreeDeeModels
+from pytadbit.imp.structuralmodels import StructuralModels
 from pytadbit.imp.impmodel import IMPmodel
 from scipy import polyfit
 from math import fabs, pow as power
@@ -38,10 +38,10 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     :param resolution: of the Hi-C experiment, this will be the number of
        nucleotides in each particle of the models
     :param 10000 n_models: number of modes to generate.
-    :param 1000 n_keep: number of models to keep (models with lowest energy).
-       Usually 20% of the models generated are kept.
+    :param 1000 n_keep: number of models to keep (models with lowest objective
+       function final value). Usually 20% of the models generated are kept.
     :param False keep_all: whether to keep the discarded models or not (if True,
-       they will be stored under ThreeDeeModels.bad_models).
+       they will be stored under StructuralModels.bad_models).
     :param 1 close_bins: number of particle away a particle may be to be
        considered as a neighbor.
     :param n_cpus: number of CPUs to use for the optimization of models
@@ -146,14 +146,14 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
         dump((models, bad_models), out)
         out.close()
     else:
-        return ThreeDeeModels(NLOCI, models, bad_models, resolution,
-                              original_data=values, config=CONFIG)
+        return StructuralModels(NLOCI, models, bad_models, resolution,
+                                original_data=values, config=CONFIG)
 
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
     """
     Parallelize the
-    :func:`pytadbit.imp.imp_model.ThreeDeeModels.generate_IMPmodel`.
+    :func:`pytadbit.imp.imp_model.StructuralModels.generate_IMPmodel`.
 
     :param n_cpus: number of CPUs to use
     :param n_models: number of models to calculate.
