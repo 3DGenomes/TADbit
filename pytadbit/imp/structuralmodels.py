@@ -360,7 +360,8 @@ class StructuralModels(object):
                                                              's' if k else '')
                           for k in steps] + (
                       ['+/- 2 standard deviations for {}'.format(k)
-                       for k in steps] if error else []), fontsize='small')
+                       for k in steps] if error else []), fontsize='small',
+                  bbox_to_anchor=(1,1.28))
         ax.set_xlim((0, self.nloci))
         ax.set_title('Chromatine density')
         if savefig:
@@ -590,7 +591,7 @@ class StructuralModels(object):
             plots += axe.plot(consistencies[cut], color='darkred',
                               alpha= 1 - i / float(len(cutoffs)))
         axe.legend(plots, ['{} nm'.format(k) for k in cutoffs[::-1]],
-                   fontsize='small')
+                   fontsize='small', bbox_to_anchor=(1,1.28))
         axe.set_xlim((0, self.nloci))
         axe.set_xlabel('Particle')
         axe.set_ylabel('Consistency (%)')
