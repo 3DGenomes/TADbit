@@ -11,8 +11,8 @@ from scipy.optimize import fmin, fmin_slsqp, fmin_tnc, fmin_l_bfgs_b, anneal
 global COUNT
 COUNT = 0
 
-def grid_search(upfreq_range='auto', lowfreq_range='auto', freq_step=0.1,
-                maxdist_range=(400, 1500), maxdist_step=100, zscores=None,
+def grid_search(zscores=None, upfreq_range='auto', lowfreq_range='auto', freq_step=0.1,
+                maxdist_range=(400, 1500), maxdist_step=100,
                 resolution=None, values=None, n_models=500,
                 n_keep=100, n_cpus=1):
     count = 0

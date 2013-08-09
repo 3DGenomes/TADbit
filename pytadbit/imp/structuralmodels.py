@@ -333,7 +333,7 @@ class StructuralModels(object):
             ax = axe
             fig = ax.get_figure()
         else:
-            fig = plt.figure(figsize=(15, 5.5))
+            fig = plt.figure(figsize=(11, 5))
             ax = fig.add_subplot(111)
             ax.patch.set_facecolor('lightgrey')
             ax.patch.set_alpha(0.4)
@@ -361,7 +361,7 @@ class StructuralModels(object):
                           for k in steps] + (
                       ['+/- 2 standard deviations for {}'.format(k)
                        for k in steps] if error else []), fontsize='small',
-                  bbox_to_anchor=(1,1.28))
+                  bbox_to_anchor=(1,1.1))
         ax.set_xlim((0, self.nloci))
         ax.set_title('Chromatine density')
         if savefig:
@@ -546,28 +546,13 @@ class StructuralModels(object):
                            enumerate(self.clusters[cluster])])
         else:
             models = self.__models
-        # Popen('mkdir -p {}'.format(tmp_path), shell=True).communicate()
-        # lst_path = tmp_path + '.list'
-        # out = open(lst_path, 'w')
-        # for m in models:
-        #     out.write(self.write_xyz(m, tmp_path, get_path=True) + '\n')
-        # out.close()
-        # consistencies = {}
-        # for cut in cutoffs:
-        #     consistencies[cut] = []
-        #     out = Popen('{} -d {} -l {}'.format(tmsc, cut, lst_path),
-        #                 shell=True, stdout=PIPE).communicate()[0]
-        #     for line in out.split('\n'):
-        #         if not line.startswith('  '):
-        #             continue
-        #         consistencies[cut].append(float(line.split()[1]))
         consistencies = {}
         for cut in cutoffs:
             consistencies[cut] = calc_consistency(models, self.nloci, cut)
         
         show = False
         if not axe:
-            fig = plt.figure(figsize=(10, 4))
+            fig = plt.figure(figsize=(11, 5))
             axe = fig.add_subplot(111)
             show=True
             axe.patch.set_facecolor('lightgrey')
@@ -591,7 +576,7 @@ class StructuralModels(object):
             plots += axe.plot(consistencies[cut], color='darkred',
                               alpha= 1 - i / float(len(cutoffs)))
         axe.legend(plots, ['{} nm'.format(k) for k in cutoffs[::-1]],
-                   fontsize='small', bbox_to_anchor=(1,1.28))
+                   fontsize='small', bbox_to_anchor=(1,1.1))
         axe.set_xlim((0, self.nloci))
         axe.set_xlabel('Particle')
         axe.set_ylabel('Consistency (%)')
