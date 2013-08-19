@@ -69,307 +69,635 @@ Right now we assume that :math:`log_{10}(0) = 0`, in the calculation of the mean
 
 
 
-How to get ThreeDeeModels?
-==========================
+TADBit tutorial #1. From HiC data to TAD 3D models.
+===================================================
 
 
-Here we load a Chromosome object, from which we take one Experiment object ('exp'). 
 
-From this Experiment object we can model a given region using IMP.
+This tutorial will walk users in the necessary steps for modeling a 3D genomic domain from a Hi-C fly dataset (REF). First, we will load a "Chromosome" object from which we take one "Experiment" object ('exp'). From this Experiment object we can model a given region using IMP.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
+
+1. Loading data
+~~~~~~~~~~~~~~~
+
+
+Import the necessary libraries and set some variables
+
+*****
+    WE WILL HAVE TO TELL IN THE MANUAL HOW TO USE THIS TUTORIAL IN THEIR OWN COMPUTERS, WITH GRAPHS, ETC...
+    REMEMBER TO CHANGE THE NAMES OF THE LIBRARIES THAT YOU MAY HAVE CHANGED!
+*****
 
 ::
 
+    # Libraries
     from pytadbit import Chromosome
+    from pytadbit.tad_clustering.tad_cmo import optimal_cmo
+    from pytadbit.imp.structuralmodels import load_structuralmodels
+    from pytadbit.imp.CONFIG import CONFIG
 
 Definition of a Chromosome object
 
 ::
 
-    crm = '2R'
-    crmbit = Chromosome('2R')
+    crm = '2R' # Chromosome name
+    my_chrom = Chromosome(crm) # Create the chromosome object
 
-Load all experiments done on Drosophila's chromosome 2R (Hi-C matrices), and sum the Hi-C matrices (Corces' technical and biolobical replicates) into a single experiment
+Load all experiments done on Drosophila's chromosome 2R (Hi-C matrices), which includes Corces' technical and biolobical replicates. Then visualize the data 
+
 
 ::
 
-    for xnam in ['TR2', 'TR1', 'BR']:
-        crmbit.add_experiment(xnam, resolution=10000, 
-                              xp_handler='/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
+    # Load three different experimental data named TR1, TR2 and BR
+    datasets = ['TR1', 'TR2', 'BR']
+    for xnam in datasets:
+        my_chrom.add_experiment(xnam, 
+                                resolution=10000, 
+                                xp_handler='/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
+    my_chrom.experiments
     
-    exp = crmbit.experiments['TR1'] + crmbit.experiments['TR2'] + crmbit.experiments['BR']
+    # Visualize the experimental data for each of the three experiments
+    for xnam in datasets:
+        my_chrom.visualize(xnam)
 
-Finally run the IMP modelling on a given region (this region corresponds to the one Davide shows at meeting with Guillaume)
+
+.. parsed-literal::
+
+    /usr/local/lib/python2.7/dist-packages/pytadbit/chromosome.py:468: RuntimeWarning: divide by zero encountered in log2
+      img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
+
+.. image:: pictures/Tadbit_for_IMP_fransua_8_1.png
+
+.. image:: pictures/Tadbit_for_IMP_fransua_8_2.png
+
+.. image:: pictures/Tadbit_for_IMP_fransua_8_3.png
+
+
+2. Calculating TAD borders.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Calculate TAD borders for the three expriments
+
 
 ::
 
-    models = exp.model_region(190, 295, n_models=5000, n_keep=1000, n_cpus=8, keep_all=True)
+    # Identify TADs of the experimental data saved in my_chrom (about 20' execution time)
+    for xnam in datasets:
+        my_chrom.find_tad(xnam) # Finding TADs can take significant CPU time (by default it uses all available CPUs)
+        my_chrom.visualize(xnam, paint_tads=True)
 
+.. image:: pictures/Tadbit_for_IMP_fransua_11_0.png
 
-Playing around with models
---------------------------
+.. image:: pictures/Tadbit_for_IMP_fransua_11_1.png
 
+.. image:: pictures/Tadbit_for_IMP_fransua_11_2.png
 
-Models are stored in a dictionary which keys are number (the lowest the less energy).
-Thus to have a look to the best model we just type:
+Calculating TADs takes significant CPU time. Thus, it is a good idea to save the results and reload them when needed.
 
 ::
 
+    # Save the TAD definition for all experiments. To re-load a chromosome use the load_chromosome() function.
+    my_chrom.save_chromosome('my_chrom.tdb')
+
+Align the three experiments (TAD borders) and visualize it.
+
+::
+
+    # Align all experiments
+    my_chrom.align_experiments()
+    my_chrom.alignment
+
+
+.. parsed-literal::
+
+    {('BR',
+      'TR1',
+      'TR2'): Alignment of boundaries (length: 210, number of experiments: 3)}
+
+
+
+::
+
+    # Visualize the result of the alignment
+    ali = my_chrom.alignment[('BR','TR1','TR2')]
+    ali.write_alignment()
+
+
+.. raw:: html
+
+   <pre>Alignment shown in 10 Kb (3 experiments) (scores: <span class="ansiblue">0</span> <span class="ansiblue">1</span> <span class="ansiblue">2</span> <span class="ansicyan">3</span> 4 5</span> <span class="ansiyellow">6</span> <span class="ansiyellow">7</span> <span class="ansipurple">8</span> <span class="ansipurple">9</span> <span class="ansired">10</span>)
+   TR1:| ---- | ---- | ---- | ---- | ---- |   <span class="ansired">155</span>|   <span class="ansipurple">160</span>|   <span class="ansired">165</span>|   <span class="ansired">184</span>|   <span class="ansired">191</span>|   <span class="ansired">196</span>|   <span class="ansired">203</span>|   210|   <span class="ansired">215</span>|   <span class="ansired">226</span>|   <span class="ansired">237</span>|   <span class="ansired">251</span>|   <span class="ansipurple">263</span>|   <span class="ansipurple">269</span>|   <span class="ansiyellow">283</span>|   <span class="ansiyellow">289</span>| ---- | ---- |   <span class="ansired">334</span>|   <span class="ansired">341</span>|   <span class="ansiyellow">355</span>|   <span class="ansipurple">361</span>| ---- |   <span class="ansired">371</span>|   <span class="ansipurple">379</span>|   <span class="ansired">387</span>|   <span class="ansired">395</span>|   <span class="ansipurple">405</span>|   <span class="ansired">448</span>|   <span class="ansipurple">454</span>|   <span class="ansiyellow">461</span>| ---- |   <span class="ansired">477</span>|   <span class="ansired">483</span>|   <span class="ansiyellow">497</span>|   <span class="ansiyellow">502</span>|   <span class="ansired">508</span>|   <span class="ansired">517</span>|   <span class="ansiyellow">527</span>|   <span class="ansiyellow">532</span>|   <span class="ansired">542</span>|   <span class="ansired">547</span>|   <span class="ansired">553</span>|   <span class="ansiyellow">558</span>|   <span class="ansired">569</span>|   <span class="ansiyellow">587</span>|   <span class="ansiyellow">596</span>|   <span class="ansiyellow">601</span>|   <span class="ansired">629</span>|   <span class="ansired">644</span>|   <span class="ansired">652</span>|   <span class="ansired">669</span>|   <span class="ansipurple">678</span>|   700|   705|   <span class="ansiyellow">711</span>|   <span class="ansiyellow">716</span>|   <span class="ansiyellow">721</span>|   <span class="ansiyellow">728</span>|   <span class="ansiyellow">733</span>|   <span class="ansired">746</span>|   <span class="ansiyellow">752</span>|   <span class="ansiyellow">757</span>|   <span class="ansired">772</span>|   <span class="ansired">777</span>| ---- |   789|   <span class="ansired">794</span>|   <span class="ansired">802</span>|   <span class="ansired">808</span>|   <span class="ansired">817</span>|   <span class="ansired">822</span>|   <span class="ansired">830</span>|   <span class="ansipurple">835</span>|   <span class="ansipurple">849</span>|   <span class="ansired">856</span>|   <span class="ansired">864</span>|   <span class="ansired">872</span>|   878</span>|   <span class="ansired">883</span>|   <span class="ansired">892</span>|   <span class="ansipurple">901</span>|   <span class="ansipurple">906</span>|   <span class="ansipurple">912</span>|   <span class="ansiyellow">931</span>|   <span class="ansipurple">936</span>|   <span class="ansired">945</span>|   <span class="ansired">974</span>|   <span class="ansired">981</span>|   <span class="ansired">987</span>|  <span class="ansired">1003</span>|  1009</span>|  <span class="ansipurple">1014</span>|  <span class="ansired">1036</span>|  <span class="ansired">1050</span>|  <span class="ansired">1063</span>|  <span class="ansipurple">1069</span>|  <span class="ansipurple">1075</span>|  <span class="ansipurple">1084</span>|  1090|  1096</span>|  <span class="ansired">1102</span>|  <span class="ansired">1108</span>|  <span class="ansiyellow">1113</span>|  <span class="ansipurple">1120</span>|  <span class="ansired">1126</span>|  1139</span>|  <span class="ansiyellow">1145</span>|  1173</span>|  <span class="ansiyellow">1181</span>|  <span class="ansiyellow">1189</span>|  <span class="ansipurple">1197</span>|  <span class="ansipurple">1202</span>| ---- |  <span class="ansired">1210</span>|  <span class="ansired">1222</span>|  <span class="ansired">1246</span>|  <span class="ansired">1265</span>|  <span class="ansipurple">1271</span>|  <span class="ansiyellow">1277</span>|  <span class="ansired">1289</span>|  <span class="ansired">1298</span>|  <span class="ansiyellow">1326</span>|  <span class="ansiyellow">1331</span>|  1336|  <span class="ansiyellow">1342</span>|  <span class="ansipurple">1349</span>|  <span class="ansired">1354</span>|  <span class="ansired">1361</span>|  <span class="ansipurple">1367</span>|  <span class="ansired">1375</span>|  <span class="ansired">1401</span>|  <span class="ansired">1406</span>|  <span class="ansipurple">1427</span>|  <span class="ansipurple">1432</span>|  <span class="ansired">1449</span>|  <span class="ansiyellow">1454</span>|  <span class="ansiyellow">1459</span>|  <span class="ansired">1467</span>|  <span class="ansired">1474</span>|  <span class="ansired">1500</span>|  1510</span>|  <span class="ansipurple">1516</span>|  <span class="ansipurple">1525</span>|  <span class="ansipurple">1533</span>|  <span class="ansipurple">1538</span>|  1558|  1565|  <span class="ansired">1612</span>|  <span class="ansired">1621</span>|  <span class="ansired">1646</span>|  <span class="ansipurple">1652</span>|  <span class="ansiyellow">1680</span>|  <span class="ansiyellow">1685</span>|  <span class="ansired">1690</span>|  <span class="ansired">1696</span>|  <span class="ansipurple">1706</span>| ---- |  <span class="ansipurple">1717</span>|  <span class="ansired">1726</span>|  <span class="ansired">1736</span>|  <span class="ansired">1741</span>|  <span class="ansired">1748</span>|  <span class="ansiyellow">1754</span>|  <span class="ansired">1760</span>|  <span class="ansired">1795</span>|  <span class="ansiyellow">1800</span>|  <span class="ansired">1809</span>|  <span class="ansipurple">1838</span>|  <span class="ansired">1844</span>|  <span class="ansired">1849</span>|  <span class="ansired">1858</span>|  <span class="ansired">1868</span>|  <span class="ansiyellow">1875</span>|  <span class="ansipurple">1880</span>|  1885</span>|  1890</span>|  <span class="ansipurple">1895</span>|  <span class="ansired">1924</span>|  <span class="ansired">1929</span>|  <span class="ansired">1940</span>|  1946|  1953</span>|  <span class="ansiyellow">1958</span>|  <span class="ansiyellow">1963</span>|  <span class="ansired">1971</span>|  <span class="ansired">1978</span>|  <span class="ansired">1985</span>|  <span class="ansired">1994</span>|  <span class="ansired">1999</span>|  <span class="ansired">2007</span>|  <span class="ansired">2018</span>|  <span class="ansiyellow">2024</span>|  <span class="ansired">2040</span>|  2045</span>|  2052|  2057</span>|  <span class="ansipurple">2062</span>|  <span class="ansipurple">2067</span>|  <span class="ansiyellow">2075</span>|  <span class="ansired">2081</span>|  <span class="ansired">2089</span>|  <span class="ansired">2096</span>| ---- |  <span class="ansired">2114</span>
+   TR2:| ---- | ---- | ---- | ---- | ---- |   <span class="ansired">155</span>|   <span class="ansipurple">160</span>|   <span class="ansired">165</span>|   <span class="ansired">184</span>|   <span class="ansired">191</span>|   <span class="ansired">196</span>|   <span class="ansired">203</span>|   <span class="ansiyellow">210</span>|   <span class="ansired">215</span>| ---- |   <span class="ansipurple">237</span>|   <span class="ansired">251</span>|   <span class="ansipurple">263</span>|   <span class="ansipurple">269</span>|   <span class="ansired">283</span>|   <span class="ansired">289</span>|   <span class="ansipurple">294</span>|   <span class="ansipurple">299</span>|   <span class="ansired">334</span>|   <span class="ansired">341</span>|   355</span>|   <span class="ansired">361</span>|   <span class="ansiyellow">367</span>|   <span class="ansiyellow">372</span>|   <span class="ansired">379</span>|   <span class="ansired">387</span>|   <span class="ansipurple">395</span>|   <span class="ansipurple">405</span>|   <span class="ansired">448</span>|   <span class="ansired">454</span>|   <span class="ansipurple">461</span>| ---- |   <span class="ansired">477</span>|   <span class="ansired">483</span>|   497</span>|   502</span>|   <span class="ansired">508</span>|   <span class="ansired">517</span>|   527</span>|   532</span>|   <span class="ansired">542</span>|   <span class="ansired">547</span>|   <span class="ansired">553</span>|   <span class="ansipurple">558</span>|   <span class="ansired">569</span>|   <span class="ansipurple">587</span>|   <span class="ansiyellow">596</span>|   <span class="ansiyellow">601</span>|   <span class="ansired">629</span>|   <span class="ansired">644</span>|   <span class="ansired">652</span>|   <span class="ansired">669</span>|   <span class="ansipurple">678</span>|   703</span>| ---- |   <span class="ansipurple">711</span>|   <span class="ansipurple">716</span>|   721</span>|   <span class="ansipurple">728</span>|   <span class="ansipurple">733</span>|   <span class="ansired">746</span>|   <span class="ansired">752</span>|   <span class="ansired">757</span>|   <span class="ansired">772</span>|   <span class="ansired">777</span>| ---- |   789|   <span class="ansired">794</span>|   <span class="ansired">802</span>|   <span class="ansired">808</span>|   <span class="ansipurple">817</span>|   <span class="ansired">822</span>|   <span class="ansired">830</span>|   <span class="ansipurple">835</span>|   <span class="ansired">849</span>|   <span class="ansipurple">856</span>|   <span class="ansired">864</span>|   <span class="ansired">872</span>|   <span class="ansiyellow">878</span>|   <span class="ansired">883</span>|   <span class="ansired">892</span>|   <span class="ansiyellow">901</span>|   <span class="ansiyellow">906</span>|   <span class="ansiyellow">912</span>|   <span class="ansired">931</span>|   <span class="ansired">936</span>|   <span class="ansired">945</span>|   <span class="ansiyellow">973</span>|   <span class="ansired">981</span>|   <span class="ansired">987</span>|  <span class="ansired">1003</span>|  <span class="ansipurple">1009</span>|  <span class="ansired">1014</span>|  <span class="ansired">1036</span>|  <span class="ansired">1050</span>|  <span class="ansiyellow">1063</span>|  <span class="ansiyellow">1069</span>|  <span class="ansiyellow">1075</span>|  <span class="ansired">1084</span>| ---- |  1094|  <span class="ansired">1102</span>|  <span class="ansired">1108</span>|  <span class="ansipurple">1113</span>|  <span class="ansipurple">1120</span>|  <span class="ansired">1126</span>|  <span class="ansiyellow">1139</span>|  <span class="ansired">1145</span>|  <span class="ansiyellow">1174</span>|  1180</span>|  <span class="ansipurple">1189</span>|  <span class="ansipurple">1197</span>|  <span class="ansipurple">1202</span>| ---- |  <span class="ansired">1210</span>|  <span class="ansired">1222</span>|  <span class="ansired">1246</span>|  <span class="ansired">1265</span>|  <span class="ansiyellow">1271</span>|  1277</span>|  <span class="ansired">1289</span>|  <span class="ansired">1298</span>|  <span class="ansiyellow">1326</span>|  <span class="ansiyellow">1331</span>|  <span class="ansiyellow">1336</span>|  <span class="ansiyellow">1342</span>|  <span class="ansipurple">1349</span>|  <span class="ansired">1354</span>|  <span class="ansired">1361</span>|  <span class="ansiyellow">1367</span>|  <span class="ansired">1375</span>|  <span class="ansired">1401</span>|  <span class="ansired">1406</span>|  <span class="ansired">1427</span>|  <span class="ansired">1432</span>|  <span class="ansired">1449</span>|  <span class="ansipurple">1454</span>|  <span class="ansipurple">1459</span>|  <span class="ansired">1467</span>|  <span class="ansired">1474</span>|  <span class="ansired">1500</span>| ---- |  <span class="ansipurple">1516</span>|  <span class="ansired">1525</span>|  <span class="ansiyellow">1533</span>|  <span class="ansiyellow">1538</span>|  <span class="ansired">1559</span>|  <span class="ansired">1565</span>|  <span class="ansired">1612</span>|  <span class="ansired">1621</span>|  <span class="ansired">1646</span>|  <span class="ansired">1652</span>|  <span class="ansiyellow">1681</span>| ---- |  <span class="ansired">1690</span>|  <span class="ansired">1696</span>|  <span class="ansipurple">1706</span>| ---- |  <span class="ansipurple">1717</span>|  <span class="ansired">1726</span>|  <span class="ansired">1736</span>|  <span class="ansired">1741</span>|  <span class="ansired">1748</span>|  <span class="ansipurple">1754</span>|  <span class="ansired">1760</span>|  <span class="ansired">1795</span>|  <span class="ansiyellow">1801</span>|  <span class="ansiyellow">1806</span>|  <span class="ansipurple">1838</span>|  <span class="ansired">1844</span>|  <span class="ansired">1849</span>|  <span class="ansired">1858</span>|  <span class="ansired">1868</span>|  <span class="ansipurple">1875</span>|  <span class="ansired">1880</span>|  1885</span>|  1890</span>|  <span class="ansiyellow">1895</span>|  <span class="ansired">1924</span>|  <span class="ansired">1929</span>|  <span class="ansired">1940</span>|  1946</span>|  1953</span>|  1958</span>|  1963</span>|  <span class="ansired">1971</span>|  <span class="ansired">1978</span>|  <span class="ansired">1985</span>|  <span class="ansired">1994</span>|  <span class="ansired">1999</span>|  <span class="ansired">2007</span>|  <span class="ansired">2018</span>|  <span class="ansipurple">2024</span>|  <span class="ansired">2040</span>|  <span class="ansiyellow">2045</span>|  <span class="ansiyellow">2052</span>|  <span class="ansiyellow">2057</span>|  <span class="ansired">2062</span>|  <span class="ansired">2067</span>|  <span class="ansired">2075</span>|  <span class="ansired">2081</span>|  <span class="ansired">2089</span>|  <span class="ansired">2096</span>| ---- |  <span class="ansired">2114</span>
+   BR :|     <span class="ansired">7</span>|    <span class="ansiyellow">15</span>|    <span class="ansiyellow">23</span>|    <span class="ansired">28</span>|    <span class="ansired">33</span>|   <span class="ansired">155</span>|   <span class="ansired">160</span>|   <span class="ansired">165</span>|   <span class="ansired">184</span>|   <span class="ansired">191</span>|   <span class="ansired">196</span>|   <span class="ansired">203</span>| ---- |   <span class="ansired">215</span>|   <span class="ansired">229</span>|   <span class="ansired">237</span>|   <span class="ansipurple">251</span>|   <span class="ansired">263</span>|   <span class="ansired">269</span>|   <span class="ansired">283</span>|   <span class="ansired">289</span>|   <span class="ansired">294</span>| ---- |   <span class="ansired">334</span>|   <span class="ansired">341</span>| ---- |   <span class="ansired">361</span>| ---- |   <span class="ansiyellow">371</span>|   <span class="ansired">379</span>|   <span class="ansired">387</span>|   <span class="ansired">395</span>|   <span class="ansired">405</span>|   <span class="ansired">448</span>|   <span class="ansiyellow">454</span>|   <span class="ansicyan">460</span>|   <span class="ansiyellow">466</span>|   <span class="ansired">477</span>|   <span class="ansired">483</span>|   <span class="ansired">498</span>| ---- |   <span class="ansired">508</span>|   <span class="ansired">517</span>|   <span class="ansired">527</span>|   <span class="ansired">533</span>|   <span class="ansired">542</span>|   <span class="ansired">547</span>|   <span class="ansired">553</span>|   <span class="ansipurple">558</span>|   <span class="ansired">569</span>|   <span class="ansired">587</span>|   <span class="ansired">597</span>|   <span class="ansired">602</span>|   <span class="ansired">629</span>|   <span class="ansired">644</span>|   <span class="ansired">652</span>|   <span class="ansired">669</span>|   <span class="ansired">678</span>|   <span class="ansipurple">701</span>|   <span class="ansiyellow">706</span>|   <span class="ansipurple">711</span>|   <span class="ansired">716</span>|   <span class="ansiyellow">721</span>|   <span class="ansired">728</span>|   <span class="ansired">733</span>|   <span class="ansired">746</span>|   <span class="ansipurple">752</span>|   <span class="ansipurple">757</span>|   <span class="ansipurple">773</span>|   <span class="ansipurple">778</span>|   <span class="ansipurple">784</span>|   <span class="ansiyellow">789</span>|   <span class="ansiyellow">794</span>|   <span class="ansired">802</span>|   <span class="ansired">808</span>|   <span class="ansired">817</span>|   <span class="ansired">822</span>|   <span class="ansipurple">830</span>|   <span class="ansipurple">835</span>|   <span class="ansired">849</span>|   856</span>|   <span class="ansired">864</span>|   <span class="ansired">872</span>|   878</span>|   <span class="ansired">883</span>|   <span class="ansired">892</span>|   <span class="ansired">901</span>|   <span class="ansipurple">906</span>|   <span class="ansired">912</span>|   <span class="ansired">931</span>|   <span class="ansired">940</span>|   <span class="ansired">945</span>|   <span class="ansiyellow">974</span>|   <span class="ansired">981</span>|   <span class="ansired">987</span>|  <span class="ansired">1003</span>| ---- |  1014</span>|  <span class="ansired">1036</span>|  <span class="ansired">1050</span>|  <span class="ansired">1063</span>|  <span class="ansired">1069</span>|  <span class="ansired">1075</span>|  <span class="ansired">1084</span>|  1089|  <span class="ansiyellow">1094</span>|  <span class="ansired">1102</span>|  <span class="ansired">1108</span>|  <span class="ansired">1113</span>|  <span class="ansired">1120</span>|  <span class="ansired">1126</span>|  <span class="ansipurple">1139</span>|  <span class="ansired">1145</span>|  <span class="ansired">1173</span>|  <span class="ansired">1181</span>|  <span class="ansired">1189</span>| ---- |  <span class="ansipurple">1200</span>|  <span class="ansipurple">1205</span>|  <span class="ansired">1210</span>|  <span class="ansired">1222</span>|  <span class="ansired">1246</span>|  <span class="ansired">1265</span>|  <span class="ansired">1270</span>|  <span class="ansired">1275</span>|  <span class="ansiyellow">1289</span>|  <span class="ansired">1298</span>|  <span class="ansired">1325</span>|  <span class="ansired">1330</span>|  <span class="ansired">1335</span>|  <span class="ansired">1342</span>|  <span class="ansired">1349</span>|  <span class="ansired">1354</span>|  <span class="ansired">1361</span>|  1366</span>|  <span class="ansired">1375</span>|  <span class="ansiyellow">1401</span>|  <span class="ansired">1406</span>|  <span class="ansired">1427</span>|  <span class="ansired">1432</span>|  <span class="ansired">1449</span>|  <span class="ansired">1454</span>|  <span class="ansired">1459</span>|  <span class="ansired">1467</span>|  <span class="ansired">1474</span>|  <span class="ansired">1500</span>| ---- |  <span class="ansired">1516</span>|  <span class="ansiyellow">1525</span>|  <span class="ansired">1533</span>|  <span class="ansired">1538</span>|  1558</span>|  1565</span>|  <span class="ansired">1612</span>|  <span class="ansired">1621</span>|  <span class="ansipurple">1646</span>|  <span class="ansired">1652</span>|  <span class="ansiyellow">1681</span>| ---- |  <span class="ansired">1690</span>|  <span class="ansired">1696</span>|  <span class="ansiyellow">1704</span>|  <span class="ansiyellow">1709</span>|  <span class="ansired">1717</span>|  <span class="ansired">1726</span>|  <span class="ansired">1736</span>|  <span class="ansired">1741</span>|  <span class="ansired">1748</span>|  <span class="ansiyellow">1754</span>|  <span class="ansired">1760</span>|  <span class="ansired">1795</span>|  <span class="ansired">1800</span>| ---- | ---- |  <span class="ansired">1844</span>|  <span class="ansired">1849</span>|  <span class="ansired">1858</span>|  <span class="ansired">1868</span>|  <span class="ansiyellow">1875</span>|  <span class="ansiyellow">1880</span>|  1886| ---- |  <span class="ansired">1895</span>|  <span class="ansired">1924</span>|  <span class="ansired">1929</span>|  <span class="ansired">1940</span>|  <span class="ansiyellow">1946</span>|  <span class="ansiyellow">1953</span>|  <span class="ansiyellow">1958</span>|  <span class="ansiyellow">1963</span>|  <span class="ansired">1971</span>|  <span class="ansired">1978</span>|  <span class="ansired">1985</span>|  <span class="ansired">1994</span>|  <span class="ansired">1999</span>|  <span class="ansired">2007</span>|  <span class="ansiyellow">2018</span>|  <span class="ansiyellow">2024</span>|  <span class="ansiyellow">2040</span>|  2045</span>| ---- |  2057</span>|  <span class="ansipurple">2062</span>|  <span class="ansiyellow">2067</span>|  <span class="ansired">2074</span>|  <span class="ansired">2081</span>|  <span class="ansired">2089</span>|  <span class="ansired">2096</span>|  <span class="ansired">2106</span>|  <span class="ansired">2114</span>
+   
+   </pre>
+    
+
+The region between boundaries 405 and 448 (430Kb) has well conserved boundaries (9 & 10 scores) and will be selected for modeling
+
+::
+
+    # Get the TAD number for each of the selected TADs in each experiment using the brk (upper boundary)
+    brkp = 448
+    ntad = {}
+    ltad = {}
+    for xnam in datasets:
+        ltad[xnam] = my_chrom.experiments[xnam].tads
+        for tad_k, tad_v in ltad[xnam].iteritems():
+            for k, v in tad_v.iteritems():
+                if k == 'brk' and v == brkp:
+                    ntad[xnam] = tad_k
+                    print "Experiment "+ xnam + " has selected TAD " + str(ntad[xnam])
+
+
+.. parsed-literal::
+
+    Experiment TR1 has selected TAD 25
+    Experiment TR2 has selected TAD 27
+    Experiment BR has selected TAD 29
+
+
+::
+
+    # alternative way to do the same
+    # I know you should have passed a hard time to write your loop, but I think this way is more elegant
+    # and it works even if one of the TADs does not end exactly at 448 (it could be that the column is 448 448 449).
+    brkp = 448
+    ntad = {}
+    columns = ali.get_column(lambda x: x['brk'] == brkp, 
+                             min_num=1) # selection of columns having TADs ending at genomic bin '448'
+                                        # Can also be done by counting columns, this one is the 32: 
+                                        # >>> ali.get_column(32)
+    column= columns[0]                  # only one column
+    for tad in column[1]:               # second element of a column is the list of TADs (first is the column number)
+        ntad[tad['exp'].name] = tad['index']
+        print "Experiment "+ tad['exp'].name + " has selected TAD " + str(tad['index'])
+
+
+.. parsed-literal::
+
+    Experiment TR1 has selected TAD 25
+    Experiment TR2 has selected TAD 27
+    Experiment BR has selected TAD 29
+
+Compare all-against-all the selected tads
+
+::
+
+    # We can now compare the selected TADs
+    for i in range(0, len(datasets)):
+        for j in range(i+1, len(datasets)):
+            xnam1 = datasets[i]        
+            xnam2 = datasets[j]
+            hic1 = my_chrom.get_tad_hic(my_chrom.experiments[xnam1].tads[ntad[xnam1]],xnam1)
+            hic2 = my_chrom.get_tad_hic(my_chrom.experiments[xnam2].tads[ntad[xnam2]],xnam2)
+            align1, align2, score = optimal_cmo(hic1, hic2, max_num_v=8, long_nw=True, long_dist=True, method='frobenius')
+            print "{:>3}[{}] .vs. {:>3}[{}] CC: {:.3}".format(xnam1, ntad[xnam1], xnam2, ntad[xnam2], score['rho'])
+
+
+.. parsed-literal::
+
+    TR1[25] .vs. TR2[27] CC: 0.949
+    TR1[25] .vs.  BR[29] CC: 0.93
+    TR2[27] .vs.  BR[29] CC: 0.945
+
+All comparisons result in high correlation coefficients (>0.92) and thus, the three experiments for the selected TADs can be merged into a single experiment.
+
+::
+
+    # Sum all datasets into a single experimetal set
+    exp = my_chrom.experiments['BR'] + my_chrom.experiments['TR1'] + my_chrom.experiments['TR2']
+    my_chrom.experiments.append(exp)
+    exp
+
+
+.. parsed-literal::
+
+    Experiment BR+TR1+TR2 (resolution: 10Kb, TADs: None, Hi-C rows: 2115)
+
+
+We can re-calculate all TADs for the new sum of the experiments.
+
+::
+
+    # Re-calculate the TAD borders for the new dataset with the sum of the individual matrices
+    xnam = 'BR+TR1+TR2'
+    my_chrom.find_tad(xnam) # Finding TADs can take significant CPU time (by default it uses all available CPUs)
+    my_chrom.visualize(xnam, paint_tads=True)
+
+.. image:: pictures/Tadbit_for_IMP_fransua_25_0.png
+
+
+::
+
+    # Is the selected TAD also found in the new TADs from matrix joining the three experiments?
+    strp = 406 # starting point
+    endp = 448 # end point
+    ltad[xnam] = my_chrom.experiments[xnam].tads
+    for tad_k, tad_v in ltad[xnam].iteritems():
+        if tad_v['start'] == strp and tad_v['end'] == endp:
+            ntad[xnam] = tad_k
+            print "Experiment "+ xnam + " has selected TAD " + str(ntad[xnam])
+
+
+.. parsed-literal::
+
+    Experiment BR+TR1+TR2 has selected TAD 24
+
+The selected TAD (number 24) is also identified in the mix matrix from the three experiments. Lets visualize it before modeling its 3D structure.
+
+***** 
+    I ALSO WORRY FOR THE BLUE LINES THAT GO TO THE DIAGONAL. ARE THOSE CORRECT? MISSING VALUES? => yes, data is a bit wired...
+*****
+
+::
+
+    # Visualize a specific TAD
+    my_tad = my_chrom.experiments[xnam].tads[ntad[xnam]]
+    my_chrom.visualize(xnam, tad=my_tad)
+
+.. image:: pictures/Tadbit_for_IMP_fransua_28_0.png
+
+
+.. parsed-literal::
+
+    <matplotlib.image.AxesImage at 0x3f5f290>
+
+
+
+3. Model the 3D structure of a selected TAD
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Run 3D modelling on the selected TAD. Models are stored in a dictionary which keys are number (ordered by the IMP Objective Function, smaller to larger). All models are based on specific sets of experimental data for which TADBit modeling parameters need to be optimized (see Tutorial #2). Optimizing the parameters takes significant CPU time and thus we have pre-optimized them for the datasets in this tutorial. The specific parameters are stored in a python dictionary called CONFIG. The one used in this tutorial are CONFIG[‘dmel_01’].
+
+******
+    IF I USE ONLY 406 to 448 I GET AN ERROR ON nmin, SEEMS THAT CANNNOT MODEL SMALL REGIONS? TO CORRECT! => indeed it is the step of "polynomial-fit" filtering that was craching, this steps needs a minimum of columns to be able to fit something... This step is now skipped when number of columns is too low.
+****** 
+
+::
+
+    # 3D modeling configuration.
+    CONFIG
+
+
+.. parsed-literal::
+
+    {'dmel_01': {'kforce': 5,
+      'lowfreq': -0.7,
+      'lowrdist': 100,
+      'maxdist': 600,
+      'reference': 'victor corces dataset 2013',
+      'upfreq': 0.3}}
+
+
+
+::
+
+    # Build 3D models based on the HiC data. This is done by IMP. 
+    models = exp.model_region(406, 448, n_models=500, n_keep=100, n_cpus=8, keep_all=True, config=CONFIG['dmel_01'])
     print models
 
 
 .. parsed-literal::
 
-    ThreeDeeModels with 1000 models (energy range: 1879749-1937736)
-       (corresponding to the best models out of 5000 models).
+    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:145: UserWarning: WARNING: Too few data to filter columns. SKIPPING...
+      warn('WARNING: Too few data to filter columns. SKIPPING...')
+
+
+.. parsed-literal::
+
+    StructuralModels with 100 models (objective function range: 922965 - 932558)
+       (corresponding to the best models out of 500 models).
+      IMP modelling used this parameters:
+       - maxdist     : 600
+       - upfreq      : 0.3
+       - reference   : victor corces dataset 2013
+       - kforce      : 5
+       - lowfreq     : -0.7
+       - lowrdist    : 100
       Models where clustered into 0 clusters
 
-Note that if, at this point, you want to keep only 500 models, just do:
+One can select parts of the models by:
 
 ::
 
-    models.define_best_models(500)
+    # Select top 10 models
+    models.define_best_models(10)
+    print "Lowest 10 IMP OF models:" 
+    print models
+    
+    # Select top 50 models
+    models.define_best_models(100)
+    print "Lowest 50 IMP OF models:" 
     print models
 
 
 .. parsed-literal::
 
-    ThreeDeeModels with 500 models (energy range: 1879749-1921292)
-       (corresponding to the best models out of 5000 models).
+    Lowest 10 IMP OF models:
+    StructuralModels with 10 models (objective function range: 922965 - 923673)
+       (corresponding to the best models out of 500 models).
+      IMP modelling used this parameters:
+       - maxdist     : 600
+       - upfreq      : 0.3
+       - reference   : victor corces dataset 2013
+       - kforce      : 5
+       - lowfreq     : -0.7
+       - lowrdist    : 100
+      Models where clustered into 0 clusters
+    Lowest 50 IMP OF models:
+    StructuralModels with 100 models (objective function range: 922965 - 932558)
+       (corresponding to the best models out of 500 models).
+      IMP modelling used this parameters:
+       - maxdist     : 600
+       - upfreq      : 0.3
+       - reference   : victor corces dataset 2013
+       - kforce      : 5
+       - lowfreq     : -0.7
+       - lowrdist    : 100
       Models where clustered into 0 clusters
 
-And back to the thousand models:
+Thus for each model is stored, the IMP OF, the random initial number used with IMP, the coordinates xyz and the log of the search for the best conformation (that is, the one that best satisfies the input restraints or with the lowest IMP OF). Data from a model can be retreived:
+
 
 ::
 
-    models.define_best_models(1000)
-    print models
-
-
-.. parsed-literal::
-
-    ThreeDeeModels with 1000 models (energy range: 1879749-1937736)
-       (corresponding to the best models out of 5000 models).
-      Models where clustered into 0 clusters
-
-Thus for each model is stored, the final energy, the random initial number used with IMP, the coordinates xyz and the log of the search for the best conformation lowering the energy.
-
-Each can be reached like this:
-
-
-::
-
+    # Get the data for the lowest IMP OF model (number 0) in the set of models
     model = models[0]
     print model
 
 
-
 .. parsed-literal::
 
-    IMP model of 106 particles with: 
-     - Final energy: 1879749.89564
-     - random initial value: 3730
+    IMP model of 43 particles with: 
+     - Final objective function value: 922965.537593
+     - random initial value: 479
      - first coordinates:
             X      Y      Z
-         -511    234   -325
-         -434    217   -254
-         -497    253   -208
+          119   -500    282
+           37   -476    212
+          136   -459    187
     
 
+One can also plot the IMP OF as function of the iteration during simulation.
 
-Objective function
-------------------
-
-
-We want to plot the objective function for this best model:
-
-::
-
-    models.objective_function_model(0, log=False, smooth=False)
-
-.. image:: pictures/Tadbit_for_IMP_notebook_20_0.png
-
-... perhaps nicer with log (note that it can be done using the IMPmodel object directely):
+***** 
+    NEED TO SAVE THE IMP OF DATA INTO A FILE. => what is IMP data? always, or on demand?
+*****
 
 ::
 
-    model = models[0]
+    # Get the IMP OF of the stored model in "model"
     model.objective_function(log=True, smooth=True)
 
-.. image:: pictures/Tadbit_for_IMP_notebook_22_0.png
+.. image:: pictures/Tadbit_for_IMP_fransua_38_0.png
 
+One important aspect is to identfy whether the set of models has a good correlation with the input HiC data. This can be done with a single function that affects the models.
 
-Clustering models
------------------
-
-
-First we run the clustering. The result of this will be stored inside the ThreeDeeModels object.
+***** 
+    WE NEED TO SEE EXACTLY HOW YOU CALCULATE THE CC... THE TWO PLOTS DO NOT SEEM THAT DIFFERENT FOR SUCH POOR CC (0.50)
+    WHAT DO YOU DO WITH THE WHITE (I GUESS MISSING PARTICLES)? DO YOU USE THEM TO CALCULATE THE CC?
+    YOU CALCULATE THE CC FROM THE COUNT DATA? THE Z-SCORES? WHAT EXACTLY?
+*****
 
 ::
 
-    models.cluster_models(fact=0.75, dcutoff=200)
+    # Calculate the correlation coefficient between the selected models and the original HiC matrix
+    models.correlate_with_real_data(models=range(50), plot=True, cutoff=300)
+
+.. image:: pictures/Tadbit_for_IMP_fransua_40_0.png
+
+
+4. Model analysis
+~~~~~~~~~~~~~~~~~
+
+
+
+4.1 Model clustering
+^^^^^^^^^^^^^^^^^^^^
+
+
+First we are going to cluster the 3D models based on their structural similarity. Clusters are numbered from larger (more models) to smallest (less models).
+
+::
+
+    # Cluster models based on structural similarity
+    models.cluster_models(fact=0.90, dcutoff=200)
     print models.clusters
 
 
 .. parsed-literal::
 
-    {0: [668, 652, 381, 392, 241, 526, 259, 938, 722, 452, 203, 247, 648, 678, 588, 285, 309, 204, 25, 228, 412, 579, 36, 94, 521, 937, 642, 68, 834, 44, 156, 192, 637, 543, 359, 566, 415, 132, 15, 75, 22, 761, 933, 736, 48, 710, 619, 618, 323, 251, 961, 402, 211, 338, 812, 134, 666, 10, 691, 321, 929, 268, 744, 962, 375, 634, 39, 240, 63, 187, 536, 93, 943, 65, 930, 106, 728, 472, 781, 73, 789, 147, 641, 814, 747, 274, 502, 258, 433, 265, 593, 510, 442, 313, 230, 218, 893, 165, 467, 679, 575, 746, 559, 126, 84, 102, 31, 771, 14, 674, 349, 6, 280, 330, 580, 66, 12, 90, 143, 277, 740, 62, 772, 249, 196, 286, 606, 537, 382, 661, 115, 650, 136, 826, 810, 103, 177, 127, 380, 578, 534, 29, 96, 9, 122, 109, 158, 799, 107, 361, 123, 468, 611, 208, 515, 24, 743, 224, 358, 289, 492, 43, 603, 699, 188, 21, 408, 369, 72, 599, 785, 809, 617, 2, 205, 28, 16, 546, 184, 124, 428, 128, 401, 655, 987, 186, 315, 133, 848, 889, 74, 261, 105, 297, 52, 288, 255, 675, 151, 995, 92, 209, 33, 589, 758, 976, 35, 920, 584, 342, 30, 217, 164, 498, 973, 458, 83, 544, 570, 254, 387, 901, 142, 406, 873, 195, 999, 226, 329, 114, 61, 978, 202, 801, 326, 257, 667, 245, 104, 215, 307, 311, 372, 173, 528, 750, 518, 191, 221, 154, 811, 379, 767, 239, 276, 253, 807, 531, 70, 1, 459, 393, 335, 216, 613, 8, 185, 519, 595, 76, 377, 941, 200, 716, 235, 429, 182, 576, 922, 101, 272, 145, 654, 841, 163, 169, 573, 854, 760, 82, 720, 969, 491, 87, 404, 175, 141, 328, 275, 886, 7, 594, 194, 57, 564, 378, 113, 673, 60, 936, 4, 213, 869, 538, 649, 532, 737, 110, 118, 440, 556, 225, 797, 150, 582, 513, 91, 38, 514, 778, 353, 490, 19, 947, 991, 703, 496, 181, 846, 117, 201, 0, 548, 111, 149, 69, 5, 304, 131, 541, 301, 50, 453, 368, 140, 487, 157, 100, 47, 499, 706, 231, 162, 718, 193, 627, 299, 112, 59, 263, 665, 233, 282, 721, 374, 715, 899, 37, 659, 171, 561, 524, 927, 478, 489, 322, 436, 152, 242, 409, 765, 138, 210, 267, 945, 336, 770, 121, 612, 658, 333, 495, 714, 45, 905, 227, 46, 863, 161, 180, 430, 78, 99, 287, 689, 364, 745, 116, 80, 176, 27, 733, 248, 18, 77, 605, 444, 539, 455, 817, 878, 574, 621, 967, 974, 523, 273, 139, 602, 206, 189, 530, 3, 108, 610, 640, 585, 89, 816, 739, 651, 148, 558, 120, 67, 413, 693, 129, 719, 463, 137, 405, 705, 984, 704, 497, 271, 135, 229, 512, 821, 308, 23, 725, 316, 944, 663, 422, 331, 199, 507, 643, 895, 54, 319, 670, 238, 909, 632, 17, 503, 281, 85, 457, 894, 825, 802, 557, 607, 13, 278, 178, 97, 815, 435, 155, 912, 975, 577, 780, 592, 174, 681, 399, 533, 88, 168, 318, 34, 237, 840, 397, 292, 79, 119, 806, 81, 146, 98, 813, 327, 86, 389, 232, 565, 394, 339, 71, 471, 236, 183, 266, 58, 493, 172, 403, 348, 295, 207, 64, 11, 214, 879, 954, 517, 243, 615, 465, 932, 42, 851, 166, 798, 786, 779, 939, 20, 223, 963, 695, 494, 542, 994, 125, 754, 32, 828, 332, 437, 294, 40, 144, 800, 748, 41, 306, 981, 500, 153, 550, 234, 179, 159, 293, 949, 449, 190, 49, 260, 283, 198, 856, 130, 540, 395, 170, 445, 959, 522, 552, 376, 466, 55, 385, 484, 355, 529, 167, 777, 26, 160, 95, 344, 290, 598, 360, 244, 384, 246, 197, 562, 587, 888, 370, 793, 581, 662, 337, 365, 256, 764, 485, 916, 269], 1: [866, 735, 906, 597, 907, 795, 924, 923, 983, 711, 877, 373, 824, 325, 919, 858, 864, 320, 432, 931, 303, 347, 985, 717, 410, 357, 837, 729, 990, 367, 366, 928, 883, 782, 630, 692, 604, 940, 831, 890, 417, 914, 911, 787, 881, 324, 386, 554, 482, 305, 270, 264, 252, 314, 783, 979, 902, 876, 520, 830, 980, 291, 620, 759, 857, 977, 822, 250, 956, 371, 727, 418, 752, 647, 609, 474, 896, 836, 898, 768, 805, 709, 354, 784, 657, 388, 763, 917, 885, 441, 396], 2: [563, 669, 483, 638, 684, 753, 400, 690, 833, 910, 686, 950, 926, 279, 829, 625, 567, 891, 664, 839, 479, 553, 749, 411, 677, 511, 908, 636, 583, 438, 832, 505, 525, 571, 951, 398, 769, 653, 688, 946, 685, 942, 989, 997, 918, 477, 773, 900, 790, 590, 867, 960, 560, 742, 804, 845, 988, 903, 982, 506, 875, 957, 350, 756, 791, 600, 921, 698, 568, 935, 788, 596, 504, 451, 547, 586, 591, 818, 302, 868, 724, 682, 434, 644, 766, 426, 774], 3: [732, 509, 971, 423, 775, 958, 862, 757, 850, 762, 953, 835, 461, 871, 416, 555, 964, 470, 469, 755, 501, 897, 904, 407, 421, 414, 696, 391, 671, 614, 842, 624, 447, 861, 819, 865, 346, 363, 844, 847, 508, 843, 486, 820, 965, 855, 345, 683, 948, 454, 527, 460, 672, 853, 419, 660, 707, 608, 827, 913, 880, 970, 545, 340, 351, 425], 4: [852, 701, 569, 731, 860, 870, 646, 892, 859, 639, 645, 730, 838, 738, 697, 616, 723, 796, 823, 849, 601, 713, 925, 462, 622, 626, 694, 623, 631, 488, 708], 5: [803, 312, 424, 882, 352, 629, 262, 446, 427, 687, 356, 284, 680, 334, 296, 343, 776, 741, 448, 431, 362, 516, 341, 464, 656, 456, 450, 874, 300, 955], 6: [56, 915, 676, 473, 792, 53, 298, 51, 808, 572, 884, 549, 439, 794, 475, 476, 383, 310, 317, 443, 952, 535, 390, 712, 628, 726, 551, 887, 872, 481], 7: [220, 212, 222, 219], 8: [635, 420, 633, 480], 9: [734, 751, 700, 702], 10: [968, 998, 934], 11: [972, 966, 996], 12: [986, 992, 993]}
+    {0: [57, 39, 70, 43, 63, 44, 42, 12, 9, 0, 15, 30, 62, 17, 8, 28, 75, 35, 38, 56, 34, 54, 36, 40, 73, 1, 45, 59, 14, 64, 58, 55, 53, 51, 27, 2], 1: [50, 41, 88, 84, 77, 89, 61, 67, 94, 81, 79, 46, 82, 47, 71, 68, 48, 60, 66, 95], 2: [3, 76, 22, 5, 4, 65, 13, 23, 7, 83, 78, 21, 24], 3: [29, 33, 32, 37, 25, 20], 4: [80, 86, 87, 74, 69, 72], 5: [98, 91, 85, 93], 6: [10, 11, 16, 6], 7: [97, 92, 99], 8: [90, 96], 9: [52, 49], 10: [19, 18], 11: [31, 26]}
 
+Once a cluster is generated, one can plot it for easy visualization. The "y" axis of the plot shows the IMP Objective function. One would expect that the largest cluster (the one numbered with a "0") has the lowest IMP Objective function. 
 
-Plot clusters
--------------
-
-
-We can plot everything (The 12 clusters found):
+******
+     NEED TO SAVE THE CLUSTERING AND DENDOGRAM DATA INTO A FILE. => format? always or on demand?
+******
 
 ::
 
+    # Plot the resulting clusers
     cl = models.cluster_analysis_dendrogram(color=True)
 
-.. image:: pictures/Tadbit_for_IMP_notebook_28_0.png
+.. image:: pictures/Tadbit_for_IMP_fransua_46_0.png
 
-Or just 6 of them (without this colors that no one understands...)
-
-::
-
-    cl = models.cluster_analysis_dendrogram(n_best_clusters=7)
-
-.. image:: pictures/Tadbit_for_IMP_notebook_30_0.png
-
-
-Distance between 2 particles
-----------------------------
-
-
-We can just quickly get a value of the distance between particle 13 and 23
+One can also show the similarity betwen clusters for a limited number of them (5 in this example)
 
 ::
 
+    # Show de dendogram for only the 5 top clusters and no colors
+    cl = models.cluster_analysis_dendrogram(n_best_clusters=5)
+
+.. image:: pictures/Tadbit_for_IMP_fransua_48_0.png
+
+
+4.2 Models consistency
+^^^^^^^^^^^^^^^^^^^^^^
+
+
+To assess how "deterministic" a cluster is, one can calculate for each particle the percentage of models (in the cluster) that superimpose the particle within a given cut-off (pre-set cut-offs of 50, 100, 150 and 200 nm). The lower the consistency value (in %) the less deterministic the models within the selected cluster. This measure can be taken as a proxy of variability across the model.
+
+***** 
+    NEED TO SAVE THE CONSISTENCY DATA INTO A FILE. => Done, on demand only
+*****
+
+::
+
+    # Calculate the consistency plot for all models in the first cluster (cluster 0)
+    models.model_consistency(cluster=0)
+
+.. image:: pictures/Tadbit_for_IMP_fransua_51_0.png
+
+
+4.3 DNA density plots
+^^^^^^^^^^^^^^^^^^^^^
+
+
+From the 3D models, the DNA density (or local compactness) can be calculated as the ratio of the bin size (in base pairs) and the distances between consequtive particles in the models. The higher the density the more compact DNA for the region. Values are calculated using running averages.
+
+******
+     NEED TO SAVE THE DENSITY DATA INTO A FILE. => done on demand only
+******
+
+::
+
+    # Calculate a DNA density plot
+    models.density_plot()
+
+.. image:: pictures/Tadbit_for_IMP_fransua_54_0.png
+
+***** 
+    I NEED TO UNDESTAND HOW YOU GET THIS STANDARD DEVIATION (MAYBE USE STANDAR ERROR?). => It's simply two times the standard deviation, but it moves a lot from one model to the other.
+    ALSO, I DID TRIED TO USE ONLY ONE STEPS (10) AND DID NOT WORK. WHY? => FIXED. before only tuples were accepted.
+*****
+
+::
+
+    # Get a similar plot for only the top cluster and show the standar deviation for a specific running window (steps)
+    models.density_plot(error=True, steps=(2, 5))
+
+.. image:: pictures/Tadbit_for_IMP_fransua_56_0.png
+
+
+4.4 Models contact map
+^^^^^^^^^^^^^^^^^^^^^^
+
+
+Given a set of selected models (either from a cluster or list) one can calculate the percentage of pairs of particles within a for a distance cut-off. This can then be represented as a heat-map similar to the ones done for HiC data.
+
+******
+    ALSO REMOVE THE Z LABEL => all?
+    NEED TO SAVE THE CONTACT MAP DATA INTO A FILE. => done.
+******
+
+::
+
+    # Get a contact map for the top 50 models at a distance cut-off of 300nm
+    models.contact_map(models=range(50), cutoff=300)
+
+.. image:: pictures/Tadbit_for_IMP_fransua_59_0.png
+
+The goal of IMP is to find a 3D structure (or ensemble of structures) that best satisfies the original HiC matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix.
+
+::
+
+    # Correlate the contact map with the original input HiC matrix
+    models.correlate_with_real_data(models=range(50), plot=True, cutoff=300)
+
+.. image:: pictures/Tadbit_for_IMP_fransua_61_0.png
+
+
+4.5 Calculating distances between particles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Sometimes is useful to get a distribution of distances between pairs of particles in the models (or sub-set of models). 
+
+******
+    WE ALSO NEED TO CALCULATE ANGLES BETWEEN THREE PARTICLES.
+    WOULD BE NICE TO ALSO HAVE THE MEDIAN FOR A DISTANCE (NOT JUST THE AVERAGE). => hmmm the name of the function is bad, what is returned is the median... you can also get the full list of value if you want to compute the mean for example. I haven't done the mean. But if you wish I can.
+    ALL OUTPUT NEEDS TO HAVE A MAXIMUM OF TWO DECIMALS. => At the time to write them imto a file OK. But for the return of a function, I do not think this is a good idea, if you want it you just do "round(result, 3)"
+    THERE IS A NEED ALSO TO HAVE AN OPTION FOR SAVING THE ACTUAL DISTANCES IN A FILE. => format?
+******
+
+::
+
+    # Get the average distance between particles 13 and 23 in all kept models
     models.average_3d_dist(13, 23, plot=False)
 
 
 .. parsed-literal::
 
-    325.43350473976784
+    353.18443338679435
 
 
-This by default, is calculated over the ensemble of models we have. Lets plot the distribution used to get this mean value:
+Lets plot the distribution used to get this mean value.
 
 ::
 
+    # Plot the distance distributions between particles 13 and 23 in all kept models
     models.average_3d_dist(13, 23, plot=True)
 
-.. image:: pictures/Tadbit_for_IMP_notebook_35_0.png
+.. image:: pictures/Tadbit_for_IMP_fransua_66_0.png
 
-We may also want to use only the 100 first models (lowest energy), or the models belonging to cluster number 0:
-
-::
-
-    models.average_3d_dist(13, 23, models=range(100))
-
-.. image:: pictures/Tadbit_for_IMP_notebook_37_0.png
-
+We may also want to use only the 10 first models (lowest energy), or the models belonging to a cluster (example cluster 0).
 
 ::
 
+    # Plot the distance distributions between particles 13 and 23 in the top 10 models
+    models.average_3d_dist(13, 23, models=range(10))
+
+.. image:: pictures/Tadbit_for_IMP_fransua_68_0.png
+
+
+::
+
+    # Plot the distance distributions between particles 13 and 23 in the models from cluster 0
     models.average_3d_dist(13, 23, plot=True, cluster=0)
 
-.. image:: pictures/Tadbit_for_IMP_notebook_38_0.png
+.. image:: pictures/Tadbit_for_IMP_fransua_69_0.png
 
 
-Density plot
-------------
+4.6 Visualizing the 3D models
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Using distances between particle, we can plot now the density (bp per nm) of our chromosomic region.
+Specific 3D models can be saved in two formats:
+    - CMM format, which can be directly load into Chimera for visualization.
+    - XYZ format, which is a simple format that can be useful for further analysis that require coordinates.
 
-::
-
-    models.density_plot(models=None)
-
-
-.. parsed-literal::
-
-    <matplotlib.axes.AxesSubplot at 0x3694450>
-
-
-.. image:: pictures/Tadbit_for_IMP_notebook_41_1.png
-
+******
+    CAN GET GET THE OPTION TO WRITE CMMs AND XYZ FILES FOR A RANGE OF MODELS OR ALL MODELS IN A CLUSTER?
+    WE NEED TO PREPARE A PAIR OF FUNCTIONS THAT WRITE MODELS AND SCRIPTS FOR CHIMERA
+        1. SINGLE MODEL TO VISUALIZE AS A "tube"
+        2. ENTIRE CLUSTER TO VISUALIZE AS "surface"
+    DAVIDE CAN HELP IN PREPARING THE CHIMERA PYTHON SCRIPTS => YES!!! :)
+******
 
 ::
 
-    models.density_plot(cluster=0, error=True, steps=(10,20))
-
-
-.. parsed-literal::
-
-    <matplotlib.axes.AxesSubplot at 0x36a0c10>
-
-
-.. image:: pictures/Tadbit_for_IMP_notebook_42_1.png
-
-
-Contact Map
------------
-
-
-
-::
-
-    models.contact_map(models=range(100), cutoff=200)
-
-
-.. parsed-literal::
-
-    <matplotlib.axes.AxesSubplot at 0x3d58290>
-
-
-.. image:: pictures/Tadbit_for_IMP_notebook_44_1.png
-
-
-Consistency Plot
-----------------
-
-
-
-::
-
-    models.model_consistency(cluster=0)
-
-.. image:: pictures/Tadbit_for_IMP_notebook_46_0.png
-
-
-::
-
-    models.correlate_with_real_data(cluster=0, plot=True, cutoff=250)
-
-.. image:: pictures/Tadbit_for_IMP_notebook_47_0.png
+    # Write a CMM file for the top model
+    models.write_cmm(directory="./", model_num=0, models=None, cluster=None)
+    # Write a XYZ file for the top model
+    models.write_xyz(directory="./", model_num=0, models=None, cluster=None)
 
 
 Save and load your analysis
 ---------------------------
 
 
-To save your results in a file called "ici"
+By saving your analysis, you won't need to repeat some of the most expensive calculations.
 
 ::
 
-    models.save_models('ici')
+    # Save your entire analysis and models
+    models.save_models('dmel_01.models')
 
 And to load them:
 
 ::
 
-    from pytadbit.imp.threedeemodels import load_threedeemodels
-    
-    models = load_threedeemodels('ici')
+    # Load the models
+    models = load_structuralmodels('dmel_01.models')
     print models
 
 
 .. parsed-literal::
 
-    ThreeDeeModels with 1000 models (energy range: 1879749-1937736)
-       (corresponding to the best models out of 5000 models).
-      Models where clustered into 13 clusters
+    StructuralModels with 100 models (objective function range: 922965 - 932558)
+       (corresponding to the best models out of 500 models).
+      IMP modelling used this parameters:
+       - maxdist     : 600
+       - upfreq      : 0.3
+       - reference   : victor corces dataset 2013
+       - kforce      : 5
+       - lowfreq     : -0.7
+       - lowrdist    : 100
+      Models where clustered into 12 clusters
 
-and start again :)

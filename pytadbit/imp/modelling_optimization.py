@@ -41,7 +41,7 @@ def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
                     print 'ERROR'
     return results
 
-            
+
 def to_optimize(params, zscores, resolution, values, n_models, n_keep,
                 n_cpus=1):
     upfreq, lowfreq, maxdist = params
@@ -142,6 +142,6 @@ for i in xrange(exp2.size):
 
 optimize(exp2._zscores, exp.resolution, values)
 
-grid_search(upfreq_range=(0,1), lowfreq_range=(-1,0), freq_step=0.1,
-            zscores=exp2._zscores, resolution=exp2.resolution, values=values,
-            n_cpus=2, n_models=10, n_keep=2)
+results = grid_search(upfreq_range=(0,1), lowfreq_range=(-1,0), freq_step=0.1,
+                      zscores=exp2._zscores, resolution=exp2.resolution, values=values,
+                      n_cpus=2, n_models=500, n_keep=100)

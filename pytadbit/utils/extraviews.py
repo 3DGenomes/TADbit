@@ -5,6 +5,7 @@
 """
 from warnings import warn
 import numpy as np
+from subprocess import Popen, PIPE
 
 
 try:
@@ -231,3 +232,19 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
     elif not axe:
         plt.show()
 
+
+
+def chimera_view(cmm_file, chimera_bin='chimera'):
+    """
+    """
+    pref_f = '/tmp/tmp.cmd'
+    out = open(pref_f, 'w')
+    out.write('open {}\n'.format(cmm_file))
+    out.write('represent wire\n')
+    out.write('~bondcolor\n')
+    out.write('~label\n')
+    out.write('tile\n')
+    out.close()
+    
+    return Popen('{} {}'.format(chimera_bin, pref_f),
+                 shell=True)

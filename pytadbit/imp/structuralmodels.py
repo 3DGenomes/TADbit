@@ -5,11 +5,11 @@
 """
 from pytadbit.utils.tadmaths   import calinski_harabasz, calc_eqv_rmsd
 from pytadbit.utils.tadmaths   import calc_consistency
-from pytadbit.utils.extraviews import color_residues
+from pytadbit.utils.extraviews import color_residues, chimera_view
 from pytadbit.utils.extraviews import augmented_dendrogram, plot_hist_box
 from cPickle                   import load, dump
 from subprocess                import Popen, PIPE
-from math                      import sqrt
+from math                      import sqrt, acos, degrees
 from numpy                     import median as np_median
 from numpy                     import std as np_std, log2
 from scipy.cluster.hierarchy   import linkage, fcluster
@@ -301,12 +301,19 @@ class StructuralModels(object):
         for part1, part2 in zip(range(self.nloci - 1), range(1, self.nloci)):
             dists.append(self.average_3d_dist(part1, part2, models, cluster,
                                               plot=False, median=False))
+        lmodels = len(dists[0])
         distsk = {1: dists}
         for k in (steps[1:] if steps[0]==1 else steps):
             distsk[k] = [None for _ in range(k/2)]
             for i in range(self.nloci - k):
                 distsk[k].append(reduce(lambda x, y: x + y,
                                         [dists[i+j] for j in range(k)]))
+                if k == 1:
+                    continue
+                # calculate the mean for steps larger than 1
+                distsk[k][-1] = [float(sum([distsk[k][-1][i+lmodels*j]
+                                            for j in xrange(k)])) / k
+                                 for i in xrange(lmodels)]
         new_distsk = {}
         errorp    = {}
         errorn    = {}
@@ -623,6 +630,75 @@ class StructuralModels(object):
             plt.show()
 
 
+    def view_model(self, model_num, tool='chimera', savefig=None):
+        """
+        Visualize a given model in three dimensions
+
+        :param model_num: number of the model to visualize
+        :param 'chimera' tool: external tool to visualize the model
+        :param None savefig: path to a file where to save the image generated
+           if None, the image will be shown using default GUI.
+        
+        """
+        self.write_cmm('/tmp/', model_num=model_num)
+        chimera_view('/tmp/model.{}.cmm'.format(self[model_num]['rand_init']))
+    
+
+    def measure_angle_3_particles(self, parta, partc, partb,
+                                  models=None, cluster=None,
+                                  radian=False):
+        """
+        Given three particles (A, C and B) the angle g shown below:
+        
+        ::
+
+
+                              A
+                             /|
+                            / |
+                          b/  |
+                          /   |
+                         /    |
+                        C )g  |c
+                         \    |
+                          \   |
+                          a\  |
+                            \ |
+                             \|
+                              B
+
+        is given by the theorem of Al-Kashi:
+        
+        .. math::
+
+          c^2 = a^2 + b^2 - 2 \cos(g)
+
+        :param part1: A particle number
+        :param part2: A particle number
+        :param part3: A particle number
+        :param None models: If None (default) will do calculate the distance
+            along all models. A list of numbers corresponding to a given set of
+            models can also be passed.
+        :param None cluster: A number can be passed in order to calculate the
+           distance between particles in all models corresponding to the cluster
+           number 'cluster'
+        :param False radian: return value in radian, in degree if false
+
+        :returns: an angle,  either in degrees or radians
+        """
+
+        a = self.average_3d_dist(partc, partb, models=models,
+                                 cluster=cluster, plot=False)
+        b = self.average_3d_dist(parta, partc, models=models,
+                                 cluster=cluster, plot=False)
+        c = self.average_3d_dist(parta, partb, models=models,
+                                 cluster=cluster, plot=False)
+
+        g = acos((a**2 + b**2 - c**2) / (2 * a * b))
+
+        return g if radian else degrees(g)
+
+
     def average_3d_dist(self, part1, part2, models=None, cluster=None,
                         plot=True, median=True, axe=None, savefig=None):
         """
@@ -658,7 +734,7 @@ class StructuralModels(object):
                 sqrt(
                     (self[mdl]['x'][part1] - self[mdl]['x'][part2])**2 + 
                     (self[mdl]['y'][part1] - self[mdl]['y'][part2])**2 +
-                    (self[mdl]['z'][part1] - self[mdl]['z'][part1])**2)
+                    (self[mdl]['z'][part1] - self[mdl]['z'][part2])**2)
                 )
         if not plot:
             if median:
@@ -686,7 +762,7 @@ class StructuralModels(object):
         """
         Writes cmm file read by Chimera (http://www.cgl.ucsf.edu/chimera).
 
-        **Note: ** If none of model_num, models or cluster parameter are set,
+        **Note:** If none of model_num, models or cluster parameter are set,
         ALL models will be writen.
         
         :param directory: where to write the file (note: the name of the file
@@ -749,7 +825,7 @@ class StructuralModels(object):
         """
         Writes xyz file containing the 3D coordinates of each particles.
 
-        **Note: ** If none of model_num, models or cluster parameter are set,
+        **Note:** If none of model_num, models or cluster parameter are set,
         ALL models will be writen.
         
         :param directory: where to write the file (note: the name of the file

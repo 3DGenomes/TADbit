@@ -17,11 +17,11 @@ IMPmodel class
    :no-undoc-members:
 
 
-.. currentmodule:: pytadbit.imp.threedeemodels
+.. currentmodule:: pytadbit.imp.structuralmodels
 
-ThreeDeeModels class
---------------------
+StructuralModels class
+----------------------
 
-.. autoclass:: ThreeDeeModels
+.. autoclass:: StructuralModels
    :members:
    :no-undoc-members:
