@@ -299,7 +299,7 @@ class StructuralModels(object):
         colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred'][-len(steps):]
         dists = []
         for part1, part2 in zip(range(self.nloci - 1), range(1, self.nloci)):
-            dists.append(self.average_3d_dist(part1, part2, models, cluster,
+            dists.append(self.median_3d_dist(part1, part2, models, cluster,
                                               plot=False, median=False))
         lmodels = len(dists[0])
         distsk = {1: dists}
@@ -413,7 +413,7 @@ class StructuralModels(object):
         matrix = [[float('nan') for _ in xrange(self.nloci)] for _ in xrange(self.nloci)]
         for i in xrange(self.nloci):
             for j in xrange(i + 1, self.nloci):
-                val = len([k for k in self.average_3d_dist(
+                val = len([k for k in self.median_3d_dist(
                     i, j, plot=False, median=False, models=models)
                            if k < cutoff])
                 matrix[i][j] = matrix[j][i] = float(val) / len(models) * 100
@@ -687,23 +687,23 @@ class StructuralModels(object):
         :returns: an angle,  either in degrees or radians
         """
 
-        a = self.average_3d_dist(partc, partb, models=models,
-                                 cluster=cluster, plot=False)
-        b = self.average_3d_dist(parta, partc, models=models,
-                                 cluster=cluster, plot=False)
-        c = self.average_3d_dist(parta, partb, models=models,
-                                 cluster=cluster, plot=False)
+        a = self.median_3d_dist(partc, partb, models=models,
+                                cluster=cluster, plot=False)
+        b = self.median_3d_dist(parta, partc, models=models,
+                                cluster=cluster, plot=False)
+        c = self.median_3d_dist(parta, partb, models=models,
+                                cluster=cluster, plot=False)
 
         g = acos((a**2 + b**2 - c**2) / (2 * a * b))
 
         return g if radian else degrees(g)
 
 
-    def average_3d_dist(self, part1, part2, models=None, cluster=None,
-                        plot=True, median=True, axe=None, savefig=None):
+    def median_3d_dist(self, part1, part2, models=None, cluster=None,
+                       plot=True, median=True, axe=None, savefig=None):
         """
-        Computes the distance between two particles. This is done by averaging
-           between a set of given models.
+        Computes the distance between two particles. This is done by calculating
+           the median value corresponding to the set of given models.
         
         :param part1: number corresponding to the first particle
         :param part2: number corresponding to the second particle
