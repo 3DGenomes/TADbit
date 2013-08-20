@@ -259,19 +259,21 @@ def chimera_view(cmm_file, chimera_bin='chimera',
     set silhouette_width 2
     set silhouette_color black
     ''')
-    if savefig.endswith('.png'):
-        out.write('copy file {} png'.format(savefig))
-    elif savefig[-4:] in ('.mov', 'webm'):
-        out.write('''
-        movie record supersample 2
-        turn y 1 360
-        wait 360
-        movie stop
-        movie encode output {0}
-        '''.format(savefig))
-    elif savefig:
-        raise Exception('Not supportes format, must be one of png, mov or webm')
+    if savefig:
+        if savefig.endswith('.png'):
+            out.write('copy file {} png'.format(savefig))
+        elif savefig[-4:] in ('.mov', 'webm'):
+            out.write('''
+            movie record supersample 2
+            turn y 1 360
+            wait 360
+            movie stop
+            movie encode output {0}
+            '''.format(savefig))
+        elif savefig:
+            raise Exception('Not supportes format, must be one of png, mov or webm')
     out.close()
     
-    return Popen('{} {}'.format(chimera_bin, pref_f),
+    return Popen('{} {}'.format(chimera_bin + ' --no-gui ' if savefig else '',
+                                pref_f),
                  shell=True)
