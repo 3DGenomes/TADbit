@@ -636,12 +636,15 @@ class StructuralModels(object):
 
         :param model_num: number of the model to visualize
         :param 'chimera' tool: external tool to visualize the model
-        :param None savefig: path to a file where to save the image generated
-           if None, the image will be shown using default GUI.
+        :param None savefig: path to a file where to save the image OR movie
+           generated (depending on the extension, accepted formats are png,
+           mov and webm) if None, the image or movie will be shown using
+           default GUI.
         
         """
         self.write_cmm('/tmp/', model_num=model_num)
-        chimera_view('/tmp/model.{}.cmm'.format(self[model_num]['rand_init']))
+        chimera_view('/tmp/model.{}.cmm'.format(self[model_num]['rand_init']),
+                     savefig=savefig)
     
 
     def measure_angle_3_particles(self, parta, partc, partb,

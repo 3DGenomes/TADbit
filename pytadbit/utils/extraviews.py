@@ -234,16 +234,43 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
 
 
 
-def chimera_view(cmm_file, chimera_bin='chimera'):
+def chimera_view(cmm_file, chimera_bin='chimera',
+                 shape='tube',
+                 savefig=None):
     """
     """
     pref_f = '/tmp/tmp.cmd'
     out = open(pref_f, 'w')
     out.write('open {}\n'.format(cmm_file))
-    out.write('represent wire\n')
-    out.write('~bondcolor\n')
-    out.write('~label\n')
-    out.write('tile\n')
+    out.write('''
+    focus
+    set bg_color white
+    windowsize 1200 1000
+    bonddisplay never #0
+    shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on
+    clip yon -500
+    ~label
+    set subdivision 1
+    set depth_cue
+    set dc_color black
+    set dc_start 0.5
+    set dc_end 1
+    set silhouette
+    set silhouette_width 2
+    set silhouette_color black
+    ''')
+    if savefig.endswith('.png'):
+        out.write('copy file {} png'.format(savefig))
+    elif savefig[-4:] in ('.mov', 'webm'):
+        out.write('''
+        movie record supersample 2
+        turn y 1 360
+        wait 360
+        movie stop
+        movie encode output {0}
+        '''.format(savefig))
+    elif savefig:
+        raise Exception('Not supportes format, must be one of png, mov or webm')
     out.close()
     
     return Popen('{} {}'.format(chimera_bin, pref_f),
