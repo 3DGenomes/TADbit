@@ -274,6 +274,6 @@ def chimera_view(cmm_file, chimera_bin='chimera',
             raise Exception('Not supportes format, must be one of png, mov or webm')
     out.close()
     
-    return Popen('{} {}'.format(chimera_bin + ' --no-gui ' if savefig else '',
+    return Popen('{} {}'.format(chimera_bin + ' --nogui ' if savefig else '',
                                 pref_f),
                  shell=True)
