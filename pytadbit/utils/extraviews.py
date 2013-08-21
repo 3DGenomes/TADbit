@@ -243,37 +243,32 @@ def chimera_view(cmm_file, chimera_bin='chimera',
     out = open(pref_f, 'w')
     out.write('open {}\n'.format(cmm_file))
     out.write('''
-    focus
-    set bg_color white
-    windowsize 1200 1000
-    bonddisplay never #0
-    shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on
-    clip yon -500
-    ~label
-    set subdivision 1
-    set depth_cue
-    set dc_color black
-    set dc_start 0.5
-    set dc_end 1
-    set silhouette
-    set silhouette_width 2
-    set silhouette_color black
+focus
+set bg_color white
+windowsize 1200 1000
+bonddisplay never #0
+shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on
+clip yon -500
+~label
+set subdivision 1
+set depth_cue
+set dc_color black
+set dc_start 0.5
+set dc_end 1
     ''')
     if savefig:
         if savefig.endswith('.png'):
             out.write('copy file {} png'.format(savefig))
         elif savefig[-4:] in ('.mov', 'webm'):
             out.write('''
-            movie record supersample 2
-            turn y 1 360
-            wait 360
-            movie stop
-            movie encode output {0}
+movie record supersample 2
+turn y 1 360
+wait 360
+movie stop
+movie encode output {0}
             '''.format(savefig))
         elif savefig:
-            raise Exception('Not supportes format, must be one of png, mov or webm')
+            raise Exception('Not supported format, must be png, mov or webm\n')
     out.close()
     
-    return Popen('{} {}'.format(chimera_bin + ' --nogui ' if savefig else '',
-                                pref_f),
-                 shell=True)
+    return Popen('{} {}'.format(chimera_bin, pref_f), shell=True)
