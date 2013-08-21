@@ -235,17 +235,18 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
 
 
 def chimera_view(cmm_file, chimera_bin='chimera',
-                 shape='tube',
+                 shape='tube', chimera_cmd=None,
                  savefig=None):
     """
     """
     pref_f = '/tmp/tmp.cmd'
     out = open(pref_f, 'w')
     out.write('open {}\n'.format(cmm_file))
-    out.write('''
+    if not chimera_cmd:
+        out.write('''
 focus
 set bg_color white
-windowsize 1200 1000
+windowsize 800 600
 bonddisplay never #0
 shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on
 clip yon -500
@@ -255,20 +256,22 @@ set depth_cue
 set dc_color black
 set dc_start 0.5
 set dc_end 1
-    ''')
-    if savefig:
-        if savefig.endswith('.png'):
-            out.write('copy file {} png'.format(savefig))
-        elif savefig[-4:] in ('.mov', 'webm'):
-            out.write('''
-movie record supersample 2
-turn y 1 360
-wait 360
+''')
+        if savefig:
+            if savefig.endswith('.png'):
+                out.write('copy file {} png'.format(savefig))
+            elif savefig[-4:] in ('.mov', 'webm'):
+                out.write('''
+movie record supersample 1
+turn y 3 120
+wait 120
 movie stop
 movie encode output {0}
-            '''.format(savefig))
-        elif savefig:
-            raise Exception('Not supported format, must be png, mov or webm\n')
-    out.close()
+'''.format(savefig))
+            elif savefig:
+                raise Exception('Not supported format, must be png, mov or webm\n')
+        else:
+            out.write('\n'.join(chimera_cmd) + '\n')
+        out.close()
     
     return Popen('{} {}'.format(chimera_bin, pref_f), shell=True)

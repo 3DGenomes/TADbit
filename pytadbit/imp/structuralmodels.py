@@ -630,7 +630,7 @@ class StructuralModels(object):
             plt.show()
 
 
-    def view_model(self, model_num, tool='chimera', savefig=None):
+    def view_model(self, model_num, tool='chimera', savefig=None, cmd=None):
         """
         Visualize a given model in three dimensions
 
@@ -640,11 +640,47 @@ class StructuralModels(object):
            generated (depending on the extension, accepted formats are png,
            mov and webm) if None, the image or movie will be shown using
            default GUI.
+        :param None cmd: a list of commands to be passed to the viewer. The
+           default is (using chimera tool):
+
+           ::
+
+             focus
+             set bg_color white
+             windowsize 800 600
+             bonddisplay never #0
+             shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on
+             clip yon -500
+             ~label
+             set subdivision 1
+             set depth_cue
+             set dc_color black
+             set dc_start 0.5
+             set dc_end 1
+
+           Followed by the movie record for movies:
+
+           ::
+          
+             movie record supersample 1
+             turn y 3 120
+             wait 120
+             movie stop
+             movie encode output SAVEFIG
+
+           Or the copy for images:
+
+           ::
+
+             copy file SAVEFIG png
+
         
         """
         self.write_cmm('/tmp/', model_num=model_num)
-        chimera_view('/tmp/model.{}.cmm'.format(self[model_num]['rand_init']),
-                     savefig=savefig, chimera_bin=tool)
+        proc = chimera_view('/tmp/model.{}.cmm'.format(
+            self[model_num]['rand_init']),
+                            savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
+        return proc
     
 
     def measure_angle_3_particles(self, parta, partc, partb,
