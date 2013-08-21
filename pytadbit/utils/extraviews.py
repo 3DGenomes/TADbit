@@ -275,3 +275,81 @@ movie encode output {0}
         out.close()
     
     return Popen('{} {}'.format(chimera_bin, pref_f), shell=True)
+
+
+def plot_3d_optimization_result(result, max_dist_arange, upfreq_arange,
+                                lowfreq_arange):
+    """
+    Displays a three dimensional scatter plot representing the result of the
+    optimization.
+
+    :param result: 3D numpy array contating correlation values
+    :param max_dist_arange: range of max_dist values used in the optimization
+    :param upfreq_arange: range of upfreq values used in the optimization
+    :param lowfreq_arange: range of lowfreq values used in the optimization
+    """
+    x = [i for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
+    y = [j for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
+    z = [k for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
+    col = [result[i,j,k] for i in range(len(max_dist_arange)) for j in range(len(upfreq_arange)) for k in range(len(lowfreq_arange))]
+
+    fig = plt.figure()
+    from mpl_toolkits.mplot3d import Axes3D
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlabel('maxdist')
+    ax.set_ylabel('upfreq')
+    ax.set_zlabel('lowfreq')
+    lol = ax.scatter(x, y, z, c=col, s=100, alpha=0.9)
+    cbar = fig.colorbar(lol)
+    cbar.ax.set_ylabel('Correlation value')
+    plt.show()
+
+
+def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange, lowfreq_arange):
+    """
+    A grid of heatmaps representing the result of the optimization.
+
+    :param result: 3D numpy array contating correlation values
+    :param max_dist_arange: range of max_dist values used in the optimization
+    :param upfreq_arange: range of upfreq values used in the optimization
+    :param lowfreq_arange: range of lowfreq values used in the optimization
+    """
+
+    from mpl_toolkits.axes_grid1 import AxesGrid
+    fig = plt.figure()
+    
+    grid = AxesGrid(fig, 111, # similar to subplot(122)
+                    nrows_ncols = (3,4),
+                    axes_pad = 0.1,
+                    label_mode = "1",
+                    share_all = True,
+                    cbar_location="top",
+                    cbar_mode="each",
+                    cbar_size="7%",
+                    cbar_pad="2%",
+                    )
+    # for i in range(len(max_dist_arange)):
+    #     im = grid[i].imshow(result[i, :, :], interpolation="nearest",
+    #                         vmin=0.4, vmax=1)
+    #     grid.cbar_axes[i].colorbar(im)
+
+    # for i in range(len(upfreq_arange)):
+    #     im = grid[i].imshow(result[:, i, :], interpolation="nearest",
+    #                         vmin=0.4, vmax=1)
+    #     grid.cbar_axes[i].colorbar(im)
+
+    for i in range(len(lowfreq_arange)):
+        im = grid[i].imshow(result[:, :, i], interpolation="nearest",
+                            vmin=0.4, vmax=1)
+        grid.cbar_axes[i].colorbar(im)
+
+    # for cax in grid.cbar_axes:
+    #     cax.toggle_label(False)
+
+    # This affects all axes because we set share_all = True.
+    # grid.axes_llc.set_xticks([-2, 0, 2])
+    # grid.axes_llc.set_yticks([-2, 0, 2])
+    
+    plt.show()
+
+    

@@ -1,6 +1,6 @@
 
-Tutorial for Python
-*******************
+Tutorial
+********
 
 .. toctree::
    :maxdepth: 2

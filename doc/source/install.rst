@@ -1,23 +1,18 @@
-Download and Install Tadbit for Python
-**************************************
+Install Tadbit on GNU/Linux
+***************************
 
 .. contents::
 
 *Note: for now this section is only relative to installation under Debian-linux*
 
-GNU/Linux
-=========
 
 Tadbit requires python>=2.7 as well as several dependencies that are listed below.
 
-Only needed for drawing graph:
+Dependencies
+============
 
-* **python-matplotlib**
-* **python-numpy**
-* **python-scipy**
-
-Install Python libraries
-------------------------
+Python libraries
+----------------
 
 **Required:**
 ::
@@ -31,8 +26,8 @@ Accessory (but **highly** recommended):
 
   apt-get install python-matplotlib
 
-IMP
----
+IMP - 3D modelling
+------------------
 
 Determination of the three dimensional structure of a given locus is done with the IMP package.
 
@@ -80,8 +75,8 @@ Once all is done open the file setup_environment.sh in your imp directory and co
   export PYTHONPATH
 
 
-MCL
----
+MCL - clustering
+----------------
 
 MCL program is used for clustering 3-dimensional models can be downloaded from http://micans.org/mcl/ .
 
@@ -94,13 +89,22 @@ On Debian/Ubuntu machines you can install MCL from the repositories:
   sudo apt-get install mcl
 
 
+Chimera - visualization
+-----------------------
 
-Installing Tadbit
-==================
+Chimera is a program for visualization and analysis of molecular structures. It is used in TADbit to visualize chromatin strands.
 
-Once done EcoloPy can be downloaded from here:
+Software is available at: http://www.cgl.ucsf.edu/chimera/
 
-https://github.com/gui11aume/tadbit.git
+*This software is only needed for the visualization of thee dimensional models from inside Tadbit.*
+
+
+Tadbit
+======
+
+Once done Tadbit can be downloaded from here:
+
+https://github.com/tadbit/tadbit.git
 
 Download the package as tar.gz and uncompress it:
 

@@ -14,9 +14,3 @@ What is Tadbit?
 Why? 
 =====
 
-
-
-
-References
-==========
-

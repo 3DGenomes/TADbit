@@ -11,10 +11,6 @@ Welcome to Tadbit's documentation!
    
    intro
 
-   install_r
-
-   r_tadbit
-
    install
 
    tutorial

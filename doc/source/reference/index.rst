@@ -1,5 +1,5 @@
-Tadbit's Reference Guide
-=========================
+Reference Guide
+===============
 
 
 .. toctree::

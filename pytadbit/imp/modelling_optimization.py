@@ -6,23 +6,30 @@
 from pytadbit.imp.imp_modelling import generate_3d_models
 import numpy as np
 
-from scipy.optimize import fmin, fmin_slsqp, fmin_tnc, fmin_l_bfgs_b, anneal
+from scipy.optimize import anneal
 
 global COUNT
 COUNT = 0
 
+
 def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
                 freq_step=0.1, maxdist_range=(400, 1500), maxdist_step=100,
-                resolution=None, values=None, n_models=500,
+                resolution=None, values=None, n_models=500, cutoff=300,
                 n_keep=100, n_cpus=1):
     count = 0
-    results = []
-    for lowfreq in np.arange(lowfreq_range[0], lowfreq_range[1] + freq_step,
-                             freq_step):
-        for upfreq in np.arange(upfreq_range[0], upfreq_range[1] - freq_step,
-                                freq_step):
-            for maxdist in xrange(maxdist_range[0], maxdist_range[1],
-                                  maxdist_step):
+    max_dist_arange = range(maxdist_range[0], maxdist_range[1] + maxdist_step,
+                            maxdist_step)
+    lowfreq_arange = np.arange(lowfreq_range[0],
+                               lowfreq_range[1] + freq_step / 2,
+                               freq_step)
+    upfreq_arange = np.arange(upfreq_range[0],
+                              upfreq_range[1] + freq_step / 2,
+                              freq_step)
+    results = np.empty((len(max_dist_arange), len(upfreq_arange),
+                        len(lowfreq_arange)))
+    for x, maxdist in enumerate(max_dist_arange):
+        for y, upfreq in enumerate(upfreq_arange):
+            for z, lowfreq in enumerate(lowfreq_arange):
                 tmp = {'kforce'   : 5,
                        'lowrdist' : 100,
                        'maxdist'  : maxdist,
@@ -34,12 +41,12 @@ def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
                 count += 1
                 print '%5s  ' % (count), upfreq, lowfreq, maxdist,
                 try:
-                    result = tdm.correlate_with_real_data(cutoff=200)[0]
+                    result = tdm.correlate_with_real_data(cutoff=cutoff)[0]
                     print result
-                    results.append((result, (upfreq, lowfreq, maxdist)))
+                    results[x, y, z] = result
                 except:
                     print 'ERROR'
-    return results
+    return results, max_dist_arange, upfreq_arange, lowfreq_arange
 
 
 def to_optimize(params, zscores, resolution, values, n_models, n_keep,
@@ -90,58 +97,82 @@ def optimize(zscores, resolution, values):
     #                                                            values, 8, 4, 8),
     #                  bounds=[(0.,uzsc),(lzsc,0.),(100, 2000)], epsilon=0.01)
 
-from pytadbit import Chromosome
-crm = '2R'
-crmbit = Chromosome('2R')
 
-for xnam in ['TR2', 'TR1', 'BR']:
-    crmbit.add_experiment(xnam, resolution=10000, 
-                          xp_handler='/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
+def main():
 
-exp = crmbit.experiments['TR1'] + crmbit.experiments['TR2'] + crmbit.experiments['BR']
+    from pytadbit import Chromosome
+    crm = '2R'
+    crmbit = Chromosome('2R')
 
-start = 190
-end   = 295
+    for xnam in ['TR2', 'TR1', 'BR']:
+        crmbit.add_experiment(xnam, resolution=10000, 
+                              xp_handler='/home/fransua/db/hi-c/corces_dmel/10Kb/{0}/{0}_{1}_10Kb.txt'.format(crm, xnam))
 
-matrix = exp.get_hic_matrix()
-end += 1
+    exp = crmbit.experiments['TR1'] + crmbit.experiments['TR2'] + crmbit.experiments['BR']
 
-new_matrix = [[] for _ in range(end-start)]
-for i in xrange(start, end):
-    for j in xrange(start, end):
-        new_matrix[i - start].append(matrix[i][j])
-        
-tmp = Chromosome('tmp')
-tmp.add_experiment('exp1', xp_handler=[new_matrix],
-                   resolution=exp.resolution)
+    start = 190
+    end   = 295
 
-exp2 = tmp.experiments[0]
-exp2.normalize_hic(method='bytot')
-exp2.get_hic_zscores(remove_zeros=True)
-values = [[float('nan') for _ in xrange(exp2.size)]
-          for _ in xrange(exp2.size)]
-for i in xrange(exp2.size):
-    # zeros are rows or columns having a zero in the diagonal
-    if i in exp2._zeros:
-        continue
-    for j in xrange(i + 1, exp2.size):
-        if j in exp2._zeros:
+    matrix = exp.get_hic_matrix()
+    end += 1
+
+    new_matrix = [[] for _ in range(end-start)]
+    for i in xrange(start, end):
+        for j in xrange(start, end):
+            new_matrix[i - start].append(matrix[i][j])
+
+    tmp = Chromosome('tmp')
+    tmp.add_experiment('exp1', xp_handler=[new_matrix],
+                       resolution=exp.resolution)
+
+    exp2 = tmp.experiments[0]
+    exp2.normalize_hic(method='bytot')
+    exp2.get_hic_zscores(remove_zeros=True)
+    values = [[float('nan') for _ in xrange(exp2.size)]
+              for _ in xrange(exp2.size)]
+    for i in xrange(exp2.size):
+        # zeros are rows or columns having a zero in the diagonal
+        if i in exp2._zeros:
             continue
-        if (not exp2.hic_data[0][i * exp2.size + j] 
-            or not exp2.hic_data[0][i * exp2.size + j]):
-            continue
-        try:
-            values[i][j] = (exp2.hic_data[0][i * exp2.size + j] /
-                            exp2.wght[0][i * exp2.size + j])
-            values[j][i] = (exp2.hic_data[0][i * exp2.size + j] /
-                            exp2.wght[0][i * exp2.size + j])
-        except ZeroDivisionError:
-            values[i][j] = 0.0
-            values[j][i] = 0.0
+        for j in xrange(i + 1, exp2.size):
+            if j in exp2._zeros:
+                continue
+            if (not exp2.hic_data[0][i * exp2.size + j] 
+                or not exp2.hic_data[0][i * exp2.size + j]):
+                continue
+            try:
+                values[i][j] = (exp2.hic_data[0][i * exp2.size + j] /
+                                exp2.wght[0][i * exp2.size + j])
+                values[j][i] = (exp2.hic_data[0][i * exp2.size + j] /
+                                exp2.wght[0][i * exp2.size + j])
+            except ZeroDivisionError:
+                values[i][j] = 0.0
+                values[j][i] = 0.0
 
 
-optimize(exp2._zscores, exp.resolution, values)
+    optimize(exp2._zscores, exp.resolution, values)
 
-results = grid_search(upfreq_range=(0,1), lowfreq_range=(-1,0), freq_step=0.1,
-                      zscores=exp2._zscores, resolution=exp2.resolution, values=values,
-                      n_cpus=2, n_models=500, n_keep=100)
+    results = grid_search(upfreq_range=(0,1), lowfreq_range=(-1,0), freq_step=0.1,
+                          zscores=exp2._zscores, resolution=exp2.resolution,
+                          values=values,maxdist_range=(400, 1400),
+                          n_cpus=8, n_models=10, n_keep=2)
+
+
+
+    from matplotlib import pyplot as plt
+    result, max_dist_arange, upfreq_arange, lowfreq_arange = results
+    x = [i for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
+    y = [j for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
+    z = [k for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
+    col = [result[i,j,k] for i in range(len(max_dist_arange)) for j in range(len(upfreq_arange)) for k in range(len(lowfreq_arange))]
+    
+    fig = plt.figure()
+    from mpl_toolkits.mplot3d import Axes3D
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlabel('maxdist')
+    ax.set_ylabel('upfreq')
+    ax.set_zlabel('lowfreq')
+    lol = ax.scatter(x, y, z, c=col, s=100, alpha=0.9)
+    cbar = fig.colorbar(lol)
+    cbar.ax.set_ylabel('Correlation value')
+    plt.show()

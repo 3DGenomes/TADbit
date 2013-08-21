@@ -140,9 +140,11 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score', one=False):
     :param 'score' var: value to return, can be either (i) 'drmsd' (symmetry
        independent: mirrors will show no differences) (ii) 'score' that is:
 
-                             dRMSD[i] / max(dRMSD)
-       score[i] = eqvs[i] * -----------------------
-                              RMSD[i] / max(RMSD)
+       ::
+
+                               dRMSD[i] / max(dRMSD)
+         score[i] = eqvs[i] * -----------------------
+                                RMSD[i] / max(RMSD)
 
        where eqvs[i] is the number of equivalent position for the ith
        pairwise model comparison.

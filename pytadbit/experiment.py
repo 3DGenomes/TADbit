@@ -4,15 +4,16 @@
 
 """
 
-from pytadbit.parsers.hic_parser import read_matrix
-from pytadbit.utils.extraviews import nicer
-from pytadbit.utils.tadmaths import zscore
-from pytadbit.utils.hic_filtering import hic_filtering_for_modelling
-from pytadbit.parsers.tad_parser import parse_tads
-from pytadbit.imp.imp_modelling import generate_3d_models
-from warnings import warn
-from math import sqrt
-from pytadbit.imp.CONFIG import CONFIG
+from pytadbit.parsers.hic_parser         import read_matrix
+from pytadbit.utils.extraviews           import nicer
+from pytadbit.utils.tadmaths             import zscore
+from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
+from pytadbit.parsers.tad_parser         import parse_tads
+from pytadbit.imp.imp_modelling          import generate_3d_models
+from pytadbit.imp.modelling_optimization import grid_search
+from warnings                            import warn
+from math                                import sqrt
+from pytadbit.imp.CONFIG                 import CONFIG
 
 
 class Experiment(object):
@@ -353,7 +354,7 @@ class Experiment(object):
 
         :param start: start of the region to model (bin number)
         :param end: end of the region to model (bin number, both inclusive)
-        :param 10000 n_models: number of modes to generate.
+        :param 5000 n_models: number of modes to generate.
         :param 1000 n_keep: number of models to keep (models with lowest
            objective function final value). Usually 20% of the models generated
            are kept.
@@ -391,19 +392,92 @@ class Experiment(object):
                   # Maximum experimental contact distance
                   'maxdist'   : 600, # OPTIMIZATION: 500-1200
              
-                  # Maximum thresholds used to decide which experimental values have to be
+                  # Minimum and maximum thresholds used to decide which experimental values have to be
                   # included in the computation of restraints. Z-score values bigger than upfreq
                   # and less that lowfreq will be include, whereas all the others will be rejected
                   'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
              
-                  # Minimum thresholds used to decide which experimental values have to be
-                  # included in the computation of restraints. Z-score values bigger than upfreq
-                  # and less that lowfreq will be include, whereas all the others will be rejected
                   'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
              
                   }
               }
 
+        """
+        zscores, values = self._sub_experiment_zscore(start, end)
+        return generate_3d_models(zscores, self.resolution, values=values,
+                                  n_models=n_models, outfile=outfile,
+                                  n_keep=n_keep, n_cpus=n_cpus, verbose=verbose,
+                                  keep_all=keep_all, close_bins=close_bins,
+                                  config=config)
+
+    def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
+                               n_cpus=1, verbose=False, upfreq_range=(0, 1),
+                               lowfreq_range=(-1, 0), freq_step=0.1, cutoff=300,
+                               maxdist_range=(400, 1400), maxdist_step=100,
+                               keep_all=False, close_bins=1, outfile=None):
+        """
+        Find the optimal set of parameters in order to model a given region with
+        IMP.
+
+        :param start: start of the region to model (bin number)
+        :param end: end of the region to model (bin number, both inclusive)
+        :param 500 n_models: number of modes to generate.
+        :param 100 n_keep: number of models to keep (models with lowest
+           objective function final value). Usually 20% of the models generated
+           are kept.
+        :param False keep_all: whether to keep the discarded models or not (if
+           True, they will be stored under StructuralModels.bad_models).
+        :param 1 close_bins: number of particle away a particle may be to be
+           considered as a neighbor.
+        :param n_cpus: number of CPUs to use for the optimization of models
+        :param False verbose: verbosity
+        :param (-1, 0) lowfreq_range: a tuple with the boundaries between which
+           to search for the minimum threshold used to decide which experimental
+           values have to be included in the computation of restraints
+        :param (0, 1) upfreq_range: a tuple with the boundaries between which
+           to search for the maximum threshold used to decide which experimental
+           values have to be included in the computation of restraints
+        :param 0.1 freq_step: step to increase upfreq and lowfreq values
+        :param (400, 1400) maxdist_range: tuple with upper and lower bounds
+           used to search for the optimal maximum experimental distance.
+        :param 100 maxdist_step: size of the steps done during the search for
+           maxdist
+
+        :returns: a tuple containing:
+           * a 3D numpy array with the values of correlations found
+           * the range of maxdist used
+           * the range of upfreq used
+           * the range of lowfreq used
+           
+        """
+        zscores, values = self._sub_experiment_zscore(start, end)
+        matrix, max_dist_arange, upfreq_arange, lowfreq_arange = grid_search(
+            upfreq_range=(0,1), lowfreq_range=(-1,0), freq_step=0.1,
+            zscores=zscores, resolution=self.resolution, values=values,
+            maxdist_range=(400, 1400), n_cpus=8, n_models=10, n_keep=2,
+            cutoff=cutoff)
+        if outfile:
+            out = open(outfile, 'w')
+            out.write('# max_dist\tup_freq\tlow_freq\tcorrelation\n')
+            for i in max_dist_arange:
+                for j in upfreq_arange:
+                    for k in lowfreq_arange:
+                        out.write('{}\t{}\t{}\t{}\n'.format(i, j, k,
+                                                            matrix[i, j, k]))
+            out.close()
+        return matrix, max_dist_arange, upfreq_arange, lowfreq_arange
+
+    
+    def _sub_experiment_zscore(self, start, end):
+        """
+        Get a sub experiment
+
+        TODO: find a nicer way to do this...
+
+        :param start: start of the region to model (bin number)
+        :param end: end of the region to model (bin number, both inclusive)
+
+        :returns: zscore and raw values corresping to the experiment
         """
         from pytadbit import Chromosome
         matrix = self.get_hic_matrix()
@@ -439,11 +513,7 @@ class Experiment(object):
                 except ZeroDivisionError:
                     values[i][j] = 0.0
                     values[j][i] = 0.0
-        return generate_3d_models(exp._zscores, self.resolution, values=values,
-                                  n_models=n_models, outfile=outfile,
-                                  n_keep=n_keep, n_cpus=n_cpus, verbose=verbose,
-                                  keep_all=keep_all, close_bins=close_bins,
-                                  config=config)
+        return exp._zscores, values
         
 
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,

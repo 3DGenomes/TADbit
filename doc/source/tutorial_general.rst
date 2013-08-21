@@ -1,8 +1,8 @@
 
 .. _getting_start:
 
-Getting start
-*************
+Getting started
+***************
 
 .. contents::
    :depth: 3
@@ -42,7 +42,7 @@ However, the number of extra columns or rows may vary as no convention as been p
 Strange data format
 -------------------
 
-In the case Tadbit is not able to parse the input file, user can create its own parser as pass it to Chromosome. For example one might be interested in using [Dixon2012]_ data that appears like this:
+In the case Tadbit is not able to parse the input file, user can create its own parser and pass it to Chromosome. For example one might be interested in using [Dixon2012]_ data that appears like this:
 
 ::
 
@@ -101,14 +101,14 @@ Each Experiment is an independent object with a list of associated functions (se
 
 .. _run_tadbit:
 
-Run Tadbit core function
-========================
+Find Topologically Associating Domains
+======================================
 
 Once loaded the location of topologically associating domains (TADs) can be estimated.
 
 ::
 
-  my_chrom.find_tads('First Hi-C experiment')
+  my_chrom.find_tad('First Hi-C experiment')
 
 :func:`pytadbit.chromosome.Chromosome.find_tad` is called from our Chromosome object, however it is applied to a specific experiment. TADs found by tadbit will thus be associated to this experiment. They can be accessed like this:
 
