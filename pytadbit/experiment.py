@@ -411,10 +411,10 @@ class Experiment(object):
                                   config=config)
 
     def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
-                               n_cpus=1, verbose=False, upfreq_range=(0, 1),
+                               n_cpus=1, upfreq_range=(0, 1),
                                lowfreq_range=(-1, 0), freq_step=0.1, cutoff=300,
                                maxdist_range=(400, 1400), maxdist_step=100,
-                               keep_all=False, close_bins=1, outfile=None):
+                               outfile=None):
         """
         Find the optimal set of parameters in order to model a given region with
         IMP.
@@ -452,10 +452,11 @@ class Experiment(object):
         """
         zscores, values = self._sub_experiment_zscore(start, end)
         matrix, max_dist_arange, upfreq_arange, lowfreq_arange = grid_search(
-            upfreq_range=(0,1), lowfreq_range=(-1,0), freq_step=0.1,
-            zscores=zscores, resolution=self.resolution, values=values,
-            maxdist_range=(400, 1400), n_cpus=8, n_models=10, n_keep=2,
-            cutoff=cutoff)
+            upfreq_range=upfreq_range, lowfreq_range=lowfreq_range,
+            freq_step=freq_step, zscores=zscores, resolution=self.resolution,
+            values=values, maxdist_range=maxdist_range, n_cpus=n_cpus,
+            n_models=n_models, n_keep=n_keep, cutoff=cutoff,
+            maxdist_step=maxdist_step)
         if outfile:
             out = open(outfile, 'w')
             out.write('# max_dist\tup_freq\tlow_freq\tcorrelation\n')

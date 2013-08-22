@@ -305,51 +305,110 @@ def plot_3d_optimization_result(result, max_dist_arange, upfreq_arange,
     plt.show()
 
 
-def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange, lowfreq_arange):
+def my_round(num, val):
+    num = round(num, val)
+    return int(num) if num == int(num) else num
+
+
+def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
+                                lowfreq_arange, sliced='maxdist', show_best=10):
     """
     A grid of heatmaps representing the result of the optimization.
 
     :param result: 3D numpy array contating correlation values
-    :param max_dist_arange: range of max_dist values used in the optimization
+    :param maxdist_arange: range of max_dist values used in the optimization
     :param upfreq_arange: range of upfreq values used in the optimization
     :param lowfreq_arange: range of lowfreq values used in the optimization
+    :param 'maxd_ist' sliced: which parameter used to slice the 3D matrix of
+       results
+    :param 10 show_best: number of best correlation value to identifie.
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
-    fig = plt.figure()
-    
-    grid = AxesGrid(fig, 111, # similar to subplot(122)
-                    nrows_ncols = (3,4),
-                    axes_pad = 0.1,
+    import matplotlib.patches as patches
+
+    vmin = result.min()
+    vmax = result.max()
+    if sliced == 'maxdist':
+        x = [my_round(i, 1) for i in lowfreq_arange]
+        y = [my_round(i, 1) for i in upfreq_arange]
+        z = [my_round(i, 1) for i in max_dist_arange]
+        sort_result =  sorted([(result[k, j, i], x[i], y[j], z[k])
+                               for i in range(len(x))
+                               for j in range(len(y))
+                               for k in range(len(z))], key=lambda x: x[0],
+                              reverse=True)[:show_best]
+    if sliced == 'upfreq':
+        z = [my_round(i, 1) for i in upfreq_arange]
+        x = [my_round(i, 1) for i in lowfreq_arange]
+        y = [my_round(i, 1) for i in max_dist_arange]
+        sort_result =  sorted([(result[j, k, i], x[i], y[j], z[k])
+                               for i in range(len(x))
+                               for j in range(len(y))
+                               for k in range(len(z))], key=lambda x: x[0],
+                              reverse=True)[:show_best]
+    if sliced == 'lowfreq':
+        x = [my_round(i, 1) for i in upfreq_arange]
+        z = [my_round(i, 1) for i in lowfreq_arange]
+        y = [my_round(i, 1) for i in max_dist_arange]
+        sort_result =  sorted([(result[j, i, k], x[i], y[j], z[k])
+                               for i in range(len(x))
+                               for j in range(len(y))
+                               for k in range(len(z))], key=lambda x: x[0],
+                              reverse=True)[:show_best]
+
+    ncols = int(np.sqrt(len(z)) + 0.999)
+    nrows = int(np.sqrt(len(z)) + 0.5)
+    fig = plt.figure(figsize=(ncols*3,nrows*3))
+    grid = AxesGrid(fig, 111,
+                    nrows_ncols = (nrows, ncols),
+                    axes_pad = 0.0,
                     label_mode = "1",
                     share_all = True,
-                    cbar_location="top",
-                    cbar_mode="each",
+                    cbar_location="right",
+                    cbar_mode="single",
                     cbar_size="7%",
                     cbar_pad="2%",
                     )
-    # for i in range(len(max_dist_arange)):
-    #     im = grid[i].imshow(result[i, :, :], interpolation="nearest",
-    #                         vmin=0.4, vmax=1)
-    #     grid.cbar_axes[i].colorbar(im)
-
-    # for i in range(len(upfreq_arange)):
-    #     im = grid[i].imshow(result[:, i, :], interpolation="nearest",
-    #                         vmin=0.4, vmax=1)
-    #     grid.cbar_axes[i].colorbar(im)
-
-    for i in range(len(lowfreq_arange)):
-        im = grid[i].imshow(result[:, :, i], interpolation="nearest",
-                            vmin=0.4, vmax=1)
-        grid.cbar_axes[i].colorbar(im)
-
-    # for cax in grid.cbar_axes:
-    #     cax.toggle_label(False)
-
+    for i in range(len(z)):
+        if sliced == 'maxdist':
+            im = grid[i].imshow(result[i, :, :], interpolation="nearest",
+                                vmin=vmin, vmax=vmax)
+        elif sliced == 'upfreq':
+            im = grid[i].imshow(result[:, i, :], interpolation="nearest",
+                                vmin=vmin, vmax=vmax)
+        else:
+            im = grid[i].imshow(result[:, :, i], interpolation="nearest",
+                                vmin=vmin, vmax=vmax)
+        grid[i].tick_params(axis='both', direction='out', top=False,
+                            right=False, left=False, bottom=False)
+        rect = patches.Rectangle((-0.5, len(y)-.5),len(x), 1.5,
+                                 facecolor='grey', alpha=0.5)
+        grid[i].add_patch(rect)
+        grid[i].text(np.mean(range(0, len(x))), max(range(0, len(y))) + 1.25,
+                     sliced + ': ' + str(my_round(z[i], 1)),
+                     {'ha':'center', 'va':'center'})
+        for j, k  in enumerate(sort_result):
+            if k[3] == z[i]:
+                grid[i].text(x.index(k[1]), y.index(k[2]), str(j),
+                             {'ha':'center', 'va':'center'})
+    for i in range(len(z), nrows * ncols):
+        grid[i].set_visible(False)
+    grid.cbar_axes[0].colorbar(im)
+    grid.cbar_axes[0].set_ylabel('Correlation value')
     # This affects all axes because we set share_all = True.
-    # grid.axes_llc.set_xticks([-2, 0, 2])
-    # grid.axes_llc.set_yticks([-2, 0, 2])
-    
+    grid.axes_llc.set_ylim(-0.5, len(y)+1)
+    grid.axes_llc.set_xticks(range(0, len(x), 2))
+    grid.axes_llc.set_yticks(range(0, len(y), 2))
+    grid.axes_llc.set_xticklabels([my_round(i, 1) for i in x][::2])
+    grid.axes_llc.set_yticklabels([my_round(i, 1) for i in y][::2])
+    grid.axes_llc.set_ylabel('upfreq' if sliced=='maxdist'else
+                             'maxdist' if sliced=='upfreq' else 'maxdist')
+    grid.axes_llc.set_xlabel('lowfreq' if sliced=='maxdist'else
+                             'lowfreq' if sliced=='upfreq' else 'upfreq')
     plt.show()
 
-    
+     
+
+
+
