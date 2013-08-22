@@ -406,7 +406,13 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
                              'maxdist' if sliced=='upfreq' else 'maxdist')
     grid.axes_llc.set_xlabel('lowfreq' if sliced=='maxdist'else
                              'lowfreq' if sliced=='upfreq' else 'upfreq')
-    fig.suptitle('Optimal IMP parameters', size='large')
+    fig.suptitle(('Optimal IMP parameters\n' +
+                  'Best for: lowfreq={}, upfreq={}, maxdist={}'
+                  ).format(my_round(sort_result[0][1], 2),
+                           my_round(sort_result[0][2], 2),
+                           my_round(sort_result[0][3], 2)),
+                 size='large')
+    plt.title('lallalal')
     plt.show()
 
      
