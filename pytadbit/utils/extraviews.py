@@ -288,6 +288,14 @@ def plot_3d_optimization_result(result, max_dist_arange, upfreq_arange,
     :param upfreq_arange: range of upfreq values used in the optimization
     :param lowfreq_arange: range of lowfreq values used in the optimization
     """
+    x = [my_round(i, 3) for i in lowfreq_arange]
+    y = [my_round(i, 3) for i in upfreq_arange]
+    z = [my_round(i, 3) for i in max_dist_arange]
+    sort_result =  sorted([(result[k, j, i], x[i], y[j], z[k])
+                           for i in range(len(x))
+                           for j in range(len(y))
+                           for k in range(len(z))], key=lambda x: x[0],
+                          reverse=True)[0]
     x = [i for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
     y = [j for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
     z = [k for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
@@ -302,6 +310,12 @@ def plot_3d_optimization_result(result, max_dist_arange, upfreq_arange,
     lol = ax.scatter(x, y, z, c=col, s=100, alpha=0.9)
     cbar = fig.colorbar(lol)
     cbar.ax.set_ylabel('Correlation value')
+    plt.title(('Optimal IMP parameters\n' +
+               'Best for: lowfreq={}, upfreq={}, maxdist={}'
+               ).format(my_round(sort_result[1], 2),
+                        my_round(sort_result[2], 2),
+                        my_round(sort_result[3], 2)),
+                 size='large')
     plt.show()
 
 
@@ -337,7 +351,7 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
                                for i in range(len(x))
                                for j in range(len(y))
                                for k in range(len(z))], key=lambda x: x[0],
-                              reverse=True)[:show_best]
+                              reverse=True)[:show_best+1]
     if sliced == 'upfreq':
         z = [my_round(i, 3) for i in upfreq_arange]
         x = [my_round(i, 3) for i in lowfreq_arange]
@@ -346,7 +360,7 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
                                for i in range(len(x))
                                for j in range(len(y))
                                for k in range(len(z))], key=lambda x: x[0],
-                              reverse=True)[:show_best]
+                              reverse=True)[:show_best+1]
     if sliced == 'lowfreq':
         x = [my_round(i, 3) for i in upfreq_arange]
         z = [my_round(i, 3) for i in lowfreq_arange]
@@ -355,7 +369,7 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
                                for i in range(len(x))
                                for j in range(len(y))
                                for k in range(len(z))], key=lambda x: x[0],
-                              reverse=True)[:show_best]
+                              reverse=True)[:show_best+1]
 
     ncols = int(np.sqrt(len(z)) + 0.999)
     nrows = int(np.sqrt(len(z)) + 0.5)
@@ -388,7 +402,7 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
         grid[i].text(np.mean(range(0, len(x))), max(range(0, len(y))) + 1.25,
                      sliced + ': ' + str(my_round(z[i], 3)),
                      {'ha':'center', 'va':'center'})
-        for j, k  in enumerate(sort_result):
+        for j, k  in enumerate(sort_result[:-1]):
             if k[3] == z[i]:
                 grid[i].text(x.index(k[1]), y.index(k[2]), str(j),
                              {'ha':'center', 'va':'center'})
