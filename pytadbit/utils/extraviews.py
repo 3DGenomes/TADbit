@@ -330,27 +330,27 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
     vmin = result.min()
     vmax = result.max()
     if sliced == 'maxdist':
-        x = [my_round(i, 1) for i in lowfreq_arange]
-        y = [my_round(i, 1) for i in upfreq_arange]
-        z = [my_round(i, 1) for i in max_dist_arange]
+        x = [my_round(i, 3) for i in lowfreq_arange]
+        y = [my_round(i, 3) for i in upfreq_arange]
+        z = [my_round(i, 3) for i in max_dist_arange]
         sort_result =  sorted([(result[k, j, i], x[i], y[j], z[k])
                                for i in range(len(x))
                                for j in range(len(y))
                                for k in range(len(z))], key=lambda x: x[0],
                               reverse=True)[:show_best]
     if sliced == 'upfreq':
-        z = [my_round(i, 1) for i in upfreq_arange]
-        x = [my_round(i, 1) for i in lowfreq_arange]
-        y = [my_round(i, 1) for i in max_dist_arange]
+        z = [my_round(i, 3) for i in upfreq_arange]
+        x = [my_round(i, 3) for i in lowfreq_arange]
+        y = [my_round(i, 3) for i in max_dist_arange]
         sort_result =  sorted([(result[j, k, i], x[i], y[j], z[k])
                                for i in range(len(x))
                                for j in range(len(y))
                                for k in range(len(z))], key=lambda x: x[0],
                               reverse=True)[:show_best]
     if sliced == 'lowfreq':
-        x = [my_round(i, 1) for i in upfreq_arange]
-        z = [my_round(i, 1) for i in lowfreq_arange]
-        y = [my_round(i, 1) for i in max_dist_arange]
+        x = [my_round(i, 3) for i in upfreq_arange]
+        z = [my_round(i, 3) for i in lowfreq_arange]
+        y = [my_round(i, 3) for i in max_dist_arange]
         sort_result =  sorted([(result[j, i, k], x[i], y[j], z[k])
                                for i in range(len(x))
                                for j in range(len(y))
@@ -386,7 +386,7 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
                                  facecolor='grey', alpha=0.5)
         grid[i].add_patch(rect)
         grid[i].text(np.mean(range(0, len(x))), max(range(0, len(y))) + 1.25,
-                     sliced + ': ' + str(my_round(z[i], 1)),
+                     sliced + ': ' + str(my_round(z[i], 3)),
                      {'ha':'center', 'va':'center'})
         for j, k  in enumerate(sort_result):
             if k[3] == z[i]:
@@ -400,8 +400,8 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
     grid.axes_llc.set_ylim(-0.5, len(y)+1)
     grid.axes_llc.set_xticks(range(0, len(x), 2))
     grid.axes_llc.set_yticks(range(0, len(y), 2))
-    grid.axes_llc.set_xticklabels([my_round(i, 1) for i in x][::2])
-    grid.axes_llc.set_yticklabels([my_round(i, 1) for i in y][::2])
+    grid.axes_llc.set_xticklabels([my_round(i, 3) for i in x][::2])
+    grid.axes_llc.set_yticklabels([my_round(i, 3) for i in y][::2])
     grid.axes_llc.set_ylabel('upfreq' if sliced=='maxdist'else
                              'maxdist' if sliced=='upfreq' else 'maxdist')
     grid.axes_llc.set_xlabel('lowfreq' if sliced=='maxdist'else
