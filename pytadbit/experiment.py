@@ -459,7 +459,7 @@ class Experiment(object):
             resolution=self.resolution, values=values,
             maxdist_range=maxdist_range, n_cpus=n_cpus, n_models=n_models,
             n_keep=n_keep, cutoff=cutoff, maxdist_step=maxdist_step,
-            close_bins=close_bins)
+            close_bins=close_bins, verbose=verbose)
         if outfile:
             out = open(outfile, 'w')
             out.write('# max_dist\tup_freq\tlow_freq\tcorrelation\n')
