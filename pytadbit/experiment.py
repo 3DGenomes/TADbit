@@ -463,10 +463,10 @@ class Experiment(object):
         if outfile:
             out = open(outfile, 'w')
             out.write('# max_dist\tup_freq\tlow_freq\tcorrelation\n')
-            for i in max_dist_arange:
-                for j in upfreq_arange:
-                    for k in lowfreq_arange:
-                        out.write('{}\t{}\t{}\t{}\n'.format(i, j, k,
+            for i, ii in enumerate(max_dist_arange):
+                for j, jj in enumerate(upfreq_arange):
+                    for k, kk in enumerate(lowfreq_arange):
+                        out.write('{}\t{}\t{}\t{}\n'.format(ii, jj, kk,
                                                             matrix[i, j, k]))
             out.close()
         return matrix, max_dist_arange, upfreq_arange, lowfreq_arange
