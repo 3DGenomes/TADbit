@@ -13,18 +13,18 @@ COUNT = 0
 
 
 def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
-                freq_step=0.1, maxdist_range=(400, 1500), maxdist_step=100,
-                resolution=None, values=None, n_models=500, cutoff=300,
-                n_keep=100, n_cpus=1):
+                upfreq_step=0.1, lowfreq_step=0.1, maxdist_range=(400, 1500),
+                maxdist_step=100, resolution=None, values=None, n_models=500,
+                cutoff=300, n_keep=100, n_cpus=1, close_bins=1):
     count = 0
     max_dist_arange = range(maxdist_range[0], maxdist_range[1] + maxdist_step,
                             maxdist_step)
     lowfreq_arange = np.arange(lowfreq_range[0],
-                               lowfreq_range[1] + freq_step / 2,
-                               freq_step)
+                               lowfreq_range[1] + lowfreq_step / 2,
+                               lowfreq_step)
     upfreq_arange = np.arange(upfreq_range[0],
-                              upfreq_range[1] + freq_step / 2,
-                              freq_step)
+                              upfreq_range[1] + upfreq_step / 2,
+                              upfreq_step)
     results = np.empty((len(max_dist_arange), len(upfreq_arange),
                         len(lowfreq_arange)))
     for x, maxdist in enumerate(max_dist_arange):
@@ -37,7 +37,7 @@ def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
                        'lowfreq'  : lowfreq}
                 tdm = generate_3d_models(zscores, resolution, n_models, n_keep,
                                          config=tmp, n_cpus=n_cpus,
-                                         values=values)
+                                         values=values, close_bins=close_bins)
                 count += 1
                 print '%5s  ' % (count), upfreq, lowfreq, maxdist,
                 try:

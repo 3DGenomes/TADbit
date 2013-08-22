@@ -411,8 +411,9 @@ class Experiment(object):
                                   config=config)
 
     def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
-                               n_cpus=1, upfreq_range=(0, 1),
-                               lowfreq_range=(-1, 0), freq_step=0.1, cutoff=300,
+                               n_cpus=1, upfreq_range=(0, 1), close_bins=1,
+                               lowfreq_range=(-1, 0), upfreq_step=0.1,
+                               lowfreq_step=0.1, cutoff=300,
                                maxdist_range=(400, 1400), maxdist_step=100,
                                outfile=None):
         """
@@ -425,8 +426,6 @@ class Experiment(object):
         :param 100 n_keep: number of models to keep (models with lowest
            objective function final value). Usually 20% of the models generated
            are kept.
-        :param False keep_all: whether to keep the discarded models or not (if
-           True, they will be stored under StructuralModels.bad_models).
         :param 1 close_bins: number of particle away a particle may be to be
            considered as a neighbor.
         :param n_cpus: number of CPUs to use for the optimization of models
@@ -437,7 +436,8 @@ class Experiment(object):
         :param (0, 1) upfreq_range: a tuple with the boundaries between which
            to search for the maximum threshold used to decide which experimental
            values have to be included in the computation of restraints
-        :param 0.1 freq_step: step to increase upfreq and lowfreq values
+        :param 0.1 upfreq_step: step to increase  lowfreq values
+        :param 0.1 lowfreq_step: step to increase lowfreq values
         :param (400, 1400) maxdist_range: tuple with upper and lower bounds
            used to search for the optimal maximum experimental distance.
         :param 100 maxdist_step: size of the steps done during the search for
@@ -453,10 +453,11 @@ class Experiment(object):
         zscores, values = self._sub_experiment_zscore(start, end)
         matrix, max_dist_arange, upfreq_arange, lowfreq_arange = grid_search(
             upfreq_range=upfreq_range, lowfreq_range=lowfreq_range,
-            freq_step=freq_step, zscores=zscores, resolution=self.resolution,
-            values=values, maxdist_range=maxdist_range, n_cpus=n_cpus,
-            n_models=n_models, n_keep=n_keep, cutoff=cutoff,
-            maxdist_step=maxdist_step)
+            upfreq_step=upfreq_step, lowfreq_step=lowfreq_step, zscores=zscores,
+            resolution=self.resolution, values=values,
+            maxdist_range=maxdist_range, n_cpus=n_cpus, n_models=n_models,
+            n_keep=n_keep, cutoff=cutoff, maxdist_step=maxdist_step,
+            close_bins=close_bins)
         if outfile:
             out = open(outfile, 'w')
             out.write('# max_dist\tup_freq\tlow_freq\tcorrelation\n')
