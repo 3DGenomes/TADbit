@@ -415,7 +415,7 @@ class Experiment(object):
                                lowfreq_range=(-1, 0), upfreq_step=0.1,
                                lowfreq_step=0.1, cutoff=300,
                                maxdist_range=(400, 1400), maxdist_step=100,
-                               outfile=None):
+                               outfile=None, verbose=True):
         """
         Find the optimal set of parameters in order to model a given region with
         IMP.
@@ -430,25 +430,27 @@ class Experiment(object):
            considered as a neighbor.
         :param n_cpus: number of CPUs to use for the optimization of models
         :param False verbose: verbosity
-        :param (-1, 0) lowfreq_range: a tuple with the boundaries between which
+        :param (-1,0) lowfreq_range: a tuple with the boundaries between which
            to search for the minimum threshold used to decide which experimental
            values have to be included in the computation of restraints
-        :param (0, 1) upfreq_range: a tuple with the boundaries between which
+        :param (0,1) upfreq_range: a tuple with the boundaries between which
            to search for the maximum threshold used to decide which experimental
            values have to be included in the computation of restraints
         :param 0.1 upfreq_step: step to increase  lowfreq values
         :param 0.1 lowfreq_step: step to increase lowfreq values
-        :param (400, 1400) maxdist_range: tuple with upper and lower bounds
+        :param (400,1400) maxdist_range: tuple with upper and lower bounds
            used to search for the optimal maximum experimental distance.
         :param 100 maxdist_step: size of the steps done during the search for
            maxdist
+        :param True verbose: print results as they are computed
 
         :returns: a tuple containing:
-           * a 3D numpy array with the values of correlations found
-           * the range of maxdist used
-           * the range of upfreq used
-           * the range of lowfreq used
-           
+
+             - a 3D numpy array with the values of correlations found
+             - the range of maxdist used
+             - the range of upfreq used
+             - the range of lowfreq used
+
         """
         zscores, values = self._sub_experiment_zscore(start, end)
         matrix, max_dist_arange, upfreq_arange, lowfreq_arange = grid_search(

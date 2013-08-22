@@ -15,7 +15,7 @@ COUNT = 0
 def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
                 upfreq_step=0.1, lowfreq_step=0.1, maxdist_range=(400, 1500),
                 maxdist_step=100, resolution=None, values=None, n_models=500,
-                cutoff=300, n_keep=100, n_cpus=1, close_bins=1):
+                cutoff=300, n_keep=100, n_cpus=1, close_bins=1, verbose=True):
     count = 0
     max_dist_arange = range(maxdist_range[0], maxdist_range[1] + maxdist_step,
                             maxdist_step)
@@ -39,10 +39,12 @@ def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
                                          config=tmp, n_cpus=n_cpus,
                                          values=values, close_bins=close_bins)
                 count += 1
-                print '%5s  ' % (count), upfreq, lowfreq, maxdist,
+                if verbose:
+                    print '%5s  ' % (count), upfreq, lowfreq, maxdist,
                 try:
                     result = tdm.correlate_with_real_data(cutoff=cutoff)[0]
-                    print result
+                    if verbose:
+                        print result
                     results[x, y, z] = result
                 except:
                     print 'ERROR'
