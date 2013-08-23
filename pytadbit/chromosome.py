@@ -527,9 +527,9 @@ class Chromosome(object):
             return img
         for i, tad in xper.tads.iteritems():
             if start:
-                if int(tad['start']) - 1 < start:
+                if int(tad['start']) < start:
                     continue
-                if int(tad['end']) + 1 > end:
+                if int(tad['end']) > end:
                     continue
                 t_start = int(tad['start']) - start
                 t_end = int(tad['end']) - start
