@@ -458,11 +458,11 @@ class Chromosome(object):
             fun = lambda x: x
         size = xper.size
         if normalized:
-            matrix = [[xper.hic_data[0][i+size*j] / xper.wght[0][i+size*j]
-                       if (xper.wght[0][i+size*j]
-                           and not i in xper._zeros
-                           and not j in xper._zeros) else 0.0
-                       for i in xrange(size)]
+            matrix = [xper.hic_data[0][i+size*j] / xper.wght[0][i+size*j]
+                      if (xper.wght[0][i+size*j]
+                          and not i in xper._zeros
+                          and not j in xper._zeros) else 0.0
+                      for i in xrange(size)
                       for j in xrange(size)]
             vmin = fun(min(matrix) or (1 if logarithm else 0))
             vmax = fun(max(matrix))
