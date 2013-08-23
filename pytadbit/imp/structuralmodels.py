@@ -837,18 +837,19 @@ class StructuralModels(object):
             if type(color) != list:
                 color = color(self.nloci)
             out = '<marker_set name=\"{}\">\n'.format(model['rand_init'])
-            # TODO: SCALE param in CONFIG
             form = ('<marker id=\"{0}\" x=\"{1}\" y=\"{2}\" z=\"{3}\"' +
                     ' r=\"{4}\" g=\"{5}\" b=\"{6}\" ' +
-                    'radius=\"{}\" note=\"{0}\"/>\n'.format(
-                        self.resolution * self._config['scale']))
+                    'radius=\"' +
+                    str(self.resolution * self._config['scale']) +
+                    '\" note=\"{0}\"/>\n')
             for n in xrange(self.nloci):
                 out += form.format(n + 1,
                                    model['x'][n], model['y'][n], model['z'][n],
                                    color[n][0], color[n][1], color[n][2])
             form = ('<link id1=\"{}\" id2=\"{}\" r=\"1\" ' +
-                    'g=\"1\" b=\"1\" radius=\"{}\"/>\n').format(
-                self.resolution * self._config['scale'] * 2)
+                    'g=\"1\" b=\"1\" radius=\"' +
+                    str(self.resolution * self._config['scale'] * 2) +
+                    '\"/>\n')
             for n in xrange(1, self.nloci):
                 out += form.format(n, n + 1)
             out += '</marker_set>\n'
