@@ -325,7 +325,7 @@ def my_round(num, val):
 
 
 def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
-                                lowfreq_arange, sliced='maxdist', show_best=10):
+                                lowfreq_arange, sliced='maxdist', show_best=0):
     """
     A grid of heatmaps representing the result of the optimization.
 
@@ -335,7 +335,7 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
     :param lowfreq_arange: range of lowfreq values used in the optimization
     :param 'maxd_ist' sliced: which parameter used to slice the 3D matrix of
        results
-    :param 10 show_best: number of best correlation value to identifie.
+    :param 0 show_best: number of best correlation value to identifie.
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
@@ -344,6 +344,7 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
     vmin = result.min()
     vmax = result.max()
     if sliced == 'maxdist':
+        sort_keys = ['lowfreq', 'upfreq', 'maxdist']
         x = [my_round(i, 3) for i in lowfreq_arange]
         y = [my_round(i, 3) for i in upfreq_arange]
         z = [my_round(i, 3) for i in max_dist_arange]
@@ -353,18 +354,20 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
                                for k in range(len(z))], key=lambda x: x[0],
                               reverse=True)[:show_best+1]
     if sliced == 'upfreq':
-        z = [my_round(i, 3) for i in upfreq_arange]
+        sort_keys = ['lowfreq', 'maxdist', 'upfreq']
         x = [my_round(i, 3) for i in lowfreq_arange]
         y = [my_round(i, 3) for i in max_dist_arange]
+        z = [my_round(i, 3) for i in upfreq_arange]
         sort_result =  sorted([(result[j, k, i], x[i], y[j], z[k])
                                for i in range(len(x))
                                for j in range(len(y))
                                for k in range(len(z))], key=lambda x: x[0],
                               reverse=True)[:show_best+1]
     if sliced == 'lowfreq':
+        sort_keys = ['upfreq', 'maxdist', 'lowfreq']
         x = [my_round(i, 3) for i in upfreq_arange]
-        z = [my_round(i, 3) for i in lowfreq_arange]
         y = [my_round(i, 3) for i in max_dist_arange]
+        z = [my_round(i, 3) for i in lowfreq_arange]
         sort_result =  sorted([(result[j, i, k], x[i], y[j], z[k])
                                for i in range(len(x))
                                for j in range(len(y))
@@ -421,10 +424,9 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
     grid.axes_llc.set_xlabel('lowfreq' if sliced=='maxdist'else
                              'lowfreq' if sliced=='upfreq' else 'upfreq')
     fig.suptitle(('Optimal IMP parameters\n' +
-                  'Best for: lowfreq={}, upfreq={}, maxdist={}'
-                  ).format(my_round(sort_result[0][1], 2),
-                           my_round(sort_result[0][2], 2),
-                           my_round(sort_result[0][3], 2)),
+                  'Best for: {0}={3}, {1}={4}, {2}={5}'
+                  ).format(*(sort_keys + [my_round(i, 2)
+                                          for i in sort_result[0][1:]])),
                  size='large')
     plt.title('lallalal')
     plt.show()
