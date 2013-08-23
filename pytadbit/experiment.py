@@ -413,7 +413,7 @@ class Experiment(object):
     def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1), close_bins=1,
                                lowfreq_range=(-1, 0), upfreq_step=0.1,
-                               lowfreq_step=0.1, cutoff=300,
+                               lowfreq_step=0.1, cutoff=300, scale=0.005,
                                maxdist_range=(400, 1400), maxdist_step=100,
                                outfile=None, verbose=True):
         """
@@ -442,6 +442,8 @@ class Experiment(object):
            used to search for the optimal maximum experimental distance.
         :param 100 maxdist_step: size of the steps done during the search for
            maxdist
+        :param 0.005 scale: scale parameter, how many nanometers occupies one
+           nucleotide.
         :param True verbose: print results as they are computed
 
         :returns: a tuple containing:
@@ -456,7 +458,7 @@ class Experiment(object):
         matrix, max_dist_arange, upfreq_arange, lowfreq_arange = grid_search(
             upfreq_range=upfreq_range, lowfreq_range=lowfreq_range,
             upfreq_step=upfreq_step, lowfreq_step=lowfreq_step, zscores=zscores,
-            resolution=self.resolution, values=values,
+            resolution=self.resolution, values=values, scale=scale,
             maxdist_range=maxdist_range, n_cpus=n_cpus, n_models=n_models,
             n_keep=n_keep, cutoff=cutoff, maxdist_step=maxdist_step,
             close_bins=close_bins, verbose=verbose)

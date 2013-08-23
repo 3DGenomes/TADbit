@@ -15,7 +15,8 @@ COUNT = 0
 def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
                 upfreq_step=0.1, lowfreq_step=0.1, maxdist_range=(400, 1500),
                 maxdist_step=100, resolution=None, values=None, n_models=500,
-                cutoff=300, n_keep=100, n_cpus=1, close_bins=1, verbose=True):
+                cutoff=300, n_keep=100, n_cpus=1, close_bins=1, verbose=True,
+                scale=0.005):
     count = 0
     max_dist_arange = range(maxdist_range[0], maxdist_range[1] + maxdist_step,
                             maxdist_step)
@@ -34,7 +35,8 @@ def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
                        'lowrdist' : 100,
                        'maxdist'  : maxdist,
                        'upfreq'   : upfreq,
-                       'lowfreq'  : lowfreq}
+                       'lowfreq'  : lowfreq,
+                       'scale'    : scale}
                 tdm = generate_3d_models(zscores, resolution, n_models, n_keep,
                                          config=tmp, n_cpus=n_cpus,
                                          values=values, close_bins=close_bins)
