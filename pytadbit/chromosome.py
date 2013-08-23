@@ -435,9 +435,9 @@ class Chromosome(object):
               'brk'  : end,
               'score': score}
               
-           Alternatively a list of these TADs can be passed (all TADs between
-           first and last TAD passed will be painted... thus passing more than
-           two TADs might be superfluous)
+           **Alternatively** a list of these TADs can be passed (all TADs
+           between first and last TAD passed will be painted... thus passing
+           more than two TADs might be superfluous)
         :param None focus: a tuple with the start and end position of the region
            to visualize.
         :param False paint_tads: draw a box around TADs defined for this
@@ -447,16 +447,28 @@ class Chromosome(object):
         :param True show: either to pop-up matplotlib image or not
         :param True logarithm: show logarithm
         :param True normalized: show normalized data (weights might have been
-           calculated previously)
+           calculated previously). *Note: white rows/columns may appear in the
+           matrix displayed, these rows correspond to filtered rows (see*
+           :func:`pytadbit.utils.hic_filtering.hic_filtering_for_modelling` *)*
         """
         xper = self.get_experiment(name)
         if logarithm:
             fun = log2
         else:
             fun = lambda x: x
-        vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
-        vmax = fun(max(xper.hic_data[0]))
         size = xper.size
+        if normalized:
+            matrix = [[xper.hic_data[0][i+size*j] / xper.wght[0][i+size*j]
+                       if (xper.wght[0][i+size*j]
+                           and not i in xper._zeros
+                           and not j in xper._zeros) else 0.0
+                       for i in xrange(size)]
+                      for j in xrange(size)]
+            vmin = fun(min(matrix) or (1 if logarithm else 0))
+            vmax = fun(max(matrix))
+        else:
+            vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
+            vmax = fun(max(xper.hic_data[0]))
         if normalized and not xper.wght:
             raise Exception('ERROR: weights not calculated for this ' +
                             'experiment. Run Experiment.normalize_hic\n')
