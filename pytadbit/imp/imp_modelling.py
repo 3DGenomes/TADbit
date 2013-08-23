@@ -86,6 +86,9 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
               # and less that lowfreq will be include, whereas all the others will be rejected
               'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
 
+              # How much space (radius in nm) ocupies a nucleotide
+              'scale'     : 0.005
+
               }
           }
 
@@ -99,8 +102,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     
     # Particles initial radius
     global RADIUS
-    # TODO: SCALE param in CONFIG
-    RADIUS = resolution * 0.005
+    RADIUS = resolution * CONFIG['scale']
 
     # get SLOPE and regression for all particles of the z-score data
     global SLOPE, INTERCEPT
@@ -218,7 +220,7 @@ def generate_IMPmodel(rand_init, verbose=False):
         p.set_name(str(LOCI[i]))
         # radius = diameter/2 (0.01/2)
         # computed following the relationship with the 30nm vs 40nm fiber
-        newrk = RADIUS * 0.005
+        newrk = RADIUS
         p.set_value(model['rk'], newrk)
 
     # Restraints between pairs of LOCI proportional to the PDIST

@@ -15,6 +15,8 @@ from numpy                     import std as np_std, log2
 from scipy.cluster.hierarchy   import linkage, fcluster
 from scipy.stats               import spearmanr
 from warnings                  import warn
+from pytadbit.imp.CONFIG       import CONFIG
+
 
 try:
     from matplotlib import pyplot as plt
@@ -840,13 +842,14 @@ class StructuralModels(object):
             form = ('<marker id=\"{0}\" x=\"{1}\" y=\"{2}\" z=\"{3}\"' +
                     ' r=\"{4}\" g=\"{5}\" b=\"{6}\" ' +
                     'radius=\"{}\" note=\"{0}\"/>\n'.format(
-                        self.resolution * 0.005))
+                        self.resolution * CONFIG['scale']))
             for n in xrange(self.nloci):
                 out += form.format(n + 1,
                                    model['x'][n], model['y'][n], model['z'][n],
                                    color[n][0], color[n][1], color[n][2])
             form = ('<link id1=\"{}\" id2=\"{}\" r=\"1\" ' +
-                    'g=\"1\" b=\"1\" radius=\"0.1\"/>\n')
+                    'g=\"1\" b=\"1\" radius=\"{}\"/>\n').format(
+                self.resolution * CONFIG['scale'] * 2)
             for n in xrange(1, self.nloci):
                 out += form.format(n, n + 1)
             out += '</marker_set>\n'
