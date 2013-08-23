@@ -679,10 +679,9 @@ class StructuralModels(object):
         
         """
         self.write_cmm('/tmp/', model_num=model_num)
-        proc = chimera_view('/tmp/model.{}.cmm'.format(
+        chimera_view('/tmp/model.{}.cmm'.format(
             self[model_num]['rand_init']),
-                            savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
-        return proc
+                     savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
     
 
     def measure_angle_3_particles(self, parta, partc, partb,

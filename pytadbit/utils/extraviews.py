@@ -275,7 +275,7 @@ movie encode output {0}
         out.write('\n'.join(chimera_cmd) + '\n')
     out.close()
     
-    return Popen('{} {}'.format(chimera_bin, pref_f), shell=True)
+    Popen('{} {}'.format(chimera_bin, pref_f), shell=True).communicate()
 
 
 def plot_3d_optimization_result(result, max_dist_arange, upfreq_arange,
