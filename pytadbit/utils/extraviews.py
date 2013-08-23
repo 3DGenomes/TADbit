@@ -256,6 +256,7 @@ set depth_cue
 set dc_color black
 set dc_start 0.5
 set dc_end 1
+scale 0.8
 ''')
         if savefig:
             if savefig.endswith('.png'):
@@ -270,9 +271,9 @@ movie encode output {0}
 '''.format(savefig))
             elif savefig:
                 raise Exception('Not supported format, must be png, mov or webm\n')
-        else:
-            out.write('\n'.join(chimera_cmd) + '\n')
-        out.close()
+    else:
+        out.write('\n'.join(chimera_cmd) + '\n')
+    out.close()
     
     return Popen('{} {}'.format(chimera_bin, pref_f), shell=True)
 
