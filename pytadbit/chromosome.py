@@ -457,6 +457,9 @@ class Chromosome(object):
         else:
             fun = lambda x: x
         size = xper.size
+        if normalized and not xper.wght:
+            raise Exception('ERROR: weights not calculated for this ' +
+                            'experiment. Run Experiment.normalize_hic\n')
         if normalized:
             matrix = [xper.hic_data[0][i+size*j] / xper.wght[0][i+size*j]
                       if (xper.wght[0][i+size*j]
@@ -469,9 +472,6 @@ class Chromosome(object):
         else:
             vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
             vmax = fun(max(xper.hic_data[0]))
-        if normalized and not xper.wght:
-            raise Exception('ERROR: weights not calculated for this ' +
-                            'experiment. Run Experiment.normalize_hic\n')
         plt.figure(figsize=(8, 6))
         if not axe:
             axe = plt.subplot(111)
