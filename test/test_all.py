@@ -20,13 +20,13 @@ class TestTadbit(unittest.TestCase):
 
         global exp1, exp2, exp3, exp4
         exp1 = tadbit('40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
-                     verbose=False, no_heuristic=False)
+                      verbose=False, no_heuristic=False)
         exp2 = tadbit('20Kb/chrT/chrT_B.tsv', max_tad_size="auto",
-                     verbose=False, no_heuristic=False)
+                      verbose=False, no_heuristic=False)
         exp3 = tadbit('20Kb/chrT/chrT_C.tsv', max_tad_size="auto",
-                     verbose=False, no_heuristic=False)
+                      verbose=False, no_heuristic=False)
         exp4 = tadbit('20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
-                     verbose=False, no_heuristic=False, get_weights=True)
+                      verbose=False, no_heuristic=False, get_weights=True)
 
         breaks = [0, 4, 10, 15, 23, 29, 38, 45]
         scores = [8.0, 7.0, 5.0, 7.0, 4.0, 7.0, 7.0, None]
@@ -171,7 +171,6 @@ class TestTadbit(unittest.TestCase):
 
     def test_10_generate_weights(self):
         """
-        TODO: using Francois' formula
         method names are: 'sqrt' or 'over_tot'
         """
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)

@@ -214,25 +214,26 @@ class Experiment(object):
         Normalize Hi-C data. This normalize step is an exact replicate of what
         is done inside :func:`pytadbit.tadbit.tadbit` (default parameters),
 
-        It fills the Experiment.wght variable.
+        It fills the Experiment.wght variable with the Hi-C value divided by
+        the calculated weight.
 
         the weight of a given cell in column i and row j corresponds to the
         square root of the product of the sum of the column i by the sum of row
         j.
 
-        :param sqrt method: either 'sqrt' or 'bytot'. Depending on this param
-           the weight of the Hi-C count in row I, column J of the Hi-C matrix
-           would be, under 'sqrt':
+        :param sqrt method: either 'sqrt' or 'visibility'. Depending on this
+           param the weight of the Hi-C count in row I, column J of the Hi-C
+           matrix would be, under 'sqrt':
            ::
               
                                    _________________________________________
                          \        / N                    N                  |
                           \      / ___                  ___             
             weight(I,J) =  \    /  \                    \           
-                            \  /   /__ (matrix(J, i)) * /__  (matrix(j, I))
+                            \  /   /__ (matrix(i, J)) * /__  (matrix(I, j))
                              \/    i=0                  j=0
 
-           and under 'bytot': 
+           and under 'visibility': 
            ::
    
                              N                    N                 
@@ -257,8 +258,8 @@ class Experiment(object):
         """
         if not self.hic_data:
             raise Exception('ERROR: No Hi-C data loaded\n')
-        if not method in ['sqrt', 'bytot']:
-            raise LookupError('Only "sqrt" and "bytot" methods are implemented')
+        if not method in ['sqrt', 'visibility']:
+            raise LookupError('Only "sqrt" and "visibility" methods are implemented')
         if self.wght:
             warn('WARNING: removing previous weights\n')
         # removes columns where there is no data in the diagonal
@@ -274,7 +275,7 @@ class Experiment(object):
                 if not j in forbidden:
                     rowsums[-1] += self.hic_data[0][i + j]
         self.wght = [[0. for _ in xrange(self.size * self.size)]]
-        if method == 'bytot':
+        if method == 'visibility':
             total = sum(rowsums)
             func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
         elif method == 'sqrt':
@@ -284,7 +285,11 @@ class Experiment(object):
                 if i in forbidden or j in forbidden:
                     self.wght[0][i * self.size + j] = 0.0
                 else:
-                    self.wght[0][i * self.size + j] = func(i, j)
+                    try:
+                        self.wght[0][i * self.size + j] = (
+                            self.hic_data[0][i * self.size + j] / func(i, j))
+                    except ZeroDivisionError:
+                        self.wght[0][i * self.size + j] = 0.0
 
 
     def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):
@@ -314,12 +319,7 @@ class Experiment(object):
                         and remove_zeros:
                         zeros[(i, j)] = None
                         continue
-                    try:
-                        values.append(
-                            self.hic_data[0][i * self.size + j] /
-                            self.wght[0][i * self.size + j])
-                    except ZeroDivisionError:
-                        values.append(0.0)
+                    values.append(self.wght[0][i * self.size + j])
         else:
             for i in xrange(self.size):
                 if i in self._zeros:
@@ -481,7 +481,7 @@ class Experiment(object):
         :param start: start of the region to model (bin number)
         :param end: end of the region to model (bin number, both inclusive)
 
-        :returns: zscore and raw values corresping to the experiment
+        :returns: zscore and raw values corresponding to the experiment
         """
         from pytadbit import Chromosome
         matrix = self.get_hic_matrix()
@@ -495,7 +495,7 @@ class Experiment(object):
         tmp.add_experiment('exp1', xp_handler=[new_matrix],
                               resolution=self.resolution)
         exp = tmp.experiments[0]
-        exp.normalize_hic(method='bytot')
+        exp.normalize_hic(method='visibility')
         exp.get_hic_zscores(remove_zeros=True)
         values = [[float('nan') for _ in xrange(exp.size)]
                   for _ in xrange(exp.size)]
@@ -509,14 +509,8 @@ class Experiment(object):
                 if (not exp.hic_data[0][i * exp.size + j] 
                     or not exp.hic_data[0][i * exp.size + j]):
                     continue
-                try:
-                    values[i][j] = (exp.hic_data[0][i * exp.size + j] /
-                                    exp.wght[0][i * exp.size + j])
-                    values[j][i] = (exp.hic_data[0][i * exp.size + j] /
-                                    exp.wght[0][i * exp.size + j])
-                except ZeroDivisionError:
-                    values[i][j] = 0.0
-                    values[j][i] = 0.0
+                values[i][j] = exp.wght[0][i * exp.size + j]
+                values[j][i] = exp.wght[0][i * exp.size + j]
         return exp._zscores, values
         
 
@@ -567,8 +561,7 @@ class Experiment(object):
                         continue
                     val = self._zscores[i][j]
                 elif normalized:
-                    val = (self.hic_data[0][self.size*i+j] /
-                           self.wght[0][self.size*i+j])
+                    val = self.wght[0][self.size*i+j]
                 else:
                     val = self.hic_data[0][self.size*i+j]
                 if remove_zeros and not val:

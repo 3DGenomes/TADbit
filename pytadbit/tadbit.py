@@ -66,7 +66,11 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
         result['score'].append(scores[brk] if brk < len(breaks) else None)
 
     if get_weights:
-        return result, weights
+        # in tadbit we are not using directly weights, but the
+        # multiplication by the real value
+        tadbit_weights = [[i/j if j else 0.0 for i, j in
+                           zip(nums[k], weights[k])] for k in xrange(len(nums))]
+        return result, tadbit_weights
     return result
 
 

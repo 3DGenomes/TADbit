@@ -361,7 +361,7 @@ class Chromosome(object):
             'batch_exp1_exp2').
 
         TODO: check option -> name for batch mode... some dirty changes....
-        
+
         """
         if batch_mode:
             matrix = []
@@ -461,14 +461,8 @@ class Chromosome(object):
             raise Exception('ERROR: weights not calculated for this ' +
                             'experiment. Run Experiment.normalize_hic\n')
         if normalized:
-            matrix = [xper.hic_data[0][i+size*j] / xper.wght[0][i+size*j]
-                      if (xper.wght[0][i+size*j]
-                          and not i in xper._zeros
-                          and not j in xper._zeros) else 0.0
-                      for i in xrange(size)
-                      for j in xrange(size)]
-            vmin = fun(min(matrix) or (1 if logarithm else 0))
-            vmax = fun(max(matrix))
+            vmin = fun(min(xper.wght[0]) or (1 if logarithm else 0))
+            vmax = fun(max(xper.wght[0]))
         else:
             vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
             vmax = fun(max(xper.hic_data[0]))
@@ -493,9 +487,8 @@ class Chromosome(object):
             if start:
                 if normalized:
                     matrix = [
-                        [xper.hic_data[0][i+size*j] / xper.wght[0][i+size*j]
-                         if (xper.wght[0][i+size*j]
-                             and not i in xper._zeros
+                        [xper.wght[0][i+size*j]
+                         if (not i in xper._zeros
                              and not j in xper._zeros) else 0.0
                          for i in xrange(start, end)]
                         for j in xrange(start, end)]
@@ -510,9 +503,8 @@ class Chromosome(object):
                 matrix = tad
         else:
             if normalized:
-                matrix = [[xper.hic_data[0][i+size*j] / xper.wght[0][i+size*j]
-                           if (xper.wght[0][i+size*j]
-                               and not i in xper._zeros
+                matrix = [[xper.wght[0][i+size*j]
+                           if (not i in xper._zeros
                                and not j in xper._zeros) else 0.0
                            for i in xrange(size)]
                           for j in xrange(size)]
@@ -588,14 +580,10 @@ class Chromosome(object):
         for i, tadi in enumerate(xrange(beg, end)):
             tadi = tadi * size
             for j, tadj in enumerate(xrange(beg, end)):
-                matrix[j][i] = xpr.hic_data[matrix_num][tadi + tadj]
-                if not normed:
-                    continue
-                try:
-                    matrix[j][i] = float(matrix[j][i]) \
-                                   / xpr.wght[0][tadi + tadj]
-                except ZeroDivisionError:
-                    matrix[j][i] = 0.0
+                if normed:
+                    matrix[j][i] = xpr.hic_data[matrix_num][tadi + tadj]
+                else:
+                    matrix[j][i] = xpr.wght[0][tadi + tadj]
         return matrix
 
 

@@ -128,7 +128,7 @@ def main():
                        resolution=exp.resolution)
 
     exp2 = tmp.experiments[0]
-    exp2.normalize_hic(method='bytot')
+    exp2.normalize_hic(method='visibility')
     exp2.get_hic_zscores(remove_zeros=True)
     values = [[float('nan') for _ in xrange(exp2.size)]
               for _ in xrange(exp2.size)]
