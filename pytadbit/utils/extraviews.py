@@ -256,7 +256,7 @@ set depth_cue
 set dc_color black
 set dc_start 0.5
 set dc_end 1
-scale 0.8
+scale 0.9
 ''')
         if savefig:
             if savefig.endswith('.png'):
