@@ -461,7 +461,13 @@ class Chromosome(object):
             raise Exception('ERROR: weights not calculated for this ' +
                             'experiment. Run Experiment.normalize_hic\n')
         if normalized:
-            vmin = fun(min(xper.wght[0]) or (1 if logarithm else 0))
+            # find minimum, if value is non-zero... for logarithm
+            mini = min([i for i in xper.wght[0] if i])
+            if mini == int(mini):
+                vmin = min(xper.wght[0])
+            else:
+                vmin = mini
+            vmin = fun(vmin or (1 if logarithm else 0))
             vmax = fun(max(xper.wght[0]))
         else:
             vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
@@ -489,7 +495,7 @@ class Chromosome(object):
                     matrix = [
                         [xper.wght[0][i+size*j]
                          if (not i in xper._zeros
-                             and not j in xper._zeros) else 0.0
+                             and not j in xper._zeros) else vmin
                          for i in xrange(start, end)]
                         for j in xrange(start, end)]
                 else:
@@ -505,7 +511,7 @@ class Chromosome(object):
             if normalized:
                 matrix = [[xper.wght[0][i+size*j]
                            if (not i in xper._zeros
-                               and not j in xper._zeros) else 0.0
+                               and not j in xper._zeros) else vmin
                            for i in xrange(size)]
                           for j in xrange(size)]
             else:
