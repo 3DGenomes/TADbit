@@ -325,22 +325,39 @@ def my_round(num, val):
     return int(num) if num == int(num) else num
 
 
-def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
-                                lowfreq_arange, sliced='maxdist', show_best=0):
+def plot_2d_optimization_result(result, scale, scale_arange, max_dist_arange,
+                                upfreq_arange, lowfreq_arange, sliced='maxdist',
+                                show_best=0):
     """
     A grid of heatmaps representing the result of the optimization.
 
     :param result: 3D numpy array contating correlation values
+    :param scale: represent optimization result for the scale
+    :param scale_arange: range of scale values used in the optimization
     :param maxdist_arange: range of max_dist values used in the optimization
     :param upfreq_arange: range of upfreq values used in the optimization
     :param lowfreq_arange: range of lowfreq values used in the optimization
     :param 'maxd_ist' sliced: which parameter used to slice the 3D matrix of
        results
     :param 0 show_best: number of best correlation value to identifie.
+
+    .. warning::
+    
+      one of ``scale_arange``, ``maxdist_arange``, ``upfreq_arange`` or
+      ``lowfreq_arange``, should be a single value in the calculated range.
+      E.g.: ``scale_arange=scale_arange[0]``. Right now we found not solution
+      for visualizing this number of dimentions.
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
     import matplotlib.patches as patches
+
+    # TOBEREMOVED
+    try:
+        scale_idx = scale_arange.index(scale)
+    except IndexError:
+        raise Exception('Scale not found, in scale_arange')
+    result = result[scale_arange,:,:,:]
 
     vmin = result.min()
     vmax = result.max()
@@ -424,10 +441,10 @@ def plot_2d_optimization_result(result, max_dist_arange, upfreq_arange,
                              'maxdist' if sliced=='upfreq' else 'maxdist')
     grid.axes_llc.set_xlabel('lowfreq' if sliced=='maxdist'else
                              'lowfreq' if sliced=='upfreq' else 'upfreq')
-    fig.suptitle(('Optimal IMP parameters\n' +
+    fig.suptitle(('Optimal IMP parameters (scale=)\n' +
                   'Best for: {0}={3}, {1}={4}, {2}={5}'
-                  ).format(*(sort_keys + [my_round(i, 2)
-                                          for i in sort_result[0][1:]])),
+                  ).format(*([round(scale,3)] + sort_keys + [my_round(i, 2)
+                                                             for i in sort_result[0][1:]])),
                  size='large')
     plt.title('lallalal')
     plt.show()

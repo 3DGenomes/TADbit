@@ -457,12 +457,9 @@ class Experiment(object):
 
            E.g.:
              * scale_range=[0.001, 0.005, 0.006] will test these three values.
-             * scale_range=(0.001, 0.005, 0.001) will test the values 0.001
-             0.002 0.003 0.004 and 0.005
+             * scale_range=(0.001, 0.005, 0.001) will test the values 0.001,
+               0.002, 0.003, 0.004 and 0.005
 
-           **be sure to use scare brackets for this last option, and parenthesis
-           for the first one.**
-        
         :returns: a tuple containing:
 
              - a 3D numpy array with the values of correlations found
