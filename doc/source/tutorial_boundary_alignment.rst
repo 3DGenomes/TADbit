@@ -6,7 +6,7 @@
    :depth: 3
 
 
-Tadbit allows to use information about different Hi-C experiments and put them together in order to decided whether some TAD boundaries are more or less conserved.
+Tadbit allows to use information about different Hi-C experiments and put them together in order to decide whether some TAD boundaries are conserved or not.
 
 Following with the example in previous section (:ref:`getting_start`), we will load one extra experiment (from the same works of [Lieberman-Aiden2009]_)
 
@@ -72,7 +72,7 @@ In order to check that the alignment makes sense and that it do not corresponds 
    
 For randomization two methodologies are available, "shuffle" or "interpolate" (the default). The first one, is based on shuffling the observed TADs while the former one draws the distribution of TAD lengths and generates random set of TADs according to this distribution (see:* :func:`pytadbit.alignment.randomization_test` *for more details).*
 
-In the case of our example, the score of the alignment is 0.27 and the might be p-value < 0.001.
+In the case of our example, the score of the alignment is 0.27 and its p-value < 0.001.
 
 
 Alignment objects

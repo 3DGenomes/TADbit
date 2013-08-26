@@ -410,11 +410,12 @@ class Experiment(object):
                                   keep_all=keep_all, close_bins=close_bins,
                                   config=config)
 
+
     def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
-                               n_cpus=1, upfreq_range=(0, 1), close_bins=1,
-                               lowfreq_range=(-1, 0), upfreq_step=0.1,
-                               lowfreq_step=0.1, cutoff=300, scale=0.005,
-                               maxdist_range=(400, 1400), maxdist_step=100,
+                               n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
+                               lowfreq_range=(-1, 0, 0.1),
+                               scale_range=(0.005, 0.005, 0.001),
+                               maxdist_range=(400, 1400), cutoff=300,
                                outfile=None, verbose=True):
         """
         Find the optimal set of parameters in order to model a given region with
@@ -430,22 +431,30 @@ class Experiment(object):
            considered as a neighbor.
         :param n_cpus: number of CPUs to use for the optimization of models
         :param False verbose: verbosity
-        :param (-1,0) lowfreq_range: a tuple with the boundaries between which
-           to search for the minimum threshold used to decide which experimental
-           values have to be included in the computation of restraints
-        :param (0,1) upfreq_range: a tuple with the boundaries between which
-           to search for the maximum threshold used to decide which experimental
-           values have to be included in the computation of restraints
-        :param 0.1 upfreq_step: step to increase  lowfreq values
-        :param 0.1 lowfreq_step: step to increase lowfreq values
-        :param (400,1400) maxdist_range: tuple with upper and lower bounds
-           used to search for the optimal maximum experimental distance.
-        :param 100 maxdist_step: size of the steps done during the search for
-           maxdist
-        :param 0.005 scale: scale parameter, how many nanometers occupies one
-           nucleotide.
+        :param (-1,0,0.1) lowfreq_range: a tuple with the boundaries between
+           which to search for the minimum threshold used to decide which
+           experimental values have to be included in the computation of
+           restraints. Last value of the input tuple is the step for
+           lowfreq increments
+        :param (0,1,0.1,0.1) upfreq_range: a tuple with the boundaries between
+           which to search for the maximum threshold used to decide which
+           experimental values have to be included in the computation of
+           restraints. Last value of the input tuple is the step for
+           upfreq increments
+        :param (400,1400,100) maxdist_range: tuple with upper and lower bounds
+           used to search for the optimal maximum experimental distance. Last
+           value of the input tuple is the step for maxdist increments
+        :param (0.005,0.005,0.001) scale_range: tuple with upper and lower
+           bounds used to search for the optimal scale parameter (how many
+           nanometers occupies one nucleotide). Last value of the input tuple is
+           the step for scale parameter increments
         :param True verbose: print results as they are computed
 
+        .. note: Each of the *_range* parameters accept tuples in the form
+           *(start, end, step)*, or list with the list of values to test. E.g.:
+           scale_range=[0.001, 0.005] will test these two values. **be sure to use
+           scare brackets for this last option, and parenthesis for the first one.**
+        
         :returns: a tuple containing:
 
              - a 3D numpy array with the values of correlations found
@@ -457,10 +466,10 @@ class Experiment(object):
         zscores, values = self._sub_experiment_zscore(start, end)
         matrix, max_dist_arange, upfreq_arange, lowfreq_arange = grid_search(
             upfreq_range=upfreq_range, lowfreq_range=lowfreq_range,
-            upfreq_step=upfreq_step, lowfreq_step=lowfreq_step, zscores=zscores,
-            resolution=self.resolution, values=values, scale=scale,
+            scale_range=scale_range, zscores=zscores,
+            resolution=self.resolution, values=values,
             maxdist_range=maxdist_range, n_cpus=n_cpus, n_models=n_models,
-            n_keep=n_keep, cutoff=cutoff, maxdist_step=maxdist_step,
+            n_keep=n_keep, cutoff=cutoff,
             close_bins=close_bins, verbose=verbose)
         if outfile:
             out = open(outfile, 'w')

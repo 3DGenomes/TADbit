@@ -12,45 +12,65 @@ global COUNT
 COUNT = 0
 
 
-def grid_search(zscores=None, upfreq_range=(0, 1), lowfreq_range=(-1, 0),
-                upfreq_step=0.1, lowfreq_step=0.1, maxdist_range=(400, 1500),
-                maxdist_step=100, resolution=None, values=None, n_models=500,
-                cutoff=300, n_keep=100, n_cpus=1, close_bins=1, verbose=True,
-                scale=0.005):
+def grid_search(zscores=None, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1),
+                scale_range=(0.005, 0.005, 0.001), maxdist_range=(400, 1500, 100),
+                resolution=None, values=None, n_models=500,
+                cutoff=300, n_keep=100, n_cpus=1, close_bins=1, verbose=True):
     count = 0
-    max_dist_arange = range(maxdist_range[0], maxdist_range[1] + maxdist_step,
-                            maxdist_step)
-    lowfreq_arange = np.arange(lowfreq_range[0],
-                               lowfreq_range[1] + lowfreq_step / 2,
-                               lowfreq_step)
-    upfreq_arange = np.arange(upfreq_range[0],
-                              upfreq_range[1] + upfreq_step / 2,
-                              upfreq_step)
-    results = np.empty((len(max_dist_arange), len(upfreq_arange),
-                        len(lowfreq_arange)))
-    for x, maxdist in enumerate(max_dist_arange):
-        for y, upfreq in enumerate(upfreq_arange):
-            for z, lowfreq in enumerate(lowfreq_arange):
-                tmp = {'kforce'   : 5,
-                       'lowrdist' : 100,
-                       'maxdist'  : maxdist,
-                       'upfreq'   : upfreq,
-                       'lowfreq'  : lowfreq,
-                       'scale'    : scale}
-                tdm = generate_3d_models(zscores, resolution, n_models, n_keep,
-                                         config=tmp, n_cpus=n_cpus,
-                                         values=values, close_bins=close_bins)
-                count += 1
-                if verbose:
-                    print '%5s  ' % (count), upfreq, lowfreq, maxdist,
-                try:
-                    result = tdm.correlate_with_real_data(cutoff=cutoff)[0]
+    if type(maxdist_range) == tuple:
+        maxdist_step = maxdist_range[2]
+        maxdist_arange = range(maxdist_range[0], maxdist_range[1] + maxdist_step,
+                               maxdist_step)
+    else:
+        maxdist_arange = maxdist_range
+    if type(lowfreq_range) == tuple:
+        lowfreq_step = lowfreq_range[2]
+        lowfreq_arange = np.arange(lowfreq_range[0],
+                                   lowfreq_range[1] + lowfreq_step / 2,
+                                   lowfreq_step)
+    else:
+        lowfreq_arange = lowfreq_range
+    if type(upfreq_range) == tuple:
+        upfreq_step = upfreq_range[2]
+        upfreq_arange = np.arange(upfreq_range[0],
+                                  upfreq_range[1] + upfreq_step / 2,
+                                  upfreq_step)
+    else:
+        upfreq_arange = upfreq_range
+    if type(scale_range) == tuple:
+        scale_step = scale_range[2]
+        scale_arange = np.arange(scale_range[0],
+                                  scale_range[1] + scale_step / 2,
+                                  scale_step)
+    else:
+        scale_arange = scale_range
+    results = np.empty((len(scale_arange), len(maxdist_arange),
+                        len(upfreq_arange), len(lowfreq_arange)))
+    for w, scale in enumerate(scale_arange):
+        for x, maxdist in enumerate(maxdist_arange):
+            for y, upfreq in enumerate(upfreq_arange):
+                for z, lowfreq in enumerate(lowfreq_arange):
+                    tmp = {'kforce'   : 5,
+                           'lowrdist' : 100,
+                           'maxdist'  : maxdist,
+                           'upfreq'   : upfreq,
+                           'lowfreq'  : lowfreq,
+                           'scale'    : scale}
+                    tdm = generate_3d_models(zscores, resolution, n_models,
+                                             n_keep, config=tmp, n_cpus=n_cpus,
+                                             values=values,
+                                             close_bins=close_bins)
+                    count += 1
                     if verbose:
-                        print result
-                    results[x, y, z] = result
-                except:
-                    print 'ERROR'
-    return results, max_dist_arange, upfreq_arange, lowfreq_arange
+                        print '%5s  ' % (count), upfreq, lowfreq, maxdist,
+                    try:
+                        result = tdm.correlate_with_real_data(cutoff=cutoff)[0]
+                        if verbose:
+                            print result
+                        results[w, x, y, z] = result
+                    except:
+                        print 'ERROR'
+    return results, scale_arange, maxdist_arange, upfreq_arange, lowfreq_arange
 
 
 def to_optimize(params, zscores, resolution, values, n_models, n_keep,

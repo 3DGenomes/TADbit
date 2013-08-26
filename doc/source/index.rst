@@ -6,15 +6,26 @@
 Welcome to Tadbit's documentation!
 ==================================
 
-.. toctree::
-   :maxdepth: 2
-   
-   intro
+Some text...
 
-   install
 
-   tutorial
+Documentation
+-------------
 
-   reference/index
+:ref:`Introduction<intro>`
+""""""""""""""""""""""""""
+*overview of basic tasks*
 
-   biblio
+Installation
+""""""""""""
+*Download and install TADBit*
+
+Tutorials
+"""""""""
+
+*for a complete overview*
+
+:ref:`General Index<reference>`
+"""""""""""""""""""""""""""""""
+*all functions, classes, terms*
+
