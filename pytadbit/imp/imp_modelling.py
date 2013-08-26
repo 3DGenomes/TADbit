@@ -220,7 +220,7 @@ def generate_IMPmodel(rand_init, verbose=False):
         p.set_name(str(LOCI[i]))
         # radius = diameter/2 (0.01/2)
         # computed following the relationship with the 30nm vs 40nm fiber
-        newrk = RADIUS * CONFIG['scale']
+        newrk = RADIUS
         p.set_value(model['rk'], newrk)
 
     # Restraints between pairs of LOCI proportional to the PDIST
