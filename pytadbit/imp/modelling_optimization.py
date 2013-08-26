@@ -62,7 +62,7 @@ def grid_search(zscores=None, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.
                                              close_bins=close_bins)
                     count += 1
                     if verbose:
-                        print '%5s  ' % (count), upfreq, lowfreq, maxdist,
+                        print '%5s  ' % (count), upfreq, lowfreq, maxdist, scale,
                     try:
                         result = tdm.correlate_with_real_data(cutoff=cutoff)[0]
                         if verbose:

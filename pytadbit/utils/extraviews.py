@@ -334,27 +334,21 @@ def my_round(num, val):
     return int(num) if num == int(num) else num
 
 
-def plot_2d_optimization_result(result, axes=['scale', 'maxdist', 'upfreq', 'lowfreq'],
+def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
                                 show_best=0):
     """
     A grid of heatmaps representing the result of the optimization.
 
     :param result: 3D numpy array contating correlation values
-    :param scale: represent optimization result for the scale
-    :param scale_arange: range of scale values used in the optimization
-    :param maxdist_arange: range of max_dist values used in the optimization
-    :param upfreq_arange: range of upfreq values used in the optimization
-    :param lowfreq_arange: range of lowfreq values used in the optimization
-    :param 'maxd_ist' sliced: which parameter used to slice the 3D matrix of
-       results
+    :param 'scale','maxdist','upfreq','lowfreq' axes: tuple of axes to
+       represent. The order will define which parameter will be placed on the
+       w, z, x or z axe.
     :param 0 show_best: number of best correlation value to identifie.
 
     .. warning::
-    
-      one of ``scale_arange``, ``maxdist_arange``, ``upfreq_arange`` or
-      ``lowfreq_arange``, should be a single value in the calculated range.
-      E.g.: ``scale_arange=scale_arange[0]``. Right now we found not solution
-      for visualizing this number of dimentions.
+
+      Only complet set of axes is avaiable now
+      
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
@@ -370,67 +364,71 @@ def plot_2d_optimization_result(result, axes=['scale', 'maxdist', 'upfreq', 'low
     vmin = result.min()
     vmax = result.max()
 
-    sort_keys = ['lowfreq', 'upfreq', 'maxdist']
     w = [my_round(i, 3) for i in axes_range[0]]
-    x = [my_round(i, 3) for i in axes_range[1]]
+    z = [my_round(i, 3) for i in axes_range[1]]
+    x = [my_round(i, 3) for i in axes_range[3]]
     y = [my_round(i, 3) for i in axes_range[2]]
-    z = [my_round(i, 3) for i in axes_range[3]]
-    sort_result =  sorted([(result[l, k, j, i], w[i], x[j], y[k], z[l])
+    sort_result =  sorted([(result[i, j, k, l], w[i], z[j], x[l], y[k])
                            for i in range(len(w))
-                           for j in range(len(x))
+                           for j in range(len(z))
                            for k in range(len(y))
-                           for l in range(len(z))
+                           for l in range(len(x))
                            ], key=lambda x: x[0],
                           reverse=True)[:show_best+1]
 
     ncols = int(np.sqrt(len(z)) + 0.999)
     nrows = int(np.sqrt(len(z)) + 0.5)
-    fig = plt.figure(figsize=(ncols*3,nrows*3))
-    grid = AxesGrid(fig, 111,
-                    nrows_ncols = (nrows, ncols),
-                    axes_pad = 0.0,
-                    label_mode = "1",
-                    share_all = True,
-                    cbar_location="right",
-                    cbar_mode="single",
-                    cbar_size="7%",
-                    cbar_pad="2%",
-                    )
-    for i in range(len(z)):
-        im = grid[i].imshow(result[i, :, :], interpolation="nearest",
-                            vmin=vmin, vmax=vmax)
-        grid[i].tick_params(axis='both', direction='out', top=False,
-                            right=False, left=False, bottom=False)
-        rect = patches.Rectangle((-0.5, len(y)-.5),len(x), 1.5,
-                                 facecolor='grey', alpha=0.5)
-        grid[i].add_patch(rect)
-        grid[i].text(np.mean(range(0, len(x))), max(range(0, len(y))) + 1.25,
-                     axes[1] + ': ' + str(my_round(z[i], 3)),
-                     {'ha':'center', 'va':'center'})
-        for j, k  in enumerate(sort_result[:-1]):
-            if k[4] == z[i]:
-                grid[i].text(x.index(k[1]), y.index(k[2]), str(j),
-                             {'ha':'center', 'va':'center'})
-    for i in range(len(z), nrows * ncols):
-        grid[i].set_visible(False)
+    nncols = int(np.sqrt(len(w)) + 0.999)
+    nnrows = int(np.sqrt(len(w)) + 0.5)
+    fig = plt.figure(figsize=((nncols+ncols)*3,(nrows+nrows)*3))
+    
+    for ii in range(len(w))[::-1]:
+        print ii
+        grid = AxesGrid(fig, int(str(nnrows) + str(nncols) + str(ii)),
+                        nrows_ncols = (nrows, ncols),
+                        axes_pad = 0.0,
+                        label_mode = "1",
+                        share_all = True,
+                        cbar_location="right",
+                        cbar_mode="single" if not ii else None,
+                        cbar_size="7%",
+                        cbar_pad="2%",
+                        )
+        for i in range(len(z)):
+            if not i:
+                grid[i].text(len(x) * ncols/2, len(y) + 1.5,
+                             axes[0] + ': ' + str(my_round(w[ii], 3)),
+                             {'ha':'center', 'va':'top'}, size='large')
+            im = grid[i].imshow(result[ii, i, :, :], interpolation="nearest",
+                                vmin=vmin, vmax=vmax)
+            grid[i].tick_params(axis='both', direction='out', top=False,
+                                right=False, left=False, bottom=False)
+            rect = patches.Rectangle((-0.5, len(y)-.5),len(x), 1.5,
+                                     facecolor='grey', alpha=0.5)
+            grid[i].add_patch(rect)
+            grid[i].text(np.mean(range(0, len(x))), max(range(0, len(y))) + 1.25,
+                         axes[1] + ': ' + str(my_round(z[i], 3)),
+                         {'ha':'center', 'va':'center'})
+            for j, k  in enumerate(sort_result[:-1]):
+                if k[2] == z[i] and k[1] == w[ii]:
+                    grid[i].text(x.index(k[3]), y.index(k[4]), str(j),
+                                 {'ha':'center', 'va':'center'})
+        for i in range(len(z), nrows * ncols):
+            grid[i].set_visible(False)
+        # This affects all axes because we set share_all = True.
+        grid.axes_llc.set_ylim(-0.5, len(y)+1)
+        grid.axes_llc.set_xticks(range(0, len(x), 2))
+        grid.axes_llc.set_yticks(range(0, len(y), 2))
+        grid.axes_llc.set_xticklabels([my_round(i, 3) for i in x][::2])
+        grid.axes_llc.set_yticklabels([my_round(i, 3) for i in y][::2])
+        grid.axes_llc.set_ylabel(axes[2])
+        grid.axes_llc.set_xlabel(axes[3])
+        plt.title('lallalal')
     grid.cbar_axes[0].colorbar(im)
     grid.cbar_axes[0].set_ylabel('Correlation value')
-    # This affects all axes because we set share_all = True.
-    grid.axes_llc.set_ylim(-0.5, len(y)+1)
-    grid.axes_llc.set_xticks(range(0, len(x), 2))
-    grid.axes_llc.set_yticks(range(0, len(y), 2))
-    grid.axes_llc.set_xticklabels([my_round(i, 3) for i in x][::2])
-    grid.axes_llc.set_yticklabels([my_round(i, 3) for i in y][::2])
-    grid.axes_llc.set_ylabel(axes[2])
-    grid.axes_llc.set_xlabel(axes[3])
-    fig.suptitle(('Optimal IMP parameters ({0}={4})\n' +
-                  'Best for: {1}={5}, {2}={6}, {3}={7}'
-                  ).format(*(sort_keys + [my_round(i, 2)
-                                          for i in sort_result[0][1:]])),
+    fig.suptitle(('Optimal IMP parameters\n' +
+                  'Best for: {0}={4}, {1}={5}, {2}={6}, {3}={7}'
+                  ).format(*(list(axes) + [my_round(i, 3)
+                                           for i in sort_result[0][1:]])),
                  size='large')
-    plt.title('lallalal')
     plt.show()
-
-     
-
-
