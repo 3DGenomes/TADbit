@@ -480,7 +480,7 @@ class Experiment(object):
             close_bins=close_bins, verbose=verbose)
         if outfile:
             out = open(outfile, 'w')
-            out.write('# max_dist\tup_freq\tlow_freq\tcorrelation\n')
+            out.write('# scale\tmax_dist\tup_freq\tlow_freq\tcorrelation\n')
             for h, hh in enumerate(scale_arange):
                 for i, ii in enumerate(max_dist_arange):
                     for j, jj in enumerate(upfreq_arange):
