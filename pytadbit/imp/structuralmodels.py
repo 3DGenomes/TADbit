@@ -59,7 +59,7 @@ class StructuralModels(object):
         self.nloci          = nloci
         self.clusters       = clusters or {}
         self.resolution     = float(resolution)
-        self._original_data = original_data
+        self._original_data = original_data # only used for correlation
         self._config        = config
         
 
@@ -538,7 +538,7 @@ class StructuralModels(object):
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the observed Hi-C count')
         cbar = ax.figure.colorbar(ims)
-        cbar.ax.set_ylabel('Log2(raw Hi-C data)')
+        cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
         
         if savefig:
             fig.savefig(savefig)

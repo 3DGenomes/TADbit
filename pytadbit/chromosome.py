@@ -422,7 +422,7 @@ class Chromosome(object):
 
 
     def visualize(self, name, tad=None, focus=None, paint_tads=False, axe=None,
-                  show=True, logarithm=True, normalized=False):
+                  show=True, logarithm=True, normalized=False, relative=True):
         """
         Visualize the matrix of Hi-C interactions
 
@@ -450,6 +450,8 @@ class Chromosome(object):
            calculated previously). *Note: white rows/columns may appear in the
            matrix displayed, these rows correspond to filtered rows (see*
            :func:`pytadbit.utils.hic_filtering.hic_filtering_for_modelling` *)*
+        :param True relative: Color scale is relative to the whole matrix of
+           data, not only the region displayed.
         """
         xper = self.get_experiment(name)
         if logarithm:
@@ -460,23 +462,10 @@ class Chromosome(object):
         if normalized and not xper.wght:
             raise Exception('ERROR: weights not calculated for this ' +
                             'experiment. Run Experiment.normalize_hic\n')
-        if normalized:
-            # find minimum, if value is non-zero... for logarithm
-            mini = min([i for i in xper.wght[0] if i])
-            if mini == int(mini):
-                vmin = min(xper.wght[0])
-            else:
-                vmin = mini
-            vmin = fun(vmin or (1 if logarithm else 0))
-            vmax = fun(max(xper.wght[0]))
-        else:
-            vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
-            vmax = fun(max(xper.hic_data[0]))
-        plt.figure(figsize=(8, 6))
-        if not axe:
-            axe = plt.subplot(111)
         if tad and focus:
             raise Exception('ERROR: only one of "tad" or "focus" might be set')
+        if focus:
+            start, end = focus
         start = end = None
         if type(tad) == dict:
             start = int(tad['start'])
@@ -487,8 +476,22 @@ class Chromosome(object):
                                    key=lambda x: int(x['start']))[0 ]['start'])
                 end   = int(sorted(tad,
                                    key=lambda x: int(x['end'  ]))[-1]['end'  ])
-        if focus:
-            start, end = focus
+        if relative:
+            if normalized:
+                # find minimum, if value is non-zero... for logarithm
+                mini = min([i for i in xper.wght[0] if i])
+                if mini == int(mini):
+                    vmin = min(xper.wght[0])
+                else:
+                    vmin = mini
+                vmin = fun(vmin or (1 if logarithm else 0))
+                vmax = fun(max(xper.wght[0]))
+            else:
+                vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
+                vmax = fun(max(xper.hic_data[0]))
+        plt.figure(figsize=(8, 6))
+        if not axe:
+            axe = plt.subplot(111)
         if tad or focus:
             if start:
                 if normalized:
@@ -518,8 +521,12 @@ class Chromosome(object):
                 matrix = [[xper.hic_data[0][i+size*j]\
                            for i in xrange(size)] \
                           for j in xrange(size)]
-        img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
-                         interpolation="nearest")
+        if relative:
+            img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
+                             interpolation="nearest")
+        else:
+            img = axe.imshow(fun(matrix), origin='lower',
+                             interpolation="nearest")
         cbar = axe.figure.colorbar(img)
         cbar.ax.set_ylabel('Log2 Hi-C interactions count')
         axe.set_title(('Chromosome {} experiment {}' +

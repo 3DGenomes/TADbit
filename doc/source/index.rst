@@ -3,29 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
 Welcome to Tadbit's documentation!
 ==================================
 
-Some text...
+Documentation index:
+--------------------
 
+.. epigraph::
 
-Documentation
--------------
-
-:ref:`Introduction<intro>`
-""""""""""""""""""""""""""
-*overview of basic tasks*
-
-Installation
-""""""""""""
-*Download and install TADBit*
-
-Tutorials
-"""""""""
-
-*for a complete overview*
-
-:ref:`General Index<reference>`
-"""""""""""""""""""""""""""""""
-*all functions, classes, terms*
-
+  .. toctree::
+     :maxdepth: 3
+     
+     intro
+  
+     install
+  
+     tutorial
+  
+     reference/index
+  
+     biblio

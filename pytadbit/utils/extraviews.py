@@ -334,8 +334,7 @@ def my_round(num, val):
     return int(num) if num == int(num) else num
 
 
-def plot_2d_optimization_result(result, scale, scale_arange, max_dist_arange,
-                                upfreq_arange, lowfreq_arange, sliced='maxdist',
+def plot_2d_optimization_result(result, axes=['scale', 'maxdist', 'upfreq', 'lowfreq'],
                                 show_best=0):
     """
     A grid of heatmaps representing the result of the optimization.
@@ -361,45 +360,28 @@ def plot_2d_optimization_result(result, scale, scale_arange, max_dist_arange,
     from mpl_toolkits.axes_grid1 import AxesGrid
     import matplotlib.patches as patches
 
-    # TOBEREMOVED
-    try:
-        scale_idx = scale_arange.index(scale)
-    except IndexError:
-        raise Exception('Scale not found, in scale_arange')
-    result = result[scale_idx,:,:,:]
+    ori_axes, axes_range, result = result
+    trans = [ori_axes.index(a) for a in axes]
+    axes_range = [axes_range[i] for i in trans]
+
+    # transpose results
+    result = result.transpose(trans)
 
     vmin = result.min()
     vmax = result.max()
-    if sliced == 'maxdist':
-        sort_keys = ['lowfreq', 'upfreq', 'maxdist']
-        x = [my_round(i, 3) for i in lowfreq_arange]
-        y = [my_round(i, 3) for i in upfreq_arange]
-        z = [my_round(i, 3) for i in max_dist_arange]
-        sort_result =  sorted([(result[k, j, i], x[i], y[j], z[k])
-                               for i in range(len(x))
-                               for j in range(len(y))
-                               for k in range(len(z))], key=lambda x: x[0],
-                              reverse=True)[:show_best+1]
-    if sliced == 'upfreq':
-        sort_keys = ['lowfreq', 'maxdist', 'upfreq']
-        x = [my_round(i, 3) for i in lowfreq_arange]
-        y = [my_round(i, 3) for i in max_dist_arange]
-        z = [my_round(i, 3) for i in upfreq_arange]
-        sort_result =  sorted([(result[j, k, i], x[i], y[j], z[k])
-                               for i in range(len(x))
-                               for j in range(len(y))
-                               for k in range(len(z))], key=lambda x: x[0],
-                              reverse=True)[:show_best+1]
-    if sliced == 'lowfreq':
-        sort_keys = ['upfreq', 'maxdist', 'lowfreq']
-        x = [my_round(i, 3) for i in upfreq_arange]
-        y = [my_round(i, 3) for i in max_dist_arange]
-        z = [my_round(i, 3) for i in lowfreq_arange]
-        sort_result =  sorted([(result[j, i, k], x[i], y[j], z[k])
-                               for i in range(len(x))
-                               for j in range(len(y))
-                               for k in range(len(z))], key=lambda x: x[0],
-                              reverse=True)[:show_best+1]
+
+    sort_keys = ['lowfreq', 'upfreq', 'maxdist']
+    w = [my_round(i, 3) for i in axes_range[0]]
+    x = [my_round(i, 3) for i in axes_range[1]]
+    y = [my_round(i, 3) for i in axes_range[2]]
+    z = [my_round(i, 3) for i in axes_range[3]]
+    sort_result =  sorted([(result[l, k, j, i], w[i], x[j], y[k], z[l])
+                           for i in range(len(w))
+                           for j in range(len(x))
+                           for k in range(len(y))
+                           for l in range(len(z))
+                           ], key=lambda x: x[0],
+                          reverse=True)[:show_best+1]
 
     ncols = int(np.sqrt(len(z)) + 0.999)
     nrows = int(np.sqrt(len(z)) + 0.5)
@@ -415,25 +397,18 @@ def plot_2d_optimization_result(result, scale, scale_arange, max_dist_arange,
                     cbar_pad="2%",
                     )
     for i in range(len(z)):
-        if sliced == 'maxdist':
-            im = grid[i].imshow(result[i, :, :], interpolation="nearest",
-                                vmin=vmin, vmax=vmax)
-        elif sliced == 'upfreq':
-            im = grid[i].imshow(result[:, i, :], interpolation="nearest",
-                                vmin=vmin, vmax=vmax)
-        else:
-            im = grid[i].imshow(result[:, :, i], interpolation="nearest",
-                                vmin=vmin, vmax=vmax)
+        im = grid[i].imshow(result[i, :, :], interpolation="nearest",
+                            vmin=vmin, vmax=vmax)
         grid[i].tick_params(axis='both', direction='out', top=False,
                             right=False, left=False, bottom=False)
         rect = patches.Rectangle((-0.5, len(y)-.5),len(x), 1.5,
                                  facecolor='grey', alpha=0.5)
         grid[i].add_patch(rect)
         grid[i].text(np.mean(range(0, len(x))), max(range(0, len(y))) + 1.25,
-                     sliced + ': ' + str(my_round(z[i], 3)),
+                     axes[1] + ': ' + str(my_round(z[i], 3)),
                      {'ha':'center', 'va':'center'})
         for j, k  in enumerate(sort_result[:-1]):
-            if k[3] == z[i]:
+            if k[4] == z[i]:
                 grid[i].text(x.index(k[1]), y.index(k[2]), str(j),
                              {'ha':'center', 'va':'center'})
     for i in range(len(z), nrows * ncols):
@@ -446,14 +421,12 @@ def plot_2d_optimization_result(result, scale, scale_arange, max_dist_arange,
     grid.axes_llc.set_yticks(range(0, len(y), 2))
     grid.axes_llc.set_xticklabels([my_round(i, 3) for i in x][::2])
     grid.axes_llc.set_yticklabels([my_round(i, 3) for i in y][::2])
-    grid.axes_llc.set_ylabel('upfreq' if sliced=='maxdist'else
-                             'maxdist' if sliced=='upfreq' else 'maxdist')
-    grid.axes_llc.set_xlabel('lowfreq' if sliced=='maxdist'else
-                             'lowfreq' if sliced=='upfreq' else 'upfreq')
-    fig.suptitle(('Optimal IMP parameters (scale={})\n' +
-                  'Best for: {0}={3}, {1}={4}, {2}={5}'
-                  ).format(*([round(scale,3)] + sort_keys + [my_round(i, 2)
-                                                             for i in sort_result[0][1:]])),
+    grid.axes_llc.set_ylabel(axes[2])
+    grid.axes_llc.set_xlabel(axes[3])
+    fig.suptitle(('Optimal IMP parameters ({0}={4})\n' +
+                  'Best for: {1}={5}, {2}={6}, {3}={7}'
+                  ).format(*(sort_keys + [my_round(i, 2)
+                                          for i in sort_result[0][1:]])),
                  size='large')
     plt.title('lallalal')
     plt.show()
