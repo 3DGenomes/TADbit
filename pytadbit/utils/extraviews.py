@@ -450,7 +450,7 @@ def plot_2d_optimization_result(result, scale, scale_arange, max_dist_arange,
                              'maxdist' if sliced=='upfreq' else 'maxdist')
     grid.axes_llc.set_xlabel('lowfreq' if sliced=='maxdist'else
                              'lowfreq' if sliced=='upfreq' else 'upfreq')
-    fig.suptitle(('Optimal IMP parameters (scale=)\n' +
+    fig.suptitle(('Optimal IMP parameters (scale={})\n' +
                   'Best for: {0}={3}, {1}={4}, {2}={5}'
                   ).format(*([round(scale,3)] + sort_keys + [my_round(i, 2)
                                                              for i in sort_result[0][1:]])),
