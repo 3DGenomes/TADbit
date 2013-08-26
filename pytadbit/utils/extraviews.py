@@ -278,17 +278,26 @@ movie encode output {0}
     Popen('{} {}'.format(chimera_bin, pref_f), shell=True).communicate()
 
 
-def plot_3d_optimization_result(result, max_dist_arange, upfreq_arange,
-                                lowfreq_arange):
+def plot_3d_optimization_result(result, scale, scale_arange, max_dist_arange,
+                                upfreq_arange, lowfreq_arange):
     """
     Displays a three dimensional scatter plot representing the result of the
     optimization.
 
     :param result: 3D numpy array contating correlation values
+    :param scale: represent optimization result for the scale
+    :param scale_arange: range of scale values used in the optimization
     :param max_dist_arange: range of max_dist values used in the optimization
     :param upfreq_arange: range of upfreq values used in the optimization
     :param lowfreq_arange: range of lowfreq values used in the optimization
     """
+    # TOBEREMOVED
+    try:
+        scale_idx = scale_arange.index(scale)
+    except IndexError:
+        raise Exception('Scale not found, in scale_arange')
+    result = result[scale_idx,:,:,:]
+
     x = [my_round(i, 3) for i in lowfreq_arange]
     y = [my_round(i, 3) for i in upfreq_arange]
     z = [my_round(i, 3) for i in max_dist_arange]
@@ -311,9 +320,9 @@ def plot_3d_optimization_result(result, max_dist_arange, upfreq_arange,
     lol = ax.scatter(x, y, z, c=col, s=100, alpha=0.9)
     cbar = fig.colorbar(lol)
     cbar.ax.set_ylabel('Correlation value')
-    plt.title(('Optimal IMP parameters\n' +
+    plt.title(('Optimal IMP parameters (scale={})\n' +
                'Best for: lowfreq={}, upfreq={}, maxdist={}'
-               ).format(my_round(sort_result[1], 2),
+               ).format(round(scale,3), my_round(sort_result[1], 2),
                         my_round(sort_result[2], 2),
                         my_round(sort_result[3], 2)),
                  size='large')
@@ -357,7 +366,7 @@ def plot_2d_optimization_result(result, scale, scale_arange, max_dist_arange,
         scale_idx = scale_arange.index(scale)
     except IndexError:
         raise Exception('Scale not found, in scale_arange')
-    result = result[scale_arange,:,:,:]
+    result = result[scale_idx,:,:,:]
 
     vmin = result.min()
     vmax = result.max()
