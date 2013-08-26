@@ -450,7 +450,8 @@ class Experiment(object):
            the step for scale parameter increments
         :param True verbose: print results as they are computed
 
-        .. note: Each of the *_range* parameters accept tuples in the form
+        .. note::
+          Each of the *_range* parameters accept tuples in the form
            *(start, end, step)*, or list with the list of values to test. E.g.:
            scale_range=[0.001, 0.005] will test these two values. **be sure to use
            scare brackets for this last option, and parenthesis for the first one.**
@@ -458,13 +459,15 @@ class Experiment(object):
         :returns: a tuple containing:
 
              - a 3D numpy array with the values of correlations found
+             - the range of scale used
              - the range of maxdist used
              - the range of upfreq used
              - the range of lowfreq used
 
         """
         zscores, values = self._sub_experiment_zscore(start, end)
-        matrix, max_dist_arange, upfreq_arange, lowfreq_arange = grid_search(
+        (matrix, scale_arange, max_dist_arange,
+         upfreq_arange, lowfreq_arange) = grid_search(
             upfreq_range=upfreq_range, lowfreq_range=lowfreq_range,
             scale_range=scale_range, zscores=zscores,
             resolution=self.resolution, values=values,
@@ -480,7 +483,8 @@ class Experiment(object):
                         out.write('{}\t{}\t{}\t{}\n'.format(ii, jj, kk,
                                                             matrix[i, j, k]))
             out.close()
-        return matrix, max_dist_arange, upfreq_arange, lowfreq_arange
+        return (matrix,
+                scale_arange, max_dist_arange, upfreq_arange, lowfreq_arange)
 
     
     def _sub_experiment_zscore(self, start, end):

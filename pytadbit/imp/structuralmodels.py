@@ -553,7 +553,7 @@ class StructuralModels(object):
            fragment modelled. This plot can also be viewed as how well defined,
            or how stable, is a given portion of the chromatine model.
 
-        :param (50, 100, 150, 200) cutoffs: list of cutoff values (in nanometer)
+        :param (50,100,150,200) cutoffs: list of cutoff values (in nanometer)
            to plot. These distances are used to know when to consider two
            particles as diferent.
         :param None models: If None (default) will do calculate the distance
