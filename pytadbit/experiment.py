@@ -451,10 +451,17 @@ class Experiment(object):
         :param True verbose: print results as they are computed
 
         .. note::
+        
           Each of the *_range* parameters accept tuples in the form
-           *(start, end, step)*, or list with the list of values to test. E.g.:
-           scale_range=[0.001, 0.005] will test these two values. **be sure to use
-           scare brackets for this last option, and parenthesis for the first one.**
+           *(start, end, step)*, or list with the list of values to test.
+
+           E.g.:
+             * scale_range=[0.001, 0.005, 0.006] will test these three values.
+             * scale_range=(0.001, 0.005, 0.001) will test the values 0.001
+             0.002 0.003 0.004 and 0.005
+
+           **be sure to use scare brackets for this last option, and parenthesis
+           for the first one.**
         
         :returns: a tuple containing:
 
@@ -477,11 +484,12 @@ class Experiment(object):
         if outfile:
             out = open(outfile, 'w')
             out.write('# max_dist\tup_freq\tlow_freq\tcorrelation\n')
-            for i, ii in enumerate(max_dist_arange):
-                for j, jj in enumerate(upfreq_arange):
-                    for k, kk in enumerate(lowfreq_arange):
-                        out.write('{}\t{}\t{}\t{}\n'.format(ii, jj, kk,
-                                                            matrix[i, j, k]))
+            for h, hh in enumerate(scale_arange):
+                for i, ii in enumerate(max_dist_arange):
+                    for j, jj in enumerate(upfreq_arange):
+                        for k, kk in enumerate(lowfreq_arange):
+                            out.write('{}\t{}\t{}\t{}\n'.format(
+                                hh, ii, jj, kk, matrix[h, i, j, k]))
             out.close()
         return (matrix,
                 scale_arange, max_dist_arange, upfreq_arange, lowfreq_arange)
