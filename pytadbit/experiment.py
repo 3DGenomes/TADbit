@@ -45,13 +45,15 @@ class Experiment(object):
        the cell type, the enzyme... (i.e.: ['HindIII', 'cortex', 'treatment']).
        This parameter may be used to compare the effect of this conditions on
        the TADs.
+    :param True filter_columns: Filter columns with unexpectedly high content
+       of low values
        
     """
 
 
     def __init__(self, name, resolution, xp_handler=None, tad_handler=None,
                  parser=None, no_warn=False, weights=None,
-                 conditions=None):
+                 conditions=None, filter_columns=True):
         self.name            = name
         self.resolution      = resolution
         self.crm             = None
@@ -62,10 +64,12 @@ class Experiment(object):
         self.size            = None
         self.tads            = {}
         self.wght            = None
+        self._normalization  = None
         self._zeros          = None
         self._zscores        = {}
         if xp_handler:
-            self.load_experiment(xp_handler, parser)
+            self.load_experiment(xp_handler, parser,
+                              filter_columns=filter_columns)
         if tad_handler:
             self.load_tad_def(tad_handler, weights=weights)
         elif not xp_handler and not no_warn:
@@ -73,9 +77,9 @@ class Experiment(object):
 
 
     def __repr__(self):
-        return 'Experiment {} (resolution: {}, TADs: {}, Hi-C rows: {})'.format(
+        return 'Experiment {} (resolution: {}, TADs: {}, Hi-C rows: {}, normalized: {})'.format(
             self.name, nicer(self.resolution), len(self.tads) or None,
-            self.size)
+            self.size, self._normalization if self._normalization else 'None')
 
 
     def __add__(self, other):
@@ -154,7 +158,8 @@ class Experiment(object):
             del(self._ori_hic)
 
 
-    def load_experiment(self, handler, parser=None, resolution=None):
+    def load_experiment(self, handler, parser=None, resolution=None,
+                        filter_columns=True):
         """
         Add Hi-C experiment to Chromosome
         
@@ -180,6 +185,8 @@ class Experiment(object):
            will be adjusted to the resolution of the experiment. By default the
            file is expected to contain an hi-c experiment at the same resolution
            as the :class:`pytadbit.Experiment` created, and no change is made.
+        :param True filter_columns: Filter columns with unexpectedly high content
+           of low values
         
         """
         nums, size = read_matrix(handler, parser=parser)
@@ -190,7 +197,8 @@ class Experiment(object):
         # self._zeros   = [int(pos) for pos, raw in enumerate(
         #     xrange(0, self.size**2, self.size))
         #                  if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
-        self._zeros = hic_filtering_for_modelling(self.get_hic_matrix())
+        if filter_columns:
+            self._zeros = hic_filtering_for_modelling(self.get_hic_matrix())
         
 
     def load_tad_def(self, handler, weights=None):
@@ -290,6 +298,7 @@ class Experiment(object):
                             self.hic_data[0][i * self.size + j] / func(i, j))
                     except ZeroDivisionError:
                         self.wght[0][i * self.size + j] = 0.0
+        self._normalization = method
 
 
     def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):
@@ -403,6 +412,9 @@ class Experiment(object):
               }
 
         """
+        if self._normalization != 'visibility':
+            warn('WARNING: normalizing according to visibility method')
+            self.normalize_hic(method='visibility')
         zscores, values = self._sub_experiment_zscore(start, end)
         return generate_3d_models(zscores, self.resolution, values=values,
                                   n_models=n_models, outfile=outfile,
@@ -469,6 +481,9 @@ class Experiment(object):
              - the range of lowfreq used
 
         """
+        if self._normalization != 'visibility':
+            warn('WARNING: normalizing according to visibility method')
+            self.normalize_hic(method='visibility')
         zscores, values = self._sub_experiment_zscore(start, end)
         (matrix, scale_arange, max_dist_arange,
          upfreq_arange, lowfreq_arange) = grid_search(
@@ -488,8 +503,9 @@ class Experiment(object):
                             out.write('{}\t{}\t{}\t{}\n'.format(
                                 hh, ii, jj, kk, matrix[h, i, j, k]))
             out.close()
-        return (matrix,
-                scale_arange, max_dist_arange, upfreq_arange, lowfreq_arange)
+        return (('scale', 'maxdist', 'upfreq', 'lowfreq'),
+                (scale_arange, max_dist_arange, upfreq_arange, lowfreq_arange),
+                matrix)
 
     
     def _sub_experiment_zscore(self, start, end):
@@ -513,9 +529,14 @@ class Experiment(object):
                 
         tmp = Chromosome('tmp')
         tmp.add_experiment('exp1', xp_handler=[new_matrix],
-                              resolution=self.resolution)
+                           resolution=self.resolution, filter_columns=False)
         exp = tmp.experiments[0]
-        exp.normalize_hic(method='visibility')
+        # We want the weights and zeros calculated in the full chromosome
+        siz = self.size
+        exp.wght = [[self.wght[0][i + siz * j] for i in xrange(start, end)
+                     for j in xrange(start, end)]]
+        exp._zeros = [z - start for z in self._zeros if start <= z <= end]
+        # ... but the z-scores in this particular region
         exp.get_hic_zscores(remove_zeros=True)
         values = [[float('nan') for _ in xrange(exp.size)]
                   for _ in xrange(exp.size)]

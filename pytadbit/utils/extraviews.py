@@ -461,4 +461,3 @@ def plot_2d_optimization_result(result, scale, scale_arange, max_dist_arange,
      
 
 
-

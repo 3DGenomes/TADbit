@@ -538,7 +538,7 @@ class StructuralModels(object):
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the observed Hi-C count')
         cbar = ax.figure.colorbar(ims)
-        cbar.ax.set_ylabel('Log2(Normalized Hi-C data)')
+        cbar.ax.set_ylabel('Log2(raw Hi-C data)')
         
         if savefig:
             fig.savefig(savefig)
