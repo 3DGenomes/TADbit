@@ -143,11 +143,13 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                                 va='top', ha='center')
             leaves[(i[1] + i[2])/2] = dads[leaves[i[1]]]
     cutter = 10**int(np.log10(difnrj))
+    cut = cutter/10
+    cut = cut or 1
     print cutter, difnrj
     bot = -int(difnrj)/cutter * cutter
-    plt.yticks([bot+i for i in xrange(0, -bot-bot/10, -bot/10)],
+    plt.yticks([bot+i for i in xrange(0, -bot-bot/cut, -bot/cut)],
                ["{:,}".format(int(minnrj)/cutter * cutter  + i)
-                for i in xrange(0, -bot-bot/10, -bot/10)], size='small')
+                for i in xrange(0, -bot-bot/cut, -bot/cut)], size='small')
     ax.set_ylabel('Minimum IMP objective function')
     ax.set_xticks([])
     ax.set_xlim((plt.xlim()[0] - 2, plt.xlim()[1] + 2))
