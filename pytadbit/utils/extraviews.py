@@ -335,20 +335,18 @@ def my_round(num, val):
 
 
 def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                                show_best=0):
+                                show_best=0, skip=None):
     """
     A grid of heatmaps representing the result of the optimization.
 
     :param result: 3D numpy array contating correlation values
     :param 'scale','maxdist','upfreq','lowfreq' axes: tuple of axes to
        represent. The order will define which parameter will be placed on the
-       w, z, x or z axe.
+       w, z, y or x axe.
     :param 0 show_best: number of best correlation value to identifie.
+    :param None skip: a dict can be passed here in order to fix a given axe,
+       e.g.: {'scale': 0.001, 'maxdist': 500}
 
-    .. warning::
-
-      Only complet set of axes is avaiable now
-      
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
@@ -364,25 +362,41 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     vmin = result.min()
     vmax = result.max()
 
-    w = [my_round(i, 3) for i in axes_range[0]]
-    z = [my_round(i, 3) for i in axes_range[1]]
-    x = [my_round(i, 3) for i in axes_range[3]]
-    y = [my_round(i, 3) for i in axes_range[2]]
-    sort_result =  sorted([(result[i, j, k, l], w[i], z[j], x[l], y[k])
-                           for i in range(len(w))
-                           for j in range(len(z))
-                           for k in range(len(y))
-                           for l in range(len(x))
+    wax = [my_round(i, 3) for i in axes_range[0]]
+    zax = [my_round(i, 3) for i in axes_range[1]]
+    xax = [my_round(i, 3) for i in axes_range[3]]
+    yax = [my_round(i, 3) for i in axes_range[2]]
+    sort_result =  sorted([(result[i, j, k, l], wax[i], zax[j], xax[l], yax[k])
+                           for i in range(len(wax))
+                           for j in range(len(zax))
+                           for k in range(len(yax))
+                           for l in range(len(xax))
                            ], key=lambda x: x[0],
                           reverse=True)[:show_best+1]
 
-    ncols = int(np.sqrt(len(z)) + 0.999)
-    nrows = int(np.sqrt(len(z)) + 0.5)
-    nncols = int(np.sqrt(len(w)) + 0.999)
-    nnrows = int(np.sqrt(len(w)) + 0.5)
+    # skip
+    wax_range = range(len(wax))[::-1]
+    zax_range = range(len(zax))
+    skip = {} if not skip else skip
+    for i, k in enumerate(axes):
+        if not k in skip:
+            continue
+        if i == 0:
+            wax_range = [wax.index(skip[k])]
+        elif i==1:
+            zax_range = [zax.index(skip[k])]
+        else:
+            raise Exception('ERROR: skip keys must be one of the two first keywords passed as axes parameter')
+
+    # best number of rows/columns
+    ncols  = int(np.sqrt(len(zax_range)) + 0.999)
+    nrows  = int(np.sqrt(len(zax_range)) + 0.5)
+    nncols = int(np.sqrt(len(wax_range)) + 0.999)
+    nnrows = int(np.sqrt(len(wax_range)) + 0.5)
+    
     fig = plt.figure(figsize=((nncols+ncols)*3,(nrows+nrows)*3))
     
-    for ii in range(len(w))[::-1]:
+    for ii in wax_range:
         print ii
         grid = AxesGrid(fig, int(str(nnrows) + str(nncols) + str(ii)),
                         nrows_ncols = (nrows, ncols),
@@ -394,36 +408,36 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                         cbar_size="7%",
                         cbar_pad="2%",
                         )
-        for i in range(len(z)):
+        for i in zax_range:
             if not i:
-                grid[i].text(len(x) * ncols/2, len(y) + 1.5,
-                             axes[0] + ': ' + str(my_round(w[ii], 3)),
+                grid[i].text(len(xax) * ncols/2, len(yax) + 1.5,
+                             axes[0] + ': ' + str(my_round(wax[ii], 3)),
                              {'ha':'center', 'va':'top'}, size='large')
             im = grid[i].imshow(result[ii, i, :, :], interpolation="nearest",
                                 vmin=vmin, vmax=vmax)
             grid[i].tick_params(axis='both', direction='out', top=False,
                                 right=False, left=False, bottom=False)
-            rect = patches.Rectangle((-0.5, len(y)-.5),len(x), 1.5,
+            rect = patches.Rectangle((-0.5, len(yax)-.5),len(xax), 1.5,
                                      facecolor='grey', alpha=0.5)
             grid[i].add_patch(rect)
-            grid[i].text(np.mean(range(0, len(x))), max(range(0, len(y))) + 1.25,
-                         axes[1] + ': ' + str(my_round(z[i], 3)),
+            grid[i].text(np.mean(range(0, len(xax))),
+                         max(range(0, len(yax))) + 1.25,
+                         axes[1] + ': ' + str(my_round(zax[i], 3)),
                          {'ha':'center', 'va':'center'})
-            for j, k  in enumerate(sort_result[:-1]):
-                if k[2] == z[i] and k[1] == w[ii]:
-                    grid[i].text(x.index(k[3]), y.index(k[4]), str(j),
+            for j, best  in enumerate(sort_result[:-1]):
+                if best[2] == zax[i] and best[1] == wax[ii]:
+                    grid[i].text(xax.index(best[3]), yax.index(best[4]), str(j),
                                  {'ha':'center', 'va':'center'})
-        for i in range(len(z), nrows * ncols):
+        for i in range(len(zax), nrows * ncols):
             grid[i].set_visible(False)
         # This affects all axes because we set share_all = True.
-        grid.axes_llc.set_ylim(-0.5, len(y)+1)
-        grid.axes_llc.set_xticks(range(0, len(x), 2))
-        grid.axes_llc.set_yticks(range(0, len(y), 2))
-        grid.axes_llc.set_xticklabels([my_round(i, 3) for i in x][::2])
-        grid.axes_llc.set_yticklabels([my_round(i, 3) for i in y][::2])
+        grid.axes_llc.set_ylim(-0.5, len(yax)+1)
+        grid.axes_llc.set_xticks(range(0, len(xax), 2))
+        grid.axes_llc.set_yticks(range(0, len(yax), 2))
+        grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2])
+        grid.axes_llc.set_yticklabels([my_round(i, 3) for i in yax][::2])
         grid.axes_llc.set_ylabel(axes[2])
         grid.axes_llc.set_xlabel(axes[3])
-        plt.title('lallalal')
     grid.cbar_axes[0].colorbar(im)
     grid.cbar_axes[0].set_ylabel('Correlation value')
     fig.suptitle(('Optimal IMP parameters\n' +
