@@ -408,30 +408,32 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                                    vmin=vmin, vmax=vmax)
             grid[cell].tick_params(axis='both', direction='out', top=False,
                                    right=False, left=False, bottom=False)
-            rect = patches.Rectangle((-0.5, len(yax)-.5),len(xax), 1.5,
-                                     facecolor='grey', alpha=0.5)
-            grid[cell].add_patch(rect)
-            grid[cell].text(np.mean(range(0, len(xax))),
-                            max(range(0, len(yax))) + 1.25,
-                            axes[1] + ': ' + str(my_round(zax[i], 3)),
-                            {'ha':'center', 'va':'center'})
             for j, best  in enumerate(sort_result[:-1]):
                 if best[2] == zax[i] and best[1] == wax[ii]:
                     grid[cell].text(xax.index(best[3]), yax.index(best[4]), str(j),
                                     {'ha':'center', 'va':'center'})
+            if ii == wax_range[0]:
+                rect = patches.Rectangle((-0.5, -0.5),len(xax), -1.5,
+                                         facecolor='grey', alpha=0.5)
+                rect.set_clip_on(False)
+                grid[cell].add_patch(rect)
+                grid[cell].text(len(xax)/2,
+                                -1.25,
+                                axes[1] + ' ' + str(my_round(zax[i], 3)),
+                                {'ha':'center', 'va':'center'})
             cell += 1
         rect = patches.Rectangle((len(xax)-.5, -0.5), 1.5, len(yax),
                                  facecolor='grey', alpha=0.5)
         rect.set_clip_on(False)
         grid[cell-1].add_patch(rect)
         grid[cell-1].text(len(xax)+.5, len(yax)/2-.5, 
-                          axes[0] + ': ' + str(my_round(wax[ii], 3)),
+                          axes[0] + ' ' + str(my_round(wax[ii], 3)),
                           {'ha':'right', 'va':'center'}, 
                           rotation=90)
     # for i in range(len(zax), nrows * ncols):
     #     grid[i].set_visible(False)
     # This affects all axes because we set share_all = True.
-    grid.axes_llc.set_ylim(-0.5, len(yax)+1)
+    # grid.axes_llc.set_ylim(-0.5, len(yax)+1)
     grid.axes_llc.set_xticks(range(0, len(xax), 2))
     grid.axes_llc.set_yticks(range(0, len(yax), 2))
     grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2])
@@ -444,5 +446,5 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                   'Best for: {0}={4}, {1}={5}, {2}={6}, {3}={7}'
                   ).format(*(list(axes) + [my_round(i, 3)
                                            for i in sort_result[0][1:]])),
-                 size='large')
+                 size='large', y=1)
     plt.show()
