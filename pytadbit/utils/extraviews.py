@@ -388,8 +388,8 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
             raise Exception('ERROR: skip keys must be one of the two first keywords passed as axes parameter')
 
     # best number of rows/columns
-    ncols  = len(zax)
-    nrows  = len(wax)
+    ncols  = len(zax_range)
+    nrows  = len(wax_range)
     fig = plt.figure(figsize=((ncols)*3,(nrows)*3))
     grid = AxesGrid(fig, 111,
                     nrows_ncols = (nrows, ncols),
@@ -446,5 +446,5 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                   'Best for: {0}={4}, {1}={5}, {2}={6}, {3}={7}'
                   ).format(*(list(axes) + [my_round(i, 3)
                                            for i in sort_result[0][1:]])),
-                 size='large', y=1)
+                 size='large')
     plt.show()
