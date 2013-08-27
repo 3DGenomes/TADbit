@@ -392,18 +392,22 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     nrows  = len(wax_range)
     fig = plt.figure(figsize=((ncols)*3,(nrows)*3))
     grid = AxesGrid(fig, 111,
-                    nrows_ncols = (nrows, ncols),
+                    nrows_ncols = (nrows+1, ncols+1),
                     axes_pad = 0.0,
                     label_mode = "1",
-                    share_all = True,
+                    share_all = False,
                     cbar_location="right",
                     cbar_mode="single",
                     cbar_size="7%",
-                    cbar_pad="30%",
+                    cbar_pad="10%",
                     )
-    cell = 0
+    grid,
+    cell = ncols
+    used = []
     for ii in wax_range:
+        cell+=1
         for i in zax_range:
+            used.append(cell)
             im = grid[cell].imshow(result[ii, i, :, :], interpolation="nearest",
                                    vmin=vmin, vmax=vmax)
             grid[cell].tick_params(axis='both', direction='out', top=False,
@@ -417,7 +421,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                                          facecolor='grey', alpha=0.5)
                 rect.set_clip_on(False)
                 grid[cell].add_patch(rect)
-                grid[cell].text(len(xax)/2,
+                grid[cell].text(len(xax)/2-0.5,
                                 -1.25,
                                 axes[1] + ' ' + str(my_round(zax[i], 3)),
                                 {'ha':'center', 'va':'center'})
@@ -430,8 +434,9 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                           axes[0] + ' ' + str(my_round(wax[ii], 3)),
                           {'ha':'right', 'va':'center'}, 
                           rotation=90)
-    # for i in range(len(zax), nrows * ncols):
-    #     grid[i].set_visible(False)
+    for i in range(cell+1):
+        if not i in used:
+            grid[i].set_visible(False)
     # This affects all axes because we set share_all = True.
     # grid.axes_llc.set_ylim(-0.5, len(yax)+1)
     grid.axes_llc.set_xticks(range(0, len(xax), 2))
@@ -444,7 +449,8 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     grid.cbar_axes[0].set_ylabel('Correlation value')
     fig.suptitle(('Optimal IMP parameters\n' +
                   'Best for: {0}={4}, {1}={5}, {2}={6}, {3}={7}'
-                  ).format(*(list(axes) + [my_round(i, 3)
-                                           for i in sort_result[0][1:]])),
+                  ).format(*([axes[0], axes[1], axes[3],
+                              axes[2]] + [my_round(i, 3)
+                                          for i in sort_result[0][1:]])),
                  size='large')
     plt.show()
