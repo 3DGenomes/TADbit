@@ -361,7 +361,6 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
 
     vmin = result.min()
     vmax = result.max()
-
     wax = [my_round(i, 3) for i in axes_range[0]]
     zax = [my_round(i, 3) for i in axes_range[1]]
     xax = [my_round(i, 3) for i in axes_range[3]]
@@ -389,55 +388,56 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
             raise Exception('ERROR: skip keys must be one of the two first keywords passed as axes parameter')
 
     # best number of rows/columns
-    ncols  = int(np.sqrt(len(zax_range)) + 0.999)
-    nrows  = int(np.sqrt(len(zax_range)) + 0.5)
-    nncols = int(np.sqrt(len(wax_range)) + 0.999)
-    nnrows = int(np.sqrt(len(wax_range)) + 0.5)
-    
-    fig = plt.figure(figsize=((nncols+ncols)*3,(nrows+nrows)*3))
-    
+    ncols  = len(zax)
+    nrows  = len(wax)
+    fig = plt.figure(figsize=((ncols)*3,(nrows)*3))
+    grid = AxesGrid(fig, 111,
+                    nrows_ncols = (nrows, ncols),
+                    axes_pad = 0.0,
+                    label_mode = "1",
+                    share_all = True,
+                    cbar_location="right",
+                    cbar_mode="single",
+                    cbar_size="7%",
+                    cbar_pad="30%",
+                    )
+    cell = 0
     for ii in wax_range:
-        print ii
-        grid = AxesGrid(fig, int(str(nnrows) + str(nncols) + str(ii)),
-                        nrows_ncols = (nrows, ncols),
-                        axes_pad = 0.0,
-                        label_mode = "1",
-                        share_all = True,
-                        cbar_location="right",
-                        cbar_mode="single" if not ii else None,
-                        cbar_size="7%",
-                        cbar_pad="2%",
-                        )
         for i in zax_range:
-            if not i:
-                grid[i].text(len(xax) * ncols/2, len(yax) + 1.5,
-                             axes[0] + ': ' + str(my_round(wax[ii], 3)),
-                             {'ha':'center', 'va':'top'}, size='large')
-            im = grid[i].imshow(result[ii, i, :, :], interpolation="nearest",
-                                vmin=vmin, vmax=vmax)
-            grid[i].tick_params(axis='both', direction='out', top=False,
-                                right=False, left=False, bottom=False)
+            im = grid[cell].imshow(result[ii, i, :, :], interpolation="nearest",
+                                   vmin=vmin, vmax=vmax)
+            grid[cell].tick_params(axis='both', direction='out', top=False,
+                                   right=False, left=False, bottom=False)
             rect = patches.Rectangle((-0.5, len(yax)-.5),len(xax), 1.5,
                                      facecolor='grey', alpha=0.5)
-            grid[i].add_patch(rect)
-            grid[i].text(np.mean(range(0, len(xax))),
-                         max(range(0, len(yax))) + 1.25,
-                         axes[1] + ': ' + str(my_round(zax[i], 3)),
-                         {'ha':'center', 'va':'center'})
+            grid[cell].add_patch(rect)
+            grid[cell].text(np.mean(range(0, len(xax))),
+                            max(range(0, len(yax))) + 1.25,
+                            axes[1] + ': ' + str(my_round(zax[i], 3)),
+                            {'ha':'center', 'va':'center'})
             for j, best  in enumerate(sort_result[:-1]):
                 if best[2] == zax[i] and best[1] == wax[ii]:
-                    grid[i].text(xax.index(best[3]), yax.index(best[4]), str(j),
-                                 {'ha':'center', 'va':'center'})
-        for i in range(len(zax), nrows * ncols):
-            grid[i].set_visible(False)
-        # This affects all axes because we set share_all = True.
-        grid.axes_llc.set_ylim(-0.5, len(yax)+1)
-        grid.axes_llc.set_xticks(range(0, len(xax), 2))
-        grid.axes_llc.set_yticks(range(0, len(yax), 2))
-        grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2])
-        grid.axes_llc.set_yticklabels([my_round(i, 3) for i in yax][::2])
-        grid.axes_llc.set_ylabel(axes[2])
-        grid.axes_llc.set_xlabel(axes[3])
+                    grid[cell].text(xax.index(best[3]), yax.index(best[4]), str(j),
+                                    {'ha':'center', 'va':'center'})
+            cell += 1
+        rect = patches.Rectangle((len(xax)-.5, -0.5), 1.5, len(yax),
+                                 facecolor='grey', alpha=0.5)
+        rect.set_clip_on(False)
+        grid[cell-1].add_patch(rect)
+        grid[cell-1].text(len(xax)+.5, len(yax)/2-.5, 
+                          axes[0] + ': ' + str(my_round(wax[ii], 3)),
+                          {'ha':'right', 'va':'center'}, 
+                          rotation=90)
+    # for i in range(len(zax), nrows * ncols):
+    #     grid[i].set_visible(False)
+    # This affects all axes because we set share_all = True.
+    grid.axes_llc.set_ylim(-0.5, len(yax)+1)
+    grid.axes_llc.set_xticks(range(0, len(xax), 2))
+    grid.axes_llc.set_yticks(range(0, len(yax), 2))
+    grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2])
+    grid.axes_llc.set_yticklabels([my_round(i, 3) for i in yax][::2])
+    grid.axes_llc.set_ylabel(axes[2])
+    grid.axes_llc.set_xlabel(axes[3])
     grid.cbar_axes[0].colorbar(im)
     grid.cbar_axes[0].set_ylabel('Correlation value')
     fig.suptitle(('Optimal IMP parameters\n' +

@@ -500,7 +500,7 @@ class Experiment(object):
                 for i, ii in enumerate(max_dist_arange):
                     for j, jj in enumerate(upfreq_arange):
                         for k, kk in enumerate(lowfreq_arange):
-                            out.write('{}\t{}\t{}\t{}\n'.format(
+                            out.write('{}\t{}\t{}\t{}\t{}\n'.format(
                                 hh, ii, jj, kk, matrix[h, i, j, k]))
             out.close()
         return (('scale', 'maxdist', 'upfreq', 'lowfreq'),
