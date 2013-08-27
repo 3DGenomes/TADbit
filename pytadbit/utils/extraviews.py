@@ -143,9 +143,7 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                                 va='top', ha='center')
             leaves[(i[1] + i[2])/2] = dads[leaves[i[1]]]
     cutter = 10**int(np.log10(difnrj))
-    cut = cutter/10
-    cut = cut or 1
-    print cutter, difnrj
+    cut = cutter/10 or 1
     bot = -int(difnrj)/cutter * cutter
     plt.yticks([bot+i for i in xrange(0, -bot-bot/cut, -bot/cut)],
                ["{:,}".format(int(minnrj)/cutter * cutter  + i)
