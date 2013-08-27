@@ -142,9 +142,10 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                                 textcoords='offset points',
                                 va='top', ha='center')
             leaves[(i[1] + i[2])/2] = dads[leaves[i[1]]]
-    bot = -int(difnrj)/10000 * 10000
+    cutter = 10**int(np.log10(difnrj)-1)
+    bot = -int(difnrj)/cutter * cutter
     plt.yticks([bot+i for i in xrange(0, -bot-bot/10, -bot/10)],
-               ["{:,}".format(int(minnrj)/10000 * 10000  + i)
+               ["{:,}".format(int(minnrj)/cutter * cutter  + i)
                 for i in xrange(0, -bot-bot/10, -bot/10)], size='small')
     ax.set_ylabel('Minimum IMP objective function')
     ax.set_xticks([])
@@ -331,7 +332,7 @@ def plot_3d_optimization_result(result,
         cbar = fig.colorbar(lol)
         cbar.ax.set_ylabel('Correlation value')
         plt.title(('Optimal IMP parameters (subplot {0}={1})\n' +
-                   'Best for: {2}={6}, {3}={7}, {4}={8}, {5}={9}'
+                   'Best: {2}={6}, {3}={7}, {4}={8}, {5}={9}'
                    ).format(*([axes[0], wax[i], axes[0], axes[1], axes[3],
                                axes[2]] + [my_round(i, 3)
                                            for i in sort_result[1:]])))
@@ -411,7 +412,6 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                     cbar_size="7%",
                     cbar_pad="10%",
                     )
-    grid,
     cell = ncols
     used = []
     for ii in wax_range:
@@ -458,7 +458,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     grid.cbar_axes[0].colorbar(im)
     grid.cbar_axes[0].set_ylabel('Correlation value')
     fig.suptitle(('Optimal IMP parameters\n' +
-                  'Best for: {0}={4}, {1}={5}, {2}={6}, {3}={7}'
+                  'Best: {0}={4}, {1}={5}, {2}={6}, {3}={7}'
                   ).format(*([axes[0], axes[1], axes[3],
                               axes[2]] + [my_round(i, 3)
                                           for i in sort_result[0][1:]])),
