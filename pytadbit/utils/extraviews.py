@@ -278,8 +278,8 @@ movie encode output {0}
     Popen('{} {}'.format(chimera_bin, pref_f), shell=True).communicate()
 
 
-def plot_3d_optimization_result(result, scale, scale_arange, max_dist_arange,
-                                upfreq_arange, lowfreq_arange):
+def plot_3d_optimization_result(result,
+                                axes=('scale', 'maxdist', 'upfreq', 'lowfreq')):
     """
     Displays a three dimensional scatter plot representing the result of the
     optimization.
@@ -291,41 +291,52 @@ def plot_3d_optimization_result(result, scale, scale_arange, max_dist_arange,
     :param upfreq_arange: range of upfreq values used in the optimization
     :param lowfreq_arange: range of lowfreq values used in the optimization
     """
-    # TOBEREMOVED
-    try:
-        scale_idx = scale_arange.index(scale)
-    except IndexError:
-        raise Exception('Scale not found, in scale_arange')
-    result = result[scale_idx,:,:,:]
 
-    x = [my_round(i, 3) for i in lowfreq_arange]
-    y = [my_round(i, 3) for i in upfreq_arange]
-    z = [my_round(i, 3) for i in max_dist_arange]
-    sort_result =  sorted([(result[k, j, i], x[i], y[j], z[k])
-                           for i in range(len(x))
-                           for j in range(len(y))
-                           for k in range(len(z))], key=lambda x: x[0],
-                          reverse=True)[0]
-    x = [i for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
-    y = [j for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
-    z = [k for i in max_dist_arange for j in upfreq_arange for k in lowfreq_arange]
-    col = [result[i,j,k] for i in range(len(max_dist_arange)) for j in range(len(upfreq_arange)) for k in range(len(lowfreq_arange))]
+    ori_axes, axes_range, result = result
+    trans = [ori_axes.index(a) for a in axes]
+    axes_range = [axes_range[i] for i in trans]
 
-    fig = plt.figure()
+    # transpose results
+    result = result.transpose(trans)
+
+    wax = [my_round(i, 3) for i in axes_range[0]]
+    zax = [my_round(i, 3) for i in axes_range[1]]
+    xax = [my_round(i, 3) for i in axes_range[3]]
+    yax = [my_round(i, 3) for i in axes_range[2]]
+    sort_result = sorted([(result[i, j, k, l], wax[i], zax[j], xax[l], yax[k])
+                          for i in range(len(wax))
+                          for j in range(len(zax))
+                          for k in range(len(yax))
+                          for l in range(len(xax))
+                          ], key=lambda x: x[0],
+                         reverse=True)[0]
+    x = [i for i in axes_range[1] for j in axes_range[2] for k in axes_range[3]]
+    y = [j for i in axes_range[1] for j in axes_range[2] for k in axes_range[3]]
+    z = [k for i in axes_range[1] for j in axes_range[2] for k in axes_range[3]]
+    
     from mpl_toolkits.mplot3d import Axes3D
-    ax = fig.add_subplot(111, projection='3d')
-    ax.set_xlabel('maxdist')
-    ax.set_ylabel('upfreq')
-    ax.set_zlabel('lowfreq')
-    lol = ax.scatter(x, y, z, c=col, s=100, alpha=0.9)
-    cbar = fig.colorbar(lol)
-    cbar.ax.set_ylabel('Correlation value')
-    plt.title(('Optimal IMP parameters (scale={})\n' +
-               'Best for: lowfreq={}, upfreq={}, maxdist={}'
-               ).format(round(scale,3), my_round(sort_result[1], 2),
-                        my_round(sort_result[2], 2),
-                        my_round(sort_result[3], 2)),
-                 size='large')
+
+    ncols  = int(np.sqrt(len(wax)) + 0.999)
+    nrows  = int(np.sqrt(len(wax)) + 0.5)
+    fig = plt.figure(figsize=((ncols)*6,(nrows)*4.5))
+
+    for i in xrange(len(wax)):
+        col = [result[i, j, k, l] for j in range(len(axes_range[1]))
+               for k in range(len(axes_range[2])) for l in range(len(axes_range[3]))]
+
+        ax = fig.add_subplot(int(str(nrows) + str(ncols) + str(i)),
+                             projection='3d')
+        ax.set_xlabel('maxdist')
+        ax.set_ylabel('upfreq')
+        ax.set_zlabel('lowfreq')
+        lol = ax.scatter(x, y, z, c=col, s=100, alpha=0.9)
+        cbar = fig.colorbar(lol)
+        cbar.ax.set_ylabel('Correlation value')
+        plt.title(('Optimal IMP parameters (subplot {0}={1})\n' +
+                   'Best for: {2}={6}, {3}={7}, {4}={8}, {5}={9}'
+                   ).format(*([axes[0], wax[i], axes[0], axes[1], axes[3],
+                               axes[2]] + [my_round(i, 3)
+                                           for i in sort_result[1:]])))
     plt.show()
 
 
@@ -391,7 +402,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     ncols  = len(zax_range)
     nrows  = len(wax_range)
     fig = plt.figure(figsize=((ncols)*3,(nrows)*3))
-    grid = AxesGrid(fig, 111,
+    grid = AxesGrid(fig, [.05,.05,.95,.7],
                     nrows_ncols = (nrows+1, ncols+1),
                     axes_pad = 0.0,
                     label_mode = "1",
