@@ -285,11 +285,9 @@ def plot_3d_optimization_result(result,
     optimization.
 
     :param result: 3D numpy array contating correlation values
-    :param scale: represent optimization result for the scale
-    :param scale_arange: range of scale values used in the optimization
-    :param max_dist_arange: range of max_dist values used in the optimization
-    :param upfreq_arange: range of upfreq values used in the optimization
-    :param lowfreq_arange: range of lowfreq values used in the optimization
+    :param 'scale','maxdist','upfreq','lowfreq' axes: tuple of axes to
+       represent. The order will define which parameter will be placed on the
+       w, z, y or x axe.
     """
 
     ori_axes, axes_range, result = result
@@ -326,9 +324,9 @@ def plot_3d_optimization_result(result,
 
         ax = fig.add_subplot(int(str(nrows) + str(ncols) + str(i)),
                              projection='3d')
-        ax.set_xlabel('maxdist')
-        ax.set_ylabel('upfreq')
-        ax.set_zlabel('lowfreq')
+        ax.set_xlabel(axes[1])
+        ax.set_ylabel(axes[2])
+        ax.set_zlabel(axes[3])
         lol = ax.scatter(x, y, z, c=col, s=100, alpha=0.9)
         cbar = fig.colorbar(lol)
         cbar.ax.set_ylabel('Correlation value')
@@ -396,7 +394,8 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
         elif i==1:
             zax_range = [zax.index(skip[k])]
         else:
-            raise Exception('ERROR: skip keys must be one of the two first keywords passed as axes parameter')
+            raise Exception(('ERROR: skip keys must be one of the two first' +
+                             ' keywords passed as axes parameter'))
 
     # best number of rows/columns
     ncols  = len(zax_range)
