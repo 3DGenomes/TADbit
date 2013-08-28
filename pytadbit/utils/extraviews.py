@@ -84,6 +84,15 @@ def color_residues(n_part):
     return result
 
 
+def draw_alignment(alignment, experiments):
+    """
+    """
+    for i, xpr in enumerate(experiments):
+        if not xpr.name in alignment.__keys:
+            continue
+        matrix = xpr.get_hic_matrix()
+
+
 def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                          axe=None, savefig=None, *args, **kwargs):
 
@@ -308,6 +317,7 @@ def plot_3d_optimization_result(result,
                           for j in range(len(zax))
                           for k in range(len(yax))
                           for l in range(len(xax))
+                          if not np.isnan(result[i, j, k, l])
                           ], key=lambda x: x[0],
                          reverse=True)[0]
     x = [i for i in axes_range[1] for j in axes_range[2] for k in axes_range[3]]
@@ -390,7 +400,8 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                            for j in range(len(zax))
                            for k in range(len(yax))
                            for l in range(len(xax))
-                           ], key=lambda x: x[0],
+                           if not np.isnan(result[i, j, k, l])],
+                          key=lambda x: x[0],
                           reverse=True)[:show_best+1]
 
     # skip axes?
@@ -411,16 +422,18 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     # best number of rows/columns
     ncols  = len(zax_range)
     nrows  = len(wax_range)
-    fig = plt.figure(figsize=(float(ncols) * len(xax) / 3,
-                              float(nrows) * len(yax) / 3))
-    grid = AxesGrid(fig, [.1,.1,.9,.65],
+    print ncols, nrows
+    print len(xax), len(yax)
+    fig = plt.figure(figsize=(max(6, float(ncols) * len(xax) / 3),
+                              max(6, float(nrows) * len(yax) / 3)))
+    grid = AxesGrid(fig, [.1,.1,.9,.75],
                     nrows_ncols = (nrows+1, ncols+1),
                     axes_pad = 0.0,
                     label_mode = "1",
                     share_all = False,
                     cbar_location="right",
                     cbar_mode="single",
-                    cbar_size="7%",
+                    cbar_size="{}%".format(7./(float(ncols) * len(xax) / 3)),
                     cbar_pad="10%",
                     )
     cell = ncols

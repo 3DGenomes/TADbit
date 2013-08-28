@@ -511,7 +511,7 @@ class Chromosome(object):
                     warn('List passed, not going to be normalized.')
                 matrix = tad
             else:
-                # TODO: something...
+                # TODO: something... matrix not declared...
                 pass
         else:
             if normalized:

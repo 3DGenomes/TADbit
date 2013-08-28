@@ -678,6 +678,13 @@ class StructuralModels(object):
 
              copy file SAVEFIG png
 
+           Thus If you pass as 'cmd' parameter this list:
+           ::
+
+             cmd = ['focus', 'set bg_color white', 'windowsize 800 600', 'bonddisplay never #0', 'shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on', 'clip yon -500', '~label', 'set subdivision 1', 'set depth_cue', 'set dc_color black', 'set dc_start 0.5', 'set dc_end 1', 'scale 0.8']
+             
+           you would obtain the same result as with default (do not forget to
+           add commands to save figure/movie if you which).
         
         """
         self.write_cmm('/tmp/', model_num=model_num)
@@ -831,7 +838,7 @@ class StructuralModels(object):
             models = self.clusters[cluster]
         else:
             models = self.__models        
-        for model in models:
+        for model_num in models:
             try:
                 model = self.__models[model_num]
             except KeyError:
@@ -850,7 +857,7 @@ class StructuralModels(object):
                                    color[n][0], color[n][1], color[n][2])
             form = ('<link id1=\"{}\" id2=\"{}\" r=\"1\" ' +
                     'g=\"1\" b=\"1\" radius=\"' +
-                    str(self.resolution * self._config['scale'] * 2) +
+                    str(1) +
                     '\"/>\n')
             for n in xrange(1, self.nloci):
                 out += form.format(n, n + 1)
@@ -897,7 +904,7 @@ class StructuralModels(object):
             models = self.clusters[cluster]
         else:
             models = self.__models        
-        for model in models:
+        for model_num in models:
             try:
                 model = self[model_num]
             except KeyError:
