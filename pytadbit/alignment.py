@@ -137,22 +137,23 @@ class Alignment(object):
             <meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8" />
             <title>stdin</title>
             </head>
-            <h1>{}</h1>
+            <h1>%s</h1>
             <body>
-            <pre>'''.format(title)
+            <pre>''' % (title)
         elif ftype == 'ansi':
             out = title + '\n' if title else ''
         else:
             raise NotImplementedError('Only ansi and html ftype implemented.\n')
         out += 'Alignment shown in %s Kb (%s experiments) (' % (
             int(xpers[0].resolution / 1000), len(xpers))
-        out += 'scores: {})\n'.format(' '.join(
+        out += 'scores: %s)\n' % (' '.join(
             [colorize(x, x, ftype) for x in range(11)]))
         for i, xpr in enumerate(xpers):
             if not xpr.name in self.__keys:
                 continue
             # res = xpr.resolution / 1000
-            out += '{1:{0}}:'.format(length, names[i])
+            out += ('%' + str(length) + 's') % (names[i])
+            out += ':'
             for x in self[xpr.name]:
                 if x['end'] == 0.0:
                     out += '| ' + '-' * 4 + ' '
@@ -359,7 +360,7 @@ def randomization_test(xpers, score=None, num=1000, verbose=False, max_dist=1000
             if not val / num * 100 % 5:
                 stdout.write('\r' + ' ' * 10 + 
                              ' randomizing: '
-                             '{:.2%} completed'.format(val/num))
+                             '%.2f completed' % (100 * val/num))
                 stdout.flush()
         if rnd_method is 'interpolate':
             rnd_tads = [generate_rnd_tads(r_size, distr)
@@ -381,16 +382,16 @@ def randomization_test(xpers, score=None, num=1000, verbose=False, max_dist=1000
         # print ''
     pval = float(len([n for n in rnd_distr if n > score])) / len(rnd_distr)
     if verbose:
-        stdout.write('\n {} randomizations finished.'.format(num))
+        stdout.write('\n %s randomizations finished.' % (num))
         stdout.flush()
-        print '  Observed alignment score: {}'.format(score)
-        # print '  Mean number of boundaries: {}; observed: {}'.format(
+        print '  Observed alignment score: %s' % (score)
+        # print '  Mean number of boundaries: {}; observed: {}'.format (
         #     sum(rnd_len)/len(rnd_len),
         #     str([len(self.experiments[e].brks)
         #          for e in self.experiments]))
-        print 'Randomized scores between {} and {}; observed: {}'.format(
+        print 'Randomized scores between %s and %s; observed: %s' % (
             min(rnd_distr), max(rnd_distr), score)
-        print 'p-value: {}'.format(pval if pval else '<{}'.format(1./num))
+        print 'p-value: %s' % (pval if pval else '<%s' % (1./num))
     return pval
 
 

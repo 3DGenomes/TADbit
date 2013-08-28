@@ -207,16 +207,15 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     if max_num_v:
         num_v = min(max_num_v, num_v)
     if num_v > l_p1 or num_v > l_p2:
-        raise Exception('\nnum_v should be at most {}\n'.format(min(l_p1,
-                                                                    l_p2)))
+        raise Exception('\nnum_v should be at most %s\n' % (min(l_p1, l_p2)))
     val1, vec1 = eigh(hic1)
     if npsum(vec1).imag:
         raise Exception("ERROR: Hi-C data is not symmetric.\n" +
-                        '{}\n\n{}'.format(hic1, vec1))
+                        '%s\n\n%s' % (hic1, vec1))
     val2, vec2 = eigh(hic2)
     if npsum(vec2).imag:
         raise Exception("ERROR: Hi-C data is not symmetric.\n" +
-                        '{}\n\n{}'.format(hic2, vec2))
+                        '%s\n\n%s' % (hic2, vec2))
     #
     val1 = array([sqrt(abs(v)) for v in val1])
     val2 = array([sqrt(abs(v)) for v in val2])
@@ -260,7 +259,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     except ValueError:
         pass
     if verbose:
-        print '\n Alignment (score = {}):'.format(nearest)
+        print '\n Alignment (score = %s):' % (nearest)
         print 'TADS 1: '+'|'.join(['%4s' % (str(int(x)) \
                                             if x!='-' else '-'*3) for x in align1])
         print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
@@ -405,12 +404,12 @@ def run_aleigen(contacts1, contacts2, num_v):
     * score = 2*CMO/(C1+C2)
 
     """
-    f_string = '/tmp/lala{}.txt'
-    f_name1 = f_string.format(1)
-    f_name2 = f_string.format(2)
+    f_string = '/tmp/lala%s.txt'
+    f_name1 = f_string % (1)
+    f_name2 = f_string % (2)
     write_contacts(contacts1, contacts2, f_string)
     sc_str = re.compile('Score\s+C1\s+C2\s+CMO\n([0-9.]+)\s+[0-9]+\s+.*')
-    out = Popen('aleigen {} {} {}'.format(f_name1, f_name2, num_v),
+    out = Popen('aleigen %s %s %s' % (f_name1, f_name2, num_v),
                 shell=True, stdout=PIPE).communicate()[0]
     score = [float(c) for c in re.findall(sc_str, out)]
     print out
@@ -427,7 +426,7 @@ def run_aleigen(contacts1, contacts2, num_v):
 
 def write_contacts(contacts1, contacts2, f_string):
     for i, contacts in enumerate([contacts1, contacts2]):
-        out = open(f_string.format(i+1), 'w')
+        out = open(f_string % (i+1), 'w')
         out.write(str(max([max(c) for c in contacts])+1) + '\n')
         out.write('\n'.join([str(c1) + ' ' + str(c2) for c1, c2 in contacts]))
         out.write('\n')

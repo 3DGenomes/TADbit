@@ -321,7 +321,7 @@ def generate_IMPmodel(rand_init, verbose=0):
     log_energies.append(model['model'].evaluate(False))
     if verbose >=1:
         if verbose >= 2 or not rand_init % 100:
-            print 'Model {} IMP Objective Function: {}'.format(
+            print 'Model %s IMP Objective Function: %s' % (
                 rand_init, log_energies[-1])
     x, y, z, radius = (FloatKey("x"), FloatKey("y"),
                        FloatKey("z"), FloatKey("radius"))

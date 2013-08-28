@@ -57,5 +57,5 @@ def parse_tads(handler):
                          'brk'  : end,
                          'score': score}
     else:
-        raise Exception('File {} not found\n'.format(handler))
+        raise Exception('File %s not found\n' % (handler))
     return tads, weights

@@ -134,12 +134,11 @@ def print_result_r(result, write=True):
        results
     """
     table = ''
-    table += '{:<6}{:>6}{:>6}{:>6}\n'.format('#', 'start', 'end', 'score')
+    table += '%-6s%6s%6s%6s\n' % ('#', 'start', 'end', 'score')
     for i in xrange(len(result['end'])):
-        table += '{:<6}{:>6}{:>6}{:>6}\n'.format(i+1,
-                                                 result['start'][i]+1,
-                                                 result['end'][i]+1,
-                                                 result['score'][i])
+        table += '%-6s%6s%6s%6s\n' % (i+1, result['start'][i]+1,
+                                      result['end'][i]+1,
+                                      result['score'][i])
     if write:
         print table
     else:

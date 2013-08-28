@@ -70,14 +70,14 @@ class StructuralModels(object):
                 if self.__models[m]['rand_init'] == nam:
                     return self.__models[m]
             else:
-                raise KeyError('Model {} not found\n'.format(nam))
+                raise KeyError('Model %s not found\n' % (nam))
         try:
             return self.__models[nam]
         except TypeError:
             for i, key in self.__models:
                 if nam == i:
                     return self.__models[key]
-            raise KeyError('Model {} not found\n'.format(i))
+            raise KeyError('Model %s not found\n' % (i))
 
 
     def __iter__(self):
@@ -89,16 +89,16 @@ class StructuralModels(object):
 
 
     def __repr__(self):
-        return ('StructuralModels with {} models (objective function range: {} - {})\n' +
-                '   (corresponding to the best models out of {} models).\n' +
+        return ('StructuralModels with %s models (objective function range: %s - %s)\n' +
+                '   (corresponding to the best models out of %s models).\n' +
                 '  IMP modelling used this parameters:\n' +
-                '{}\n' + 
-                '  Models where clustered into {} clusters').format(
+                '%s\n' + 
+                '  Models where clustered into %s clusters') % (
             len(self.__models),
             int(self.__models[0]['objfun']),
             int(self.__models[len(self.__models) - 1]['objfun']),
             len(self.__models) + len(self._bad_models),
-            '\n'.join(['   - {:<12}: {}'.format(k, v)
+            '\n'.join(['   - %-12s: %s' % (k, v)
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
 
@@ -123,8 +123,8 @@ class StructuralModels(object):
             for m in self._bad_models:
                 if self._bad_models[m]['rand_init'] == rand_init:
                     return m
-        raise IndexError(('Model with initial random number: {}, not found\n' +
-                          '').format(rand_init))
+        raise IndexError(('Model with initial random number: %s, not found\n' +
+                          '') % (rand_init))
 
 
     def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
@@ -192,11 +192,11 @@ class StructuralModels(object):
         else:
             out_f = open(tmp_file, 'w')
             for (md1, md2), score in scores.iteritems():
-                out_f.write('model_{}\tmodel_{}\t{}\n'.format(
+                out_f.write('model_%s\tmodel_%s\t%s\n' % (
                     md1, md2, score if score > fact * self.nloci else 0.0))
             out_f.close()
-            Popen('{0} {1} --abc -V all -o {1}.mcl'.format(
-                mcl_bin, tmp_file, stdout=PIPE, stderr=PIPE),
+            Popen('%s %s --abc -V all -o %s.mcl' % (
+                mcl_bin, tmp_file, tmp_file), stdout=PIPE, stderr=PIPE,
                   shell=True).communicate()
             self.clusters = ClusterOfModels()
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
@@ -356,10 +356,11 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t{}\n'.format('\t'.join([str(c) for c in steps])))
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in steps])))
             for part in xrange(self.nloci):
-                out.write('{}\t{}\n'.format(part + 1, '\t'.join(
-                    [('-' if not part in distsk[c] else str(distsk[c][part]) if distsk[c][part] else 'None')
+                out.write('%s\t%s\n' % (part + 1, '\t'.join(
+                    [('-' if not part in distsk[c] else str(distsk[c][part])
+                      if distsk[c][part] else 'None')
                      for c in steps])))
             out.close()
         # plot
@@ -390,10 +391,9 @@ class StructuralModels(object):
                 ax.plot(errorn[k], color=colors[steps.index(k)], ls='--')
         ax.set_ylabel('Density (bp / nm)')
         ax.set_xlabel('Particle number')
-        ax.legend(plots, ['Average for {} particle{}'.format(k,
-                                                             's' if k else '')
+        ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
                           for k in steps] + (
-                      ['+/- 2 standard deviations for {}'.format(k)
+                      ['+/- 2 standard deviations for %s' % (k)
                        for k in steps] if error else []), fontsize='small',
                   bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((0, self.nloci))
@@ -483,7 +483,7 @@ class StructuralModels(object):
             out.write('#Particle1\tParticle2\tModels_percentage\n')
             for i in xrange(len(matrix)):
                 for j in xrange(i+1, len(matrix)):
-                    out.write('{}\t{}\t{}\n'.format(i, j, matrix[i][j]))
+                    out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
             out.close()
         if not axe:
             fig = plt.figure(figsize=(8, 6))
@@ -495,8 +495,9 @@ class StructuralModels(object):
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
-        cbar.ax.set_yticklabels(['{:>3}%'.format(p) for p in range(0, 110, 10)])
-        cbar.ax.set_ylabel('Percentage of models with particles closer than {} nm'.format(cutoff))
+        cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
+        cbar.ax.set_ylabel('Percentage of models with particles closer than ' +
+                           '%s nm' % (cutoff))
         axe.set_title('Contact map')
         if savefig:
             fig.savefig(savefig)
@@ -542,7 +543,7 @@ class StructuralModels(object):
         else:
             fig = axe.get_figure()
         fig.suptitle('Correlation bettween normalized-real and modelled '
-                     + 'contact maps (correlation={:.4})'.format(corr[0]),
+                     + 'contact maps (correlation=%.4f)' % (corr[0]),
                      size='x-large')
         ax = fig.add_subplot(121)
         self.contact_map(models, cluster, cutoff, axe=ax)
@@ -598,9 +599,9 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t{}'.format('\t'.join([c for c in cutoffs])))
+            out.write('#Particle\t%s' % ('\t'.join([c for c in cutoffs])))
             for part in xrange(self.nloci):
-                out.write('{}\t{}\n'.format(part + 1, '\t'.join(
+                out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     [consistencies[c][part] for c in cutoffs])))
             out.close()
         # plot
@@ -629,13 +630,13 @@ class StructuralModels(object):
         for i, cut in enumerate(cutoffs[::-1]):
             plots += axe.plot(consistencies[cut], color='darkred',
                               alpha= 1 - i / float(len(cutoffs)))
-        axe.legend(plots, ['{} nm'.format(k) for k in cutoffs[::-1]],
+        axe.legend(plots, ['%s nm' % (k) for k in cutoffs[::-1]],
                    fontsize='small', loc='center left', bbox_to_anchor=(1, 0.5))
         axe.set_xlim((0, self.nloci))
         axe.set_xlabel('Particle')
         axe.set_ylabel('Consistency (%)')
         if cluster:
-            axe.set_title('Cluster {}'.format(cluster))
+            axe.set_title('Cluster %s' % (cluster))
         elif len(models) == len(self):
             axe.set_title('All clusters')
         else:
@@ -701,8 +702,7 @@ class StructuralModels(object):
         
         """
         self.write_cmm('/tmp/', model_num=model_num)
-        chimera_view('/tmp/model.{}.cmm'.format(
-            self[model_num]['rand_init']),
+        chimera_view('/tmp/model.%s.cmm' % (self[model_num]['rand_init']),
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
     
 
@@ -858,29 +858,29 @@ class StructuralModels(object):
                 model = self._bad_models[model_num]
             if type(color) != list:
                 color = color(self.nloci)
-            out = '<marker_set name=\"{}\">\n'.format(model['rand_init'])
-            form = ('<marker id=\"{0}\" x=\"{1}\" y=\"{2}\" z=\"{3}\"' +
-                    ' r=\"{4}\" g=\"{5}\" b=\"{6}\" ' +
+            out = '<marker_set name=\"%s\">\n' % (model['rand_init'])
+            form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
+                    ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"' +
                     str(self.resolution * self._config['scale']) +
-                    '\" note=\"{0}\"/>\n')
+                    '\" note=\"%s\"/>\n')
             for n in xrange(self.nloci):
-                out += form.format(n + 1,
-                                   model['x'][n], model['y'][n], model['z'][n],
-                                   color[n][0], color[n][1], color[n][2])
-            form = ('<link id1=\"{}\" id2=\"{}\" r=\"1\" ' +
+                out += form % (n + 1,
+                               model['x'][n], model['y'][n], model['z'][n],
+                               color[n][0], color[n][1], color[n][2], n + 1)
+            form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
                     'g=\"1\" b=\"1\" radius=\"' +
                     str(1) +
                     '\"/>\n')
             for n in xrange(1, self.nloci):
-                out += form.format(n, n + 1)
+                out += form % (n, n + 1)
             out += '</marker_set>\n'
 
             if rndname:
-                out_f = open('{}/model.{}.cmm'.format(
-                    directory, model['rand_init']), 'w')
+                out_f = open('%s/model.%s.cmm' % (directory,
+                                                  model['rand_init']), 'w')
             else:
-                out_f = open('{}/model_{}_rnd{}.cmm'.format(
+                out_f = open('%s/model_%s_rnd%s.cmm' % (
                     directory, model_num, model['rand_init']), 'w')
             out_f.write(out)
             out_f.close()
@@ -923,15 +923,15 @@ class StructuralModels(object):
             except KeyError:
                 model = self._bad_models[model_num]
             if rndname:
-                path_f = '{}/model.{}.xyz'.format(directory, model['rand_init'])
+                path_f = '%s/model.%s.xyz' % (directory, model['rand_init'])
             else:
-                path_f = '{}/model_{}_rnd{}.xyz'.format(directory, model_num,
-                                                        model['rand_init'])
+                path_f = '%s/model_%s_rnd%s.xyz' % (directory, model_num,
+                                                    model['rand_init'])
             out = ''
-            form = "{:>12}{:>12}{:>12.3f}{:>12.3f}{:>12.3f}\n"
+            form = "%12s%12s%12.3f%12.3f%12.3f\n"
             for n in xrange(self.nloci):
-                out += form.format('p' + str(n + 1), n + 1, model['x'][n],
-                                   model['y'][n], model['z'][n])
+                out += form % ('p' + str(n + 1), n + 1, model['x'][n],
+                               model['y'][n], model['z'][n])
             out_f = open(path_f, 'w')
             out_f.write(out)
             out_f.close()
@@ -962,8 +962,8 @@ class StructuralModels(object):
 
 class ClusterOfModels(dict):
     def __repr__(self):
-        out1 = '   Cluster #{} has {} models [top model: {}]\n'
-        out = 'Total number of clusters: {}\n{}'.format(
+        out1 = '   Cluster #%s has %s models [top model: %s]\n'
+        out = 'Total number of clusters: %s\n%s' % (
             len(self), 
-            ''.join([out1.format(k, len(self[k]), self[k][0]) for k in self]))
+            ''.join([out1 % (k, len(self[k]), self[k][0]) for k in self]))
         return out

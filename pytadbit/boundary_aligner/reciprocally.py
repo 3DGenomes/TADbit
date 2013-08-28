@@ -95,7 +95,7 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
                     t = '-'
                 diff = penalty
         diffs.append(diff)
-        #print 't2i {}; start {}; t1 {}; clos {}; gap {}'.format(
+        #print 't2i {}; start {}; t1 {}; clos {}; gap {}'.format (
         #    tads2[i], start, t, closest, gap)
         align1.append(t)
         align2.append(closest)

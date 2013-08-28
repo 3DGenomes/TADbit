@@ -77,7 +77,7 @@ class Experiment(object):
 
 
     def __repr__(self):
-        return 'Experiment {} (resolution: {}, TADs: {}, Hi-C rows: {}, normalized: {})'.format(
+        return 'Experiment %s (resolution: %s, TADs: %s, Hi-C rows: %s, normalized: %s)' % (
             self.name, nicer(self.resolution), len(self.tads) or None,
             self.size, self._normalization if self._normalization else 'None')
 
@@ -94,7 +94,7 @@ class Experiment(object):
             self.set_resolution(resolution)
             other.set_resolution(resolution)
             
-        xpr = Experiment(name='{}+{}'.format(self.name, other.name),
+        xpr = Experiment(name='%s+%s' % (self.name, other.name),
                          resolution=resolution,
                          xp_handler=tuple([i + j for i, j in zip(
                              self.hic_data[0], other.hic_data[0])]))
@@ -499,7 +499,7 @@ class Experiment(object):
                 for i, ii in enumerate(max_dist_arange):
                     for j, jj in enumerate(upfreq_arange):
                         for k, kk in enumerate(lowfreq_arange):
-                            out.write('{}\t{}\t{}\t{}\t{}\n'.format(
+                            out.write('%s\t%s\t%s\t%s\t%s\n' % (
                                 hh, ii, jj, kk, matrix[h, i, j, k]))
             out.close()
         return (('scale', 'maxdist', 'upfreq', 'lowfreq'),
@@ -582,9 +582,9 @@ class Experiment(object):
         # write to file
         out = open(fname, 'w')
         if header:
-            out.write('elt1\telt2\t{}\n'.format('zscore' if zscored else 
-                                                'normalized hi-c' if normalized 
-                                                else 'raw hi-c'))
+            out.write('elt1\telt2\t%s\n' % ('zscore' if zscored else 
+                                            'normalized hi-c' if normalized 
+                                            else 'raw hi-c'))
         for i in xrange(self.size):
             if i in self._zeros:
                 continue
@@ -610,12 +610,10 @@ class Experiment(object):
                 if remove_zeros and not val:
                     continue
                 if true_position:
-                    out.write('{}\t{}\t{}\n'.format(self.resolution * (i + 1),
-                                                    self.resolution * (j + 1),
-                                                    val))
+                    out.write('%s\t%s\t%s\n' % (self.resolution * (i + 1),
+                                                self.resolution * (j + 1), val))
                 else:
-                    out.write('{}\t{}\t{}\n'.format(i + 1, j + 1,
-                                                    val))
+                    out.write('%s\t%s\t%s\n' % (i + 1, j + 1, val))
         out.close()
 
 

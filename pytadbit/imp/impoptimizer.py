@@ -209,9 +209,9 @@ class IMPoptimizer(object):
         :param f_name: path to file
         """
         out = open(f_name, 'w')
-        out.write(('## n_models: {} cutoff: {} n_keep: {} ' +
-                   'close_bins: {}\n').format(self.n_models, self.cutoff,
-                                              self.n_keep, self.close_bins))
+        out.write(('## n_models: %s cutoff: %s n_keep: %s ' +
+                   'close_bins: %s\n') % (self.n_models, self.cutoff,
+                                          self.n_keep, self.close_bins))
         out.write('# scale\tmax_dist\tup_freq\tlow_freq\tcorrelation\n')
         for scale in self.scale_range:
             for maxdist in self.maxdist_range:
@@ -220,7 +220,7 @@ class IMPoptimizer(object):
                         try:
                             result = self.results[
                                 (scale, maxdist, upfreq, lowfreq)]
-                            out.write('{}\t{}\t{}\t{}\t{}\n'.format(
+                            out.write('%s\t%s\t%s\t%s\t%s\n' % (
                                 scale, maxdist, upfreq, lowfreq, result))
                         except KeyError:
                             print 'ERROR key %s not found' % (
@@ -244,7 +244,7 @@ class IMPoptimizer(object):
                 if ([int(n_models), int(cutoff), int(n_keep), int(close_bins)]
                     != 
                     [self.n_models, self.cutoff, self.n_keep, self.close_bins]):
-                    raise Exception('Parameters does not match: {}\n{}'.format(
+                    raise Exception('Parameters does not match: %s\n%s' % (
                         [int(n_models), int(cutoff),
                          int(n_keep), int(close_bins)],
                         [self.n_models, self.cutoff,

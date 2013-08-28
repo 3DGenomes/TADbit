@@ -62,7 +62,7 @@ def load_chromosome(in_f, fast=2):
         try:
             dicp = load(open(in_f + '_hic'))
         except IOError:
-            raise Exception('ERROR: file {} not found\n'.format(
+            raise Exception('ERROR: file %s not found\n' % (
                 dico['experiments'][name]['hi-c']))
         for name in dico['experiments']:
             crm.get_experiment(name).hic_data = dicp[name]['hi-c']
@@ -170,7 +170,7 @@ class Chromosome(object):
             if exp.name == name:
                 return exp
         raise Exception('ERROR: experiment ' +
-                        '{} not found\n'.format(name))
+                        '%s not found\n' % (name))
                 
 
     def save_chromosome(self, out_f, fast=True, divide=True, force=False):
@@ -322,12 +322,12 @@ class Chromosome(object):
         if not name:
             name = ''.join([letters[int(rand() * len(letters))] \
                             for _ in xrange(5)])
-            warn('No name provided, random name generated: {}\n'.format(name))
+            warn('No name provided, random name generated: %s\n' % (name))
         if name in self.experiments:
             if 'hi-c' in self.get_experiment(name) and not replace:
-                warn('''Hi-C data already loaded under the name: {}.
-                This experiment will be kept under {}.\n'''.format(name,
-                                                                   name + '_'))
+                warn('''Hi-C data already loaded under the name: %s.
+                This experiment will be kept under %s.\n''' % (name,
+                                                               name + '_'))
                 name += '_'
         if type(name) == Experiment:
             self.experiments.append(name)
@@ -532,13 +532,11 @@ class Chromosome(object):
                              interpolation="nearest")
         cbar = axe.figure.colorbar(img)
         cbar.ax.set_ylabel('Log2 Hi-C interactions count')
-        axe.set_title(('Chromosome {} experiment {}' +
-                       ' {}').format(self.name, xper.name,
-                                     'focus: {}-{}'.format(
-                                         start,
-                                         end) if tad else ''))
-        axe.set_xlabel('Genomic bin (resolution: {})'.format(xper.resolution))
-        axe.set_ylabel('Genomic bin (resolution: {})'.format(xper.resolution))
+        axe.set_title(('Chromosome %s experiment %s' +
+                       ' %s') % (self.name, xper.name,
+                                 'focus: %s-%s' % (start, end) if tad else ''))
+        axe.set_xlabel('Genomic bin (resolution: %s)' % (xper.resolution))
+        axe.set_ylabel('Genomic bin (resolution: %s)' % (xper.resolution))
         if not paint_tads:            
             axe.set_ylim(0, len(matrix))
             axe.set_xlim(0, len(matrix))
@@ -613,7 +611,7 @@ class Chromosome(object):
         :yields: Hi-C data corresponding to each TAD
         """
         if not self.get_experiment(x_name).hic_data:
-            raise Exception('No Hi-c data for {} experiment\n'.format(x_name))
+            raise Exception('No Hi-c data for %s experiment\n' % (x_name))
         for name, ref in self.get_experiment(x_name).tads.iteritems():
             yield name, self.get_tad_hic(ref, x_name, normed=normed)
 
@@ -741,7 +739,7 @@ class ExperimentList(list):
             for nam in self:
                 if nam.name == i:
                     return nam
-            raise KeyError('Experiment {} not found\n'.format(i))
+            raise KeyError('Experiment %s not found\n' % (i))
 
 
     def __setitem__(self, i, exp):
@@ -772,7 +770,7 @@ class ExperimentList(list):
                     del(exp)
                     break
             else:
-                raise KeyError('Experiment {} not found\n'.format(i))
+                raise KeyError('Experiment %s not found\n' % (i))
 
 
     def append(self, exp):
@@ -802,7 +800,7 @@ class AlignmentDict(dict):
             for i, key in enumerate(self):
                 if nam == i:
                     return self[key]
-            raise TypeError('Alignment {} not found\n'.format(i))
+            raise TypeError('Alignment %s not found\n' % (i))
 
 
 class ChromosomeSize(int):

@@ -69,8 +69,8 @@ def colorize(string, num, ftype='ansi'):
     :returns: the string 'decorated' with ANSII color code
     """
     color = COLOR if ftype=='ansi' else COLORHTML
-    return '{}{}{}'.format(color[num], string,
-                           '\033[m' if ftype=='ansi' else '</span>')
+    return '%s%s%s' % (color[num], string,
+                       '\033[m' if ftype=='ansi' else '</span>')
 
 
 def color_residues(n_part):
@@ -202,7 +202,8 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     cut = 10 if cutter >= 10 else 1
     bot = -int(difnrj)/cutter * cutter
     plt.yticks([bot+i for i in xrange(0, -bot-bot/cut, -bot/cut)],
-               ["{:,}".format(int(minnrj)/cutter * cutter  + i)
+               # ["{:,}".format (int(minnrj)/cutter * cutter  + i)
+               ["%d" % (int(minnrj)/cutter * cutter  + i)
                 for i in xrange(0, -bot-bot/cut, -bot/cut)], size='small')
     ax.set_ylabel('Minimum IMP objective function')
     ax.set_xticks([])
@@ -246,17 +247,17 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
     plt.setp(bp['fliers'], color='darkred', marker='+')
     bpAx.plot(sum(data)/len(data), 1, 
               color='w', marker='*', markeredgecolor='k')
-    bpAx.annotate('{:.4}'.format(bp['boxes'][0].get_xdata()[0]),
+    bpAx.annotate('%.4f' % (bp['boxes'][0].get_xdata()[0]),
                   (bp['boxes'][0].get_xdata()[0], bp['boxes'][0].get_ydata()[1]),
                   va='bottom', ha='center', xytext=(0, 2),
                   textcoords='offset points',
                   size='small')
-    bpAx.annotate('{:.4}'.format(bp['boxes'][0].get_xdata()[2]),
+    bpAx.annotate('%.4f' % (bp['boxes'][0].get_xdata()[2]),
                   (bp['boxes'][0].get_xdata()[2], bp['boxes'][0].get_ydata()[1]),
                   va='bottom', ha='center', xytext=(0, 2),
                   textcoords='offset points',
                   size='small')
-    bpAx.annotate('{:.4}'.format(bp['medians'][0].get_xdata()[0]),
+    bpAx.annotate('%.4f' % (bp['medians'][0].get_xdata()[0]),
                   (bp['medians'][0].get_xdata()[0], bp['boxes'][0].get_ydata()[0]),
                   va='top', ha='center', xytext=(0, -2),
                   textcoords='offset points', color='darkred',
@@ -284,7 +285,8 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
     bpAx.set_yticks([])  # don't need that 1 tick mark
     plt.xlabel('Distance between particles (nm)')
     plt.ylabel('Number of observations')
-    bpAx.set_title('Histogram and boxplot of distances between particles {} and {}'.format(part1, part2))
+    bpAx.set_title('Histogram and boxplot of distances between particles ' +
+                   '%s and %s' % (part1, part2))
     if savefig:
         fig.savefig(savefig)
     elif not axe:
@@ -299,7 +301,7 @@ def chimera_view(cmm_file, chimera_bin='chimera',
     """
     pref_f = '/tmp/tmp.cmd'
     out = open(pref_f, 'w')
-    out.write('open {}\n'.format(cmm_file))
+    out.write('open %s\n' % (cmm_file))
     if not chimera_cmd:
         out.write('''
 focus
@@ -318,22 +320,22 @@ scale 0.8
 ''')
         if savefig:
             if savefig.endswith('.png'):
-                out.write('copy file {} png'.format(savefig))
+                out.write('copy file %s png' % (savefig))
             elif savefig[-4:] in ('.mov', 'webm'):
                 out.write('''
 movie record supersample 1
 turn y 3 120
 wait 120
 movie stop
-movie encode output {0}
-'''.format(savefig))
+movie encode output %s
+''' % (savefig))
             elif savefig:
                 raise Exception('Not supported format, must be png, mov or webm\n')
     else:
         out.write('\n'.join(chimera_cmd) + '\n')
     out.close()
     
-    Popen('{} {}'.format(chimera_bin, pref_f), shell=True).communicate()
+    Popen('%s %s' % (chimera_bin, pref_f), shell=True).communicate()
 
 
 def plot_3d_optimization_result(result,
@@ -389,11 +391,10 @@ def plot_3d_optimization_result(result,
         lol = ax.scatter(x, y, z, c=col, s=100, alpha=0.9)
         cbar = fig.colorbar(lol)
         cbar.ax.set_ylabel('Correlation value')
-        plt.title(('Optimal IMP parameters (subplot {0}={1})\n' +
-                   'Best: {2}={6}, {3}={7}, {4}={8}, {5}={9}'
-                   ).format(*([axes[0], wax[i], axes[0], axes[1], axes[3],
-                               axes[2]] + [my_round(i, 3)
-                                           for i in sort_result[1:]])))
+        tit = 'Optimal IMP parameters (subplot %s=%s)\n' % (axes[0], wax[i])
+        tit += 'Best: %s=%%s, %s=%%s, %s=%%s, %s=%%s' % (axes[0], axes[1],
+                                                         axes[3], axes[4])
+        plt.title(tit % tuple([my_round(i, 3) for i in sort_result[1:]]))
     plt.show()
 
 
@@ -480,7 +481,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                     share_all = False,
                     cbar_location="right",
                     cbar_mode="single",
-                    cbar_size="{}%".format(7./(float(ncols) * len(xax) / 3)),
+                    cbar_size="%s%%" % (7./(float(ncols) * len(xax) / 3)),
                     cbar_pad="10%",
                     )
     cell = ncols
@@ -528,10 +529,9 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     grid.axes_llc.set_xlabel(axes[3])
     grid.cbar_axes[0].colorbar(im)
     grid.cbar_axes[0].set_ylabel('Correlation value')
-    fig.suptitle(('Optimal IMP parameters\n' +
-                  'Best: {0}={4}, {1}={5}, {2}={6}, {3}={7}'
-                  ).format(*([axes[0], axes[1], axes[3],
-                              axes[2]] + [my_round(i, 3)
-                                          for i in sort_result[0][1:]])),
+    tit = 'Optimal IMP parameters (subplot %s=%s)\n' % (axes[0], wax[i])
+    tit += 'Best: %s=%%s, %s=%%s, %s=%%s, %s=%%s' % (axes[0], axes[1],
+                                                     axes[3], axes[4])
+    fig.suptitle(tit % tuple([my_round(i, 3) for i in sort_result[1:]]),
                  size='large')
     plt.show()
