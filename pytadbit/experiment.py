@@ -357,7 +357,7 @@ class Experiment(object):
 
 
     def model_region(self, start, end, n_models=5000, n_keep=1000, n_cpus=1,
-                     verbose=False, keep_all=False, close_bins=1, outfile=None,
+                     verbose=0, keep_all=False, close_bins=1, outfile=None,
                      config=CONFIG['dmel_01']):
         """
 
@@ -372,7 +372,9 @@ class Experiment(object):
         :param 1 close_bins: number of particle away a particle may be to be
            considered as a neighbor.
         :param n_cpus: number of CPUs to use for the optimization of models
-        :param False verbose: verbosity
+        :param 0 verbose: level of verbosity, can be 0: nothing, 1: objective
+           function value each 100 models, 2: objective function value each
+           model, or 3: many many things.
         :param CONFIG['dmel_01'] config: a dictionary containing the main
            parameters used to optimize models. Dictionary should contain the
            keys 'kforce', 'lowrdist', 'maxdist', 'upfreq' and 'lowfreq'.

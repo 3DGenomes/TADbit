@@ -27,7 +27,7 @@ IMP.set_log_level(IMP.SILENT)
 
 
 def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
-                       close_bins=1, n_cpus=1, keep_all=False, verbose=False,
+                       close_bins=1, n_cpus=1, keep_all=False, verbose=0,
                        outfile=None, config=CONFIG['dmel_01'], values=None):
     """
     To generate three-dimensional models from Hi-C data (z-scores of the
@@ -192,7 +192,7 @@ def _do_it(num, verbose):
     return generate_IMPmodel(num, verbose)
 
 
-def generate_IMPmodel(rand_init, verbose=False):
+def generate_IMPmodel(rand_init, verbose=0):
     """
     :param rand_init: random number kept as model key, for reproducibility.
 
@@ -200,9 +200,6 @@ def generate_IMPmodel(rand_init, verbose=False):
        function value optimization, and the coordinates of each particles.
 
     """
-    if verbose:
-        if not rand_init % 100:
-            print 'processing model #{}'.format(rand_init)
     IMP.random_number_generator.seed(rand_init)
 
     log_energies = []
@@ -236,7 +233,7 @@ def generate_IMPmodel(rand_init, verbose=False):
     r = IMP.core.ExcludedVolumeRestraint(model['ps'], CONFIG['kforce'])
     model['model'].add_restraint(r)
 
-    if verbose:
+    if verbose == 3:
         print "Total number of restraints: %i" % (
             model['model'].get_number_of_restraints())
 
@@ -252,12 +249,12 @@ def generate_IMPmodel(rand_init, verbose=False):
     # o.add_optimizer_state(log)
 
     # Optimizer's parameters
-    if verbose:
+    if verbose == 3:
         print "nrounds: %i, steps: %i, lsteps: %i" % (NROUNDS, STEPS, LSTEPS)
 
     # Start optimization and save an VRML after 100 MC moves
     log_energies.append(model['model'].evaluate(False))
-    if verbose:
+    if verbose == 3:
         print "Start", log_energies[-1]
 
     #"""simulated_annealing: preform simulated annealing for at most nrounds
@@ -284,7 +281,7 @@ def generate_IMPmodel(rand_init, verbose=False):
         temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
         o.set_kt(temperature)
         log_energies.append(o.optimize(STEPS))
-        if verbose:
+        if verbose == 3:
             print i, log_energies[-1], o.get_kt()
     # After the firsts hightemp iterations, stop the optimization if the score
     # does not change by more than a value defined by endLoopValue and
@@ -294,7 +291,7 @@ def generate_IMPmodel(rand_init, verbose=False):
         temperature = alpha * (1.1 * NROUNDS - i) / NROUNDS
         o.set_kt(temperature)
         log_energies.append(o.optimize(STEPS))
-        if verbose:
+        if verbose == 3:
             print i, log_energies[-1], o.get_kt()
         # Calculate the score variation and check if the optimization
         # can be stopped or not
@@ -322,9 +319,10 @@ def generate_IMPmodel(rand_init, verbose=False):
     # Print the IMP score of the final model
 
     log_energies.append(model['model'].evaluate(False))
-    if verbose:
-        print "Final", log_energies[-1]
-
+    if verbose >=1:
+        if verbose >= 2 or not rand_init % 100:
+            print 'Model {} IMP Objective Function: {}'.format(
+                rand_init, log_energies[-1])
     x, y, z, radius = (FloatKey("x"), FloatKey("y"),
                        FloatKey("z"), FloatKey("radius"))
 
@@ -340,7 +338,7 @@ def generate_IMPmodel(rand_init, verbose=False):
         result['y'].append(part.get_value(y))
         result['z'].append(part.get_value(z))
         result['radius'].append(part.get_value(radius))
-        if verbose:
+        if verbose == 3:
             print (part.get_name(), part.get_value(x), part.get_value(y),
                    part.get_value(z), part.get_value(radius))
     return result
