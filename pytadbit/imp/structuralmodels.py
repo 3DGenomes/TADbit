@@ -356,7 +356,7 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t{}'.format('\t'.join([str(c) for c in steps])))
+            out.write('#Particle\t{}\n'.format('\t'.join([str(c) for c in steps])))
             for part in xrange(self.nloci):
                 out.write('{}\t{}\n'.format(part + 1, '\t'.join(
                     [str(distsk[c][part/c]) for c in steps if not part%c])))
@@ -842,7 +842,7 @@ class StructuralModels(object):
            :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
            tuples (as long as the number of particles). 
         """
-        if model_num:
+        if model_num > -1:
             models = [model_num]
         elif models:
             models = models
@@ -908,7 +908,7 @@ class StructuralModels(object):
         :param False get_path: whether to return, or not the full path where
            the file has been written
         """
-        if model_num:
+        if model_num > -1:
             models = [model_num]
         elif models:
             models = models
