@@ -422,7 +422,7 @@ class StructuralModels(object):
         if models:
             models = models
         elif cluster > -1:
-            models = self.clusters[cluster]
+            models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
         matrix = [[float('nan') for _ in xrange(self.nloci)] for _ in xrange(self.nloci)]
@@ -587,7 +587,7 @@ class StructuralModels(object):
         if models:
             models = dict([(i, self[m]) for i, m in enumerate(models)])
         elif cluster > -1:
-            models = dict([(i, self[m]) for i, m in
+            models = dict([(i, self[str(m)]) for i, m in
                            enumerate(self.clusters[cluster])])
         else:
             models = self.__models
@@ -787,7 +787,7 @@ class StructuralModels(object):
         if models:
             models=models
         elif cluster > -1:
-            models = self.clusters[cluster]
+            models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
         for mdl in models:
@@ -847,7 +847,7 @@ class StructuralModels(object):
         elif models:
             models = models
         elif cluster > -1:
-            models = self.clusters[cluster]
+            models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models        
         for model_num in models:
@@ -913,7 +913,7 @@ class StructuralModels(object):
         elif models:
             models = models
         elif cluster > -1:
-            models = self.clusters[cluster]
+            models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models        
         for model_num in models:
@@ -960,9 +960,9 @@ class StructuralModels(object):
 
 
 class ClusterOfModels(dict):
-    def ___repr___(self):
+    def __repr__(self):
         out1 = '   Cluster #{} has {} models [top model: {}]\n'.format()
         out = 'Total number of clusters: {}\n{}'.format(
             len(self), 
-            ''.join([out1.format(len(self[k]), k[0]) for k in self]))
+            ''.join([out1.format(k, len(self[k]), self[k][0]) for k in self]))
         return out
