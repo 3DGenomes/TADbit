@@ -87,15 +87,28 @@ def color_residues(n_part):
 def draw_alignment(alignment, experiments):
     """
     """
-    for i, xpr in enumerate(experiments):
-        if not xpr.name in alignment.__keys:
+
+    from matplotlib.patches import Ellipse
+    fig, axes = plt.subplots(nrows=len(experiments), sharex=True)
+    for iex, xpr in enumerate(experiments):
+        if not xpr.name in alignment:
             continue
         siz = xpr.size
         for tad in xpr.tads:
-            start, end = xpr.tads[tad]['start'], xpr.tads[tad]['end']
+            start, end = int(xpr.tads[tad]['start']), int(xpr.tads[tad]['end'])
             matrix = [xpr.wght[0][i + siz * j] for i in xrange(start, end)
                       for j in xrange(start, end)]
             height = float(sum(matrix))/len(matrix)/max(matrix)
+
+        
+            el = Ellipse((start+(end-start)/2,0), end-start, height, facecolor='r', alpha=0.5)
+            axes[iex].add_artist(el)
+            el.set_clip_box(axes[iex].bbox)
+        axes[iex].set_ylim((0, 0.2))
+        axes[iex].set_xlim((0, end))
+    plt.show()
+
+
 
 
 def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
