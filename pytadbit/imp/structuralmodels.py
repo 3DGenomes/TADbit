@@ -205,7 +205,8 @@ class StructuralModels(object):
                     model = int(model.split('_')[1])
                     self[model]['cluster'] = cluster
                     self.clusters[cluster].append(self[model]['rand_init'])
-                self.clusters[cluster].sort(key=lambda x: self[x]['objfun'])
+                self.clusters[cluster].sort(
+                    key=lambda x: self[str(x)]['objfun'])
             # sort clusters according to their lowest energy
             # for clt in clusters:
             #     clusters[clt].sort()
