@@ -6,7 +6,7 @@
 from warnings import warn
 import numpy as np
 from subprocess import Popen, PIPE
-
+from itertools import combinations
 
 try:
     from matplotlib import pyplot as plt
@@ -56,6 +56,8 @@ COLORHTML = {None: '<span style="color:red;">'       , # red
              }
 
 
+COLORGUI = ['blue', 'blue', 'blue', 'purple', 'purple', 'cyan', 'cyan', 'yellow', 'yellow', 'red', 'red']
+
 def colorize(string, num, ftype='ansi'):
     """
     Colorize with ANSII colors a string for printing in shell. this acording to
@@ -84,14 +86,19 @@ def color_residues(n_part):
     return result
 
 
-def draw_alignment(alignment, experiments):
+def draw_alignment(alignment, experiments, focus=None):
     """
     """
 
-    from matplotlib.patches import Ellipse
-    fig, axes = plt.subplots(nrows=len(experiments), sharex=True)
-    transFigure = fig.transFigure.inverted()
-    coords = [[] for _ in xrange(len(experiments))]
+    from matplotlib.patches import Ellipse, Rectangle
+    from matplotlib.cm import jet
+    from matplotlib import colors
+    from matplotlib import colorbar
+    
+    fig, axes = plt.subplots(nrows=len(experiments), sharex=True, sharey=True,
+                             figsize=(25, 6))
+    fig.subplots_adjust(hspace=0)
+    maxys = []
     for iex, xpr in enumerate(experiments):
         if not xpr.name in alignment:
             continue
@@ -100,23 +107,37 @@ def draw_alignment(alignment, experiments):
             start, end = int(xpr.tads[tad]['start']), int(xpr.tads[tad]['end'])
             matrix = [xpr.wght[0][i + siz * j] for i in xrange(start, end)
                       for j in xrange(start, end)]
-            height = float(sum(matrix))/len(matrix)/max(matrix)
+            height = float(sum(matrix))/len(matrix)
+            maxys.append(height/2)
 
-        
-            el = Ellipse((start+(end-start)/2,0), end-start, height, facecolor='r', alpha=0.5)
+            el = Ellipse((start+float(end-start)/2,0), end-start, height,
+                         facecolor='k', alpha=0.7)
             axes[iex].add_artist(el)
             el.set_clip_box(axes[iex].bbox)
-        axes[iex].set_ylim((0, 0.2))
-        axes[iex].set_xlim((0, end))
         axes[iex].grid()
+    maxy = max(maxys)
     for col in alignment.itercolumns():
+        beg = min([t['end'] for t in col if t['end']])-0.5
+        end = max([t['end'] for t in col if t['end']])+0.5
         for iex, tad in enumerate(col):
-            coords[iex].append(transFigure.transform(
-                axes[iex].transData.transform([tad['end'], 0])))
+            if tad['end']:
+                rect = Rectangle((beg, 0), end-beg, maxy, alpha=0.8,
+                                 color=jet(tad['score']/10))
+                axes[iex].add_patch(rect)
+    starting = focus[0] if focus else 0
+    ending = focus[1] if focus else end
+    for iex in range(len(experiments)):
+        axes[iex].set_ylim((0, maxy))
+        axes[iex].set_xlig((starting, ending))
+        axes[iex].set_ylabel('Mean interaction')
+    axes[iex].set_xlabel('Genomic bin')
+    axes[0].set_title("TAD borders' alignment")
+    ax1 = fig.add_axes([0.93, 0.05, 0.02, 0.9])
+    cb1 = colorbar.ColorbarBase(ax1, cmap=jet,
+                                norm=colors.Normalize(vmin=0., vmax=1.))
+    cb1.set_label('Border prediction score')
+    cb1.ax.set_yticklabels([str(i)for i in range(1, 11)])
     plt.show()
-    
-
-
 
 
 def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
