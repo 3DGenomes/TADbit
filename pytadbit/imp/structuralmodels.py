@@ -64,6 +64,13 @@ class StructuralModels(object):
         
 
     def __getitem__(self, nam):
+        if type(nam) == str:
+            nam = int(nam)
+            for m in self.__models:
+                if self.__models[m]['rand_init'] == nam:
+                    return self.__models[m]
+            else:
+                raise KeyError('Model {} not found\n'.format(nam))
         try:
             return self.__models[nam]
         except TypeError:
