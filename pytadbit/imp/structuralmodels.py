@@ -355,7 +355,7 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t{}'.format('\t'.join([c for c in steps])))
+            out.write('#Particle\t{}'.format('\t'.join([str(c) for c in steps])))
             for part in xrange(self.nloci):
                 out.write('{}\t{}\n'.format(part + 1, '\t'.join(
                     [distsk[c][part] for c in steps])))
