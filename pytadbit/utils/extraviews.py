@@ -111,7 +111,8 @@ def draw_alignment(alignment, experiments):
         axes[iex].set_ylim((0, 0.2))
         axes[iex].set_xlim((0, end))
         axes[iex].grid()
-    for tad in coords[0]
+    for tad in coords[0]:
+        pass
     plt.show()
     
 
