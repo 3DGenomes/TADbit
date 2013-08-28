@@ -43,7 +43,7 @@ class StructuralModels(object):
     interactions). A given number of models is kept, and can be used to draw
     some statistics or search for some specific interactions.
 
-    :param nloci: length of the chromatine fragment modelled (in number of
+    :param nloci: length of the chromatin fragment modelled (in number of
        particles)
     :param models: a dictionary contatining 
     :param resolution: of the Hi-C experiment, this will be the number of
@@ -291,7 +291,7 @@ class StructuralModels(object):
                      error=False, axe=None, savefig=None, outfile=None):
         """
         Represents the number of nucletotide base pairs can be found in 1 nm of
-           chromatine, this along strand modelled.
+           chromatin, this along strand modelled.
 
         :param None models: If None (default) will do calculate the distance
            along all models. A list of numbers corresponding to a given set of
@@ -395,7 +395,7 @@ class StructuralModels(object):
                        for k in steps] if error else []), fontsize='small',
                   bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((0, self.nloci))
-        ax.set_title('Chromatine density')
+        ax.set_title('Chromatin density')
         if savefig:
             fig.savefig(savefig)
         elif not axe:
@@ -562,9 +562,9 @@ class StructuralModels(object):
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
                           cluster=None, axe=None, savefig=None, outfile=None):
         """
-        Plots the consistency of a given set of models, along the chromatine
+        Plots the consistency of a given set of models, along the chromatin
            fragment modelled. This plot can also be viewed as how well defined,
-           or how stable, is a given portion of the chromatine model.
+           or how stable, is a given portion of the chromatin model.
 
         :param (50,100,150,200) cutoffs: list of cutoff values (in nanometer)
            to plot. These distances are used to know when to consider two

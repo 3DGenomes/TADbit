@@ -96,5 +96,5 @@ PyMODINIT_FUNC
 initeqv_rms_drms(void)
 {
   (void) Py_InitModule3("eqv_rms_drms", Eqv_rms_drmsMethods, 
-			"Functions to compaire two Chromatine strands.");
+			"Functions to compaire two Chromatin strands.");
 }
