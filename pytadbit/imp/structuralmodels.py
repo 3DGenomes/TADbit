@@ -121,7 +121,7 @@ class StructuralModels(object):
 
 
     def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
-                       mcl_bin='mcl', tmp_file='/tmp/tmp.xyz'):
+                       mcl_bin='mcl', tmp_file='/tmp/tmp.xyz', verbose=True):
         """
         Runs a clustering analysis over models. Clusters found will be stored
            in StructuralModels.clusters
@@ -145,6 +145,7 @@ class StructuralModels(object):
         :param 'mcl' mcl_bin: path to MCL executable file, in case 'mcl is not
            in the PATH'
         :param '/tmp/tmp.xyz' tmp_file: path to a temporary file
+        :param True verbose: same as print StructuralModels.clusters
         
         """
         scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, var)
@@ -196,7 +197,8 @@ class StructuralModels(object):
                 for model in line.split():
                     model = int(model.split('_')[1])
                     self[model]['cluster'] = cluster
-                    self.clusters[cluster].append(model)
+                    self.clusters[cluster].append(self[model]['rand_init'])
+                self.clusters[cluster].sort(key=lambda x: self[x]['objfun'])
             # sort clusters according to their lowest energy
             # for clt in clusters:
             #     clusters[clt].sort()
@@ -205,6 +207,8 @@ class StructuralModels(object):
             #     self.clusters[i] = clusters[clt]
             #     for model in self.clusters[i]:
             #         self.__models[model]['cluster'] = i
+        if verbose:
+            print self.clusters
 
 
     def _build_distance_matrix(self, n_best_clusters):
@@ -946,3 +950,11 @@ class StructuralModels(object):
         dump(to_save, out)
         out.close()
 
+
+class ClusterOfModels(dict):
+    def ___repr___(self):
+        out1 = '   Cluster #{} has {} models [top model: {}]\n'.format()
+        out = 'Total number of clusters: {}\n{}'.format(
+            len(self), 
+            ''.join([out1.format(len(self[k]), k[0]) for k in self]))
+        return out
