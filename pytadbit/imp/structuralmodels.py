@@ -358,10 +358,8 @@ class StructuralModels(object):
             out = open(outfile, 'w')
             out.write('#Particle\t{}'.format('\t'.join([str(c) for c in steps])))
             for part in xrange(self.nloci):
-                print part
-                print distsk[steps[0]][part]
                 out.write('{}\t{}\n'.format(part + 1, '\t'.join(
-                    [distsk[c][part] for c in steps])))
+                    [str(distsk[c][part]) for c in steps])))
             out.close()
         # plot
         if axe:
