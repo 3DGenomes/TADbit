@@ -961,7 +961,7 @@ class StructuralModels(object):
 
 class ClusterOfModels(dict):
     def __repr__(self):
-        out1 = '   Cluster #{} has {} models [top model: {}]\n'.format()
+        out1 = '   Cluster #{} has {} models [top model: {}]\n'
         out = 'Total number of clusters: {}\n{}'.format(
             len(self), 
             ''.join([out1.format(k, len(self[k]), self[k][0]) for k in self]))

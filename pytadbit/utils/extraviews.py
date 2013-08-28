@@ -90,7 +90,8 @@ def draw_alignment(alignment, experiments):
     for i, xpr in enumerate(experiments):
         if not xpr.name in alignment.__keys:
             continue
-        matrix = xpr.get_hic_matrix()
+        matrix = [self.wght[0][i + siz * j] for i in xrange(start, end)
+                   for j in xrange(start, end)]
 
 
 def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
