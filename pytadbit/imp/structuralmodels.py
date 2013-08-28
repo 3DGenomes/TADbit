@@ -359,7 +359,7 @@ class StructuralModels(object):
             out.write('#Particle\t{}\n'.format('\t'.join([str(c) for c in steps])))
             for part in xrange(self.nloci):
                 out.write('{}\t{}\n'.format(part + 1, '\t'.join(
-                    [('-' if not part in distsk[c] str(distsk[c][part]) if distsk[c][part] else 'None')
+                    [('-' if not part in distsk[c] else str(distsk[c][part]) if distsk[c][part] else 'None')
                      for c in steps])))
             out.close()
         # plot

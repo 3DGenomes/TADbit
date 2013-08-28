@@ -90,6 +90,8 @@ def draw_alignment(alignment, experiments):
 
     from matplotlib.patches import Ellipse
     fig, axes = plt.subplots(nrows=len(experiments), sharex=True)
+    transFigure = fig.transFigure.inverted()
+    coords = [[] for _ in xrange(len(experiments))]
     for iex, xpr in enumerate(experiments):
         if not xpr.name in alignment:
             continue
@@ -104,9 +106,14 @@ def draw_alignment(alignment, experiments):
             el = Ellipse((start+(end-start)/2,0), end-start, height, facecolor='r', alpha=0.5)
             axes[iex].add_artist(el)
             el.set_clip_box(axes[iex].bbox)
+            coords[iex].append(transFigure.transform(
+                axes[iex].transData.transform([end, 0])))
         axes[iex].set_ylim((0, 0.2))
         axes[iex].set_xlim((0, end))
+        axes[iex].grid()
+    for tad in coords[0]
     plt.show()
+    
 
 
 
