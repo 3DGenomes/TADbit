@@ -57,7 +57,7 @@ class StructuralModels(object):
         self.__models       = models
         self._bad_models    = bad_models
         self.nloci          = nloci
-        self.clusters       = clusters or {}
+        self.clusters       = clusters or ClusterOfModels()
         self.resolution     = float(resolution)
         self._original_data = original_data # only used for correlation
         self._config        = config
@@ -172,7 +172,7 @@ class StructuralModels(object):
             # x = []
             # y = []
             for k in clust[:,2]:
-                clusters = {}
+                clusters = ClusterOfModels()
                 _ = [clusters.setdefault(j, []).append(i) for i, j in
                      enumerate(fcluster(clust, k, criterion='distance'))]
                 solutions[k] = {'out': clusters}
@@ -198,7 +198,7 @@ class StructuralModels(object):
             Popen('{0} {1} --abc -V all -o {1}.mcl'.format(
                 mcl_bin, tmp_file, stdout=PIPE, stderr=PIPE),
                   shell=True).communicate()
-            self.clusters= {}
+            self.clusters = ClusterOfModels()
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
                 self.clusters[cluster] = []
                 for model in line.split():
