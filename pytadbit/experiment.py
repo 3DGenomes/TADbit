@@ -481,9 +481,6 @@ class Experiment(object):
              - the range of lowfreq used
 
         """
-        if self._normalization != 'visibility':
-            warn('WARNING: normalizing according to visibility method')
-            self.normalize_hic(method='visibility')
         zscores, values = self._sub_experiment_zscore(start, end)
         (matrix, scale_arange, max_dist_arange,
          upfreq_arange, lowfreq_arange) = grid_search(
@@ -519,6 +516,9 @@ class Experiment(object):
 
         :returns: zscore and raw values corresponding to the experiment
         """
+        if self._normalization != 'visibility':
+            warn('WARNING: normalizing according to visibility method')
+            self.normalize_hic(method='visibility')
         from pytadbit import Chromosome
         matrix = self.get_hic_matrix()
         end += 1

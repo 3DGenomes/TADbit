@@ -362,6 +362,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
 
     from mpl_toolkits.axes_grid1 import AxesGrid
     import matplotlib.patches as patches
+    from matplotlib.cm import jet
 
     ori_axes, axes_range, result = result
     trans = [ori_axes.index(a) for a in axes]
@@ -370,12 +371,20 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     # transpose results
     result = result.transpose(trans)
 
+    # set NaNs
+    result = np.ma.array(result, mask=np.isnan(result))
+    cmap = jet
+    cmap.set_bad('w', 1.)
+
+    # defines axes
     vmin = result.min()
     vmax = result.max()
     wax = [my_round(i, 3) for i in axes_range[0]]
     zax = [my_round(i, 3) for i in axes_range[1]]
     xax = [my_round(i, 3) for i in axes_range[3]]
     yax = [my_round(i, 3) for i in axes_range[2]]
+
+    # get best correlations
     sort_result =  sorted([(result[i, j, k, l], wax[i], zax[j], xax[l], yax[k])
                            for i in range(len(wax))
                            for j in range(len(zax))
@@ -384,7 +393,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                            ], key=lambda x: x[0],
                           reverse=True)[:show_best+1]
 
-    # skip
+    # skip axes?
     wax_range = range(len(wax))[::-1]
     zax_range = range(len(zax))
     skip = {} if not skip else skip
@@ -402,8 +411,9 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     # best number of rows/columns
     ncols  = len(zax_range)
     nrows  = len(wax_range)
-    fig = plt.figure(figsize=((ncols)*3,(nrows)*3))
-    grid = AxesGrid(fig, [.05,.05,.95,.7],
+    fig = plt.figure(figsize=(float(ncols) * len(xax) / 3,
+                              float(nrows) * len(yax) / 3))
+    grid = AxesGrid(fig, [.1,.1,.9,.65],
                     nrows_ncols = (nrows+1, ncols+1),
                     axes_pad = 0.0,
                     label_mode = "1",
@@ -420,7 +430,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
         for i in zax_range:
             used.append(cell)
             im = grid[cell].imshow(result[ii, i, :, :], interpolation="nearest",
-                                   vmin=vmin, vmax=vmax)
+                                   vmin=vmin, vmax=vmax, cmap=cmap)
             grid[cell].tick_params(axis='both', direction='out', top=False,
                                    right=False, left=False, bottom=False)
             for j, best  in enumerate(sort_result[:-1]):

@@ -464,9 +464,9 @@ class Chromosome(object):
                             'experiment. Run Experiment.normalize_hic\n')
         if tad and focus:
             raise Exception('ERROR: only one of "tad" or "focus" might be set')
+        start = end = None
         if focus:
             start, end = focus
-        start = end = None
         if type(tad) == dict:
             start = int(tad['start'])
             end   = int(tad['end'])
@@ -510,6 +510,9 @@ class Chromosome(object):
                 if normalized:
                     warn('List passed, not going to be normalized.')
                 matrix = tad
+            else:
+                # TODO: something...
+                pass
         else:
             if normalized:
                 matrix = [[xper.wght[0][i+size*j]
