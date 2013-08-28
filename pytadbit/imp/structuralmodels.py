@@ -359,7 +359,7 @@ class StructuralModels(object):
             out.write('#Particle\t{}'.format('\t'.join([str(c) for c in steps])))
             for part in xrange(self.nloci):
                 out.write('{}\t{}\n'.format(part + 1, '\t'.join(
-                    [str(distsk[c][part]) for c in steps])))
+                    [str(distsk[c][part/c]) for c in steps if not part%c])))
             out.close()
         # plot
         if axe:
