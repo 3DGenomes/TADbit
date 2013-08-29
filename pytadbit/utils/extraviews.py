@@ -132,7 +132,7 @@ def draw_alignment(alignment, experiments, focus=None):
     ending = focus[1] if focus else end
     for iex in range(len(experiments)):
         axes[iex].set_ylim((0, maxy))
-        axes[iex].set_xlig((starting, ending))
+        axes[iex].set_xlim((starting, ending))
         axes[iex].set_ylabel('Mean interaction')
     axes[iex].set_xlabel('Genomic bin')
     axes[0].set_title("TAD borders' alignment")
