@@ -121,7 +121,7 @@ def draw_alignment(alignment, experiments, focus=None):
     for i, col in enumerate(alignment.itercolumns()):
         beg = min([t['end'] for t in col if t['end']]) - 0.5
         end = max([t['end'] for t in col if t['end']]) + 1.5
-        axes[0].text(beg + float(end-beg)/2, maxy, str(i), 
+        axes[0].text(beg + float(end-beg)/2, maxy+float(maxy)/20, str(i), 
                      {'ha':'center', 'va':'bottom'}, rotation=90)
         for iex, tad in enumerate(col):
             if tad['end']:
@@ -135,7 +135,10 @@ def draw_alignment(alignment, experiments, focus=None):
         axes[iex].set_xlim((starting, ending))
         axes[iex].set_ylabel('Mean interaction')
     axes[iex].set_xlabel('Genomic bin')
-    axes[0].set_title("TAD borders' alignment\n")
+    fig.suptitle("TAD borders' alignment", size='large')
+    tit = axes.set_title("Alignment column number")
+    tit.set_y(1.09)
+    plt.subplots_adjust(top=0.86) 
     ax1 = fig.add_axes([0.93, 0.05, 0.02, 0.9])
     cb1 = colorbar.ColorbarBase(ax1, cmap=jet,
                                 norm=colors.Normalize(vmin=0., vmax=1.))
@@ -459,9 +462,6 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                           key=lambda x: x[0],
                           reverse=True)[:show_best+1]
 
-    for sr in sort_result:
-        print sr
-
     # skip axes?
     wax_range = range(len(wax))[::-1]
     zax_range = range(len(zax))
@@ -508,7 +508,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                     grid[cell].text(xax.index(best[3]), yax.index(best[4]), str(j),
                                     {'ha':'center', 'va':'center'})
             if ii == wax_range[0]:
-                rect = patches.Rectangle((-0.5, -0.5),len(xax), -1.5,
+                rect = patches.Rectangle((-0.5, len(yax)+0.5),len(xax), 1.5,
                                          facecolor='grey', alpha=0.5)
                 rect.set_clip_on(False)
                 grid[cell].add_patch(rect)
