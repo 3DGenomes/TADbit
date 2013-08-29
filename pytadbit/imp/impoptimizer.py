@@ -194,7 +194,7 @@ class IMPoptimizer(object):
                             results[w, x, y, z] = self.results[
                                 (scale, maxdist, upfreq, lowfreq)]
                         except KeyError:
-                            print w, x, y, z
+                            print scale, maxdist, upfreq, lowfreq
                             results[w, x, y, z] = float('nan')
         return results
 
