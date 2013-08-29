@@ -201,9 +201,12 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     cutter = 10**int(np.log10(difnrj))
     cut = 10 if cutter >= 10 else 1
     bot = -int(difnrj)/cutter * cutter
+    # just to display nice numbers
+    form = lambda x: ''.join([(s + ',') if not i%3 and i else s
+                              for i, s in enumerate(str(x)[::-1])][::-1])
     plt.yticks([bot+i for i in xrange(0, -bot-bot/cut, -bot/cut)],
                # ["{:,}".format (int(minnrj)/cutter * cutter  + i)
-               ["%d" % (int(minnrj)/cutter * cutter  + i)
+               ["%d" % (form(int(minnrj)/cutter * cutter  + i))
                 for i in xrange(0, -bot-bot/cut, -bot/cut)], size='small')
     ax.set_ylabel('Minimum IMP objective function')
     ax.set_xticks([])
