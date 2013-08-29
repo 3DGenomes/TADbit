@@ -223,8 +223,7 @@ class IMPoptimizer(object):
                             out.write('%s\t%s\t%s\t%s\t%s\n' % (
                                 scale, maxdist, upfreq, lowfreq, result))
                         except KeyError:
-                            print 'ERROR key %s not found' % (
-                                str((scale, maxdist, upfreq, lowfreq)))
+                            continue
         out.close()
         
 
@@ -252,7 +251,9 @@ class IMPoptimizer(object):
             if line.startswith('#'):
                 continue
             scale, maxdist, upfreq, lowfreq, result = line.split()
-            self.results[(scale, maxdist, upfreq, lowfreq)] = result
+            scale, maxdist, upfreq, lowfreq = (
+                float(scale), int(maxdist), float(upfreq), float(lowfreq))
+            self.results[(scale, maxdist, upfreq, lowfreq)] = float(result)
             if not scale in self.scale_range:
                 self.scale_range.append(scale)
             if not maxdist in self.maxdist_range:

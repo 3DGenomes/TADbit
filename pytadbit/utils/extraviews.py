@@ -477,8 +477,6 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     # best number of rows/columns
     ncols  = len(zax_range)
     nrows  = len(wax_range)
-    print ncols, nrows
-    print len(xax), len(yax)
     fig = plt.figure(figsize=(max(6, float(ncols) * len(xax) / 3),
                               max(6, float(nrows) * len(yax) / 3)))
     grid = AxesGrid(fig, [.1,.1,.9,.75],
