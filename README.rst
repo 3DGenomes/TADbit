@@ -1,10 +1,10 @@
-==============
-tadbit
-==============
+======
+TADBit
+======
 
 
 Install python wrapper:
-====================
+=======================
 
 * Download tadbit
 * Go to your tadbit/src directory
@@ -14,7 +14,7 @@ Install python wrapper:
    python setup.py build
    sudo python setup.py install
 
-I fsomething goes wrong try:
+If something goes wrong try:
 ::
 
    python setup.py clean --all
@@ -30,6 +30,7 @@ To test the installation:
 
    cd test
    python test_all.py
+
 
 Links
 =====
