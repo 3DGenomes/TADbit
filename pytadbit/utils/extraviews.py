@@ -95,11 +95,11 @@ def draw_alignment(alignment, experiments, focus=None):
 
     siz = experiments[0].size
     if focus:
-        figsiz = 4 + (focus[1] - focus[0])/50
+        figsiz = 4 + (focus[1] - focus[0])/40
     else:
-        figsiz = 4 + (siz)/50
+        figsiz = 4 + (siz)/40
     fig, axes = plt.subplots(nrows=len(experiments), sharex=True, sharey=True,
-                             figsize=(figsiz, 1 + len(experiments) * 2))
+                             figsize=(figsiz, 1 + len(experiments) * 1.5))
     fig.subplots_adjust(hspace=0)
     maxys = []
     for iex, xpr in enumerate(experiments):
@@ -122,7 +122,7 @@ def draw_alignment(alignment, experiments, focus=None):
         beg = min([t['end'] for t in col if t['end']]) - 0.5
         end = max([t['end'] for t in col if t['end']]) + 1.5
         axes[0].text(beg + float(end-beg)/2, maxy, str(i), 
-                     {'ha':'center', 'va':'top'}, rotation=90)
+                     {'ha':'center', 'va':'bottom'}, rotation=90)
         for iex, tad in enumerate(col):
             if tad['end']:
                 rect = Rectangle((beg, 0), end-beg, maxy, alpha=0.8,
@@ -135,7 +135,7 @@ def draw_alignment(alignment, experiments, focus=None):
         axes[iex].set_xlim((starting, ending))
         axes[iex].set_ylabel('Mean interaction')
     axes[iex].set_xlabel('Genomic bin')
-    axes[0].set_title("TAD borders' alignment")
+    axes[0].set_title("TAD borders' alignment\n")
     ax1 = fig.add_axes([0.93, 0.05, 0.02, 0.9])
     cb1 = colorbar.ColorbarBase(ax1, cmap=jet,
                                 norm=colors.Normalize(vmin=0., vmax=1.))
