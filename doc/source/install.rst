@@ -47,11 +47,12 @@ Installation instruction for IMP can be found at their website (http://salilab.o
     sudo apt-get install python-dev
 
 
-Download tarball from http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz. And uncompress:
+Download tarball from http://salilab.org/imp/. And uncompress:
 
 
 ::
 
+   wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
    tar xzvf imp-2.0.1.tar.gz
    cd imp-2.0.1
 
@@ -66,13 +67,17 @@ Once all is done open the file setup_environment.sh in your imp directory and co
 
 ::
 
-  LD_LIBRARY_PATH="/something/imp-2.0.1/lib:/something/imp-2.0.1/lib:/something/imp-2.0.1/src/dependency/RMF/:$LD_LIBRARY_PATH"
+  LD_LIBRARY_PATH="/something/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$LD_LIBRARY_PATH"
 
   export LD_LIBRARY_PATH
 
-  PYTHONPATH="/something/imp-2.0.1/lib:/something/imp-2.0.1/lib:/something/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
+  PYTHONPATH="/something/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
 
   export PYTHONPATH
+
+.. warning::
+
+  Replace ``SOMETHING`` above by real path to IMP.
 
 
 MCL - clustering
@@ -104,7 +109,7 @@ Tadbit
 
 Once done Tadbit can be downloaded from here:
 
-https://github.com/tadbit/tadbit.git
+https://github.com/3DGenomes/tadbit.git
 
 Download the package as tar.gz and uncompress it:
 
@@ -116,7 +121,12 @@ once done, go in the tadbit/src directory and install it:
 
 ::
 
+  wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
+  unzip tadbit.zip
+  cd tadbit-master/src
+  cd src
   sudo python setup.py install
+
 
 finally it is a good thing to test if every thing is working fine.
 
@@ -124,5 +134,6 @@ Go to the test directory and run:
 
 ::
 
+  cd ../test
   python test_all.py
 
