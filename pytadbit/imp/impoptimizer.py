@@ -198,7 +198,8 @@ class IMPoptimizer(object):
                                 (my_round(scale), my_round(maxdist),
                                  my_round(upfreq), my_round(lowfreq))]
                         except KeyError:
-                            print scale, maxdist, upfreq, lowfreq
+                            print (my_round(scale), my_round(maxdist),
+                                   my_round(upfreq), my_round(lowfreq))
                             results[w, x, y, z] = float('nan')
         return results
 

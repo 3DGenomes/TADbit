@@ -210,7 +210,7 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                               for i, s in enumerate(str(x)[::-1])][::-1])
     plt.yticks([bot+i for i in xrange(0, -bot-bot/cut, -bot/cut)],
                # ["{:,}".format (int(minnrj)/cutter * cutter  + i)
-               ["%d" % (form(int(minnrj)/cutter * cutter  + i))
+               ["%s" % (form(int(minnrj)/cutter * cutter  + i))
                 for i in xrange(0, -bot-bot/cut, -bot/cut)], size='small')
     ax.set_ylabel('Minimum IMP objective function')
     ax.set_xticks([])
@@ -436,11 +436,6 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     # transpose results
     result = result.transpose(trans)
 
-    # set NaNs
-    result = np.ma.array(result, mask=np.isnan(result))
-    cmap = jet
-    cmap.set_bad('w', 1.)
-
     # defines axes
     vmin = result.min()
     vmax = result.max()
@@ -458,6 +453,11 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                            if not np.isnan(result[i, j, k, l])],
                           key=lambda x: x[0],
                           reverse=True)[:show_best+1]
+
+    # set NaNs
+    result = np.ma.array(result, mask=np.isnan(result))
+    cmap = jet
+    cmap.set_bad('w', 1.)
 
     for sr in sort_result:
         print sr
