@@ -426,7 +426,8 @@ class StructuralModels(object):
             models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
-        matrix = [[float('nan') for _ in xrange(self.nloci)] for _ in xrange(self.nloci)]
+        matrix = [[float('nan') for _ in xrange(self.nloci)]
+                  for _ in xrange(self.nloci)]
         for i in xrange(self.nloci):
             for j in xrange(i + 1, self.nloci):
                 val = len([k for k in self.median_3d_dist(

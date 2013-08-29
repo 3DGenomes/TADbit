@@ -86,7 +86,7 @@ class Chromosome(object):
        containing the definition of TADs corresponding to different experiments
        (or output of tadbit)
     :param None experiment_names: :py:func:`list` of names for each experiment
-    :param 3000000 max_tad_size: maximum size of TAD allowed. TADs longer than
+    :param 5000000 max_tad_size: maximum size of TAD allowed. TADs longer than
         this will not be considered, and relative chromosome size will be reduced
         accordingly
     :param 0 chr_len: size of the DNA chromosome in bp. By default it will be
@@ -97,7 +97,7 @@ class Chromosome(object):
     """
     def __init__(self, name, experiment_resolutions=None, tad_handlers=None,
                  experiment_handlers=None, experiment_names=None,
-                 max_tad_size=3000000, chr_len=0, parser=None):
+                 max_tad_size=5000000, chr_len=0, parser=None):
         self.name             = name
         self.max_tad_size     = max_tad_size
         self.size             = self._given_size = self.r_size = chr_len
@@ -621,7 +621,7 @@ class Chromosome(object):
         Change maximum size allowed for TADs. Also apply it to computed
         experiments.
 
-        :param 3000000 value: an int
+        :param value: an int default is 5000000
         """
         self.max_tad_size = value
         for xpr in self.experiments:

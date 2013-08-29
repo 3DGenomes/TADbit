@@ -212,6 +212,9 @@ class Alignment(object):
         if type(cond1) is int:
             val = cond1
             cond1 = lambda x: x['pos'] == val
+        elif type(cond1) is list:
+            val = cond1
+            cond1 = lambda x: x['pos'] in val
         if not cond2:
             cond2 = lambda x: True
         cond = lambda x: cond1(x) and cond2(x)
@@ -281,7 +284,7 @@ class Alignment(object):
             figsiz = 4 + (siz)/30
         fig, axes = plt.subplots(nrows=len(experiments),
                                  sharex=True, sharey=True,
-                                 figsize=(figsiz, 1 + len(experiments) * 1.7))
+                                 figsize=(figsiz, 1 + len(experiments) * 1.8))
         fig.subplots_adjust(hspace=0)
         maxys = []
         for iex, xpr in enumerate(experiments):
@@ -317,12 +320,12 @@ class Alignment(object):
         for iex in range(len(experiments)):
             axes[iex].set_ylim((0, maxy))
             axes[iex].set_xlim((starting, ending))
-            axes[iex].set_ylabel('Mean interaction')
+            axes[iex].set_ylabel('Mean interaction\n' + experiments[iex].name)
         axes[iex].set_xlabel('Genomic bin')
         tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
         tit2 = axes[0].set_title("Alignment column number")
         tit2.set_y(1.3)
-        plt.subplots_adjust(top=0.82) 
+        plt.subplots_adjust(top=0.8) 
         ax1 = fig.add_axes([0.9 + 0.3/figsiz, 0.05, 0.2/figsiz, 0.9])
         cb1 = colorbar.ColorbarBase(ax1, cmap=jet,
                                     norm=colors.Normalize(vmin=0., vmax=1.))

@@ -141,8 +141,8 @@ class IMPoptimizer(object):
                                           my_round(maxdist),
                                           my_round(upfreq),
                                           my_round(lowfreq))] = result
-                        except:
-                            print 'ERROR'
+                        except Exception, e:
+                            print 'ERROR %s' % e
                             
         self.scale_range.sort()
         self.maxdist_range.sort()
