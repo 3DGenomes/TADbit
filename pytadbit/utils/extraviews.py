@@ -436,6 +436,11 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     # transpose results
     result = result.transpose(trans)
 
+    # set NaNs
+    result = np.ma.array(result, mask=np.isnan(result))
+    cmap = jet
+    cmap.set_bad('w', 1.)
+
     # defines axes
     vmin = result.min()
     vmax = result.max()
@@ -450,14 +455,9 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                            for j in range(len(zax))
                            for k in range(len(yax))
                            for l in range(len(xax))
-                           if not np.isnan(result[i, j, k, l])],
+                           if str(result[i, j, k, l]) != '--'],
                           key=lambda x: x[0],
                           reverse=True)[:show_best+1]
-
-    # set NaNs
-    result = np.ma.array(result, mask=np.isnan(result))
-    cmap = jet
-    cmap.set_bad('w', 1.)
 
     for sr in sort_result:
         print sr
