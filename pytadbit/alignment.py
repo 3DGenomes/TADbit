@@ -259,6 +259,78 @@ class Alignment(object):
         self.__keys.append(name)
 
 
+    def draw(self, focus=None):
+        """
+        Draw alignment as a plot
+        
+        :param None focus: can pass a tuple (bin_start, bin_stop) to display the
+           alignment between these genomic bins.
+        """
+        from matplotlib.patches import Ellipse, Rectangle
+        from matplotlib.cm import jet
+        from matplotlib import colors
+        from matplotlib import colorbar
+        from matplotlib import pyplot as plt
+
+        experiments = []
+
+        siz = experiments[0].size
+        if focus:
+            figsiz = 4 + (focus[1] - focus[0])/30
+        else:
+            figsiz = 4 + (siz)/30
+        fig, axes = plt.subplots(nrows=len(self.__experiments),
+                                 sharex=True, sharey=True,
+                                 figsize=(figsiz, 1 + len(experiments) * 1.7))
+        fig.subplots_adjust(hspace=0)
+        maxys = []
+        for iex, xpr in enumerate(self.__experiments):
+            if not xpr.name in self:
+                continue
+            for tad in xpr.tads:
+                start, end = (int(xpr.tads[tad]['start']),
+                              int(xpr.tads[tad]['end']))
+                matrix = [xpr.wght[0][i + siz * j] for i in xrange(start, end)
+                          for j in xrange(start, end)]
+                height = float(sum(matrix))/len(matrix)
+                maxys.append(height/2)
+
+                el = Ellipse((start+float(end-start)/2,0), end-start, height,
+                             facecolor='k', alpha=0.7)
+                axes[iex].add_artist(el)
+                el.set_clip_box(axes[iex].bbox)
+            axes[iex].grid()
+        maxy = max(maxys)
+        for i, col in enumerate(self.itercolumns()):
+            beg = min([t['end'] for t in col if t['end']]) - 0.5
+            end = max([t['end'] for t in col if t['end']]) + 1.5
+            axes[0].text(beg + float(end-beg)/2, maxy+float(maxy)/20, str(i), 
+                         {'ha':'center', 'va':'bottom'}, rotation=90,
+                         size='small')
+            for iex, tad in enumerate(col):
+                if tad['end']:
+                    rect = Rectangle((beg, 0), end-beg, maxy, alpha=0.8,
+                                     color=jet(tad['score']/10))
+                    axes[iex].add_patch(rect)
+        starting = focus[0] if focus else 0
+        ending = focus[1] if focus else end
+        for iex in range(len(experiments)):
+            axes[iex].set_ylim((0, maxy))
+            axes[iex].set_xlim((starting, ending))
+            axes[iex].set_ylabel('Mean interaction')
+        axes[iex].set_xlabel('Genomic bin')
+        tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
+        tit2 = axes[0].set_title("Alignment column number")
+        tit2.set_y(1.3)
+        plt.subplots_adjust(top=0.82) 
+        ax1 = fig.add_axes([0.9 + 0.3/figsiz, 0.05, 0.2/figsiz, 0.9])
+        cb1 = colorbar.ColorbarBase(ax1, cmap=jet,
+                                    norm=colors.Normalize(vmin=0., vmax=1.))
+        cb1.set_label('Border prediction score')
+        cb1.ax.set_yticklabels([str(i)for i in range(1, 11)])
+        plt.show()
+
+
 class TAD(dict):
     """
     Specific class of TADs, used only within Alignment objects.
