@@ -459,6 +459,9 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                           key=lambda x: x[0],
                           reverse=True)[:show_best+1]
 
+    for sr in sort_result:
+        print sr
+
     # skip axes?
     wax_range = range(len(wax))[::-1]
     zax_range = range(len(zax))
@@ -496,7 +499,8 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
         for i in zax_range:
             used.append(cell)
             im = grid[cell].imshow(result[ii, i, :, :], interpolation="nearest",
-                                   vmin=vmin, vmax=vmax, cmap=cmap)
+                                   origin='lower', vmin=vmin, vmax=vmax,
+                                   cmap=cmap)
             grid[cell].tick_params(axis='both', direction='out', top=False,
                                    right=False, left=False, bottom=False)
             for j, best  in enumerate(sort_result[:-1]):
