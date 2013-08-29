@@ -627,8 +627,8 @@ class Chromosome(object):
         for xpr in self.experiments:
             for tad in xpr.tads:
                 xpr.tads[tad]['brk'] = xpr.tads[tad]['end']
-                if (xpr.tads[tad]['end'] - xpr.tads[tad]['start']) \
-                   * xpr.resolution < self.max_tad_size:
+                if ((xpr.tads[tad]['end'] - xpr.tads[tad]['start']) 
+                    * xpr.resolution) > self.max_tad_size:
                     xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
             
 
