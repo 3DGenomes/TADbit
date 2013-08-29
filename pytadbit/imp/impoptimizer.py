@@ -137,7 +137,10 @@ class IMPoptimizer(object):
                                 cutoff=self.cutoff)[0]
                             if verbose:
                                 print result
-                            self.results[(scale, maxdist, upfreq, lowfreq)] = result
+                            self.results[(my_round(scale),
+                                          my_round(maxdist),
+                                          my_round(upfreq),
+                                          my_round(lowfreq))] = result
                         except:
                             print 'ERROR'
                             
@@ -192,7 +195,8 @@ class IMPoptimizer(object):
                     for z, lowfreq in enumerate(self.lowfreq_range):
                         try:
                             results[w, x, y, z] = self.results[
-                                (scale, maxdist, upfreq, lowfreq)]
+                                (my_round(scale), my_round(maxdist),
+                                 my_round(upfreq), my_round(lowfreq))]
                         except KeyError:
                             print scale, maxdist, upfreq, lowfreq
                             results[w, x, y, z] = float('nan')
@@ -219,8 +223,10 @@ class IMPoptimizer(object):
                 for upfreq in self.upfreq_range:
                     for lowfreq in self.lowfreq_range:
                         try:
-                            result = self.results[
-                                (scale, maxdist, upfreq, lowfreq)]
+                            result = self.results[(my_round(scale),
+                                                   my_round(maxdist),
+                                                   my_round(upfreq),
+                                                   my_round(lowfreq))]
                             out.write('%s\t%s\t%s\t%s\t%s\n' % (
                                 scale, maxdist, upfreq, lowfreq, result))
                         except KeyError:
@@ -254,7 +260,8 @@ class IMPoptimizer(object):
             scale, maxdist, upfreq, lowfreq, result = line.split()
             scale, maxdist, upfreq, lowfreq = (
                 float(scale), int(maxdist), float(upfreq), float(lowfreq))
-            self.results[(scale, maxdist, upfreq, lowfreq)] = float(result)
+            self.results[(my_round(scale), my_round(maxdist),
+                          my_round(upfreq), my_round(lowfreq))] = float(result)
             if not scale in self.scale_range:
                 self.scale_range.append(scale)
             if not maxdist in self.maxdist_range:
@@ -267,3 +274,8 @@ class IMPoptimizer(object):
         self.maxdist_range.sort()
         self.lowfreq_range.sort()
         self.upfreq_range.sort()
+
+
+def my_round(num, val=4):
+    num = round(num, val)
+    return str(int(num) if num == int(num) else num)
