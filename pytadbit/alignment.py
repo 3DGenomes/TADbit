@@ -272,19 +272,19 @@ class Alignment(object):
         from matplotlib import colorbar
         from matplotlib import pyplot as plt
 
-        experiments = []
+        experiments = self.__experiments
 
         siz = experiments[0].size
         if focus:
             figsiz = 4 + (focus[1] - focus[0])/30
         else:
             figsiz = 4 + (siz)/30
-        fig, axes = plt.subplots(nrows=len(self.__experiments),
+        fig, axes = plt.subplots(nrows=len(experiments),
                                  sharex=True, sharey=True,
                                  figsize=(figsiz, 1 + len(experiments) * 1.7))
         fig.subplots_adjust(hspace=0)
         maxys = []
-        for iex, xpr in enumerate(self.__experiments):
+        for iex, xpr in enumerate(experiments):
             if not xpr.name in self:
                 continue
             for tad in xpr.tads:
