@@ -262,3 +262,7 @@ class IMPoptimizer(object):
                 self.upfreq_range.append(upfreq)
             if not lowfreq in self.lowfreq_range:
                 self.lowfreq_range.append(lowfreq)
+        self.scale_range.sort()
+        self.maxdist_range.sort()
+        self.lowfreq_range.sort()
+        self.upfreq_range.sort()
