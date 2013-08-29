@@ -56,8 +56,6 @@ COLORHTML = {None: '<span style="color:red;">'       , # red
              }
 
 
-COLORGUI = ['blue', 'blue', 'blue', 'purple', 'purple', 'cyan', 'cyan', 'yellow', 'yellow', 'red', 'red']
-
 def colorize(string, num, ftype='ansi'):
     """
     Colorize with ANSII colors a string for printing in shell. this acording to
@@ -94,15 +92,19 @@ def draw_alignment(alignment, experiments, focus=None):
     from matplotlib.cm import jet
     from matplotlib import colors
     from matplotlib import colorbar
-    
+
+    siz = experiments[0].size
+    if focus:
+        figsiz = 4 + (focus[1] - focus[0])/50
+    else:
+        figsiz = 4 + (siz)/50
     fig, axes = plt.subplots(nrows=len(experiments), sharex=True, sharey=True,
-                             figsize=(25, 6))
+                             figsize=(figsiz, 1 + len(experiments) * 2))
     fig.subplots_adjust(hspace=0)
     maxys = []
     for iex, xpr in enumerate(experiments):
         if not xpr.name in alignment:
             continue
-        siz = xpr.size
         for tad in xpr.tads:
             start, end = int(xpr.tads[tad]['start']), int(xpr.tads[tad]['end'])
             matrix = [xpr.wght[0][i + siz * j] for i in xrange(start, end)
@@ -116,9 +118,11 @@ def draw_alignment(alignment, experiments, focus=None):
             el.set_clip_box(axes[iex].bbox)
         axes[iex].grid()
     maxy = max(maxys)
-    for col in alignment.itercolumns():
-        beg = min([t['end'] for t in col if t['end']])-0.5
-        end = max([t['end'] for t in col if t['end']])+0.5
+    for i, col in enumerate(alignment.itercolumns()):
+        beg = min([t['end'] for t in col if t['end']]) - 0.5
+        end = max([t['end'] for t in col if t['end']]) + 1.5
+        axes[0].text(beg + float(end-beg)/2, maxy, str(i), 
+                     {'ha':'center', 'va':'top'}, rotation=90)
         for iex, tad in enumerate(col):
             if tad['end']:
                 rect = Rectangle((beg, 0), end-beg, maxy, alpha=0.8,
