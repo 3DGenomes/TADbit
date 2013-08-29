@@ -95,9 +95,9 @@ def draw_alignment(alignment, experiments, focus=None):
 
     siz = experiments[0].size
     if focus:
-        figsiz = 4 + (focus[1] - focus[0])/40
+        figsiz = 4 + (focus[1] - focus[0])/30
     else:
-        figsiz = 4 + (siz)/40
+        figsiz = 4 + (siz)/30
     fig, axes = plt.subplots(nrows=len(experiments), sharex=True, sharey=True,
                              figsize=(figsiz, 1 + len(experiments) * 1.5))
     fig.subplots_adjust(hspace=0)
@@ -136,7 +136,7 @@ def draw_alignment(alignment, experiments, focus=None):
         axes[iex].set_ylabel('Mean interaction')
     axes[iex].set_xlabel('Genomic bin')
     fig.suptitle("TAD borders' alignment", size='large')
-    tit = axes.set_title("Alignment column number")
+    tit = axes[0].set_title("Alignment column number")
     tit.set_y(1.09)
     plt.subplots_adjust(top=0.86) 
     ax1 = fig.add_axes([0.93, 0.05, 0.02, 0.9])
@@ -508,12 +508,12 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                     grid[cell].text(xax.index(best[3]), yax.index(best[4]), str(j),
                                     {'ha':'center', 'va':'center'})
             if ii == wax_range[0]:
-                rect = patches.Rectangle((-0.5, len(yax)+0.5),len(xax), 1.5,
+                rect = patches.Rectangle((-0.5, len(yax)-0.5),len(xax), 1.5,
                                          facecolor='grey', alpha=0.5)
                 rect.set_clip_on(False)
                 grid[cell].add_patch(rect)
-                grid[cell].text(len(xax)/2-0.5,
-                                -1.25,
+                grid[cell].text(len(xax) / 2 - 0.5,
+                                len(yax) - 1.25,
                                 axes[1] + ' ' + str(my_round(zax[i], 3)),
                                 {'ha':'center', 'va':'center'})
             cell += 1
