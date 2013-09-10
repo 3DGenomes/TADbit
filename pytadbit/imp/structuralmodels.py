@@ -356,11 +356,11 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in steps])))
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' + '2*stdev(%d)' % c for c in steps])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
-                    [('-' if not part in distsk[c] else str(distsk[c][part])
-                      if distsk[c][part] else 'None')
+                    ['None\tNone' if part >= len(distsk[c]) else (str(distsk[c][part]) + '\t' + str(errorp[c][part])) 
+                     if distsk[c][part] else 'None\tNone'
                      for c in steps])))
             out.close()
         # plot
@@ -600,7 +600,7 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t%s' % ('\t'.join([str(c) for c in cutoffs])))
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in cutoffs])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
                     [str(consistencies[c][part]) for c in cutoffs])))
