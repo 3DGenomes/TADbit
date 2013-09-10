@@ -39,15 +39,25 @@ def load_structuralmodels(path_f):
 
 class StructuralModels(object):
     """
-    To generate three-dimensional models from Hi-C data (z-scores of the
-    interactions). A given number of models is kept, and can be used to draw
-    some statistics or search for some specific interactions.
+    This function generates three-dimensional models starting from Hi-C data. 
+    The final analysis will be performed on the n_keep top models.
 
-    :param nloci: length of the chromatin fragment modelled (in number of
-       particles)
-    :param models: a dictionary contatining 
-    :param resolution: of the Hi-C experiment, this will be the number of
-       nucleotides in each particle of the models
+    :param nloci: number of particles in the selected region
+    :param models: a dictionary containing the generated 
+       :class:`pytadbit.imp.impmodel.IMPmodel` to be used as 'best models'
+    :param bad_models: a dictionary of :class:`pytadbit.imp.impmodel.IMPmodel`,
+       these model will not be used, just stored in case the set of 
+       'best models' needs to be extended later-on (
+       :func:`pytadbit.imp.structuralmodels.StructuralModels.define_best_models`
+       ).
+    :param resolution: number of nucleotides per Hi-C bin. This will be the 
+       number of nucleotides in each model's particle.
+    :param None original_data: a list of list (equivalent to a square matrix) of 
+       the normalized Hi-C data, used to build this list of models.
+    :param None clusters: a dictionary of type 
+       :class:`pytadbit.imp.structuralmodels.ClusterOfModels`
+    :param None config: a dictionary containing the parameter to be used for the 
+       generation of three dimensional models.
 
     """
 
@@ -130,14 +140,17 @@ class StructuralModels(object):
     def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
                        mcl_bin='mcl', tmp_file='/tmp/tmp.xyz', verbose=True):
         """
-        Runs a clustering analysis over models. Clusters found will be stored
-           in StructuralModels.clusters
+        This function performs a clustering analysis of the generated models 
+        based on structural comparison. The result will be stored in 
+        StructuralModels.clusters
         
-        :param 0.75 fact: Factor for equivalent positions
-        :param 200 dcutoff: distance in nanometer from which it is considered
-           that two particles are separated.
-        :param 'score' var: value to return, can be either (i) 'drmsd' (symmetry
-           independent: mirrors will show no differences) (ii) 'score' that is:
+        :param 0.75 fact: factor to define the percentage of equivalent 
+           positions to be considered in the clustering
+        :param 200 dcutoff: distance threshold (nm) to determine if two 
+           particles are in contact
+        :param 'score' var: value to return, which can be either (i) 'drmsd' 
+           (symmetry independent: mirrors will show no differences), or (ii) 
+           'score', defined as:
            
            ::
            
@@ -145,13 +158,15 @@ class StructuralModels(object):
               score[i] = eqvs[i] * -----------------------
                                      RMSD[i] / max(RMSD)
            
-           where eqvs[i] is the number of equivalent position for the ith
-           pairwise model comparison.
-        :param 'mcl' method: clustering method to use, can be either 'mcl' or
-           'ward'. Last one uses scipy implementation, and is NOT RECOMENDED.
-        :param 'mcl' mcl_bin: path to MCL executable file, in case 'mcl is not
-           in the PATH'
-        :param '/tmp/tmp.xyz' tmp_file: path to a temporary file
+           where eqvs[i] is the number of equivalent position for the ith 
+           pairwise model comparison
+        :param 'mcl' method: clustering method to use, which can be either 
+           'mcl' or 'ward'. The last one uses scipy implementation, and is 
+           NOT RECOMMENDED.
+        :param 'mcl' mcl_bin: path to the mcl executable file, in case of the 
+           'mcl is not in the PATH' warning message
+        :param '/tmp/tmp.xyz' tmp_file: path to a temporary file created during
+           the clustering computation
         :param True verbose: same as print StructuralModels.clusters
         
         """
@@ -191,9 +206,12 @@ class StructuralModels(object):
             self.clusters = clusters
         else:
             out_f = open(tmp_file, 'w')
-            for (md1, md2), score in scores.iteritems():
-                out_f.write('model_%s\tmodel_%s\t%s\n' % (
-                    md1, md2, score if score > fact * self.nloci else 0.0))
+            uniqs = list(set([tuple(sorted((m1, m2))) for m1, m2 in scores]))
+            for md1, md2 in uniqs:
+                score = scores[(md1, md2)]
+                #if score >= fact * self.nloci:
+                out_f.write('model_%s\tmodel_%s\t%s\n' % (md1, md2, 
+                score if score >= fact * self.nloci else 0.0))
             out_f.close()
             Popen('%s %s --abc -V all -o %s.mcl' % (
                 mcl_bin, tmp_file, tmp_file), stdout=PIPE, stderr=PIPE,
@@ -356,11 +374,13 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in steps])))
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' + 
+            '2*stdev(%d)' % c for c in steps])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
-                    [('-' if not part in distsk[c] else str(distsk[c][part])
-                      if distsk[c][part] else 'None')
+                    ['None\tNone' if part >= len(distsk[c]) else 
+                    (str(distsk[c][part]) + '\t' + str(errorp[c][part])) 
+                     if distsk[c][part] else 'None\tNone'
                      for c in steps])))
             out.close()
         # plot
@@ -406,8 +426,8 @@ class StructuralModels(object):
 
     def get_contact_matrix(self, models=None, cluster=None, cutoff=150):
         """
-        Draws a heatmap representing the proportion of times two particles are
-           closer than a given cutoff.
+        Returns a matrix with the number of interactions observed below a given 
+        cutoff distance.
 
         :param None models: If None (default) will do calculate the distance
            along all models. A list of numbers corresponding to a given set of
@@ -474,7 +494,8 @@ class StructuralModels(object):
            if None, the image will be shown using matplotlib GUI.
         :param None outfile: path to a file where to save the contact map data
            generated (1 column particle1, 1 for particle2, one with the
-           percentage of models where this particles are close in space
+           percentage of models where this particles are close in space. This 
+           option will skip the generation of figure.
            
         """
         matrix = self.get_contact_matrix(models, cluster, cutoff)
@@ -486,6 +507,7 @@ class StructuralModels(object):
                 for j in xrange(i+1, len(matrix)):
                     out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
             out.close()
+            return # stop here, we do not want to display anything
         if not axe:
             fig = plt.figure(figsize=(8, 6))
             axe = fig.add_subplot(111)
@@ -600,10 +622,10 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t%s' % ('\t'.join([str(c) for c in cutoffs])))
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in cutoffs])))
             for part in xrange(self.nloci):
-                out.write('%s\t%s\n' % (part + 1, '\t'.join(
-                    [consistencies[c][part] for c in cutoffs])))
+                out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
+                    [str(consistencies[c][part]) for c in cutoffs])))
             out.close()
         # plot
         show = False
@@ -854,7 +876,7 @@ class StructuralModels(object):
             models = self.__models        
         for model_num in models:
             try:
-                model = self.__models[model_num]
+                model = self[model_num]
             except KeyError:
                 model = self._bad_models[model_num]
             if type(color) != list:
