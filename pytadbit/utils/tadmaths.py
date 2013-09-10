@@ -174,6 +174,8 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score', one=False):
         for i, (md1, md2) in enumerate(combines):
             score = (float(eqvs[i]) * ((float(drms[i]) / max_drmsd)
                                        / (float(nrms[i]) / max_rmsd)))
+            #print '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(
+            #models[md1]['rand_init'], models[md2]['rand_init'], eqvs[i], drms[i], nrms[i], max_drmsd, max_rmsd, score)
             scores[(md1, md2)] = score
             scores[(md2, md1)] = score
     elif var=='drmsd':

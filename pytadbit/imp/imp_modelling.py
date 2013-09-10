@@ -337,6 +337,7 @@ def generate_IMPmodel(rand_init, verbose=0):
                        'y'          : [],
                        'z'          : [],
                        'radius'     : [],
+                       'cluster'    : 'Singleton',
                        'rand_init'  : rand_init})
     for part in model['ps'].get_particles():
         result['x'].append(part.get_value(x))
