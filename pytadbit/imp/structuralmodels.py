@@ -600,7 +600,7 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t%s' % ('\t'.join([c for c in cutoffs])))
+            out.write('#Particle\t%s' % ('\t'.join([str(c) for c in cutoffs])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     [consistencies[c][part] for c in cutoffs])))
