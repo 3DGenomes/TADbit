@@ -600,10 +600,10 @@ class StructuralModels(object):
         # write consistencies to file
         if outfile:
             out = open(outfile, 'w')
-            out.write('#Particle\t%s' % ('\t'.join([c for c in cutoffs])))
+            out.write('#Particle\t%s' % ('\t'.join([str(c) for c in cutoffs])))
             for part in xrange(self.nloci):
-                out.write('%s\t%s\n' % (part + 1, '\t'.join(
-                    [consistencies[c][part] for c in cutoffs])))
+                out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
+                    [str(consistencies[c][part]) for c in cutoffs])))
             out.close()
         # plot
         show = False
@@ -854,7 +854,7 @@ class StructuralModels(object):
             models = self.__models        
         for model_num in models:
             try:
-                model = self.__models[model_num]
+                model = self[model_num]
             except KeyError:
                 model = self._bad_models[model_num]
             if type(color) != list:
