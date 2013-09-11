@@ -9,14 +9,14 @@ from math import log
 def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
                      max_dist=500000, verbose=False):
     """
-    Align two lists of TAD's boundaries.
+    Align two lists of TAD boundaries.
     
     :param tads1: list of boundaries for one chromosome under one condition
     :param tads2: list of boundaries for the same chromosome under other
         conditions
     :param -0.1 penalty: penalty to open a gap in the alignment of boundaries
     :param 500000 max_dist: distance from which match are denied. A bin_size
-        of 20Kb the number of bins corresponding to 0.5Mb is 25.
+        of 20Kb the number of bins corresponding to 0.5Mb is 25
     :param False verbose: print the Needleman-Wunsch score matrix, and the
         alignment of boundaries
 

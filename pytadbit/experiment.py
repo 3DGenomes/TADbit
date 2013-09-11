@@ -21,14 +21,15 @@ class Experiment(object):
     Hi-C experiment.
 
     :param name: name of the experiment
-    :param resolution: resolution of the experiment (size of a bin in bases)
+    :param resolution: the resolution of the experiment (size of a bin in
+       bases)
     :param None xp_handler: whether a file or a list of lists corresponding to
-       the hi-c data
+       the Hi-C data
     :param None tad_handler: a file or a dict with precomputed TADs for this
        experiment
-    :param None parser: a parser function that returns a tuple of lists
-       representing the data matrix, and the length of a row/column, with
-       this file example.tsv:
+    :param None parser: a parser function that returns a tuple of lists 
+       representing the data matrix and the length of a row/column. With
+       the file example.tsv:
 
        ::
        
@@ -38,15 +39,15 @@ class Experiment(object):
          chrT_003	88	175	437	100
          chrT_004	105	110	100	278
 
-       the output of parser('example.tsv') might be:
+       the output of parser('example.tsv') would be be:
        ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
        110, 100, 278]), 4]``
-    :param None conditions: :py:func:`list` of experimental conditions, can be 
+    :param None conditions: :py:func:`list` of experimental conditions, e.g. 
        the cell type, the enzyme... (i.e.: ['HindIII', 'cortex', 'treatment']).
        This parameter may be used to compare the effect of this conditions on
-       the TADs.
-    :param True filter_columns: Filter columns with unexpectedly high content
-       of low values
+       the TADs
+    :param True filter_columns: filter the columns with unexpectedly high 
+       content of low values
        
     """
 
@@ -106,13 +107,13 @@ class Experiment(object):
 
     def set_resolution(self, resolution, keep_original=True):
         """
-        Set a new value for resolution. copy original data into
-        Experiment._ori_hic and replaces the Experiment.hic_data
+        Set a new value for the resolution. Copy the original data into
+        Experiment._ori_hic and replace the Experiment.hic_data
         with the data corresponding to new data 
         (:func:`pytadbit.Chromosome.compare_condition`).
 
-        :param resolution: an integer, representing resolution. This number
-           must be a multiple of the original resolution, and higher than it.
+        :param resolution: an integer representing the resolution. This number
+           must be a multiple of the original resolution, and higher than it
         :param True keep_original: either to keep or not the original data
 
         """
@@ -161,14 +162,15 @@ class Experiment(object):
     def load_experiment(self, handler, parser=None, resolution=None,
                         filter_columns=True):
         """
-        Add Hi-C experiment to Chromosome
+        Add a Hi-C experiment to the Chromosome object.
         
-        :param f_name: path to tsv file
+        :param f_name: path to the tab separeted value file
         :param name: name of the experiment
-        :param False force: overwrite experiments loaded under the same name
+        :param False force: overwrite the experiments loaded under the same 
+           name
         :param None parser: a parser function that returns a tuple of lists
-           representing the data matrix, and the length of a row/column, with
-           this file example.tsv:
+           representing the data matrix and the length of a row/column. 
+           With the file example.tsv:
 
            ::
            
@@ -178,14 +180,14 @@ class Experiment(object):
              chrT_003	159	216	437	105
              chrT_004	100	111	146	278
            
-           the output of parser('example.tsv') might be:
+           the output of parser('example.tsv') would be:
            ``[([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105,
            110, 105, 278]), 4]``
-        :param None resolution: resolution of the experiment in the file, it
+        :param None resolution: resolution of the experiment in the file; it
            will be adjusted to the resolution of the experiment. By default the
-           file is expected to contain an hi-c experiment at the same resolution
-           as the :class:`pytadbit.Experiment` created, and no change is made.
-        :param True filter_columns: Filter columns with unexpectedly high content
+           file is expected to contain a Hi-C experiment with the same resolution
+           as the :class:`pytadbit.Experiment` created, and no change is made
+        :param True filter_columns: filter the columns with unexpectedly high content
            of low values
         
         """
@@ -203,7 +205,7 @@ class Experiment(object):
 
     def load_tad_def(self, handler, weights=None):
         """
-         Add Topologically Associated Domains definition detection to Slice
+         Add the Topologically Associated Domains definition detection to Slice
         
         :param f_name: path to file
         :param None name: name of the experiment, if None f_name will be used
@@ -219,19 +221,19 @@ class Experiment(object):
 
     def normalize_hic(self, method='sqrt'):
         """
-        Normalize Hi-C data. This normalize step is an exact replicate of what
-        is done inside :func:`pytadbit.tadbit.tadbit` (default parameters),
+        Normalize the Hi-C data. This normalization step does the same of
+        the :func:`pytadbit.tadbit.tadbit` function (default parameters),
 
-        It fills the Experiment.wght variable with the Hi-C value divided by
+        It fills the Experiment.wght variable with the Hi-C values divided by
         the calculated weight.
 
-        the weight of a given cell in column i and row j corresponds to the
-        square root of the product of the sum of the column i by the sum of row
+        The weight of a given cell in column i and row j corresponds to the
+        square root of the product of the sum of column i by the sum of row
         j.
 
         :param sqrt method: either 'sqrt' or 'visibility'. Depending on this
-           param the weight of the Hi-C count in row I, column J of the Hi-C
-           matrix would be, under 'sqrt':
+           parameter, the weight of the Hi-C count in row I, column J of the
+           Hi-C matrix will be, under 'sqrt':
            ::
               
                                    _________________________________________
@@ -258,7 +260,8 @@ class Experiment(object):
    
    
            
-           N being the number or rows/columns of the Hi-C matrix in both cases.
+           with N being the number or rows/columns of the Hi-C matrix in both
+           cases.
 
            Note that the default behavior (also used in
            :func:`pytadbit.tadbit.tadbit`)
@@ -303,13 +306,13 @@ class Experiment(object):
 
     def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):
         """
-        Computes a normalization of Hi-C raw data. Result will be stored into
-        the private Experiment._zscore list
+        Normalize the Hi-C raw data. The result will be stored into
+        the private Experiment._zscore list.
 
         :param True normalized: whether to normalize the result using the
            weights (see :func:`normalize_hic`)
-        :param True zscored: apply a z-score transform over the data.
-        :param True remove_zeros: remove null interactions.
+        :param True zscored: calculate the z-score of the data
+        :param True remove_zeros: remove null interactions
         
         """
         values = []
@@ -361,23 +364,25 @@ class Experiment(object):
                      config=CONFIG['dmel_01']):
         """
 
-        :param start: start of the region to model (bin number)
-        :param end: end of the region to model (bin number, both inclusive)
-        :param 5000 n_models: number of modes to generate.
-        :param 1000 n_keep: number of models to keep (models with lowest
-           objective function final value). Usually 20% of the models generated
-           are kept.
-        :param False keep_all: whether to keep the discarded models or not (if
-           True, they will be stored under StructuralModels.bad_models).
-        :param 1 close_bins: number of particle away a particle may be to be
-           considered as a neighbor.
-        :param n_cpus: number of CPUs to use for the optimization of models
-        :param 0 verbose: level of verbosity, can be 0: nothing, 1: objective
-           function value each 100 models, 2: objective function value each
-           model, or 3: many many things.
-        :param CONFIG['dmel_01'] config: a dictionary containing the main
-           parameters used to optimize models. Dictionary should contain the
-           keys 'kforce', 'lowrdist', 'maxdist', 'upfreq' and 'lowfreq'.
+        :param start:  first bin to model (bin number)
+        :param end: last bin to model (bin number)
+        :param 5000 n_models: number of modes to generate
+        :param 1000 n_keep: number of models used in the final analysis 
+           (usually the top 20% of the generated models). The models are ranked
+           according to their objective function value (the lower the better)
+        :param False keep_all: whether or not to keep the discarded models (if
+           True, models will be stored under tructuralModels.bad_models)
+        :param 1 close_bins: number of particles away (i.e. the bin number
+           difference) a particle pair must be in order to be considered as
+           neighbors (e.g. 1 means consecutive particles)
+        :param n_cpus: number of CPUs to use
+        :param 0 verbose: the information printed can be: nothing (0), the
+           objective function value the selected models (1), the objective
+           function value of all the models (2), all the modeling 
+           information (3)
+        :param CONFIG['dmel_01'] a dictionary containing the standard
+           parameters used to generate the models. The dictionary should
+           contain the keys kforce, lowrdist, maxdist, upfreq and lowfreq.
            Examples can be seen by doing:
            
            ::
@@ -428,46 +433,43 @@ class Experiment(object):
     def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
-                               scale_range=(0.005, 0.005, 0.001),
+                               scale_range=[0.01],
                                maxdist_range=(400, 1400), cutoff=300,
                                outfile=None, verbose=True):
         """
-        Find the optimal set of parameters in order to model a given region with
+        Find the optimal set of parameters to be used for the 3D modeling in
         IMP.
 
-        :param start: start of the region to model (bin number)
-        :param end: end of the region to model (bin number, both inclusive)
-        :param 500 n_models: number of modes to generate.
-        :param 100 n_keep: number of models to keep (models with lowest
-           objective function final value). Usually 20% of the models generated
-           are kept.
-        :param 1 close_bins: number of particle away a particle may be to be
-           considered as a neighbor.
-        :param n_cpus: number of CPUs to use for the optimization of models
-        :param False verbose: verbosity
-        :param (-1,0,0.1) lowfreq_range: a tuple with the boundaries between
-           which to search for the minimum threshold used to decide which
-           experimental values have to be included in the computation of
-           restraints. Last value of the input tuple is the step for
-           lowfreq increments
-        :param (0,1,0.1,0.1) upfreq_range: a tuple with the boundaries between
-           which to search for the maximum threshold used to decide which
-           experimental values have to be included in the computation of
-           restraints. Last value of the input tuple is the step for
-           upfreq increments
-        :param (400,1400,100) maxdist_range: tuple with upper and lower bounds
-           used to search for the optimal maximum experimental distance. Last
-           value of the input tuple is the step for maxdist increments
-        :param (0.005,0.005,0.001) scale_range: tuple with upper and lower
-           bounds used to search for the optimal scale parameter (how many
-           nanometers occupies one nucleotide). Last value of the input tuple is
-           the step for scale parameter increments
-        :param True verbose: print results as they are computed
+        :param start: first bin to model (bin number)
+        :param end: last bin to model (bin number)
+        :param 500 n_models: number of modes to generate
+        :param 100 n_keep: number of models used in the final analysis (usually
+           the top 20% of the generated models). The models are ranked
+           according to their objective function value (the lower the better)
+        :param 1 close_bins: number of particles away (i.e. the bin number
+           difference) a particle pair must be in order to be considered as
+           neighbors (e.g. 1 means consecutive particles)
+        :param n_cpus: number of CPUs to use
+        :param False verbose: if set to True, information about the distance,
+           force and Z-score between particles will be printed
+        :param (-1,0,0.1) lowfreq_range:  range of lowfreq values to be 
+           optimized. The last value of the input tuple is the incremental step
+           for the lowfreq values
+        :param (0,1,0.1,0.1) upfreq_range: range of upfreq values to be
+           optimized. The last value of the input tuple is the incremental step
+           for the upfreq values
+        :param (400,1400,100) maxdist_range: upper and lower bounds used to
+           search for the optimal maximum experimental distance. The last value
+           of the input tuple is the incremental step for maxdist values 
+        :param [0.01] scale_range: upper and lower bounds used to search for
+           the optimal scale parameter (nm per nucleotide). The last value of
+           the input tuple is the incremental step for scale parameter values
+        :param True verbose: print the results to the standard output
 
         .. note::
         
           Each of the *_range* parameters accept tuples in the form
-           *(start, end, step)*, or list with the list of values to test.
+           *(start, end, step)*, or a list with the list of values to test.
 
            E.g.:
              * scale_range=[0.001, 0.005, 0.006] will test these three values.
@@ -476,7 +478,7 @@ class Experiment(object):
 
         :returns: a tuple containing:
 
-             - a 3D numpy array with the values of correlations found
+             - a 3D numpy array with the values of the correlations calculated
              - the range of scale used
              - the range of maxdist used
              - the range of upfreq used
@@ -509,14 +511,14 @@ class Experiment(object):
     
     def _sub_experiment_zscore(self, start, end):
         """
-        Get a sub experiment
+        Get the z-score of a sub-region of an  experiment.
 
         TODO: find a nicer way to do this...
 
-        :param start: start of the region to model (bin number)
-        :param end: end of the region to model (bin number, both inclusive)
+        :param start: first bin to model (bin number)
+        :param end: first bin to model (bin number)
 
-        :returns: zscore and raw values corresponding to the experiment
+        :returns: z-score and raw values of the experiment
         """
         if self._normalization != 'visibility':
             warn('WARNING: normalizing according to visibility method')
@@ -564,14 +566,14 @@ class Experiment(object):
                                 true_position=False, uniq=True,
                                 remove_zeros=False):
         """
-        Creates a tab separated file with all interactions
+        Creates a tab separated file with all the pairwise interactions.
         
-        :param fname: file name to write the interactions pairs 
+        :param fname: file name where to write the  pairwise interactions 
         :param True zscored: computes the z-score of the log10(data)
-        :param True normalized: use weights to normalize data
-        :param None cutoff: if defined, only zscores above the cutoff will be
-           writen to file
-        :param False uniq: only writes on representent of an interacting pair
+        :param True normalized: use the weights to normalize the data
+        :param None cutoff: if defined, only the zscores above the cutoff will
+           be writen to the file
+        :param False uniq: only writes one representent per interacting pair
            
         """
         if not self._zscores and zscored:
@@ -621,10 +623,10 @@ class Experiment(object):
 
     def get_hic_matrix(self):
         """
-        Returns the Hi-C matrix
+        Return the Hi-C matrix.
 
-        :returns: list of lists representing Hi-C data matrix of current
-           experiment
+        :returns: list of lists representing the Hi-C data matrix of the
+           current experiment
         """
         siz = self.size
         hic = self.hic_data[0]
@@ -633,10 +635,10 @@ class Experiment(object):
 
     def print_hic_matrix(self, print_it=True):
         """
-        Returns the Hi-C matrix as string
+        Return the Hi-C matrix as string
 
-        :returns: list of lists representing Hi-C data matrix of current
-           experiment
+        :returns: list of lists representing the Hi-C data matrix of the
+           current experiment
         """
         siz = self.size
         hic = self.hic_data[0]
@@ -653,7 +655,7 @@ class Experiment(object):
         """
         Related to the generation of 3D models.
         In the case of Hi-C data, the density is equal to the number of
-        nucleotides in a bin, that is equal to the resolution
+        nucleotides in a bin, which is equal to the experiment resolution.
         """
         dens = {}
         for i in self.size:

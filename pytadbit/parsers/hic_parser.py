@@ -39,7 +39,7 @@ def _read_matrix(f_h):
 
 def read_matrix(things, parser=None):
     """
-    reads and checks matrix from file or list
+    Read and checks a matrix from a file or a list.
 
     :param things: might be either a file name, a file handler, a list of them
         or a list of list (all with same length)

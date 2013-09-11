@@ -184,7 +184,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                 method='frobenius', long_nw=True, long_dist=True):
     """
 
-    Note: penalty is defined as the minimum value of the pre-scoring matrix
+    Note: penalty is defined as the minimum value of the pre-scoring matrix.
     
     :param hic1: first matrix to align
     :param hic2: second matrix to align
@@ -194,9 +194,9 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     :param score method: distance function to use as alignment score. if 'score'
        distance will be the result of the last value of the Needleman-Wunsch
        algorithm. If 'frobenius' a modification of the Frobenius distance will
-       be used.
+       be used
 
-    :returns: 2 lists, one per aligned matrix, plus a dict summarizing the
+    :returns: two lists, one per aligned matrix, plus a dict summarizing the
         goodness of the alignment with the distance between matrices, their 
         Spearman correlation Rho value and pvalue.
     """

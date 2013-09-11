@@ -25,16 +25,16 @@ except ImportError:
 
 def load_chromosome(in_f, fast=2):
     """
-    Load Chromosome from file. Chromosome might have been saved through the
-    :func:`Chromosome.save_chromosome`.
+    Load a Chromosome object from a file. A Chromosome object can be saved with
+    the :func:`Chromosome.save_chromosome` function. 
     
-    :param in_f: path to a saved Chromosome file
-    :param 2 fast: if fast=2 do not load Hi-C data (in the case that they were
-       saved in a separate file see :func:`Chromosome.save_chromosome`). If fast
-       is equal to 1, weight would be skipped from load in order to save memory.
-       Finally if fast=0, both weights and Hi-C data will be loaded.
+    :param in_f: path to a saved Chromosome object file
+    :param 2 fast: if fast=2 do not load the Hi-C data (in the case that they 
+       were saved in a separate file see :func:`Chromosome.save_chromosome`).
+       If fast is equal to 1, the weights will be skipped from load to save 
+       memory. Finally if fast=0, both the weights and Hi-C data will be loaded
     
-    :returns: Chromosome object
+    :returns: a Chromosome object
 
     TODO: remove first try/except type error... this is loading old experiments
     """
@@ -75,22 +75,23 @@ def load_chromosome(in_f, fast=2):
 
 class Chromosome(object):
     """
-    Chromosome object designed to deal with Topologically Associating Domains
+    A Chromosome object designed to deal with Topologically Associating Domains
     predictions from different experiments, in different cell types for a given
-    chromosome of DNA, and compare them.
+    chromosome of DNA, and to compare them.
 
-    :param name: name of the chromosome (might be a chromosome name for example).
-    :param None resolution: resolution of the experiments. All experiments may
-       have the same resolution
+    :param name: name of the chromosome (might be a chromosome name for example)
+    :param None resolution: resolution of the experiments. All the experiments
+       must have the same resolution
     :param None experiment_handlers: :py:func:`list` of paths to files
        containing the definition of TADs corresponding to different experiments
-       (or output of tadbit)
-    :param None experiment_names: :py:func:`list` of names for each experiment
-    :param 5000000 max_tad_size: maximum size of TAD allowed. TADs longer than
-        this will not be considered, and relative chromosome size will be reduced
-        accordingly
+       (or output of TADBit)
+    :param None experiment_names: :py:func:`list` of the names of each 
+        experiment
+    :param 5000000 max_tad_size: maximum TAD size allowed. TADs longer than
+        this value will not be considered, and size of the corresponding
+        chromosome size will be reduced accordingly
     :param 0 chr_len: size of the DNA chromosome in bp. By default it will be
-        inferred from the distribution of TADs.
+        inferred from the distribution of TADs
 
     :return: Chromosome object
 
@@ -131,8 +132,8 @@ class Chromosome(object):
 
     def _get_forbidden_region(self, xpr):
         """
-        Find regions where there is no info in any of the experiments.
-        This is used to infer the relative chromosome size.
+        Find the regions for which there is no information in any of the
+        experiments. This is used to infer the relative chromosome size.
         """
         if not xpr.tads:
             return
@@ -161,9 +162,9 @@ class Chromosome(object):
 
     def get_experiment(self, name):
         """
-        This can also be done directly through Chromosome.experiments[name].
+        This can also be done directly with Chromosome.experiments[name].
         
-        :param name: name of the wanted experiment
+        :param name: name of the experiment to select
         :returns: :class:`pytadbit.Experiment`
         """
         for exp in self.experiments:
@@ -175,19 +176,20 @@ class Chromosome(object):
 
     def save_chromosome(self, out_f, fast=True, divide=True, force=False):
         """
-        Save Chromosome object to file (it uses :py:func:`pickle.load` from the
-        :py:mod:`cPickle`). Once saved, the object may be loaded through
+        Save a Chromosome object to a file (it uses :py:func:`pickle.load` from
+        the :py:mod:`cPickle`). Once saved, the object can be loaded with
         :func:`load_chromosome`.
 
-        :param out_f: path to file to dump the :py:mod:`cPickle` object.
-        :param True fast: if True, skips Hi-D data and weights
-        :param True divide: if True writes 2 pickles, one with what would result
-           by using the fast option, and the second with Hi-C and weights data.
-           Second file name will be extended by '_hic' (ie: with
-           out_f='chromosome12.pik' we would obtain chromosome12.pik and
+        :param out_f: path to the file where to store the :py:mod:`cPickle`
+           object
+        :param True fast: if True, skip Hi-C data and weights
+        :param True divide: if True writes two pickles, one with what would
+           result by using the fast option, and the second with the Hi-C and 
+           weights data. The second file name will be extended by '_hic' (ie:
+           with out_f='chromosome12.pik' we would obtain chromosome12.pik and
            chromosome12.pik_hic). When loaded :func:`load_chromosome` will
-           automatically search for both files.
-        :param False force: overwrite existing file.
+           automatically search for both files
+        :param False force: overwrite the existing file
 
         """
         while exists(out_f) and not force:
@@ -233,24 +235,26 @@ class Chromosome(object):
     def align_experiments(self, names=None, verbose=False, randomize=False,
                           rnd_method='interpolate', rnd_num=1000, **kwargs):
         """
-        Align prediction of boundaries of two different experiments. Resulting
-        alignment will be stored in the self.experiment list.
+        Align the predicted boundaries of two different experiments. The 
+        resulting alignment will be stored in the self.experiment list.
         
-        :param None names: list of names of experiments to align. If None
-            align all.
+        :param None names: list of names of the experiments to align. If None,
+            align all
         :param experiment1: name of the first experiment to align
         :param experiment2: name of the second experiment to align
-        :param -0.1 penalty: penalty of inserting a gap in the alignment
-        :param 100000 max_dist: Maximum distance between 2 boundaries allowing
-            match (100Kb seems fair with HUMAN chromosomes)
-        :param False verbose: print somethings
-        :param False randomize: check alignment quality by comparing
-            randomization of boundaries over Chromosomes of same size. This will
-            return a extra value, the p-value of accepting that observed
-            alignment is not better than random alignment
-        :param interpolate rnd_method: by default uses interpolation of TAD
-           distribution. Alternative is 'shuffle' where TADs are simply shuffled
-        :param 1000 rnd_num: number of randomizations to be done
+        :param -0.1 penalty: penalty for inserting a gap in the alignment
+        :param 100000 max_dist: maximum distance between two boundaries
+            allowing match (100Kb seems fair with HUMAN chromosomes)
+        :param False verbose: if True, print some information about the 
+            alignments
+        :param False randomize: check the alignment quality by comparing
+            randomized boundaries over Chromosomes of the same size. This will
+            return a extra value, the p-value of accepting that the observed
+            alignment is not better than a random alignment
+        :param interpolate rnd_method: by default uses the interpolation of TAD
+           distribution. The alternative method is 'shuffle', where TADs are
+           simply shuffled
+        :param 1000 rnd_num: number of randomizations to do
         :param reciprocal method: if global, Needleman-Wunsch is used to align
             (see :func:`pytadbit.boundary_aligner.globally.needleman_wunsch`);
             if reciprocal, a method based on reciprocal closest boundaries is
@@ -295,16 +299,17 @@ class Chromosome(object):
                        xp_handler=None, replace=False, parser=None,
                        conditions=None, **kwargs):
         """
-        Add Hi-C experiment to Chromosome
+        Add a Hi-C experiment to Chromosome
         
-        :param name: name of the experiment or Experiment object
-        :param resolution: resolution of the experiment (need if name is not an
-           Experiment)
-        :param handler: path to tsv file
-        :param False replace: overwrite experiments loaded under the same name
-        :param None parser: a parser function that returns a tuple of lists
-           representing the data matrix, and the length of a row/column, with
-           this file example.tsv:
+        :param name: name of the experiment or of the Experiment object
+        :param resolution: resolution of the experiment (needed if name is not
+           an Experiment object)
+        :param handler: path to the tab separeted value file
+        :param False replace: overwrite the experiments loaded under the same
+           name
+        :param None parser: a parser function that returns a tuple of lists 
+           representing the data matrix and the length of a row/column. With 
+           a file example.tsv containing:
 
            ::
            
@@ -314,7 +319,7 @@ class Chromosome(object):
              chrT_003	88	175	437	100
              chrT_004	105	110	100	278
            
-           the output of parser('example.tsv') might be:
+           the output of parser('example.tsv') would be:
            ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
            110, 100, 278]), 4]``
         
@@ -342,23 +347,23 @@ class Chromosome(object):
     def find_tad(self, experiments, name=None, n_cpus=None, verbose=True,
                  max_tad_size="auto", no_heuristic=False, batch_mode=False):
         """
-        Call :func:`pytadbit.tadbit.tadbit` function to calculate the position
-        of Topologically associated domains
+        Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
+        position of Topologically Associated Domains
         
-        :param experiment: A square matrix of interaction counts in hi-C
-            data or a list of such matrices for replicated experiments. The
-            counts must be evenly sampled and not normalized. 'experiment'
-            might be either a list of list, a path to a file or a file handler
-        :param None n_cpus: The number of CPUs to allocate to tadbit. The
-            value default is the total number of CPUs minus 1.
-        :param auto max_tad_size: an integer defining maximum size of TAD.
-            Default (auto) defines it to the number of rows/columns.
+        :param experiment: A square matrix of interaction counts of Hi-C
+           data or a list of such matrices for replicated experiments. The
+           counts must be evenly sampled and not normalized. 'experiment'
+           can be either a list of lists, a path to a file or a file handler
+        :param None n_cpus: The number of CPUs to allocate to TADBit. The
+           default value is the total number of CPUs minus 1
+        :param auto max_tad_size: an integer defining the maximum size of a 
+           TAD. Default (auto) defines it as the number of rows/columns
         :param False no_heuristic: whether to use or not some heuristics
-        :param False batch_mode: if True, all experiments will be concatenated
-            into one for the search of TADs. The resulting TADs found are stored
-            under the name 'batch' plus a concatenation of the experiment names
-            passed (i.e.: if experiments=['exp1', 'exp2'], the name would be:
-            'batch_exp1_exp2').
+        :param False batch_mode: if True, all the experiments will be 
+           concatenated into one for the search of TADs. The resulting TADs 
+           found are stored under the name 'batch' plus a concatenation of the
+           experiment names passed (e.g.: if experiments=['exp1', 'exp2'], the
+           name would be: 'batch_exp1_exp2').
 
         TODO: check option -> name for batch mode... some dirty changes....
 
@@ -407,10 +412,8 @@ class Chromosome(object):
 
     def __update_size(self, xpr):
         """
-        Update chromosome size and relative size after loading new Hi-C
-        experiments.
-
-        Unless Chromosome size was defined by hand.
+        Update the chromosome size and relative size after loading new Hi-C
+        experiments, unless the Chromosome size was defined by hand.
         
         """
         if not self._given_size:
@@ -424,7 +427,7 @@ class Chromosome(object):
     def visualize(self, name, tad=None, focus=None, paint_tads=False, axe=None,
                   show=True, logarithm=True, normalized=False, relative=True):
         """
-        Visualize the matrix of Hi-C interactions
+        Visualize the matrix of Hi-C interactions.
 
         :param name: name of the experiment to visualize
         :param None tad: a given TAD in the form:
@@ -435,23 +438,23 @@ class Chromosome(object):
               'brk'  : end,
               'score': score}
               
-           **Alternatively** a list of these TADs can be passed (all TADs
-           between first and last TAD passed will be painted... thus passing
+           **Alternatively** a list of the TADs can be passed (all the TADs
+           between the first and last one passed will be showed. Thus, passing
            more than two TADs might be superfluous)
-        :param None focus: a tuple with the start and end position of the region
-           to visualize.
-        :param False paint_tads: draw a box around TADs defined for this
+        :param None focus: a tuple with the start and end positions of the 
+           region to visualize
+        :param False paint_tads: draw a box around the TADs defined for this
            experiment
-        :param None axe: an axe object from matplotlib can be passed in order to
-           customize the picture.
+        :param None axe: an axe object from matplotlib can be passed in order
+           to customize the picture
         :param True show: either to pop-up matplotlib image or not
-        :param True logarithm: show logarithm
-        :param True normalized: show normalized data (weights might have been
-           calculated previously). *Note: white rows/columns may appear in the
-           matrix displayed, these rows correspond to filtered rows (see*
+        :param True logarithm: show the logarithm values
+        :param True normalized: show the normalized data (weights might have
+           been calculated previously). *Note: white rows/columns may appear in
+           the matrix displayed; these rows correspond to filtered rows (see*
            :func:`pytadbit.utils.hic_filtering.hic_filtering_for_modelling` *)*
-        :param True relative: Color scale is relative to the whole matrix of
-           data, not only the region displayed.
+        :param True relative: color scale is relative to the whole matrix of
+           data, not only to the region displayed
         """
         xper = self.get_experiment(name)
         if logarithm:
@@ -578,11 +581,11 @@ class Chromosome(object):
 
     def get_tad_hic(self, tad, x_name, normed=True, matrix_num=0):
         """
-        Retrieve the Hi-C data matrix corresponding to ma given TAD.
+        Retrieve the Hi-C data matrix corresponding to a given TAD.
         
-        :param tad: a given TAD -> :py:class:`dict`
+        :param tad: a given TAD (:py:class:`dict`)
         :param x_name: name of the experiment
-        :param True normed: if Hi-C data has to be normalized
+        :param True normed: if True, normalize the Hi-C data
         
         :returns: Hi-C data matrix for the given TAD
         """
@@ -603,7 +606,7 @@ class Chromosome(object):
 
     def iter_tads(self, x_name, normed=True):
         """
-        Iterate over TADs corresponding to a given experiment.
+        Iterate over the TADs corresponding to the given experiment.
         
         :param x_name: name of the experiment
         :param True normed: normalize Hi-C data returned
@@ -618,10 +621,10 @@ class Chromosome(object):
 
     def set_max_tad_size(self, value):
         """
-        Change maximum size allowed for TADs. Also apply it to computed
-        experiments.
+        Change the maximum size allowed for TADs. It also applies to the
+        computed experiments.
 
-        :param value: an int default is 5000000
+        :param value: an int value (default is 5000000)
         """
         self.max_tad_size = value
         for xpr in self.experiments:
@@ -634,11 +637,11 @@ class Chromosome(object):
 
     def _search_centromere(self, xpr):
         """
-        Search for centromere in chromosome, assuming that
+        Search for the centromere in a chromosome, assuming that
         :class:`Chromosome` corresponds to a real chromosome.
-        Add a boundary to all experiments where the centromere is.
-         * A centromere is defined as the largest area where the rows/columns of
-           the Hi-C matrix are empty.
+        Add a boundary to all the experiments where the centromere is.
+         * A centromere is defined as the largest area where the rows/columns
+           of the Hi-C matrix are empty.
         """
         beg = end = 0
         size = xpr.size
@@ -716,12 +719,12 @@ class Chromosome(object):
 
 class ExperimentList(list):
     """
-    Inherist from python built in :py:func:`list`, modified for tadbit
+    Inherited from python built in :py:func:`list`, modified for tadbit
     :class:`pytadbit.Experiment`.
     
-    Mainly, `getitem`, `setitem`, and `append` where modified in order to
-    be able to search experiments by index or by name, and to add experiments
-    using simply Chromosome.experiments.append(Experiment).
+    Mainly, `getitem`, `setitem`, and `append` were modified in order to
+    be able to search for experiments by index or by name, and to add 
+    experiments simply using Chromosome.experiments.append(Experiment).
 
     The whole ExperimentList object is linked to a Chromosome instance
     (:class:`pytadbit.Chromosome`).

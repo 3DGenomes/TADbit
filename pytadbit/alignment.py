@@ -264,10 +264,10 @@ class Alignment(object):
 
     def draw(self, focus=None):
         """
-        Draw alignment as a plot
+        Draw alignments as a plot.
         
         :param None focus: can pass a tuple (bin_start, bin_stop) to display the
-           alignment between these genomic bins.
+           alignment between these genomic bins
         """
         from matplotlib.patches import Ellipse, Rectangle
         from matplotlib.cm import jet

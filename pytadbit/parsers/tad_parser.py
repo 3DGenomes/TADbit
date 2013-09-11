@@ -9,8 +9,8 @@ from os.path import isfile
 
 def parse_tads(handler):
     """
-    Parse a tsv file that contains the list of TADs of a given experiment.
-    This file might have been generated whith the
+    Parse a tab separated value file that contains the list of TADs of a given
+    experiment. This file might have been generated whith the
     :func:`pytadbit.tadbit.print_result_R` or with the R binding for tadbit
 
     :param handler: path to file

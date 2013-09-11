@@ -20,7 +20,7 @@ def find_closest(num, tads1, start=0):
 
 def find_closest_reciprocal(t1, tads1, tads2, start=0):
     """
-    function to check the needleman_wunsch algorithm.
+    Function to check the needleman_wunsch algorithm.
     """
     closest = None
     diff = inf = float('inf')
@@ -44,18 +44,18 @@ def find_closest_reciprocal(t1, tads1, tads2, start=0):
 def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
     """
     Method based on reciprocal closest boundaries (bd). bd1 will be aligned
-       with bd2 (closest boundary from bd1) if and only if bd1 is the closest
-       boundary of bd2 too (and of course if the distance between bd1 and bd2 is
-       lower than max_dist).
+    with bd2 (closest boundary from bd1) if and only if bd1 is the closest
+    boundary of bd2 too (and of course if the distance between bd1 and bd2 is
+    lower than max_dist).
 
     :argument tads1: list of boundaries
     :argument tads2: list of boundaries
     :argument None penalty: if None, penalty will be two times max_dist
     :argument verbose: print alignment
     :argument 100000 max_dist: distance threshold from which two boundaries can
-       not be aligned together.
+       not be aligned together
 
-    :returns: the alignment and a score between 0 and 1 (0: bad, 1: good)
+    :returns: the alignment and a score between 0 and 1 (0: bad, 1: good).
     """
 
     if not penalty:

@@ -12,11 +12,11 @@ from pytadbit.tadbit_py import _tadbit_wrapper
 def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
            no_heuristic=False, get_weights=False):
     """
-    The tadbit algorithm works on raw chromosome interaction count data.
-    Not only is normalization not necessary, it is also not recommended
+    The TADBit algorithm works on raw chromosome interaction count data.
+    The normalization is neither necessary nor recommended,
     since the data is assumed to be discrete counts.
     
-    Tadbit is a breakpoint detection algorithm that returns the optimal
+    TADBit is a breakpoint detection algorithm that returns the optimal
     segmentation of the chromosome under BIC-penalized likelihood. The
     model assumes that counts have a Poisson distribution and that the
     expected value of the counts decreases like a power-law with the
@@ -26,18 +26,18 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
     site densities and 'mappability' of the reads in case a bin contains
     repeated regions.
 
-    :param x: A square matrix of interaction counts in hi-C data or a list of
-        such matrices for replicated experiments. The counts must be evenly
-        sampled and not normalized. x might be either a list of list, a path to
-        a file or a file handler
-    :param None n_cpus: The number of CPUs to allocate to tadbit. The value
-        default is the total number of CPUs minus 1.
+    :param x: a square matrix of interaction counts in the HI-C data or a list
+       of such matrices for replicated experiments. The counts must be evenly
+       sampled and not normalized. x might be either a list of list, a path to
+       a file or a file handler
+    :param None n_cpus: the number of CPUs to allocate to TADBit. The default
+       value is the total number of CPUs minus 1
     :param auto max_tad_size: an integer defining maximum size of TAD. Default
-        (auto) defines it to the number of rows/columns.
+       (auto) defines it as the number of rows/columns
     :param False no_heuristic: whether to use or not some heuristics
     :param False get_weights: either to return the weights corresponding to the
        Hi-C count (weights are a normalization dependent of the count of each
-       columns).
+       columns)
 
     :returns: the :py:func:`list` of topologically associated domains'
        boundaries, and the corresponding list associated log likelihoods.
@@ -76,7 +76,7 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
 
 def batch_tadbit(directory, parser=None, **kwargs):
     """
-    Use tadbit on directories of data files
+    Use tadbit on directories of data files.
     All files in the specified directory will be considered data file. The
     presence of non data files will cause the function to either crash or
     produce aberrant results.
@@ -96,15 +96,15 @@ def batch_tadbit(directory, parser=None, **kwargs):
     Other arguments such as max_size, n_CPU and verbose are passed to
     :func:`tadbit`.
   
-    :param directory: The directory containing the data files.
-    :param kwargs: arguments passed to :func:`tadbit` function.
+    :param directory: the directory containing the data files
+    :param kwargs: arguments passed to :func:`tadbit` function
     :param None parser: a parser function that takes file name as input and
         returns a tuple representing the matrix of data. Tuple is a
         concatenation of column1 + column2 + column3 + ...
 
     :returns: A :py:func:`list` where each element has the name of the
         unit/chromosome, and is the output of :func:`tadbit` run on the
-        corresponding files assumed to be replicates.
+        corresponding files assumed to be replicates
 
     """
 
@@ -124,7 +124,7 @@ def batch_tadbit(directory, parser=None, **kwargs):
 
 def print_result_r(result, write=True):
     """
-    print a table summarizing the TADs found by tadbit. This function outputs
+    Print a table summarizing the TADs found by tadbit. This function outputs
     something similar to the R function.
 
     :param result: the :py:class:`dict` that returns :func:`tadbit`
