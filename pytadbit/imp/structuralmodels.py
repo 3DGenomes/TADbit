@@ -15,7 +15,8 @@ from numpy                     import std as np_std, log2
 from scipy.cluster.hierarchy   import linkage, fcluster
 from scipy.stats               import spearmanr
 from warnings                  import warn
-
+from string                    import uppercase as uc, lowercase as lc
+from random                    import random
 
 try:
     from matplotlib import pyplot as plt
@@ -138,7 +139,7 @@ class StructuralModels(object):
 
 
     def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
-                       mcl_bin='mcl', tmp_file='/tmp/tmp.xyz', verbose=True):
+                       mcl_bin='mcl', tmp_file=None, verbose=True):
         """
         This function performs a clustering analysis of the generated models 
         based on structural comparison. The result will be stored in 
@@ -165,11 +166,13 @@ class StructuralModels(object):
            NOT RECOMMENDED.
         :param 'mcl' mcl_bin: path to the mcl executable file, in case of the 
            'mcl is not in the PATH' warning message
-        :param '/tmp/tmp.xyz' tmp_file: path to a temporary file created during
-           the clustering computation
+        :param None tmp_file: path to a temporary file created during
+           the clustering computation. Default will be created in /tmp/ folder
         :param True verbose: same as print StructuralModels.clusters
         
         """
+        tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
+            ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
         scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, var)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
@@ -604,8 +607,6 @@ class StructuralModels(object):
         :param None cluster: A number can be passed in order to calculate the
            distance between particles in all models corresponding to the cluster
            number 'cluster'
-        :param '/tmp/tmp_cons' tmp_path: where to write input files for TM-score
-           program
         :param '' tmsc: path to TMscore_consistency, by default it assumes that
            it is installed
         :param None outfile: path to a file where to save the consistency data
