@@ -30,41 +30,43 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
                        close_bins=1, n_cpus=1, keep_all=False, verbose=0,
                        outfile=None, config=CONFIG['dmel_01'], values=None):
     """
-    To generate three-dimensional models from Hi-C data (z-scores of the
-    interactions). A given number of models is kept, and can be used to draw
-    some statistics or search for some specific interactions.
-
-    :param zscores: a dictionary with values of pairwise interactions
-    :param resolution: of the Hi-C experiment, this will be the number of
-       nucleotides in each particle of the models
-    :param 10000 n_models: number of modes to generate.
-    :param 1000 n_keep: number of models to keep (models with lowest objective
-       function final value). Usually 20% of the models generated are kept.
-    :param False keep_all: whether to keep the discarded models or not (if True,
-       they will be stored under StructuralModels.bad_models).
-    :param 1 close_bins: number of particle away a particle may be to be
-       considered as a neighbor.
-    :param n_cpus: number of CPUs to use for the optimization of models
-    :param False verbose: verbosity
-    :param None values: a list of list (equivalent to a square matrix) of the
-       normalized Hi-C data.
-    :param CONFIG['dmel_01'] config: a dictionary containing the main
-       parameters used to optimize models. Dictionary should contain the
-       keys 'kforce', 'lowrdist', 'maxdist', 'upfreq' and 'lowfreq'.
-       Examples can be seen by doing:
+    This function generates three-dimensional models starting from Hi-C data. 
+    The final analysis will be performed on the n_keep top models.
+    
+    :param zscores: the dictionary of the Z-score values calculated from the 
+       Hi-C pairwise interactions
+    :param resolution:  number of nucleotides per Hi-C bin. This will be the 
+       number of nucleotides in each model's particle
+    :param 5000 n_models: number of models to generate
+    :param 1000 n_keep: number of models used in the final analysis (usually 
+       the top 20% of the generated models). The models are ranked according to
+       their objective function value (the lower the better)
+    :param False keep_all: whether or not to keep the discarded models (if 
+       True, models will be stored under StructuralModels.bad_models) 
+    :param 1 close_bins: number of particles away (i.e. the bin number 
+       difference) a particle pair must be in order to be considered as
+       neighbors (e.g. 1 means consecutive particles)
+    :param n_cpus: number of CPUs to use
+    :param False verbose: if set to True, information about the distance, force
+       and Z-score between particles will be printed
+    :param None values: the normalized Hi-C data in a list of lists (equivalent 
+       to a square matrix)
+    :param CONFIG['dmel_01'] config: a dictionary containing the standard 
+       parameters used to generate the models. The dictionary should contain
+       the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
+       seen by doing:
 
        ::
 
          from pytadbit.imp.CONFIG import CONFIG
 
-           where CONFIG is a dictionarry of dictionnaries to be passed to this
-           function:
+         where CONFIG is a dictionary of dictionaries to be passed to this function:
 
        :::
 
          CONFIG = {
           'dmel_01': {
-              # use these paramaters with the Hi-C data from:
+              # Paramaters for the Hi-C dataset from:
               'reference' : 'victor corces dataset 2013',
 
               # Force applied to the restraints inferred to neighbor particles
@@ -76,9 +78,9 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
               # Maximum experimental contact distance
               'maxdist'   : 600, # OPTIMIZATION: 500-1200
 
-              # Maximum thresholds used to decide which experimental values have to be
-              # included in the computation of restraints. Z-score values bigger than upfreq
-              # and less that lowfreq will be include, whereas all the others will be rejected
+              # Maximum threshold used to decide which experimental values have to be
+              # included in the computation of restraints. Z-score values greater than upfreq
+              # and less than lowfreq will be included, while all the others will be rejected
               'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
 
               # Minimum thresholds used to decide which experimental values have to be
@@ -86,7 +88,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
               # and less that lowfreq will be include, whereas all the others will be rejected
               'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
 
-              # How much space (radius in nm) ocupies a nucleotide
+              # Space occupied by a nucleotide (nm)
               'scale'     : 0.005
 
               }
@@ -164,7 +166,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
     :func:`pytadbit.imp.imp_model.StructuralModels.generate_IMPmodel`.
 
     :param n_cpus: number of CPUs to use
-    :param n_models: number of models to calculate.
+    :param n_models: number of models to generate
     """
     pool = mu.Pool(n_cpus)
     jobs = {}

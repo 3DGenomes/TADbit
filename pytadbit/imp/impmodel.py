@@ -16,18 +16,17 @@ except ImportError:
 
 class IMPmodel(dict):
     """
-    A container for IMP modelling result.
-
-    It is a dictionnary with this keys:
+    A container for the IMP modeling results. The container is a dictionary 
+    with the following keys:
     
-    - log_objfun: a list of objective function values found by IMP
-    - objfun: the last objective function value of previous list. The one
-       associated to the model, and used for model comparison.
-    - rand_init: The random initial value passed to IMP. An other
-       modelization with this same number should result in the same model
-    - x 
-    - y   }  3D coordinates of each particles (each of these is a list)
-    - z 
+    - log_objfun: The list of IMP objective function values
+    - objfun: The final objective function value of the corresponding model 
+       (from log_objfun). This value will be used to rank all the generated 
+       models
+    - rand_init: The random number generator feed (needed for model 
+       reproducibility)
+    - x, y, z: The spatial 3D coordinates of each particles. Each coordinate is 
+       represented as a list
     
     """
     def __repr__(self):
@@ -58,10 +57,11 @@ class IMPmodel(dict):
     def objective_function(self, log=False, smooth=True,
                            axe=None, savefig=None):
         """
-        Plots the fall in objective function value through the Monte-Carlo search.
+        This function plots the objective function value per each Monte-Carlo 
+        step.
         
-        :param False log: to plot in log scale
-        :param True smooth: to smooth the curve
+        :param False log: log plot
+        :param True smooth: curve smoothing
         
         """
         show = False

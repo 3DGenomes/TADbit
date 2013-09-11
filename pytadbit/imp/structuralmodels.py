@@ -273,15 +273,15 @@ class StructuralModels(object):
     def cluster_analysis_dendrogram(self, n_best_clusters=None, color=False,
                                     axe=None, savefig=None):
         """
-        Representation of clusters of models. The length of the leaves if
-           proportional to the final objective function value of each model.
-           Branch widths are proportional to the number of models in a given
-           cluster (or group of clusters, ifit is an internal branch)
+        Representation of the clustering results. The length of the leaves if 
+        proportional to the final objective function value of each model. The 
+        branch widths are proportional to the number of models in a given 
+        cluster (or group of clusters, if it is an internal branch).
            
-        :param None n_best_clusters: number of clusters to represent, by default
-           all clusters will be shown
-        :param False color: display colors for the significance of the
-           clustering (basically dependent of internal branch lengths)
+        :param None n_best_clusters: number of clusters to represent (by 
+           default all clusters will be shown)
+        :param False color: color the dendrogram based on the significance of
+           the clustering (basically it depends of the internal branch lengths)
         """
 
         if not self.clusters:
@@ -315,18 +315,17 @@ class StructuralModels(object):
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
                      error=False, axe=None, savefig=None, outfile=None):
         """
-        Represents the number of nucletotide base pairs can be found in 1 nm of
-           chromatin, this along strand modelled.
+        Plots the number of nucletotides per nm of chromatin vs the modeled
+        region bins.
 
-        :param None models: If None (default) will do calculate the distance
-           along all models. A list of numbers corresponding to a given set of
-           models can also be passed.
-        :param None cluster: A number can be passed in order to calculate the
-           distance between particles in all models corresponding to the cluster
-           number 'cluster'
+        :param None models: if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
         :param (1, 2, 3, 4, 5) steps: how many particles to group for the
-           estimation. By default 5 curves are drawn.
-        :param False error: represent the error of the estimates.
+           estimation. By default 5 curves are drawn
+        :param False error: represent the error of the estimates
         :param None outfile: path to a file where to save the density data
            generated (1 column per step + 1 for particle number).
         
@@ -435,16 +434,15 @@ class StructuralModels(object):
         Returns a matrix with the number of interactions observed below a given 
         cutoff distance.
 
-        :param None models: If None (default) will do calculate the distance
-           along all models. A list of numbers corresponding to a given set of
-           models can also be passed.
-        :param None cluster: A number can be passed in order to calculate the
-           distance between particles in all models corresponding to the cluster
-           number 'cluster'
-        :param 150 cutoff: distance in nanometer from which it is considered
-           that two particles are separated.
+        :param None models: if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param 150 cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not
 
-        :returns: matrix of contact counts
+        :returns: matrix frequency of interaction
         """
         if models:
             models = models
@@ -465,13 +463,15 @@ class StructuralModels(object):
 
     def define_best_models(self, nbest):
         """
-        Define the number of best models to keep. If keep_all was True in
+        Defines the number of top models (based on the objective function) to 
+        keep. If keep_all is set to True in
         :func:`pytadbit.imp.imp_model.generate_3d_models` or in
-        :func:`pytadbit.experiment.Experiment.model_region` the full set of models
-        (n_models parameter) will be available, otherwise only the n_keep models.
+        :func:`pytadbit.experiment.Experiment.model_region`, then the full set
+        of models (n_models parameter) will be used, otherwise only the n_keep
+        models will be available.
 
-        :param nbest: number of models to consider as best models.
-           Usually 20% of the models generated are kept.
+        :param nbest: number of top models to keep (usually 20% of the 
+           generated models).
         """
         tmp_models = self.__models
         tmp_models.update(self._bad_models)
@@ -483,25 +483,23 @@ class StructuralModels(object):
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
                     savefig=None, outfile=None):
         """
-        Draws a heatmap representing the proportion of times two particles are
-           closer than a given cutoff.
+        Plots a contact map representing the frequency of interaction (defined
+        by a distance cuoff) between two particles.
 
-        :param None models: If None (default) will do calculate the distance
-           along all models. A list of numbers corresponding to a given set of
-           models can also be passed.
-        :param None cluster: A number can be passed in order to calculate the
-           distance between particles in all models corresponding to the cluster
-           number 'cluster'
-        :param 150 cutoff: distance in nanometer from which it is considered
-           that two particles are separated.
-        :param None axe: a matplotlib.axes.Axes object, using it allows to
-           redefine figure size, background etc...
-        :param None savefig: path to a file where to save the image generated
-           if None, the image will be shown using matplotlib GUI.
+        :param None models: if None (default) the contact map will be computed 
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param 150 cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not
+        :param None axe: a matplotlib.axes.Axes object to define the plot 
+           apparence
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI
         :param None outfile: path to a file where to save the contact map data
-           generated (1 column particle1, 1 for particle2, one with the
-           percentage of models where this particles are close in space. This 
-           option will skip the generation of figure.
+           generated, in three columns format (particle1, particle2, percentage
+           of models where these two particles are in contact)
            
         """
         matrix = self.get_contact_matrix(models, cluster, cutoff)
@@ -537,20 +535,20 @@ class StructuralModels(object):
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=200,
                                  plot=False, axe=None, savefig=None):
         """
-        :param hic_matrix: a matrix representing the normalized count of Hi-C
-           interactions, used to generated these models.
-        :param None models: If None (default) will do calculate the distance
-           along all models. A list of numbers corresponding to a given set of
-           models can also be passed.
-        :param None cluster: A number can be passed in order to calculate the
-           distance between particles in all models corresponding to the cluster
-           number 'cluster'
-        :param 150 cutoff: distance in nanometer from which it is considered
-           that two particles are separated.
+        :param hic_matrix: a matrix representing the normalized counts of Hi-C
+           interactions, used to generated the models.
+        :param None models: if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param 150 cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not
+        :param None savefig: path to a file where to save the image generated; 
+           if None, the image will be shown using matplotlib GUI
         :returns: spearman correlation rho and p-value, between the two
-           matrices. Good correlation may have a Rho value upper than 0.7
-        :param None savefig: path to a file where to save the image generated
-           if None, the image will be shown using matplotlib GUI.
+           matrices. A rho value greater than 0.7 indecates a very good 
+           correlation
         
         """
         model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
@@ -594,21 +592,23 @@ class StructuralModels(object):
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
                           cluster=None, axe=None, savefig=None, outfile=None):
         """
-        Plots the consistency of a given set of models, along the chromatin
-           fragment modelled. This plot can also be viewed as how well defined,
-           or how stable, is a given portion of the chromatin model.
+        Plots the particle consistency, over a given set of models, vs the 
+        modeled region bins. The consistency is a measure of the variability
+        (or stability) of the modeled region (the higher the consistency value,
+        the higher stability).  
 
-        :param (50,100,150,200) cutoffs: list of cutoff values (in nanometer)
-           to plot. These distances are used to know when to consider two
-           particles as diferent.
-        :param None models: If None (default) will do calculate the distance
-           along all models. A list of numbers corresponding to a given set of
-           models can also be passed.
-        :param None cluster: A number can be passed in order to calculate the
-           distance between particles in all models corresponding to the cluster
-           number 'cluster'
-        :param '' tmsc: path to TMscore_consistency, by default it assumes that
-           it is installed
+        :param (50,100,150,200) cutoffs: list of distance cutoffs (nm) used to
+           compute the consistency. Two particle are considered consistent if 
+           their distance is less than the given cutoff
+        :param None models:  if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param '/tmp/tmp_cons' tmp_path: location of the input files for 
+           TM-score program
+        :param '' tmsc: path to the TMscore_consistency script (assumed to be 
+           installed by default)
         :param None outfile: path to a file where to save the consistency data
            generated (1 column per cutoff + 1 for particle number).
         
@@ -676,16 +676,16 @@ class StructuralModels(object):
 
     def view_model(self, model_num, tool='chimera', savefig=None, cmd=None):
         """
-        Visualize a given model in three dimensions
+        Visualize a selected model in the three dimensions.
 
-        :param model_num: number of the model to visualize
-        :param 'chimera' tool: path to external tool to visualize the model
+        :param model_num: model to visualize
+        :param 'chimera' tool: path to the external tool used to visualize the 
+           model
         :param None savefig: path to a file where to save the image OR movie
-           generated (depending on the extension, accepted formats are png,
-           mov and webm) if None, the image or movie will be shown using
-           default GUI.
-        :param None cmd: a list of commands to be passed to the viewer. The
-           default is (using chimera tool):
+           generated (depending on the extension; accepted formats are png, mov
+           and webm). if set to None, the image or movie will be shown using 
+           the default GUI.
+        :param None cmd: list of commands to be passed to the viewer. The chimera list is:
 
            ::
 
@@ -703,7 +703,7 @@ class StructuralModels(object):
              set dc_end 1
              scale 0.8
 
-           Followed by the movie record for movies:
+           Followed by the movie command to record movies:
 
            ::
           
@@ -713,19 +713,19 @@ class StructuralModels(object):
              movie stop
              movie encode output SAVEFIG
 
-           Or the copy for images:
+           Or the copy command for images:
 
            ::
 
              copy file SAVEFIG png
 
-           Thus If you pass as 'cmd' parameter this list:
+           Passing as the following list as 'cmd' parameter:
            ::
 
              cmd = ['focus', 'set bg_color white', 'windowsize 800 600', 'bonddisplay never #0', 'shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on', 'clip yon -500', '~label', 'set subdivision 1', 'set depth_cue', 'set dc_color black', 'set dc_start 0.5', 'set dc_end 1', 'scale 0.8']
              
-           you would obtain the same result as with default (do not forget to
-           add commands to save figure/movie if you which).
+           will return the default image (other commands can be passed to 
+           modified the final image/movie).
         
         """
         self.write_cmm('/tmp/', model_num=model_num)
@@ -733,11 +733,11 @@ class StructuralModels(object):
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
     
 
-    def measure_angle_3_particles(self, parta, partc, partb,
+    def measure_angle_3_particles(self, parta, partb, partc,
                                   models=None, cluster=None,
                                   radian=False):
         """
-        Given three particles (A, C and B) the angle g shown below:
+        Given three particles A, B and C, the angle g (angle ACB, shown below):
         
         ::
 
@@ -745,42 +745,42 @@ class StructuralModels(object):
                               A
                              /|
                             / |
-                          b/  |
+                          c/  |
                           /   |
                          /    |
-                        C )g  |c
+                        B )g  |b
                          \    |
                           \   |
                           a\  |
                             \ |
                              \|
-                              B
+                              C
 
         is given by the theorem of Al-Kashi:
         
         .. math::
 
-          c^2 = a^2 + b^2 - 2 \cos(g)
+          b^2 = a^2 + c^2 - 2 \cos(g)
 
-        :param part1: A particle number
-        :param part2: A particle number
-        :param part3: A particle number
-        :param None models: If None (default) will do calculate the distance
-            along all models. A list of numbers corresponding to a given set of
-            models can also be passed.
-        :param None cluster: A number can be passed in order to calculate the
-           distance between particles in all models corresponding to the cluster
-           number 'cluster'
-        :param False radian: return value in radian, in degree if false
+        :param parta: A particle number
+        :param partb: A particle number
+        :param partc: A particle number
+        :param None models:  if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param False radian: if True, return value in radians (in degrees 
+           otherwise)
 
-        :returns: an angle,  either in degrees or radians
+        :returns: an angle, either in degrees or radians
         """
 
-        a = self.median_3d_dist(partc, partb, models=models,
-                                cluster=cluster, plot=False)
-        b = self.median_3d_dist(parta, partc, models=models,
+        a = self.median_3d_dist(partb, partc, models=models,
                                 cluster=cluster, plot=False)
         c = self.median_3d_dist(parta, partb, models=models,
+                                cluster=cluster, plot=False)
+        b = self.median_3d_dist(parta, partc, models=models,
                                 cluster=cluster, plot=False)
 
         g = acos((a**2 + b**2 - c**2) / (2 * a * b))
@@ -791,25 +791,25 @@ class StructuralModels(object):
     def median_3d_dist(self, part1, part2, models=None, cluster=None,
                        plot=True, median=True, axe=None, savefig=None):
         """
-        Computes the distance between two particles. This is done by calculating
-           the median value corresponding to the set of given models.
+        Computes the median distance between two particles over a set of models
         
         :param part1: number corresponding to the first particle
         :param part2: number corresponding to the second particle
-        :param None models: If None (default) will do calculate the distance
-           along all models. A list of numbers corresponding to a given set of
-           models can also be passed.
-        :param None cluster: A number can be passed in order to calculate the
-           distance between particles in all models corresponding to the cluster
-           number 'cluster'
-        :param True plot: if True, will display a histogram and a boxplot
-           representing the distribution of distances calculated. Else it will
-           return either the median value of these distances or the full list
-        :param True median: if plot is False this option set the return to,
-           either the median value of these distances or the full list
+        :param None models:  if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param True plot: if True, display a histogram and a boxplot of the 
+           distribution of the calculated distances. If False, return either
+           the full list of the calculated distances or their median value
+        :param True median: return either the full list of the calculated 
+           distances (False) or their median value (True), when 'plot' is set 
+           to False
         
-        :returns: if plot is false, returns either the median values of the
-           distances, either the list of distances.
+        :returns: if 'plot' is False, return either the full list of the 
+           calculated distances or their median value distances, either the 
+           list of distances.
         """
         dists = []
         if models:
@@ -836,11 +836,12 @@ class StructuralModels(object):
     def objective_function_model(self, model, log=False, smooth=True, axe=None,
                                  savefig=None):
         """
-        Plots the fall in objective function through the Monte-Carlo search.
+        This function plots the objective function value per each Monte-Carlo 
+        step
 
         :param model: the number of the model to plot
-        :param False log: to plot in log scale
-        :param True smooth: to smooth the curve
+        :param False log: log plot
+        :param True smooth: curve smoothing
         """
         self[model].objective_function(log=log, smooth=smooth, axe=axe,
                                        savefig=savefig)
@@ -849,26 +850,26 @@ class StructuralModels(object):
     def write_cmm(self, directory, model_num=None, models=None, cluster=None,
                   color=color_residues, rndname=True):
         """
-        Writes cmm file read by Chimera (http://www.cgl.ucsf.edu/chimera).
+        Save a model in the cmm format, read by Chimera 
+        (http://www.cgl.ucsf.edu/chimera).
 
         **Note:** If none of model_num, models or cluster parameter are set,
-        ALL models will be writen.
+        ALL the models will be written.  
         
-        :param directory: where to write the file (note: the name of the file
-           will be model_1.cmm if model number is 1)
-        :param None model_num: the number of the model to write.
-        :param None models: A list of numbers corresponding to a given set of
-           models to be written.
-        :param None cluster: A number can be passed in order to write models
-           corresponding to the cluster number 'cluster'
-        :param True rndname: If True, file names will be formated as:
-           model.RND.cmm, where RND is the random initial value used by IMP to
-           generate this model. If False, the format will be:
+        :param directory: location where the file will be written (note: the
+           name of the file will be model_1.cmm if model number is 1)
+        :param None model_num: the number of the model to save
+        :param None models: a list of numbers corresponding to a given set of
+           models to save
+        :param None cluster: save the models in the cluster number 'cluster'
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.cmm, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
            model_NUM_RND.cmm where NUM is the rank of the model in terms of
-           objective function value.
+           objective function value
         :param color_residues color: either a coloring function like
            :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
-           tuples (as long as the number of particles). 
+           tuples (as long as the number of particles) 
         """
         if model_num > -1:
             models = [model_num]
@@ -916,24 +917,24 @@ class StructuralModels(object):
     def write_xyz(self, directory, model_num=None, models=None, cluster=None,
                   get_path=False, rndname=True):
         """
-        Writes xyz file containing the 3D coordinates of each particles.
+        Writes a xyz file containing the 3D coordinates of each particle in the
+        model.
 
         **Note:** If none of model_num, models or cluster parameter are set,
-        ALL models will be writen.
+        ALL the models will be written.
         
-        :param directory: where to write the file (note: the name of the file
-           will be model.1.xyz if model number is 1)
-        :param None model_num: the number of the model to write.
-        :param None models: A list of numbers corresponding to a given set of
-           models to be written.
-        :param None cluster: A number can be passed in order to write models
-           corresponding to the cluster number 'cluster'
+        :param directory: location where the file will be written (note: the
+           file name will be model.1.xyz, if the model number is 1)
+        :param None model_num: the number of the model to save
+        :param None models: a list of numbers corresponding to a given set of
+           models to be written
+        :param None cluster: save the models in the cluster number 'cluster'
         :param True rndname: If True, file names will be formated as:
-           model.RND.xyz, where RND is the random initial value used by IMP to
-           generate this model. If False, the format will be:
+           model.RND.xyz, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
            model_NUM_RND.xyz where NUM is the rank of the model in terms of
-           objective function value.
-        :param False get_path: whether to return, or not the full path where
+           objective function value
+        :param False get_path: whether to return, or not, the full path where
            the file has been written
         """
         if model_num > -1:
@@ -968,9 +969,9 @@ class StructuralModels(object):
 
     def save_models(self, path_f):
         """
-        Saves all models in pickle format (python object written to disk).
+        Saves all the models in pickle format (python object written to disk).
         
-        :param path_f: path to file where to pickle
+        :param path_f: path where to save the pickle file
         """
         to_save = {}
         
