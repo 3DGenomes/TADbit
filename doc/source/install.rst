@@ -116,7 +116,19 @@ Download the latest version as tar.gz and install it as follows:
   wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
   unzip tadbit.zip
   cd tadbit-master/src
-  sudo PYTHONPATH=$PYTHONPATH python setup.py install
+  sudo python setup.py install
+
+.. note:: IMP not found problem
+	  If you are under **debian/Ubuntu machines**, and you have
+	  followed the quick tutorial proposed here to install IMP,
+	  you may encounter some warning message stating that IMP is
+	  not installed. This is because root user is not using the
+	  PYTHONPATH declared in your bashrc file. You can perfectly
+	  ignore the warning, or just proceed like this:
+
+  ::
+
+    sudo PYTHONPATH=$PYTHONPATH python setup.py install
   
 
 Finally it is a good thing to test if every thing is working fine.
