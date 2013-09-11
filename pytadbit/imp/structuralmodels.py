@@ -175,7 +175,9 @@ class StructuralModels(object):
         if not find_executable(mcl_bin):
             print('\nWARNING: MCL not found in path using WARD clustering\n')
             method = 'ward'
-            
+        # Initialize cluster definition of models:
+        for model in self:
+            model['cluster'] = 'Singleton'
         if method == 'ward':
 
             matrix = [[0.0 for _ in xrange(len(self))]
@@ -209,9 +211,8 @@ class StructuralModels(object):
             uniqs = list(set([tuple(sorted((m1, m2))) for m1, m2 in scores]))
             for md1, md2 in uniqs:
                 score = scores[(md1, md2)]
-                #if score >= fact * self.nloci:
-                out_f.write('model_%s\tmodel_%s\t%s\n' % (md1, md2, 
-                score if score >= fact * self.nloci else 0.0))
+                if score >= fact * self.nloci:
+                    out_f.write('model_%s\tmodel_%s\t%s\n' % (md1, md2, score))
             out_f.close()
             Popen('%s %s --abc -V all -o %s.mcl' % (
                 mcl_bin, tmp_file, tmp_file), stdout=PIPE, stderr=PIPE,
@@ -234,6 +235,8 @@ class StructuralModels(object):
             #     for model in self.clusters[i]:
             #         self.__models[model]['cluster'] = i
         if verbose:
+            print 'Number of Singletons excluded from clustering: %s' % (
+                len([1 for model in self if model['cluster'] == 'Singleton']))
             print self.clusters
 
 
@@ -984,7 +987,7 @@ class StructuralModels(object):
 
 
 class ClusterOfModels(dict):
-    def __repr__(self):
+    def __str__(self):
         out1 = '   Cluster #%s has %s models [top model: %s]\n'
         out = 'Total number of clusters: %s\n%s' % (
             len(self), 
