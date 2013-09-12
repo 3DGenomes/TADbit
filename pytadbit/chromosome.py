@@ -344,7 +344,7 @@ class Chromosome(object):
             raise Exception('resolution param is needed\n')
 
 
-    def find_tad(self, experiments, name=None, n_cpus=None, verbose=True,
+    def find_tad(self, experiments, name=None, n_cpus=1, verbose=True,
                  max_tad_size="auto", no_heuristic=False, batch_mode=False):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
@@ -354,8 +354,8 @@ class Chromosome(object):
            data or a list of such matrices for replicated experiments. The
            counts must be evenly sampled and not normalized. 'experiment'
            can be either a list of lists, a path to a file or a file handler
-        :param None n_cpus: The number of CPUs to allocate to TADBit. The
-           default value is the total number of CPUs minus 1
+        :param 1 n_cpus: The number of CPUs to allocate to TADBit. If
+           n_cpus='auto' the total number of CPUs will be used
         :param auto max_tad_size: an integer defining the maximum size of a 
            TAD. Default (auto) defines it as the number of rows/columns
         :param False no_heuristic: whether to use or not some heuristics

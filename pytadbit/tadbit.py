@@ -9,7 +9,7 @@ from pytadbit.parsers.hic_parser import read_matrix
 from pytadbit.tadbit_py import _tadbit_wrapper
 
 
-def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
+def tadbit(x, n_cpus=1, verbose=True, max_tad_size="auto",
            no_heuristic=False, get_weights=False):
     """
     The TADBit algorithm works on raw chromosome interaction count data.
@@ -30,8 +30,8 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
        of such matrices for replicated experiments. The counts must be evenly
        sampled and not normalized. x might be either a list of list, a path to
        a file or a file handler
-    :param None n_cpus: the number of CPUs to allocate to TADBit. The default
-       value is the total number of CPUs minus 1
+    :param 1 n_cpus: The number of CPUs to allocate to TADBit. If
+       n_cpus='auto' the total number of CPUs will be used
     :param auto max_tad_size: an integer defining maximum size of TAD. Default
        (auto) defines it as the number of rows/columns
     :param False no_heuristic: whether to use or not some heuristics
@@ -45,12 +45,13 @@ def tadbit(x, n_cpus=None, verbose=True, max_tad_size="auto",
        weights.
     """
     nums, size = read_matrix(x)
+    n_cpus = n_cpus if n_cpus != 'auto' else 0
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
     _, nbks, passages, _, _, bkpts, weights = \
        _tadbit_wrapper(nums,             # list of lists representing matrices
                        size,             # size of one row/column
                        len(nums),        # number of matrices
-                       n_cpus or 0,      # number of threads
+                       n_cpus,      # number of threads
                        int(verbose),     # verbose 0/1
                        max_tad_size,     # max_tad_size
                        int(no_heuristic) # heuristic 0/1
