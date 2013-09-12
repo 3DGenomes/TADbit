@@ -125,13 +125,12 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     #                  [[int (k) for k in j.keys()] for j in zscores.values()]
     #                  ))
 
-    zsc = range(max([int (k) for k in zscores.keys()] +
-                    reduce(lambda x, y: x + y,
-                           [[int (k) for k in j.keys()]
-                            for j in zscores.values()])) + 1)
     
     global LOCI, NLOCI
-    LOCI = range(min(zsc), max(zsc) + 1)
+    LOCI = range(max([int (k) for k in zscores.keys()] +
+                     reduce(lambda x, y: x + y,
+                            [[int (k) for k in j.keys()]
+                             for j in zscores.values()])) + 1)
     NLOCI = len(LOCI)
     
     # Z-scores

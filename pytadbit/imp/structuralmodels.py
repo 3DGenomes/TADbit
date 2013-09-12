@@ -102,7 +102,7 @@ class StructuralModels(object):
     def __repr__(self):
         return ('StructuralModels with %s models (objective function range: %s - %s)\n' +
                 '   (corresponding to the best models out of %s models).\n' +
-                '  IMP modelling used this parameters:\n' +
+                '  IMP modeling used this parameters:\n' +
                 '%s\n' + 
                 '  Models where clustered into %s clusters') % (
             len(self.__models),
@@ -116,10 +116,10 @@ class StructuralModels(object):
 
     def fetch_model_by_rand_init(self, rand_init, all_models=False):
         """
-        Models are stored according to their objctive function value (first
+        Models are stored according to their objective function value (first
         best), but in order to reproduce a model, we need its initial random
         number. This method helps to fetch the model corresponding to a given
-        intitial random number stored under
+        initial random number stored under
         StructuralModels.models[N]['rand_init'].
 
         :param rand_init: the wanted rand_init number.
@@ -315,7 +315,7 @@ class StructuralModels(object):
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
                      error=False, axe=None, savefig=None, outfile=None):
         """
-        Plots the number of nucletotides per nm of chromatin vs the modeled
+        Plots the number of nucleotides per nm of chromatin vs the modeled
         region bins.
 
         :param None models: if None (default) the contact map will be computed
@@ -334,7 +334,8 @@ class StructuralModels(object):
             steps = (steps, )
         if len(steps) > 6:
             raise Exception('Sorry not enough colors to do this.\n')
-        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred'][-len(steps):]
+        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
+                  'darkred'][-len(steps):]
         dists = []
         for part1, part2 in zip(range(self.nloci - 1), range(1, self.nloci)):
             dists.append(self.median_3d_dist(part1, part2, models, cluster,
@@ -380,11 +381,12 @@ class StructuralModels(object):
         if outfile:
             out = open(outfile, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' + 
-            '2*stdev(%d)' % c for c in steps])))
+            '2*stddev(%d)' % c for c in steps])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     ['None\tNone' if part >= len(distsk[c]) else 
-                    (str(distsk[c][part]) + '\t' + str(errorp[c][part])) 
+                    (str(round(distsk[c][part], 3)) + '\t' +
+                     str(errorp[c][part]))
                      if distsk[c][part] else 'None\tNone'
                      for c in steps])))
             out.close()
@@ -408,12 +410,15 @@ class StructuralModels(object):
                            left=False, bottom=False, which='minor')
         plots = []
         for k in steps:
-            plots += ax.plot(distsk[k], color=colors[steps.index(k)],
+            plots += ax.plot(range(1, len(distsk[k]) + 1), distsk[k],
+                             color=colors[steps.index(k)],
                              lw=steps.index(k) + 1, alpha=0.5)
         if error:
             for k in steps:
-                plots += ax.plot(errorp[k], color=colors[steps.index(k)], ls='--')
-                ax.plot(errorn[k], color=colors[steps.index(k)], ls='--')
+                plots += ax.plot(range(1, len(errorp[k]) + 1), errorp[k],
+                                 color=colors[steps.index(k)], ls='--')
+                ax.plot(range(1, len(errorp[k]) + 1), errorn[k],
+                        color=colors[steps.index(k)], ls='--')
         ax.set_ylabel('Density (bp / nm)')
         ax.set_xlabel('Particle number')
         ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
@@ -421,7 +426,7 @@ class StructuralModels(object):
                       ['+/- 2 standard deviations for %s' % (k)
                        for k in steps] if error else []), fontsize='small',
                   bbox_to_anchor=(1, 0.5), loc='center left')
-        ax.set_xlim((0, self.nloci))
+        ax.set_xlim((1, self.nloci))
         ax.set_title('Chromatin density')
         if savefig:
             fig.savefig(savefig)
@@ -484,7 +489,7 @@ class StructuralModels(object):
                     savefig=None, outfile=None):
         """
         Plots a contact map representing the frequency of interaction (defined
-        by a distance cuoff) between two particles.
+        by a distance cutoff) between two particles.
 
         :param None models: if None (default) the contact map will be computed 
            using all the models. A list of numbers corresponding to a given set
@@ -518,7 +523,8 @@ class StructuralModels(object):
             show=True
         else:
             fig = axe.get_figure()
-        ims = axe.imshow(matrix, origin='lower', interpolation="nearest")
+        ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
+                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
@@ -546,8 +552,8 @@ class StructuralModels(object):
            are in contact or not
         :param None savefig: path to a file where to save the image generated; 
            if None, the image will be shown using matplotlib GUI
-        :returns: spearman correlation rho and p-value, between the two
-           matrices. A rho value greater than 0.7 indecates a very good 
+        :returns: Spearman correlation rho and p-value, between the two
+           matrices. A rho value greater than 0.7 indicates a very good 
            correlation
         
         """
@@ -569,14 +575,15 @@ class StructuralModels(object):
             fig = plt.figure(figsize=(15, 5.5))
         else:
             fig = axe.get_figure()
-        fig.suptitle('Correlation bettween normalized-real and modelled '
+        fig.suptitle('Correlation between normalized-real and modeled '
                      + 'contact maps (correlation=%.4f)' % (corr[0]),
                      size='x-large')
         ax = fig.add_subplot(121)
         self.contact_map(models, cluster, cutoff, axe=ax)
         ax = fig.add_subplot(122)
         ims = ax.imshow(log2(self._original_data), origin='lower',
-                        interpolation="nearest")
+                        interpolation="nearest",
+                        extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax.set_title('Z-scores of the observed Hi-C count')
@@ -629,7 +636,7 @@ class StructuralModels(object):
             out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in cutoffs])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
-                    [str(consistencies[c][part]) for c in cutoffs])))
+                    [str(round(consistencies[c][part], 3)) for c in cutoffs])))
             out.close()
         # plot
         show = False
@@ -655,11 +662,12 @@ class StructuralModels(object):
         # colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred'][-len(cutoffs):]
         plots = []
         for i, cut in enumerate(cutoffs[::-1]):
-            plots += axe.plot(consistencies[cut], color='darkred',
+            plots += axe.plot(range(1, self.nloci + 1),
+                              consistencies[cut], color='darkred',
                               alpha= 1 - i / float(len(cutoffs)))
         axe.legend(plots, ['%s nm' % (k) for k in cutoffs[::-1]],
                    fontsize='small', loc='center left', bbox_to_anchor=(1, 0.5))
-        axe.set_xlim((0, self.nloci))
+        axe.set_xlim((1, self.nloci))
         axe.set_xlabel('Particle')
         axe.set_ylabel('Consistency (%)')
         if cluster:
@@ -775,7 +783,8 @@ class StructuralModels(object):
 
         :returns: an angle, either in degrees or radians
         """
-
+        # WARNING: here particle numbers are +1, they will be reduced
+        # inside median_3d_dist
         a = self.median_3d_dist(partb, partc, models=models,
                                 cluster=cluster, plot=False)
         c = self.median_3d_dist(parta, partb, models=models,
@@ -800,7 +809,7 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
-        :param True plot: if True, display a histogram and a boxplot of the 
+        :param True plot: if True, display a histogram and a box-plot of the 
            distribution of the calculated distances. If False, return either
            the full list of the calculated distances or their median value
         :param True median: return either the full list of the calculated 
@@ -811,6 +820,8 @@ class StructuralModels(object):
            calculated distances or their median value distances, either the 
            list of distances.
         """
+        part1 -= 1
+        part2 -= 1
         dists = []
         if models:
             models=models
@@ -830,7 +841,7 @@ class StructuralModels(object):
                 return np_median(dists)
             else:
                 return dists
-        plot_hist_box(dists, part1, part2, axe, savefig)
+        plot_hist_box(dists, part1 + 1, part2 + 1, axe, savefig)
 
 
     def objective_function_model(self, model, log=False, smooth=True, axe=None,
@@ -929,7 +940,7 @@ class StructuralModels(object):
         :param None models: a list of numbers corresponding to a given set of
            models to be written
         :param None cluster: save the models in the cluster number 'cluster'
-        :param True rndname: If True, file names will be formated as:
+        :param True rndname: If True, file names will be formatted as:
            model.RND.xyz, where RND is the random number feed used by IMP to
            generate the corresponding model. If False, the format will be:
            model_NUM_RND.xyz where NUM is the rank of the model in terms of
@@ -958,8 +969,8 @@ class StructuralModels(object):
             out = ''
             form = "%12s%12s%12.3f%12.3f%12.3f\n"
             for n in xrange(self.nloci):
-                out += form % ('p' + str(n + 1), n + 1, model['x'][n],
-                               model['y'][n], model['z'][n])
+                out += form % ('p' + str(n + 1), n + 1, round(model['x'][n], 3),
+                               round(model['y'][n], 3), round(model['z'][n], 3))
             out_f = open(path_f, 'w')
             out_f.write(out)
             out_f.close()

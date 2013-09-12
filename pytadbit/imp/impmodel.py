@@ -29,7 +29,7 @@ class IMPmodel(dict):
        represented as a list
     
     """
-    def __repr__(self):
+    def __str__(self):
         try:
             return ('IMP model of %s particles with: \n' +
                     ' - Final objective function value: %s\n' +
