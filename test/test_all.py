@@ -20,12 +20,13 @@ class TestTadbit(unittest.TestCase):
 
         global exp1, exp2, exp3, exp4
         exp1 = tadbit('40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
-                      verbose=False, no_heuristic=False)
+                      verbose=False, no_heuristic=False, n_cpus='auto')
         exp2 = tadbit('20Kb/chrT/chrT_B.tsv', max_tad_size="auto",
-                      verbose=False, no_heuristic=False)
+                      verbose=False, no_heuristic=False, n_cpus='auto')
         exp3 = tadbit('20Kb/chrT/chrT_C.tsv', max_tad_size="auto",
-                      verbose=False, no_heuristic=False)
+                      verbose=False, no_heuristic=False, n_cpus='auto')
         exp4 = tadbit('20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
+                      n_cpus='auto',
                       verbose=False, no_heuristic=False, get_weights=True)
 
         breaks = [0, 4, 10, 15, 23, 29, 38, 45]
@@ -46,10 +47,13 @@ class TestTadbit(unittest.TestCase):
 
 
     def test_03_tad_multi_aligner(self):
+
         test_chr = Chromosome(name='Test Chromosome',
                               tad_handlers=[exp1, exp2, exp3, exp4],
+                              experiment_handlers=['40Kb/chrT/chrT_A.tsv', '20Kb/chrT/chrT_B.tsv', '20Kb/chrT/chrT_C.tsv', '20Kb/chrT/chrT_D.tsv'],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'],
                               experiment_resolutions=[40000,20000,20000,20000])
+        for exp in test_chr.experiments: exp.normalize_hic(method='visibility')
 
         test_chr.align_experiments(verbose=False, randomize=False,
                                    method='global')
@@ -61,7 +65,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(0.001, 1), round(pval1, 1))
         self.assertTrue(abs(0.175 - pval2) < 0.2)
 
-
+                              
     def test_04_chromosome_batch(self):
         test_chr = Chromosome(name='Test Chromosome',
                               experiment_resolutions=[20000]*3,

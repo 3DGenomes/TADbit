@@ -233,7 +233,7 @@ class Alignment(object):
 
 
     def add_aligned_exp(self, name, seq):
-        p = 0
+        p = 1
         scores = []
         exp = self.__experiments[name]
         for i, pos in enumerate(seq):
@@ -277,6 +277,10 @@ class Alignment(object):
 
         experiments = self.__experiments
 
+        maxres = max([e.resolution for e in experiments])
+        facts = [maxres/e.resolution for e in experiments]
+        
+
         siz = experiments[0].size
         if focus:
             figsiz = 4 + (focus[1] - focus[0])/30
@@ -309,30 +313,32 @@ class Alignment(object):
                     [diags[i-1] * (end - start - i)
                      for i in xrange(1, end - start)])
                 maxys.append(height / 2)
-                els[iex].append(Ellipse((start + float(end-start) / 2,0), end-start,
+                els[iex].append(Ellipse(((start + float(end-start) / 2)  / facts[iex], 0),
+                                        (end-start) / facts[iex],
                                         height, facecolor='lightgrey',
                                         alpha=1 if height > 2 else 0.2))
             axes[iex].grid()
         maxy = max(maxys)
         for i, col in enumerate(self.itercolumns()):
-            beg = min([t['end'] for t in col if t['end']]) + 0.4
-            end = max([t['end'] for t in col if t['end']]) + 2.5
-            axes[0].text(beg + float(end-beg)/2, maxy+float(maxy)/20,
+            beg = min([t['end'] / facts[j] for j, t in enumerate(col) if t['end']]) + 0.4
+            end = max([t['end'] / facts[j] for j, t in enumerate(col) if t['end']]) + 2.5
+            axes[0].text(beg + float(end - beg) / 2, maxy + float(maxy) / 20,
                          str(i + 1), {'ha':'center', 'va':'bottom'},
                          rotation=90, size='small')
             for iex, tad in enumerate(col):
                 if tad['end']:
-                    rect = Rectangle((beg, 0), end-beg, maxy, alpha=0.6,
+                    rect = Rectangle((beg, 0), (end - beg) / facts[j], maxy,
+                                     alpha=0.6,
                                      color=jet(tad['score']/10))
                     axes[iex].add_patch(rect)
-        starting = focus[0] if focus else 1
-        ending = focus[1] if focus else end
         for iex in range(len(experiments)):
+            starting = focus[0] if focus else 1
+            ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']
             for el in els[iex]:
                 axes[iex].add_artist(el)
                 el.set_clip_box(axes[iex].bbox)
             axes[iex].set_ylim((0, maxy))
-            axes[iex].set_xlim((starting, ending))
+            axes[iex].set_xlim((starting, ending / facts[iex]))
             axes[iex].set_ylabel('Relative mean\ncontact for ' + experiments[iex].name)
         axes[iex].set_xlabel('Genomic bin')
         tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
