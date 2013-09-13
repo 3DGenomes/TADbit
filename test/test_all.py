@@ -51,7 +51,8 @@ class TestTadbit(unittest.TestCase):
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'],
                               experiment_resolutions=[40000,20000,20000,20000])
 
-        test_chr.align_experiments(verbose=False, randomize=False,method='global')
+        test_chr.align_experiments(verbose=False, randomize=False,
+                                   method='global')
         score1, pval1 = test_chr.align_experiments(verbose=False,method='global',
                                                    randomize=True)
         _, pval2 = test_chr.align_experiments(verbose=False, randomize=True,

@@ -37,10 +37,10 @@ def parse_tads(handler):
                 score = float(handler['score'][pos])
             except TypeError: # last one
                 score = 10.0
-            tads[pos] = {'start': start,
-                         'end'  : end,
-                         'brk'  : end,
-                         'score': score}
+            tads[pos + 1] = {'start': start,
+                             'end'  : end,
+                             'brk'  : end,
+                             'score': score}
     elif isfile(handler):
         for line in open(handler):
             if line.startswith('#'): continue

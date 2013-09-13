@@ -158,7 +158,7 @@ class Alignment(object):
                 if x['end'] == 0.0:
                     out += '| ' + '-' * 4 + ' '
                     continue
-                cell = str(int(x['end'])) # * res
+                cell = str(int(x['end'])) # * res # TODO: +1
                 out += ('|' + ' ' * (6 - len(cell)) +
                         colorize(cell, x['score'], ftype))
             out += '\n'
@@ -210,10 +210,10 @@ class Alignment(object):
           
         """
         if type(cond1) is int:
-            val = cond1
+            val = cond1 - 1
             cond1 = lambda x: x['pos'] == val
         elif type(cond1) is list:
-            val = cond1
+            val = [v - 1 for v in cond1]
             cond1 = lambda x: x['pos'] in val
         if not cond2:
             cond2 = lambda x: True
@@ -286,41 +286,54 @@ class Alignment(object):
                                  sharex=True, sharey=True,
                                  figsize=(figsiz, 1 + len(experiments) * 1.8))
         fig.subplots_adjust(hspace=0)
+        els = [[] for _ in xrange(len(experiments))]
         maxys = []
         for iex, xpr in enumerate(experiments):
             if not xpr.name in self:
                 continue
+            diags = []
+            for k in xrange(1, siz):
+                diags.append(sum([xpr.wght[0][i + siz * (i + k)]
+                                 if not (i in xpr._zeros
+                                         or (i + k) in xpr._zeros) else 0.
+                                  for i in xrange(siz - k)]) / (siz - k))
             for tad in xpr.tads:
-                start, end = (int(xpr.tads[tad]['start']),
-                              int(xpr.tads[tad]['end']))
-                matrix = [xpr.wght[0][i + siz * j] for i in xrange(start, end)
-                          for j in xrange(start, end)]
-                height = float(sum(matrix))/len(matrix)
-                maxys.append(height/2)
-
-                el = Ellipse((start+float(end-start)/2,0), end-start, height,
-                             facecolor='k', alpha=0.7)
-                axes[iex].add_artist(el)
-                el.set_clip_box(axes[iex].bbox)
+                start, end = (int(xpr.tads[tad]['start']) + 1,
+                              int(xpr.tads[tad]['end']) + 1)
+                matrix = sum([xpr.wght[0][i + siz * j]
+                             if not (i in xpr._zeros
+                                     or j in xpr._zeros) else 0.
+                              for i in xrange(start - 1, end - 1)
+                              for j in xrange(i + 1, end - 1)])
+                height = 2. * float(matrix) / sum(
+                    [diags[i-1] * (end - start - i)
+                     for i in xrange(1, end - start)])
+                maxys.append(height / 2)
+                els[iex].append(Ellipse((start + float(end-start) / 2,0), end-start,
+                                        height, facecolor='lightgrey',
+                                        alpha=1 if height > 2 else 0.2))
             axes[iex].grid()
         maxy = max(maxys)
         for i, col in enumerate(self.itercolumns()):
-            beg = min([t['end'] for t in col if t['end']]) - 0.5
-            end = max([t['end'] for t in col if t['end']]) + 1.5
-            axes[0].text(beg + float(end-beg)/2, maxy+float(maxy)/20, str(i), 
-                         {'ha':'center', 'va':'bottom'}, rotation=90,
-                         size='small')
+            beg = min([t['end'] for t in col if t['end']]) + 0.4
+            end = max([t['end'] for t in col if t['end']]) + 2.5
+            axes[0].text(beg + float(end-beg)/2, maxy+float(maxy)/20,
+                         str(i + 1), {'ha':'center', 'va':'bottom'},
+                         rotation=90, size='small')
             for iex, tad in enumerate(col):
                 if tad['end']:
-                    rect = Rectangle((beg, 0), end-beg, maxy, alpha=0.8,
+                    rect = Rectangle((beg, 0), end-beg, maxy, alpha=0.6,
                                      color=jet(tad['score']/10))
                     axes[iex].add_patch(rect)
-        starting = focus[0] if focus else 0
+        starting = focus[0] if focus else 1
         ending = focus[1] if focus else end
         for iex in range(len(experiments)):
+            for el in els[iex]:
+                axes[iex].add_artist(el)
+                el.set_clip_box(axes[iex].bbox)
             axes[iex].set_ylim((0, maxy))
             axes[iex].set_xlim((starting, ending))
-            axes[iex].set_ylabel('Mean interaction\n' + experiments[iex].name)
+            axes[iex].set_ylabel('Relative mean\ncontact for ' + experiments[iex].name)
         axes[iex].set_xlabel('Genomic bin')
         tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
         tit2 = axes[0].set_title("Alignment column number")

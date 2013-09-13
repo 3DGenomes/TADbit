@@ -138,7 +138,7 @@ class Chromosome(object):
         if not xpr.tads:
             return
         forbidden = []
-        for pos in xrange(len(xpr.tads)):
+        for pos in xpr.tads:
             start = float(xpr.tads[pos]['start'])
             end   = float(xpr.tads[pos]['end'])
             diff  = end - start
@@ -271,8 +271,7 @@ class Chromosome(object):
         for xpr in xpers:
             if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
-            tads.append([xpr.tads[x]['brk'] * xpr.resolution \
-                         for x in xrange(len(xpr.tads))])
+            tads.append([xpr.tads[x]['brk'] * xpr.resolution for x in xpr.tads])
         # new
         aligneds, score = align(tads, verbose=verbose, **kwargs)
         name = tuple(sorted([x.name for x in xpers]))
@@ -470,6 +469,9 @@ class Chromosome(object):
         start = end = None
         if focus:
             start, end = focus
+            if start == 0:
+                warn('Hi-C matrix starts at 1, setting starting point to 1.\n')
+                start = 1
         if type(tad) == dict:
             start = int(tad['start'])
             end   = int(tad['end'])
@@ -571,12 +573,13 @@ class Chromosome(object):
             axe.hlines(t_end, t_start, t_end, colors='k')
             axe.vlines(t_start, t_start, t_end, colors='k')
             axe.vlines(t_end, t_start, t_end, colors='k')
-            if i % 2:
-                axe.text(t_start + abs(t_start-t_end)/2,
-                         t_start - 1, str(i), va='top', ha='center')
-            else:
-                axe.text(t_start + abs(t_start-t_end)/2,
-                         t_end + 1, str(i), va='bottom', ha='center')
+            if not i % (len(xper.tads) / 10):
+                if i % 2:
+                    axe.text(t_start + abs(t_start-t_end)/2,
+                             t_end + 1, str(i), va='bottom', ha='center')
+                else:
+                    axe.text(t_start + abs(t_start-t_end)/2,
+                             t_start - 1, str(i), va='top', ha='center')
             if tad['score'] < 0:
                 for j in xrange(0, int(t_end) - int(t_start), 2):
                     axe.plot((t_start    , t_start + j),
@@ -701,9 +704,9 @@ class Chromosome(object):
         if [True for t in tads.values() \
             if t['start'] < beg < t['end'] \
             and t['start'] < end < t['end']]:
-            tad  = len(tads)
+            tad  = len(tads) + 1
             plus = 0
-            while tad + plus >= 1:
+            while tad + plus > 1:
                 start = tads[tad - 1 + plus]['start']
                 final = tads[tad - 1 + plus]['end']
                 # centromere found?
