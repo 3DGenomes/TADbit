@@ -499,7 +499,7 @@ class StructuralModels(object):
         :param 150 cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not
         :param None axe: a matplotlib.axes.Axes object to define the plot 
-           apparence
+           appearance
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI
         :param None outfile: path to a file where to save the contact map data

@@ -496,19 +496,19 @@ class Chromosome(object):
         if not axe:
             axe = plt.subplot(111)
         if tad or focus:
-            if start:
+            if start > -1:
                 if normalized:
                     matrix = [
                         [xper.wght[0][i+size*j]
                          if (not i in xper._zeros
                              and not j in xper._zeros) else vmin
-                         for i in xrange(start, end)]
-                        for j in xrange(start, end)]
+                         for i in xrange(start - 1, end)]
+                        for j in xrange(start - 1, end)]
                 else:
                     matrix = [
                         [xper.hic_data[0][i+size*j]
-                         for i in xrange(start, end)]
-                        for j in xrange(start, end)]
+                         for i in xrange(start - 1, end)]
+                        for j in xrange(start - 1, end)]
             elif type(tad) is list:
                 if normalized:
                     warn('List passed, not going to be normalized.')
@@ -529,10 +529,18 @@ class Chromosome(object):
                           for j in xrange(size)]
         if relative:
             img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
-                             interpolation="nearest")
+                             interpolation="nearest",
+                             extent=(int(start or 1) - 0.5,
+                                     int(start or 1) + len(matrix) - 0.5,
+                                     int(start or 1) - 0.5,
+                                     int(start or 1) + len(matrix) - 0.5))
         else:
             img = axe.imshow(fun(matrix), origin='lower',
-                             interpolation="nearest")
+                             interpolation="nearest",
+                             extent=(int(start or 1) - 0.5,
+                                     int(start or 1) + len(matrix) - 0.5,
+                                     int(start or 1) - 0.5,
+                                     int(start or 1) + len(matrix) - 0.5))
         cbar = axe.figure.colorbar(img)
         cbar.ax.set_ylabel('Log2 Hi-C interactions count')
         axe.set_title(('Chromosome %s experiment %s' +
@@ -541,40 +549,44 @@ class Chromosome(object):
         axe.set_xlabel('Genomic bin (resolution: %s)' % (xper.resolution))
         axe.set_ylabel('Genomic bin (resolution: %s)' % (xper.resolution))
         if not paint_tads:            
-            axe.set_ylim(0, len(matrix))
-            axe.set_xlim(0, len(matrix))
+            axe.set_ylim(int(start or 1) - 0.5,
+                         int(start or 1) + len(matrix) - 0.5)
+            axe.set_xlim(int(start or 1) - 0.5,
+                         int(start or 1) + len(matrix) - 0.5)
             if show:
                 plt.show()
             return img
         for i, tad in xper.tads.iteritems():
             if start:
-                if int(tad['start']) < start:
+                if int(tad['start']) + 1 < start:
                     continue
-                if int(tad['end']) > end:
+                if int(tad['end']) + 1 > end:
                     continue
-                t_start = int(tad['start']) - start
-                t_end = int(tad['end']) - start
+                t_start = int(tad['start']) - start + 1.5
+                t_end = int(tad['end']) - start + 2.5
             else:
-                t_start = int(tad['start'])
-                t_end = int(tad['end'])
+                t_start = int(tad['start']) + .5
+                t_end = int(tad['end']) + 1.5
             axe.hlines(t_start, t_start, t_end, colors='k')
             axe.hlines(t_end, t_start, t_end, colors='k')
             axe.vlines(t_start, t_start, t_end, colors='k')
             axe.vlines(t_end, t_start, t_end, colors='k')
             if i % 2:
-                axe.text(t_start + abs(t_start-t_end)/2 - 1,
-                         t_start - 1, str(i), va='top')
+                axe.text(t_start + abs(t_start-t_end)/2,
+                         t_start - 1, str(i), va='top', ha='center')
             else:
-                axe.text(t_start + abs(t_start-t_end)/2 - 1,
-                         t_end + 1, str(i), va='bottom')
+                axe.text(t_start + abs(t_start-t_end)/2,
+                         t_end + 1, str(i), va='bottom', ha='center')
             if tad['score'] < 0:
                 for j in xrange(0, int(t_end) - int(t_start), 2):
                     axe.plot((t_start    , t_start + j),
                              (t_end   - j, t_end      ), color='k')
                     axe.plot((t_end      , t_end   - j),
                              (t_start + j, t_start    ), color='k')
-        axe.set_ylim(0, len(matrix))
-        axe.set_xlim(0, len(matrix))
+        axe.set_ylim(int(start or 1) - 0.5,
+                     int(start or 1) + len(matrix) - 0.5)
+        axe.set_xlim(int(start or 1) - 0.5,
+                     int(start or 1) + len(matrix) - 0.5)
         if show:
             plt.show()
 
