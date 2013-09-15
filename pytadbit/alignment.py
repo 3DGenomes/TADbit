@@ -313,24 +313,32 @@ class Alignment(object):
                     [diags[i-1] * (end - start - i)
                      for i in xrange(1, end - start)])
                 maxys.append(height / 2)
-                els[iex].append(Ellipse(((start + float(end-start) / 2)  / facts[iex], 0),
-                                        (end-start) / facts[iex],
+                start = float(start) / facts[iex]
+                end   = float(end) / facts[iex]
+                els[iex].append(Ellipse(((start + float(end - start) / 2), 0),
+                                        (end-start),
                                         height, facecolor='lightgrey',
-                                        alpha=1 if height > 2 else 0.2))
+                                        alpha=1 if height > 2 else 0.5))
             axes[iex].grid()
         maxy = max(maxys)
         for i, col in enumerate(self.itercolumns()):
-            beg = min([t['end'] / facts[j] for j, t in enumerate(col) if t['end']]) + 0.4
-            end = max([t['end'] / facts[j] for j, t in enumerate(col) if t['end']]) + 2.5
+            beg = min([(t['end'] + 0.9) / facts[j]
+                       for j, t in enumerate(col) if t['end']])
+            end = max([(t['end'] + 1.1) / facts[j]
+                       for j, t in enumerate(col) if t['end']])
             axes[0].text(beg + float(end - beg) / 2, maxy + float(maxy) / 20,
                          str(i + 1), {'ha':'center', 'va':'bottom'},
                          rotation=90, size='small')
             for iex, tad in enumerate(col):
                 if tad['end']:
-                    rect = Rectangle((beg, 0), (end - beg) / facts[j], maxy,
-                                     alpha=0.6,
-                                     color=jet(tad['score']/10))
+                    rect = Rectangle((beg, 0),
+                                     (end - beg), maxy,
+                                     alpha=0.4,
+                                     color='lightgrey')
                     axes[iex].add_patch(rect)
+                    axes[iex].plot((((tad['end'] + 1.) / facts[iex]), ), (0, ),
+                                   color=jet(tad['score'] / 10),
+                                   marker='^', ms=12, alpha=0.7)
         for iex in range(len(experiments)):
             starting = focus[0] if focus else 1
             ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']
