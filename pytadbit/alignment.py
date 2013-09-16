@@ -315,9 +315,12 @@ class Alignment(object):
                                      or j in zeros) else 0.
                               for i in xrange(start - 1, end - 1)
                               for j in xrange(i + 1, end - 1)])
-                height = float(matrix) / sum(
-                    [diags[i-1] * (end - start - i)
-                     for i in xrange(1, end - start)])
+                try:
+                    height = float(matrix) / sum(
+                        [diags[i-1] * (end - start - i)
+                         for i in xrange(1, end - start)])
+                except ZeroDivisionError:
+                    height = 0.
                 maxys.append(height)
                 start = float(start) / facts[iex]
                 end   = float(end) / facts[iex]
