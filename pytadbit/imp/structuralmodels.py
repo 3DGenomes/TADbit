@@ -541,8 +541,6 @@ class StructuralModels(object):
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=200,
                                  plot=False, axe=None, savefig=None):
         """
-        :param hic_matrix: a matrix representing the normalized counts of Hi-C
-           interactions, used to generated the models.
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -552,6 +550,10 @@ class StructuralModels(object):
            are in contact or not
         :param None savefig: path to a file where to save the image generated; 
            if None, the image will be shown using matplotlib GUI
+        :param False plot: to display the plot
+        :param None axe: a matplotlib.axes.Axes object to define the plot 
+           appearance
+
         :returns: Spearman correlation rho and p-value, between the two
            matrices. A rho value greater than 0.7 indicates a very good 
            correlation

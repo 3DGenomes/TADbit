@@ -322,17 +322,21 @@ class Alignment(object):
                 start = float(start) / facts[iex]
                 end   = float(end) / facts[iex]
                 axes[iex].fill(linspace(start, end), ellipse(height),
-                               alpha=1 if height > 1 else 0.5,
-                               facecolor='lightgrey', edgecolor='lightgrey')
+                               alpha=.8 if height > 1 else 0.4,
+                               facecolor='grey', edgecolor='grey')
             axes[iex].grid()
             axes[iex].patch.set_visible(False)
         maxy = max(maxys)
         for iex in range(len(experiments)):
             starting = focus[0] if focus else 1
             ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']
+            axes[iex].hlines(1, 1, end, 'k', lw=1.5)
             axes[iex].set_ylim((0, maxy))
             axes[iex].set_xlim((starting, ending / facts[iex]))
-            axes[iex].set_ylabel('Relative mean\ncontact for ' + experiments[iex].name)
+            axes[iex].set_ylabel('Relative mean\ncontact for ' +
+                                 experiments[iex].name)
+            axes[iex].set_yticks([float(i) / 2
+                                  for i in range(1, int(maxy) * 2)])
         pos = {'ha':'center', 'va':'bottom'}
         for i, col in enumerate(self.itercolumns()):
             ends = sorted([(t['end'], j) for j, t in enumerate(col) if t['end']])
@@ -348,22 +352,29 @@ class Alignment(object):
                                   color='lightgrey')
                 axes[iex].plot(((tad['end'] + 1.) / facts[iex], ), (0, ),
                                color=jet(tad['score'] / 10),
-                               mec='none',label=str(tad['score']), 
+                               mec='none', 
                                marker=6, ms=9, alpha=1,
                                clip_on=False)
         axes[iex].set_xlabel('Genomic bin')
         tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
         tit2 = axes[0].set_title("Alignment column number")
         tit2.set_y(1.3)
-        plt.subplots_adjust(top=0.8) 
-        ax1 = fig.add_axes([0.9 + 0.3/figsiz, 0.05, 0.2/figsiz, 0.9])
-        cb1 = colorbar.ColorbarBase(ax1, cmap=jet,
-                                    norm=colors.Normalize(vmin=0., vmax=1.))
-        cb1.set_label('Border prediction score')
-        cb1.ax.set_yticklabels([str(i)for i in range(1, 11)])
+        plt.subplots_adjust(top=0.8)
+        # This was for color bar instead of legend
+        # ax1 = fig.add_axes([0.9 + 0.3/figsiz, 0.05, 0.2/figsiz, 0.9])
+        # cb1 = colorbar.ColorbarBase(ax1, cmap=jet,
+        #                             norm=colors.Normalize(vmin=0., vmax=1.))
+        # cb1.set_label('Border prediction score')
+        # cb1.ax.set_yticklabels([str(i)for i in range(1, 11)])
         fig.set_facecolor('white')
-        axes[0].legend(
-            fontsize='small', loc='center left', bbox_to_anchor=(1, 0.5))
+        plots = []
+        for scr in xrange(1, 11):
+            plots += plt.plot((100,),(100,), marker=6, ms=9,
+                              color=jet(float(scr) / 10), mec='none')
+        axes[0].legend(plots,
+                       [str(scr) for scr in xrange(1, 11)],
+                       numpoints=1, title='Boundary scores',
+                       fontsize='small', loc='bottom left', bbox_to_anchor=(1, 0.5))
         plt.show()
 
 
