@@ -8,6 +8,7 @@ from pytadbit.utils.extraviews import colorize
 from random import random, shuffle
 from sys import stdout
 from pytadbit.boundary_aligner.aligner import align
+from numpy import linspace, sin, pi
 try:
     from scipy.interpolate import interp1d
 except ImportError:
@@ -158,7 +159,7 @@ class Alignment(object):
                 if x['end'] == 0.0:
                     out += '| ' + '-' * 4 + ' '
                     continue
-                cell = str(int(x['end'])) # * res # TODO: +1
+                cell = str(int(x['end']) + 1) # * res # TODO: +1
                 out += ('|' + ' ' * (6 - len(cell)) +
                         colorize(cell, x['score'], ftype))
             out += '\n'
@@ -269,7 +270,6 @@ class Alignment(object):
         :param None focus: can pass a tuple (bin_start, bin_stop) to display the
            alignment between these genomic bins
         """
-        from matplotlib.patches import Ellipse, Rectangle
         from matplotlib.cm import jet
         from matplotlib import colors
         from matplotlib import colorbar
@@ -289,7 +289,10 @@ class Alignment(object):
                                  sharex=True, sharey=True,
                                  figsize=(figsiz, 1 + len(experiments) * 1.8))
         fig.subplots_adjust(hspace=0)
-        els = [[] for _ in xrange(len(experiments))]
+
+        zsin = sin(linspace(0, pi))
+        ellipse = lambda h : h * zsin
+
         maxys = []
         for iex, xpr in enumerate(experiments):
             if not xpr.name in self:
@@ -312,18 +315,24 @@ class Alignment(object):
                                      or j in zeros) else 0.
                               for i in xrange(start - 1, end - 1)
                               for j in xrange(i + 1, end - 1)])
-                height = 2. * float(matrix) / sum(
+                height = float(matrix) / sum(
                     [diags[i-1] * (end - start - i)
                      for i in xrange(1, end - start)])
-                maxys.append(height / 2)
+                maxys.append(height)
                 start = float(start) / facts[iex]
                 end   = float(end) / facts[iex]
-                els[iex].append(Ellipse(((start + float(end - start) / 2), 0),
-                                        (end-start),
-                                        height, facecolor='lightgrey',
-                                        alpha=1 if height > 2 else 0.5))
+                axes[iex].fill(linspace(start, end), ellipse(height),
+                               alpha=1 if height > 1 else 0.5,
+                               facecolor='lightgrey', edgecolor='lightgrey')
             axes[iex].grid()
+            axes[iex].patch.set_visible(False)
         maxy = max(maxys)
+        for iex in range(len(experiments)):
+            starting = focus[0] if focus else 1
+            ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']
+            axes[iex].set_ylim((0, maxy))
+            axes[iex].set_xlim((starting, ending / facts[iex]))
+            axes[iex].set_ylabel('Relative mean\ncontact for ' + experiments[iex].name)
         pos = {'ha':'center', 'va':'bottom'}
         for i, col in enumerate(self.itercolumns()):
             ends = sorted([(t['end'], j) for j, t in enumerate(col) if t['end']])
@@ -335,23 +344,13 @@ class Alignment(object):
             for iex, tad in enumerate(col):
                 if not tad['end']:
                     continue
-                rect = Rectangle((beg, 0),
-                                 (end - beg), maxy,
-                                 alpha=0.4,
-                                 color='lightgrey')
-                axes[iex].add_patch(rect)
+                axes[iex].axvspan(beg, end, alpha=0.3,
+                                  color='lightgrey')
                 axes[iex].plot(((tad['end'] + 1.) / facts[iex], ), (0, ),
                                color=jet(tad['score'] / 10),
-                               marker='^', ms=12, alpha=0.7)
-        for iex in range(len(experiments)):
-            starting = focus[0] if focus else 1
-            ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']
-            for el in els[iex]:
-                axes[iex].add_artist(el)
-                el.set_clip_box(axes[iex].bbox)
-            axes[iex].set_ylim((0, maxy))
-            axes[iex].set_xlim((starting, ending / facts[iex]))
-            axes[iex].set_ylabel('Relative mean\ncontact for ' + experiments[iex].name)
+                               mec='none',label=str(tad['score']), 
+                               marker=6, ms=9, alpha=1,
+                               clip_on=False)
         axes[iex].set_xlabel('Genomic bin')
         tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
         tit2 = axes[0].set_title("Alignment column number")
@@ -362,6 +361,9 @@ class Alignment(object):
                                     norm=colors.Normalize(vmin=0., vmax=1.))
         cb1.set_label('Border prediction score')
         cb1.ax.set_yticklabels([str(i)for i in range(1, 11)])
+        fig.set_facecolor('white')
+        axes[0].legend(
+            fontsize='small', loc='center left', bbox_to_anchor=(1, 0.5))
         plt.show()
 
 

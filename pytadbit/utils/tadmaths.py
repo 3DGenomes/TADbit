@@ -156,7 +156,7 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score', one=False):
     drms = []
     combines = list(combinations(models, 2))
     for md1, md2 in combines:
-        eqv, drmsd, rmsd = rmsdRMSD_wrapper(
+        eqv, rmsd, drmsd = rmsdRMSD_wrapper(
             [(models[md1]['x'][p], models[md1]['y'][p], models[md1]['z'][p])
              for p in xrange(nloci)],
             [(models[md2]['x'][p], models[md2]['y'][p], models[md2]['z'][p])
