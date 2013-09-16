@@ -539,8 +539,9 @@ class Experiment(object):
         siz = self.size
         exp.wght = [[self.wght[0][i + siz * j] for i in xrange(start, end)
                      for j in xrange(start, end)]]
-        exp._zeros = [z - start for z in self._zeros if start <= z <= end]
-        if exp._zeros == range(start, end+1):
+        exp._zeros = dict([(z - start, None) for z in self._zeros
+                           if start <= z <= end])
+        if len(exp._zeros) == (end + 1 - start):
             raise Exception('ERROR: no interaction found in selected regions')
         # ... but the z-scores in this particular region
         exp.get_hic_zscores(remove_zeros=True)

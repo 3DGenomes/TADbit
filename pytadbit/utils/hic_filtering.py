@@ -94,10 +94,10 @@ def filter_by_zero_count(matrx, draw_hist=False):
         plt.ylim(0, plt.ylim()[1])
         plt.show()
     # label as bad the columns with sums lower than the root
-    bads = []
+    bads = {}
     for i, col in enumerate(matrx):
         if sum(col) < root:
-            bads.append(i)
+            bads[i] = None
     # now stored in Experiment._zeros, used for getting more accurate z-scores
     return bads
 
@@ -189,10 +189,10 @@ def filter_by_mean(matrx, draw_hist=False):
         plt.ylim(0, plt.ylim()[1])
         plt.show()
     # label as bad the columns with sums lower than the root
-    bads = []
+    bads = {}
     for i, col in enumerate(matrx):
         if sum(col) < root:
-            bads.append(i)
+            bads[i] = None
     # now stored in Experiment._zeros, used for getting more accurate z-scores
     return bads
 
@@ -203,10 +203,10 @@ def filter_by_stdev(matrx):
     stde = np.std(means)
     root = mean - stde * 1.25
     # label as bad the columns with sums lower than the root
-    bads = []
+    bads = {}
     for i, col in enumerate(matrx):
         if sum(col) < root:
-            bads.append(i)
+            bads[i] = None
     # now stored in Experiment._zeros, used for getting more accurate z-scores
     return bads
 
@@ -221,10 +221,10 @@ def filter_by_mad(matrx):
     mad = np.median([abs(median - c ) for c in cols])
     root = median - mad * 1.5
     # label as bad the columns with sums lower than the root
-    bads = []
+    bads = {}
     for i, col in enumerate(matrx):
         if sum(col) < root:
-            bads.append(i)
+            bads[i] = None
     # now stored in Experiment._zeros, used for getting more accurate z-scores
     return bads
 

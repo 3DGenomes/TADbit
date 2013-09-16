@@ -274,7 +274,6 @@ class Alignment(object):
         from matplotlib import colors
         from matplotlib import colorbar
         from matplotlib import pyplot as plt
-
         experiments = self.__experiments
 
         maxres = max([e.resolution for e in experiments])
@@ -295,18 +294,22 @@ class Alignment(object):
         for iex, xpr in enumerate(experiments):
             if not xpr.name in self:
                 continue
+            zeros = xpr._zeros
+            wghts = xpr.wght[0]
             diags = []
+            sp1 = siz + 1
             for k in xrange(1, siz):
-                diags.append(sum([xpr.wght[0][i + siz * (i + k)]
-                                 if not (i in xpr._zeros
-                                         or (i + k) in xpr._zeros) else 0.
+                s_k = siz * k
+                diags.append(sum([wghts[i * sp1 + s_k]
+                                 if not (i in zeros
+                                         or (i + k) in zeros) else 0.
                                   for i in xrange(siz - k)]) / (siz - k))
             for tad in xpr.tads:
                 start, end = (int(xpr.tads[tad]['start']) + 1,
                               int(xpr.tads[tad]['end']) + 1)
-                matrix = sum([xpr.wght[0][i + siz * j]
-                             if not (i in xpr._zeros
-                                     or j in xpr._zeros) else 0.
+                matrix = sum([wghts[i + siz * j]
+                             if not (i in zeros
+                                     or j in zeros) else 0.
                               for i in xrange(start - 1, end - 1)
                               for j in xrange(i + 1, end - 1)])
                 height = 2. * float(matrix) / sum(
@@ -321,24 +324,25 @@ class Alignment(object):
                                         alpha=1 if height > 2 else 0.5))
             axes[iex].grid()
         maxy = max(maxys)
+        pos = {'ha':'center', 'va':'bottom'}
         for i, col in enumerate(self.itercolumns()):
-            beg = min([(t['end'] + 0.9) / facts[j]
-                       for j, t in enumerate(col) if t['end']])
-            end = max([(t['end'] + 1.1) / facts[j]
-                       for j, t in enumerate(col) if t['end']])
+            ends = sorted([(t['end'], j) for j, t in enumerate(col) if t['end']])
+            beg = (ends[0 ][0] + 0.9) / facts[ends[0 ][1]]
+            end = (ends[-1][0] + 1.1) / facts[ends[-1][1]]
             axes[0].text(beg + float(end - beg) / 2, maxy + float(maxy) / 20,
-                         str(i + 1), {'ha':'center', 'va':'bottom'},
+                         str(i + 1), pos,
                          rotation=90, size='small')
             for iex, tad in enumerate(col):
-                if tad['end']:
-                    rect = Rectangle((beg, 0),
-                                     (end - beg), maxy,
-                                     alpha=0.4,
-                                     color='lightgrey')
-                    axes[iex].add_patch(rect)
-                    axes[iex].plot((((tad['end'] + 1.) / facts[iex]), ), (0, ),
-                                   color=jet(tad['score'] / 10),
-                                   marker='^', ms=12, alpha=0.7)
+                if not tad['end']:
+                    continue
+                rect = Rectangle((beg, 0),
+                                 (end - beg), maxy,
+                                 alpha=0.4,
+                                 color='lightgrey')
+                axes[iex].add_patch(rect)
+                axes[iex].plot(((tad['end'] + 1.) / facts[iex], ), (0, ),
+                               color=jet(tad['score'] / 10),
+                               marker='^', ms=12, alpha=0.7)
         for iex in range(len(experiments)):
             starting = focus[0] if focus else 1
             ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']

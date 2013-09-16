@@ -57,7 +57,6 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
 
     :returns: the alignment and a score between 0 and 1 (0: bad, 1: good).
     """
-
     if not penalty:
         # set penalty to the average length of a TAD
         penalty = 2 * max_dist
