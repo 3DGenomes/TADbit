@@ -377,7 +377,7 @@ class Alignment(object):
         axes[0].legend(plots,
                        [str(scr) for scr in xrange(1, 11)],
                        numpoints=1, title='Boundary scores',
-                       fontsize='small', loc='bottom left', bbox_to_anchor=(1, 0.5))
+                       fontsize='small', loc='lower left', bbox_to_anchor=(1, 0.5))
         plt.show()
 
 
