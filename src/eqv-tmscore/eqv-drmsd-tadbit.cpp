@@ -13,6 +13,16 @@ float distance(float* p1, float* p2) {
   return sqrt(x*x + y*y + z*z);
 }
 
+float ddistance(float* p1, float* p2) {
+  float x, y, z;
+
+  x = p1[0] - p2[0];
+  y = p1[1] - p2[1];
+  z = p1[2] - p2[2];
+  
+  return x*x + y*y + z*z;
+}
+
 // Set origin to center of mass
 void massCenter(float** xyz, int size) {
   float xm, ym, zm;
@@ -43,7 +53,7 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
   drms = .0;
   eqv = 0;
   last = size - 1;
-
+  thres *= thres;
 
   massCenter(xyzA, size);
   massCenter(xyzB, size);
@@ -55,7 +65,7 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
   double o[7][7]; // eigen vector SET BY EIGEN
   double ha[4][4];
   double ka[4][4];
-  double oa[7][7];
+  // double oa[7][7];
   double r[4][4]; // rotation
   double op[4];
   double s;
@@ -81,7 +91,7 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
   // additional init PF TEST
   for (i = 1; i <= 6; i++) {
     for (int j = 1;  j <= 6; j++) {
-      oa[i][j] = 0.0;
+      // oa[i][j] = 0.0;
       o[i][j] = 0.0;
       // omega done in original code later
     }
@@ -140,30 +150,32 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
   for (k = 1; k<=3; k++) {
     s = 0.;
     for (i = 1; i<=3; i++) {
-      s = s + ha[i][k] * ha[i][k] ;
+      s += ha[i][k] * ha[i][k] ;
     }
+    s = sqrt(s);
     for (i = 1; i<=3; i++) {
-      ha[i][k] = ha[i][k]/sqrt(s);
+      ha[i][k] = ha[i][k]/s;
     }
   }
   for (k = 1; k <= 3; k++) {
     s = 0.0;
     for (i = 1; i<=3; i++) {
-      s = s + ka[i][k]* ka[i][k];
+      s += ka[i][k]* ka[i][k];
     }
+    s = sqrt(s);
     for (i = 1; i <= 3; i++) {
-      ka[i][k] = ka[i][k]/sqrt(s);
+      ka[i][k] = ka[i][k]/s;
     }
   }
 
-  for (k = 1; k <= 3; k++) {
-    for (i = 1; i <= 3; i++) {
-      oa[i][k] = ha[i][k];
-      oa[i + 3][k] = ka[i][k];
-      oa[i][k + 3] = ha[i][k];
-      oa[i + 3][k + 3] = -ka[i][k];
-    }
-  }
+  // for (k = 1; k <= 3; k++) {
+  //   for (i = 1; i <= 3; i++) {
+  //     oa[i][k] = ha[i][k];
+  //     oa[i + 3][k] = ka[i][k];
+  //     oa[i][k + 3] = ha[i][k];
+  //     oa[i + 3][k + 3] = -ka[i][k];
+  //   }
+  // }
 
   op[1] = ha[2][1] * ha[3][2]-ha[3][1] * ha[2][2];
   op[2] = ha[3][1] * ha[1][2]-ha[1][1] * ha[3][2];
@@ -221,36 +233,33 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
   // PStruct
 
   // rmsd last particle in the model since loop1 stops at the second last
-  dist = distance(xyzA[last],xyzB[last]) * distance(xyzA[last],xyzB[last]);
+  dist = ddistance(xyzA[last],xyzB[last]);
 
   if (consistency==1){
-    if (sqrt(dist) < thres) cons_list[last]++;
+    if (dist < thres) cons_list[last]++;
     // eqv remaining particles
     // cout <<"start"<<endl;
     for (int i=0; i < size; i++) {
-      dist = distance(xyzA[i],xyzB[i]) * distance(xyzA[i],xyzB[i]);
-      if (sqrt(dist) < thres) {
+      dist = ddistance(xyzA[i],xyzB[i]);
+      if (dist < thres) {
 	cons_list[i]=1;
       }else{cons_list[i]=0;}
     }
     // cout <<"end"<<endl;
   }else{
     //dist = distance(xyzn[last],xyzB[last]) * distance(xyzn[last],xyzB[last]);
-    if (sqrt(dist) < thres) eqv++;
+    if (dist < thres) eqv++;
     rms += dist;
     // rmsd remaining particles
     for (int i=0; i < size-1; i++) {
-      dist = distance(xyzA[i], xyzB[i]) * distance(xyzA[i],xyzB[i]);
+      dist = ddistance(xyzA[i], xyzB[i]);
       //dist = distance(xyzn[i],xyzB[i]) * distance(xyzn[i],xyzB[i]);
-      if (sqrt(dist) < thres) eqv++;
+      if (dist < thres) eqv++;
       rms += dist;
       // drmsd
       for (int j=i+1; j < size; j++) {
-	dist =(distance(xyzA[i],xyzA[j]) - distance(xyzB[i],xyzB[j]))
-	  * (distance(xyzA[i],xyzA[j]) - distance(xyzB[i],xyzB[j]));
-	//dist =(distance(xyzn[i],xyzn[j]) - distance(xyzB[i],xyzB[j]))
-	//* (distance(xyzn[i],xyzn[j]) - distance(xyzB[i],xyzB[j]));
-	drms += dist;
+	dist = distance(xyzA[i],xyzA[j]) - distance(xyzB[i],xyzB[j]);
+	drms += dist*dist;
       }
     }
     drms = sqrt(drms / (size*(size-1)/2));

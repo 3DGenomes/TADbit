@@ -22,34 +22,37 @@ number of equivalent positions, the RMSD and the dRMSD.\n\
 
 static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
 {
-  PyObject **py_xyzA;
-  PyObject **py_xyzB;
+  PyObject *py_xA;
+  PyObject *py_xB;
+  PyObject *py_yA;
+  PyObject *py_yB;
+  PyObject *py_zA;
+  PyObject *py_zB;
   int size;
   float thres;
   int consistency=0;
  
-  if (!PyArg_ParseTuple(args, "OOifi", &py_xyzA, &py_xyzB, &size, &thres, &consistency))
+  if (!PyArg_ParseTuple(args, "OOOOOOifi", &py_xA, &py_yA, &py_zA, &py_xB, &py_yB, 
+			&py_zB, &size, &thres, &consistency))
     return NULL;
  
   float **xyzA;
   float **xyzB;
-  int i, j;
+  int i;
   xyzA = new float*[size];
-  for(int i=0; i<size; i++) {
-    xyzA[i] = new float[3];
-    memset(xyzA[i], 0, 3*sizeof(float));
-  }
   xyzB = new float*[size];
-  for(int i=0; i<size; i++) {
-    xyzB[i] = new float[3];
-    memset(xyzB[i], 0, 3*sizeof(float));
-  }
 
   for (i=0; i<size; i++){
-    for (j=0; j<=2; j++){
-      xyzA[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_xyzA, i), j));
-      xyzB[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_xyzB, i), j));
-    }
+    xyzB[i] = new float[3];
+    memset(xyzB[i], 0, 3*sizeof(float));
+    xyzA[i] = new float[3];
+    memset(xyzA[i], 0, 3*sizeof(float));
+    xyzA[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_xA, i));
+    xyzB[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_xB, i));
+    xyzA[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_yA, i));
+    xyzB[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_yB, i));
+    xyzA[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zA, i));
+    xyzB[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zB, i));
   }
   float rms, drms;
 
@@ -73,11 +76,11 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
 
   // free
   delete[] cons_list;
-  for (int i=0; i<size; i++)
+  for (int i=0; i<size; i++){
     delete[] xyzA[i];
-  delete[] xyzA;
-  for (int i=0; i<size; i++)
     delete[] xyzB[i];
+  }
+  delete[] xyzA;
   delete[] xyzB;
 
   // give it to me

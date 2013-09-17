@@ -374,10 +374,11 @@ class Alignment(object):
         for scr in xrange(1, 11):
             plots += plt.plot((100,),(100,), marker=6, ms=9,
                               color=jet(float(scr) / 10), mec='none')
-        axes[0].legend(plots,
-                       [str(scr) for scr in xrange(1, 11)],
-                       numpoints=1, title='Boundary scores',
-                       fontsize='small', loc='lower left', bbox_to_anchor=(1, 0.5))
+        axes[-1].legend(plots,
+                        [str(scr) for scr in xrange(1, 11)],
+                        numpoints=1, title='Boundary scores',
+                        fontsize='small', loc='lower left',
+                        bbox_to_anchor=(1, 0.5))
         plt.show()
 
 
