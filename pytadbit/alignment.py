@@ -340,18 +340,20 @@ class Alignment(object):
                                facecolor='grey', edgecolor='grey')
             axes[iex].grid()
             axes[iex].patch.set_visible(False)
-        maxy = max(maxys) + 0.5
+        maxy = max(maxys) + 0.6
+        maxxs = []
         for iex in range(len(experiments)):
             starting = focus[0] if focus else 1
             ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']
             axes[iex].hlines(1, 1, end, 'k', lw=1.5)
             axes[iex].set_ylim((0, maxy))
-            axes[iex].set_xlim((starting, ending / facts[iex]))
+            maxxs.append(ending / facts[iex])
             axes[iex].set_ylabel('Relative\nHi-C count')
             axes[iex].text(starting + 1, float(maxy) / 20,
                            experiments[iex].name, {'ha':'left', 'va':'bottom'})
             axes[iex].set_yticks([float(i) / 2
                                   for i in range(1, int(maxy) * 2)])
+        axes[iex].set_xlim((starting, max(maxxs)))
         pos = {'ha':'center', 'va':'bottom'}
         for i, col in enumerate(self.itercolumns()):
             ends = sorted([(t['end'], j) for j, t in enumerate(col) if t['end']])

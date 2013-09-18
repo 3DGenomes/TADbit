@@ -115,8 +115,8 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     dist = ddata['icoord'][0][2] - ddata['icoord'][0][1]
     for i, x in enumerate(ddata['leaves']):
         leaves[dist*i + dist/2] = x
-    minnrj = min(objfun.values())-1
-    maxnrj = max(objfun.values())-1
+    minnrj = min(objfun.values())
+    maxnrj = max(objfun.values())
     difnrj = maxnrj - minnrj
     total = sum(clust_count.values())
     if not kwargs.get('no_plot', False):
@@ -142,9 +142,12 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                                 textcoords='offset points',
                                 va='top', ha='center')
             leaves[(i[1] + i[2])/2] = dads[leaves[i[1]]]
-    cutter = 10**int(np.log10(difnrj))
+    try:
+        cutter = 10**int(np.log10(difnrj))
+    except OverflowError: # case that the two are exactly the same
+        cutter = 1
     cut = 10 if cutter >= 10 else 1
-    bot = -int(difnrj)/cutter * cutter
+    bot = (-int(difnrj)/cutter * cutter) or -1 # do not want this to be null
     # just to display nice numbers
     form = lambda x: ''.join([(s + ',') if not i%3 and i else s
                               for i, s in enumerate(str(x)[::-1])][::-1])
