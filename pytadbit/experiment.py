@@ -9,12 +9,15 @@ from pytadbit.utils.extraviews           import nicer
 from pytadbit.utils.tadmaths             import zscore
 from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser         import parse_tads
-from pytadbit.imp.imp_modelling          import generate_3d_models
-from pytadbit.imp.modelling_optimization import grid_search
 from warnings                            import warn
 from math                                import sqrt
 from pytadbit.imp.CONFIG                 import CONFIG
 
+try:
+    from pytadbit.imp.imp_modelling          import generate_3d_models
+    from pytadbit.imp.modelling_optimization import grid_search
+except ImportError:
+    warn('IMP not found, check PYTHONPATH\n')
 
 class Experiment(object):
     """

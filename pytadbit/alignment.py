@@ -9,6 +9,8 @@ from random import random, shuffle
 from sys import stdout
 from pytadbit.boundary_aligner.aligner import align
 from numpy import linspace, sin, pi
+from warnings import warn
+
 try:
     from scipy.interpolate import interp1d
 except ImportError:
@@ -298,27 +300,36 @@ class Alignment(object):
             if not xpr.name in self:
                 continue
             zeros = xpr._zeros
-            wghts = xpr.wght[0]
+            try:
+                wghts = xpr.wght[0]
+            except TypeError:
+                warn("WARNING: weights not available, TAD's height fixed to 1")
+                wghts = None
             diags = []
             sp1 = siz + 1
-            for k in xrange(1, siz):
-                s_k = siz * k
-                diags.append(sum([wghts[i * sp1 + s_k]
-                                 if not (i in zeros
-                                         or (i + k) in zeros) else 0.
-                                  for i in xrange(siz - k)]) / (siz - k))
+            if wghts:
+                for k in xrange(1, siz):
+                    s_k = siz * k
+                    diags.append(sum([wghts[i * sp1 + s_k]
+                                     if not (i in zeros
+                                             or (i + k) in zeros) else 0.
+                                      for i in xrange(siz - k)]) / (siz - k))
             for tad in xpr.tads:
                 start, end = (int(xpr.tads[tad]['start']) + 1,
                               int(xpr.tads[tad]['end']) + 1)
-                matrix = sum([wghts[i + siz * j]
-                             if not (i in zeros
-                                     or j in zeros) else 0.
-                              for i in xrange(start - 1, end - 1)
-                              for j in xrange(i + 1, end - 1)])
+                if wghts:
+                    matrix = sum([wghts[i + siz * j]
+                                 if not (i in zeros
+                                         or j in zeros) else 0.
+                                  for i in xrange(start - 1, end - 1)
+                                  for j in xrange(i + 1, end - 1)])
                 try:
-                    height = float(matrix) / sum(
-                        [diags[i-1] * (end - start - i)
-                         for i in xrange(1, end - start)])
+                    if wghts:
+                        height = float(matrix) / sum(
+                            [diags[i-1] * (end - start - i)
+                             for i in xrange(1, end - start)])
+                    else:
+                        height = 1.
                 except ZeroDivisionError:
                     height = 0.
                 maxys.append(height)
@@ -329,15 +340,16 @@ class Alignment(object):
                                facecolor='grey', edgecolor='grey')
             axes[iex].grid()
             axes[iex].patch.set_visible(False)
-        maxy = max(maxys)
+        maxy = max(maxys) + 0.5
         for iex in range(len(experiments)):
             starting = focus[0] if focus else 1
             ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']
             axes[iex].hlines(1, 1, end, 'k', lw=1.5)
             axes[iex].set_ylim((0, maxy))
             axes[iex].set_xlim((starting, ending / facts[iex]))
-            axes[iex].set_ylabel('Relative mean\ncontact for ' +
-                                 experiments[iex].name)
+            axes[iex].set_ylabel('Relative\nHi-C count')
+            axes[iex].text(starting + 1, float(maxy) / 20,
+                           experiments[iex].name, {'ha':'left', 'va':'bottom'})
             axes[iex].set_yticks([float(i) / 2
                                   for i in range(1, int(maxy) * 2)])
         pos = {'ha':'center', 'va':'bottom'}
@@ -345,6 +357,9 @@ class Alignment(object):
             ends = sorted([(t['end'], j) for j, t in enumerate(col) if t['end']])
             beg = (ends[0 ][0] + 0.9) / facts[ends[0 ][1]]
             end = (ends[-1][0] + 1.1) / facts[ends[-1][1]]
+            if focus:
+                if beg < focus[0] or end > focus[1]:
+                    continue
             axes[0].text(beg + float(end - beg) / 2, maxy + float(maxy) / 20,
                          str(i + 1), pos,
                          rotation=90, size='small')

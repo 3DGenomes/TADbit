@@ -136,6 +136,7 @@ def main():
     opts = get_options()
     res = opts.res
     if opts.genomes:
+        # load all chromosomes of reference genomes
         ref_genome = {}
         for crm in listdir(opts.ref_genome):
             crm_path = opts.ref_genome + crm + '/'
