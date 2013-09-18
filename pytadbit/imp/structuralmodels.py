@@ -265,7 +265,7 @@ class StructuralModels(object):
                     if md2['cluster'] == cl2:
                         # the first on found is the best :)
                         break
-                matrix[i][j+i+1] = calc_eqv_rmsd({1: md1, 2: md2}, self.nloci,
+                matrix[i][j+i+1] = calc_eqv_rmsd({0: md1, 1: md2}, self.nloci,
                                                  var='drmsd', one=True)
         return clust_count, objfun, matrix
 
