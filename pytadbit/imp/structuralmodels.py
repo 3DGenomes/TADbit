@@ -338,8 +338,8 @@ class StructuralModels(object):
                   'darkred'][-len(steps):]
         dists = []
         for part1, part2 in zip(range(self.nloci - 1), range(1, self.nloci)):
-            dists.append(self.median_3d_dist(part1, part2, models, cluster,
-                                              plot=False, median=False))
+            dists.append(self.median_3d_dist(part1 + 1, part2 + 1, models,
+                                             cluster, plot=False, median=False))
         lmodels = len(dists[0])
         distsk = {1: dists}
         for k in (steps[1:] if steps[0]==1 else steps):
@@ -423,11 +423,12 @@ class StructuralModels(object):
         ax.set_xlabel('Particle number')
         ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
                           for k in steps] + (
-                      ['+/- 2 standard deviations for %s' % (k)
+                      ['+/- 2 standard deviations'
                        for k in steps] if error else []), fontsize='small',
                   bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title('Chromatin density')
+        plt.subplots_adjust(left=0.1, right=0.78)
         if savefig:
             fig.savefig(savefig)
         elif not axe:
@@ -460,7 +461,7 @@ class StructuralModels(object):
         for i in xrange(self.nloci):
             for j in xrange(i + 1, self.nloci):
                 val = len([k for k in self.median_3d_dist(
-                    i, j, plot=False, median=False, models=models)
+                    i + 1, j + 1, plot=False, median=False, models=models)
                            if k < cutoff])
                 matrix[i][j] = matrix[j][i] = float(val) / len(models) * 100
         return matrix
