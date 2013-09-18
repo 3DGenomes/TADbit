@@ -671,6 +671,7 @@ class StructuralModels(object):
         axe.legend(plots, ['%s nm' % (k) for k in cutoffs[::-1]],
                    fontsize='small', loc='center left', bbox_to_anchor=(1, 0.5))
         axe.set_xlim((1, self.nloci))
+        axe.set_ylim((0, 100))
         axe.set_xlabel('Particle')
         axe.set_ylabel('Consistency (%)')
         if cluster:
