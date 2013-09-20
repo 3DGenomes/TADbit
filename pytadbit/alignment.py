@@ -340,7 +340,7 @@ class Alignment(object):
                                facecolor='grey', edgecolor='grey')
             axes[iex].grid()
             axes[iex].patch.set_visible(False)
-        maxy = max(maxys) + 0.6
+        maxy = max(maxys) + 0.4
         maxxs = []
         for iex in range(len(experiments)):
             starting = focus[0] if focus else 1
@@ -352,7 +352,7 @@ class Alignment(object):
             axes[iex].text(starting + 1, float(maxy) / 20,
                            experiments[iex].name, {'ha':'left', 'va':'bottom'})
             axes[iex].set_yticks([float(i) / 2
-                                  for i in range(1, int(maxy) * 2)])
+                                  for i in range(1, int(maxy + .5) * 2)])
         axes[iex].set_xlim((starting, max(maxxs)))
         pos = {'ha':'center', 'va':'bottom'}
         for i, col in enumerate(self.itercolumns()):

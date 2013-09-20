@@ -71,7 +71,8 @@ def main():
                                 sources=['tadbit_py.c'])
     # c++ module to align and calculate distances between 2 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
-                                sources=['eqv-tmscore/eqv_rms_drms_py.cpp'])
+                                sources=['eqv-tmscore/eqv_rms_drms_py.cpp'],
+                                extra_compile_args=["-ffast-math"])
 
     setup(
         name        = 'pytadbit',

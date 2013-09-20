@@ -100,6 +100,18 @@ Chimera is a program used for visualization and analysis of molecular structures
 *This software is only needed for the visualization of 3D models from inside TADBit.*
 
 
+LiftOver
+--------
+
+TADBit provides a wrapper for the LiftOver tool [Fujita2011]_ (download it from: http://hgdownload.cse.ucsc.edu/admin/exe/ ).
+
+This can be used to ease the conversion of genomic TAD coordinates (e.g.: to align human TADs with mouse TADs).
+
+.. note::
+   A 'chain' file may also be downloaded. For example, to convert coordinates to hg19, the chain file needed may be found at: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/
+
+
+
 TADBit
 ======
 
@@ -125,7 +137,7 @@ Once all the needed library/software have been installed, TADBit can be download
     sudo PYTHONPATH=$PYTHONPATH python setup.py install
   
 
-Finally, run the test script to check that the installation completed succesfully.
+Finally, run the test script to check that the installation completed successfully.
 To do so, move to the test directory and run:
 
 ::

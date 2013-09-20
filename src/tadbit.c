@@ -182,7 +182,7 @@ ll(
          i_high = diag ? j : _i+1;
          for (i = i_low ; i < i_high ; i++) {
             index = _cache_index[i+j*n];
-            // Retrive value of the exponential from cache.
+            // Retrieve value of the exponential from cache.
             if (c[index] != c[index]) { // ERROR.
                c[index] = exp(a+b*d[i+j*n]);
             }
