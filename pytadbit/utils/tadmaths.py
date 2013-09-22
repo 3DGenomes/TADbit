@@ -182,16 +182,19 @@ def dihedral(a,b,c,d):
     """
     Calculates dihedral angle between 4 points in 3D (array with x,y,z)
     """
-    v1 = getNormedVector(a, b)
-    v2 = getNormedVector(b, c)
-    v3 = getNormedVector(c, d)
+    v1 = getNormedVector(b - a)
+    v2 = getNormedVector(b - c)
+    v3 = getNormedVector(c - b)
+    v4 = getNormedVector(c - d)
     v1v2 = np.cross(v1, v2)
-    v2v3 = np.cross(v2, v3)
+    v2v3 = np.cross(v3, v4)
     sign = -1 if np.linalg.det([v2, v1v2, v2v3]) < 0 else 1
-    return sign * getAngle(v1v2,v2v3)
+    angle = getAngle(v1v2, v2v3)
+    # angle, sign = (angle, sign) if angle <= 90 else (180 - angle, - sign)
+    return sign * angle
 
-def getNormedVector(a,b):
-    return (b - a) / np.linalg.norm(b - a)
+def getNormedVector(dif):
+    return (dif) / np.linalg.norm(dif)
 
 def getAngle(v1v2, v2v3):
     return np.rad2deg(
@@ -200,3 +203,173 @@ def getAngle(v1v2, v2v3):
             v2v3.T / np.linalg.norm(v2v3)))
         )
 
+# from numpy import zeros
+# from math import acos
+
+# def crossproduct(ar1, ar2, base=1) :
+#   """Calculate the cross-product of two vectors.
+
+#   Positional arguments :
+#   ar1    -- first vector (ndarray)
+#   ar2    -- second vector (ndarray)
+#           their base is given by the keyword argument of the same name
+
+#   Keyword arguments :
+#   base -- base index (default 1)
+
+#   """
+#   for ar_ in (ar1, ar2) :
+#     if ar_ is None or 3 + base != len(ar_) :
+#       raise Exception('Invalid parameter passed')
+
+#   q1_ = ar1[base+1] * ar2[base+2] - ar1[base+2] * ar2[base+1]
+#   q2_ = ar1[base+2] * ar2[base+0] - ar1[base+0] * ar2[base+2]
+#   q3_ = ar1[base+0] * ar2[base+1] - ar1[base+1] * ar2[base+0]
+
+#   ans = zeros(base + 3, 'd')
+#   ans[base:] = (q1_, q2_, q3_)
+  
+#   return ans
+
+# def spatproduct(ar1, ar2, ar3, base=1) :
+#   """Calculate the scalar triple product of three vectors.
+
+#   Positional arguments :
+#   ar1    -- first vector (ndarray)
+#   ar2    -- second vector (ndarray)
+#   ar3    -- third vector (ndarray)
+#           their base is given by the keyword argument of the same name
+
+#   Keyword arguments :
+#   base -- base index (default 1)
+
+#   """
+#   for ar_ in (ar1, ar2, ar3) :
+#     if ar_ is None or 3 + base != len(ar_) :
+#       raise Exception('Invalid parameter passed')
+
+#   mat_ = zeros((3, 3), 'd')
+#   mat_[0] = ar1[base:]
+#   mat_[1] = ar2[base:]
+#   mat_[2] = ar3[base:]
+
+#   return np.linalg.det(mat_)
+
+# def angle_vectors(ar1, ar2, base=1) :
+#   """Calculate the angle between two vectors.
+
+#   Positional arguments :
+#   ar1    -- first vector (ndarray)
+#   br2    -- second vector (ndarray)
+#             their base is given by the keyword argument of the same name
+
+#   Keyword arguments :
+#   base -- base index (default 1)
+
+#   Return the angle in grad.
+  
+#   """
+#   for ar_ in (ar1, ar2) :
+#     if ar_ is None or 3 + base != len(ar_) :
+#       raise Exception('Invalid parameter passed')
+
+#   ar1 = np.array(ar1[base:], 'd')
+#   ar2 = np.array(ar2[base:], 'd')
+    
+#   scalar_prod = np.dot(ar1, ar2)
+  
+#   if 0. == scalar_prod :
+#     return 90./np.pi
+
+#   arg_ = scalar_prod / np.sqrt(np.dot(ar1, ar1) * np.dot(ar2, ar2))
+
+#   # sometimes acos behaves strange...
+#   if 1. < arg_ :
+#     arg_ = 1.
+#   elif -1. > arg_ :
+#     arg_ = -1
+
+#   return 180./np.pi * acos(arg_)
+
+# def distance(ar1, ar2, base=1) :
+#   """Calculate the distance between two points.
+
+#   Positional arguments :
+#   ar1    -- first point (ndarray)
+#   ar2    -- second point (ndarray)
+#             their base is given by the keyword argument of the same name
+
+#   Keyword arguments :
+#   base -- base index (default 1)
+  
+#   """
+#   for ar_ in (ar1, ar2) :
+#     if ar_ is None or 3 + base != len(ar_) :
+#       raise Exception('Invalid parameter passed')
+    
+#   dist = np.array(ar1[base:], 'd') - np.array(ar2[base:], 'd')
+
+#   return np.linalg.norm(dist)
+
+# def angle(ar1, ar2, ar3, base=1) :
+#   """Calculate the angle between three points.
+
+#   Positional arguments :
+#   ar1    -- first point (ndarray)
+#   ar2    -- second point (ndarray)
+#   ar3    -- third point (ndarray)
+#             their base is given by the keyword argument of the same name
+
+#   Keyword arguments :
+#   base -- base index (default 1)
+
+#   Return the angle in grad.
+  
+#   """
+#   for ar_ in (ar1, ar2, ar3) :
+#     if ar_ is None or 3 + base != len(ar_) :
+#       raise Exception('Invalid parameter passed')
+  
+#   v_ba = np.array(ar1, 'd') - np.array(ar2, 'd')
+#   v_bc = np.array(ar3, 'd') - np.array(ar2, 'd')
+
+#   return angle_vectors(v_ba, v_bc, base)
+
+# def dihedral_bis(ar1, ar2, ar3, ar4, base=0) :
+#   """Calculate the dihedral angle between four points.
+
+#   Positional arguments :
+#   ar1    -- first point (ndarray)
+#   ar2    -- second point (ndarray)
+#   ar3    -- third point (ndarray)
+#   ar4    -- fourth point (ndarray)
+#             their base is given by the keyword argument of the same name
+
+#   Keyword arguments :
+#   base -- base index (default 1)
+
+#   Return the dihedral angle in grad.
+  
+#   """
+#   # for ar_ in (ar1, ar2, ar3, ar4) :
+#   #   if ar_ is None or 3 + base != len(ar_) :
+#   #     raise Exception('Invalid parameter passed')
+
+#   v_ba = np.array(ar1, 'd') - np.array(ar2, 'd')
+#   v_bc = np.array(ar3, 'd') - np.array(ar2, 'd')
+#   v_cb = np.array(ar2, 'd') - np.array(ar3, 'd')
+#   v_cd = np.array(ar4, 'd') - np.array(ar3, 'd')
+
+#   # normal to the plane (a, b, c)
+#   norm1 = crossproduct(v_ba, v_bc, base)
+
+#   # normal to the plane (b, c, d)
+#   norm2 = crossproduct(v_cb, v_cd, base)
+
+#   # scalar triple product which defines the sign of the dihedral angle
+#   if 0. > spatproduct(v_bc, norm1, norm2, base) :
+#     sign = -1.
+#   else :
+#     sign = +1.
+  
+#   return sign * angle_vectors(norm1, norm2, base)

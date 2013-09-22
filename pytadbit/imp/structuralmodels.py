@@ -840,10 +840,10 @@ class StructuralModels(object):
                        cluster=None):
         """
         """
-        parta = array(self.particle_coordinates(parta - 1, models, cluster))
-        partb = array(self.particle_coordinates(partb - 1, models, cluster))
-        partc = array(self.particle_coordinates(partc - 1, models, cluster))
-        partd = array(self.particle_coordinates(partd - 1, models, cluster))
+        parta = array(self.particle_coordinates(parta, models, cluster))
+        partb = array(self.particle_coordinates(partb, models, cluster))
+        partc = array(self.particle_coordinates(partc, models, cluster))
+        partd = array(self.particle_coordinates(partd, models, cluster))
         return dihedral(parta, partb, partc, partd)
 
 
@@ -874,14 +874,15 @@ class StructuralModels(object):
         #
         rads = {}
         rads[1] = []
-        for res in xrange(1, self.nloci - 2):
-            rads[1].append(self.dihedral_angle(res + 1, res + 2,
-                                               res + 3, res + 4,
+        dst = 1 # to play with plane size
+        for res in xrange(self.nloci - (4 * dst - 1)):
+            rads[1].append(self.dihedral_angle(res + 1, res + dst * 2,
+                                               res + dst * 3, res + dst * 4,
                                                models=models, cluster=cluster))
         lmodels = len(rads[1])
         for k in (steps[1:] if steps[0]==1 else steps):
             rads[k] = [None for _ in range(k/2)]
-            for i in range(1, self.nloci - k - 2):
+            for i in range(1, self.nloci - k - (4 * dst - 2)):
                 rads[k].append(reduce(lambda x, y: x + y,
                                       [rads[1][i+j] for j in range(k)]) / k)
                 if k == 1:
