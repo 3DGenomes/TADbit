@@ -214,7 +214,7 @@ def generate_IMPmodel(rand_init, verbose=0):
              'ps'    : None,
              'pps'   : None}
     model['ps'] = ListSingletonContainer(IMP.core.create_xyzr_particles(
-        model['model'], NLOCI, RADIUS, 1000))
+        model['model'], NLOCI, RADIUS, 100000))
     model['ps'].set_name("")
 
     # initialize each particles

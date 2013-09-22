@@ -4,14 +4,15 @@
 
 """
 from pytadbit.utils.tadmaths   import calinski_harabasz, calc_eqv_rmsd
-from pytadbit.utils.tadmaths   import calc_consistency
+from pytadbit.utils.tadmaths   import calc_consistency, dihedral
 from pytadbit.utils.extraviews import color_residues, chimera_view
 from pytadbit.utils.extraviews import augmented_dendrogram, plot_hist_box
 from cPickle                   import load, dump
 from subprocess                import Popen, PIPE
-from math                      import sqrt, acos, degrees
+from math                      import sqrt, acos, degrees, pi
 from numpy                     import median as np_median
 from numpy                     import std as np_std, log2
+from numpy                     import array
 from scipy.cluster.hierarchy   import linkage, fcluster
 from scipy.stats               import spearmanr
 from warnings                  import warn
@@ -747,7 +748,7 @@ class StructuralModels(object):
 
     def measure_angle_3_particles(self, parta, partb, partc,
                                   models=None, cluster=None,
-                                  radian=False):
+                                  radian=False, all_angles=False):
         """
         Given three particles A, B and C, the angle g (angle ACB, shown below):
         
@@ -756,7 +757,7 @@ class StructuralModels(object):
 
                               A
                              /|
-                            / |
+                            /i|
                           c/  |
                           /   |
                          /    |
@@ -764,7 +765,7 @@ class StructuralModels(object):
                          \    |
                           \   |
                           a\  |
-                            \ |
+                            \h|
                              \|
                               C
 
@@ -772,7 +773,7 @@ class StructuralModels(object):
         
         .. math::
 
-          b^2 = a^2 + c^2 - 2 \cos(g)
+          b^2 = a^2 + c^2 - 2ac\cos(g)
 
         :param parta: A particle number
         :param partb: A particle number
@@ -785,7 +786,9 @@ class StructuralModels(object):
         :param False radian: if True, return value in radians (in degrees 
            otherwise)
 
-        :returns: an angle, either in degrees or radians
+        :returns: an angle, either in degrees or radians. If all_angles is true
+           returns a list of the angle g, h, i (see picture above)
+        
         """
         # WARNING: here particle numbers are +1, they will be reduced
         # inside median_3d_dist
@@ -796,9 +799,104 @@ class StructuralModels(object):
         b = self.median_3d_dist(parta, partc, models=models,
                                 cluster=cluster, plot=False)
 
-        g = acos((a**2 + b**2 - c**2) / (2 * a * b))
+        g = acos((a**2 - b**2 + c**2) / (2 * a * c))
 
-        return g if radian else degrees(g)
+        if not all_angles:
+            return g if radian else degrees(g)
+        
+        h = acos((a**2 + b**2 - c**2) / (2 * a * b))
+
+        i = pi - g - h
+
+        return (g, h, i)
+
+
+    def particle_coordinates(self, part, models=None, cluster=None):
+        """
+        """
+        if models:
+            models=models
+        elif cluster > -1:
+            models = [str(m) for m in self.clusters[cluster]]
+        else:
+            models = self.__models
+
+        part -= 1
+        xis = 0.
+        yis = 0.
+        zis = 0.
+        for mod in models:
+            xis += self[mod]['x'][part]
+            yis += self[mod]['y'][part]
+            zis += self[mod]['z'][part]
+        xis /= len(models)
+        yis /= len(models)
+        zis /= len(models)
+        
+        return [xis, yis, zis]
+
+
+    def dihedral_angle(self, parta, partb, partc, partd, models=None,
+                       cluster=None):
+        """
+        """
+        parta = array(self.particle_coordinates(parta - 1, models, cluster))
+        partb = array(self.particle_coordinates(partb - 1, models, cluster))
+        partc = array(self.particle_coordinates(partc - 1, models, cluster))
+        partd = array(self.particle_coordinates(partd - 1, models, cluster))
+        return dihedral(parta, partb, partc, partd)
+
+
+    def persistence_length(self, models=None, cluster=None, steps=(1,3),
+                           plot=True, savefig=None, axe=None):
+        """
+        """
+        # plot
+        if axe:
+            ax = axe
+            fig = ax.get_figure()
+        else:
+            fig = plt.figure(figsize=(11, 5))
+            ax = fig.add_subplot(111)
+            ax.patch.set_facecolor('lightgrey')
+            ax.patch.set_alpha(0.4)
+            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+            ax.set_axisbelow(True)
+            ax.minorticks_on() # always on, not only for log
+            # remove tick marks
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False)
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False, which='minor')
+        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
+                  'darkred'][-len(steps):]
+        #
+        rads = {}
+        rads[1] = []
+        for res in xrange(1, self.nloci - 2):
+            rads[1].append(self.dihedral_angle(res + 1, res + 2,
+                                               res + 3, res + 4,
+                                               models=models, cluster=cluster))
+        lmodels = len(rads[1])
+        for k in (steps[1:] if steps[0]==1 else steps):
+            rads[k] = [None for _ in range(k/2)]
+            for i in range(1, self.nloci - k - 2):
+                rads[k].append(reduce(lambda x, y: x + y,
+                                      [rads[1][i+j] for j in range(k)]) / k)
+                if k == 1:
+                    continue
+        plots = []
+        for k in steps:
+            plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
+                             color=colors[steps.index(k)],
+                             lw=steps.index(k) + 1, alpha=0.5)
+        
+        if savefig:
+            fig.savefig(savefig)
+        elif not axe:
+            plt.show()
+        
 
 
     def median_3d_dist(self, part1, part2, models=None, cluster=None,

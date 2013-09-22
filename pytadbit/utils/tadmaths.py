@@ -177,3 +177,26 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score', one=False):
             scores[(md2, md1)] = drmsds[i]
     return scores
 
+
+def dihedral(a,b,c,d):
+    """
+    Calculates dihedral angle between 4 points in 3D (array with x,y,z)
+    """
+    v1 = getNormedVector(a, b)
+    v2 = getNormedVector(b, c)
+    v3 = getNormedVector(c, d)
+    v1v2 = np.cross(v1, v2)
+    v2v3 = np.cross(v2, v3)
+    sign = -1 if np.linalg.det([v2, v1v2, v2v3]) < 0 else 1
+    return sign * getAngle(v1v2,v2v3)
+
+def getNormedVector(a,b):
+    return (b - a) / np.linalg.norm(b - a)
+
+def getAngle(v1v2, v2v3):
+    return np.rad2deg(
+        np.arccos(np.dot(
+            v1v2   / np.linalg.norm(v1v2),
+            v2v3.T / np.linalg.norm(v2v3)))
+        )
+

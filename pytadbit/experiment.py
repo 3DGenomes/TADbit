@@ -210,7 +210,7 @@ class Experiment(object):
         """
          Add the Topologically Associated Domains definition detection to Slice
         
-        :param f_name: path to file
+        :param handler: path to file
         :param None name: name of the experiment, if None f_name will be used
         :param None weights: Store information about the weights, corresponding
            to the normalization of the Hi-C data (see tadbit function
@@ -436,7 +436,7 @@ class Experiment(object):
     def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
-                               scale_range=[0.01],
+                               scale_range=[0.01][:],
                                maxdist_range=(400, 1400), cutoff=300,
                                outfile=None, verbose=True):
         """
