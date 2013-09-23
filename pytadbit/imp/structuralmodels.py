@@ -12,7 +12,8 @@ from subprocess                import Popen, PIPE
 from math                      import sqrt, acos, degrees, pi
 from numpy                     import median as np_median
 from numpy                     import std as np_std, log2
-from numpy                     import array
+from numpy                     import array, cross, dot
+from numpy.linalg              import norm
 from scipy.cluster.hierarchy   import linkage, fcluster
 from scipy.stats               import spearmanr
 from warnings                  import warn
@@ -847,8 +848,8 @@ class StructuralModels(object):
         return dihedral(parta, partb, partc, partd)
 
 
-    def persistence_length(self, models=None, cluster=None, steps=(1,3),
-                           plot=True, savefig=None, axe=None):
+    def walking_dihedral(self, models=None, cluster=None, steps=(1,3),
+                         plot=True, savefig=None, axe=None):
         """
         """
         # plot
@@ -874,15 +875,90 @@ class StructuralModels(object):
         #
         rads = {}
         rads[1] = []
-        dst = 1 # to play with plane size
-        for res in xrange(self.nloci - (4 * dst - 1)):
-            rads[1].append(self.dihedral_angle(res + 1, res + dst * 2,
-                                               res + dst * 3, res + dst * 4,
+        for res in xrange(self.nloci - 6):
+            rads[1].append(self.dihedral_angle(res + 1, res + 4,
+                                               res + 5, res + 7,
                                                models=models, cluster=cluster))
         lmodels = len(rads[1])
         for k in (steps[1:] if steps[0]==1 else steps):
             rads[k] = [None for _ in range(k/2)]
-            for i in range(1, self.nloci - k - (4 * dst - 2)):
+            for i in range(1, self.nloci - k - 5):
+                rads[k].append(reduce(lambda x, y: x + y,
+                                      [rads[1][i+j] for j in range(k)]) / k)
+                if k == 1:
+                    continue
+        plots = []
+        for k in steps:
+            plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
+                             color=colors[steps.index(k)],
+                             lw=steps.index(k) + 1, alpha=0.5)
+        
+        if savefig:
+            fig.savefig(savefig)
+        elif not axe:
+            plt.show()
+
+
+
+    def walking_angle(self, models=None, cluster=None, steps=(1,3),
+                         plot=True, savefig=None, axe=None, signed=True):
+        """
+        """
+        # plot
+        if axe:
+            ax = axe
+            fig = ax.get_figure()
+        else:
+            fig = plt.figure(figsize=(11, 5))
+            ax = fig.add_subplot(111)
+            ax.patch.set_facecolor('lightgrey')
+            ax.patch.set_alpha(0.4)
+            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+            ax.set_axisbelow(True)
+            ax.minorticks_on() # always on, not only for log
+            # remove tick marks
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False)
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False, which='minor')
+        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
+                  'darkred'][-len(steps):]
+        #
+        rads = {}
+        rads[1] = []
+        sign = 1
+        for res in xrange(self.nloci - 6):
+            rads[1].append(self.measure_angle_3_particles(res + 1, res + 4,
+                                                          res + 7,
+                                                          models=models,
+                                                          cluster=cluster))
+            # tmp = self.measure_angle_3_particles(res + 3, res + 1,
+            #                                      res + 5,
+            #                                      models=models,
+            #                                      cluster=cluster)
+            # tmp2 = self.measure_angle_3_particles(res + 3, res + 1,
+            #                                      res + 7,
+            #                                      models=models,
+            #                                      cluster=cluster)
+            # tmp3 = self.measure_angle_3_particles(res + 5, res + 1,
+            #                                      res + 7,
+            #                                      models=models,
+            #                                      cluster=cluster)
+            if signed:
+                res1 = self.particle_coordinates(res+1)
+                res2 = self.particle_coordinates(res+4)
+                res3 = self.particle_coordinates(res+7)
+                vec1 = array(res1) - array(res2) / norm(array(res1) - array(res2))
+                vec2 = array(res1) - array(res3) / norm(array(res1) - array(res3))
+                sign = dot(array([1.,1.,1.]), cross(vec1, vec2))
+            # sign = -1 if sign < 0 else 1
+            # sign = -sign if tmp > tmp2 else sign
+            rads[1][-1] *= sign
+        lmodels = len(rads[1])
+        for k in (steps[1:] if steps[0]==1 else steps):
+            rads[k] = [None for _ in range(k/2)]
+            for i in range(1, self.nloci - k - 10):
                 rads[k].append(reduce(lambda x, y: x + y,
                                       [rads[1][i+j] for j in range(k)]) / k)
                 if k == 1:

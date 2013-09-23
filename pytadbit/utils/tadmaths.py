@@ -190,7 +190,7 @@ def dihedral(a,b,c,d):
     v2v3 = np.cross(v3, v4)
     sign = -1 if np.linalg.det([v2, v1v2, v2v3]) < 0 else 1
     angle = getAngle(v1v2, v2v3)
-    # angle, sign = (angle, sign) if angle <= 90 else (180 - angle, - sign)
+    angle, sign = (angle, sign) if angle <= 90 else (180 - angle, - sign)
     return sign * angle
 
 def getNormedVector(dif):
