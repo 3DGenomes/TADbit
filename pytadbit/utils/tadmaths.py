@@ -193,8 +193,10 @@ def dihedral(a,b,c,d):
     angle, sign = (angle, sign) if angle <= 90 else (180 - angle, - sign)
     return sign * angle
 
+
 def getNormedVector(dif):
     return (dif) / np.linalg.norm(dif)
+
 
 def getAngle(v1v2, v2v3):
     return np.rad2deg(
@@ -202,6 +204,7 @@ def getAngle(v1v2, v2v3):
             v1v2   / np.linalg.norm(v1v2),
             v2v3.T / np.linalg.norm(v2v3)))
         )
+
 
 # from numpy import zeros
 # from math import acos

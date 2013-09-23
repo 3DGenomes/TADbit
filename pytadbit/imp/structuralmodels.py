@@ -925,6 +925,8 @@ class StructuralModels(object):
         colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
                   'darkred'][-len(steps):]
         #
+        if not type(steps) == tuple:
+            steps = (steps,)
         rads = {}
         rads[1] = []
         sign = 1
@@ -952,7 +954,7 @@ class StructuralModels(object):
                 vec1 = array(res1) - array(res2) / norm(array(res1) - array(res2))
                 vec2 = array(res1) - array(res3) / norm(array(res1) - array(res3))
                 sign = dot(array([1.,1.,1.]), cross(vec1, vec2))
-            # sign = -1 if sign < 0 else 1
+                sign = -1 if sign < 0 else 1
             # sign = -sign if tmp > tmp2 else sign
             rads[1][-1] *= sign
         lmodels = len(rads[1])
@@ -973,7 +975,6 @@ class StructuralModels(object):
             fig.savefig(savefig)
         elif not axe:
             plt.show()
-        
 
 
     def median_3d_dist(self, part1, part2, models=None, cluster=None,
