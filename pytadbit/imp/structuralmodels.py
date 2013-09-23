@@ -315,7 +315,7 @@ class StructuralModels(object):
 
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     error=False, axe=None, savefig=None, outfile=None):
+                     error=False, axe=None, savefig=None, savedata=None):
         """
         Plots the number of nucleotides per nm of chromatin vs the modeled
         region bins.
@@ -328,7 +328,7 @@ class StructuralModels(object):
         :param (1, 2, 3, 4, 5) steps: how many particles to group for the
            estimation. By default 5 curves are drawn
         :param False error: represent the error of the estimates
-        :param None outfile: path to a file where to save the density data
+        :param None savedata: path to a file where to save the density data
            generated (1 column per step + 1 for particle number).
         
         """
@@ -380,8 +380,8 @@ class StructuralModels(object):
                     errorp[-1].append(None)
         distsk = new_distsk
         # write consistencies to file
-        if outfile:
-            out = open(outfile, 'w')
+        if savedata:
+            out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' + 
             '2*stddev(%d)' % c for c in steps])))
             for part in xrange(self.nloci):
@@ -489,7 +489,7 @@ class StructuralModels(object):
 
 
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
-                    savefig=None, outfile=None):
+                    savefig=None, savedata=None):
         """
         Plots a contact map representing the frequency of interaction (defined
         by a distance cutoff) between two particles.
@@ -505,15 +505,15 @@ class StructuralModels(object):
            appearance
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI
-        :param None outfile: path to a file where to save the contact map data
+        :param None savedata: path to a file where to save the contact map data
            generated, in three columns format (particle1, particle2, percentage
            of models where these two particles are in contact)
            
         """
         matrix = self.get_contact_matrix(models, cluster, cutoff)
         show = False
-        if outfile:
-            out = open(outfile, 'w')
+        if savedata:
+            out = open(savedata, 'w')
             out.write('#Particle1\tParticle2\tModels_percentage\n')
             for i in xrange(len(matrix)):
                 for j in xrange(i+1, len(matrix)):
@@ -602,7 +602,7 @@ class StructuralModels(object):
 
 
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
-                          cluster=None, axe=None, savefig=None, outfile=None):
+                          cluster=None, axe=None, savefig=None, savedata=None):
         """
         Plots the particle consistency, over a given set of models, vs the 
         modeled region bins. The consistency is a measure of the variability
@@ -621,7 +621,7 @@ class StructuralModels(object):
            TM-score program
         :param '' tmsc: path to the TMscore_consistency script (assumed to be 
            installed by default)
-        :param None outfile: path to a file where to save the consistency data
+        :param None savedata: path to a file where to save the consistency data
            generated (1 column per cutoff + 1 for particle number).
         
         """
@@ -636,8 +636,8 @@ class StructuralModels(object):
         for cut in cutoffs:
             consistencies[cut] = calc_consistency(models, self.nloci, cut)
         # write consistencies to file
-        if outfile:
-            out = open(outfile, 'w')
+        if savedata:
+            out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in cutoffs])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
@@ -800,12 +800,18 @@ class StructuralModels(object):
         b = self.median_3d_dist(parta, partc, models=models,
                                 cluster=cluster, plot=False)
 
-        g = acos((a**2 - b**2 + c**2) / (2 * a * c))
+        try:
+            g = acos((a**2 - b**2 + c**2) / (2 * a * c))
+        except ValueError:
+            g = 0.
 
         if not all_angles:
             return g if radian else degrees(g)
         
-        h = acos((a**2 + b**2 - c**2) / (2 * a * b))
+        try:
+            h = acos((a**2 + b**2 - c**2) / (2 * a * b))
+        except ValueError:
+            h = 0.
 
         i = pi - g - h
 
