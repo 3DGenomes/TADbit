@@ -900,8 +900,8 @@ class StructuralModels(object):
 
 
 
-    def walking_angle(self, models=None, cluster=None, steps=(1,3),
-                         plot=True, savefig=None, axe=None, signed=True):
+    def walking_angle(self, models=None, cluster=None, steps=(1,3), signed=True,
+                      plot=True, savefig=None, savedata=None, axe=None):
         """
         """
         # plot
@@ -935,18 +935,6 @@ class StructuralModels(object):
                                                           res + 7,
                                                           models=models,
                                                           cluster=cluster))
-            # tmp = self.measure_angle_3_particles(res + 3, res + 1,
-            #                                      res + 5,
-            #                                      models=models,
-            #                                      cluster=cluster)
-            # tmp2 = self.measure_angle_3_particles(res + 3, res + 1,
-            #                                      res + 7,
-            #                                      models=models,
-            #                                      cluster=cluster)
-            # tmp3 = self.measure_angle_3_particles(res + 5, res + 1,
-            #                                      res + 7,
-            #                                      models=models,
-            #                                      cluster=cluster)
             if signed:
                 res1 = self.particle_coordinates(res+1)
                 res2 = self.particle_coordinates(res+4)
@@ -955,12 +943,10 @@ class StructuralModels(object):
                 vec2 = array(res1) - array(res3) / norm(array(res1) - array(res3))
                 sign = dot(array([1.,1.,1.]), cross(vec1, vec2))
                 sign = -1 if sign < 0 else 1
-            # sign = -sign if tmp > tmp2 else sign
             rads[1][-1] *= sign
-        lmodels = len(rads[1])
         for k in (steps[1:] if steps[0]==1 else steps):
             rads[k] = [None for _ in range(k/2)]
-            for i in range(1, self.nloci - k - 10):
+            for i in range(1, self.nloci - k - 5):
                 rads[k].append(reduce(lambda x, y: x + y,
                                       [rads[1][i+j] for j in range(k)]) / k)
                 if k == 1:
@@ -970,7 +956,29 @@ class StructuralModels(object):
             plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
                              color=colors[steps.index(k)],
                              lw=steps.index(k) + 1, alpha=0.5)
-        
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#Particle\t' +
+                      '\t'.join(['angle(step:%s)' % (s) for s in steps]) + '\n')
+            for p in xrange(len(rads[1])):
+                out.write(str(p+1))
+                for s in steps:
+                    try:
+                        out.write('\t%s' % rads[s][p])
+                    except IndexError:
+                        out.write('\tNone')
+                out.write('\n')
+            out.close()
+                
+        ax.set_ylabel('Angle in degrees')
+        ax.set_xlabel('Particle number')
+        ax.legend(plots, ['Average for %s angle%s' % (k, 's' if k else '')
+                          for k in steps], fontsize='small',
+                  bbox_to_anchor=(1, 0.5), loc='center left')
+        ax.set_xlim((1, self.nloci))
+        ax.set_title('Angle between consecutive loci')
+        plt.subplots_adjust(left=0.1, right=0.8)
+
         if savefig:
             fig.savefig(savefig)
         elif not axe:
