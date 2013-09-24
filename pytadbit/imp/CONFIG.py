@@ -15,9 +15,6 @@ CONFIG = {
         # Force applied to the restraints inferred to neighbor particles
         'kforce'    : 5,
         
-        # Minimum distance between two non-bonded particles
-        'lowrdist'  : 100,
-        
         # Maximum experimental contact distance
         'maxdist'   : 600, # OPTIMIZATION: 500-1200
         

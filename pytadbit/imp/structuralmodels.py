@@ -28,7 +28,7 @@ except ImportError:
 
 def load_structuralmodels(path_f):
     """
-    
+
     :param path: to the pickled StructuralModels object.
 
     :returns: a :class:`pytadbit.imp.imp_model.StructuralModels`.
@@ -42,31 +42,31 @@ def load_structuralmodels(path_f):
 
 class StructuralModels(object):
     """
-    This function generates three-dimensional models starting from Hi-C data. 
+    This function generates three-dimensional models starting from Hi-C data.
     The final analysis will be performed on the n_keep top models.
 
     :param nloci: number of particles in the selected region
-    :param models: a dictionary containing the generated 
+    :param models: a dictionary containing the generated
        :class:`pytadbit.imp.impmodel.IMPmodel` to be used as 'best models'
     :param bad_models: a dictionary of :class:`pytadbit.imp.impmodel.IMPmodel`,
-       these model will not be used, just stored in case the set of 
+       these model will not be used, just stored in case the set of
        'best models' needs to be extended later-on (
        :func:`pytadbit.imp.structuralmodels.StructuralModels.define_best_models`
        ).
-    :param resolution: number of nucleotides per Hi-C bin. This will be the 
+    :param resolution: number of nucleotides per Hi-C bin. This will be the
        number of nucleotides in each model's particle.
-    :param None original_data: a list of list (equivalent to a square matrix) of 
+    :param None original_data: a list of list (equivalent to a square matrix) of
        the normalized Hi-C data, used to build this list of models.
-    :param None clusters: a dictionary of type 
+    :param None clusters: a dictionary of type
        :class:`pytadbit.imp.structuralmodels.ClusterOfModels`
-    :param None config: a dictionary containing the parameter to be used for the 
+    :param None config: a dictionary containing the parameter to be used for the
        generation of three dimensional models.
 
     """
 
     def __init__(self, nloci, models, bad_models, resolution,
                  original_data=None, clusters=None, config=None):
-        
+
         self.__models       = models
         self._bad_models    = bad_models
         self.nloci          = nloci
@@ -74,7 +74,7 @@ class StructuralModels(object):
         self.resolution     = float(resolution)
         self._original_data = original_data # only used for correlation
         self._config        = config
-        
+
 
     def __getitem__(self, nam):
         if type(nam) == str:
@@ -105,7 +105,7 @@ class StructuralModels(object):
         return ('StructuralModels with %s models (objective function range: %s - %s)\n' +
                 '   (corresponding to the best models out of %s models).\n' +
                 '  IMP modeling used this parameters:\n' +
-                '%s\n' + 
+                '%s\n' +
                 '  Models where clustered into %s clusters') % (
             len(self.__models),
             int(self.__models[0]['objfun']),
@@ -143,35 +143,35 @@ class StructuralModels(object):
     def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
                        mcl_bin='mcl', tmp_file=None, verbose=True):
         """
-        This function performs a clustering analysis of the generated models 
-        based on structural comparison. The result will be stored in 
+        This function performs a clustering analysis of the generated models
+        based on structural comparison. The result will be stored in
         StructuralModels.clusters
-        
-        :param 0.75 fact: factor to define the percentage of equivalent 
+
+        :param 0.75 fact: factor to define the percentage of equivalent
            positions to be considered in the clustering
-        :param 200 dcutoff: distance threshold (nm) to determine if two 
+        :param 200 dcutoff: distance threshold (nm) to determine if two
            particles are in contact
-        :param 'score' var: value to return, which can be either (i) 'drmsd' 
-           (symmetry independent: mirrors will show no differences), or (ii) 
+        :param 'score' var: value to return, which can be either (i) 'drmsd'
+           (symmetry independent: mirrors will show no differences), or (ii)
            'score', defined as:
-           
+
            ::
-           
+
                                     dRMSD[i] / max(dRMSD)
               score[i] = eqvs[i] * -----------------------
                                      RMSD[i] / max(RMSD)
-           
-           where eqvs[i] is the number of equivalent position for the ith 
+
+           where eqvs[i] is the number of equivalent position for the ith
            pairwise model comparison
-        :param 'mcl' method: clustering method to use, which can be either 
-           'mcl' or 'ward'. The last one uses scipy implementation, and is 
+        :param 'mcl' method: clustering method to use, which can be either
+           'mcl' or 'ward'. The last one uses scipy implementation, and is
            NOT RECOMMENDED.
-        :param 'mcl' mcl_bin: path to the mcl executable file, in case of the 
+        :param 'mcl' mcl_bin: path to the mcl executable file, in case of the
            'mcl is not in the PATH' warning message
         :param None tmp_file: path to a temporary file created during
            the clustering computation. Default will be created in /tmp/ folder
         :param True verbose: same as print StructuralModels.clusters
-        
+
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
@@ -275,12 +275,12 @@ class StructuralModels(object):
     def cluster_analysis_dendrogram(self, n_best_clusters=None, color=False,
                                     axe=None, savefig=None):
         """
-        Representation of the clustering results. The length of the leaves if 
-        proportional to the final objective function value of each model. The 
-        branch widths are proportional to the number of models in a given 
+        Representation of the clustering results. The length of the leaves if
+        proportional to the final objective function value of each model. The
+        branch widths are proportional to the number of models in a given
         cluster (or group of clusters, if it is an internal branch).
-           
-        :param None n_best_clusters: number of clusters to represent (by 
+
+        :param None n_best_clusters: number of clusters to represent (by
            default all clusters will be shown)
         :param False color: color the dendrogram based on the significance of
            the clustering (basically it depends of the internal branch lengths)
@@ -309,7 +309,7 @@ class StructuralModels(object):
             dads[a] = i
             dads[b] = i
 
-        d = augmented_dendrogram(clust_count, dads, objfun, color, 
+        d = augmented_dendrogram(clust_count, dads, objfun, color,
                                  axe, savefig, z)
         return d
 
@@ -330,7 +330,7 @@ class StructuralModels(object):
         :param False error: represent the error of the estimates
         :param None savedata: path to a file where to save the density data
            generated (1 column per step + 1 for particle number).
-        
+
         """
         if type(steps) == int:
             steps = (steps, )
@@ -382,11 +382,11 @@ class StructuralModels(object):
         # write consistencies to file
         if savedata:
             out = open(savedata, 'w')
-            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' + 
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
             '2*stddev(%d)' % c for c in steps])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
-                    ['None\tNone' if part >= len(distsk[c]) else 
+                    ['None\tNone' if part >= len(distsk[c]) else
                     (str(round(distsk[c][part], 3)) + '\t' +
                      str(errorp[c][part]))
                      if distsk[c][part] else 'None\tNone'
@@ -439,7 +439,7 @@ class StructuralModels(object):
 
     def get_contact_matrix(self, models=None, cluster=None, cutoff=150):
         """
-        Returns a matrix with the number of interactions observed below a given 
+        Returns a matrix with the number of interactions observed below a given
         cutoff distance.
 
         :param None models: if None (default) the contact map will be computed
@@ -467,18 +467,18 @@ class StructuralModels(object):
                            if k < cutoff])
                 matrix[i][j] = matrix[j][i] = float(val) / len(models) * 100
         return matrix
-        
+
 
     def define_best_models(self, nbest):
         """
-        Defines the number of top models (based on the objective function) to 
+        Defines the number of top models (based on the objective function) to
         keep. If keep_all is set to True in
         :func:`pytadbit.imp.imp_model.generate_3d_models` or in
         :func:`pytadbit.experiment.Experiment.model_region`, then the full set
         of models (n_models parameter) will be used, otherwise only the n_keep
         models will be available.
 
-        :param nbest: number of top models to keep (usually 20% of the 
+        :param nbest: number of top models to keep (usually 20% of the
            generated models).
         """
         tmp_models = self.__models
@@ -494,21 +494,21 @@ class StructuralModels(object):
         Plots a contact map representing the frequency of interaction (defined
         by a distance cutoff) between two particles.
 
-        :param None models: if None (default) the contact map will be computed 
+        :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
         :param 150 cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not
-        :param None axe: a matplotlib.axes.Axes object to define the plot 
+        :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI
         :param None savedata: path to a file where to save the contact map data
            generated, in three columns format (particle1, particle2, percentage
            of models where these two particles are in contact)
-           
+
         """
         matrix = self.get_contact_matrix(models, cluster, cutoff)
         show = False
@@ -551,16 +551,16 @@ class StructuralModels(object):
            cluster number 'cluster'
         :param 150 cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not
-        :param None savefig: path to a file where to save the image generated; 
+        :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI
         :param False plot: to display the plot
-        :param None axe: a matplotlib.axes.Axes object to define the plot 
+        :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
 
         :returns: Spearman correlation rho and p-value, between the two
-           matrices. A rho value greater than 0.7 indicates a very good 
+           matrices. A rho value greater than 0.7 indicates a very good
            correlation
-        
+
         """
         model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
                                                cutoff=cutoff)
@@ -594,7 +594,7 @@ class StructuralModels(object):
         ax.set_title('Z-scores of the observed Hi-C count')
         cbar = ax.figure.colorbar(ims)
         cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
-        
+
         if savefig:
             fig.savefig(savefig)
         elif not axe:
@@ -604,26 +604,26 @@ class StructuralModels(object):
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
                           cluster=None, axe=None, savefig=None, savedata=None):
         """
-        Plots the particle consistency, over a given set of models, vs the 
+        Plots the particle consistency, over a given set of models, vs the
         modeled region bins. The consistency is a measure of the variability
         (or stability) of the modeled region (the higher the consistency value,
-        the higher stability).  
+        the higher stability).
 
         :param (50,100,150,200) cutoffs: list of distance cutoffs (nm) used to
-           compute the consistency. Two particle are considered consistent if 
+           compute the consistency. Two particle are considered consistent if
            their distance is less than the given cutoff
         :param None models:  if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
-        :param '/tmp/tmp_cons' tmp_path: location of the input files for 
+        :param '/tmp/tmp_cons' tmp_path: location of the input files for
            TM-score program
-        :param '' tmsc: path to the TMscore_consistency script (assumed to be 
+        :param '' tmsc: path to the TMscore_consistency script (assumed to be
            installed by default)
         :param None savedata: path to a file where to save the consistency data
            generated (1 column per cutoff + 1 for particle number).
-        
+
         """
         if models:
             models = dict([(i, self[m]) for i, m in enumerate(models)])
@@ -693,11 +693,11 @@ class StructuralModels(object):
         Visualize a selected model in the three dimensions.
 
         :param model_num: model to visualize
-        :param 'chimera' tool: path to the external tool used to visualize the 
+        :param 'chimera' tool: path to the external tool used to visualize the
            model
         :param None savefig: path to a file where to save the image OR movie
            generated (depending on the extension; accepted formats are png, mov
-           and webm). if set to None, the image or movie will be shown using 
+           and webm). if set to None, the image or movie will be shown using
            the default GUI.
         :param None cmd: list of commands to be passed to the viewer. The chimera list is:
 
@@ -707,7 +707,8 @@ class StructuralModels(object):
              set bg_color white
              windowsize 800 600
              bonddisplay never #0
-             shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on
+             represent wire
+             shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
              clip yon -500
              ~label
              set subdivision 1
@@ -720,7 +721,7 @@ class StructuralModels(object):
            Followed by the movie command to record movies:
 
            ::
-          
+
              movie record supersample 1
              turn y 3 120
              wait 120
@@ -737,22 +738,22 @@ class StructuralModels(object):
            ::
 
              cmd = ['focus', 'set bg_color white', 'windowsize 800 600', 'bonddisplay never #0', 'shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on', 'clip yon -500', '~label', 'set subdivision 1', 'set depth_cue', 'set dc_color black', 'set dc_start 0.5', 'set dc_end 1', 'scale 0.8']
-             
-           will return the default image (other commands can be passed to 
+
+           will return the default image (other commands can be passed to
            modified the final image/movie).
-        
+
         """
         self.write_cmm('/tmp/', model_num=model_num)
         chimera_view('/tmp/model.%s.cmm' % (self[model_num]['rand_init']),
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
-    
+
 
     def measure_angle_3_particles(self, parta, partb, partc,
                                   models=None, cluster=None,
                                   radian=False, all_angles=False):
         """
         Given three particles A, B and C, the angle g (angle ACB, shown below):
-        
+
         ::
 
 
@@ -771,7 +772,7 @@ class StructuralModels(object):
                               C
 
         is given by the theorem of Al-Kashi:
-        
+
         .. math::
 
           b^2 = a^2 + c^2 - 2ac\cos(g)
@@ -784,12 +785,12 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
-        :param False radian: if True, return value in radians (in degrees 
+        :param False radian: if True, return value in radians (in degrees
            otherwise)
 
         :returns: an angle, either in degrees or radians. If all_angles is true
            returns a list of the angle g, h, i (see picture above)
-        
+
         """
         # WARNING: here particle numbers are +1, they will be reduced
         # inside median_3d_dist
@@ -807,7 +808,7 @@ class StructuralModels(object):
 
         if not all_angles:
             return g if radian else degrees(g)
-        
+
         try:
             h = acos((a**2 + b**2 - c**2) / (2 * a * b))
         except ValueError:
@@ -839,7 +840,7 @@ class StructuralModels(object):
         xis /= len(models)
         yis /= len(models)
         zis /= len(models)
-        
+
         return [xis, yis, zis]
 
 
@@ -898,7 +899,7 @@ class StructuralModels(object):
             plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
                              color=colors[steps.index(k)],
                              lw=steps.index(k) + 1, alpha=0.5)
-        
+
         if savefig:
             fig.savefig(savefig)
         elif not axe:
@@ -907,10 +908,40 @@ class StructuralModels(object):
 
 
     def walking_angle(self, models=None, cluster=None, steps=(1,3), signed=True,
-                      plot=True, savefig=None, savedata=None, axe=None):
+                      savefig=None, savedata=None, axe=None):
         """
+        Plots the angle between successive loci in a given model or set of
+        models.
+        :param None models: if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param (1, 3) steps: how many particles to group for the estimation.
+           By default 2 curves are drawn
+        :param True signed: whether to compute the sign of the angle according
+           to a normal plane, or not.
+        :para None savefig:
+
+
+
+
+
+
+                            C..........D
+                         ...            ...
+                      ...                 ...
+                   ...                       ...
+        A..........B                            .E
+       ..                                        .
+     ..                                          .
+                                                 .                 .
+                                                 .                .
+                                                 F...............G
+        
+                                             
         """
-        # plot
+        # plot                                              .
         if axe:
             ax = axe
             fig = ax.get_figure()
@@ -975,7 +1006,7 @@ class StructuralModels(object):
                         out.write('\tNone')
                 out.write('\n')
             out.close()
-                
+
         ax.set_ylabel('Angle in degrees')
         ax.set_xlabel('Particle number')
         ax.legend(plots, ['Average for %s angle%s' % (k, 's' if k else '')
@@ -995,7 +1026,7 @@ class StructuralModels(object):
                        plot=True, median=True, axe=None, savefig=None):
         """
         Computes the median distance between two particles over a set of models
-        
+
         :param part1: number corresponding to the first particle
         :param part2: number corresponding to the second particle
         :param None models:  if None (default) the contact map will be computed
@@ -1003,15 +1034,15 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
-        :param True plot: if True, display a histogram and a box-plot of the 
+        :param True plot: if True, display a histogram and a box-plot of the
            distribution of the calculated distances. If False, return either
            the full list of the calculated distances or their median value
-        :param True median: return either the full list of the calculated 
-           distances (False) or their median value (True), when 'plot' is set 
+        :param True median: return either the full list of the calculated
+           distances (False) or their median value (True), when 'plot' is set
            to False
-        
-        :returns: if 'plot' is False, return either the full list of the 
-           calculated distances or their median value distances, either the 
+
+        :returns: if 'plot' is False, return either the full list of the
+           calculated distances or their median value distances, either the
            list of distances.
         """
         part1 -= 1
@@ -1026,7 +1057,7 @@ class StructuralModels(object):
         for mdl in models:
             dists.append(
                 sqrt(
-                    (self[mdl]['x'][part1] - self[mdl]['x'][part2])**2 + 
+                    (self[mdl]['x'][part1] - self[mdl]['x'][part2])**2 +
                     (self[mdl]['y'][part1] - self[mdl]['y'][part2])**2 +
                     (self[mdl]['z'][part1] - self[mdl]['z'][part2])**2)
                 )
@@ -1041,7 +1072,7 @@ class StructuralModels(object):
     def objective_function_model(self, model, log=False, smooth=True, axe=None,
                                  savefig=None):
         """
-        This function plots the objective function value per each Monte-Carlo 
+        This function plots the objective function value per each Monte-Carlo
         step
 
         :param model: the number of the model to plot
@@ -1050,17 +1081,17 @@ class StructuralModels(object):
         """
         self[model].objective_function(log=log, smooth=smooth, axe=axe,
                                        savefig=savefig)
-        
+
 
     def write_cmm(self, directory, model_num=None, models=None, cluster=None,
                   color=color_residues, rndname=True):
         """
-        Save a model in the cmm format, read by Chimera 
+        Save a model in the cmm format, read by Chimera
         (http://www.cgl.ucsf.edu/chimera).
 
         **Note:** If none of model_num, models or cluster parameter are set,
-        ALL the models will be written.  
-        
+        ALL the models will be written.
+
         :param directory: location where the file will be written (note: the
            name of the file will be model_1.cmm if model number is 1)
         :param None model_num: the number of the model to save
@@ -1074,7 +1105,7 @@ class StructuralModels(object):
            objective function value
         :param color_residues color: either a coloring function like
            :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
-           tuples (as long as the number of particles) 
+           tuples (as long as the number of particles)
         """
         if model_num > -1:
             models = [model_num]
@@ -1083,7 +1114,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [str(m) for m in self.clusters[cluster]]
         else:
-            models = self.__models        
+            models = self.__models
         for model_num in models:
             try:
                 model = self[model_num]
@@ -1127,7 +1158,7 @@ class StructuralModels(object):
 
         **Note:** If none of model_num, models or cluster parameter are set,
         ALL the models will be written.
-        
+
         :param directory: location where the file will be written (note: the
            file name will be model.1.xyz, if the model number is 1)
         :param None model_num: the number of the model to save
@@ -1149,7 +1180,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [str(m) for m in self.clusters[cluster]]
         else:
-            models = self.__models        
+            models = self.__models
         for model_num in models:
             try:
                 model = self[model_num]
@@ -1175,11 +1206,11 @@ class StructuralModels(object):
     def save_models(self, path_f):
         """
         Saves all the models in pickle format (python object written to disk).
-        
+
         :param path_f: path where to save the pickle file
         """
         to_save = {}
-        
+
         to_save['models']        = self.__models
         to_save['bad_models']    = self._bad_models
         to_save['nloci']         = self.nloci
@@ -1187,7 +1218,7 @@ class StructuralModels(object):
         to_save['resolution']    = self.resolution
         to_save['original_data'] = self._original_data
         to_save['config']        = self._config
-        
+
         out = open(path_f, 'w')
         dump(to_save, out)
         out.close()
@@ -1197,6 +1228,6 @@ class ClusterOfModels(dict):
     def __str__(self):
         out1 = '   Cluster #%s has %s models [top model: %s]\n'
         out = 'Total number of clusters: %s\n%s' % (
-            len(self), 
+            len(self),
             ''.join([out1 % (k, len(self[k]), self[k][0]) for k in self]))
         return out

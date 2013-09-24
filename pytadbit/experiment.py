@@ -385,7 +385,7 @@ class Experiment(object):
            information (3)
         :param CONFIG['dmel_01'] a dictionary containing the standard
            parameters used to generate the models. The dictionary should
-           contain the keys kforce, lowrdist, maxdist, upfreq and lowfreq.
+           contain the keys kforce, maxdist, upfreq and lowfreq.
            Examples can be seen by doing:
            
            ::
@@ -404,9 +404,6 @@ class Experiment(object):
              
                   # Force applied to the restraints inferred to neighbor particles
                   'kforce'    : 5,
-             
-                  # Minimum distance between two non-bonded particles
-                  'lowrdist'  : 100,
              
                   # Maximum experimental contact distance
                   'maxdist'   : 600, # OPTIMIZATION: 500-1200
@@ -436,7 +433,7 @@ class Experiment(object):
     def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
-                               scale_range=[0.01][:],
+                               scale_range=[0.005][:],
                                maxdist_range=(400, 1400), cutoff=300,
                                outfile=None, verbose=True):
         """

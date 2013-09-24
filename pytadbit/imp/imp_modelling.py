@@ -105,6 +105,8 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     # Particles initial radius
     global RADIUS
     RADIUS = resolution * CONFIG['scale']
+    CONFIG['lowrdist'] = RADIUS * 2.
+    
 
     # get SLOPE and regression for all particles of the z-score data
     global SLOPE, INTERCEPT

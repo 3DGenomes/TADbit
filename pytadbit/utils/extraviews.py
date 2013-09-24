@@ -258,7 +258,8 @@ focus
 set bg_color white
 windowsize 800 600
 bonddisplay never #0
-shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on
+represent wire
+shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
 clip yon -500
 ~label
 set subdivision 1
