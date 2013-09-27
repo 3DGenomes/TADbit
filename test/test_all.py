@@ -26,7 +26,7 @@ class TestTadbit(unittest.TestCase):
         exp3 = tadbit('20Kb/chrT/chrT_C.tsv', max_tad_size="auto",
                       verbose=False, no_heuristic=False, n_cpus='max')
         exp4 = tadbit('20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
-                      n_cpus='auto',
+                      n_cpus='max',
                       verbose=False, no_heuristic=False, get_weights=True)
 
         breaks = [0, 4, 10, 15, 23, 29, 38, 45]
@@ -49,8 +49,8 @@ class TestTadbit(unittest.TestCase):
     def test_03_tad_multi_aligner(self):
 
         test_chr = Chromosome(name='Test Chromosome',
-                              tad_handlers=[exp1, exp2, exp3, exp4],
-                              experiment_handlers=['40Kb/chrT/chrT_A.tsv', '20Kb/chrT/chrT_B.tsv', '20Kb/chrT/chrT_C.tsv', '20Kb/chrT/chrT_D.tsv'],
+                              experiment_tads=[exp1, exp2, exp3, exp4],
+                              experiment_hic_data=['40Kb/chrT/chrT_A.tsv', '20Kb/chrT/chrT_B.tsv', '20Kb/chrT/chrT_C.tsv', '20Kb/chrT/chrT_D.tsv'],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'],
                               experiment_resolutions=[40000,20000,20000,20000])
         for exp in test_chr.experiments: exp.normalize_hic(method='visibility')
@@ -69,7 +69,7 @@ class TestTadbit(unittest.TestCase):
     def test_04_chromosome_batch(self):
         test_chr = Chromosome(name='Test Chromosome',
                               experiment_resolutions=[20000]*3,
-                              experiment_handlers=['20Kb/chrT/chrT_A.tsv',
+                              experiment_hic_data=['20Kb/chrT/chrT_A.tsv',
                                                    '20Kb/chrT/chrT_D.tsv',
                                                    '20Kb/chrT/chrT_C.tsv'],
                               experiment_names=['exp1', 'exp2', 'exp3'])
@@ -83,7 +83,7 @@ class TestTadbit(unittest.TestCase):
 
     def test_05_save_load(self):
         test_chr = Chromosome(name='Test Chromosome',
-                              tad_handlers=[exp1, exp2],
+                              experiment_tads=[exp1, exp2],
                               experiment_names=['exp1', 'exp2'],
                               experiment_resolutions=[20000,20000])
         test_chr.save_chromosome('lolo', force=True)
@@ -94,9 +94,9 @@ class TestTadbit(unittest.TestCase):
 
     def test_06_tad_clustering(self):
         test_chr = Chromosome(name='Test Chromosome',
-                              tad_handlers=[exp4],
+                              experiment_tads=[exp4],
                               experiment_names=['exp1'],
-                              experiment_handlers=['20Kb/chrT/chrT_D.tsv'],
+                              experiment_hic_data=['20Kb/chrT/chrT_D.tsv'],
                               experiment_resolutions=[20000,20000])
         all_tads = []
         for _, tad in test_chr.iter_tads('exp1'):
@@ -109,16 +109,16 @@ class TestTadbit(unittest.TestCase):
 
     def test_07_forbidden_regions(self):
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
-        test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
-                                xp_handler='20Kb/chrT/chrT_D.tsv')
+        test_chr.add_experiment('exp1', 20000, tad_def=exp4,
+                                hic_data='20Kb/chrT/chrT_D.tsv')
         brks = [2.0, 7.0, 12.0, 18.0, 49.0,
                 61.0, 66.0, 75.0, 89.0, 94.0, 99.0]
         tads = test_chr.experiments['exp1'].tads
         found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
         self.assertEqual(brks, found)
         items1 = test_chr.forbidden.keys(), test_chr.forbidden.values()
-        test_chr.add_experiment('exp2', 20000, tad_handler=exp3,
-                                xp_handler='20Kb/chrT/chrT_C.tsv')
+        test_chr.add_experiment('exp2', 20000, tad_def=exp3,
+                                hic_data='20Kb/chrT/chrT_C.tsv')
         items2 = test_chr.forbidden.keys(), test_chr.forbidden.values()
         know1 = ([32, 33, 34, 38, 39, 19, 20, 21, 22,
                   23, 24, 25, 26, 27, 28, 29, 30, 31],
@@ -132,8 +132,8 @@ class TestTadbit(unittest.TestCase):
 
     def test_08_changing_resolution(self):
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
-        test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
-                                xp_handler='20Kb/chrT/chrT_D.tsv')
+        test_chr.add_experiment('exp1', 20000, tad_def=exp4,
+                                hic_data='20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments['exp1']
         sum20 = sum(exp.hic_data[0])
         exp.set_resolution(80000)
@@ -166,8 +166,8 @@ class TestTadbit(unittest.TestCase):
         TODO: check with Davide's script
         """
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
-        test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
-                                xp_handler='20Kb/chrT/chrT_D.tsv')
+        test_chr.add_experiment('exp1', 20000, tad_def=exp4,
+                                hic_data='20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_experiment('20Kb/chrT/chrT_A.tsv')
         exp.get_hic_zscores()
@@ -179,8 +179,8 @@ class TestTadbit(unittest.TestCase):
         method names are: 'sqrt' or 'over_tot'
         """
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
-        test_chr.add_experiment('exp1', 20000, tad_handler=exp4,
-                                xp_handler='20Kb/chrT/chrT_D.tsv')
+        test_chr.add_experiment('exp1', 20000, tad_def=exp4,
+                                hic_data='20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         tadbit_weigths = exp.wght[:]
         exp.wght = None

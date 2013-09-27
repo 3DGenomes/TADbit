@@ -14,6 +14,7 @@ from copy                              import deepcopy as copy
 from cPickle                           import load, dump
 from pytadbit.alignment                import Alignment, randomization_test
 from numpy                             import log2
+from random                            import random
 
 try:
     from matplotlib import pyplot as plt
@@ -80,11 +81,12 @@ class Chromosome(object):
     chromosome of DNA, and to compare them.
 
     :param name: name of the chromosome (might be a chromosome name for example)
-    :param None resolution: resolution of the experiments. All the experiments
-       must have the same resolution
-    :param None experiment_handlers: :py:func:`list` of paths to files
+    :param None resolutions: list of resolutions corresponding to a list of
+       experiments passed.
+    :param None experiment_hic_data: :py:func:`list` of paths to files
+       containing the Hi-C count matrices corresponding to different experiments
+    :param None experiment_tads: :py:func:`list` of paths to files
        containing the definition of TADs corresponding to different experiments
-       (or output of TADBit)
     :param None experiment_names: :py:func:`list` of the names of each 
         experiment
     :param 5000000 max_tad_size: maximum TAD size allowed. TADs longer than
@@ -92,14 +94,28 @@ class Chromosome(object):
         chromosome size will be reduced accordingly
     :param 0 chr_len: size of the DNA chromosome in bp. By default it will be
         inferred from the distribution of TADs
+    :param None parser: a parser function that returns a tuple of lists 
+       representing the data matrix and the length of a row/column. With
+       the file example.tsv:
+
+       ::
+       
+         chrT_001	chrT_002	chrT_003	chrT_004
+         chrT_001	629	164	88	105
+         chrT_002	164	612	175	110
+         chrT_003	88	175	437	100
+         chrT_004	105	110	100	278
+
+       the output of parser('example.tsv') would be be:
+       ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
+       110, 100, 278]), 4]``
 
     :return: Chromosome object
 
-    TODO: update doc
 
     """
-    def __init__(self, name, experiment_resolutions=None, tad_handlers=None,
-                 experiment_handlers=None, experiment_names=None,
+    def __init__(self, name, experiment_resolutions=None, experiment_tads=None,
+                 experiment_hic_data=None, experiment_names=None,
                  max_tad_size=5000000, chr_len=0, parser=None):
         self.name             = name
         self.max_tad_size     = max_tad_size
@@ -110,13 +126,13 @@ class Chromosome(object):
         self.experiments      = ExperimentList([], self)
         self._centromere      = None
         self.alignment        = AlignmentDict()
-        if tad_handlers:
-            for i, handler in enumerate(tad_handlers or []):
+        if experiment_tads:
+            for i, handler in enumerate(experiment_tads or []):
                 name = experiment_names[i] if experiment_names else None
                 self.add_experiment(name, experiment_resolutions[i],
-                                    tad_handler=handler, parser=parser)
-        if experiment_handlers:
-            for i, handler in enumerate(experiment_handlers or []):
+                                    tad_def=handler, parser=parser)
+        if experiment_hic_data:
+            for i, handler in enumerate(experiment_hic_data or []):
                 name = experiment_names[i] if experiment_names else None
                 try:
                     xpr = self.get_experiment(name)
@@ -129,7 +145,7 @@ class Chromosome(object):
                     self.experiments.append(handler)
                 else:
                     self.add_experiment(name, experiment_resolutions[i],
-                                        xp_handler=handler, parser=parser)
+                                        hic_data=handler, parser=parser)
 
 
     def _get_forbidden_region(self, xpr):
@@ -296,8 +312,8 @@ class Chromosome(object):
         return score, p_value
 
 
-    def add_experiment(self, name, resolution=None, tad_handler=None,
-                       xp_handler=None, replace=False, parser=None,
+    def add_experiment(self, name, resolution=None, tad_def=None,
+                       hic_data=None, replace=False, parser=None,
                        conditions=None, **kwargs):
         """
         Add a Hi-C experiment to Chromosome
@@ -305,7 +321,10 @@ class Chromosome(object):
         :param name: name of the experiment or of the Experiment object
         :param resolution: resolution of the experiment (needed if name is not
            an Experiment object)
-        :param handler: path to the tab separeted value file
+        :param None hic_data: whether a file or a list of lists corresponding to
+           the Hi-C data
+        :param None tad_def: a file or a dict with precomputed TADs for this
+           experiment
         :param False replace: overwrite the experiments loaded under the same
            name
         :param None parser: a parser function that returns a tuple of lists 
@@ -326,7 +345,7 @@ class Chromosome(object):
         
         """
         if not name:
-            name = ''.join([letters[int(rand() * len(letters))] \
+            name = ''.join([letters[int(random() * len(letters))] \
                             for _ in xrange(5)])
             warn('No name provided, random name generated: %s\n' % (name))
         if name in self.experiments:
@@ -338,8 +357,8 @@ class Chromosome(object):
         if type(name) == Experiment:
             self.experiments.append(name)
         elif resolution:
-            self.experiments.append(Experiment(name, resolution, xp_handler,
-                                               tad_handler, parser=parser,
+            self.experiments.append(Experiment(name, resolution, hic_data,
+                                               tad_def, parser=parser,
                                                conditions=conditions, **kwargs))
         else:
             raise Exception('resolution param is needed\n')
@@ -393,8 +412,8 @@ class Chromosome(object):
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
-            experiment = Experiment(name, resolution, xp_handler=matrix,
-                                    tad_handler=result, weights=weights)
+            experiment = Experiment(name, resolution, hic_data=matrix,
+                                    tad_def=result, weights=weights)
             self.add_experiment(experiment)
             return
         if type(experiments) is not list:

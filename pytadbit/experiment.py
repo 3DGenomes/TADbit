@@ -26,9 +26,9 @@ class Experiment(object):
     :param name: name of the experiment
     :param resolution: the resolution of the experiment (size of a bin in
        bases)
-    :param None xp_handler: whether a file or a list of lists corresponding to
+    :param None hic_data: whether a file or a list of lists corresponding to
        the Hi-C data
-    :param None tad_handler: a file or a dict with precomputed TADs for this
+    :param None tad_def: a file or a dict with precomputed TADs for this
        experiment
     :param None parser: a parser function that returns a tuple of lists 
        representing the data matrix and the length of a row/column. With
@@ -57,7 +57,7 @@ class Experiment(object):
     """
 
 
-    def __init__(self, name, resolution, xp_handler=None, tad_handler=None,
+    def __init__(self, name, resolution, hic_data=None, tad_def=None,
                  parser=None, no_warn=False, weights=None,
                  conditions=None, filter_columns=True):
         self.name            = name
@@ -73,12 +73,12 @@ class Experiment(object):
         self._normalization  = None
         self._zeros          = None
         self._zscores        = {}
-        if xp_handler:
-            self.load_experiment(xp_handler, parser,
+        if hic_data:
+            self.load_experiment(hic_data, parser,
                               filter_columns=filter_columns)
-        if tad_handler:
-            self.load_tad_def(tad_handler, weights=weights)
-        elif not xp_handler and not no_warn:
+        if tad_def:
+            self.load_tad_def(tad_def, weights=weights)
+        elif not hic_data and not no_warn:
             warn('WARNING: this is an empty shell, no data here.\n')
 
 
@@ -102,7 +102,7 @@ class Experiment(object):
             
         xpr = Experiment(name='%s+%s' % (self.name, other.name),
                          resolution=resolution,
-                         xp_handler=tuple([i + j for i, j in zip(
+                         hic_data=tuple([i + j for i, j in zip(
                              self.hic_data[0], other.hic_data[0])]))
         self.set_resolution(reso1)
         other.set_resolution(reso2)
@@ -164,12 +164,13 @@ class Experiment(object):
             del(self._ori_hic)
 
 
-    def load_experiment(self, handler, parser=None, resolution=None,
+    def load_experiment(self, hic_data, parser=None, resolution=None,
                         filter_columns=True):
         """
         Add a Hi-C experiment to the Chromosome object.
         
-        :param handler: path to the tab separeted value file
+        :param None hic_data: whether a file or a list of lists corresponding to
+           the Hi-C data
         :param name: name of the experiment
         :param False force: overwrite the experiments loaded under the same 
            name
@@ -196,7 +197,7 @@ class Experiment(object):
            of low values
         
         """
-        nums, size = read_matrix(handler, parser=parser)
+        nums, size = read_matrix(hic_data, parser=parser)
         self.hic_data = nums
         self.size     = size
         resolution = resolution or self.resolution
@@ -208,18 +209,19 @@ class Experiment(object):
             self._zeros = hic_filtering_for_modelling(self.get_hic_matrix())
         
 
-    def load_tad_def(self, handler, weights=None):
+    def load_tad_def(self, tad_def, weights=None):
         """
          Add the Topologically Associated Domains definition detection to Slice
         
-        :param handler: path to file
+        :param None tad_def: a file or a dict with precomputed TADs for this
+           experiment
         :param None name: name of the experiment, if None f_name will be used
         :param None weights: Store information about the weights, corresponding
            to the normalization of the Hi-C data (see tadbit function
            documentation)
         
         """
-        tads, wght = parse_tads(handler)
+        tads, wght = parse_tads(tad_def)
         self.tads = tads
         self.wght  = weights or wght
         
@@ -534,7 +536,7 @@ class Experiment(object):
                 new_matrix[i - start].append(matrix[i][j])
                 
         tmp = Chromosome('tmp')
-        tmp.add_experiment('exp1', xp_handler=[new_matrix],
+        tmp.add_experiment('exp1', hic_data=[new_matrix],
                            resolution=self.resolution, filter_columns=False)
         exp = tmp.experiments[0]
         # We want the weights and zeros calculated in the full chromosome
