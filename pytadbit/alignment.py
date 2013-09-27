@@ -265,16 +265,16 @@ class Alignment(object):
         self.__keys.append(name)
 
 
-    def draw(self, focus=None):
+    def draw(self, focus=None, extras=None):
         """
         Draw alignments as a plot.
         
         :param None focus: can pass a tuple (bin_start, bin_stop) to display the
            alignment between these genomic bins
+        :param None extras: list of coordinates (genomic bin) where to draw a
+           red cross
         """
         from matplotlib.cm import jet
-        from matplotlib import colors
-        from matplotlib import colorbar
         from matplotlib import pyplot as plt
         experiments = self.__experiments
 
@@ -338,6 +338,8 @@ class Alignment(object):
                 axes[iex].fill(linspace(start, end), ellipse(height),
                                alpha=.8 if height > 1 else 0.4,
                                facecolor='grey', edgecolor='grey')
+            if extras:
+                axes[iex].plot(extras, [.5 for _ in xrange(len(extras))], 'rx')
             axes[iex].grid()
             axes[iex].patch.set_visible(False)
         maxy = max(maxys) + 0.4

@@ -912,6 +912,7 @@ class StructuralModels(object):
         """
         Plots the angle between successive loci in a given model or set of
         models.
+        
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -922,26 +923,26 @@ class StructuralModels(object):
         :param True signed: whether to compute the sign of the angle according
            to a normal plane, or not.
         :para None savefig:
-
-
-
-
-
-
-                            C..........D
-                         ...            ...
-                      ...                 ...
-                   ...                       ...
-        A..........B                            .E
-       ..                                        .
-     ..                                          .
-                                                 .                 .
-                                                 .                .
-                                                 F...............G
         
-                                             
+        
+        
+        
+        ::
+          
+                                C..........D
+                             ...            ...
+                          ...                 ...
+                       ...                       ...
+            A..........B                            .E
+           ..                                        .
+          .                                          .
+                                                     .                 .
+                                                     .                .
+                                                     F...............G
+          
+        
         """
-        # plot                                              .
+        # plot
         if axe:
             ax = axe
             fig = ax.get_figure()

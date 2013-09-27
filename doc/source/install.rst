@@ -27,15 +27,13 @@ Optional packages (but **highly** recommended):
 
   apt-get install python-matplotlib
 
+.. note:: **Alternative install**, you can install *python-setuptools* and use easy_install to get these packages (e.g. "``easy_install scipy``"). 
+
+
 IMP - 3D modeling
 -----------------
 
-The three-dimensional (3D) structure of a given genomic region is done via the IMP package.
-TADBit has been tested with **IMP version 2.0.1** (recommended IMP version to be installed).
-The installation procedure reported in this manual describes how to install IMP on Ubuntu 
-machines (installation tested on Ubuntu versions 12.04 and 13.04). However, we do not provide 
-support for installing IMP; installation instructions for IMP can be found on the IMP website
- (http://salilab.org/imp/nightly/doc/html/).
+The three-dimensional (3D) structure of a given genomic region is done via the IMP package. TADBit has been tested with **IMP version 2.0.1** (recommended IMP version to be installed). The installation procedure reported in this manual describes how to install IMP on Ubuntu machines (installation tested on Ubuntu versions 12.04 and 13.04). However, we do not provide support for installing IMP; installation instructions for IMP can be found on the IMP website (http://salilab.org/imp/nightly/doc/html/).
 
 Install the required libraries:
 

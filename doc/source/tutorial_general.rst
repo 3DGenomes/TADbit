@@ -37,6 +37,10 @@ TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as 
   # load Hi-C data
   my_chrom.add_experiment('First Hi-C experiment', xp_handler="sample_data/HIC_k562_chr19_chr19_100000_obs.txt", resolution=100000)
 
+.. warning::
+   TADBit assumes that Hi-C data matrices starts at chromosome position 1. If your matrix do not represents the full chromosome length, fill the missing columns and rows with zeros.
+
+
 Unconventional data format
 -------------------
 
