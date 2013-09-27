@@ -95,6 +95,8 @@ class Chromosome(object):
 
     :return: Chromosome object
 
+    TODO: update doc
+
     """
     def __init__(self, name, experiment_resolutions=None, tad_handlers=None,
                  experiment_handlers=None, experiment_names=None,
@@ -354,7 +356,7 @@ class Chromosome(object):
            counts must be evenly sampled and not normalized. 'experiment'
            can be either a list of lists, a path to a file or a file handler
         :param 1 n_cpus: The number of CPUs to allocate to TADBit. If
-           n_cpus='auto' the total number of CPUs will be used
+           n_cpus='max' the total number of CPUs will be used
         :param auto max_tad_size: an integer defining the maximum size of a 
            TAD. Default (auto) defines it as the number of rows/columns
         :param False no_heuristic: whether to use or not some heuristics

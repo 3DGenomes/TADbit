@@ -9,7 +9,7 @@ from pytadbit.parsers.hic_parser import read_matrix
 from pytadbit.tadbit_py import _tadbit_wrapper
 
 
-def tadbit(x, n_cpus=1, verbose=True, max_tad_size="auto",
+def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
            no_heuristic=False, get_weights=False):
     """
     The TADBit algorithm works on raw chromosome interaction count data.
@@ -31,7 +31,7 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="auto",
        sampled and not normalized. x might be either a list of list, a path to
        a file or a file handler
     :param 1 n_cpus: The number of CPUs to allocate to TADBit. If
-       n_cpus='auto' the total number of CPUs will be used
+       n_cpus='max' the total number of CPUs will be used
     :param auto max_tad_size: an integer defining maximum size of TAD. Default
        (auto) defines it as the number of rows/columns
     :param False no_heuristic: whether to use or not some heuristics
@@ -45,7 +45,7 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="auto",
        weights.
     """
     nums, size = read_matrix(x)
-    n_cpus = n_cpus if n_cpus != 'auto' else 0
+    n_cpus = n_cpus if n_cpus != 'max' else 0
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
     _, nbks, passages, _, _, bkpts, weights = \
        _tadbit_wrapper(nums,             # list of lists representing matrices

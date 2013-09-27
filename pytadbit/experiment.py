@@ -51,7 +51,9 @@ class Experiment(object):
        the TADs
     :param True filter_columns: filter the columns with unexpectedly high 
        content of low values
-       
+
+    TODO: doc conditions
+    TODO: normalization
     """
 
 
@@ -167,7 +169,7 @@ class Experiment(object):
         """
         Add a Hi-C experiment to the Chromosome object.
         
-        :param f_name: path to the tab separeted value file
+        :param handler: path to the tab separeted value file
         :param name: name of the experiment
         :param False force: overwrite the experiments loaded under the same 
            name
@@ -652,16 +654,13 @@ class Experiment(object):
             return out + '\n'
 
 
-    def generate_densities(self):
-        """
-        Related to the generation of 3D models.
-        In the case of Hi-C data, the density is equal to the number of
-        nucleotides in a bin, which is equal to the experiment resolution.
-        """
-        dens = {}
-        for i in self.size:
-            dens[i] = self.resolution
-        return dens
-
-
-
+    # def generate_densities(self):
+    #     """
+    #     Related to the generation of 3D models.
+    #     In the case of Hi-C data, the density is equal to the number of
+    #     nucleotides in a bin, which is equal to the experiment resolution.
+    #     """
+    #     dens = {}
+    #     for i in self.size:
+    #         dens[i] = self.resolution
+    #     return dens
