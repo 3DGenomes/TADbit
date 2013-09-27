@@ -493,10 +493,10 @@ class Chromosome(object):
             if start == 0:
                 warn('Hi-C matrix starts at 1, setting starting point to 1.\n')
                 start = 1
-        if type(tad) == dict:
+        elif type(tad) == dict:
             start = int(tad['start'])
             end   = int(tad['end'])
-        if type(tad) == list:
+        elif type(tad) == list:
             if type(tad[0]) == dict:
                 start = int(sorted(tad,
                                    key=lambda x: int(x['start']))[0 ]['start'])
@@ -581,15 +581,17 @@ class Chromosome(object):
             return img
         for i, tad in xper.tads.iteritems():
             if start:
+                print int(tad['start']) + 1, start
+                print int(tad['end']) + 1, end
                 if int(tad['start']) + 1 < start:
                     continue
                 if int(tad['end']) + 1 > end:
                     continue
-                t_start = int(tad['start']) - start + 1.5
-                t_end = int(tad['end']) - start + 2.5
+                t_start = int(tad['start']) + 1.5
+                t_end   = int(tad['end'])   + 2.5
             else:
                 t_start = int(tad['start']) + .5
-                t_end = int(tad['end']) + 1.5
+                t_end   = int(tad['end']) + 1.5
             axe.hlines(t_start, t_start, t_end, colors='k')
             axe.hlines(t_end, t_start, t_end, colors='k')
             axe.vlines(t_start, t_start, t_end, colors='k')
