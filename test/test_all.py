@@ -182,10 +182,10 @@ class TestTadbit(unittest.TestCase):
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data='20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
-        tadbit_weigths = exp.wght[:]
-        exp.wght = None
+        tadbit_weigths = exp.norm[:]
+        exp.norm = None
         exp.normalize_hic()
-        self.assertEqual(tadbit_weigths[0], exp.wght[0])
+        self.assertEqual(tadbit_weigths[0], exp.norm[0])
 
 
     def test_11_write_interaction_pairs(self):

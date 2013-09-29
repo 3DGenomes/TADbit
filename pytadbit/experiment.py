@@ -69,7 +69,7 @@ class Experiment(object):
         self.conditions      = sorted(conditions) if conditions else []
         self.size            = None
         self.tads            = {}
-        self.wght            = None
+        self.norm            = None
         self._normalization  = None
         self._zeros          = None
         self._zscores        = {}
@@ -221,9 +221,9 @@ class Experiment(object):
            documentation)
         
         """
-        tads, wght = parse_tads(tad_def)
+        tads, norm = parse_tads(tad_def)
         self.tads = tads
-        self.wght  = weights or wght
+        self.norm  = weights or norm
         
 
     def normalize_hic(self, method='sqrt'):
@@ -231,7 +231,7 @@ class Experiment(object):
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
 
-        It fills the Experiment.wght variable with the Hi-C values divided by
+        It fills the Experiment.norm variable with the Hi-C values divided by
         the calculated weight.
 
         The weight of a given cell in column i and row j corresponds to the
@@ -278,7 +278,7 @@ class Experiment(object):
             raise Exception('ERROR: No Hi-C data loaded\n')
         if not method in ['sqrt', 'visibility']:
             raise LookupError('Only "sqrt" and "visibility" methods are implemented')
-        if self.wght:
+        if self.norm:
             warn('WARNING: removing previous weights\n')
         # removes columns where there is no data in the diagonal
         forbidden = [i for i in xrange(self.size)
@@ -292,7 +292,7 @@ class Experiment(object):
             for j in xrange(self.size):
                 if not j in forbidden:
                     rowsums[-1] += self.hic_data[0][i + j]
-        self.wght = [[0. for _ in xrange(self.size * self.size)]]
+        self.norm = [[0. for _ in xrange(self.size * self.size)]]
         if method == 'visibility':
             total = sum(rowsums)
             func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
@@ -301,13 +301,13 @@ class Experiment(object):
         for i in xrange(self.size):
             for j in xrange(self.size):
                 if i in forbidden or j in forbidden:
-                    self.wght[0][i * self.size + j] = 0.0
+                    self.norm[0][i * self.size + j] = 0.0
                 else:
                     try:
-                        self.wght[0][i * self.size + j] = (
+                        self.norm[0][i * self.size + j] = (
                             self.hic_data[0][i * self.size + j] / func(i, j))
                     except ZeroDivisionError:
-                        self.wght[0][i * self.size + j] = 0.0
+                        self.norm[0][i * self.size + j] = 0.0
         self._normalization = method
 
 
@@ -338,7 +338,7 @@ class Experiment(object):
                         and remove_zeros:
                         zeros[(i, j)] = None
                         continue
-                    values.append(self.wght[0][i * self.size + j])
+                    values.append(self.norm[0][i * self.size + j])
         else:
             for i in xrange(self.size):
                 if i in self._zeros:
@@ -541,7 +541,7 @@ class Experiment(object):
         exp = tmp.experiments[0]
         # We want the weights and zeros calculated in the full chromosome
         siz = self.size
-        exp.wght = [[self.wght[0][i + siz * j] for i in xrange(start, end)
+        exp.norm = [[self.norm[0][i + siz * j] for i in xrange(start, end)
                      for j in xrange(start, end)]]
         exp._zeros = dict([(z - start, None) for z in self._zeros
                            if start <= z <= end])
@@ -561,8 +561,8 @@ class Experiment(object):
                 if (not exp.hic_data[0][i * exp.size + j] 
                     or not exp.hic_data[0][i * exp.size + j]):
                     continue
-                values[i][j] = exp.wght[0][i * exp.size + j]
-                values[j][i] = exp.wght[0][i * exp.size + j]
+                values[i][j] = exp.norm[0][i * exp.size + j]
+                values[j][i] = exp.norm[0][i * exp.size + j]
         return exp._zscores, values
         
 
@@ -586,7 +586,7 @@ class Experiment(object):
                 for j in xrange(self.size):
                     self._zscores.setdefault(i, {})
                     self._zscores[i][j] = self.hic_data[0][i * self.size + j]
-        if not self.wght:
+        if not self.norm:
             raise Exception('Experiment not normalized.')
         # write to file
         out = open(fname, 'w')
@@ -613,7 +613,7 @@ class Experiment(object):
                         continue
                     val = self._zscores[i][j]
                 elif normalized:
-                    val = self.wght[0][self.size*i+j]
+                    val = self.norm[0][self.size*i+j]
                 else:
                     val = self.hic_data[0][self.size*i+j]
                 if remove_zeros and not val:

@@ -301,30 +301,30 @@ class Alignment(object):
                 continue
             zeros = xpr._zeros
             try:
-                wghts = xpr.wght[0]
+                norms = xpr.norm[0]
             except TypeError:
                 warn("WARNING: weights not available, TAD's height fixed to 1")
-                wghts = None
+                norms = None
             diags = []
             sp1 = siz + 1
-            if wghts:
+            if norms:
                 for k in xrange(1, siz):
                     s_k = siz * k
-                    diags.append(sum([wghts[i * sp1 + s_k]
+                    diags.append(sum([norms[i * sp1 + s_k]
                                      if not (i in zeros
                                              or (i + k) in zeros) else 0.
                                       for i in xrange(siz - k)]) / (siz - k))
             for tad in xpr.tads:
                 start, end = (int(xpr.tads[tad]['start']) + 1,
                               int(xpr.tads[tad]['end']) + 1)
-                if wghts:
-                    matrix = sum([wghts[i + siz * j]
+                if norms:
+                    matrix = sum([norms[i + siz * j]
                                  if not (i in zeros
                                          or j in zeros) else 0.
                                   for i in xrange(start - 1, end - 1)
                                   for j in xrange(i + 1, end - 1)])
                 try:
-                    if wghts:
+                    if norms:
                         height = float(matrix) / sum(
                             [diags[i-1] * (end - start - i)
                              for i in xrange(1, end - start)])

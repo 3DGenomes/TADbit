@@ -46,7 +46,7 @@ def load_chromosome(in_f, fast=2):
         xpr = Experiment(name, dico['experiments'][name]['resolution'], 
                          no_warn=True)
         xpr.tads       = dico['experiments'][name]['tads']
-        xpr.wght       = dico['experiments'][name]['wght']
+        xpr.norm       = dico['experiments'][name]['wght']
         xpr.hic_data   = dico['experiments'][name]['hi-c']
         xpr.conditions = dico['experiments'][name]['cond']
         xpr.size       = dico['experiments'][name]['size']
@@ -68,7 +68,7 @@ def load_chromosome(in_f, fast=2):
         for name in dico['experiments']:
             crm.get_experiment(name).hic_data = dicp[name]['hi-c']
             if fast != 1:
-                crm.get_experiment(name).wght = dicp[name]['wght']
+                crm.get_experiment(name).norm = dicp[name]['wght']
     elif not fast:
         warn('WARNING: data not saved correctly for fast loading.\n')
     return crm
@@ -228,12 +228,12 @@ class Chromosome(object):
                 continue
             if divide:
                 dicp[xpr.name] = {
-                    'wght': xpr.wght,
+                    'wght': xpr.norm,
                     'hi-c': xpr.hic_data}
                 dico['experiments'][xpr.name]['wght'] = None
                 dico['experiments'][xpr.name]['hi-c'] = None
             else:
-                dico['experiments'][xpr.name]['wght'] = xpr.wght
+                dico['experiments'][xpr.name]['wght'] = xpr.norm
                 dico['experiments'][xpr.name]['hi-c'] = xpr.hic_data
         dico['name']            = self.name
         dico['size']            = self.size
@@ -482,7 +482,7 @@ class Chromosome(object):
         else:
             fun = lambda x: x
         size = xper.size
-        if normalized and not xper.wght:
+        if normalized and not xper.norm:
             raise Exception('ERROR: weights not calculated for this ' +
                             'experiment. Run Experiment.normalize_hic\n')
         if tad and focus:
@@ -505,13 +505,13 @@ class Chromosome(object):
         if relative:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
-                mini = min([i for i in xper.wght[0] if i])
+                mini = min([i for i in xper.norm[0] if i])
                 if mini == int(mini):
-                    vmin = min(xper.wght[0])
+                    vmin = min(xper.norm[0])
                 else:
                     vmin = mini
                 vmin = fun(vmin or (1 if logarithm else 0))
-                vmax = fun(max(xper.wght[0]))
+                vmax = fun(max(xper.norm[0]))
             else:
                 vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
                 vmax = fun(max(xper.hic_data[0]))
@@ -522,7 +522,7 @@ class Chromosome(object):
             if start > -1:
                 if normalized:
                     matrix = [
-                        [xper.wght[0][i+size*j]
+                        [xper.norm[0][i+size*j]
                          if (not i in xper._zeros
                              and not j in xper._zeros) else vmin
                          for i in xrange(start - 1, end)]
@@ -541,7 +541,7 @@ class Chromosome(object):
                 pass
         else:
             if normalized:
-                matrix = [[xper.wght[0][i+size*j]
+                matrix = [[xper.norm[0][i+size*j]
                            if (not i in xper._zeros
                                and not j in xper._zeros) else vmin
                            for i in xrange(size)]
@@ -638,7 +638,7 @@ class Chromosome(object):
                 if normed:
                     matrix[j][i] = xpr.hic_data[matrix_num][tadi + tadj]
                 else:
-                    matrix[j][i] = xpr.wght[0][tadi + tadj]
+                    matrix[j][i] = xpr.norm[0][tadi + tadj]
         return matrix
 
 
