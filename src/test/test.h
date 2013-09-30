@@ -1,0 +1,9 @@
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <time.h>
+#include <glib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "tadbit.h"

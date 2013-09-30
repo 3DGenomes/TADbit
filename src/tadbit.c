@@ -1,11 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <pthread.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <float.h>
-
 #include "tadbit.h"
 
 
@@ -17,6 +9,25 @@ int n_processed;              // Number of slices processed so far.
 int n_to_process;             // Total number of slices to process.
 int taskQ_i;                  // Index used for task queue.
 pthread_mutex_t tadbit_lock;  // Mutex to access task queue.
+
+// Convenience function to erase tadbit_output data structure //
+void
+destroy_tadbit_output(
+   tadbit_output *seg
+)
+{
+   free(seg->passages);
+   free(seg->llikmat);
+   free(seg->mllik);
+   free(seg->bkpts);
+   for (int i = 0 ; i < seg->m ; i++) {
+      free(seg->weights[i]);
+   }   
+   free(seg->weights);
+   free(seg);
+
+   return;
+}
 
 
 void
@@ -182,7 +193,7 @@ ll(
          i_high = diag ? j : _i+1;
          for (i = i_low ; i < i_high ; i++) {
             index = _cache_index[i+j*n];
-            // Retrive value of the exponential from cache.
+            // Retrieve value of the exponential from cache.
             if (c[index] != c[index]) { // ERROR.
                c[index] = exp(a+b*d[i+j*n]);
             }
@@ -233,7 +244,7 @@ ll(
       i_high = diag ? j : _i+1;
       for (i = i_low ; i < i_high ; i++) {
          index = _cache_index[i+j*n];
-         // Retrive value of the exponential from cache.
+         // Retrieve value of the exponential from cache.
          llik += c[index] + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
       }
    }
@@ -392,14 +403,6 @@ DPwalk(
    };
 
    pthread_t *tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
-   for (i = 0 ; i < n_threads ; i++) tid[i] = 0;
-   for (i = 0 ; i < n_threads ; i++) {
-      err = pthread_create(&(tid[i]), NULL, &fill_DP, &arg);
-      if (err) {
-         fprintf(stderr, "error creating thread (%d)\n", err);
-         return;
-      }
-   }
 
    // Dynamic programming.
    for (nbreaks = 1 ; nbreaks < MAXBREAKS ; nbreaks++) {
@@ -436,6 +439,7 @@ DPwalk(
 
    }
 
+   free(tid);
    free(new_bkpt_list);
    free(old_bkpt_list);
 
@@ -639,9 +643,11 @@ tadbit(
   const int do_not_use_heuristic,
   // output //
   tadbit_output *seg
-){
+)
+// TODO: write synopsis.
+{
 
-   // Get thread number if set to 0 (automatic).
+   // Get thread number if set to 0 (max).
    if (n_threads < 1) {
       #ifdef _SC_NPROCESSORS_ONLN
          n_threads = (int) sysconf(_SC_NPROCESSORS_ONLN);
@@ -650,8 +656,8 @@ tadbit(
       #endif
    }
 
-   const int N = n; // Original size.
-   int err;       // Used for error checking.
+   const int N = n;   // Original size.
+   int err;           // Used for error checking.
 
    int i;
    int j;
@@ -692,6 +698,16 @@ tadbit(
       n -= remove[i];
    }
 
+   if (n < 6) {
+      // Signal failure.
+      seg->maxbreaks = -1;
+      // Clean before exit.
+      free(init_dist);
+      free(remove);
+      // Bye-bye.
+      return;
+   }
+
    const int MAXBREAKS = n/5;
 
    _cache_index = (int *) malloc(n*n * sizeof(int));
@@ -727,6 +743,15 @@ tadbit(
       rowsums[k] = (double *) malloc(n * sizeof(double));
       for (i = 0 ; i < n ; i++) rowsums[k][i] = 0.0;
    }
+
+   double *totalsum = malloc(m * sizeof(double));
+   for (k = 0 ; k < m ; k++) {
+      totalsum[k] = 0.0;
+      for (i = 0 ; i < n*n ; i++) {
+         totalsum[k] += obs[k][i];
+      }
+   }
+
    for (i = 0 ; i < n ; i++)
    for (k = 0 ; k < m ; k++)
    for (l = 0 ; l < n ; l++)
@@ -734,18 +759,22 @@ tadbit(
 
    // Compute the weights.
    double **weights = (double **) malloc(m * sizeof(double *));
-   for (l = 0 ; l < m ; l++) {
-      weights[l] = (double *) malloc(n*n * sizeof(double));
-      for (i = 0 ; i < n*n ; i++) weights[l][i] = 0.0;
+   for (k = 0 ; k < m ; k++) {
+      weights[k] = (double *) malloc(n*n * sizeof(double));
+      for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0;
       // Compute scalar product.
       for (j = 0 ; j < n ; j++)
       for (i = 0 ; i < n ; i++)
-         weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
+         // TODO: test whether second normalization makes more
+         // sense and remove the square root normalization.
+         // weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
+         weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
    }
 
    // We don't need the row/column sums any more.
    for (l = 0 ; l < m ; l++) free(rowsums[l]);
    free(rowsums);
+   free(totalsum);
 
    double *mllik = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkpts = (int *) malloc(MAXBREAKS*n * sizeof(int));
@@ -860,6 +889,9 @@ tadbit(
    err = pthread_mutex_init(&tadbit_lock, NULL);
    if (err) {
       fprintf(stderr, "error initializing mutex (%d)\n", err);
+      // Signal failure.
+      seg->maxbreaks = -1;
+      // TODO: free memory before exit.
       return;
    }
 
@@ -892,6 +924,8 @@ tadbit(
          err = pthread_create(&(tid[i]), NULL, &fill_llikmat, &arg);
          if (err) {
             fprintf(stderr, "error creating thread (%d)\n", err);
+            seg->maxbreaks = -1;
+            // TODO: free memory before exit.
             return;
          }
       }
@@ -1023,6 +1057,7 @@ tadbit(
    free(remove);
 
    // Update output struct.
+   seg->m = m;
    seg->maxbreaks = MAXBREAKS;
    seg->nbreaks_opt = nbreaks_opt;
    seg->weights = resized_weights;
