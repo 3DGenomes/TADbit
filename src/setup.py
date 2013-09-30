@@ -68,7 +68,8 @@ def main():
     
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
-                                sources=['tadbit_py.c'])
+                                sources=['tadbit_py.c'],
+                                extra_compile_args=['-std=c99'])
     # c++ module to align and calculate distances between 2 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
                                 sources=['eqv-tmscore/eqv_rms_drms_py.cpp'],
