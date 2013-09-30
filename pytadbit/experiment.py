@@ -569,7 +569,7 @@ class Experiment(object):
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,
                                 diagonal=False, cutoff=None, header=False,
                                 true_position=False, uniq=True,
-                                remove_zeros=False):
+                                remove_zeros=False, focus=None):
         """
         Creates a tab separated file with all the pairwise interactions.
         
@@ -579,6 +579,10 @@ class Experiment(object):
         :param None cutoff: if defined, only the zscores above the cutoff will
            be writen to the file
         :param False uniq: only writes one representent per interacting pair
+        :param False true_position: if, true writes genomic coordinates,
+           otherwise, genomic bin.
+        :param None focus: writes interactions between the start and stop bin
+           passed to this parameter.
            
         """
         if not self._zscores and zscored:
@@ -594,11 +598,15 @@ class Experiment(object):
             out.write('elt1\telt2\t%s\n' % ('zscore' if zscored else 
                                             'normalized hi-c' if normalized 
                                             else 'raw hi-c'))
-        for i in xrange(self.size):
+        if focus:
+            start, end = focus[0], focus[1] + 1
+        else:
+            start, end = 0, self.size
+        for i in xrange(start, end):
             if i in self._zeros:
                 continue
-            start = i if uniq else 0
-            for j in xrange(start, self.size):
+            newstart = i if uniq else 0
+            for j in xrange(newstart, end):
                 if j in self._zeros:
                     continue
                 if not diagonal and i == j:
@@ -622,7 +630,7 @@ class Experiment(object):
                     out.write('%s\t%s\t%s\n' % (self.resolution * (i + 1),
                                                 self.resolution * (j + 1), val))
                 else:
-                    out.write('%s\t%s\t%s\n' % (i + 1, j + 1, val))
+                    out.write('%s\t%s\t%s\n' % (i + 1 - start, j + 1 - start, val))
         out.close()
 
 

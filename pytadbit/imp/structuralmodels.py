@@ -12,10 +12,10 @@ from subprocess                import Popen, PIPE
 from math                      import sqrt, acos, degrees, pi
 from numpy                     import median as np_median
 from numpy                     import std as np_std, log2
-from numpy                     import array, cross, dot
+from numpy                     import array, cross, dot, corrcoef
 from numpy.linalg              import norm
 from scipy.cluster.hierarchy   import linkage, fcluster
-from scipy.stats               import spearmanr
+# from scipy.stats               import spearmanr
 from warnings                  import warn
 from string                    import uppercase as uc, lowercase as lc
 from random                    import random
@@ -465,7 +465,7 @@ class StructuralModels(object):
                 val = len([k for k in self.median_3d_dist(
                     i + 1, j + 1, plot=False, median=False, models=models)
                            if k < cutoff])
-                matrix[i][j] = matrix[j][i] = float(val) / len(models) * 100
+                matrix[i][j] = matrix[j][i] = float(val) / len(models)# * 100
         return matrix
 
 
@@ -510,7 +510,7 @@ class StructuralModels(object):
            of models where these two particles are in contact)
 
         """
-        matrix = self.get_contact_matrix(models, cluster, cutoff)
+        matrix = self.get_contact_matrix(models, cluster, cutoff=cutoff)
         show = False
         if savedata:
             out = open(savedata, 'w')
@@ -549,7 +549,7 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
-        :param 150 cutoff: distance cutoff (nm) to define whether two particles
+        :param 200 cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI
@@ -557,7 +557,7 @@ class StructuralModels(object):
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
 
-        :returns: Spearman correlation rho and p-value, between the two
+        :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
            correlation
 
@@ -573,7 +573,10 @@ class StructuralModels(object):
                 oridata.append(self._original_data[i][j])
                 moddata.append(model_matrix[i][j])
         # corr = spearmanr(model_matrix, self._original_data, axis=None)
-        corr = spearmanr(moddata, oridata)
+        # corr = spearmanr(moddata, oridata)
+        print oridata
+        print moddata
+        corr = corrcoef(moddata, oridata)[1]
         if not plot:
             return corr
         if not axe:
