@@ -1,11 +1,17 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <pthread.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <float.h>
 #include <pthread.h>
 
-#ifndef TADBIT_LOADED
-#define TADBIT_LOADED
+#ifndef _TADBIT_LOADED
+#define _TADBIT_LOADED
 
 #define TOLERANCE 1e-6
 #define MAXITER 10000
-
 
 typedef struct {
    const int n;
@@ -33,6 +39,7 @@ typedef struct {
 
 // 'tadbit' output struct.
 typedef struct {
+   int m;
    int maxbreaks;
    int nbreaks_opt;
    int *passages;
@@ -41,6 +48,7 @@ typedef struct {
    int *bkpts;
    double **weights;
 } tadbit_output;
+
 
 
 void
@@ -56,5 +64,11 @@ tadbit(
   const int do_not_use_heuristic,
   /* output */
   tadbit_output *seg
+);
+
+
+void
+destroy_tadbit_output(
+   tadbit_output *seg
 );
 #endif
