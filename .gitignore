@@ -17,3 +17,8 @@ src/pytadbit_wrap.c
 *.egg-info
 *.cmm
 script.cmd
+*.gcda
+*.out
+*.o
+*.gcno
+testset
