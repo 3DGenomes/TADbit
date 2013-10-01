@@ -767,8 +767,8 @@ tadbit(
       for (i = 0 ; i < n ; i++)
          // TODO: test whether second normalization makes more
          // sense and remove the square root normalization.
-         // weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
-         weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+         weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
+         // weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
    }
 
    // We don't need the row/column sums any more.
