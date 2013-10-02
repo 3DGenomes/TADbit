@@ -645,6 +645,7 @@ tadbit(
   const int verbose,
   int max_tad_size,
   const int do_not_use_heuristic,
+  const int use_visibility,
   // output //
   tadbit_output *seg
 )
@@ -767,12 +768,20 @@ tadbit(
       weights[k] = (double *) malloc(n*n * sizeof(double));
       for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0;
       // Compute scalar product.
-      for (j = 0 ; j < n ; j++)
-      for (i = 0 ; i < n ; i++)
+      for (j = 0 ; j < n ; j++) {
+      for (i = 0 ; i < n ; i++) {
          // TODO: test whether second normalization makes more
          // sense and remove the square root normalization.
          //weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
-          weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+         //weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+         if (use_visibility) {
+           weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+         }
+         else {
+           weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
+         }
+      }
+      }
    }
 
    // We don't need the row/column sums any more.

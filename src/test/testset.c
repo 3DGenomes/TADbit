@@ -91,7 +91,7 @@ test_tadbit
       16, 17.6, 18.5, 19.1, 19.6, 19.9, 20.1, 20.3, 20.5, 20.8, 20.8, 20.5, 20.3, 20.1, 19.9, 19.6, 19.1, 18.5, 17.6, 16,
    };
 
-   tadbit(obs, 20, 2, 1, 0, 20, 1, seg);
+   tadbit(obs, 20, 2, 1, 0, 20, 1, 1, seg);
 
    g_assert_cmpint(seg->maxbreaks, ==, 4);
    g_assert_cmpint(seg->nbreaks_opt, ==, 1);
