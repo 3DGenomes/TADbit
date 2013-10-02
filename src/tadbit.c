@@ -641,6 +641,7 @@ tadbit(
   const int verbose,
   int max_tad_size,
   const int do_not_use_heuristic,
+  const int use_visibility,
   // output //
   tadbit_output *seg
 )
@@ -767,8 +768,12 @@ tadbit(
       for (i = 0 ; i < n ; i++)
          // TODO: test whether second normalization makes more
          // sense and remove the square root normalization.
-         weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
-         // weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+	if (use_visibility) {
+	  weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+	}
+	else {
+	  weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
+	}
    }
 
    // We don't need the row/column sums any more.

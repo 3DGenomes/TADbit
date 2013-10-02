@@ -62,6 +62,7 @@ tadbit(
   //const int speed,
   const int max_tad_size,
   const int do_not_use_heuristic,
+  const int use_visibility,
   /* output */
   tadbit_output *seg
 );

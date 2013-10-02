@@ -62,7 +62,7 @@ test_tadbit
    // -- OUTPUT -- //
    tadbit_output *seg = malloc(sizeof(tadbit_output));
 
-   tadbit(obs, 6, 2, 1, 0, 6, 0, seg);
+   tadbit(obs, 6, 2, 1, 0, 6, 0, 0, seg);
 
    g_assert_cmpint(seg->maxbreaks, ==, 1);
 

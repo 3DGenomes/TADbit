@@ -31,10 +31,11 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   const int verbose=0;
   const int max_tad_size=0;
   const int do_not_use_heuristic=0;
+  const int use_visibility=0;
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "Oiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &do_not_use_heuristic))
+  if (!PyArg_ParseTuple(args, "Oiiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &do_not_use_heuristic, &use_visibility))
     return NULL;
 
   // convert list of lists to pointer o pointers
@@ -49,7 +50,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
       list[i][j] = PyInt_AS_LONG(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
 
   // run tadbit
-  tadbit(list, n, m, n_threads, verbose, max_tad_size, do_not_use_heuristic, seg);
+  tadbit(list, n, m, n_threads, verbose, max_tad_size, do_not_use_heuristic, use_visibility, seg);
 
   // store each tadbit output
   int       mbreaks     = seg->maxbreaks;
