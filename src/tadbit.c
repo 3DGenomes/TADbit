@@ -39,7 +39,7 @@ fg(
   const int    j_,
   const int    _j,
   const int    diag,
-  const int *k,
+  const int    *k,
   const double *d,
   const double *w,
   const double a,
@@ -236,10 +236,8 @@ ll(
    // Compute log-likelihood (using 'dfda').
    double llik = 0.0;
 
-   //////////////////////////////////////////////////////////////////////
-   // The last call to 'fg' has set the cache to the right values. //
-   // No need to reset the cache.                                      //
-   //////////////////////////////////////////////////////////////////////
+   // The last call to 'fg' has set the cache to the right values.
+   // No need to reset the cache.
    for (j = j_low ; j < j_high ; j++) {
       i_high = diag ? j : _i+1;
       for (i = i_low ; i < i_high ; i++) {
@@ -511,15 +509,21 @@ fill_llikmat(
       i = job_index % n;
       j = job_index / n;
 
+      // Make sure that slices have minimum width 3.
+      int cornered = (i == 1) || (i == 2) || (j == n-2) || (j == n-3);
+      int slice_too_thin = (j-i) < 2;
+      if (cornered || slice_too_thin) continue;
+
       // Distinct parts of the array, no lock needed.
       llikmat[i+j*n] = 0.0;
       for (l = 0 ; l < m ; l++) {
-         // This is the slice ll summation.
+         // LABEL: slice ll summation.
          llikmat[i+j*n] += 
-            ll(n, 0, i-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2 +
-            ll(n, i,   j, i, j, 1, k[l], d, w[l], lg[l], c) +
-            ll(n, j+1, n, i, j, 0, k[l], d, w[l], lg[l], c) / 2;
+            ll(n,   0, i-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2 +
+            ll(n,   i,   j, i, j, 1, k[l], d, w[l], lg[l], c) +
+            ll(n, j+1, n-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2;
       }
+
       n_processed++;
       if (verbose) {
          fprintf(stderr, "computing likelihood (%0.f%% done)\r",
@@ -767,8 +771,8 @@ tadbit(
       for (i = 0 ; i < n ; i++)
          // TODO: test whether second normalization makes more
          // sense and remove the square root normalization.
-         weights[l][i+j*n] = sqrt(rowsums[l][i]*rowsums[l][j]);
-         // weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+         //weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
+          weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
    }
 
    // We don't need the row/column sums any more.
@@ -791,7 +795,8 @@ tadbit(
    if (do_not_use_heuristic) {
       for (j = 0 ; j < n ; j++)
       for (i = 0 ; i < n ; i++)
-         skip[i+j*n] = (j-i) > max_tad_size ? 1 : 0;
+         // Also sets the lower triangular part of 'skip'.
+         skip[i+j*n] = (i >= j) || ((j-i) > max_tad_size) ? 1 : 0;
    }
    else {
       if (verbose) {
