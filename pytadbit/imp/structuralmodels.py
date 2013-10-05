@@ -12,7 +12,7 @@ from subprocess                import Popen, PIPE
 from math                      import sqrt, acos, degrees, pi
 from numpy                     import median as np_median
 from numpy                     import std as np_std, log2
-from numpy                     import array, cross, dot, corrcoef
+from numpy                     import array, cross, dot
 from numpy.linalg              import norm
 from scipy.cluster.hierarchy   import linkage, fcluster
 # from scipy.stats               import spearmanr
@@ -573,11 +573,9 @@ class StructuralModels(object):
                 oridata.append(self._original_data[i][j])
                 moddata.append(model_matrix[i][j])
         # corr = spearmanr(model_matrix, self._original_data, axis=None)
-        # corr = spearmanr(moddata, oridata)
-        print oridata
-        print moddata
-        corr = corrcoef(moddata, oridata)[1]
-        if not plot:
+        corr = spearmanr(moddata, oridata)
+        # corr = corrcoef(moddata, oridata)[1]
+        if not plot and not savefig:
             return corr
         if not axe:
             fig = plt.figure(figsize=(15, 5.5))
@@ -861,6 +859,38 @@ class StructuralModels(object):
     def walking_dihedral(self, models=None, cluster=None, steps=(1,3),
                          plot=True, savefig=None, axe=None):
         """
+        Plots the dihedral angle between successive plans. A plan is formed by 3
+	successive loci.
+        
+        :param None models: if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param (1, 3) steps: how many particles to group for the estimation.
+           By default 2 curves are drawn
+        :param True signed: whether to compute the sign of the angle according
+           to a normal plane, or not.
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI
+        :param None savedata: path to a file where to save the angle data
+           generated (1 column per step + 1 for particle number).                
+        
+        
+        ::
+          
+                                C..........D
+                             ...            ...
+                          ...                 ...
+                       ...                       ...
+            A..........B                            .E
+           ..                                        .
+          .                                          .
+                                                     .                 .
+                                                     .                .
+                                                     F...............G
+          
+        
         """
         # plot
         if axe:
@@ -909,12 +939,13 @@ class StructuralModels(object):
             plt.show()
 
 
-
     def walking_angle(self, models=None, cluster=None, steps=(1,3), signed=True,
                       savefig=None, savedata=None, axe=None):
         """
         Plots the angle between successive loci in a given model or set of
-        models.
+        models. In order to limit the noise of the measure angle is calculated
+	between 3 loci, between each are two other loci. E.g. in the scheme
+	bellow, angle are calculated between loci A, D and G.
         
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -925,10 +956,11 @@ class StructuralModels(object):
            By default 2 curves are drawn
         :param True signed: whether to compute the sign of the angle according
            to a normal plane, or not.
-        :para None savefig:
-        
-        
-        
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI
+        :param None savedata: path to a file where to save the angle data
+           generated (1 column per step + 1 for particle number).                
+                
         
         ::
           
