@@ -15,7 +15,7 @@ from numpy                     import std as np_std, log2
 from numpy                     import array, cross, dot
 from numpy.linalg              import norm
 from scipy.cluster.hierarchy   import linkage, fcluster
-# from scipy.stats               import spearmanr
+from scipy.stats               import spearmanr
 from warnings                  import warn
 from string                    import uppercase as uc, lowercase as lc
 from random                    import random
