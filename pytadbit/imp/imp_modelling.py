@@ -158,7 +158,8 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
         out.close()
     else:
         return StructuralModels(NLOCI, models, bad_models, resolution,
-                                original_data=values, config=CONFIG)
+                                original_data=values, zscores=zscores,
+				config=CONFIG)
 
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):

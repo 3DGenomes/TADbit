@@ -12,7 +12,7 @@ from subprocess                import Popen, PIPE
 from math                      import sqrt, acos, degrees, pi
 from numpy                     import median as np_median
 from numpy                     import std as np_std, log2
-from numpy                     import array, cross, dot
+from numpy                     import array, cross, dot, ma, isnan
 from numpy.linalg              import norm
 from scipy.cluster.hierarchy   import linkage, fcluster
 from scipy.stats               import spearmanr
@@ -22,6 +22,7 @@ from random                    import random
 
 try:
     from matplotlib import pyplot as plt
+    from matplotlib.cm import jet
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -65,7 +66,8 @@ class StructuralModels(object):
     """
 
     def __init__(self, nloci, models, bad_models, resolution,
-                 original_data=None, clusters=None, config=None):
+                 original_data=None, zscores=None, clusters=None,
+		 config=None):
 
         self.__models       = models
         self._bad_models    = bad_models
@@ -73,6 +75,7 @@ class StructuralModels(object):
         self.clusters       = clusters or ClusterOfModels()
         self.resolution     = float(resolution)
         self._original_data = original_data # only used for correlation
+        self._zscores       = zscores       # only used for plotting
         self._config        = config
 
 
@@ -538,6 +541,76 @@ class StructuralModels(object):
         if savefig:
             fig.savefig(savefig)
         elif show:
+            plt.show()
+
+
+    def zscore_plot(self, axe=None, savefig=None):
+        """
+        Plots a contact map representing the frequency of interaction (defined
+        by a distance cutoff) between two particles.
+
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI
+
+        """
+
+        zsc_mtrx = reduce(lambda x, y: x + y, [[k] + self._zscores[k].keys()
+                                               for k in self._zscores.keys()])
+        max_bin = max([int(i) for i in zsc_mtrx])
+        zsc_mtrx = [[float('nan') for _ in xrange(max_bin)] for _ in xrange(max_bin)]
+        for i in xrange(max_bin):
+            for j in xrange(max_bin):
+                try:
+                    zsc_mtrx[i][j] = self._zscores[str(i)][str(j)]
+                except KeyError:
+                    continue
+        for i in xrange(max_bin):
+            for j in xrange(max_bin):
+                if zsc_mtrx[i][j]:
+                    zsc_mtrx[j][i] = zsc_mtrx[i][j]
+        for i in xrange(max_bin):
+            for j in xrange(max_bin):
+                if self._config['lowfreq'] < zsc_mtrx[i][j] < self._config['upfreq']:
+                    zsc_mtrx[j][i] = float('nan')
+                    zsc_mtrx[i][j] = float('nan')
+        masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
+        cmap = jet
+        cmap.set_bad('w', 1.)
+        if not axe:
+            fig = plt.figure(figsize=(15, 5.5))
+        else:
+            fig = axe.get_figure()
+        ax = fig.add_subplot(121)
+        ims = ax.imshow(masked_array, origin='lower',
+                        interpolation="nearest", cmap=cmap)
+        ax.set_ylabel('Particles')
+        ax.set_xlabel('Particles')
+        ax.set_title('Z-scores of the observed Hi-C count')
+        cbar = ax.figure.colorbar(ims, cmap=cmap)
+        cbar.ax.set_ylabel('Z-score value')
+        #
+        ax = fig.add_subplot(122)
+        _, _, patches = ax.hist(
+            reduce(lambda x, y: x+y, [self._zscores[v].values()
+                                      for v in self._zscores.keys()]),
+            bins=50)
+        for thispatch in patches:
+            print thispatch.get_x(), 
+            color = ('grey' if self._config['lowfreq'] < thispatch.get_x() + thispatch.get_width() < self._config['upfreq'] 
+                     else 'green')
+            print color
+            thispatch.set_facecolor(color)
+            thispatch.set_alpha(0.7)
+        ax.set_title('Histogram of Z-scores')
+        ax.vlines(self._config['lowfreq'], 1, ax.get_ylim()[1], color='red',
+                  linestyle='--')
+        ax.vlines(self._config['upfreq'] , 1, ax.get_ylim()[1], color='red',
+                  linestyle='--')
+        if savefig:
+            fig.savefig(savefig)
+        elif not axe:
             plt.show()
 
 
