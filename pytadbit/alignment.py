@@ -252,7 +252,7 @@ class Alignment(object):
                     p += 1
             except KeyError:
                 continue
-            scr = exp.tads[p]['score'] if exp.tads[p]['score'] >= 0 else 10
+            scr = abs(exp.tads[p]['score'])
             scores.append(TAD(exp.tads[p], i, self.__experiments[name]))
             scores[-1]['score'] = scr
             p += 1
@@ -265,7 +265,7 @@ class Alignment(object):
         self.__keys.append(name)
 
 
-    def draw(self, focus=None, extras=None):
+    def draw(self, focus=None, extras=None, savefig=None):
         """
         Draw alignments as a plot.
         
@@ -398,7 +398,10 @@ class Alignment(object):
                         numpoints=1, title='Boundary scores',
                         fontsize='small', loc='lower left',
                         bbox_to_anchor=(1, 0.5))
-        plt.show()
+        if savefig:
+            plt.savefig(savefig)
+        else:
+            plt.show()
 
 
 class TAD(dict):
