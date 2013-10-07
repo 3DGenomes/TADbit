@@ -392,7 +392,7 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
     # SHORT RANGE DISTANCE BETWEEN TWO CONSECUTIVE LOCI
     if (seqdist == 1):
         if (x in PDIST and y in PDIST[x]
-            and float(PDIST[x][y]) > 0):
+            and float(PDIST[x][y]) > CONFIG['upfreq']):
             kforce1 = CONFIG['kforce']
             log += addHarmonicNeighborsRestraints(model, p1, p2, kforce1)
             #print "harmo1\t%s\t%s\t%f\t%f" % ( x, y, dist1, kforce1)
@@ -405,7 +405,7 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
 
             # SHORT RANGE DISTANCE BETWEEN TWO SEQDIST = 2
     elif (seqdist == 2):
-        if (x in PDIST and y in PDIST[x] and float(PDIST[x][y]) > 0):
+        if (x in PDIST and y in PDIST[x] and float(PDIST[x][y]) > CONFIG['upfreq']):
             kforce2 = CONFIG['kforce']
             log += addHarmonicNeighborsRestraints(model, p1, p2, kforce2)
         else:
