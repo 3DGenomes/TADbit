@@ -116,7 +116,8 @@ class Chromosome(object):
     """
     def __init__(self, name, experiment_resolutions=None, experiment_tads=None,
                  experiment_hic_data=None, experiment_names=None,
-                 max_tad_size=5000000, chr_len=0, parser=None):
+                 max_tad_size=5000000, chr_len=0, parser=None,
+                 centromere_search=False):
         self.name             = name
         self.max_tad_size     = max_tad_size
         self.size             = self._given_size = self.r_size = chr_len
@@ -126,6 +127,8 @@ class Chromosome(object):
         self.experiments      = ExperimentList([], self)
         self._centromere      = None
         self.alignment        = AlignmentDict()
+        
+        self._search_centromere = centromere_search
         if experiment_tads:
             for i, handler in enumerate(experiment_tads or []):
                 name = experiment_names[i] if experiment_names else None
@@ -430,7 +433,8 @@ class Chromosome(object):
                                      get_weights=True,
                                      use_visibility=use_visibility)
             xpr.load_tad_def(result, weights=weights)
-            self._get_forbidden_region(xpr)
+            if self._search_centromere:
+                self._get_forbidden_region(xpr)
 
 
     def __update_size(self, xpr):
@@ -790,18 +794,21 @@ class ExperimentList(list):
         try:
             super(ExperimentList, self).__setitem__(i, exp)
             exp.crm = self.crm
-            self.crm._get_forbidden_region(exp)
+            if self.crm._search_centromere:
+                self.crm._get_forbidden_region(exp)
         except TypeError:
             for j, nam in enumerate(self):
                 if nam.name == i:
                     exp.crm = self.crm
                     self[j] = exp
-                    self.crm._get_forbidden_region(exp)
+                    if self.crm._search_centromere:
+                        self.crm._get_forbidden_region(exp)
                     break
             else:
                 exp.crm = self.crm
                 self.append(exp)
-                self.crm._get_forbidden_region(exp)
+                if self.crm._search_centromere:
+                    self.crm._get_forbidden_region(exp)
 
 
     def __delitem__(self, i):
@@ -820,10 +827,12 @@ class ExperimentList(list):
     def append(self, exp):
         if exp.name in [e.name for e in self]:
             self[exp.name] = exp
-            self.crm._get_forbidden_region(exp)
+            if self.crm._search_centromere:
+                self.crm._get_forbidden_region(exp)
         else:
             super(ExperimentList, self).append(exp)
-            self.crm._get_forbidden_region(exp)
+            if self.crm._search_centromere:
+                self.crm._get_forbidden_region(exp)
             exp.crm = self.crm
 
 
