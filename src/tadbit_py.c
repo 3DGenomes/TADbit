@@ -25,13 +25,13 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
 /* The wrapper to the underlying C function */
 static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject **obs;
-  int n=0;
-  int m=0;
-  int n_threads=0;
-  const int verbose=0;
-  const int max_tad_size=0;
-  const int do_not_use_heuristic=0;
-  const int use_visibility=0;
+  int n;
+  int m;
+  int n_threads;
+  const int verbose;
+  const int max_tad_size;
+  const int do_not_use_heuristic;
+  const int use_visibility;
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
