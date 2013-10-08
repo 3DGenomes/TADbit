@@ -673,6 +673,7 @@ class StructuralModels(object):
             fig.savefig(savefig)
         elif not axe:
             plt.show()
+        return corr
 
 
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
