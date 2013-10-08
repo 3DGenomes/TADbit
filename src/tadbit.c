@@ -749,14 +749,6 @@ tadbit(
       for (i = 0 ; i < n ; i++) rowsums[k][i] = 0.0;
    }
 
-   double *totalsum = malloc(m * sizeof(double));
-   for (k = 0 ; k < m ; k++) {
-      totalsum[k] = 0.0;
-      for (i = 0 ; i < n*n ; i++) {
-         totalsum[k] += obs[k][i];
-      }
-   }
-
    for (i = 0 ; i < n ; i++)
    for (k = 0 ; k < m ; k++)
    for (l = 0 ; l < n ; l++)
@@ -775,7 +767,8 @@ tadbit(
          //weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
          //weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
          if (use_visibility) {
-           weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+           //weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
+           weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j];
          }
          else {
            weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
@@ -787,7 +780,6 @@ tadbit(
    // We don't need the row/column sums any more.
    for (l = 0 ; l < m ; l++) free(rowsums[l]);
    free(rowsums);
-   free(totalsum);
 
    double *mllik = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkpts = (int *) malloc(MAXBREAKS*n * sizeof(int));

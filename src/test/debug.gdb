@@ -1,2 +1,2 @@
-b tadbit.c:520
+b test_tadbit_on_real_input
 r

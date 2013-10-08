@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <float.h>
+#include <assert.h>
 #include <pthread.h>
 
 #ifndef _TADBIT_LOADED
