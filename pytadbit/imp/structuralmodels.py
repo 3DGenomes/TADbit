@@ -294,7 +294,8 @@ class StructuralModels(object):
         if not n_best_clusters:
             n_best_clusters = len(self.clusters)
         if n_best_clusters <= 1:
-            raise Exception("Need at least 2 clusters to display...")
+            warn("Need at least 2 clusters to display...")
+            return None
         clust_count, objfun, matrix = self._build_distance_matrix(n_best_clusters)
         z = linkage(matrix)
         minnrj = min(objfun.values()) - 1
