@@ -104,7 +104,8 @@ test_tadbit
    for (int j = 0 ; j < 20 ; j++) {
       for (int i = j ; i < 20 ; i++) {
          g_assert_cmpfloat(
-            abs(seg->weights[0][i+j*20] - expected_weights[i+j*20]), <, .1
+            abs(seg->weights[0][i+j*20] / 9272 -
+               expected_weights[i+j*20]), <, .1
          );
       }
    }
@@ -181,6 +182,66 @@ test_ll
 }
 
 
+void
+test_tadbit_on_real_input
+(void)
+{
+   // -- Open input file (the code is hopelessly not portable) -- //
+   char *pch; 
+   int i;
+
+   int *obs[2];
+   obs[0] = malloc(1413*1413 * sizeof(int));
+   obs[1] = malloc(1413*1413 * sizeof(int));
+
+   FILE *f[2];
+   f[0] = fopen("data/HindIII_T60.tsv", "r");
+   f[1] = fopen("data/NcoI_T60.tsv", "r");
+
+   g_assert(f[0] != NULL);
+   g_assert(f[1] != NULL);
+
+   // `getline` is available because we define _GNU_SOURCE.
+   char *line = NULL;
+   size_t len = 0;
+   ssize_t read;
+
+   // Read both files the same way.
+   for (int j = 0 ; j < 2 ; j++) {
+      // Discard header.
+      read = getline(&line, &len, f[j]);
+      i = 0;
+      while ((read = getline(&line, &len, f[j])) != -1) {
+         pch = strtok(line, "\t");
+         pch = strtok(NULL, "\t");
+         while (pch != NULL) {
+            obs[j][i++] = atoi(pch);
+            pch = strtok(NULL, "\t");
+         }
+         g_assert(i % 1413 == 0);
+      }
+      g_assert(i == 1413*1413);
+   }
+
+   fclose(f[0]);
+   fclose(f[1]);
+   free(line);
+
+   tadbit_output *seg = malloc(sizeof(tadbit_output));
+   tadbit(obs, 1413, 2, 16, 1, 200, 0, 1, seg);
+   int nTADs1 = seg->nbreaks_opt;
+
+   tadbit(obs, 1413, 2, 16, 1, 200, 0, 0, seg);
+   int nTADs2 = seg->nbreaks_opt;
+
+   fprintf(stderr, "%d, %d\n", nTADs1, nTADs2);
+   destroy_tadbit_output(seg);
+
+   free(obs[0]);
+   free(obs[1]);
+
+}
+
 
 int
 main(
@@ -195,6 +256,7 @@ main(
    g_test_init(&argc, &argv, NULL);
    g_test_add_func("/ll", test_ll);
    g_test_add_func("/tadbit", test_tadbit);
+   //g_test_add_func("/tadbit_on_real_input", test_tadbit_on_real_input);
 
    int g_test_result = g_test_run();
    close(backup);
