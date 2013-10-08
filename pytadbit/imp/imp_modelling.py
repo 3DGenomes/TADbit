@@ -405,17 +405,24 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
 
             # SHORT RANGE DISTANCE BETWEEN TWO SEQDIST = 2
     elif (seqdist == 2):
-        if (x in PDIST and y in PDIST[x] and float(PDIST[x][y]) > CONFIG['upfreq']):
-            kforce2 = CONFIG['kforce']
-            log += addHarmonicNeighborsRestraints(model, p1, p2, kforce2)
-        else:
-            p3 = model['ps'].get_particle(j-1)
-            kforce2 = CONFIG['kforce']
-            dist2 = (p1.get_value(model['rk']) + p2.get_value(model['rk'])
-                    + 2.0 * p3.get_value(model['rk']))
-            log += addHarmonicUpperBoundRestraints(model, p1, p2,
-                                                   dist2, kforce2)
-            #print "upper2\t%s\t%s\t%f\t%f" % ( x, y, dist2, kforce2)
+#        if (x in PDIST and y in PDIST[x] and float(PDIST[x][y]) > CONFIG['upfreq']):
+#            kforce2 = CONFIG['kforce']
+#            log += addHarmonicNeighborsRestraints(model, p1, p2, kforce2)
+#        else:
+#            p3 = model['ps'].get_particle(j-1)
+#            kforce2 = CONFIG['kforce']
+#            dist2 = (p1.get_value(model['rk']) + p2.get_value(model['rk'])
+#                    + 2.0 * p3.get_value(model['rk']))
+#            log += addHarmonicUpperBoundRestraints(model, p1, p2,
+#                                                   dist2, kforce2)
+#            #print "upper2\t%s\t%s\t%f\t%f" % ( x, y, dist2, kforce2)
+        p3 = model['ps'].get_particle(j-1)
+        kforce2 = CONFIG['kforce']
+        dist2 = (p1.get_value(model['rk']) + p2.get_value(model['rk'])
+                + 2.0 * p3.get_value(model['rk']))
+        log += addHarmonicUpperBoundRestraints(model, p1, p2,
+                                               dist2, kforce2)
+        #print "upper2\t%s\t%s\t%f\t%f" % ( x, y, dist2, kforce2)
 
     else:
 
