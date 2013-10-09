@@ -370,8 +370,8 @@ class Alignment(object):
             for iex, tad in enumerate(col):
                 if not tad['end']:
                     continue
-                axes[iex].axvspan(beg, end, alpha=0.3,
-                                  color='lightgrey')
+                axes[iex].axvspan(beg-.2, end+.2, alpha=0.2,
+                                  color='purple' if i%2 else 'darkgreen')
                 axes[iex].plot(((tad['end'] + 1.) / facts[iex], ), (0, ),
                                color=jet(tad['score'] / 10),
                                mec='none', 
@@ -381,7 +381,7 @@ class Alignment(object):
         tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
         tit2 = axes[0].set_title("Alignment column number")
         tit2.set_y(1.3)
-        plt.subplots_adjust(top=0.8)
+        plt.subplots_adjust(top=0.76)
         # This was for color bar instead of legend
         # ax1 = fig.add_axes([0.9 + 0.3/figsiz, 0.05, 0.2/figsiz, 0.9])
         # cb1 = colorbar.ColorbarBase(ax1, cmap=jet,

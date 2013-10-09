@@ -74,8 +74,8 @@ class Experiment(object):
         self._zeros          = None
         self._zscores        = {}
         if hic_data:
-            self.load_experiment(hic_data, parser,
-                              filter_columns=filter_columns)
+            self.load_hic_data(hic_data, parser,
+                               filter_columns=filter_columns)
         if tad_def:
             self.load_tad_def(tad_def, weights=weights)
         elif not hic_data and not no_warn:
@@ -164,8 +164,8 @@ class Experiment(object):
             del(self._ori_hic)
 
 
-    def load_experiment(self, hic_data, parser=None, resolution=None,
-                        filter_columns=True):
+    def load_hic_data(self, hic_data, parser=None, wanted_resolution=None,
+                      data_resolution=None, filter_columns=True):
         """
         Add a Hi-C experiment to the Chromosome object.
         
@@ -200,8 +200,9 @@ class Experiment(object):
         nums, size = read_matrix(hic_data, parser=parser)
         self.hic_data = nums
         self.size     = size
-        resolution = resolution or self.resolution
-        self.set_resolution(resolution, keep_original=False)
+        self._ori_resolution = self.resolution = data_resolution or self._ori_resolution
+        wanted_resolution = wanted_resolution or self.resolution
+        self.set_resolution(wanted_resolution, keep_original=False)
         # self._zeros   = [int(pos) for pos, raw in enumerate(
         #     xrange(0, self.size**2, self.size))
         #                  if sum(self.hic_data[0][raw:raw + self.size]) <= 100]

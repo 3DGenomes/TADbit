@@ -139,7 +139,7 @@ class Chromosome(object):
                 name = experiment_names[i] if experiment_names else None
                 try:
                     xpr = self.get_experiment(name)
-                    xpr.load_experiment(handler)
+                    xpr.load_hic_data(handler)
                     continue
                 except:
                     pass
