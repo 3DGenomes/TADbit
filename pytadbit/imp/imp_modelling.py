@@ -20,7 +20,10 @@ import IMP.display
 from IMP.container import ListSingletonContainer
 from IMP import Model
 from IMP import FloatKey
-import IMP.kernel
+try:
+    import IMP.kernel
+except ImportError:
+    pass
 
 IMP.set_check_level(IMP.NONE)
 IMP.set_log_level(IMP.SILENT)
