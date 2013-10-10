@@ -340,14 +340,14 @@ def generate_IMPmodel(rand_init, verbose=0):
                        'x'          : [],
                        'y'          : [],
                        'z'          : [],
-                       'radius'     : [],
+                       # 'radius'     : [],
                        'cluster'    : 'Singleton',
                        'rand_init'  : rand_init})
     for part in model['ps'].get_particles():
         result['x'].append(part.get_value(x))
         result['y'].append(part.get_value(y))
         result['z'].append(part.get_value(z))
-        result['radius'].append(part.get_value(radius))
+        # result['radius'].append(part.get_value(radius))
         if verbose == 3:
             print (part.get_name(), part.get_value(x), part.get_value(y),
                    part.get_value(z), part.get_value(radius))

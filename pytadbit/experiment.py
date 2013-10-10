@@ -227,7 +227,7 @@ class Experiment(object):
         self.norm  = weights or norm
         
 
-    def normalize_hic(self, method='sqrt'):
+    def normalize_hic(self, method='visibility'):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -239,9 +239,9 @@ class Experiment(object):
         square root of the product of the sum of column i by the sum of row
         j.
 
-        :param sqrt method: either 'sqrt' or 'visibility'. Depending on this
-           parameter, the weight of the Hi-C count in row I, column J of the
-           Hi-C matrix will be, under 'sqrt':
+        :param visibility method: either 'sqrt' or 'visibility'. Depending on
+           this parameter, the weight of the Hi-C count in row I, column J of
+           the Hi-C matrix will be, under 'sqrt':
            ::
               
                                    _________________________________________
@@ -284,31 +284,28 @@ class Experiment(object):
         # removes columns where there is no data in the diagonal
         forbidden = [i for i in xrange(self.size)
                      if not self.hic_data[0][i*self.size+i]]
+        size_range = [i for i in xrange(self.size) if not i in forbidden]
         rowsums = []
         for i in xrange(self.size):
             i *= self.size
             rowsums.append(0)
             if i in forbidden:
                 continue
-            for j in xrange(self.size):
-                if not j in forbidden:
-                    rowsums[-1] += self.hic_data[0][i + j]
+            for j in size_range:
+                rowsums[-1] += self.hic_data[0][i + j]
         self.norm = [[0. for _ in xrange(self.size * self.size)]]
         if method == 'visibility':
             total = sum(rowsums)
             func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
         elif method == 'sqrt':
             func = lambda x, y: sqrt(rowsums[x] * rowsums[y])
-        for i in xrange(self.size):
-            for j in xrange(self.size):
-                if i in forbidden or j in forbidden:
-                    self.norm[0][i * self.size + j] = 0.0
-                else:
-                    try:
-                        self.norm[0][i * self.size + j] = (
-                            self.hic_data[0][i * self.size + j] / func(i, j))
-                    except ZeroDivisionError:
-                        self.norm[0][i * self.size + j] = 0.0
+        for i in size_range:
+            for j in size_range:
+                try:
+                    self.norm[0][i * self.size + j] = (
+                        self.hic_data[0][i * self.size + j] / func(i, j))
+                except ZeroDivisionError:
+                    continue
         self._normalization = method
 
 

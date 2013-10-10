@@ -59,7 +59,7 @@ def load_chromosome(in_f, fast=2):
     crm.max_tad_size    = dico['max_tad_size']
     crm.forbidden       = dico['forbidden']
     crm._centromere     = dico['_centromere']
-    if type(dico['experiments'][name]['hi-c']) == str and fast!= int(2):
+    if type(dico['experiments'][name]['hi-c']) == str or fast!= int(2):
         try:
             dicp = load(open(in_f + '_hic'))
         except IOError:
@@ -172,7 +172,7 @@ class Chromosome(object):
             self.forbidden = dict([(f, None) for f in 
                                    set(forbidden).intersection(self.forbidden)])
         # search for centromere:
-        self._search_centromere(xpr)
+        self._find_centromere(xpr)
         # add centromere as forbidden region:
         if self._centromere:
             for pos in xrange(int(self._centromere[0]),
@@ -680,7 +680,7 @@ class Chromosome(object):
                     xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
             
 
-    def _search_centromere(self, xpr):
+    def _find_centromere(self, xpr):
         """
         Search for the centromere in a chromosome, assuming that
         :class:`Chromosome` corresponds to a real chromosome.
