@@ -38,7 +38,7 @@ def load_structuralmodels(path_f):
     return StructuralModels(
         nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
         resolution=svd['resolution'], original_data=svd['original_data'],
-        clusters=svd['clusters'], config=svd['config'])
+        clusters=svd['clusters'], config=svd['config'], zscores=svd['zscores'])
 
 
 class StructuralModels(object):
@@ -1329,6 +1329,7 @@ class StructuralModels(object):
         to_save['resolution']    = self.resolution
         to_save['original_data'] = self._original_data
         to_save['config']        = self._config
+        to_save['zscore']        = self._zscores
 
         out = open(path_f, 'w')
         dump(to_save, out)

@@ -395,7 +395,7 @@ class Alignment(object):
                               color=jet(float(scr) / 10), mec='none')
         axes[-1].legend(plots,
                         [str(scr) for scr in xrange(1, 11)],
-                        numpoints=1, title='Boundary scores',
+                        numpoints=1, title='Border scores',
                         fontsize='small', loc='lower left',
                         bbox_to_anchor=(1, 0.5))
         if savefig:

@@ -230,9 +230,12 @@ def generate_IMPmodel(rand_init, verbose=0):
         p.set_value(model['rk'], newrk)
 
     # Restraints between pairs of LOCI proportional to the PDIST
-    # model['pps']  = IMP.ParticlePairs() # this was used for IMP
-    # version: 847e65d44da7d06718bcad366b09264c818752d5
-    model['pps']  = IMP.kernel.ParticlePairsTemp()
+    try:
+        # model['pps']  = IMP.ParticlePairs() # this was used for IMP
+        # version: 847e65d44da7d06718bcad366b09264c818752d5
+        model['pps']  = IMP.ParticlePairs() # this was used for IMP
+    except AttributeError:
+        model['pps']  = IMP.kernel.ParticlePairsTemp()
 
     # CALL BIG FUNCTION
     addAllHarmonics(model, verbose=verbose)

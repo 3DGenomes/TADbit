@@ -452,7 +452,8 @@ class Chromosome(object):
 
 
     def visualize(self, name, tad=None, focus=None, paint_tads=False, axe=None,
-                  show=True, logarithm=True, normalized=False, relative=True):
+                  show=True, logarithm=True, normalized=False, relative=True,
+                  decorate=True):
         """
         Visualize the matrix of Hi-C interactions.
 
@@ -482,6 +483,7 @@ class Chromosome(object):
            :func:`pytadbit.utils.hic_filtering.hic_filtering_for_modelling` *)*
         :param True relative: color scale is relative to the whole matrix of
            data, not only to the region displayed
+        :param True decorate: draws color bar, title and axes labels
         """
         xper = self.get_experiment(name)
         if logarithm:
@@ -522,8 +524,8 @@ class Chromosome(object):
             else:
                 vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
                 vmax = fun(max(xper.hic_data[0]))
-        plt.figure(figsize=(8, 6))
         if not axe:
+            plt.figure(figsize=(8, 6))
             axe = plt.subplot(111)
         if tad or focus:
             if start > -1:
@@ -571,13 +573,14 @@ class Chromosome(object):
                                      int(start or 1) + len(matrix) - 0.5,
                                      int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5))
-        cbar = axe.figure.colorbar(img)
-        cbar.ax.set_ylabel('Log2 Hi-C interactions count')
-        axe.set_title(('Chromosome %s experiment %s' +
-                       ' %s') % (self.name, xper.name,
-                                 'focus: %s-%s' % (start, end) if tad else ''))
-        axe.set_xlabel('Genomic bin (resolution: %s)' % (xper.resolution))
-        axe.set_ylabel('Genomic bin (resolution: %s)' % (xper.resolution))
+        if decorate:
+            cbar = axe.figure.colorbar(img)
+            cbar.ax.set_ylabel('Log2 Hi-C interactions count')
+            axe.set_title(('Chromosome %s experiment %s' +
+                           ' %s') % (self.name, xper.name,
+                                     'focus: %s-%s' % (start, end) if tad else ''))
+            axe.set_xlabel('Genomic bin (resolution: %s)' % (xper.resolution))
+            axe.set_ylabel('Genomic bin (resolution: %s)' % (xper.resolution))
         if not paint_tads:            
             axe.set_ylim(int(start or 1) - 0.5,
                          int(start or 1) + len(matrix) - 0.5)
@@ -743,14 +746,14 @@ class Chromosome(object):
                 if start < beg < final and start < end < final:
                     tads[tad] = copy(tads[tad - 1])
                     tads[tad]['start'] = end
-                    tads[tad]['score'] = -abs(tads[tad]['score'])
+                    tads[tad]['score'] = abs(tads[tad]['score'])
                     if (tads[tad]['end'] - tads[tad]['start']) \
                            * xpr.resolution > self.max_tad_size:
                         xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
                     tads[tad]['brk'] = tads[tad]['end']
                     tad -= 1
                     tads[tad] = copy(tads[tad])
-                    tads[tad]['score'] = -abs(tads[tad]['score'])
+                    tads[tad]['score'] = abs(tads[tad]['score'])
                     tads[tad]['end'] = beg
                     if (tads[tad]['end'] - tads[tad]['start']) \
                            * xpr.resolution > self.max_tad_size:
@@ -760,6 +763,65 @@ class Chromosome(object):
                 else:
                     tads[tad] = copy(tads[tad - 1 + plus])
                 tad -= 1
+        # if tad includes centromere but starts in the same point
+        elif [True for t in tads.values() \
+              if t['start'] == beg and end < t['end']]:
+            tad  = len(tads) + 1
+            plus = 0
+            while tad + plus > 1:
+                start = tads[tad - 1 + plus]['start']
+                final = tads[tad - 1 + plus]['end']
+                # centromere found?
+                if start == beg:
+                    tads[tad] = copy(tads[tad - 1])
+                    tads[tad]['start'] = end
+                    tads[tad]['score'] = abs(tads[tad]['score'])
+                    if (tads[tad]['end'] - tads[tad]['start']) \
+                           * xpr.resolution > self.max_tad_size:
+                        xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
+                    tads[tad]['brk'] = tads[tad]['end']
+                    tad -= 1
+                    tads[tad] = copy(tads[tad])
+                    tads[tad]['score'] = abs(tads[tad]['score'])
+                    tads[tad]['end'] = end - 1
+                    if (tads[tad]['end'] - tads[tad]['start']) \
+                           * xpr.resolution > self.max_tad_size:
+                        xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
+                    tads[tad]['brk'] = tads[tad]['end']
+                    plus = 1
+                else:
+                    tads[tad] = copy(tads[tad - 1 + plus])
+                tad -= 1
+        # if tad includes centromere but ends in the same point
+        elif [True for t in tads.values() \
+              if t['end'] == end and beg > t['start']]:
+            tad  = len(tads) + 1
+            plus = 0
+            while tad + plus > 1:
+                start = tads[tad - 1 + plus]['start']
+                final = tads[tad - 1 + plus]['end']
+                # centromere found?
+                if final == end:
+                    tads[tad] = copy(tads[tad - 1])
+                    tads[tad]['start'] = beg
+                    tads[tad]['score'] = abs(tads[tad]['score'])
+                    if (tads[tad]['end'] - tads[tad]['start']) \
+                           * xpr.resolution > self.max_tad_size:
+                        xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
+                    tads[tad]['brk'] = tads[tad]['end']
+                    tad -= 1
+                    tads[tad] = copy(tads[tad])
+                    tads[tad]['score'] = abs(tads[tad]['score'])
+                    tads[tad]['end'] = beg
+                    if (tads[tad]['end'] - tads[tad]['start']) \
+                           * xpr.resolution > self.max_tad_size:
+                        xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
+                    tads[tad]['brk'] = tads[tad]['end']
+                    plus = 1
+                else:
+                    tads[tad] = copy(tads[tad - 1 + plus])
+                tad -= 1
+
 
 
 class ExperimentList(list):
