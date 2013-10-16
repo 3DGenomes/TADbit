@@ -547,8 +547,10 @@ class StructuralModels(object):
 
     def zscore_plot(self, axe=None, savefig=None):
         """
-        Plots a contact map representing the frequency of interaction (defined
-        by a distance cutoff) between two particles.
+        Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
+        of which is binary showing in red Z-scores higher than upper cut-off;
+        and in blue Z-scores lower than lower cut-off. Last plot is an histogram
+        of the distribution of Z-scores, showing selected regions.
 
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
@@ -580,10 +582,10 @@ class StructuralModels(object):
         cmap = jet
         cmap.set_bad('w', 1.)
         if not axe:
-            fig = plt.figure(figsize=(15, 5.5))
+            fig = plt.figure(figsize=(25, 5.5))
         else:
             fig = axe.get_figure()
-        ax = fig.add_subplot(121)
+        ax = fig.add_subplot(131)
         ims = ax.imshow(masked_array, origin='lower',
                         interpolation="nearest", cmap=cmap)
         ax.set_ylabel('Particles')
@@ -592,16 +594,14 @@ class StructuralModels(object):
         cbar = ax.figure.colorbar(ims, cmap=cmap)
         cbar.ax.set_ylabel('Z-score value')
         #
-        ax = fig.add_subplot(122)
+        ax = fig.add_subplot(132)
         _, _, patches = ax.hist(
             reduce(lambda x, y: x+y, [self._zscores[v].values()
                                       for v in self._zscores.keys()]),
             bins=50)
         for thispatch in patches:
-            print thispatch.get_x(), 
             color = ('grey' if self._config['lowfreq'] < thispatch.get_x() + thispatch.get_width() < self._config['upfreq'] 
                      else 'green')
-            print color
             thispatch.set_facecolor(color)
             thispatch.set_alpha(0.7)
         ax.set_title('Histogram of Z-scores')
@@ -609,6 +609,27 @@ class StructuralModels(object):
                   linestyle='--')
         ax.vlines(self._config['upfreq'] , 1, ax.get_ylim()[1], color='red',
                   linestyle='--')
+        #
+        ax = fig.add_subplot(133)
+        masked_array = ma.array (zsc_mtrx, mask=isnan(zsc_mtrx))
+        for i in masked_array:
+            for j in xrange(len(i)):
+                try:
+                    i[j].mask
+                    continue
+                except AttributeError:
+                    pass
+                if i[j] > self._config['upfreq']:
+                    i[j] = 1
+                elif i[j] < self._config['lowfreq']:
+                    i[j] = -1
+        ims = ax.imshow(masked_array, origin='lower', vmin=-1.2, vmax=1.2,
+                        interpolation="nearest", cmap=cmap)
+        ax.set_ylabel('Particles')
+        ax.set_xlabel('Particles')
+        ax.set_title('Binary representation of Z-scores\nred: > ' +
+                     '%.2f; blue: < %.2f' % (self._config['upfreq'],
+                                             self._config['lowfreq']))
         if savefig:
             fig.savefig(savefig)
         elif not axe:
