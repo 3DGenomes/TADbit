@@ -5,10 +5,10 @@ from os import path
 from distutils.spawn import find_executable
 
 
-def can_import(mname):
+def can_import(modname):
     'Test if a module can be imported '
     try:
-        __import__(mname)
+        __import__(modname)
     except ImportError:
         return None
     else:
@@ -72,15 +72,17 @@ def main():
                                 extra_compile_args=['-std=c99'])
     # c++ module to align and calculate distances between 2 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
-                                sources=['eqv-tmscore/eqv_rms_drms_py.cpp'],
+                                sources=['3d-lib/eqv_rms_drms_py.cpp'],
                                 extra_compile_args=["-ffast-math"])
+    centroid_module = Extension('pytadbit.centroid',
+                                sources=['3d-lib/centroid_py.cpp'])
 
     setup(
         name        = 'pytadbit',
         version     = '1.0',
         author      = 'Guillaume Filion',
         description = 'Identify TADs in hi-C data',
-        ext_modules = [pytadbit_module, eqv_rmsd_module],
+        ext_modules = [pytadbit_module, eqv_rmsd_module, centroid_module],
         package_dir = {'pytadbit': PATH + '/../pytadbit'},
         packages    = ['pytadbit', 'pytadbit.parsers',
                        'pytadbit.boundary_aligner', 'pytadbit.utils',

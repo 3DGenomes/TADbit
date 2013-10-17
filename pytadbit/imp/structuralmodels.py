@@ -7,6 +7,7 @@ from pytadbit.utils.tadmaths   import calinski_harabasz, calc_eqv_rmsd
 from pytadbit.utils.tadmaths   import calc_consistency, dihedral
 from pytadbit.utils.extraviews import color_residues, chimera_view
 from pytadbit.utils.extraviews import augmented_dendrogram, plot_hist_box
+from pytadbit.centroid         import centroid_wrapper
 from cPickle                   import load, dump
 from subprocess                import Popen, PIPE
 from math                      import sqrt, acos, degrees, pi
@@ -141,6 +142,27 @@ class StructuralModels(object):
                     return m
         raise IndexError(('Model with initial random number: %s, not found\n' +
                           '') % (rand_init))
+
+
+    def centroid(self, models=None, cluster=None):
+        """
+        :param None models: if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        """
+        if models:
+            models = models
+        elif cluster > -1:
+            models = [str(m) for m in self.clusters[cluster]]
+        else:
+            models = self.__models
+        idx = centroid_wrapper([models[x]['x'] for x in models],
+                               [models[x]['y'] for x in models],
+                               [models[x]['z'] for x in models],
+                               self.nloci, len(models))
+        return models[idx]
 
 
     def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
