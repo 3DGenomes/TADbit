@@ -1,5 +1,6 @@
 #include "matrices.cc"
 
+// #include <iostream>
 #include <sstream>
 #include <map>
 #include <set>
@@ -39,7 +40,10 @@ void massCenter(float** xyz, int size) {
 //void avgCoord(float** xyzA, float** xyzB, int size, float* avg) {
 void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator it2, int size, set<string> modelList, bool add_first, float** avg) {
 
+  int last; //numP;
   bool is_in; 
+
+  last = size - 1;
 
   massCenter(it1->second, size);
   massCenter(it2->second, size);
@@ -96,11 +100,11 @@ void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator
   }
 
   det = u[1][1] * u[2][2] * u[3][3] +
-    u[1][2] * u[2][3] * u[3][1] +
-    u[1][3] * u[2][1] * u[3][2]-
-    u[1][3] * u[2][2] * u[3][1]-
-    u[1][1] * u[2][3] * u[3][2]-
-    u[1][2] * u[2][1] * u[3][3];
+        u[1][2] * u[2][3] * u[3][1] +
+        u[1][3] * u[2][1] * u[3][2] -
+        u[1][3] * u[2][2] * u[3][1] -
+        u[1][1] * u[2][3] * u[3][2] -
+        u[1][2] * u[2][1] * u[3][3];
 
   //cout << "DET= " << det << endl << flush;
   for (i = 1; i <= 6; i++) {
@@ -134,7 +138,7 @@ void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator
   for (k = 1; k<=3; k++) {
     s = 0.;
     for (i = 1; i<=3; i++) {
-      s = s + ha[i][k] * ha[i][k] ;
+      s = s + ha[i][k] * ha[i][k];
     }
     for (i = 1; i<=3; i++) {
       ha[i][k] = ha[i][k]/sqrt(s);
@@ -143,7 +147,7 @@ void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator
   for (k = 1; k <= 3; k++) {
     s = 0.0;
     for (i = 1; i<=3; i++) {
-      s = s + ka[i][k]* ka[i][k];
+      s += ka[i][k]* ka[i][k];
     }
     for (i = 1; i <= 3; i++) {
       ka[i][k] = ka[i][k]/sqrt(s);
@@ -168,14 +172,14 @@ void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator
   if(det > 0.) {
     if(s < 0.) {
       for (k = 1; k<=3; k++) {
-  ka[k][3] = -ka[k][3];
+	ka[k][3] = -ka[k][3];
       }
     }
   }
   else {
     if(s > 0.0) {
       for (k = 1; k<=3; k++) {
-  ka[k][3] = -ka[k][3];
+	ka[k][3] = -ka[k][3];
       }
     }
   }
@@ -190,14 +194,13 @@ void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator
   }
 
   for (i=0; i < size; i++) {
-    xyzn[i][0]=r[1][1]*it1->second[i][0]+r[1][2]*it1->second[i][1]+r[1][3]*it1->second[i][2];
-    xyzn[i][1]=r[2][1]*it1->second[i][0]+r[2][2]*it1->second[i][1]+r[2][3]*it1->second[i][2];
-    xyzn[i][2]=r[3][1]*it1->second[i][0]+r[3][2]*it1->second[i][1]+r[3][3]*it1->second[i][2];
+    xyzn[i][0]=r[1][1]*it2->second[i][0] + r[1][2]*it2->second[i][1] + r[1][3]*it2->second[i][2];
+    xyzn[i][1]=r[2][1]*it2->second[i][0] + r[2][2]*it2->second[i][1] + r[2][3]*it2->second[i][2];
+    xyzn[i][2]=r[3][1]*it2->second[i][0] + r[3][2]*it2->second[i][1] + r[3][3]*it2->second[i][2];
   }
 
   for (i= 0; i < size; i++) {
     for (int j=0; j<3; j++) {
-      // it1->second[i][j] = xyzn[i][j];
       it2->second[i][j] = xyzn[i][j];
     }
   }
@@ -206,7 +209,7 @@ void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator
   // PStruct
 
   if(add_first) {
-    // cout << it1->first << endl;
+    // cout << it2->first << endl;
     for (int i=0; i < size; i++) {
       avg[i][0] += it1->second[i][0];
       avg[i][1] += it1->second[i][1];
@@ -267,4 +270,3 @@ float** populateMap(int size, float** xyz) {
 
   //return tmpxyz;
 }
-

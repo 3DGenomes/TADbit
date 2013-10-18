@@ -263,7 +263,7 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
       }
     }
     drms = sqrt(drms / (size*(size-1)/2));
-    rms = sqrt(rms / size);
+    rms  = sqrt(rms / size);
   }
 }
 

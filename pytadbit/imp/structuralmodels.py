@@ -144,7 +144,7 @@ class StructuralModels(object):
                           '') % (rand_init))
 
 
-    def centroid(self, models=None, cluster=None):
+    def centroid(self, models=None, cluster=None, verbose=False):
         """
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -161,7 +161,7 @@ class StructuralModels(object):
         idx = centroid_wrapper([models[x]['x'] for x in models],
                                [models[x]['y'] for x in models],
                                [models[x]['z'] for x in models],
-                               self.nloci, len(models))
+                               self.nloci, len(models), int(verbose))
         return models[idx]
 
 

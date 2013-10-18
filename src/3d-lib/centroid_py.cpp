@@ -1,6 +1,6 @@
 #include "Python.h"
 #include "centroid.cpp"
-// #include <iostream>
+#include <iostream>
 #include <string>
 using namespace std;
 // cout << "START" << endl << flush;
@@ -25,8 +25,9 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   PyObject *py_zs;
   int size;
   int nmodels;
+  int verbose;
 
-  if (!PyArg_ParseTuple(args, "OOOii", &py_xs, &py_ys, &py_zs, &size, &nmodels))
+  if (!PyArg_ParseTuple(args, "OOOiii", &py_xs, &py_ys, &py_zs, &size, &nmodels, &verbose))
     return NULL;
  
   float **xyz;
@@ -36,6 +37,7 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   float dist2Avg;
   map<string, float**>::iterator it1;
   map<string, float**>::iterator it2;
+  map<float, string>::iterator it3;
   float **avg;
   bool add_first;
   map<float, string> dist2Centroid;
@@ -70,15 +72,11 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
     tmpStr.clear();
     tmpStr << j;
     modelId = tmpStr.str();
+    // cout << modelId << " model id "  << xyz[1][0]<<" "<<xyz[1][1]<<" "<<xyz[1][2]<<endl;
     xyzlist.insert(make_pair(modelId, populateMap(size, xyz)));
   }
-  for (int i=0; i<size; i++) {
-    delete[] xyz[i];
-  }
-  delete[] xyz;
 
-
-  numP = 0; 
+  numP = 1; 
   add_first = 1;
   it1=xyzlist.begin();
   for ((it2=it1)++; it2!=xyzlist.end(); it2++) {
@@ -101,16 +99,22 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
     dist2Centroid.insert(make_pair(dist2Avg, it1->first));
   }
 
-  // for (it3=dist2Centroid.begin(); it3!=dist2Centroid.end(); it3++) {
-  //   cout << it3->second << " rmsd2avg " << it3->first << endl;
-  // }
+  if (verbose){
+    for (it3=dist2Centroid.begin(); it3!=dist2Centroid.end(); it3++) {
+      cout << it3->second << " rmsd2avg " << it3->first << endl;
+    }
+  }
+
+  for (int i=0; i<size; i++) {
+    delete[] xyz[i];
+  }
+  delete[] xyz;
 
   for (int i=0; i<size; i++) {
     delete[] avg[i];
   }
   delete[] avg;
 
-  // map<float, string>::iterator it3;
   // give it to me
   // PyObject * py_result = NULL;
   // py_result = PyDict_New();
