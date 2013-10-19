@@ -7,6 +7,7 @@ from pytadbit.utils.tadmaths   import calinski_harabasz, calc_eqv_rmsd
 from pytadbit.utils.tadmaths   import calc_consistency, dihedral
 from pytadbit.utils.extraviews import color_residues, chimera_view
 from pytadbit.utils.extraviews import augmented_dendrogram, plot_hist_box
+from pytadbit.imp.impmodel     import IMPmodel
 from pytadbit.centroid         import centroid_wrapper
 from cPickle                   import load, dump
 from subprocess                import Popen, PIPE
@@ -144,13 +145,18 @@ class StructuralModels(object):
                           '') % (rand_init))
 
 
-    def centroid(self, models=None, cluster=None, verbose=False):
+    def centroid_model(self, models=None, cluster=None, verbose=False):
         """
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
+        :param False verbose: prints the distance of each model to average model
+           (in stderr)
+
+        :returns: the centroid model of a given group of models (the most model
+           representative)
         """
         if models:
             models = models
@@ -161,8 +167,37 @@ class StructuralModels(object):
         idx = centroid_wrapper([models[x]['x'] for x in models],
                                [models[x]['y'] for x in models],
                                [models[x]['z'] for x in models],
-                               self.nloci, len(models), int(verbose))
+                               self.nloci, len(models), int(verbose), 0)
         return models[idx]
+
+
+    def average_model(self, models=None, cluster=None, verbose=False):
+        """
+        :param None models: if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param False verbose: prints the distance of each model to average model
+           (in stderr)
+
+        :returns: the average model of a given group of models (a new and
+           ARTIFICIAL model)
+   
+        """
+        if models:
+            models = models
+        elif cluster > -1:
+            models = [str(m) for m in self.clusters[cluster]]
+        else:
+            models = self.__models
+        idx = centroid_wrapper([models[x]['x'] for x in models],
+                               [models[x]['y'] for x in models],
+                               [models[x]['z'] for x in models],
+                               self.nloci, len(models), int(verbose), 1)
+        avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
+                             ('rand_init', 'avg'), ('objfun', None)))
+        return avgmodel
 
 
     def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
@@ -1269,39 +1304,14 @@ class StructuralModels(object):
             models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
+        radius = self.resolution * self._config['scale']
         for model_num in models:
             try:
                 model = self[model_num]
             except KeyError:
                 model = self._bad_models[model_num]
-            if type(color) != list:
-                color = color(self.nloci)
-            out = '<marker_set name=\"%s\">\n' % (model['rand_init'])
-            form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
-                    ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
-                    'radius=\"' +
-                    str(self.resolution * self._config['scale']) +
-                    '\" note=\"%s\"/>\n')
-            for n in xrange(self.nloci):
-                out += form % (n + 1,
-                               model['x'][n], model['y'][n], model['z'][n],
-                               color[n][0], color[n][1], color[n][2], n + 1)
-            form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
-                    'g=\"1\" b=\"1\" radius=\"' +
-                    str(1) +
-                    '\"/>\n')
-            for n in xrange(1, self.nloci):
-                out += form % (n, n + 1)
-            out += '</marker_set>\n'
-
-            if rndname:
-                out_f = open('%s/model.%s.cmm' % (directory,
-                                                  model['rand_init']), 'w')
-            else:
-                out_f = open('%s/model_%s_rnd%s.cmm' % (
-                    directory, model_num, model['rand_init']), 'w')
-            out_f.write(out)
-            out_f.close()
+            model.write_cmm(directory, radius, color=color, rndname=rndname,
+                            model_num=model_num)
 
 
     def write_xyz(self, directory, model_num=None, models=None, cluster=None,
@@ -1340,21 +1350,10 @@ class StructuralModels(object):
                 model = self[model_num]
             except KeyError:
                 model = self._bad_models[model_num]
-            if rndname:
-                path_f = '%s/model.%s.xyz' % (directory, model['rand_init'])
-            else:
-                path_f = '%s/model_%s_rnd%s.xyz' % (directory, model_num,
-                                                    model['rand_init'])
-            out = ''
-            form = "%12s%12s%12.3f%12.3f%12.3f\n"
-            for n in xrange(self.nloci):
-                out += form % ('p' + str(n + 1), n + 1, round(model['x'][n], 3),
-                               round(model['y'][n], 3), round(model['z'][n], 3))
-            out_f = open(path_f, 'w')
-            out_f.write(out)
-            out_f.close()
-            if get_path:
-                return path_f
+            path_f = model.write_xyz(directory, model_num=model_num,
+                                     get_path=get_path, rndname=rndname)
+        if get_path:
+            return path_f
 
 
     def save_models(self, path_f):

@@ -16,6 +16,16 @@ float distance(float* p1, float* p2) {
   return sqrt(x*x + y*y + z*z);
 }
 
+float ddistance(float* p1, float* p2) {
+  float x, y, z;
+
+  x = p1[0] - p2[0];
+  y = p1[1] - p2[1];
+  z = p1[2] - p2[2];
+  
+  return x*x + y*y + z*z;
+}
+
 // Set origin to center of mass
 void massCenter(float** xyz, int size) {
   float xm, ym, zm;
@@ -40,10 +50,7 @@ void massCenter(float** xyz, int size) {
 //void avgCoord(float** xyzA, float** xyzB, int size, float* avg) {
 void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator it2, int size, set<string> modelList, bool add_first, float** avg) {
 
-  int last; //numP;
   bool is_in; 
-
-  last = size - 1;
 
   massCenter(it1->second, size);
   massCenter(it2->second, size);
@@ -88,15 +95,15 @@ void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator
   }
   int k;
   for (k = 0; k < size; k++) {
-    u[1][1] = u[1][1] + it1->second[k][0] * it2->second[k][0];
-    u[1][2] = u[1][2] + it1->second[k][0] * it2->second[k][1];
-    u[1][3] = u[1][3] + it1->second[k][0] * it2->second[k][2];
-    u[2][1] = u[2][1] + it1->second[k][1] * it2->second[k][0];
-    u[2][2] = u[2][2] + it1->second[k][1] * it2->second[k][1];
-    u[2][3] = u[2][3] + it1->second[k][1] * it2->second[k][2];
-    u[3][1] = u[3][1] + it1->second[k][2] * it2->second[k][0];
-    u[3][2] = u[3][2] + it1->second[k][2] * it2->second[k][1];
-    u[3][3] = u[3][3] + it1->second[k][2] * it2->second[k][2];
+    u[1][1] = u[1][1] + it2->second[k][0] * it1->second[k][0];
+    u[1][2] = u[1][2] + it2->second[k][0] * it1->second[k][1];
+    u[1][3] = u[1][3] + it2->second[k][0] * it1->second[k][2];
+    u[2][1] = u[2][1] + it2->second[k][1] * it1->second[k][0];
+    u[2][2] = u[2][2] + it2->second[k][1] * it1->second[k][1];
+    u[2][3] = u[2][3] + it2->second[k][1] * it1->second[k][2];
+    u[3][1] = u[3][1] + it2->second[k][2] * it1->second[k][0];
+    u[3][2] = u[3][2] + it2->second[k][2] * it1->second[k][1];
+    u[3][3] = u[3][3] + it2->second[k][2] * it1->second[k][2];
   }
 
   det = u[1][1] * u[2][2] * u[3][3] +
@@ -238,7 +245,7 @@ float findCenrtroid (map<string, float**>::iterator it1, float** avg, int size) 
 
   // rmsd
   for (int i=0; i < size; i++) {
-    dist = distance(avg[i],it1->second[i]) * distance(avg[i],it1->second[i]);
+    dist = ddistance(avg[i],it1->second[i]);
     rms += dist;
   }
   rms = sqrt(rms / size);

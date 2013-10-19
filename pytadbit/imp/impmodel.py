@@ -4,9 +4,10 @@
 
 """
 
-from scipy.interpolate import spline
-from numpy             import linspace
-from warnings          import warn
+from pytadbit.utils.extraviews import color_residues
+from scipy.interpolate         import spline
+from numpy                     import linspace
+from warnings                  import warn
 
 try:
     from matplotlib import pyplot as plt
@@ -105,3 +106,92 @@ class IMPmodel(dict):
             fig.savefig(savefig)
         elif show:
             plt.show()
+
+
+    def write_cmm(self, directory, radius, color=color_residues, rndname=True,
+                  model_num=None):
+        """
+        Save a model in the cmm format, read by Chimera
+        (http://www.cgl.ucsf.edu/chimera).
+
+        **Note:** If none of model_num, models or cluster parameter are set,
+        ALL the models will be written.
+
+        :param directory: location where the file will be written (note: the
+           name of the file will be model_1.cmm if model number is 1)
+        :param None model_num: the number of the model to save
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.cmm, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.cmm where NUM is the rank of the model in terms of
+           objective function value
+        :param color_residues color: either a coloring function like
+           :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
+           tuples (as long as the number of particles)
+        """
+        if type(color) != list:
+            color = color(len(self['x']))
+        out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
+        form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
+                ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
+                'radius=\"' +
+                str(radius) +
+                '\" note=\"%s\"/>\n')
+        for n in xrange(len(self['x'])):
+            out += form % (n + 1,
+                           self['x'][n], self['y'][n], self['z'][n],
+                           color[n][0], color[n][1], color[n][2], n + 1)
+        form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
+                'g=\"1\" b=\"1\" radius=\"' +
+                str(1) +
+                '\"/>\n')
+        for n in xrange(1, len(self['x'])):
+            out += form % (n, n + 1)
+        out += '</marker_set>\n'
+
+        if rndname:
+            out_f = open('%s/model.%s.cmm' % (directory,
+                                              self['rand_init']), 'w')
+        else:
+            out_f = open('%s/model_%s_rnd%s.cmm' % (
+                directory, model_num, self['rand_init']), 'w')
+        out_f.write(out)
+        out_f.close()
+        
+
+    def write_xyz(self, directory, model_num=None, get_path=False, rndname=True):
+        """
+        Writes a xyz file containing the 3D coordinates of each particle in the
+        model.
+
+        **Note:** If none of model_num, models or cluster parameter are set,
+        ALL the models will be written.
+
+        :param directory: location where the file will be written (note: the
+           file name will be model.1.xyz, if the model number is 1)
+        :param None model_num: the number of the model to save
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.xyz, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.xyz where NUM is the rank of the model in terms of
+           objective function value
+        :param False get_path: whether to return, or not, the full path where
+           the file has been written
+        """
+        if rndname:
+            path_f = '%s/model.%s.xyz' % (directory, self['rand_init'])
+        else:
+            path_f = '%s/model_%s_rnd%s.xyz' % (directory, model_num,
+                                                self['rand_init'])
+        out = ''
+        form = "%12s%12s%12.3f%12.3f%12.3f\n"
+        for n in xrange(len(self['x'])):
+            out += form % ('p' + str(n + 1), n + 1, round(self['x'][n], 3),
+                           round(self['y'][n], 3), round(self['z'][n], 3))
+        out_f = open(path_f, 'w')
+        out_f.write(out)
+        out_f.close()
+        if get_path:
+            return path_f
+        else:
+            return None

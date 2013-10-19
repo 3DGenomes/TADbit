@@ -13,6 +13,8 @@ number of equivalent positions, the RMSD and the dRMSD.\n\
    :param dcutoff: distance cutoff to consider 2 particles as equivalent \n\
       in position (nm)\n\
    :param nmodels: number of models or list of lists passed as first argument\n\
+   :param verbose: prints the distance of each model to average model (in stderr)\n\
+   :param getavg: return a list for each x, y, z coordinates, representing the average model\n\
 \n\
    :returns: the index of the model that is found to be the centroid\n\
 ");
@@ -26,8 +28,9 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   int size;
   int nmodels;
   int verbose;
+  int getavg;
 
-  if (!PyArg_ParseTuple(args, "OOOiii", &py_xs, &py_ys, &py_zs, &size, &nmodels, &verbose))
+  if (!PyArg_ParseTuple(args, "OOOiiii", &py_xs, &py_ys, &py_zs, &size, &nmodels, &verbose, &getavg))
     return NULL;
  
   float **xyz;
@@ -92,6 +95,7 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
     for (int j = 0; j < 3; ++j) {
       avg[i][j] /= numP;
     }
+    // cout << "   p" << i << " " << i << " " << avg[i][0] << " " << avg[i][1] << " " << avg[i][2]  << endl;
   }
 
   for (it1=xyzlist.begin(); it1!=xyzlist.end(); it1++) {
@@ -101,7 +105,7 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
 
   if (verbose){
     for (it3=dist2Centroid.begin(); it3!=dist2Centroid.end(); it3++) {
-      cout << it3->second << " rmsd2avg " << it3->first << endl;
+      cerr << it3->second << " rmsd2avg " << it3->first << endl;
     }
   }
 
@@ -110,20 +114,28 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   }
   delete[] xyz;
 
-  for (int i=0; i<size; i++) {
-    delete[] avg[i];
-  }
-  delete[] avg;
-
   // give it to me
-  // PyObject * py_result = NULL;
-  // py_result = PyDict_New();
-  // i=0;
-  // for (it3=dist2Centroid.begin(); it3!=dist2Centroid.end(); it3++) {
-  //   PyDict_SetItem(py_result, PyInt_FromLong(atoi(it3->second.c_str())), PyFloat_FromDouble(it3->first));
-  //   i++;
-  // }
-  // return py_result;
+
+  if (getavg){
+    PyObject * py_result = NULL;
+    PyObject * py_subresult = NULL;
+    py_result = PyList_New(3);
+    i=0;
+    for (int j = 0; j < 3; ++j) {
+      py_subresult = PyList_New(size);
+      for (int i = 0; i < size; ++i) {
+	PyList_SetItem(py_subresult, i, PyFloat_FromDouble(avg[i][j]));
+      }
+      PyList_SetItem(py_result, j, py_subresult);
+    }
+    for (int i=0; i<size; i++) {
+      delete[] avg[i];
+    }
+    delete[] avg;
+    
+    return py_result;
+  }
+
   return PyInt_FromLong(atoi(dist2Centroid.begin()->second.c_str()));
 }
 
