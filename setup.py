@@ -68,14 +68,14 @@ def main():
     
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
-                                sources=['tadbit_py.c'],
+                                sources=['src/tadbit_py.c'],
                                 extra_compile_args=['-std=c99'])
     # c++ module to align and calculate distances between 2 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
-                                sources=['3d-lib/eqv_rms_drms_py.cpp'],
+                                sources=['src/3d-lib/eqv_rms_drms_py.cpp'],
                                 extra_compile_args=["-ffast-math"])
     centroid_module = Extension('pytadbit.centroid',
-                                sources=['3d-lib/centroid_py.cpp'])
+                                sources=['src/3d-lib/centroid_py.cpp'])
 
     setup(
         name        = 'pytadbit',
@@ -83,7 +83,7 @@ def main():
         author      = 'Guillaume Filion',
         description = 'Identify TADs in hi-C data',
         ext_modules = [pytadbit_module, eqv_rmsd_module, centroid_module],
-        package_dir = {'pytadbit': PATH + '/../pytadbit'},
+        package_dir = {'pytadbit': PATH + '/pytadbit'},
         packages    = ['pytadbit', 'pytadbit.parsers',
                        'pytadbit.boundary_aligner', 'pytadbit.utils',
                        'pytadbit.tad_clustering', 'pytadbit.imp'],
