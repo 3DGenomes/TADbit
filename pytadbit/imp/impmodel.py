@@ -4,7 +4,7 @@
 
 """
 
-from pytadbit.utils.extraviews import color_residues
+from pytadbit.utils.extraviews import color_residues, chimera_view
 from scipy.interpolate         import spline
 from numpy                     import linspace
 from warnings                  import warn
@@ -108,7 +108,7 @@ class IMPmodel(dict):
             plt.show()
 
 
-    def write_cmm(self, directory, radius, color=color_residues, rndname=True,
+    def write_cmm(self, directory, color=color_residues, rndname=True,
                   model_num=None):
         """
         Save a model in the cmm format, read by Chimera
@@ -135,7 +135,7 @@ class IMPmodel(dict):
         form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                 ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                 'radius=\"' +
-                str(radius) +
+                str(self['radius']) +
                 '\" note=\"%s\"/>\n')
         for n in xrange(len(self['x'])):
             out += form % (n + 1,
@@ -195,3 +195,66 @@ class IMPmodel(dict):
             return path_f
         else:
             return None
+
+
+    def view_model(self, model_num, tool='chimera', savefig=None, cmd=None):
+        """
+        Visualize a selected model in the three dimensions.
+
+        :param model_num: model to visualize
+        :param 'chimera' tool: path to the external tool used to visualize the
+           model
+        :param None savefig: path to a file where to save the image OR movie
+           generated (depending on the extension; accepted formats are png, mov
+           and webm). if set to None, the image or movie will be shown using
+           the default GUI.
+        :param None cmd: list of commands to be passed to the viewer. The chimera list is:
+
+           ::
+
+             focus
+             set bg_color white
+             windowsize 800 600
+             bonddisplay never #0
+             represent wire
+             shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+             clip yon -500
+             ~label
+             set subdivision 1
+             set depth_cue
+             set dc_color black
+             set dc_start 0.5
+             set dc_end 1
+             scale 0.8
+
+           Followed by the movie command to record movies:
+
+           ::
+
+             movie record supersample 1
+             turn y 3 120
+             wait 120
+             movie stop
+             movie encode output SAVEFIG
+
+           Or the copy command for images:
+
+           ::
+
+             copy file SAVEFIG png
+
+           Passing as the following list as 'cmd' parameter:
+           ::
+
+             cmd = ['focus', 'set bg_color white', 'windowsize 800 600', 'bonddisplay never #0', 'shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on', 'clip yon -500', '~label', 'set subdivision 1', 'set depth_cue', 'set dc_color black', 'set dc_start 0.5', 'set dc_end 1', 'scale 0.8']
+
+           will return the default image (other commands can be passed to
+           modified the final image/movie).
+
+        """
+        self.write_cmm('/tmp/', model_num=model_num)
+        chimera_view('/tmp/model.%s.cmm' % (self['rand_init']),
+                     savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
+
+
+
