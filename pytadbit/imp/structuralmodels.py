@@ -284,12 +284,12 @@ class StructuralModels(object):
                   shell=True).communicate()
             self.clusters = ClusterOfModels()
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
-                self.clusters[cluster] = []
+                self.clusters[cluster + 1] = []
                 for model in line.split():
                     model = int(model.split('_')[1])
-                    self[model]['cluster'] = cluster
-                    self.clusters[cluster].append(self[model]['rand_init'])
-                self.clusters[cluster].sort(
+                    self[model]['cluster'] = cluster + 1
+                    self.clusters[cluster + 1].append(self[model]['rand_init'])
+                self.clusters[cluster + 1].sort(
                     key=lambda x: self[str(x)]['objfun'])
             # sort clusters according to their lowest energy
             # for clt in clusters:
@@ -366,9 +366,9 @@ class StructuralModels(object):
         i = max(clust_count)
         for a, b, _, _ in z:
             i += 1
-            clust_count[i] = clust_count[a] + clust_count[b]
-            dads[a] = i
-            dads[b] = i
+            clust_count[i] = clust_count[a + 1] + clust_count[b + 1]
+            dads[a + 1] = i
+            dads[b + 1] = i
 
         d = augmented_dendrogram(clust_count, dads, objfun, color,
                                  axe, savefig, z)

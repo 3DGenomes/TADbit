@@ -129,19 +129,19 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
             # for eaxch branch
             for i1, d1, d2 in zip(i[1:3], [d[0], d[3]], [d[1], d[2]]):
                 try:
-                    lw = float(clust_count[leaves[i1]])/total*10*len(leaves)
+                    lw = float(clust_count[leaves[i1] + 1])/total*10*len(leaves)
                 except KeyError:
                     lw = 1.0
-                nrj = objfun[leaves[i1]] if leaves[i1] in objfun else maxnrj
+                nrj = objfun[leaves[i1] + 1] if (leaves[i1] + 1) in objfun else maxnrj
                 ax.vlines(i1, d1-(difnrj-(nrj-minnrj)), d2, lw=lw,
                           color=(c if color else 'grey'))
-                if leaves[i1] in objfun:
-                    ax.annotate("%.3g" % (leaves[i1]),
+                if leaves[i1] + 1 in objfun:
+                    ax.annotate("%.3g" % (leaves[i1] + 1),
                                 (i1, d1-(difnrj-(nrj-minnrj))),
                                 xytext=(0, -8),
                                 textcoords='offset points',
                                 va='top', ha='center')
-            leaves[(i[1] + i[2])/2] = dads[leaves[i[1]]]
+            leaves[(i[1] + i[2])/2] = dads[leaves[i[1]] + 1]
     try:
         cutter = 10**int(np.log10(difnrj))
     except OverflowError: # case that the two are exactly the same
