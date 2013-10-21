@@ -143,7 +143,7 @@ class IMPmodel(dict):
                            color[n][0], color[n][1], color[n][2], n + 1)
         form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
                 'g=\"1\" b=\"1\" radius=\"' +
-                str(1) +
+                str(self['radius']/2) +
                 '\"/>\n')
         for n in xrange(1, len(self['x'])):
             out += form % (n, n + 1)
