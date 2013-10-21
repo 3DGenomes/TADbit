@@ -10,6 +10,7 @@ gdb python -ex 'run test.py'
 """
 
 import eqv_rms_drms
+from pytadbit.imp.impmodel import IMPmodel
 
 
 models = ['2', '3', '4', '5', '8']
@@ -17,7 +18,7 @@ models = ['2', '3', '4', '5', '8']
 lists = {}
 for model in models:
     lists[model] = []
-    for line in open ('model.{}.xyz'.format(model)):
+    for line in open ('test/model.{}.xyz'.format(model)):
         _, _, x, y, z = line.split()
         lists[model].append((float(x), float(y), float(z)))
     lists[model] = [list(i) for i in zip(*lists[model])]
@@ -42,8 +43,19 @@ for m1, m2, m3, m4, m5 in permutations(models, 5):
     lala = centroid.centroid_wrapper([lists[m1][0], lists[m2][0], lists[m3][0], lists[m4][0], lists[m5][0]],
                                      [lists[m1][1], lists[m2][1], lists[m3][1], lists[m4][1], lists[m5][1]],
                                      [lists[m1][2], lists[m2][2], lists[m3][2], lists[m4][2], lists[m5][2]],
-                                     len(lists['2'][0]), 5, 1, 1)
+                                     len(lists['2'][0]), 5, 0, 0)
     print '   ====>>>> ', models2[lala]
+
+
+avg = centroid.centroid_wrapper([lists[m1][0], lists[m2][0], lists[m3][0], lists[m4][0], lists[m5][0]],
+                                [lists[m1][1], lists[m2][1], lists[m3][1], lists[m4][1], lists[m5][1]],
+                                [lists[m1][2], lists[m2][2], lists[m3][2], lists[m4][2], lists[m5][2]],
+                                len(lists['2'][0]), 5, 0, 1)
+
+avgmodel = IMPmodel((('x', avg[0]), ('y', avg[1]), ('z', avg[2]),
+                     ('rand_init', 'avg'), ('objfun', None)))
+avgmodel.write_cmm('test/')
+
 
 exit()
 
@@ -607,3 +619,18 @@ for model in models + ['avg']:
         out.write(link.format(i+1, i+2))
     out.write(end)
     out.close()
+
+
+import os
+from cPickle import load
+mpath = '/scratch/shared/TADs/T0/models/'
+for rep in os.listdir(mpath):
+    if not rep.startswith('T0'):
+        continue
+    print '-'*80
+    svn = load(open(mpath + rep + '/'+rep+'.models'))
+    print ' '.join(svn.keys())
+    
+    print mpath
+    for fnam in os.listdir(mpath + rep):
+        print fnam

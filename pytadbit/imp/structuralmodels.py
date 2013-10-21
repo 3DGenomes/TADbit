@@ -164,9 +164,9 @@ class StructuralModels(object):
             models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
-        idx = centroid_wrapper([models[x]['x'] for x in models],
-                               [models[x]['y'] for x in models],
-                               [models[x]['z'] for x in models],
+        idx = centroid_wrapper([self[x]['x'] for x in models],
+                               [self[x]['y'] for x in models],
+                               [self[x]['z'] for x in models],
                                self.nloci, len(models), int(verbose), 0)
         return models[idx]
 
@@ -191,12 +191,13 @@ class StructuralModels(object):
             models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
-        idx = centroid_wrapper([models[x]['x'] for x in models],
-                               [models[x]['y'] for x in models],
-                               [models[x]['z'] for x in models],
+        idx = centroid_wrapper([self[x]['x'] for x in models],
+                               [self[x]['y'] for x in models],
+                               [self[x]['z'] for x in models],
                                self.nloci, len(models), int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
-                             ('rand_init', 'avg'), ('objfun', None)))
+                             ('rand_init', 'avg'), ('objfun', None),
+                             ('radius', self['radius'])))
         return avgmodel
 
 
@@ -1304,13 +1305,12 @@ class StructuralModels(object):
             models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
-        radius = self.resolution * self._config['scale']
         for model_num in models:
             try:
                 model = self[model_num]
             except KeyError:
                 model = self._bad_models[model_num]
-            model.write_cmm(directory, radius, color=color, rndname=rndname,
+            model.write_cmm(directory, color=color, rndname=rndname,
                             model_num=model_num)
 
 
@@ -1371,7 +1371,7 @@ class StructuralModels(object):
         to_save['resolution']    = self.resolution
         to_save['original_data'] = self._original_data
         to_save['config']        = self._config
-        to_save['zscore']        = self._zscores
+        to_save['zscores']       = self._zscores
 
         out = open(path_f, 'w')
         dump(to_save, out)

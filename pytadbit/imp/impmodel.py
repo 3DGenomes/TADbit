@@ -197,7 +197,7 @@ class IMPmodel(dict):
             return None
 
 
-    def view_model(self, model_num, tool='chimera', savefig=None, cmd=None):
+    def view_model(self, tool='chimera', savefig=None, cmd=None):
         """
         Visualize a selected model in the three dimensions.
 
@@ -252,7 +252,7 @@ class IMPmodel(dict):
            modified the final image/movie).
 
         """
-        self.write_cmm('/tmp/', model_num=model_num)
+        self.write_cmm('/tmp/')
         chimera_view('/tmp/model.%s.cmm' % (self['rand_init']),
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
 
