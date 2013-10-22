@@ -485,3 +485,34 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     fig.suptitle(tit % tuple([my_round(i, 3) for i in sort_result[0][1:]]),
                  size='large')
     plt.show()
+
+
+def compare_models(sm1, sm2, cutoff=150,
+                   models1=None, cluster1=None,
+                   models2=None, cluster2=None):
+    """
+    Plots the difference of contact maps of two group of structural models.
+    
+    :param sm1: a StructuralModel
+    :param sm2: a StructuralModel
+    :param 150 dcutoff: distance threshold (nm) to determine if two
+       particles are in contact
+    :param None models: if None (default) the contact map will be computed
+       using all the models. A list of numbers corresponding to a given set
+       of models can be passed
+    :param None cluster: compute the contact map only for the models in the
+       cluster number 'cluster'       
+    """
+    mtx1 = sm1.get_contact_matrix(models=models1, cluster=cluster1, cutoff=cutoff)
+    mtx2 = sm2.get_contact_matrix(models=models2, cluster=cluster2, cutoff=cutoff)
+    mtx3 = [[mtx2[i][j] - mtx1[i][j]
+             for j in xrange(len(mtx1))]
+            for i in xrange(len(mtx1))]
+    fig = plt.figure(figsize=(8, 6))
+    axe = fig.add_subplot(111)
+    im = axe.imshow(mtx3, origin='lower', interpolation="nearest")
+    axe.set_ylabel('Particle')
+    axe.set_xlabel('Particle')
+    cbar = axe.figure.colorbar(im)
+    cbar.ax.set_ylabel('Signed log difference between models')
+    plt.show()
