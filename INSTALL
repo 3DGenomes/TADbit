@@ -74,8 +74,8 @@ Once the compilation has finished, open the file setup_environment.sh in your IM
   export PYTHONPATH
 
 
-.. note:: Important note
-          Do not copy the lines above, copy them from setup_environment.sh, where ``SOMETHING`` is replaced by your real path to IMP.
+Important note
+Do not copy the lines above, copy them from setup_environment.sh, where ``SOMETHING`` is replaced by your real path to IMP.
 
 
 MCL - clustering
@@ -106,8 +106,7 @@ TADBit provides a wrapper for the LiftOver tool [Fujita2011]_ (download it from:
 
 This can be used to ease the conversion of genomic TAD coordinates (e.g.: to align human TADs with mouse TADs).
 
-.. note::
-   A 'chain' file may also be downloaded. For example, to convert coordinates to hg19, the chain file needed may be found at: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/
+A 'chain' file may also be downloaded. For example, to convert coordinates to hg19, the chain file needed may be found at: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/
 
 
 
@@ -123,13 +122,13 @@ Once all the needed library/software have been installed, TADBit can be download
   cd tadbit-master/src
   sudo python setup.py install
 
-.. note:: IMP not found problem
-	  If you are under **debian/Ubuntu machines**, and you have
-	  followed the quick tutorial proposed here to install IMP,
-	  you may encounter some warning message stating that IMP is
-	  not installed. This is because root user is not using the
-	  PYTHONPATH declared in your bashrc file. You can perfectly
-	  ignore the warning, or just proceed like this:
+IMP not found problem
+If you are under **debian/Ubuntu machines**, and you have
+followed the quick tutorial proposed here to install IMP,
+you may encounter some warning message stating that IMP is
+not installed. This is because root user is not using the
+PYTHONPATH declared in your bashrc file. You can perfectly
+ignore the warning, or just proceed like this:
 
   ::
 
