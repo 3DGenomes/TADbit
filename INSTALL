@@ -1,7 +1,6 @@
 Installing TADBit on GNU/Linux
-******************************
+==============================
 
-.. contents::
 
 *Note: at the moment the installation has been tested only under Ubuntu-linux and MacOS 
 (tested under OSX 10.9 with MacPorts www.macports.org).*
@@ -28,7 +27,7 @@ Optional packages (but **highly** recommended):
 
   apt-get install python-matplotlib
 
-.. note:: **Alternative install**, you can install *python-setuptools* and use easy_install to get these packages (e.g. "``easy_install scipy``"). 
+**Alternative install**, you can install *python-setuptools* and use easy_install to get these packages (e.g. "``easy_install scipy``"). 
 
 
 IMP - 3D modeling
