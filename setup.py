@@ -4,6 +4,28 @@ from distutils.core import setup, Extension
 from os import path
 from distutils.spawn import find_executable
 
+
+
+TAGS = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Environment :: X11 Applications",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Other Audience",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License (GPL)",
+    "Natural Language :: English",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    ]
+
+
+
 def can_import(modname):
     'Test if a module can be imported '
     try:
@@ -97,17 +119,26 @@ def main():
 
 
     setup(
-        name        = 'pytadbit',
-        version     = '1.0',
-        author      = 'Guillaume Filion',
-        description = 'Identify TADs in hi-C data',
-        ext_modules = [pytadbit_module, eqv_rmsd_module, centroid_module,
-                       consistency_module],
-        package_dir = {'pytadbit': PATH + '/pytadbit'},
-        packages    = ['pytadbit', 'pytadbit.parsers',
-                       'pytadbit.boundary_aligner', 'pytadbit.utils',
-                       'pytadbit.tad_clustering', 'pytadbit.imp'],
-        py_modules  = ["pytadbit"]
+        name         = 'TADBit',
+        version      = '0.1',
+        author       = 'Davide Bau, Francois Serra, Guillaume Filion and Marc Marti-Renom',
+        author_email = 'serra.francois@gmail.com',
+        ext_modules  = [pytadbit_module, eqv_rmsd_module, centroid_module,
+                        consistency_module],
+        package_dir  = {'pytadbit': PATH + '/pytadbit'},
+        packages     = ['pytadbit', 'pytadbit.parsers',
+                        'pytadbit.boundary_aligner', 'pytadbit.utils',
+                        'pytadbit.tad_clustering', 'pytadbit.imp'],
+        # py_modules   = ["pytadbit"],
+        platforms = "OS Independent",
+        license = "GPLv3",
+        description  = 'Identification, analysis and modelling of topologically associating domains from Hi-C data',
+        long_description = open("README.rst").read(),
+        classifiers  = TAGS,
+        provides     = ["pytadbit"],
+        keywords     = ["testing"],
+        url          = 'https://github.com/3DGenomes/tadbit',
+        download_url = 'https://github.com/3DGenomes/tadbit/tarball/master',
     )
 
 
