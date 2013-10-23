@@ -6,7 +6,7 @@ Install python wrapper:
 =======================
 
 * Download tadbit
-* Go to your tadbit/src directory
+* Go to your **tadbit/src** *directory*
 
 ::
 
