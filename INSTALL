@@ -27,7 +27,7 @@ Optional packages (but **highly** recommended):
 
   apt-get install python-matplotlib
 
-**Alternative install**, you can install *python-setuptools* and use easy_install to get these packages (e.g. "``easy_install scipy``"). 
+**Alternative install**, you can install *python-setuptools* and use easy_install to get these packages (e.g. "easy_install scipy"). 
 
 
 IMP - 3D modeling
@@ -54,7 +54,7 @@ Download the IMP tarball file from http://salilab.org/imp/ and uncompress it:
    wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
    tar xzvf imp-2.0.1.tar.gz
 
-Move into the IMP directory and compile the code (*Note:* the `-j` option stands for the number of CPUs you want to assign to the compiler; the higher the faster).
+Move into the IMP directory and compile the code (*Note:* the -j option stands for the number of CPUs you want to assign to the compiler; the higher the faster).
 
 ::
 
@@ -62,7 +62,7 @@ Move into the IMP directory and compile the code (*Note:* the `-j` option stands
    cmake . -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
    make -j4 
 
-Once the compilation has finished, open the file setup_environment.sh in your IMP directory and copy the first lines into your `~/.bashrc` file (if this file in not present in your home directory, create it). These lines should look like:
+Once the compilation has finished, open the file setup_environment.sh in your IMP directory and copy the first lines into your ~/.bashrc file (if this file in not present in your home directory, create it). These lines should look like:
 
 ::
 
@@ -74,7 +74,7 @@ Once the compilation has finished, open the file setup_environment.sh in your IM
 
 
 Important note
-Do not copy the lines above, copy them from setup_environment.sh, where ``SOMETHING`` is replaced by your real path to IMP.
+Do not copy the lines above, copy them from setup_environment.sh, where SOMETHING is replaced by your real path to IMP.
 
 
 MCL - clustering
