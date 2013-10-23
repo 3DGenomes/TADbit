@@ -8,10 +8,8 @@ MANIFEST
 MANIFEST.in
 MANIFEST.in~
 NAMESPACE
-README
 README.rst
 VERSION
-setup.cfg
 setup.cfg~
 setup.py
 setup.py~

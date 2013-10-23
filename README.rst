@@ -1,6 +1,5 @@
-======
 TADBit
-======
+******
 
 
 Install python wrapper:
