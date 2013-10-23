@@ -1,5 +1,5 @@
 #include "Python.h"
-#include "centroid.cpp"
+#include "3dStats.h"
 #include <iostream>
 #include <string>
 using namespace std;

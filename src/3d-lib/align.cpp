@@ -1,27 +1,4 @@
-#include "matrices.cc"
-// #include <iostream>
-// using namespace std;
-
-
-float distance(float* p1, float* p2) {
-  float x, y, z;
-
-  x = p1[0] - p2[0];
-  y = p1[1] - p2[1];
-  z = p1[2] - p2[2];
-  
-  return sqrt(x*x + y*y + z*z);
-}
-
-float ddistance(float* p1, float* p2) {
-  float x, y, z;
-
-  x = p1[0] - p2[0];
-  y = p1[1] - p2[1];
-  z = p1[2] - p2[2];
-  
-  return x*x + y*y + z*z;
-}
+#include "matrices.h"
 
 // Set origin to center of mass
 void massCenter(float** xyz, int size) {
@@ -44,20 +21,10 @@ void massCenter(float** xyz, int size) {
   }
 }
 
-void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres, 
-	      int &eqv, float &rms, float &drms, int * &cons_list, int consistency) {
-  float dist;
-  int last;
-  dist = .0;
-  rms = 0.;
-  drms = .0;
-  eqv = 0;
-  last = size - 1;
-  thres *= thres;
 
+void align(float** xyzA, float** xyzB, int size){
   massCenter(xyzA, size);
   massCenter(xyzB, size);
-
   // PStruct
   //  double dist;
   double u[4][4];
@@ -65,7 +32,6 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
   double o[7][7]; // eigen vector SET BY EIGEN
   double ha[4][4];
   double ka[4][4];
-  // double oa[7][7];
   double r[4][4]; // rotation
   double op[4];
   double s;
@@ -91,7 +57,6 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
   // additional init PF TEST
   for (i = 1; i <= 6; i++) {
     for (int j = 1;  j <= 6; j++) {
-      // oa[i][j] = 0.0;
       o[i][j] = 0.0;
       // omega done in original code later
     }
@@ -168,15 +133,6 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
     }
   }
 
-  // for (k = 1; k <= 3; k++) {
-  //   for (i = 1; i <= 3; i++) {
-  //     oa[i][k] = ha[i][k];
-  //     oa[i + 3][k] = ka[i][k];
-  //     oa[i][k + 3] = ha[i][k];
-  //     oa[i + 3][k + 3] = -ka[i][k];
-  //   }
-  // }
-
   op[1] = ha[2][1] * ha[3][2]-ha[3][1] * ha[2][2];
   op[2] = ha[3][1] * ha[1][2]-ha[1][1] * ha[3][2];
   op[3] = ha[1][1] * ha[2][2]-ha[2][1] * ha[1][2];
@@ -220,50 +176,10 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
     xyzn[i][0]=r[1][1]*xyzA[i][0]+r[1][2]*xyzA[i][1]+r[1][3]*xyzA[i][2];
     xyzn[i][1]=r[2][1]*xyzA[i][0]+r[2][2]*xyzA[i][1]+r[2][3]*xyzA[i][2];
     xyzn[i][2]=r[3][1]*xyzA[i][0]+r[3][2]*xyzA[i][1]+r[3][3]*xyzA[i][2];
-  }
-
-  // RMS dist
-  for (i= 0; i < size; i++) {
-    for (int j=0; j<3; j++) {
-      xyzA[i][j] = xyzn[i][j];
-    }
+    xyzA[i][0] = xyzn[i][0];
+    xyzA[i][1] = xyzn[i][1];
+    xyzA[i][2] = xyzn[i][2];
   }
 
   if (xyzn) delete [] xyzn;
-  // PStruct
-
-  // rmsd last particle in the model since loop1 stops at the second last
-  dist = ddistance(xyzA[last],xyzB[last]);
-
-  if (consistency==1){
-    if (dist < thres) cons_list[last]++;
-    // eqv remaining particles
-    // cout <<"start"<<endl;
-    for (int i=0; i < size; i++) {
-      dist = ddistance(xyzA[i],xyzB[i]);
-      if (dist < thres) {
-	cons_list[i]=1;
-      }else{cons_list[i]=0;}
-    }
-    // cout <<"end"<<endl;
-  }else{
-    //dist = distance(xyzn[last],xyzB[last]) * distance(xyzn[last],xyzB[last]);
-    if (dist < thres) eqv++;
-    rms += dist;
-    // rmsd remaining particles
-    for (int i=0; i < size-1; i++) {
-      dist = ddistance(xyzA[i], xyzB[i]);
-      //dist = distance(xyzn[i],xyzB[i]) * distance(xyzn[i],xyzB[i]);
-      if (dist < thres) eqv++;
-      rms += dist;
-      // drmsd
-      for (int j=i+1; j < size; j++) {
-	dist = distance(xyzA[i],xyzA[j]) - distance(xyzB[i],xyzB[j]);
-	drms += dist*dist;
-      }
-    }
-    drms = sqrt(drms / (size*(size-1)/2));
-    rms  = sqrt(rms / size);
-  }
 }
-

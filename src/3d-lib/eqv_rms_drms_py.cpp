@@ -1,8 +1,9 @@
 #include "Python.h"
-#include "eqv-drmsd-tadbit.cpp"
+#include "3dStats.h"
 // #include <iostream>
 // using namespace std;
-//cout << "START" << endl << flush;
+
+// cout << "START" << endl << flush;
 
 /* The function doc string */
 PyDoc_STRVAR(rmsdRMSD_wrapper__doc__,
@@ -12,77 +13,148 @@ number of equivalent positions, the RMSD and the dRMSD.\n\
    :param xyz_b: second list of tuples of (x, y, z ) coordinates.\n\
    :param dcutoff: distance cutoff to consider 2 particles as equivalent \n\
       in position (nm)\n\
-   :param consistency: whether to get consistency per particle\n\
+   :param nmodels: number of models passed\n\
 \n\
    :returns: a list with the number of equivalent positions, the RMSD and \n\
-      the dRMSD, of the alignment. If consistency is True, returns list of \n\
-      0 or 1 if a given particle is in equivalent position in both strands.\n\
+      the dRMSD, of the alignment.\n\
 ");
 
+float maximumValue(float *vals, int size)
+{
+  float max = vals[0];
+  for(int i = 1; i<size; i++)
+    if(vals[i] > max)
+      max = vals[i];
+  return max;
+}
 
 static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
 {
-  PyObject *py_xA;
-  PyObject *py_xB;
-  PyObject *py_yA;
-  PyObject *py_yB;
-  PyObject *py_zA;
-  PyObject *py_zB;
+  PyObject **py_xs;
+  PyObject **py_ys;
+  PyObject **py_zs;
+  PyObject **py_models;
   int size;
+  int one;
+  int nmodels;
   float thres;
-  int consistency=0;
+  // cout << "START" << endl << flush;
  
-  if (!PyArg_ParseTuple(args, "OOOOOOifi", &py_xA, &py_yA, &py_zA, &py_xB, &py_yB, 
-			&py_zB, &size, &thres, &consistency))
+  if (!PyArg_ParseTuple(args, "OOOifOii", &py_xs, &py_ys, &py_zs, &size, &thres, &py_models, &nmodels, &one))
     return NULL;
  
-  float **xyzA;
-  float **xyzB;
+  float ***xyzn;
+  float *nrmsds;
+  float *drmsds;
+  float *scores;
+  float max_normed;
   int i;
-  xyzA = new float*[size];
-  xyzB = new float*[size];
+  int j;
+  int jj;
+  int k;
+  int msize;
+  float rms = 0;
+  float drms = 0;
+  int   eqv = 0;
+  // cout << "START" << endl << flush;
 
-  for (i=0; i<size; i++){
-    xyzB[i] = new float[3];
-    memset(xyzB[i], 0, 3*sizeof(float));
-    xyzA[i] = new float[3];
-    memset(xyzA[i], 0, 3*sizeof(float));
-    xyzA[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_xA, i));
-    xyzB[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_xB, i));
-    xyzA[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_yA, i));
-    xyzB[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_yB, i));
-    xyzA[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zA, i));
-    xyzB[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zB, i));
-  }
-  float rms, drms;
+  msize = nmodels*(nmodels-1)/2;
+  xyzn = new float **[nmodels];
+  for (i=0;i<nmodels;i++)
+    xyzn[i] = new float *[size];
+  nrmsds = new float[msize];
+  drmsds = new float[msize];
+  scores = new float[msize];
+  // cout << "START" << endl << flush;
 
-  int *cons_list;
-  cons_list = new int[size];
-
-  int eqv;
-  rmsdRMSD(xyzA, xyzB, size, thres, eqv, rms, drms, cons_list, consistency);
 
   PyObject * py_result = NULL;
-  if (consistency){
-    py_result = PyList_New(size);
-    for (i=0; i<size; i++)
-      PyList_SetItem(py_result, i, PyInt_FromLong(cons_list[i]));
-  }else{
-    py_result = PyList_New(3);
-    PyList_SetItem(py_result, 0, PyInt_FromLong(eqv));
-    PyList_SetItem(py_result, 1, PyFloat_FromDouble(rms));
-    PyList_SetItem(py_result, 2, PyFloat_FromDouble(drms));
+  PyObject * py_subresult = NULL;
+  py_result = PyDict_New();
+  for (j=0; j<nmodels; j++){
+    for (i=0; i<size; i++){
+      xyzn[j][i] = new float[3];
+      memset(xyzn[j][i], 0, 3*sizeof(float));
+      xyzn[j][i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(PyList_GET_ITEM(py_xs, j ), i));
+      xyzn[j][i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(PyList_GET_ITEM(py_ys, j ), i));
+      xyzn[j][i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(PyList_GET_ITEM(py_zs, j ), i));
+    }
   }
+  // cout << "START2" << endl << flush;
+
+  k = 0;
+  for (j=0; j<nmodels; j++){
+    for (jj=j+1; jj<nmodels; jj++){
+      rms = 0;
+	drms = 0;
+      eqv = 0;
+      rmsdRMSD(xyzn[j], xyzn[jj], size, thres, eqv, rms, drms);
+      nrmsds[k] = rms;
+      drmsds[k] = drms;
+      scores[k] = eqv * drms / rms;
+	// cout << j<<" " <<jj<<" " <<eqv<<" " <<drms<<" " <<rms<<" "<<scores[k]<< endl << flush;
+	k++;
+    }
+  }
+  // cout << "START5" << endl << flush;
+  if (one){
+    // free
+    for (int j=0; j<nmodels; j++){
+      for (int i=0; i<size; i++){
+	delete[] xyzn[j][i];
+      }
+      delete[] xyzn[j];
+    }
+    delete[] xyzn;
+    
+    // give it to me
+    return PyFloat_FromDouble(drmsds[0]);
+  }
+  // cout << "START6" << endl << flush;
+
+  max_normed = maximumValue(nrmsds, msize) / maximumValue(drmsds, msize);
+  // cout << "START7" << endl << flush;
+
+  k=0;
+  for (j=0; j<nmodels; j++){
+    for (jj=j+1; jj<nmodels; jj++){
+	py_subresult = PyFloat_FromDouble(scores[k] * max_normed);
+	// py_subresult = PyFloat_FromDouble(scores[k]);
+	// cout << " " << j << " "<<jj<<" "<<scores[k] << " " << scores[k] * max_normed << " " << max_normed<<endl << flush;
+	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
+	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, jj), PyList_GET_ITEM(py_models, j )), py_subresult);
+	k++;
+    }
+  }
+  // cout << "START8" << endl << flush;
 
   // free
-  delete[] cons_list;
-  for (int i=0; i<size; i++){
-    delete[] xyzA[i];
-    delete[] xyzB[i];
+  // cout << "START5" << endl << flush;
+  delete[] drmsds;
+  // cout << "START5" << endl << flush;
+  delete[] nrmsds;
+// cout << "START5" << endl << flush;
+  delete[] scores;
+// cout << "START5" << endl << flush;
+  for (int j=0; j<nmodels; j++){
+    for (int i=0; i<size; i++){
+      delete[] xyzn[j][i];
+    }
+    delete[] xyzn[j];
   }
-  delete[] xyzA;
-  delete[] xyzB;
-
+// cout << "START5" << endl << flush;
+  delete[] xyzn;
+// cout << "START5" << endl << flush;
+  Py_DECREF(py_xs);
+// cout << "START5" << endl << flush;
+  Py_DECREF(py_ys);
+  Py_DECREF(py_zs);
+  Py_DECREF(py_models);
+  Py_CLEAR(py_xs);
+  Py_CLEAR(py_ys);
+  Py_CLEAR(py_zs);
+  Py_CLEAR(py_models);
+  
   // give it to me
   return py_result;
 }

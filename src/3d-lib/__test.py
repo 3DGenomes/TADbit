@@ -18,11 +18,16 @@ models = ['2', '3', '4', '5', '8']
 lists = {}
 for model in models:
     lists[model] = []
-    for line in open ('test/model.{}.xyz'.format(model)):
+    for line in open ('/scratch/shared/TADs/T0/models/T0_10_1065_1545/models/model.{}.xyz'.format(model)):
+    # for line in open ('test/model.{}.xyz'.format(model)):
         _, _, x, y, z = line.split()
         lists[model].append((float(x), float(y), float(z)))
     lists[model] = [list(i) for i in zip(*lists[model])]
-    
+
+lala =  eqv_rms_drms.rmsdRMSD_wrapper([lists[m][0] for m in models], [lists[m][1] for m in models], [lists[m][2] for m in models],
+                                    len(lists[models[0]][0]),
+                                    200., 0, models, len(models), 0)
+
 for model1 in ['2', '3', '4', '5', '8']:
     for model2 in ['2', '3', '4', '5', '8']:
         print model1, model2, eqv_rms_drms.rmsdRMSD_wrapper(lists[model1][0], lists[model1][1], lists[model1][2], lists[model2][0], lists[model2][1], lists[model2][2],

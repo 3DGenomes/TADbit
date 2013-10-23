@@ -7,6 +7,7 @@
 from bisect   import bisect_left
 from itertools import combinations
 from pytadbit.eqv_rms_drms import rmsdRMSD_wrapper
+from pytadbit.consistency import consistency_wrapper
 from math     import log10
 import numpy as np
 
@@ -74,13 +75,12 @@ def zscore(values, size):
 def calc_consistency(models, nloci, dcutoff=200):
     combines = list(combinations(models, 2))
     parts = [0 for _ in xrange(nloci)]
-    for md1, md2 in combines:
-        md1s = models[md1]
-        md2s = models[md2]
-        for i, p in enumerate(rmsdRMSD_wrapper(
-            md1s['x'], md1s['y'], md1s['z'],
-            md2s['x'], md2s['y'], md2s['z'],
-            nloci, dcutoff, 1)):
+    for pm in consistency_wrapper([models[m]['x'] for m in models],
+                                  [models[m]['y'] for m in models],
+                                  [models[m]['z'] for m in models],
+                                  nloci, dcutoff, range(len(models)),
+                                  len(models)):
+        for i, p in enumerate(pm):
             parts[i] += p
     return [float(p)/len(combines) * 100 for p in parts]
 
@@ -151,30 +151,35 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, var='score', one=False):
                                            
     :returns: a score (depends on 'var' argument)
     """
-    scores = {}
-    nrmsds = []
-    drmsds = []
-    for md1 in xrange(len(models)):
-        md1s = models[md1]
-        for md2 in xrange(md1 + 1, len(models)):
-            md2s = models[md2]
-            eqv, nrmsd, drmsd = rmsdRMSD_wrapper(
-                md1s['x'], md1s['y'], md1s['z'],
-                md2s['x'], md2s['y'], md2s['z'], nloci, dcutoff, 0)
-            nrmsds.append(nrmsd)
-            drmsds.append(drmsd)
-            scores[(md1, md2)] = eqv * drmsd / nrmsd
-    if one:
-        return drmsd
-    max_rmsd_ov_max_drmsd = max(nrmsds) / max(drmsds)
-    if var=='score':
-        for md1, md2 in scores.keys()[:]:
-            score = scores[(md1, md2)] * max_rmsd_ov_max_drmsd
-            scores[(md1, md2)] = score
-            scores[(md2, md1)] = score
-    elif var=='drmsd':
-        for i, (md1, md2) in enumerate(scores.keys()):
-            scores[(md2, md1)] = drmsds[i]
+    scores = rmsdRMSD_wrapper([models[m]['x'] for m in xrange(len(models))],
+                              [models[m]['y'] for m in xrange(len(models))],
+                              [models[m]['z'] for m in xrange(len(models))],
+                              nloci, dcutoff, range(len(models)),
+                              len(models), int(one))
+    # scores = {}
+    # nrmsds = []
+    # drmsds = []
+    # for md1 in xrange(len(models)):
+    #     md1s = models[md1]
+    #     for md2 in xrange(md1 + 1, len(models)):
+    #         md2s = models[md2]
+    #         eqv, nrmsd, drmsd = rmsdRMSD_wrapper(
+    #             md1s['x'], md1s['y'], md1s['z'],
+    #             md2s['x'], md2s['y'], md2s['z'], nloci, dcutoff, 0)
+    #         nrmsds.append(nrmsd)
+    #         drmsds.append(drmsd)
+    #         scores[(md1, md2)] = eqv * drmsd / nrmsd
+    # if one:
+    #     return drmsd
+    # max_rmsd_ov_max_drmsd = max(nrmsds) / max(drmsds)
+    # if var=='score':
+    #     for md1, md2 in scores.keys()[:]:
+    #         score = scores[(md1, md2)] * max_rmsd_ov_max_drmsd
+    #         scores[(md1, md2)] = score
+    #         scores[(md2, md1)] = score
+    # elif var=='drmsd':
+    #     for i, (md1, md2) in enumerate(scores.keys()):
+    #         scores[(md2, md1)] = drmsds[i]
     return scores
 
 

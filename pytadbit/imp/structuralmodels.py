@@ -275,9 +275,10 @@ class StructuralModels(object):
         else:
             out_f = open(tmp_file, 'w')
             uniqs = list(set([tuple(sorted((m1, m2))) for m1, m2 in scores]))
+            cut = fact * self.nloci
             for md1, md2 in uniqs:
                 score = scores[(md1, md2)]
-                if score >= fact * self.nloci:
+                if score >= cut:
                     out_f.write('model_%s\tmodel_%s\t%s\n' % (md1, md2, score))
             out_f.close()
             Popen('%s %s --abc -V all -o %s.mcl' % (
@@ -843,11 +844,16 @@ class StructuralModels(object):
             plt.show()
 
 
-    def view_model(self, model_num, tool='chimera', savefig=None, cmd=None):
+    def view_model(self, models=None, cluster=None, tool='chimera',
+                   savefig=None, cmd=None):
         """
         Visualize a selected model in the three dimensions.
 
-        :param model_num: model to visualize
+        :param None models:  if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
         :param 'chimera' tool: path to the external tool used to visualize the
            model
         :param None savefig: path to a file where to save the image OR movie
@@ -898,8 +904,17 @@ class StructuralModels(object):
            modified the final image/movie).
 
         """
-        self.write_cmm('/tmp/', model_num=model_num)
-        chimera_view('/tmp/model.%s.cmm' % (self[model_num]['rand_init']),
+        if models:
+            models = models
+        elif cluster > -1:
+            models = [str(m) for m in self.clusters[cluster]]
+        else:
+            models = self.__models
+        models = [m['rand_init'] if 'IMPmodel' in type(m) else m for m in models]
+        for model_num in models:
+            self.write_cmm('/tmp/', model_num=model_num)
+        chimera_view(['/tmp/model.%s.cmm' % (self[m]['rand_init'])
+                      for m in models],
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
 
 

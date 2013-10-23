@@ -4,7 +4,6 @@ from distutils.core import setup, Extension
 from os import path
 from distutils.spawn import find_executable
 
-
 def can_import(modname):
     'Test if a module can be imported '
     try:
@@ -68,21 +67,42 @@ def main():
     
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
+                                language = "c",
                                 sources=['src/tadbit_py.c'],
                                 extra_compile_args=['-std=c99'])
-    # c++ module to align and calculate distances between 2 3D models
+    # c++ module to align and calculate all distances between group of 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
-                                sources=['src/3d-lib/eqv_rms_drms_py.cpp'],
+                                language = "c++",
+                                sources=['src/3d-lib/eqv_rms_drms_py.cpp',
+                                         'src/3d-lib/matrices.cc',
+                                         'src/3d-lib/3dStats.cpp',
+                                         'src/3d-lib/align.cpp'],
                                 extra_compile_args=["-ffast-math"])
+    # c++ module to align and calculate consistency of a group of 3D models
+    consistency_module = Extension('pytadbit.consistency',
+                                   language = "c++",
+                                   sources=['src/3d-lib/consistency_py.cpp',
+                                            'src/3d-lib/matrices.cc',
+                                            'src/3d-lib/3dStats.cpp',
+                                            'src/3d-lib/align.cpp'],
+                                   extra_compile_args=["-ffast-math"])
+    # c++ module to get centroid of a group of 3D models
     centroid_module = Extension('pytadbit.centroid',
-                                sources=['src/3d-lib/centroid_py.cpp'])
+                                language = "c++",
+                                sources=['src/3d-lib/centroid_py.cpp',
+                                         'src/3d-lib/matrices.cc',
+                                         'src/3d-lib/3dStats.cpp',
+                                         'src/3d-lib/align.cpp'],
+                                extra_compile_args=["-ffast-math"])
+
 
     setup(
         name        = 'pytadbit',
         version     = '1.0',
         author      = 'Guillaume Filion',
         description = 'Identify TADs in hi-C data',
-        ext_modules = [pytadbit_module, eqv_rmsd_module, centroid_module],
+        ext_modules = [pytadbit_module, eqv_rmsd_module, centroid_module,
+                       consistency_module],
         package_dir = {'pytadbit': PATH + '/pytadbit'},
         packages    = ['pytadbit', 'pytadbit.parsers',
                        'pytadbit.boundary_aligner', 'pytadbit.utils',

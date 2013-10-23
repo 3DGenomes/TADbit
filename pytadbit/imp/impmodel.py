@@ -253,7 +253,7 @@ class IMPmodel(dict):
 
         """
         self.write_cmm('/tmp/')
-        chimera_view('/tmp/model.%s.cmm' % (self['rand_init']),
+        chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
 
 
