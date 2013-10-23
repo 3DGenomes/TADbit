@@ -36,11 +36,4 @@ To test the installation:
 
 Links
 =====
-`Travis CI <https://travis-ci.org/#!/tkf/emacs-jedi>`_ |build-status|
-
-.. |build-status|
-   image:: https://secure.travis-ci.org/fransua/tadbit.png
-           ?branch=master
-   :target: http://travis-ci.org/fransua/tadbit
-   :alt: Build Status
 
