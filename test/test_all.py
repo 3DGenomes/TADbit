@@ -334,7 +334,8 @@ class TestTadbit(unittest.TestCase):
     def test_15_3d_modelling(self):
         """
         """
-        models = load_structuralmodels('models.pick')
+        models = load_structuralmodels('models.pick') 
+        models.cluster_models(method='ward', verbose=False)
         # density
         models.density_plot(savedata='lala', plot=False)
         lines = open('lala').readlines()
@@ -364,7 +365,32 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(lines[1], '1\t11.0\t25.667\t40.667\t50.667\n')
         self.assertEqual(lines[15], '15\t94.667\t100.0\t100.0\t100.0\n')
         # measure angle
-        models.angle_between_3_particles(2,8,15)
+        self.assertEqual(round(models.angle_between_3_particles(2,8,15), 3), 128.338)
+        self.assertEqual(round(models.angle_between_3_particles(19,20,21), 3), 60.163)
+        self.assertEqual(round(models.angle_between_3_particles(15,14,11), 3), 64.474)
+        # coordinates
+        self.assertEqual([round(x, 3) for x in models.particle_coordinates(15)],
+                         [2372.253, -1193.602, -1145.397])
+        # dihedral_angle
+        self.assertEqual(round(models.dihedral_angle(2,8,15, 16), 3), -13.443)
+        self.assertEqual(round(models.dihedral_angle(15,19,20,21), 3), 79.439)
+        self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 3), 8.136)
+        # median distance
+        self.assertEqual(round(models.median_3d_dist(3, 20, plot=False), 3), 1553.974)
+        self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1, plot=False), 3), 1522.16)
+        self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5), plot=False), 3), 266.024)
+        # write cmm
+        models.write_cmm('.', model_num=2)
+        models.write_cmm('.', models=range(5))
+        models.write_cmm('.', cluster=2)
+        # write xyz
+        models.write_xyz('.', model_num=2)
+        models.write_xyz('.', models=range(5))
+        models.write_xyz('.', cluster=2)
+        # clean
+        system('rm -f model.*')
+        system('rm -f lala')
+        
 
     def test_16_tadbit_c(self):
         """
