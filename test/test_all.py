@@ -8,8 +8,9 @@ import unittest
 from pytadbit import tadbit, batch_tadbit, Chromosome, load_chromosome
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 from pytadbit.parsers.hic_parser import __check_hic as check_hic
-from os import system
+from os import system, path, chdir
 
+PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
 class TestTadbit(unittest.TestCase):
     """
@@ -19,13 +20,13 @@ class TestTadbit(unittest.TestCase):
     def test_01_tadbit(self):
 
         global exp1, exp2, exp3, exp4
-        exp1 = tadbit('40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
+        exp1 = tadbit(PATH + '/40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
                       verbose=False, no_heuristic=False, n_cpus='max')
-        exp2 = tadbit('20Kb/chrT/chrT_B.tsv', max_tad_size="auto",
+        exp2 = tadbit(PATH + '/20Kb/chrT/chrT_B.tsv', max_tad_size="auto",
                       verbose=False, no_heuristic=False, n_cpus='max')
-        exp3 = tadbit('20Kb/chrT/chrT_C.tsv', max_tad_size="auto",
+        exp3 = tadbit(PATH + '/20Kb/chrT/chrT_C.tsv', max_tad_size="auto",
                       verbose=False, no_heuristic=False, n_cpus='max')
-        exp4 = tadbit('20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
+        exp4 = tadbit(PATH + '/20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
                       n_cpus='max',
                       verbose=False, no_heuristic=False, get_weights=True)
 
@@ -50,10 +51,10 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome', centromere_search=True,
                               experiment_tads=[exp1, exp2, exp3, exp4],
-                              experiment_hic_data=['40Kb/chrT/chrT_A.tsv',
-                                                   '20Kb/chrT/chrT_B.tsv',
-                                                   '20Kb/chrT/chrT_C.tsv',
-                                                   '20Kb/chrT/chrT_D.tsv'],
+                              experiment_hic_data=[PATH + '/40Kb/chrT/chrT_A.tsv',
+                                                   PATH + '/20Kb/chrT/chrT_B.tsv',
+                                                   PATH + '/20Kb/chrT/chrT_C.tsv',
+                                                   PATH + '/20Kb/chrT/chrT_D.tsv'],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'],
                               experiment_resolutions=[40000,20000,20000,20000],
                               silent=True)
@@ -74,9 +75,9 @@ class TestTadbit(unittest.TestCase):
     def test_04_chromosome_batch(self):
         test_chr = Chromosome(name='Test Chromosome',
                               experiment_resolutions=[20000]*3,
-                              experiment_hic_data=['20Kb/chrT/chrT_A.tsv',
-                                                   '20Kb/chrT/chrT_D.tsv',
-                                                   '20Kb/chrT/chrT_C.tsv'],
+                              experiment_hic_data=[PATH + '/20Kb/chrT/chrT_A.tsv',
+                                                   PATH + '/20Kb/chrT/chrT_D.tsv',
+                                                   PATH + '/20Kb/chrT/chrT_C.tsv'],
                               experiment_names=['exp1', 'exp2', 'exp3'])
         test_chr.find_tad(['exp1', 'exp2', 'exp3'], batch_mode=True,
                           verbose=False)
@@ -101,7 +102,7 @@ class TestTadbit(unittest.TestCase):
         test_chr = Chromosome(name='Test Chromosome',
                               experiment_tads=[exp4],
                               experiment_names=['exp1'],
-                              experiment_hic_data=['20Kb/chrT/chrT_D.tsv'],
+                              experiment_hic_data=[PATH + '/20Kb/chrT/chrT_D.tsv'],
                               experiment_resolutions=[20000,20000])
         all_tads = []
         for _, tad in test_chr.iter_tads('exp1'):
@@ -116,7 +117,7 @@ class TestTadbit(unittest.TestCase):
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000,
                               centromere_search=True,)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data='20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         brks = [2.0, 7.0, 12.0, 18.0, 38.0, 43.0, 49.0,
                 61.0, 66.0, 75.0, 89.0, 94.0, 99.0]
         tads = test_chr.experiments['exp1'].tads
@@ -124,7 +125,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(brks, found)
         items1 = test_chr.forbidden.keys(), test_chr.forbidden.values()
         test_chr.add_experiment('exp2', 20000, tad_def=exp3,
-                                hic_data='20Kb/chrT/chrT_C.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_C.tsv')
         items2 = test_chr.forbidden.keys(), test_chr.forbidden.values()
         know1 = ([32, 33, 34, 38, 39, 19, 20, 21, 22,
                   23, 24, 25, 26, 27, 28, 29, 30, 31],
@@ -139,7 +140,7 @@ class TestTadbit(unittest.TestCase):
     def test_08_changing_resolution(self):
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data='20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments['exp1']
         sum20 = sum(exp.hic_data[0])
         exp.set_resolution(80000)
@@ -173,7 +174,7 @@ class TestTadbit(unittest.TestCase):
         """
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data='20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data('20Kb/chrT/chrT_A.tsv', silent=True)
         exp.get_hic_zscores()
@@ -186,7 +187,7 @@ class TestTadbit(unittest.TestCase):
         """
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data='20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         tadbit_weigths = exp.norm[:]
         exp.norm = None
@@ -206,6 +207,17 @@ class TestTadbit(unittest.TestCase):
         quick test to generate 3D coordinates from 3? simple models???
         """
         pass
+
+
+    def test_tadbit_c(self):
+        """
+        Runs tests written in c, around the detection of TADs
+        """
+        chdir(PATH + '/../src/test/')
+        system('make')
+        return_code = system('make test')
+        chdir(PATH)
+        self.assertEqual(return_code, 0)
 
 
 if __name__ == "__main__":
