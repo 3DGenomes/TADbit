@@ -117,7 +117,7 @@ class Chromosome(object):
     def __init__(self, name, experiment_resolutions=None, experiment_tads=None,
                  experiment_hic_data=None, experiment_names=None,
                  max_tad_size=5000000, chr_len=0, parser=None,
-                 centromere_search=False):
+                 centromere_search=False, silent=False):
         self.name             = name
         self.max_tad_size     = max_tad_size
         self.size             = self._given_size = self.r_size = chr_len
@@ -139,7 +139,7 @@ class Chromosome(object):
                 name = experiment_names[i] if experiment_names else None
                 try:
                     xpr = self.get_experiment(name)
-                    xpr.load_hic_data(handler)
+                    xpr.load_hic_data(handler, silent=silent)
                     continue
                 except:
                     pass

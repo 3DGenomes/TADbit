@@ -30,7 +30,7 @@ class TestTadbit(unittest.TestCase):
                       verbose=False, no_heuristic=False, get_weights=True)
 
         breaks = [0, 4, 10, 15, 23, 29, 38, 45]
-        scores = [8.0, 7.0, 5.0, 7.0, 4.0, 7.0, 7.0, None]
+        scores = [7.0, 7.0, 5.0, 7.0, 4.0, 6.0, 8.0, None]
         self.assertEqual(exp1['start'], breaks)
         self.assertEqual(exp1['score'], scores)
 
@@ -40,20 +40,25 @@ class TestTadbit(unittest.TestCase):
         batch_exp= batch_tadbit('20Kb/chrT/', max_tad_size=20, verbose=False,
                                 no_heuristic=True)
         breaks = [0, 4, 9, 15, 20, 29, 36, 44, 50, 62, 67, 76, 90, 95]
-        scores = [4.0, 7.0, 3.0, 7.0, 4.0, 4.0, 6.0, 7.0, 10.0, 10.0,
-                  8.0, 9.0, 7.0, None]
+        scores = [4.0, 7.0, 4.0, 8.0, 4.0, 4.0, 7.0, 7.0, 10.0, 10.0, 9.0, 8.0,
+                  7.0, None]
         self.assertEqual(batch_exp['start'], breaks)
         self.assertEqual(batch_exp['score'], scores)
 
 
     def test_03_tad_multi_aligner(self):
 
-        test_chr = Chromosome(name='Test Chromosome',
+        test_chr = Chromosome(name='Test Chromosome', centromere_search=True,
                               experiment_tads=[exp1, exp2, exp3, exp4],
-                              experiment_hic_data=['40Kb/chrT/chrT_A.tsv', '20Kb/chrT/chrT_B.tsv', '20Kb/chrT/chrT_C.tsv', '20Kb/chrT/chrT_D.tsv'],
+                              experiment_hic_data=['40Kb/chrT/chrT_A.tsv',
+                                                   '20Kb/chrT/chrT_B.tsv',
+                                                   '20Kb/chrT/chrT_C.tsv',
+                                                   '20Kb/chrT/chrT_D.tsv'],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'],
-                              experiment_resolutions=[40000,20000,20000,20000])
-        for exp in test_chr.experiments: exp.normalize_hic(method='visibility')
+                              experiment_resolutions=[40000,20000,20000,20000],
+                              silent=True)
+        for exp in test_chr.experiments:
+            exp.normalize_hic(method='visibility', silent=True)
 
         test_chr.align_experiments(verbose=False, randomize=False,
                                    method='global')
@@ -78,7 +83,7 @@ class TestTadbit(unittest.TestCase):
         tads = test_chr.get_experiment('batch_exp1_exp2_exp3').tads
         found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
         self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 35.0, 43.0,
-                          49.0, 61.0, 66.0, 75.0, 89.0, 99.0], found)
+                          49.0, 61.0, 66.0, 75.0, 89.0, 94.0, 99.0], found)
 
 
     def test_05_save_load(self):
@@ -108,10 +113,11 @@ class TestTadbit(unittest.TestCase):
         
 
     def test_07_forbidden_regions(self):
-        test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
+        test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000,
+                              centromere_search=True,)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data='20Kb/chrT/chrT_D.tsv')
-        brks = [2.0, 7.0, 12.0, 18.0, 49.0,
+        brks = [2.0, 7.0, 12.0, 18.0, 38.0, 43.0, 49.0,
                 61.0, 66.0, 75.0, 89.0, 94.0, 99.0]
         tads = test_chr.experiments['exp1'].tads
         found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
@@ -169,7 +175,7 @@ class TestTadbit(unittest.TestCase):
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data='20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
-        exp.load_experiment('20Kb/chrT/chrT_A.tsv')
+        exp.load_hic_data('20Kb/chrT/chrT_A.tsv', silent=True)
         exp.get_hic_zscores()
         exp.get_hic_zscores(zscored=False)
 
@@ -184,7 +190,7 @@ class TestTadbit(unittest.TestCase):
         exp = test_chr.experiments[0]
         tadbit_weigths = exp.norm[:]
         exp.norm = None
-        exp.normalize_hic()
+        exp.normalize_hic(method='sqrt')
         self.assertEqual(tadbit_weigths[0], exp.norm[0])
 
 

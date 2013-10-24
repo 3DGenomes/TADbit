@@ -165,7 +165,7 @@ class Experiment(object):
 
 
     def load_hic_data(self, hic_data, parser=None, wanted_resolution=None,
-                      data_resolution=None, filter_columns=True):
+                      data_resolution=None, filter_columns=True, silent=False):
         """
         Add a Hi-C experiment to the Chromosome object.
         
@@ -207,7 +207,8 @@ class Experiment(object):
         #     xrange(0, self.size**2, self.size))
         #                  if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
         if filter_columns:
-            self._zeros = hic_filtering_for_modelling(self.get_hic_matrix())
+            self._zeros = hic_filtering_for_modelling(self.get_hic_matrix(),
+                                                      silent=silent)
         
 
     def load_tad_def(self, tad_def, weights=None):
@@ -227,7 +228,7 @@ class Experiment(object):
         self.norm  = weights or norm
         
 
-    def normalize_hic(self, method='visibility'):
+    def normalize_hic(self, method='visibility', silent=False):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -279,7 +280,7 @@ class Experiment(object):
             raise Exception('ERROR: No Hi-C data loaded\n')
         if not method in ['sqrt', 'visibility']:
             raise LookupError('Only "sqrt" and "visibility" methods are implemented')
-        if self.norm:
+        if self.norm and not silent:
             warn('WARNING: removing previous weights\n')
         # removes columns where there is no data in the diagonal
         forbidden = [i for i in xrange(self.size)

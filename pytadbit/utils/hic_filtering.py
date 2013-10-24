@@ -102,7 +102,7 @@ def filter_by_zero_count(matrx, draw_hist=False):
     return bads
 
 
-def filter_by_mean(matrx, draw_hist=False):
+def filter_by_mean(matrx, draw_hist=False, silent=False):
     """
     fits the distribution of Hi-C interaction count by column in the matrix to
     a polynomial. Then searches for the first possible 
@@ -142,7 +142,8 @@ def filter_by_mean(matrx, draw_hist=False):
                 hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
             xp = range(0, cols[-1])
     except ValueError:
-        warn('WARNING: Too few data to filter columns. SKIPPING...')
+        if not silent:
+            warn('WARNING: Too few data to filter columns. SKIPPING...')
         return []
     # find best polynomial fit in a given range
     for order in range(4, 14):
@@ -229,7 +230,7 @@ def filter_by_mad(matrx):
     return bads
 
 
-def hic_filtering_for_modelling(matrx, method='mean'):
+def hic_filtering_for_modelling(matrx, method='mean', silent=False):
     """
     :param matrx: Hi-C matrix of a given experiment
     :param mean method: method to use for filtering Hi-C columns. Aims to
@@ -239,7 +240,7 @@ def hic_filtering_for_modelling(matrx, method='mean'):
        calculation of the z-score
     """
     if method == 'mean':
-        bads = filter_by_mean(matrx, draw_hist=False)
+        bads = filter_by_mean(matrx, draw_hist=False, silent=silent)
     elif method == 'zeros':
         bads = filter_by_zero_count(matrx)
     elif method == 'mad':
