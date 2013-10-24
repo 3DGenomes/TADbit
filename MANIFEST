@@ -2,7 +2,6 @@
 .gitignore
 .travis.yml
 DESCRIPTION
-INSTALL
 LICENSE.txt
 MANIFEST
 MANIFEST.in

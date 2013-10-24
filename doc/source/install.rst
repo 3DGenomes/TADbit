@@ -143,3 +143,5 @@ To do so, move to the test directory and run:
   cd ../test
   python test_all.py
 
+
+.. [Fujita2011] Fujita, P. A., Rhead, B., Zweig, A. S., Hinrichs, A. S., Karolchik, D., Cline, M. S., Goldman, M., et al. (2011). The UCSC Genome Browser database: update 2011. Nucleic Acids Research, 39(Database issue), D876-82. doi:10.1093/nar/gkq963
