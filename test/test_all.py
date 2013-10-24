@@ -289,33 +289,27 @@ class TestTadbit(unittest.TestCase):
         models.save_models('models.pick')
         
         avg = models.average_model()
-        xis = [256.8006591796875   , 192.26112365722656  , 140.6591339111328   ,
-               100.45024871826172  , 46.949642181396484  , -86.2816162109375   ,
-               -162.32574462890625 , -224.3642578125     , -265.5603942871094  ,
-               -113.91905975341797 , -12.291224479675293 , -2.076080560684204  ,
-               -141.23983764648438 , -132.74307250976562 , 25.496896743774414  ,
-               45.70216369628906   , -20.619169235229492 , 2.435852289199829   ,
-               39.39045333862305   , 132.94569396972656  , 178.3325958251953]
-        yis = [777.8389892578125   , 653.3052978515625   , 523.3452758789062   ,
-               392.9111328125      , 257.7278137207031   , 353.4071350097656   ,
-               273.9151306152344   , 151.65985107421875  , 257.0668640136719   ,
-               165.82093811035156  , 78.40266418457031   , -63.09275436401367  ,
-               -134.39276123046875 , -258.0103454589844  , -258.30206298828125 ,
-               -398.19586181640625 , -527.285400390625   , -659.3544921875     ,
-               -542.7464599609375  , -551.9331665039062  , -492.0866394042969]
-        zis = [-779.3071899414062  , -654.696044921875   , -526.7015991210938  ,
-               -396.4420166015625  , -264.5214538574219  , -344.0582275390625  ,
-               -272.64324951171875 , -143.98304748535156 , -240.02696228027344 ,
-               -157.3037109375     , -78.53412628173828  , 60.93852996826172   ,
-               168.08941650390625  , 279.0310974121094   , 252.53445434570312  ,
-               390.1815490722656   , 469.2845458984375   , 607.5489501953125   ,
-               548.5169067382812   , 551.5454711914062   , 530.5454711914062]
-        self.assertEqual([round(x, 4) for x in avg['x']],
-                         [round(x, 4) for x in xis])
-        self.assertEqual([round(x, 4) for x in avg['y']],
-                         [round(x, 4) for x in yis])
-        self.assertEqual([round(x, 4) for x in avg['z']],
-                         [round(x, 4) for x in zis])
+        xis = [256.800659, 192.261123, 140.659133, 100.450248, 46.9496421,
+               -86.281616, -162.32574, -224.36425, -265.56039, -113.91905,
+               -12.291224, -2.0760805, -141.23983, -132.74307, 25.4968967,
+               45.7021636, -20.619169, 2.43585228, 39.3904533, 132.945693,
+               178.332595]
+        yis = [777.838989, 653.305297, 523.345275, 392.911132, 257.727813,
+               353.407135, 273.915130, 151.659851, 257.066864, 165.820938,
+               78.4026641, -63.092754, -134.39276, -258.01034, -258.30206,
+               -398.19586, -527.28540, -659.35449, -542.74645, -551.93316,
+               -492.08663]
+        zis = [-779.30718, -654.69604, -526.70159, -396.44201, -264.52145,
+               -344.05822, -272.64324, -143.98304, -240.02696, -157.30371,
+               -78.534126, 60.9385299, 168.089416, 279.031097, 252.534454,
+               390.181549, 469.284545, 607.548950, 548.516906, 551.545471,
+               530.545471]
+        self.assertEqual([round(x, 3) for x in avg['x']],
+                         [round(x, 3) for x in xis])
+        self.assertEqual([round(x, 3) for x in avg['y']],
+                         [round(x, 3) for x in yis])
+        self.assertEqual([round(x, 3) for x in avg['z']],
+                         [round(x, 3) for x in zis])
 
         centroid = models.centroid_model()
         self.assertEqual(centroid['rand_init'], 69)
@@ -341,7 +335,36 @@ class TestTadbit(unittest.TestCase):
         """
         """
         models = load_structuralmodels('models.pick')
-
+        # density
+        models.density_plot(savedata='lala', plot=False)
+        lines = open('lala').readlines()
+        self.assertEqual(len(lines), 22)
+        self.assertEqual(lines[1], '1\t99.988\t100.022\tNone\tNone\tNone\tNone\tNone\tNone\tNone\tNone\n')
+        self.assertEqual(lines[15], '15\t99.939\t99.985\t99.969\t99.998\t99.97\t99.998\t99.974\t99.996\t99.977\t100.0\n')
+        # contacts
+        cmap = models.get_contact_matrix(cutoff=300)
+        self.assertEqual(round(
+            sum([i if i >=0 else 0 for i in reduce(lambda x, y: x+y, cmap)]),
+            3), 80.8)
+        # define best models
+        models.define_best_models(10)
+        self.assertEqual(len(models), 10)
+        m1 = models[9]
+        models.define_best_models(25)
+        self.assertEqual(len(models), 25)
+        self.assertEqual(m1, models[9])
+        # correlation
+        corr, pval = models.correlate_with_real_data(cutoff=300)
+        self.assertEqual(round(corr, 4), round(0.63597740365044708, 4))
+        self.assertEqual(round(pval, 4), round(0, 4))
+        # consistency
+        models.model_consistency(plot=False, savedata='lala')
+        lines = open('lala').readlines()
+        self.assertEqual(len(lines), 22)
+        self.assertEqual(lines[1], '1\t11.0\t25.667\t40.667\t50.667\n')
+        self.assertEqual(lines[15], '15\t94.667\t100.0\t100.0\t100.0\n')
+        # measure angle
+        
 
     def test_16_tadbit_c(self):
         """

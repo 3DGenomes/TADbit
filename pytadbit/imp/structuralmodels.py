@@ -374,7 +374,8 @@ class StructuralModels(object):
 
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     error=False, axe=None, savefig=None, savedata=None):
+                     error=False, axe=None, savefig=None, savedata=None,
+                     plot=True):
         """
         Plots the number of nucleotides per nm of chromatin vs the modeled
         region bins.
@@ -387,8 +388,13 @@ class StructuralModels(object):
         :param (1, 2, 3, 4, 5) steps: how many particles to group for the
            estimation. By default 5 curves are drawn
         :param False error: represent the error of the estimates
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI
         :param None savedata: path to a file where to save the density data
            generated (1 column per step + 1 for particle number).
+        :param True plot: e.g. only saves data. No plotting done
 
         """
         if type(steps) == int:
@@ -447,10 +453,12 @@ class StructuralModels(object):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     ['None\tNone' if part >= len(distsk[c]) else
                     (str(round(distsk[c][part], 3)) + '\t' +
-                     str(errorp[c][part]))
+                     str(round(errorp[c][part], 3)))
                      if distsk[c][part] else 'None\tNone'
                      for c in steps])))
             out.close()
+        if not plot:
+            return
         # plot
         if axe:
             ax = axe
@@ -754,7 +762,8 @@ class StructuralModels(object):
 
 
     def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
-                          cluster=None, axe=None, savefig=None, savedata=None):
+                          cluster=None, axe=None, savefig=None, savedata=None,
+                          plot=True):
         """
         Plots the particle consistency, over a given set of models, vs the
         modeled region bins. The consistency is a measure of the variability
@@ -775,6 +784,7 @@ class StructuralModels(object):
            installed by default)
         :param None savedata: path to a file where to save the consistency data
            generated (1 column per cutoff + 1 for particle number).
+        :param True plot: e.g. only saves data. No plotting done
 
         """
         if models:
@@ -795,6 +805,8 @@ class StructuralModels(object):
                 out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
                     [str(round(consistencies[c][part], 3)) for c in cutoffs])))
             out.close()
+        if not plot:
+            return
         # plot
         show = False
         if not axe:
