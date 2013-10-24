@@ -286,7 +286,7 @@ class TestTadbit(unittest.TestCase):
                                   config={'kforce': 5, 'maxdist': 500,
                                           'scale': 0.005,
                                           'upfreq': 1.0, 'lowfreq': -0.6})
-        models.save_models('models.pik')
+        models.save_models('models.pick')
         
         avg = models.average_model()
         xis = [256.8006591796875   , 192.26112365722656  , 140.6591339111328   ,
@@ -326,7 +326,7 @@ class TestTadbit(unittest.TestCase):
         """
         from pytadbit.imp.structuralmodels import load_structuralmodels
         
-        models = load_structuralmodels('models.pik')
+        models = load_structuralmodels('models.pick')
         wnt = {1: [95, 69, 101, 55, 94, 81, 30, 32, 25,
                    72, 52, 56, 2, 98, 89, 40],
                2: [92, 78, 97, 43, 31, 54, 62, 28, 13]}
@@ -340,7 +340,7 @@ class TestTadbit(unittest.TestCase):
     def test_15_3d_modelling(self):
         """
         """
-        models = load_structuralmodels('models.pik')
+        models = load_structuralmodels('models.pick')
 
 
     def test_16_tadbit_c(self):
