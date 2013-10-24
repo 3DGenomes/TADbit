@@ -8,6 +8,7 @@
 .Rhistory
 src/build/*
 build
+dist
 src/pytadbit.py
 src/pytadbit_wrap.c
 .project
