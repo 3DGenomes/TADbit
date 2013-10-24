@@ -197,7 +197,8 @@ class StructuralModels(object):
                                self.nloci, len(models), int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
                              ('rand_init', 'avg'), ('objfun', None),
-                             ('radius', self['radius'])))
+                             ('radius',
+                              self.resolution * self._config['scale'])))
         return avgmodel
 
 
@@ -251,27 +252,30 @@ class StructuralModels(object):
             for (i, j), score in scores.iteritems():
                 matrix[i][j] = score if score > fact * self.nloci else 0.0
             clust = linkage(matrix, method='ward')
+            # score each possible cut in hierarchical clustering
             solutions = {}
-            # x = []
-            # y = []
             for k in clust[:,2]:
                 clusters = ClusterOfModels()
                 _ = [clusters.setdefault(j, []).append(i) for i, j in
                      enumerate(fcluster(clust, k, criterion='distance'))]
                 solutions[k] = {'out': clusters}
                 solutions[k]['score'] = calinski_harabasz(scores, clusters)
-                # print len(a), k, solutions[k]['score']
-                # x.append(solutions[k]['score'])
-                # y.append(len(a))
-            # plt.plot(y,x)
-            # plt.show()
+            # take best cluster according to calinski_harabasz score
             clusters = [solutions[s] for s in sorted(
                 solutions, key=lambda x: solutions[x]['score'])
                          if solutions[s]['score']>0][-1]['out']
+            # sort clusters, the more populated, the first.
+            clusters = dict([(i + 1, j) for i, j in
+                             enumerate(sorted(clusters.values(),
+                                              key=len, reverse=True))])
+            self.clusters = ClusterOfModels()
             for cluster in clusters:
+                self.clusters[cluster] = []
                 for model in clusters[cluster]:
                     self[model]['cluster'] = cluster
-            self.clusters = clusters
+                    self.clusters[cluster].append(self[model]['rand_init'])
+                self.clusters[cluster].sort(
+                    key=lambda x: self[str(x)]['objfun'])
         else:
             out_f = open(tmp_file, 'w')
             uniqs = list(set([tuple(sorted((m1, m2))) for m1, m2 in scores]))
@@ -293,14 +297,6 @@ class StructuralModels(object):
                     self.clusters[cluster + 1].append(self[model]['rand_init'])
                 self.clusters[cluster + 1].sort(
                     key=lambda x: self[str(x)]['objfun'])
-            # sort clusters according to their lowest energy
-            # for clt in clusters:
-            #     clusters[clt].sort()
-            # for i, clt in enumerate(sorted(
-            #     clusters, key=lambda x: self[clusters[x][0]]['energy'])):
-            #     self.clusters[i] = clusters[clt]
-            #     for model in self.clusters[i]:
-            #         self.__models[model]['cluster'] = i
         if verbose:
             print 'Number of Singletons excluded from clustering: %s' % (
                 len([1 for model in self if model['cluster'] == 'Singleton']))

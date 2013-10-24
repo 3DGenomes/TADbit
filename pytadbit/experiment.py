@@ -418,6 +418,8 @@ class Experiment(object):
              
                   'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
              
+                  # How much space (radius in nm) ocupies a nucleotide
+                  'scale'     : 0.005
                   }
               }
 

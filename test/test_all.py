@@ -5,11 +5,14 @@ unittest for pytadbit functions
 """
 
 import unittest
-from pytadbit import tadbit, batch_tadbit, Chromosome, load_chromosome
+from pytadbit                        import Chromosome, load_chromosome
+from pytadbit                        import tadbit, batch_tadbit
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
-from pytadbit.parsers.hic_parser import __check_hic as check_hic
-from os import system, path, chdir
-from warnings                            import warn
+from pytadbit.parsers.hic_parser     import __check_hic as check_hic
+from pytadbit.imp.structuralmodels   import load_structuralmodels
+from os                              import system, path, chdir
+from warnings                        import warn
+from distutils.spawn                 import find_executable
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
@@ -262,7 +265,7 @@ class TestTadbit(unittest.TestCase):
                          [round(i, 4)for i in wanted])
 
 
-    def test_13_3d_modelling(self):
+    def test_13_3d_modelling_centroid(self):
         """
         quick test to generate 3D coordinates from 3? simple models???
         """
@@ -277,9 +280,70 @@ class TestTadbit(unittest.TestCase):
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data('20Kb/chrT/chrT_A.tsv', silent=True)
+        exp.normalize_hic(method='visibility', silent=True)
+        models = exp.model_region(50, 70, n_models=110, n_keep=25,
+                                  n_cpus=2,
+                                  config={'kforce': 5, 'maxdist': 500,
+                                          'scale': 0.005,
+                                          'upfreq': 1.0, 'lowfreq': -0.6})
+        models.save_models('models.pik')
+        
+        avg = models.average_model()
+        xis = [256.8006591796875   , 192.26112365722656  , 140.6591339111328   ,
+               100.45024871826172  , 46.949642181396484  , -86.2816162109375   ,
+               -162.32574462890625 , -224.3642578125     , -265.5603942871094  ,
+               -113.91905975341797 , -12.291224479675293 , -2.076080560684204  ,
+               -141.23983764648438 , -132.74307250976562 , 25.496896743774414  ,
+               45.70216369628906   , -20.619169235229492 , 2.435852289199829   ,
+               39.39045333862305   , 132.94569396972656  , 178.3325958251953]
+        yis = [777.8389892578125   , 653.3052978515625   , 523.3452758789062   ,
+               392.9111328125      , 257.7278137207031   , 353.4071350097656   ,
+               273.9151306152344   , 151.65985107421875  , 257.0668640136719   ,
+               165.82093811035156  , 78.40266418457031   , -63.09275436401367  ,
+               -134.39276123046875 , -258.0103454589844  , -258.30206298828125 ,
+               -398.19586181640625 , -527.285400390625   , -659.3544921875     ,
+               -542.7464599609375  , -551.9331665039062  , -492.0866394042969]
+        zis = [-779.3071899414062  , -654.696044921875   , -526.7015991210938  ,
+               -396.4420166015625  , -264.5214538574219  , -344.0582275390625  ,
+               -272.64324951171875 , -143.98304748535156 , -240.02696228027344 ,
+               -157.3037109375     , -78.53412628173828  , 60.93852996826172   ,
+               168.08941650390625  , 279.0310974121094   , 252.53445434570312  ,
+               390.1815490722656   , 469.2845458984375   , 607.5489501953125   ,
+               548.5169067382812   , 551.5454711914062   , 530.5454711914062]
+        self.assertEqual([round(x, 4) for x in avg['x']],
+                         [round(x, 4) for x in xis])
+        self.assertEqual([round(x, 4) for x in avg['y']],
+                         [round(x, 4) for x in yis])
+        self.assertEqual([round(x, 4) for x in avg['z']],
+                         [round(x, 4) for x in zis])
+
+        centroid = models.centroid_model()
+        self.assertEqual(centroid['rand_init'], 69)
 
 
-    def test_14_tadbit_c(self):
+    def test_14_3d_clustering(self):
+        """
+        """
+        from pytadbit.imp.structuralmodels import load_structuralmodels
+        
+        models = load_structuralmodels('models.pik')
+        wnt = {1: [95, 69, 101, 55, 94, 81, 30, 32, 25,
+                   72, 52, 56, 2, 98, 89, 40],
+               2: [92, 78, 97, 43, 31, 54, 62, 28, 13]}
+        if find_executable('mcl'):
+            models.cluster_models(method='mcl', verbose=False)
+            self.assertEqual(models.clusters, wnt)
+        models.cluster_models(method='ward', verbose=False)
+        self.assertEqual(models.clusters, wnt)
+
+
+    def test_15_3d_modelling(self):
+        """
+        """
+        models = load_structuralmodels('models.pik')
+
+
+    def test_16_tadbit_c(self):
         """
         Runs tests written in c, around the detection of TADs
         """
