@@ -437,7 +437,7 @@ class Experiment(object):
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
                                scale_range=[0.005][:],
-                               maxdist_range=(400, 1400), cutoff=300,
+                               maxdist_range=(400, 1400, 100), cutoff=300,
                                outfile=None, verbose=True):
         """
         Find the optimal set of parameters to be used for the 3D modeling in
@@ -587,8 +587,8 @@ class Experiment(object):
         if not self._zscores and zscored:
             for i in xrange(self.size):
                 for j in xrange(self.size):
-                    self._zscores.setdefault(i, {})
-                    self._zscores[i][j] = self.hic_data[0][i * self.size + j]
+                    self._zscores.setdefault(str(i), {})
+                    self._zscores[str(i)][str(j)] = self.hic_data[0][i * self.size + j]
         if not self.norm:
             raise Exception('Experiment not normalized.')
         # write to file
@@ -612,13 +612,13 @@ class Experiment(object):
                     continue
                 if zscored:
                     try:
-                        if self._zscores[i][j] < cutoff:
+                        if self._zscores[str(i)][str(j)] < cutoff:
                             continue
-                        if self._zscores[i][j] == -99:
+                        if self._zscores[str(i)][str(j)] == -99:
                             continue
                     except KeyError:
                         continue
-                    val = self._zscores[i][j]
+                    val = self._zscores[str(i)][str(j)]
                 elif normalized:
                     val = self.norm[0][self.size*i+j]
                 else:

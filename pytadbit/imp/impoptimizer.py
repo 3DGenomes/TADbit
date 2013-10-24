@@ -168,6 +168,7 @@ class IMPoptimizer(object):
                                      results), axes=axes,
                                     show_best=show_best, skip=skip)
 
+
     def plot_3d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq')):
         """
         A grid of heatmaps representing the result of the optimization.

@@ -42,7 +42,11 @@ def load_chromosome(in_f, fast=2):
     dico = load(open(in_f))
     name = ''
     crm = Chromosome(dico['name'])
-    for name in dico['experiments']:
+    try:
+        exp_order = dico['experiment_order']
+    except IndexError:
+        exp_order = dico['experiments'].keys()
+    for name in exp_order:
         xpr = Experiment(name, dico['experiments'][name]['resolution'], 
                          no_warn=True)
         xpr.tads       = dico['experiments'][name]['tads']
@@ -217,6 +221,7 @@ class Chromosome(object):
             out_f += '_'
         dico = {}
         dico['experiments'] = {}
+        dico['experiment_order'] = [xpr.name for xpr in self.experiments]
         if divide:
             dicp = {}
         for xpr in self.experiments:
