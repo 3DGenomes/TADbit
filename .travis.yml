@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get install -qq python-numpy python-scipy
 
 install:
-  - python setup.py install
+  - yes | python setup.py install
 
 before_script:
   - python --version
