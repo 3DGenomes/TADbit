@@ -7,3 +7,7 @@ Hi-C experiments generate genomic interaction data that is usually summarized at
 
 Links
 =====
+
+.. image::  https://travis-ci.org/3DGenomes/tadbit.png?branch=master
+   :target: https://travis-ci.org/3DGenomes/tadbit
+
