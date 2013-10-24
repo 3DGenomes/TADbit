@@ -926,7 +926,7 @@ class StructuralModels(object):
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
 
 
-    def measure_angle_3_particles(self, parta, partb, partc,
+    def angle_between_3_particles(self, parta, partb, partc,
                                   models=None, cluster=None,
                                   radian=False, all_angles=False):
         """
@@ -1181,7 +1181,7 @@ class StructuralModels(object):
         rads[1] = []
         sign = 1
         for res in xrange(self.nloci - 6):
-            rads[1].append(self.measure_angle_3_particles(res + 1, res + 4,
+            rads[1].append(self.angle_between_3_particles(res + 1, res + 4,
                                                           res + 7,
                                                           models=models,
                                                           cluster=cluster))

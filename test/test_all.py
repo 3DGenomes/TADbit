@@ -364,7 +364,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(lines[1], '1\t11.0\t25.667\t40.667\t50.667\n')
         self.assertEqual(lines[15], '15\t94.667\t100.0\t100.0\t100.0\n')
         # measure angle
-        
+        models.angle_between_3_particles(2,8,15)
 
     def test_16_tadbit_c(self):
         """
