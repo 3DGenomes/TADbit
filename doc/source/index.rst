@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-Welcome to Tadbit's documentation!
+Welcome to TADBit's documentation!
 ==================================
 
 Documentation index:

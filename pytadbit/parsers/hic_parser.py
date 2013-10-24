@@ -27,12 +27,17 @@ def _read_matrix(f_h):
         start = 0
     # parse the rest of the file
     for line in f_h:
+        if not line:
+            continue
         values = line.split()[start:]
         try:
             nums.append([int(v) for v in values])
         except ValueError:
             nums.append([int(float(v)) for v in values])
-    f_h.close()
+    try:
+        f_h.close()
+    except AttributeError:
+        pass
     size = len(nums)
     return tuple([nums[j][i] for i in xrange(size) for j in xrange(size)]), size
 
@@ -73,7 +78,10 @@ def read_matrix(things, parser=None):
             matrices.append(matrix)
             sizes.append(size)
         elif type(thing) is str:
-            matrix, size = parser(open(thing))
+            try:
+                matrix, size = parser(open(thing))
+            except IOError:
+                matrix, size = parser(thing.split('\n'))
             matrices.append(matrix)
             sizes.append(size)
         elif type(thing) is list:

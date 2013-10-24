@@ -11,6 +11,7 @@ decide whether some TAD boundaries are conserved or not.
 
 Following with the example in the previous section (:ref:`getting_start`), we will load one extra experiment 
 (from the same works of [Lieberman-Aiden2009]_):
+In[7]:
 
 .. code:: python
 
@@ -48,6 +49,7 @@ the default "reciprocal" method (:func:`pytadbit.boundary_aligner.reciprocally.r
 
 Continuing with the example, the two loaded experiments are aligned as follow:
 
+In[8]:
 
 .. code:: python
 
@@ -70,6 +72,7 @@ Check alignment consistency through randomization
 
 
 In order to check that the alignment makes sense and that it does not correspond to a random association of boundaries, the “randomize” parameter can be set to True when aligning:
+In[9]:
 
 .. code:: python
 
@@ -97,6 +100,7 @@ Visualization
 
 The first function to call to check the quality of the generated alignments is the 
 :func:`pytadbit.alignment.Alignment.write_alignment`:
+In[11]:
 
 .. code:: python
 
@@ -115,12 +119,13 @@ The first function to call to check the quality of the generated alignments is t
 The different colors, corresponding to the TADBit confidence in detecting the boundaries, show how conserved the boundaries are between (in this case) cell types.
 
 Alignment can also be viewed using matplotlib:
+In[13]:
 
 .. code:: python
 
     ali.draw()
 
-.. image:: pictures/tutorial_boundary_alignment_17_0.png
+.. image:: tutorial_boundary_alignment_files/tutorial_boundary_alignment_17_0.png
 
 
 The get\_column function
@@ -131,6 +136,7 @@ The :func:`pytadbit.alignment.Alignment.get_column` function allows to select sp
 
 To select, for example, the third column of an alignment:
 
+In[14]:
 
 .. code:: python
 
@@ -151,12 +157,14 @@ order to select a column (or several) depending on a specific condition. For exa
 boundaries with a score higher than 7:
 
 
+In[16]:
 
 .. code:: python
 
     cond1 = lambda x: x['score'] > 7
 
 and to the get the selected columns:
+In[17]:
 
 .. code:: python
 
@@ -171,6 +179,7 @@ and to the get the selected columns:
 
 resulting, in the selection of these 3 columns.
 To add a second condition, e.g. to select only the columns after the 50th column of the alignment:
+In[18]:
 
 .. code:: python
 
@@ -184,6 +193,7 @@ To add a second condition, e.g. to select only the columns after the 50th column
 
 
 Finally, to be more flexible, this conditions can be applied to only a given number of experiments (in this example of a pairwise alignment, it does not make a lot of sense):
+In[19]:
 
 .. code:: python
 

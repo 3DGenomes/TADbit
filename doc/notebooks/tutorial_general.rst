@@ -24,6 +24,7 @@ Hi-C data are usually represented as symmetric matrices in a tab separated file,
 TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as this 
 *(note: this example loads human chromosome 19 from* [Lieberman-Aiden2009]_ *results.)*:
 
+In[5]:
 
 .. code:: python
 
@@ -45,6 +46,7 @@ Unconventional data format
 
 If TADBit is unable to parse the input file, the user can create its own parser and pass it to the Chromosome instance. For example, one might be interested in using [Dixon2012]_ data that appear like this:
 
+In[6]:
 
 .. code:: python
 
@@ -60,6 +62,7 @@ If TADBit is unable to parse the input file, the user can create its own parser 
     '''
 
 In this case the user could implement a simple parser like this one:
+In[7]:
 
 .. code:: python
 
@@ -81,6 +84,7 @@ In this case the user could implement a simple parser like this one:
         return tuple([nums[j][i] for i in xrange(len(nums)) for j in xrange(len(nums))]), len(nums)
 
 And call it as follow:
+In[8]:
 
 .. code:: python
 
@@ -95,6 +99,7 @@ And call it as follow:
       warn('WARNING: Too few data to filter columns. SKIPPING...')
 
 Experiments, when loaded, are stored in a special kind of list attached to chromosome objects:
+In[9]:
 
 .. code:: python
 
@@ -107,6 +112,7 @@ Experiments, when loaded, are stored in a special kind of list attached to chrom
 
 
 A specific Experiment can be accessed either by its name or by its position in :class:`pytadbit.chromosome.ExperimentList` :
+In[10]:
 
 .. code:: python
 
@@ -127,6 +133,7 @@ Find Topologically Associating Domains
 
 
 Once an experiment has been loaded, the location of Topologically Associating Domains (TADs) can be estimated as:
+In[11]:
 
 .. code:: python
 
@@ -135,6 +142,7 @@ Once an experiment has been loaded, the location of Topologically Associating Do
 :func:`pytadbit.chromosome.Chromosome.find_tad` is called from our Chromosome object but is applied to a 
 specific experiment. Therefore, TADs found by TADBbit will be associated to this specific experiment. 
 They can be accessed as following:
+In[12]:
 
 .. code:: python
 
@@ -215,6 +223,7 @@ Data visualization
 
 Once loaded, the Hi-C data can be visualized using the :func:`pytadbit.chromosome.Chromosome.visualize` 
 function. The only parameter needed is which experiment to show. Therefore, the human chromosome 19 from [Lieberman-Aiden2009]_ can be visualized with:
+In[13]:
 
 .. code:: python
 
@@ -226,7 +235,7 @@ function. The only parameter needed is which experiment to show. Therefore, the 
     /usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/chromosome.py:568: RuntimeWarning: divide by zero encountered in log2
       img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
 
-.. image:: pictures/tutorial_general_31_1.png
+.. image:: tutorial_general_files/tutorial_general_31_1.png
 
 
 .. parsed-literal::
@@ -238,12 +247,13 @@ This plot shows the log2 interaction counts, resulting from the given Hi-C exper
 
 If the steps in the previous section (:ref:`run_tadbit`) have been done and TADs habe been defined, they can 
 be visualized in the same kind of plot:
+In[14]:
 
 .. code:: python
 
     my_chrom.visualize("First Hi-C experiment", paint_tads=True, show=True) 
 
-.. image:: pictures/tutorial_general_33_0.png
+.. image:: tutorial_general_files/tutorial_general_33_0.png
 
 *Note: the TAD number 19, corresponding to the centromere, and the TAD number 18, whose size is > 3 Mb, 
 have been shaded*
@@ -254,12 +264,14 @@ Saving and restoring data
 
 In order to avoid having to calculate TAD positions each time, TADBit allows to save and load Chromosome 
 objects, with all the associated experiments. To save a Chromosome object:
+In[15]:
 
 .. code:: python
 
     my_chrom.save_chromosome("some_path.tdb")
 
 And to load it:
+In[16]:
 
 .. code:: python
 
@@ -269,6 +281,7 @@ And to load it:
 
 
 *Note: while information about TADs can be saved, in order to save disk space, raw Hi-C data are not stored in this way but can be loaded again for each experiment:*
+In[19]:
 
 .. code:: python
 
