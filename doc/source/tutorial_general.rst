@@ -11,6 +11,7 @@ Hi-C data format
 
 
 Hi-C data are usually represented as symmetric matrices in a tab separated file, as in the example below:
+
 ::
 
   chrT_001      chrT_002        chrT_003        chrT_004        chrT_005        chrT_006
@@ -20,6 +21,7 @@ Hi-C data are usually represented as symmetric matrices in a tab separated file,
   chrT_004      100     111     146     278     70      42
   chrT_005      16      36      26      79      243     39
   chrT_006      19      50      53      42      37      224
+
 
 TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as this 
 *(note: this example loads human chromosome 19 from* [Lieberman-Aiden2009]_ *results.)*:
@@ -35,7 +37,6 @@ TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as 
     # load Hi-C data
     my_chrom.add_experiment('First Hi-C experiment', 
                             hic_data="../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt", resolution=100000)
-
 .. warning::
    TADBit assumes that Hi-C data matrices starts at chromosome position 1. If your matrix do not represents the full chromosome length, fill the missing columns and rows with zeros.
 
@@ -58,7 +59,7 @@ If TADBit is unable to parse the input file, the user can create its own parser 
       chr21	120000	140000	0	0	0	0	0	0	0	0
       chr21	140000	160000	0	0	0	0	0	0	0	0
     '''
-
+        
 In this case the user could implement a simple parser like this one:
 
 .. code:: python
@@ -88,11 +89,11 @@ And call it as follow:
     other_chrom.add_experiment('First Hi-C experiment', hic_data=strange,
                                parser=read_dixon_matrix, resolution=20000)
 
-
 .. parsed-literal::
 
     /usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/utils/hic_filtering.py:146: UserWarning: WARNING: Too few data to filter columns. SKIPPING...
       warn('WARNING: Too few data to filter columns. SKIPPING...')
+
 
 Experiments, when loaded, are stored in a special kind of list attached to chromosome objects:
 
@@ -101,9 +102,11 @@ Experiments, when loaded, are stored in a special kind of list attached to chrom
     my_chrom.experiments
 
 
+
 .. parsed-literal::
 
     [Experiment First Hi-C experiment (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None)]
+
 
 
 A specific Experiment can be accessed either by its name or by its position in :class:`pytadbit.chromosome.ExperimentList` :
@@ -113,13 +116,16 @@ A specific Experiment can be accessed either by its name or by its position in :
     my_chrom.experiments[0] == my_chrom.experiments["First Hi-C experiment"]
 
 
+
 .. parsed-literal::
 
     True
 
 
+
 Each Experiment is an independent object with a list of associated functions 
 (see :class:`pytadbit.experiment.Experiment`).
+
 .. _run_tadbit:
 
 Find Topologically Associating Domains
@@ -140,6 +146,7 @@ They can be accessed as following:
 
     exp = my_chrom.experiments["First Hi-C experiment"]
     exp.tads
+
 
 
 .. parsed-literal::
@@ -188,6 +195,7 @@ They can be accessed as following:
      42: {'brk': 638.0, 'end': 638.0, 'score': 10.0, 'start': 609.0}}
 
 
+
 The "tads" variable returned in this example is a dictionary of TADs, each of each is in turn a new dictionary containing information about the start and end positions of a TAD.
 
 "start" and "end" values correspond respectively to the start and end positions of the given TAD in the chromosome (note that this numbers have to be multiplied by the resolution of the experiment, "exp.resolution"). The "brk" key corresponds to the value of "end", all "brk" together corresponds to all TAD's boundaries.
@@ -220,18 +228,22 @@ function. The only parameter needed is which experiment to show. Therefore, the 
 
     my_chrom.visualize("First Hi-C experiment", show=True) 
 
-
 .. parsed-literal::
 
     /usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/chromosome.py:568: RuntimeWarning: divide by zero encountered in log2
       img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
 
+
+
 .. image:: pictures/tutorial_general_31_1.png
+
+
 
 
 .. parsed-literal::
 
     <matplotlib.image.AxesImage at 0x7375f50>
+
 
 
 This plot shows the log2 interaction counts, resulting from the given Hi-C experiment.
@@ -243,7 +255,9 @@ be visualized in the same kind of plot:
 
     my_chrom.visualize("First Hi-C experiment", paint_tads=True, show=True) 
 
+
 .. image:: pictures/tutorial_general_33_0.png
+
 
 *Note: the TAD number 19, corresponding to the centromere, and the TAD number 18, whose size is > 3 Mb, 
 have been shaded*
@@ -267,7 +281,6 @@ And to load it:
     
     my_chrom = load_chromosome("some_path.tdb")
 
-
 *Note: while information about TADs can be saved, in order to save disk space, raw Hi-C data are not stored in this way but can be loaded again for each experiment:*
 
 .. code:: python
@@ -275,4 +288,3 @@ And to load it:
     expr = my_chrom.experiments["First Hi-C experiment"]
     
     expr.load_hic_data("../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt")
-
