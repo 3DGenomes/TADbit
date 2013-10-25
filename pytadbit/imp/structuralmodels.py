@@ -11,7 +11,7 @@ from pytadbit.imp.impmodel     import IMPmodel
 from pytadbit.centroid         import centroid_wrapper
 from cPickle                   import load, dump
 from subprocess                import Popen, PIPE
-from math                      import sqrt, acos, degrees, pi
+from math                      import acos, degrees, pi, sqrt
 from numpy                     import median as np_median
 from numpy                     import std as np_std, log2
 from numpy                     import array, cross, dot, ma, isnan
@@ -69,7 +69,7 @@ class StructuralModels(object):
 
     def __init__(self, nloci, models, bad_models, resolution,
                  original_data=None, zscores=None, clusters=None,
-		 config=None):
+                 config=None):
 
         self.__models       = models
         self._bad_models    = bad_models
@@ -183,7 +183,7 @@ class StructuralModels(object):
 
         :returns: the average model of a given group of models (a new and
            ARTIFICIAL model)
-   
+
         """
         if models:
             models = models
@@ -527,10 +527,11 @@ class StructuralModels(object):
             models = self.__models
         matrix = [[float('nan') for _ in xrange(self.nloci)]
                   for _ in xrange(self.nloci)]
+        cutoff = cutoff**2
         for i in xrange(self.nloci):
             for j in xrange(i + 1, self.nloci):
-                val = len([k for k in self.median_3d_dist(
-                    i + 1, j + 1, plot=False, median=False, models=models)
+                val = len([k for k in self.__square_3d_dist(
+                    i + 1, j + 1, models=models)
                            if k < cutoff])
                 matrix[i][j] = matrix[j][i] = float(val) / len(models)# * 100
         return matrix
@@ -732,6 +733,8 @@ class StructuralModels(object):
                 moddata.append(model_matrix[i][j])
         # corr = spearmanr(model_matrix, self._original_data, axis=None)
         corr = spearmanr(moddata, oridata)
+        # corr = spearmanr(reduce(lambda x, y, : x + y, model_matrix),
+        #                  reduce(lambda x, y, : x + y, self._original_data))
         # corr = corrcoef(moddata, oridata)[1]
         if not plot and not savefig:
             return corr
@@ -1038,8 +1041,8 @@ class StructuralModels(object):
                          plot=True, savefig=None, axe=None):
         """
         Plots the dihedral angle between successive plans. A plan is formed by 3
-	successive loci.
-        
+        successive loci.
+
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -1053,10 +1056,10 @@ class StructuralModels(object):
            if None, the image will be shown using matplotlib GUI
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).                
-        
-        
+
+
         ::
-          
+
                                 C..........D
                              ...            ...
                           ...                 ...
@@ -1067,8 +1070,8 @@ class StructuralModels(object):
                                                      .                 .
                                                      .                .
                                                      F...............G
-          
-        
+
+
         """
         # plot
         if axe:
@@ -1122,9 +1125,9 @@ class StructuralModels(object):
         """
         Plots the angle between successive loci in a given model or set of
         models. In order to limit the noise of the measure angle is calculated
-	between 3 loci, between each are two other loci. E.g. in the scheme
-	bellow, angle are calculated between loci A, D and G.
-        
+        between 3 loci, between each are two other loci. E.g. in the scheme
+        bellow, angle are calculated between loci A, D and G.
+
         :param None models: if None (default) the contact map will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -1138,10 +1141,10 @@ class StructuralModels(object):
            if None, the image will be shown using matplotlib GUI
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).                
-                
-        
+
+
         ::
-          
+
                                 C..........D
                              ...            ...
                           ...                 ...
@@ -1152,8 +1155,8 @@ class StructuralModels(object):
                                                      .                 .
                                                      .                .
                                                      F...............G
-          
-        
+
+
         """
         # plot
         if axe:
@@ -1261,26 +1264,42 @@ class StructuralModels(object):
         """
         part1 -= 1
         part2 -= 1
-        dists = []
         if models:
             models=models
         elif cluster > -1:
             models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
-        for mdl in models:
-            dists.append(
-                sqrt(
-                    (self[mdl]['x'][part1] - self[mdl]['x'][part2])**2 +
-                    (self[mdl]['y'][part1] - self[mdl]['y'][part2])**2 +
-                    (self[mdl]['z'][part1] - self[mdl]['z'][part2])**2)
-                )
+        models = [self[mdl] for mdl in models]
+        dists = [sqrt((mdl['x'][part1] - mdl['x'][part2])**2 +
+                      (mdl['y'][part1] - mdl['y'][part2])**2 +
+                      (mdl['z'][part1] - mdl['z'][part2])**2)
+                 for mdl in models]
         if not plot:
             if median:
                 return np_median(dists)
             else:
                 return dists
         plot_hist_box(dists, part1 + 1, part2 + 1, axe, savefig)
+
+
+    def __square_3d_dist(self, part1, part2, models=None, cluster=None):
+        """
+        same as median_3d_dist, but return the square of the distance instead
+        """
+        part1 -= 1
+        part2 -= 1
+        if models:
+            models=models
+        elif cluster > -1:
+            models = [str(m) for m in self.clusters[cluster]]
+        else:
+            models = self.__models
+        models = [self[mdl] for mdl in models]
+        return [(mdl['x'][part1] - mdl['x'][part2])**2 +
+                (mdl['y'][part1] - mdl['y'][part2])**2 +
+                (mdl['z'][part1] - mdl['z'][part2])**2
+                for mdl in models]
 
 
     def objective_function_model(self, model, log=False, smooth=True, axe=None,

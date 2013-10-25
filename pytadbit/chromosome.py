@@ -394,8 +394,6 @@ class Chromosome(object):
            experiment names passed (e.g.: if experiments=['exp1', 'exp2'], the
            name would be: 'batch_exp1_exp2').
 
-        TODO: check option -> name for batch mode... some dirty changes....
-
         """
         if batch_mode:
             matrix = []

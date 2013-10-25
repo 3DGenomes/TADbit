@@ -45,8 +45,8 @@ class TestTadbit(unittest.TestCase):
 
     def test_02_batch_tadbit(self):
         global batch_exp
-        batch_exp= batch_tadbit('20Kb/chrT/', max_tad_size=20, verbose=False,
-                                no_heuristic=True)
+        batch_exp = batch_tadbit('20Kb/chrT/', max_tad_size=20, verbose=False,
+                                 no_heuristic=True)
         breaks = [0, 4, 9, 15, 20, 29, 36, 44, 50, 62, 67, 76, 90, 95]
         scores = [4.0, 7.0, 4.0, 8.0, 4.0, 4.0, 7.0, 7.0, 10.0, 10.0, 9.0, 8.0,
                   7.0, None]
@@ -230,8 +230,7 @@ class TestTadbit(unittest.TestCase):
         quick test to generate 3D coordinates from 3? simple models???
         """
         try:
-            from pytadbit.imp.imp_modelling          import generate_3d_models
-            from pytadbit.imp.modelling_optimization import grid_search
+            __import__('IMP')
         except ImportError:
             warn('IMP not found, skipping test\n')
             return
@@ -270,8 +269,7 @@ class TestTadbit(unittest.TestCase):
         quick test to generate 3D coordinates from 3? simple models???
         """
         try:
-            from pytadbit.imp.imp_modelling          import generate_3d_models
-            from pytadbit.imp.modelling_optimization import grid_search
+            __import__('IMP')
         except ImportError:
             warn('IMP not found, skipping test\n')
             return
@@ -318,8 +316,6 @@ class TestTadbit(unittest.TestCase):
     def test_14_3d_clustering(self):
         """
         """
-        from pytadbit.imp.structuralmodels import load_structuralmodels
-        
         models = load_structuralmodels('models.pick')
         wnt = {1: [95, 69, 101, 55, 94, 81, 30, 32, 25,
                    72, 52, 56, 2, 98, 89, 40],
