@@ -852,8 +852,8 @@ class StructuralModels(object):
             plt.show()
 
 
-    def view_model(self, models=None, cluster=None, tool='chimera',
-                   savefig=None, cmd=None):
+    def view_models(self, models=None, cluster=None, tool='chimera',
+                    savefig=None, cmd=None):
         """
         Visualize a selected model in the three dimensions.
 
@@ -918,7 +918,8 @@ class StructuralModels(object):
             models = [str(m) for m in self.clusters[cluster]]
         else:
             models = self.__models
-        models = [m['rand_init'] if 'IMPmodel' in type(m) else m for m in models]
+        models = [m['rand_init'] if 'IMPmodel' in str(type(m))
+                  else m for m in models]
         for model_num in models:
             self.write_cmm('/tmp/', model_num=model_num)
         chimera_view(['/tmp/model.%s.cmm' % (self[m]['rand_init'])
