@@ -27,11 +27,13 @@ def main():
             # print line,
             out.write(line)
         out.close()
+        os.system('rm -f ' + fname[:-6] + '.rst')
         try:
             for iname in os.listdir(fname[:-6] + '_files'):
                 if not iname.endswith('.png'):
                     continue
                 os.system('cp '+ fname[:-6] + '_files/' + iname + ' ../source/pictures/')
+            os.system('rm -rf '+ fname[:-6] + '_files')
         except OSError:
             pass
     os.system('cd ..; make html')
