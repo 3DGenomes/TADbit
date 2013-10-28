@@ -434,7 +434,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                     share_all = False,
                     cbar_location="right",
                     cbar_mode="single",
-                    cbar_size="%s%%" % (7./(float(ncols) * len(xax) / 3)),
+                    cbar_size="%s%%" % (7./(float(ncols) * len(xax) / 4)),
                     cbar_pad="10%",
                     )
     cell = ncols

@@ -594,7 +594,7 @@ class StructuralModels(object):
             show=True
         else:
             fig = axe.get_figure()
-        ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
+        ims = axe.imshow(log2(matrix), origin='lower', interpolation="nearest",
                          extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')

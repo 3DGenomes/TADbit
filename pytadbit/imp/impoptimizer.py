@@ -97,28 +97,27 @@ class IMPoptimizer(object):
                                           scale_step)
         else:
             scale_arange = scale_range
-            
+
+        # round everything
+        self.maxdist_range = [my_round(i) for i in maxdist_arange]
+        self.upfreq_range  = [my_round(i) for i in upfreq_arange ]
+        self.lowfreq_range = [my_round(i) for i in lowfreq_arange]
+        self.scale_range   = [my_round(i) for i in scale_arange  ]
+
+        # grid search
         count = 0
-        for scale in scale_arange:
-            if not scale in self.scale_range:
-                self.scale_range.append(scale)
-            for maxdist in maxdist_arange:
-                if not maxdist in self.maxdist_range:
-                    self.maxdist_range.append(maxdist)
-                for upfreq in upfreq_arange:
-                    if not upfreq in self.upfreq_range:
-                        self.upfreq_range.append(upfreq)
-                    for lowfreq in lowfreq_arange:
-                        if not lowfreq in self.lowfreq_range:
-                            self.lowfreq_range.append(lowfreq)
+        for scale in self.scale_range:
+            for maxdist in self.maxdist_range:
+                for upfreq in self.upfreq_range:
+                    for lowfreq in self.lowfreq_range:
                         if (scale, maxdist, upfreq, lowfreq) in self.results:
                             continue
                         tmp = {'kforce'   : 5,
                                'lowrdist' : 100,
-                               'maxdist'  : maxdist,
-                               'upfreq'   : upfreq,
-                               'lowfreq'  : lowfreq,
-                               'scale'    : scale}
+                               'maxdist'  : int(maxdist),
+                               'upfreq'   : float(upfreq),
+                               'lowfreq'  : float(lowfreq),
+                               'scale'    : float(scale)}
                         tdm = generate_3d_models(self.zscores, self.resolution,
                                                  self.n_models,
                                                  self.n_keep, config=tmp,
@@ -134,17 +133,16 @@ class IMPoptimizer(object):
                                 cutoff=self.cutoff)[0]
                             if verbose:
                                 print result
-                            self.results[(my_round(scale),
-                                          my_round(maxdist),
-                                          my_round(upfreq),
-                                          my_round(lowfreq))] = result
                         except Exception, e:
                             print 'ERROR %s' % e
-                            
-        self.scale_range.sort()
-        self.maxdist_range.sort()
-        self.lowfreq_range.sort()
-        self.upfreq_range.sort()
+                            continue
+                        # store
+                        self.results[(scale, maxdist, upfreq, lowfreq)] = result
+
+        self.scale_range.sort(  key=float)
+        self.maxdist_range.sort(key=float)
+        self.lowfreq_range.sort(key=float)
+        self.upfreq_range.sort( key=float)
 
 
     def plot_2d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
@@ -163,8 +161,10 @@ class IMPoptimizer(object):
         """
         results = self._result_to_array()
         plot_2d_optimization_result((('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                                     (self.scale_range, self.maxdist_range,
-                                      self.upfreq_range, self.lowfreq_range),
+                                     ([float(i) for i in self.scale_range],
+                                      [float(i) for i in self.maxdist_range],
+                                      [float(i) for i in self.upfreq_range],
+                                      [float(i) for i in self.lowfreq_range]),
                                      results), axes=axes,
                                     show_best=show_best, skip=skip)
 
@@ -180,8 +180,10 @@ class IMPoptimizer(object):
         """
         results = self._result_to_array()
         plot_3d_optimization_result((('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                                     (self.scale_range, self.maxdist_range,
-                                      self.upfreq_range, self.lowfreq_range),
+                                     ([float(i) for i in self.scale_range],
+                                      [float(i) for i in self.maxdist_range],
+                                      [float(i) for i in self.upfreq_range],
+                                      [float(i) for i in self.lowfreq_range]),
                                      results), axes=axes)
 
 
@@ -194,8 +196,7 @@ class IMPoptimizer(object):
                     for z, lowfreq in enumerate(self.lowfreq_range):
                         try:
                             results[w, x, y, z] = self.results[
-                                (my_round(scale), my_round(maxdist),
-                                 my_round(upfreq), my_round(lowfreq))]
+                                (scale, maxdist, upfreq, lowfreq)]
                         except KeyError:
                             results[w, x, y, z] = float('nan')
         return results
@@ -221,10 +222,8 @@ class IMPoptimizer(object):
                 for upfreq in self.upfreq_range:
                     for lowfreq in self.lowfreq_range:
                         try:
-                            result = self.results[(my_round(scale),
-                                                   my_round(maxdist),
-                                                   my_round(upfreq),
-                                                   my_round(lowfreq))]
+                            result = self.results[(scale, maxdist,
+                                                   upfreq, lowfreq)]
                             out.write('%s\t%s\t%s\t%s\t%s\n' % (
                                 scale, maxdist, upfreq, lowfreq, result))
                         except KeyError:
@@ -258,8 +257,11 @@ class IMPoptimizer(object):
             scale, maxdist, upfreq, lowfreq, result = line.split()
             scale, maxdist, upfreq, lowfreq = (
                 float(scale), int(maxdist), float(upfreq), float(lowfreq))
-            self.results[(my_round(scale), my_round(maxdist),
-                          my_round(upfreq), my_round(lowfreq))] = float(result)
+            scale   = my_round(scale)
+            maxdist = my_round(maxdist)
+            upfreq  = my_round(upfreq)
+            lowfreq = my_round(lowfreq)
+            self.results[(scale, maxdist, upfreq, lowfreq)] = float(result)
             if not scale in self.scale_range:
                 self.scale_range.append(scale)
             if not maxdist in self.maxdist_range:
@@ -268,10 +270,10 @@ class IMPoptimizer(object):
                 self.upfreq_range.append(upfreq)
             if not lowfreq in self.lowfreq_range:
                 self.lowfreq_range.append(lowfreq)
-        self.scale_range.sort()
-        self.maxdist_range.sort()
-        self.lowfreq_range.sort()
-        self.upfreq_range.sort()
+        self.scale_range.sort(  key=float)
+        self.maxdist_range.sort(key=float)
+        self.lowfreq_range.sort(key=float)
+        self.upfreq_range.sort( key=float)
 
 
 def my_round(num, val=4):
