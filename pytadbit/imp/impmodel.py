@@ -4,12 +4,13 @@
 
 """
 
-from pytadbit.utils.extraviews import color_residues, chimera_view
-from scipy.interpolate         import spline
-from numpy                     import linspace
-from warnings                  import warn
-from re                        import findall, compile as compil
-from math                      import sqrt
+from pytadbit.utils.extraviews      import color_residues, chimera_view
+from pytadbit.utils.three_dim_stats import generate_sphere_points
+from scipy.interpolate              import spline
+from numpy                          import linspace
+from warnings                       import warn
+from re                             import findall, compile as compil
+from math                           import sqrt
 try:
     from matplotlib import pyplot as plt
 except ImportError:
@@ -215,6 +216,99 @@ class IMPmodel(dict):
         rog = sqrt(sum([self.square_distance_to(i, com)
                         for i in xrange(len(self))]) / len(self))
         return rog
+
+
+    def contour(self):
+        """
+        :returns: the totals length of the model
+        """
+        dist = 0
+        for i in xrange(len(self)-1):
+            dist += self.distance(i, i+1)
+        return dist
+
+
+    def longest_axe(self):
+        """
+        :returns: the maximum distance between two particles in the model
+        """
+        maxdist = 0
+        for i in xrange(len(self) - 1):
+            for j in xrange(i + 1, len(self)):
+                dist = self.distance(i, j)
+                if dist > maxdist:
+                    maxdist = dist
+        return maxdist
+
+
+    def shortest_axe(self):
+        """
+        :returns: the minimum distance between two particles in the model
+        """
+        mindist = float('inf')
+        for i in xrange(len(self) - 1):
+            for j in xrange(i + 1, len(self)):
+                dist = self.distance(i, j)
+                if dist < mindist:
+                    mindist = dist
+        return mindist
+
+
+    def min_max_by_axis(self):
+        """
+        :returns: the minimum and maximum coordinates for each x, y and z axis
+        """
+        return ((min(self['x']), max(self['x'])),
+                (min(self['y']), max(self['y'])),
+                (min(self['z']), max(self['z']))) 
+
+
+    def cube_side(self):
+        """
+        :returns: the diagonal length of the cube containing the model
+        """
+        return sqrt((min(self['x']) - max(self['x']))**2 +
+                    (min(self['y']) - max(self['y']))**2 +
+                    (min(self['z']) - max(self['z']))**2)
+
+
+    def cube_volume(self):
+        """
+        :returns: the volume of  the cube containing the model
+        """
+        return self.cube_side()**3
+
+
+    def inaccessible_particles(self, radius):
+        """
+        Gives the number of loci/particles that are accessible to an object
+        (i.e. a protein) of a given size.
+        
+        :param radius: radius of the object that we want to fit in the model
+
+        :returns: a list of numbers, each being the ID of a particles that would
+           never be reached by the given object
+        
+        """
+        inaccessibles = []
+        sphere = generate_sphere_points(100)
+        for i in xrange(len(self)):
+            impossibles = 0
+            for x, y, z in sphere:
+                thing = dict((('x', x * radius + self['x'][i]),
+                              ('y', y * radius + self['y'][i]),
+                              ('z', z * radius + self['z'][i])))
+                # print form % (k+len(self), thing['x'], thing['y'], thing['z'], 0, 0, 0, k+len(self)),
+                for j in xrange(len(self)):
+                    if i == j: continue
+                    # print self.square_distance_to(j, thing), radius
+                    if self.square_distance_to(j, thing) < radius**2:
+                        # print i, j
+                        impossibles += 1
+                        break
+            if impossibles == 100:
+                inaccessibles.append(i + 1)
+        return inaccessibles
 
 
     def write_cmm(self, directory, color=color_residues, rndname=True,

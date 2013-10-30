@@ -8,6 +8,23 @@ from pytadbit.eqv_rms_drms import rmsdRMSD_wrapper
 from pytadbit.consistency import consistency_wrapper
 from itertools import combinations
 import numpy as np
+from math import pi, sqrt, cos, sin
+
+
+def generate_sphere_points(n=100):
+    """
+    Returns list of 3d coordinates of points on a sphere using the
+    Golden Section Spiral algorithm.
+    """
+    points = []
+    inc = pi * (3 - sqrt(5))
+    offset = 2 / float(n)
+    for k in range(int(n)):
+        y = k * offset - 1 + (offset / 2)
+        r = sqrt(1 - y*y)
+        phi = k * inc
+        points.append([cos(phi)*r, y, sin(phi)*r])
+    return points
 
 
 def calc_consistency(models, nloci, dcutoff=200):
