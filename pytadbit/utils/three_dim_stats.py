@@ -25,12 +25,15 @@ def calc_consistency(models, nloci, dcutoff=200):
 
 def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False):
     """
+
     :param nloci: number of particles per model
     :param 200 dcutoff: distance in nanometer from which it is considered
        that two particles are separated.
     :param 0.75 fact: Factor for equivalent positions
-    :param 'score' var: value to return, can be either (i) 'drmsd' (symmetry
-       independent: mirrors will show no differences) (ii) 'score' that is:
+    :param False one: if True assumes that only two models are passed, and
+       returns the rmsd of their comparison
+
+    :returns: a score of each pairwise comparison according to:
 
        ::
 
@@ -40,8 +43,7 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False):
 
        where eqvs[i] is the number of equivalent position for the ith
        pairwise model comparison.
-                                           
-    :returns: a score (depends on 'var' argument)
+       
     """
     scores = rmsdRMSD_wrapper([models[m]['x'] for m in xrange(len(models))],
                               [models[m]['y'] for m in xrange(len(models))],

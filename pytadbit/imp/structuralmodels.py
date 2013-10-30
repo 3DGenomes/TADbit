@@ -203,27 +203,30 @@ class StructuralModels(object):
         return avgmodel
 
 
-    def cluster_models(self, fact=0.75, dcutoff=200, var='score', method='mcl',
+    def cluster_models(self, fact=0.75, dcutoff=200, method='mcl',
                        mcl_bin='mcl', tmp_file=None, verbose=True):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison. The result will be stored in
         StructuralModels.clusters
 
-        :param 0.75 fact: factor to define the percentage of equivalent
-           positions to be considered in the clustering
-        :param 200 dcutoff: distance threshold (nm) to determine if two
-           particles are in contact
-        :param 'score' var: value to return, which can be either (i) 'drmsd'
-           (symmetry independent: mirrors will show no differences), or (ii)
-           'score', defined as:
-
-           ::
-
+        Clustering is done according to a score of pairwise comparison
+        calculated as:
+        ::
+        
                                     dRMSD[i] / max(dRMSD)
               score[i] = eqvs[i] * -----------------------
                                      RMSD[i] / max(RMSD)
 
+       where eqvs[i] is the number of equivalent position for the ith
+       pairwise model comparison.
+
+
+
+        :param 0.75 fact: factor to define the percentage of equivalent
+           positions to be considered in the clustering
+        :param 200 dcutoff: distance threshold (nm) to determine if two
+           particles are in contact
            where eqvs[i] is the number of equivalent position for the ith
            pairwise model comparison
         :param 'mcl' method: clustering method to use, which can be either
@@ -238,7 +241,7 @@ class StructuralModels(object):
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
-        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, var)
+        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
             print('\nWARNING: MCL not found in path using WARD clustering\n')
