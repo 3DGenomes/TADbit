@@ -6,11 +6,14 @@ Generate a 3D models
 
 .. autofunction:: generate_3d_models
 
-
 .. currentmodule:: pytadbit.imp.impmodel
 
 IMPmodel class
 --------------
+
+.. autofunction:: load_impmodel_from_cmm
+
+.. autofunction:: load_impmodel_from_xyz
 
 .. autoclass:: IMPmodel
    :members:
@@ -30,6 +33,8 @@ IMPoptimizer class
 
 StructuralModels class
 ----------------------
+
+.. autofunction:: load_structuralmodels
 
 .. autoclass:: StructuralModels
    :members:

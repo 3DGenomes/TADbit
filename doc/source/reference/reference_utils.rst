@@ -5,7 +5,6 @@ Utilities
 
 .. autofunction:: calinski_harabasz
 
-.. autofunction:: calc_eqv_rmsd
 
 .. currentmodule:: pytadbit.utils.extraviews
 
@@ -13,6 +12,14 @@ Utilities
 
 .. autofunction:: pytadbit.utils.extraviews.plot_2d_optimization_result
 
+.. autofunction:: pytadbit.utils.extraviews.compare_models
+
+
 .. currentmodule:: pytadbit.utils.hic_filtering
 
 .. autofunction:: pytadbit.utils.hic_filtering.hic_filtering_for_modelling
+
+
+.. currentmodule:: pytadbit.utils.three_dim_stats
+
+.. autofunction:: calc_eqv_rmsd

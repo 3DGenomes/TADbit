@@ -3,24 +3,25 @@
 
 
 """
-from pytadbit.utils.tadmaths   import calinski_harabasz, calc_eqv_rmsd
-from pytadbit.utils.tadmaths   import calc_consistency, dihedral
-from pytadbit.utils.extraviews import color_residues, chimera_view
-from pytadbit.utils.extraviews import augmented_dendrogram, plot_hist_box
-from pytadbit.imp.impmodel     import IMPmodel
-from pytadbit.centroid         import centroid_wrapper
-from cPickle                   import load, dump
-from subprocess                import Popen, PIPE
-from math                      import acos, degrees, pi, sqrt
-from numpy                     import median as np_median
-from numpy                     import std as np_std, log2
-from numpy                     import array, cross, dot, ma, isnan
-from numpy.linalg              import norm
-from scipy.cluster.hierarchy   import linkage, fcluster
-from scipy.stats               import spearmanr
-from warnings                  import warn
-from string                    import uppercase as uc, lowercase as lc
-from random                    import random
+from pytadbit.utils.three_dim_stats import calc_consistency
+from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
+from pytadbit.utils.tadmaths        import calinski_harabasz
+from pytadbit.utils.extraviews      import color_residues, chimera_view
+from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
+from pytadbit.imp.impmodel          import IMPmodel
+from pytadbit.centroid              import centroid_wrapper
+from cPickle                        import load, dump
+from subprocess                     import Popen, PIPE
+from math                           import acos, degrees, pi, sqrt
+from numpy                          import median as np_median
+from numpy                          import std as np_std, log2
+from numpy                          import array, cross, dot, ma, isnan
+from numpy.linalg                   import norm
+from scipy.cluster.hierarchy        import linkage, fcluster
+from scipy.stats                    import spearmanr
+from warnings                       import warn
+from string                         import uppercase as uc, lowercase as lc
+from random                         import random
 
 try:
     from matplotlib import pyplot as plt
@@ -326,7 +327,7 @@ class StructuralModels(object):
                         # the first on found is the best :)
                         break
                 matrix[i][j+i+1] = calc_eqv_rmsd({0: md1, 1: md2}, self.nloci,
-                                                 var='drmsd', one=True)
+                                                 one=True)
         return clust_count, objfun, matrix
 
 
@@ -1271,10 +1272,7 @@ class StructuralModels(object):
         else:
             models = self.__models
         models = [self[mdl] for mdl in models]
-        dists = [sqrt((mdl['x'][part1] - mdl['x'][part2])**2 +
-                      (mdl['y'][part1] - mdl['y'][part2])**2 +
-                      (mdl['z'][part1] - mdl['z'][part2])**2)
-                 for mdl in models]
+        dists = [mdl.distance(part1, part2) for mdl in models]
         if not plot:
             if median:
                 return np_median(dists)

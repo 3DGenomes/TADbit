@@ -65,7 +65,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
 
          where CONFIG is a dictionary of dictionaries to be passed to this function:
 
-       :::
+       ::
 
          CONFIG = {
           'dmel_01': {
@@ -97,7 +97,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
               }
           }
 
-    :returns: a TheeDeeModels object
+    :returns: a StructuralModels object
 
     """
 

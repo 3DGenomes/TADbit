@@ -4,23 +4,77 @@
 
 """
 
-def center_of_mass(model):
-    """
-    returns the center of mass of a given model
-    """
-    r_x = sum(model['x'])/len(model['x'])
-    r_y = sum(model['y'])/len(model['y'])
-    r_z = sum(model['z'])/len(model['z'])
-    return dict(('x', r_x), ('y', r_y), ('z', r_z))
+from pytadbit.eqv_rms_drms import rmsdRMSD_wrapper
+from pytadbit.consistency import consistency_wrapper
+from itertools import combinations
+import numpy as np
 
 
-def radius_of_gyration(model):
+def calc_consistency(models, nloci, dcutoff=200):
+    combines = list(combinations(models, 2))
+    parts = [0 for _ in xrange(nloci)]
+    for pm in consistency_wrapper([models[m]['x'] for m in models],
+                                  [models[m]['y'] for m in models],
+                                  [models[m]['z'] for m in models],
+                                  nloci, dcutoff, range(len(models)),
+                                  len(models)):
+        for i, p in enumerate(pm):
+            parts[i] += p
+    return [float(p)/len(combines) * 100 for p in parts]
+
+
+def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False):
     """
-    returns the radius of gyration for the components of the tensor
+    :param nloci: number of particles per model
+    :param 200 dcutoff: distance in nanometer from which it is considered
+       that two particles are separated.
+    :param 0.75 fact: Factor for equivalent positions
+    :param 'score' var: value to return, can be either (i) 'drmsd' (symmetry
+       independent: mirrors will show no differences) (ii) 'score' that is:
+
+       ::
+
+                               dRMSD[i] / max(dRMSD)
+         score[i] = eqvs[i] * -----------------------
+                                RMSD[i] / max(RMSD)
+
+       where eqvs[i] is the number of equivalent position for the ith
+       pairwise model comparison.
+                                           
+    :returns: a score (depends on 'var' argument)
     """
-    com = center_of_mass(model)
-    dist = sum([((model['x'][i] - com['x']) *
-                 (model['y'][i] - com['y']) *
-                 (model['z'][i] - com['z']))
-                for i in xrange(len(model['x']))]) / len(model['x'])
-    return dist
+    scores = rmsdRMSD_wrapper([models[m]['x'] for m in xrange(len(models))],
+                              [models[m]['y'] for m in xrange(len(models))],
+                              [models[m]['z'] for m in xrange(len(models))],
+                              nloci, dcutoff, range(len(models)),
+                              len(models), int(one))
+    return scores
+
+
+def dihedral(a,b,c,d):
+    """
+    Calculates dihedral angle between 4 points in 3D (array with x,y,z)
+    """
+    v1 = getNormedVector(b - a)
+    v2 = getNormedVector(b - c)
+    v3 = getNormedVector(c - b)
+    v4 = getNormedVector(c - d)
+    v1v2 = np.cross(v1, v2)
+    v2v3 = np.cross(v3, v4)
+    sign = -1 if np.linalg.det([v2, v1v2, v2v3]) < 0 else 1
+    angle = getAngle(v1v2, v2v3)
+    angle, sign = (angle, sign) if angle <= 90 else (180 - angle, - sign)
+    return sign * angle
+
+
+def getNormedVector(dif):
+    return (dif) / np.linalg.norm(dif)
+
+
+def getAngle(v1v2, v2v3):
+    return np.rad2deg(
+        np.arccos(np.dot(
+            v1v2   / np.linalg.norm(v1v2),
+            v2v3.T / np.linalg.norm(v2v3)))
+        )
+

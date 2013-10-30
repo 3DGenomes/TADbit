@@ -386,7 +386,7 @@ class Experiment(object):
            objective function value the selected models (1), the objective
            function value of all the models (2), all the modeling 
            information (3)
-        :param CONFIG['dmel_01'] a dictionary containing the standard
+        :param CONFIG['dmel_01'] config: a dictionary containing the standard
            parameters used to generate the models. The dictionary should
            contain the keys kforce, maxdist, upfreq and lowfreq.
            Examples can be seen by doing:
@@ -398,7 +398,7 @@ class Experiment(object):
            where CONFIG is a dictionarry of dictionnaries to be passed to this
            function:
            
-           :::
+           ::
            
              CONFIG = {
               'dmel_01': {

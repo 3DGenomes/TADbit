@@ -8,11 +8,80 @@ from pytadbit.utils.extraviews import color_residues, chimera_view
 from scipy.interpolate         import spline
 from numpy                     import linspace
 from warnings                  import warn
-
+from re                        import findall, compile as compil
+from math                      import sqrt
 try:
     from matplotlib import pyplot as plt
 except ImportError:
     warn('matplotlib not found\n')
+
+
+def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
+    '''
+    Loads an IMPmodel object using an cmm file of the form:
+    
+    ::
+
+        <marker_set name="1">
+          <marker id="1" x="7347.50964739" y="-7743.92836303" z="-8283.39749204" r="0.00990099009901" g="0" b="0.990099009901" radius="500.0" note="1"/>
+          <marker id="2" x="7647.90254377" y="-7308.1816344" z="-7387.75932893" r="0.019801980198" g="0" b="0.980198019802" radius="500.0" note="2"/>
+          <link id1="1" id2="2" r="1" g="1" b="1" radius="250.0"/>
+        </marker_set>
+    
+    :params f_name: path where to find the file
+    :params None rand_init: IMP random initial number used to generate the model
+    :param None radius: radius of each particle
+
+    :return: IMPmodel
+    '''
+    
+    if not rand_init:
+        try:
+            rand_init = int(f_name.split('.')[-2])
+        except:
+            rand_init = None
+    model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
+                      ('objfun', None), ('radius', radius)))
+    expr = compil(
+        ' x="([0-9.-]+)" y="([0-9.-]+)" z="([0-9.-]+)".* radius="([0-9.]+)"')
+    for x, y, z, radius in findall(expr, open(f_name).read()):
+        model['x'].append(float(x))
+        model['y'].append(float(y))
+        model['z'].append(float(z))
+    if not model['radius']:
+        model['radius'] = float(radius)
+    return model
+
+
+def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
+    """
+    Loads an IMPmodel object using an xyz file of the form:
+    
+    ::
+
+          p1           1      44.847     412.828    -162.673
+          p2           2     -55.574     396.869    -129.782
+
+    :params f_name: path where to find the file
+    :params None rand_init: IMP random initial number used to generate the model
+    :param None radius: radius of each particle
+
+    :return: IMPmodel
+    
+    """
+    if not rand_init:
+        try:
+            rand_init = int(f_name.split('.')[-2])
+        except:
+            rand_init = None
+    model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
+                      ('objfun', None), ('radius', radius)))
+    expr = compil('p[0-9]+\s+[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)')
+    for x, y, z in findall(expr, open(f_name).read()):
+        model['x'].append(float(x))
+        model['y'].append(float(y))
+        model['z'].append(float(z))
+    return model
 
 
 class IMPmodel(dict):
@@ -53,6 +122,10 @@ class IMPmodel(dict):
                     '  %5s%5s%5s\n') % (
                 len(self['x']), self['objfun'], self['rand_init'],
                 self['x'][0], self['y'][0], self['z'][0])
+
+
+    def __len__(self):
+        return len(self['x'])
 
 
     def objective_function(self, log=False, smooth=True,
@@ -106,6 +179,42 @@ class IMPmodel(dict):
             fig.savefig(savefig)
         elif show:
             plt.show()
+
+
+    def distance(self, part1, part2):
+        """
+        """
+        return sqrt((self['x'][part1] - self['x'][part2])**2 +
+                    (self['y'][part1] - self['y'][part2])**2 +
+                    (self['z'][part1] - self['z'][part2])**2)
+
+
+    def square_distance_to(self, part1, part2):
+        """
+        """
+        return ((self['x'][part1] - part2['x'])**2 +
+                (self['y'][part1] - part2['y'])**2 +
+                (self['z'][part1] - part2['z'])**2)
+
+
+    def center_of_mass(self):
+        """
+        :returns: the center of mass of a given model
+        """
+        r_x = sum(self['x'])/len(self)
+        r_y = sum(self['y'])/len(self)
+        r_z = sum(self['z'])/len(self)
+        return dict((('x', r_x), ('y', r_y), ('z', r_z)))
+
+
+    def radius_of_gyration(self):
+        """
+        :returns: the radius of gyration for the components of the tensor
+        """
+        com = self.center_of_mass()
+        rog = sqrt(sum([self.square_distance_to(i, com)
+                        for i in xrange(len(self))]) / len(self))
+        return rog
 
 
     def write_cmm(self, directory, color=color_residues, rndname=True,
@@ -197,7 +306,8 @@ class IMPmodel(dict):
             return None
 
 
-    def view_model(self, tool='chimera', savefig=None, cmd=None):
+    def view_model(self, tool='chimera', savefig=None, cmd=None, centroid=False,
+                   gyradius=False):
         """
         Visualize a selected model in the three dimensions.
 
@@ -252,9 +362,13 @@ class IMPmodel(dict):
            modified the final image/movie).
 
         """
+        if gyradius:
+            gyradius = self.radius_of_gyration()
+            centroid=True
         self.write_cmm('/tmp/')
         chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],
-                     savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
+                     savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
+                     centroid=centroid, gyradius=gyradius)
 
 
 
