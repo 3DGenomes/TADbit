@@ -27,6 +27,47 @@ def generate_sphere_points(n=100):
     return points
 
 
+def generate_circle_points(x, y, z, a, b, c, u, v, w, n):
+    """
+    Returns list of 3d coordinates of points on a circle using the
+    Rodrigues rotation formula
+    """
+    points = []
+    offset = 2 * pi / float(n)
+    u2 = u**2
+    v2 = v**2
+    w2 = w**2
+    L = u2 + v2 + w2
+    sqrtL = sqrt(L)
+    uxvywz =  - u*x - v*y - w*z
+    bv = b*v
+    cw = c*w
+    au = a*u
+    one = (a * (v2 + w2) - u*(bv + cw + uxvywz))
+    two = (b * (u2 + w2) - v*(au + cw + uxvywz))
+    tre = (c * (u2 + v2) - w*(au + bv + uxvywz))
+    onep = sqrtL * (-c*v + b*w - w*y + v*z)
+    twop = sqrtL * ( c*u - a*w + w*x - u*z)
+    trep = sqrtL * (-b*u + a*v - v*x + u*y)
+    for k in range(int(n)):
+        ang = k * offset
+        cosang = cos(ang)
+        Lcosang = cosang * L
+        sinang = sin(ang)
+        points.append([(one * (1 - cosang) + x * Lcosang + onep * sinang) / L,
+                       (two * (1 - cosang) + y * Lcosang + twop * sinang) / L,
+                       (tre * (1 - cosang) + z * Lcosang + trep * sinang) / L])
+    return points
+
+
+def square_distance(part1, part2):
+    """
+    """
+    return ((part1['x'] - part2['x'])**2 +
+            (part1['y'] - part2['y'])**2 +
+            (part1['z'] - part2['z'])**2)
+
+
 def calc_consistency(models, nloci, dcutoff=200):
     combines = list(combinations(models, 2))
     parts = [0 for _ in xrange(nloci)]

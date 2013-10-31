@@ -6,6 +6,8 @@
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.three_dim_stats import generate_sphere_points
+from pytadbit.utils.three_dim_stats import square_distance
+from pytadbit.utils.three_dim_stats import generate_circle_points
 from scipy.interpolate              import spline
 from numpy                          import linspace
 from warnings                       import warn
@@ -309,6 +311,86 @@ class IMPmodel(dict):
             if impossibles == 100:
                 inaccessibles.append(i + 1)
         return inaccessibles
+
+
+    def accessible_surface(self, radius):
+        """
+        """
+
+        radius = 300
+        between = 10 # number of cuts in edges
+        points = []
+        subpoints = []
+        sphere = generate_sphere_points(100)
+        for i in xrange(len(self)-1):
+            points.append(dict((('x', self['x'][i]),
+                                ('y', self['y'][i]),
+                                ('z', self['z'][i]))))
+            for x, y, z in sphere:
+                thing = dict((('x', x * radius + self['x'][i]),
+                              ('y', y * radius + self['y'][i]),
+                              ('z', z * radius + self['z'][i])))
+                subpoints.append(thing)
+            difx = self['x'][i] - self['x'][i+1]
+            dify = self['y'][i] - self['y'][i+1]
+            difz = self['z'][i] - self['z'][i+1]
+            normer = sqrt(difx**2 + dify**2 + difz**2)
+            ortho = dict((('x', 1.), ('y', 1.), ('z', -(difx + dify) / difz)))
+            normer = sqrt(ortho['x']**2 + ortho['y']**2 + ortho['z']**2)
+            ortho['x'] = ortho['x'] / normer * radius
+            ortho['y'] = ortho['y'] / normer * radius
+            ortho['z'] = ortho['z'] / normer * radius
+            for k in xrange(between-1, 0, -1):
+                point = dict((('x', self['x'][i] - k * (difx / between)),
+                              ('y', self['y'][i] - k * (dify / between)),
+                              ('z', self['z'][i] - k * (difz / between))))
+                points.append(point)
+                for spoint in generate_circle_points(ortho['x'] + point['x'],
+                                                     ortho['y'] + point['y'],
+                                                     ortho['z'] + point['z'],
+                                                     point['x']             ,
+                                                     point['y']             ,
+                                                     point['z']             ,
+                                                     difx                  ,
+                                                     dify                  ,
+                                                     difz                  ,
+                                                     20):
+                    subpoints.append(dict((('x', spoint[0]),
+                                           ('y', spoint[1]),
+                                           ('z', spoint[2]))))
+                    
+            points.append(dict((('x', self['x'][i + 1]),
+                                ('y', self['y'][i + 1]),
+                                ('z', self['z'][i + 1]))))
+        for x, y, z in sphere:
+            thing = dict((('x', x * radius + self['x'][i+1]),
+                          ('y', y * radius + self['y'][i+1]),
+                          ('z', z * radius + self['z'][i+1])))
+            subpoints.append(thing)
+
+        impossibles = 0
+        colors = []
+        for spoint in subpoints:
+            for point in points:
+                if square_distance(point, spoint) < (radius-50)**2:
+                    impossibles += 1
+                    colors.append((100, 0, 0))
+                    break
+            else:
+                colors.append((0, 100, 0))
+
+        print '<marker_set name=\"1\">'
+        for k, thing in enumerate(points):
+            form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
+                    ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
+                    'radius=\"20\" note=\"%s\"/>\n')
+            print form % (k+1+len(self), thing['x'], thing['y'], thing['z'], 0, 0, 0, k+1+len(self)),
+        for k2, thing in enumerate(subpoints):
+            form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
+                    ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
+                    'radius=\"10\" note=\"%s\"/>\n')
+            print form % (2+k+k2+len(self), thing['x'], thing['y'], thing['z'], colors[k2][0], colors[k2][1], colors[k2][2], 2+k+k2+len(self)),
+        print '</marker_set>'
 
 
     def write_cmm(self, directory, color=color_residues, rndname=True,
