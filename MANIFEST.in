@@ -1,6 +1,0 @@
-include *
-exclude *.pyc
-recursive-include . * *.* 
-recursive-include doc/tadbit_guide/ * *.*
-recursive-include doc/  * *.*
-recursive-exclude . *.pyc
