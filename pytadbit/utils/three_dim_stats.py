@@ -63,6 +63,10 @@ def generate_circle_points(x, y, z, a, b, c, u, v, w, n):
 
 def square_distance(part1, part2):
     """
+    :param part1: coordinate (dict format with x, y, z keys)
+    :param part2: coordinate (dict format with x, y, z keys)
+
+    :returns: square distance between two points in space
     """
     return ((part1['x'] - part2['x'])**2 +
             (part1['y'] - part2['y'])**2 +
@@ -71,6 +75,10 @@ def square_distance(part1, part2):
 
 def distance(part1, part2):
     """
+    :param part1: coordinate in list format (x, y, z)
+    :param part2: coordinate in list format (x, y, z)
+
+    :returns: distance between two points in space
     """
     return sqrt((part1[0] - part2[0])**2 +
                 (part1[1] - part2[1])**2 +

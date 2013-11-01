@@ -23,7 +23,7 @@ except ImportError:
 def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
     '''
     Loads an IMPmodel object using an cmm file of the form:
-    
+
     ::
 
         <marker_set name="1">
@@ -31,14 +31,14 @@ def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
           <marker id="2" x="7647.90254377" y="-7308.1816344" z="-7387.75932893" r="0.019801980198" g="0" b="0.980198019802" radius="500.0" note="2"/>
           <link id1="1" id2="2" r="1" g="1" b="1" radius="250.0"/>
         </marker_set>
-    
+
     :params f_name: path where to find the file
     :params None rand_init: IMP random initial number used to generate the model
     :param None radius: radius of each particle
 
     :return: IMPmodel
     '''
-    
+
     if not rand_init:
         try:
             rand_init = int(f_name.split('.')[-2])
@@ -48,10 +48,10 @@ def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
                       ('objfun', None), ('radius', radius)))
     expr = compil(
         ' x="([0-9.-]+)" y="([0-9.-]+)" z="([0-9.-]+)".* radius="([0-9.]+)"')
-    for x, y, z, radius in findall(expr, open(f_name).read()):
-        model['x'].append(float(x))
-        model['y'].append(float(y))
-        model['z'].append(float(z))
+    for xxx, yyy, zzz, radius in findall(expr, open(f_name).read()):
+        model['x'].append(float(xxx))
+        model['y'].append(float(yyy))
+        model['z'].append(float(zzz))
     if not model['radius']:
         model['radius'] = float(radius)
     return model
@@ -60,7 +60,7 @@ def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
 def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
     """
     Loads an IMPmodel object using an xyz file of the form:
-    
+
     ::
 
           p1           1      44.847     412.828    -162.673
@@ -71,7 +71,7 @@ def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
     :param None radius: radius of each particle
 
     :return: IMPmodel
-    
+
     """
     if not rand_init:
         try:
@@ -81,27 +81,27 @@ def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
     model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
                       ('objfun', None), ('radius', radius)))
     expr = compil('p[0-9]+\s+[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)')
-    for x, y, z in findall(expr, open(f_name).read()):
-        model['x'].append(float(x))
-        model['y'].append(float(y))
-        model['z'].append(float(z))
+    for xxx, yyy, zzz in findall(expr, open(f_name).read()):
+        model['x'].append(float(xxx))
+        model['y'].append(float(yyy))
+        model['z'].append(float(zzz))
     return model
 
 
 class IMPmodel(dict):
     """
-    A container for the IMP modeling results. The container is a dictionary 
+    A container for the IMP modeling results. The container is a dictionary
     with the following keys:
-    
+
     - log_objfun: The list of IMP objective function values
-    - objfun: The final objective function value of the corresponding model 
-       (from log_objfun). This value will be used to rank all the generated 
+    - objfun: The final objective function value of the corresponding model
+       (from log_objfun). This value will be used to rank all the generated
        models
-    - rand_init: The random number generator feed (needed for model 
+    - rand_init: The random number generator feed (needed for model
        reproducibility)
-    - x, y, z: The spatial 3D coordinates of each particles. Each coordinate is 
+    - x, y, z: The spatial 3D coordinates of each particles. Each coordinate is
        represented as a list
-    
+
     """
     def __str__(self):
         try:
@@ -135,12 +135,12 @@ class IMPmodel(dict):
     def objective_function(self, log=False, smooth=True,
                            axe=None, savefig=None):
         """
-        This function plots the objective function value per each Monte-Carlo 
+        This function plots the objective function value per each Monte-Carlo
         step.
-        
+
         :param False log: log plot
         :param True smooth: curve smoothing
-        
+
         """
         show = False
         if not axe:
@@ -187,14 +187,24 @@ class IMPmodel(dict):
 
     def distance(self, part1, part2):
         """
+        :param part1: index of a particle in the model
+        :param part2: index of a particle in the model
+
+        :returns: distance between one point of the model and an external
+           coordinate
         """
         return sqrt((self['x'][part1] - self['x'][part2])**2 +
                     (self['y'][part1] - self['y'][part2])**2 +
                     (self['z'][part1] - self['z'][part2])**2)
 
 
-    def square_distance_to(self, part1, part2):
+    def _square_distance_to(self, part1, part2):
         """
+        :param part1: index of a particle in the model
+        :param part2: external coordinate (dict format with x, y, z keys)
+
+        :returns: square distance between one point of the model and an external
+           coordinate
         """
         return ((self['x'][part1] - part2['x'])**2 +
                 (self['y'][part1] - part2['y'])**2 +
@@ -216,7 +226,7 @@ class IMPmodel(dict):
         :returns: the radius of gyration for the components of the tensor
         """
         com = self.center_of_mass()
-        rog = sqrt(sum([self.square_distance_to(i, com)
+        rog = sqrt(sum([self._square_distance_to(i, com)
                         for i in xrange(len(self))]) / len(self))
         return rog
 
@@ -263,7 +273,7 @@ class IMPmodel(dict):
         """
         return ((min(self['x']), max(self['x'])),
                 (min(self['y']), max(self['y'])),
-                (min(self['z']), max(self['z']))) 
+                (min(self['z']), max(self['z'])))
 
 
     def cube_side(self):
@@ -286,27 +296,28 @@ class IMPmodel(dict):
         """
         Gives the number of loci/particles that are accessible to an object
         (i.e. a protein) of a given size.
-        
+
         :param radius: radius of the object that we want to fit in the model
 
         :returns: a list of numbers, each being the ID of a particles that would
            never be reached by the given object
-        
+
         """
         inaccessibles = []
         sphere = generate_sphere_points(100)
         for i in xrange(len(self)):
             impossibles = 0
-            for x, y, z in sphere:
-                thing = dict((('x', x * radius + self['x'][i]),
-                              ('y', y * radius + self['y'][i]),
-                              ('z', z * radius + self['z'][i])))
-                # print form % (k+len(self), thing['x'], thing['y'], thing['z'], 0, 0, 0, k+len(self)),
+            for xxx, yyy, zzz in sphere:
+                thing = dict((('x', xxx * radius + self['x'][i]),
+                              ('y', yyy * radius + self['y'][i]),
+                              ('z', zzz * radius + self['z'][i])))
+                # print form % (k+len(self), thing['x'], thing['y'], thing['z'],
+                # 0, 0, 0, k+len(self)),
                 for j in xrange(len(self)):
                     if i == j:
                         continue
-                    # print self.square_distance_to(j, thing), radius
-                    if self.square_distance_to(j, thing) < radius**2:
+                    # print self._square_distance_to(j, thing), radius
+                    if self._square_distance_to(j, thing) < radius**2:
                         # print i, j
                         impossibles += 1
                         break
@@ -315,24 +326,46 @@ class IMPmodel(dict):
         return inaccessibles
 
 
-    def accessible_surface(self, radius, write_cmm_file=None):
+    def accessible_surface(self, radius, write_cmm_file=None, nump=100,
+                           verbose=False):
         """
-        
-        each point occupies a given surface:
-        4*pi*r**2/s = 2*pi*r*d/c
-        s number of points in sphere
-        c number of points in circle
-        d distance between circles
-        if d = r/4, there is 8 times more points in a sphere than in a circle.
+        Calculates a mesh surface around the model (distance equal to input
+        **radius**) and checks if each point of this mesh could be replaced by
+        an object (i.e. a protein) of a given **radius**
+
+        :param radius: radius of the object we want to fit in the model.
+        :param None write_cmm_file: path to file in which to write cmm with the
+           colored meshed (red inaccessible points, green accessible points)
+        :param 100 nump: number of points to draw around a given particle. This
+           number also sets the number of points drawn around edges, as each
+           point occupies a given surface:
+
+           .. math::
+
+             \\frac{4\pi r^2}{s} = \\frac{2\pi r d}{c}
+
+           with:
+
+           * *s* number of points in sphere
+           * *c* number of points in circle
+           * *d* distance between circles
+
+           if :math:`d = \\frac{r}{4}`, there is 8 times more points in a
+           sphere than in a circle.
+        :param False verbose: prints stats about the surface
+
+        :returns: a list of 1- the number of dots in the mesh that could be
+           occupied by an object of the given radius 2- the total number of dots
+           in the mesh 3- the estimated area of the mesh (in square micrometers)
+           4- the area of the mesh of a virtually straight strand of chromatin
+           having the same 'contour' as the model.
 
         """
 
-        radius = 300
-        nump = 300
-        
         points = []
         subpoints = []
         sphere = generate_sphere_points(nump)
+        i = 0
         for i in xrange(len(self)-1):
             point = dict((('x', self['x'][i]),
                           ('y', self['y'][i]),
@@ -351,17 +384,17 @@ class IMPmodel(dict):
                                                     ('z', self['z'][i-1]))))
                 hyp2 = adj2 + radius**2
             # set sphere around each particle
-            for x, y, z in sphere:
-                thing = dict((('x', x * radius + self['x'][i]),
-                              ('y', y * radius + self['y'][i]),
-                              ('z', z * radius + self['z'][i])))
+            for xxx, yyy, zzz in sphere:
+                thing = dict((('x', xxx * radius + self['x'][i]),
+                              ('y', yyy * radius + self['y'][i]),
+                              ('z', zzz * radius + self['z'][i])))
                 # only place mesh outside torsion angle
-                if self.square_distance_to(i+1, thing) > hyp1:
+                if self._square_distance_to(i+1, thing) > hyp1:
                     if not i:
                         subpoints.append(thing)
-                    elif self.square_distance_to(i-1, thing) > hyp2:
+                    elif self._square_distance_to(i-1, thing) > hyp2:
                         subpoints.append(thing)
-            # find a vector orthogonal to the axe between particle i and i+1 
+            # find a vector orthogonal to the axe between particle i and i+1
             difx = self['x'][i] - self['x'][i+1]
             dify = self['y'][i] - self['y'][i+1]
             difz = self['z'][i] - self['z'][i+1]
@@ -389,7 +422,8 @@ class IMPmodel(dict):
                                                      dify                   ,
                                                      difz                   ,
                                                      nump/4):
-                    # check that the point of the circle is not too 
+                    # check that the point of the circle is not too close from
+                    # next edge
                     if i < len(self) - 2:
                         hyp = distance((self['x'][i+1], self['y'][i+1],
                                         self['z'][i+1]), spoint)
@@ -402,6 +436,8 @@ class IMPmodel(dict):
                             # print dist, radius
                             if dist < radius:
                                 continue
+                    # check that the point of the circle is not too close from
+                    # previous edge
                     if i:
                         hyp = distance((self['x'][i], self['y'][i],
                                         self['z'][i]), spoint)
@@ -419,7 +455,7 @@ class IMPmodel(dict):
                                            ('y', spoint[1]),
                                            ('z', spoint[2]))))
 
-        # add last point
+        # add last AND least point!!
         points.append(dict((('x', self['x'][i + 1]),
                             ('y', self['y'][i + 1]),
                             ('z', self['z'][i + 1]))))
@@ -428,24 +464,40 @@ class IMPmodel(dict):
                                                 ('y', self['y'][i]),
                                                 ('z', self['z'][i]))))
         hyp2 = adj + radius**2
-        for x, y, z in sphere:
-            thing = dict((('x', x * radius + self['x'][i+1]),
-                          ('y', y * radius + self['y'][i+1]),
-                          ('z', z * radius + self['z'][i+1])))
-            if self.square_distance_to(i, thing) > hyp2:
+        for xxx, yyy, zzz in sphere:
+            thing = dict((('x', xxx * radius + self['x'][i+1]),
+                          ('y', yyy * radius + self['y'][i+1]),
+                          ('z', zzz * radius + self['z'][i+1])))
+            if self._square_distance_to(i, thing) > hyp2:
                 subpoints.append(thing)
 
-        # calculates the number of innaccesible peaces of surface
+        # calculates the number of unaccessible peaces of surface
         impossibles = 0
-        colors = []
+        colors  = []
+        radius2 = (radius - 1)**2
+        red     = (100, 0, 0)
+        green   = (0, 100, 0)
         for spoint in subpoints:
             for point in points:
-                if square_distance(point, spoint) < (radius-50)**2:
+                if square_distance(point, spoint) < radius2:
                     impossibles += 1
-                    colors.append((100, 0, 0))
+                    colors.append(red)
                     break
             else:
-                colors.append((0, 100, 0))
+                colors.append(green)
+
+        # some stats
+        area = ((len(subpoints) - impossibles) * 4 * pi *
+                (float(radius) / 1000)**2 / nump)
+        total = (self.contour() / 1000 * 2 * pi * float(radius) / 1000 + 4 * pi
+                 * (float(radius) / 1000)**2)
+        if verbose:
+            print ' Accessible surface: %s microm^2' % (
+                (round(area, 2)))
+            print '  - %s%% of the contour mesh' % (
+                round((1-float(impossibles)/len(subpoints))*100, 2))
+            print '  - %s%% of a virtual straight chromatin (%s microm^2)' % (
+                round((area/total)*100, 2), round(total, 2))
 
         # write cmm file
         if write_cmm_file:
@@ -454,22 +506,25 @@ class IMPmodel(dict):
                     'radius=\"20\" note=\"%s\"/>\n')
             out = '<marker_set name=\"1\">\n'
             for k in xrange(len(self)):
-                out += form % (k+1, self['x'][k], self['y'][k], self['z'][k], 100, 100, 100, k+1)
+                out += form % (k+1, self['x'][k], self['y'][k], self['z'][k],
+                               100, 100, 100, k+1)
             form = ('<link id1=\"%s\" id2=\"%s\" r=\"50\" ' +
                     'g=\"50\" b=\"50\" radius=\"' +
                     str(self['radius']/8) +
                     '\"/>\n')
-            for n in xrange(1, len(self['x'])):
-                out += form % (n, n + 1)
+            for i in xrange(1, len(self['x'])):
+                out += form % (i, i + 1)
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"5\"/>\n')
-            for k2, thing in enumerate(subpoints):
-                out += form % (2+k+k2, thing['x'], thing['y'], thing['z'], colors[k2][0], colors[k2][1], colors[k2][2])
+            for k_2, thing in enumerate(subpoints):
+                out += form % (2 + k + k_2, thing['x'], thing['y'], thing['z'],
+                               colors[k_2][0], colors[k_2][1], colors[k_2][2])
             out += '</marker_set>\n'
             out_f = open(write_cmm_file, 'w')
             out_f.write(out)
             out_f.close()
+        return (len(subpoints) - impossibles, len(subpoints), area, total)
 
 
     def write_cmm(self, directory, color=color_residues, rndname=True,
@@ -501,16 +556,16 @@ class IMPmodel(dict):
                 'radius=\"' +
                 str(self['radius']) +
                 '\" note=\"%s\"/>\n')
-        for n in xrange(len(self['x'])):
-            out += form % (n + 1,
-                           self['x'][n], self['y'][n], self['z'][n],
-                           color[n][0], color[n][1], color[n][2], n + 1)
+        for i in xrange(len(self['x'])):
+            out += form % (i + 1,
+                           self['x'][i], self['y'][i], self['z'][i],
+                           color[i][0], color[i][1], color[i][2], i + 1)
         form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
                 'g=\"1\" b=\"1\" radius=\"' +
                 str(self['radius']/2) +
                 '\"/>\n')
-        for n in xrange(1, len(self['x'])):
-            out += form % (n, n + 1)
+        for i in xrange(1, len(self['x'])):
+            out += form % (i, i + 1)
         out += '</marker_set>\n'
 
         if rndname:
@@ -521,9 +576,10 @@ class IMPmodel(dict):
                 directory, model_num, self['rand_init']), 'w')
         out_f.write(out)
         out_f.close()
-        
 
-    def write_xyz(self, directory, model_num=None, get_path=False, rndname=True):
+
+    def write_xyz(self, directory, model_num=None, get_path=False,
+                  rndname=True):
         """
         Writes a xyz file containing the 3D coordinates of each particle in the
         model.
@@ -549,9 +605,9 @@ class IMPmodel(dict):
                                                 self['rand_init'])
         out = ''
         form = "%12s%12s%12.3f%12.3f%12.3f\n"
-        for n in xrange(len(self['x'])):
-            out += form % ('p' + str(n + 1), n + 1, round(self['x'][n], 3),
-                           round(self['y'][n], 3), round(self['z'][n], 3))
+        for i in xrange(len(self['x'])):
+            out += form % ('p' + str(i + 1), i + 1, round(self['x'][i], 3),
+                           round(self['y'][i], 3), round(self['z'][i], 3))
         out_f = open(path_f, 'w')
         out_f.write(out)
         out_f.close()
@@ -573,7 +629,8 @@ class IMPmodel(dict):
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
            the default GUI.
-        :param None cmd: list of commands to be passed to the viewer. The chimera list is:
+        :param None cmd: list of commands to be passed to the viewer.
+           The chimera list is:
 
            ::
 
@@ -611,7 +668,12 @@ class IMPmodel(dict):
            Passing as the following list as 'cmd' parameter:
            ::
 
-             cmd = ['focus', 'set bg_color white', 'windowsize 800 600', 'bonddisplay never #0', 'shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on', 'clip yon -500', '~label', 'set subdivision 1', 'set depth_cue', 'set dc_color black', 'set dc_start 0.5', 'set dc_end 1', 'scale 0.8']
+             cmd = ['focus', 'set bg_color white', 'windowsize 800 600',
+                    'bonddisplay never #0',
+                    'shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on',
+                    'clip yon -500', '~label', 'set subdivision 1',
+                    'set depth_cue', 'set dc_color black', 'set dc_start 0.5',
+                    'set dc_end 1', 'scale 0.8']
 
            will return the default image (other commands can be passed to
            modified the final image/movie).
@@ -619,11 +681,8 @@ class IMPmodel(dict):
         """
         if gyradius:
             gyradius = self.radius_of_gyration()
-            centroid=True
+            centroid = True
         self.write_cmm('/tmp/')
         chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
                      centroid=centroid, gyradius=gyradius)
-
-
-
