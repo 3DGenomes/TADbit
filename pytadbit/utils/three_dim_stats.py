@@ -34,29 +34,30 @@ def generate_circle_points(x, y, z, a, b, c, u, v, w, n):
     """
     points = []
     offset = 2 * pi / float(n)
-    u2 = u**2
-    v2 = v**2
-    w2 = w**2
-    L = u2 + v2 + w2
-    sqrtL = sqrt(L)
+    u_2 = u**2
+    v_2 = v**2
+    w_2 = w**2
+    dst = u_2 + v_2 + w_2
+    sqrtdst = sqrt(dst)
     uxvywz =  - u*x - v*y - w*z
-    bv = b*v
-    cw = c*w
-    au = a*u
-    one = (a * (v2 + w2) - u*(bv + cw + uxvywz))
-    two = (b * (u2 + w2) - v*(au + cw + uxvywz))
-    tre = (c * (u2 + v2) - w*(au + bv + uxvywz))
-    onep = sqrtL * (-c*v + b*w - w*y + v*z)
-    twop = sqrtL * ( c*u - a*w + w*x - u*z)
-    trep = sqrtL * (-b*u + a*v - v*x + u*y)
+    b_v = b*v
+    c_w = c*w
+    a_u = a*u
+    one = (a * (v_2 + w_2) - u*(b_v + c_w + uxvywz))
+    two = (b * (u_2 + w_2) - v*(a_u + c_w + uxvywz))
+    tre = (c * (u_2 + v_2) - w*(a_u + b_v + uxvywz))
+    onep = sqrtdst * (-c*v + b*w - w*y + v*z)
+    twop = sqrtdst * ( c*u - a*w + w*x - u*z)
+    trep = sqrtdst * (-b*u + a*v - v*x + u*y)
     for k in range(int(n)):
         ang = k * offset
         cosang = cos(ang)
-        Lcosang = cosang * L
+        dcosang = cosang * dst
         sinang = sin(ang)
-        points.append([(one * (1 - cosang) + x * Lcosang + onep * sinang) / L,
-                       (two * (1 - cosang) + y * Lcosang + twop * sinang) / L,
-                       (tre * (1 - cosang) + z * Lcosang + trep * sinang) / L])
+        points.append([(one * (1 - cosang) + x * dcosang + onep * sinang) / dst,
+                       (two * (1 - cosang) + y * dcosang + twop * sinang) / dst,
+                       (tre * (1 - cosang) + z * dcosang + trep * sinang) / dst]
+                      )
     return points
 
 

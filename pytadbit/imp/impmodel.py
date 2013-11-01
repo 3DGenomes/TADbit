@@ -313,24 +313,51 @@ class IMPmodel(dict):
         return inaccessibles
 
 
-    def accessible_surface(self, radius):
+    def accessible_surface(self, radius, write_cmm_file=None):
         """
+        
+        each point occupies a given surface:
+        4*pi*r**2/s = 2*pi*r*d/c
+        s number of points in sphere
+        c number of points in circle
+        d distance between circles
+        if d = r/4, there is 8 times more points in a sphere than in a circle.
+
         """
 
         radius = 300
-        between = 10 # number of cuts in edges
+        nump = 80
+        
         points = []
         subpoints = []
-        sphere = generate_sphere_points(100)
+        sphere = generate_sphere_points(nump)
         for i in xrange(len(self)-1):
             points.append(dict((('x', self['x'][i]),
                                 ('y', self['y'][i]),
                                 ('z', self['z'][i]))))
+            # get the minimum length from next particle to display the sphere dots
+            adj1 = square_distance(points[-1], dict((('x', self['x'][i+1]),
+                                                    ('y', self['y'][i+1]),
+                                                    ('z', self['z'][i+1]))))
+            hyp1 = adj1 + radius**2
+            # get the minimum length from previous next particle to display the sphere dots
+            if i:
+                adj2 = square_distance(points[-1], dict((('x', self['x'][i-1]),
+                                                        ('y', self['y'][i-1]),
+                                                        ('z', self['z'][i-1]))))
+                hyp2 = adj2 + radius**2
+            # set sphere around each particle
             for x, y, z in sphere:
                 thing = dict((('x', x * radius + self['x'][i]),
                               ('y', y * radius + self['y'][i]),
                               ('z', z * radius + self['z'][i])))
-                subpoints.append(thing)
+                # only place mesh outside torsion angle
+                if self.square_distance_to(i+1, thing) > hyp1:
+                    if not i:
+                        subpoints.append(thing)
+                    elif self.square_distance_to(i-1, thing) > hyp2:
+                        subpoints.append(thing)
+            # find a vector orthogonal to the axe between particle i and i+1 
             difx = self['x'][i] - self['x'][i+1]
             dify = self['y'][i] - self['y'][i+1]
             difz = self['z'][i] - self['z'][i+1]
@@ -340,6 +367,9 @@ class IMPmodel(dict):
             ortho['x'] = ortho['x'] / normer * radius
             ortho['y'] = ortho['y'] / normer * radius
             ortho['z'] = ortho['z'] / normer * radius
+            # define the number of circle to draw in this section
+            between = int(sqrt(adj1) / (radius/4))
+            # define circles
             for k in xrange(between-1, 0, -1):
                 point = dict((('x', self['x'][i] - k * (difx / between)),
                               ('y', self['y'][i] - k * (dify / between)),
@@ -351,23 +381,30 @@ class IMPmodel(dict):
                                                      point['x']             ,
                                                      point['y']             ,
                                                      point['z']             ,
-                                                     difx                  ,
-                                                     dify                  ,
-                                                     difz                  ,
-                                                     20):
+                                                     difx                   ,
+                                                     dify                   ,
+                                                     difz                   ,
+                                                     nump/4):
                     subpoints.append(dict((('x', spoint[0]),
                                            ('y', spoint[1]),
                                            ('z', spoint[2]))))
-                    
-            points.append(dict((('x', self['x'][i + 1]),
-                                ('y', self['y'][i + 1]),
-                                ('z', self['z'][i + 1]))))
+        # add last point
+        points.append(dict((('x', self['x'][i + 1]),
+                            ('y', self['y'][i + 1]),
+                            ('z', self['z'][i + 1]))))
+        # and its sphere
+        adj = square_distance(points[-1], dict((('x', self['x'][i]),
+                                                ('y', self['y'][i]),
+                                                ('z', self['z'][i]))))
+        hyp2 = adj + radius**2
         for x, y, z in sphere:
             thing = dict((('x', x * radius + self['x'][i+1]),
                           ('y', y * radius + self['y'][i+1]),
                           ('z', z * radius + self['z'][i+1])))
-            subpoints.append(thing)
+            if self.square_distance_to(i, thing) > hyp2:
+                subpoints.append(thing)
 
+        # calculates the number of innaccesible peaces of surface
         impossibles = 0
         colors = []
         for spoint in subpoints:
@@ -379,18 +416,29 @@ class IMPmodel(dict):
             else:
                 colors.append((0, 100, 0))
 
-        print '<marker_set name=\"1\">'
-        for k, thing in enumerate(points):
+        # write cmm file
+        if write_cmm_file:
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"20\" note=\"%s\"/>\n')
-            print form % (k+1+len(self), thing['x'], thing['y'], thing['z'], 0, 0, 0, k+1+len(self)),
-        for k2, thing in enumerate(subpoints):
+            out = '<marker_set name=\"1\">\n'
+            for k in xrange(len(self)):
+                out += form % (k+1, self['x'][k], self['y'][k], self['z'][k], 100, 100, 100, k+1)
+            form = ('<link id1=\"%s\" id2=\"%s\" r=\"50\" ' +
+                    'g=\"50\" b=\"50\" radius=\"' +
+                    str(self['radius']/8) +
+                    '\"/>\n')
+            for n in xrange(1, len(self['x'])):
+                out += form % (n, n + 1)
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
-                    'radius=\"10\" note=\"%s\"/>\n')
-            print form % (2+k+k2+len(self), thing['x'], thing['y'], thing['z'], colors[k2][0], colors[k2][1], colors[k2][2], 2+k+k2+len(self)),
-        print '</marker_set>'
+                    'radius=\"5\"/>\n')
+            for k2, thing in enumerate(subpoints):
+                out += form % (2+k+k2, thing['x'], thing['y'], thing['z'], colors[k2][0], colors[k2][1], colors[k2][2])
+            out += '</marker_set>\n'
+            out_f = open(write_cmm_file, 'w')
+            out_f.write(out)
+            out_f.close()
 
 
     def write_cmm(self, directory, color=color_residues, rndname=True,
