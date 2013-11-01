@@ -8,7 +8,7 @@ from pytadbit.eqv_rms_drms import rmsdRMSD_wrapper
 from pytadbit.consistency import consistency_wrapper
 from itertools import combinations
 import numpy as np
-from math import pi, sqrt, cos, sin
+from math import pi, sqrt, cos, sin, acos
 
 
 def generate_sphere_points(n=100):
@@ -69,6 +69,59 @@ def square_distance(part1, part2):
             (part1['z'] - part2['z'])**2)
 
 
+def distance(part1, part2):
+    """
+    """
+    return sqrt((part1[0] - part2[0])**2 +
+                (part1[1] - part2[1])**2 +
+                (part1[2] - part2[2])**2)
+
+
+def angle_between_3_points(point1, point2, point3):
+    """
+    Given three particles A, B and C, the angle g (angle ACB, shown below):
+
+    ::
+
+
+                          A
+                         /|
+                        /i|
+                      c/  |
+                      /   |
+                     /    |
+                    B )g  |b
+                     \    |
+                      \   |
+                      a\  |
+                        \h|
+                         \|
+                          C
+
+    is given by the theorem of Al-Kashi:
+
+    .. math::
+
+      b^2 = a^2 + c^2 - 2ac\cos(g)
+
+    :param point1: list of 3 coordinate for x, y and z
+    :param point2: list of 3 coordinate for x, y and z
+    :param point3: list of 3 coordinate for x, y and z
+
+    :returns: angle in radians
+    
+    """
+    a = distance(point2, point3)
+    c = distance(point1, point2)
+    b = distance(point1, point3)
+
+    try:
+        g = acos((a**2 - b**2 + c**2) / (2 * a * c))
+    except ValueError:
+        g = 0.
+    return g
+
+
 def calc_consistency(models, nloci, dcutoff=200):
     combines = list(combinations(models, 2))
     parts = [0 for _ in xrange(nloci)]
@@ -112,7 +165,7 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False):
     return scores
 
 
-def dihedral(a,b,c,d):
+def dihedral(a, b, c, d):
     """
     Calculates dihedral angle between 4 points in 3D (array with x,y,z)
     """

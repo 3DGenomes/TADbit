@@ -6,13 +6,14 @@
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.three_dim_stats import generate_sphere_points
-from pytadbit.utils.three_dim_stats import square_distance
+from pytadbit.utils.three_dim_stats import square_distance, distance
+from pytadbit.utils.three_dim_stats import angle_between_3_points
 from pytadbit.utils.three_dim_stats import generate_circle_points
 from scipy.interpolate              import spline
 from numpy                          import linspace
 from warnings                       import warn
 from re                             import findall, compile as compil
-from math                           import sqrt
+from math                           import sqrt, sin, pi
 try:
     from matplotlib import pyplot as plt
 except ImportError:
@@ -302,7 +303,8 @@ class IMPmodel(dict):
                               ('z', z * radius + self['z'][i])))
                 # print form % (k+len(self), thing['x'], thing['y'], thing['z'], 0, 0, 0, k+len(self)),
                 for j in xrange(len(self)):
-                    if i == j: continue
+                    if i == j:
+                        continue
                     # print self.square_distance_to(j, thing), radius
                     if self.square_distance_to(j, thing) < radius**2:
                         # print i, j
@@ -326,25 +328,27 @@ class IMPmodel(dict):
         """
 
         radius = 300
-        nump = 80
+        nump = 300
         
         points = []
         subpoints = []
         sphere = generate_sphere_points(nump)
         for i in xrange(len(self)-1):
-            points.append(dict((('x', self['x'][i]),
-                                ('y', self['y'][i]),
-                                ('z', self['z'][i]))))
-            # get the minimum length from next particle to display the sphere dots
-            adj1 = square_distance(points[-1], dict((('x', self['x'][i+1]),
-                                                    ('y', self['y'][i+1]),
-                                                    ('z', self['z'][i+1]))))
+            point = dict((('x', self['x'][i]),
+                          ('y', self['y'][i]),
+                          ('z', self['z'][i])))
+            points.append(point)
+            # if i != 53 and i != 52 and i != 51: continue
+            # get minimum length from next particle to display the sphere dot
+            adj1 = square_distance(point, dict((('x', self['x'][i+1]),
+                                                ('y', self['y'][i+1]),
+                                                ('z', self['z'][i+1]))))
             hyp1 = adj1 + radius**2
-            # get the minimum length from previous next particle to display the sphere dots
+            # get minimum length from prev particle to display the sphere dot
             if i:
-                adj2 = square_distance(points[-1], dict((('x', self['x'][i-1]),
-                                                        ('y', self['y'][i-1]),
-                                                        ('z', self['z'][i-1]))))
+                adj2 = square_distance(point, dict((('x', self['x'][i-1]),
+                                                    ('y', self['y'][i-1]),
+                                                    ('z', self['z'][i-1]))))
                 hyp2 = adj2 + radius**2
             # set sphere around each particle
             for x, y, z in sphere:
@@ -385,9 +389,36 @@ class IMPmodel(dict):
                                                      dify                   ,
                                                      difz                   ,
                                                      nump/4):
+                    # check that the point of the circle is not too 
+                    if i < len(self) - 2:
+                        hyp = distance((self['x'][i+1], self['y'][i+1],
+                                        self['z'][i+1]), spoint)
+                        ang = angle_between_3_points(
+                            spoint,
+                            (self['x'][i+1], self['y'][i+1], self['z'][i+1]),
+                            (self['x'][i+2], self['y'][i+2], self['z'][i+2]))
+                        if ang < pi/2:
+                            dist = sin(ang) * hyp
+                            # print dist, radius
+                            if dist < radius:
+                                continue
+                    if i:
+                        hyp = distance((self['x'][i], self['y'][i],
+                                        self['z'][i]), spoint)
+                        ang = angle_between_3_points(
+                            spoint,
+                            (self['x'][i], self['y'][i], self['z'][i]),
+                            (self['x'][i-1], self['y'][i-1], self['z'][i-1]))
+                        if ang < pi/2:
+                            dist = sin(ang) * hyp
+                            # print dist, radius
+                            if dist < radius:
+                                continue
+                    # print 'here'
                     subpoints.append(dict((('x', spoint[0]),
                                            ('y', spoint[1]),
                                            ('z', spoint[2]))))
+
         # add last point
         points.append(dict((('x', self['x'][i + 1]),
                             ('y', self['y'][i + 1]),
