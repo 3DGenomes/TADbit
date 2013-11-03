@@ -23,7 +23,8 @@ def generate_sphere_points(n=100):
         y = k * offset - 1 + (offset / 2)
         r = sqrt(1 - y*y)
         phi = k * inc
-        points.append([cos(phi)*r, y, sin(phi)*r])
+        # points.append(dict((('x', cos(phi) * r),('y', y),('z', sin(phi) * r))))
+        points.append((cos(phi) * r, y, sin(phi) * r))
     return points
 
 
@@ -68,9 +69,28 @@ def square_distance(part1, part2):
 
     :returns: square distance between two points in space
     """
-    return ((part1['x'] - part2['x'])**2 +
-            (part1['y'] - part2['y'])**2 +
-            (part1['z'] - part2['z'])**2)
+    # return ((part1['x'] - part2['x'])**2 +
+    #         (part1['y'] - part2['y'])**2 +
+    #         (part1['z'] - part2['z'])**2)
+    return ((part1[0] - part2[0])**2 +
+            (part1[1] - part2[1])**2 +
+            (part1[2] - part2[2])**2)
+    # return np.sum((part1-part2)**2)
+
+def fast_square_distance(x1, y1, z1, x2, y2, z2):
+    """
+    :param part1: coordinate (dict format with x, y, z keys)
+    :param part2: coordinate (dict format with x, y, z keys)
+
+    :returns: square distance between two points in space
+    """
+    # return ((part1['x'] - part2['x'])**2 +
+    #         (part1['y'] - part2['y'])**2 +
+    #         (part1['z'] - part2['z'])**2)
+    return ((x1 - x2)**2 +
+            (y1 - y2)**2 +
+            (z1 - z2)**2)
+    # return np.sum((part1-part2)**2)
 
 
 def distance(part1, part2):

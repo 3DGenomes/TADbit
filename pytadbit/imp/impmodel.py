@@ -6,7 +6,7 @@
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.three_dim_stats import generate_sphere_points
-from pytadbit.utils.three_dim_stats import square_distance, distance
+from pytadbit.utils.three_dim_stats import fast_square_distance, square_distance, distance
 from pytadbit.utils.three_dim_stats import angle_between_3_points
 from pytadbit.utils.three_dim_stats import generate_circle_points
 from scipy.interpolate              import spline
@@ -193,9 +193,9 @@ class IMPmodel(dict):
         :returns: distance between one point of the model and an external
            coordinate
         """
-        return sqrt((self['x'][part1] - self['x'][part2])**2 +
-                    (self['y'][part1] - self['y'][part2])**2 +
-                    (self['z'][part1] - self['z'][part2])**2)
+        return sqrt((self['x'][part1-1] - self['x'][part2-1])**2 +
+                    (self['y'][part1-1] - self['y'][part2-1])**2 +
+                    (self['z'][part1-1] - self['z'][part2-1])**2)
 
 
     def _square_distance_to(self, part1, part2):
@@ -206,9 +206,9 @@ class IMPmodel(dict):
         :returns: square distance between one point of the model and an external
            coordinate
         """
-        return ((self['x'][part1] - part2['x'])**2 +
-                (self['y'][part1] - part2['y'])**2 +
-                (self['z'][part1] - part2['z'])**2)
+        return ((self['x'][part1] - part2[0])**2 +
+                (self['y'][part1] - part2[1])**2 +
+                (self['z'][part1] - part2[2])**2)
 
 
     def center_of_mass(self):
@@ -226,7 +226,8 @@ class IMPmodel(dict):
         :returns: the radius of gyration for the components of the tensor
         """
         com = self.center_of_mass()
-        rog = sqrt(sum([self._square_distance_to(i, com)
+        rog = sqrt(sum([self._square_distance_to(i,
+                                                 (com['x'], com['y'], com['z']))
                         for i in xrange(len(self))]) / len(self))
         return rog
 
@@ -236,7 +237,7 @@ class IMPmodel(dict):
         :returns: the totals length of the model
         """
         dist = 0
-        for i in xrange(len(self)-1):
+        for i in xrange(1, len(self)):
             dist += self.distance(i, i+1)
         return dist
 
@@ -246,8 +247,8 @@ class IMPmodel(dict):
         :returns: the maximum distance between two particles in the model
         """
         maxdist = 0
-        for i in xrange(len(self) - 1):
-            for j in xrange(i + 1, len(self)):
+        for i in xrange(1, len(self)):
+            for j in xrange(i + 1, len(self) + 1):
                 dist = self.distance(i, j)
                 if dist > maxdist:
                     maxdist = dist
@@ -259,8 +260,8 @@ class IMPmodel(dict):
         :returns: the minimum distance between two particles in the model
         """
         mindist = float('inf')
-        for i in xrange(len(self) - 1):
-            for j in xrange(i + 1, len(self)):
+        for i in xrange(1, len(self)):
+            for j in xrange(i + 1, len(self) + 1):
                 dist = self.distance(i, j)
                 if dist < mindist:
                     mindist = dist
@@ -308,9 +309,9 @@ class IMPmodel(dict):
         for i in xrange(len(self)):
             impossibles = 0
             for xxx, yyy, zzz in sphere:
-                thing = dict((('x', xxx * radius + self['x'][i]),
-                              ('y', yyy * radius + self['y'][i]),
-                              ('z', zzz * radius + self['z'][i])))
+                thing = (xxx * radius + self['x'][i],
+                         yyy * radius + self['y'][i],
+                         zzz * radius + self['z'][i])
                 # print form % (k+len(self), thing['x'], thing['y'], thing['z'],
                 # 0, 0, 0, k+len(self)),
                 for j in xrange(len(self)):
@@ -365,73 +366,112 @@ class IMPmodel(dict):
         points = []
         subpoints = []
         sphere = generate_sphere_points(nump)
+        nloci = len(self)
+        # number of dots in a circle is a quarter of the ones in a sphere  
+        fact = 4
+        if nump > 100:
+            fact = int(nump/100 + 0.5) + 3
+        elif nump < 50:
+            fact = 2
+        else:
+            fact = 4
+        numc = nump / fact
+            
         i = 0
-        for i in xrange(len(self)-1):
-            point = dict((('x', self['x'][i]),
-                          ('y', self['y'][i]),
-                          ('z', self['z'][i])))
+        for i in xrange(nloci-1):
+            selfx   = self['x'][i]
+            selfy   = self['y'][i]
+            selfz   = self['z'][i]
+            selfx1  = self['x'][i+1]
+            selfy1  = self['y'][i+1]
+            selfz1  = self['z'][i+1]
+            if i < nloci - 2:
+                selfx2  = self['x'][i+2]
+                selfy2  = self['y'][i+2]
+                selfz2  = self['z'][i+2]
+            if i:
+                selfx_1 = self['x'][i-1]
+                selfy_1 = self['y'][i-1]
+                selfz_1 = self['z'][i-1]            
+            point = dict((('x', selfx),
+                          ('y', selfy),
+                          ('z', selfz)))
+            point = [self['x'][i], self['y'][i], self['z'][i]]
             points.append(point)
             # if i != 53 and i != 52 and i != 51: continue
             # get minimum length from next particle to display the sphere dot
-            adj1 = square_distance(point, dict((('x', self['x'][i+1]),
-                                                ('y', self['y'][i+1]),
-                                                ('z', self['z'][i+1]))))
+            adj1 = square_distance(point, [selfx1,
+                                           selfy1,
+                                           selfz1])
             hyp1 = adj1 + radius**2
             # get minimum length from prev particle to display the sphere dot
             if i:
-                adj2 = square_distance(point, dict((('x', self['x'][i-1]),
-                                                    ('y', self['y'][i-1]),
-                                                    ('z', self['z'][i-1]))))
+                adj2 = square_distance(point, [selfx_1,
+                                               selfy_1,
+                                               selfz_1])
                 hyp2 = adj2 + radius**2
+
             # set sphere around each particle
             for xxx, yyy, zzz in sphere:
-                thing = dict((('x', xxx * radius + self['x'][i]),
-                              ('y', yyy * radius + self['y'][i]),
-                              ('z', zzz * radius + self['z'][i])))
+                thing = [xxx * radius + selfx,
+                         yyy * radius + selfy,
+                         zzz * radius + selfz]
                 # only place mesh outside torsion angle
                 if self._square_distance_to(i+1, thing) > hyp1:
                     if not i:
                         subpoints.append(thing)
                     elif self._square_distance_to(i-1, thing) > hyp2:
                         subpoints.append(thing)
+
             # find a vector orthogonal to the axe between particle i and i+1
-            difx = self['x'][i] - self['x'][i+1]
-            dify = self['y'][i] - self['y'][i+1]
-            difz = self['z'][i] - self['z'][i+1]
-            normer = sqrt(difx**2 + dify**2 + difz**2)
-            ortho = dict((('x', 1.), ('y', 1.), ('z', -(difx + dify) / difz)))
-            normer = sqrt(ortho['x']**2 + ortho['y']**2 + ortho['z']**2)
-            ortho['x'] = ortho['x'] / normer * radius
-            ortho['y'] = ortho['y'] / normer * radius
-            ortho['z'] = ortho['z'] / normer * radius
+            difx = selfx - selfx1
+            dify = selfy - selfy1
+            difz = selfz - selfz1
+            # orthox = 1.
+            # orthoy = 1.
+            orthoz = -(difx + dify) / difz
+            #normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius
+            normer = sqrt(2. + orthoz**2) / radius
+            orthox = 1. / normer
+            orthoy = 1. / normer
+            orthoz /= normer
             # define the number of circle to draw in this section
-            between = int(sqrt(adj1) / (radius/4))
-            # define circles
-            for k in xrange(between-1, 0, -1):
-                point = dict((('x', self['x'][i] - k * (difx / between)),
-                              ('y', self['y'][i] - k * (dify / between)),
-                              ('z', self['z'][i] - k * (difz / between))))
+            between = int(sqrt(adj1) / (radius/fact))
+            stepx = difx / between
+            stepy = dify / between
+            stepz = difz / between
+            
+            # define slices
+            for k in xrange(between - 1, 0, -1):
+                point = [selfx - k * stepx,
+                         selfy - k * stepy,
+                         selfz - k * stepz]
                 points.append(point)
-                for spoint in generate_circle_points(ortho['x'] + point['x'],
-                                                     ortho['y'] + point['y'],
-                                                     ortho['z'] + point['z'],
-                                                     point['x']             ,
-                                                     point['y']             ,
-                                                     point['z']             ,
-                                                     difx                   ,
-                                                     dify                   ,
-                                                     difz                   ,
-                                                     nump/4):
+                pointx = point[0]
+                pointy = point[1]
+                pointz = point[2]
+
+                # define circles
+                for spoint in generate_circle_points(orthox + pointx,
+                                                     orthoy + pointy,
+                                                     orthoz + pointz,
+                                                     pointx         ,
+                                                     pointy         ,
+                                                     pointz         ,
+                                                     difx           ,
+                                                     dify           ,
+                                                     difz           ,
+                                                     numc):
                     # check that the point of the circle is not too close from
                     # next edge
-                    if i < len(self) - 2:
-                        hyp = distance((self['x'][i+1], self['y'][i+1],
-                                        self['z'][i+1]), spoint)
+                    if i < nloci - 2:
+                        hyp = distance((selfx1, selfy1,
+                                        selfz1), spoint)
                         ang = angle_between_3_points(
                             spoint,
-                            (self['x'][i+1], self['y'][i+1], self['z'][i+1]),
-                            (self['x'][i+2], self['y'][i+2], self['z'][i+2]))
-                        if ang < pi/2:
+                            (selfx1, selfy1, selfz1),
+                            (selfx2, selfy2, selfz2))
+                        if ang < pi / 2:
                             dist = sin(ang) * hyp
                             # print dist, radius
                             if dist < radius:
@@ -439,52 +479,53 @@ class IMPmodel(dict):
                     # check that the point of the circle is not too close from
                     # previous edge
                     if i:
-                        hyp = distance((self['x'][i], self['y'][i],
-                                        self['z'][i]), spoint)
+                        hyp = distance((selfx, selfy,
+                                        selfz), spoint)
                         ang = angle_between_3_points(
                             spoint,
-                            (self['x'][i], self['y'][i], self['z'][i]),
-                            (self['x'][i-1], self['y'][i-1], self['z'][i-1]))
+                            (selfx, selfy, selfz),
+                            (selfx_1, selfy_1, selfz_1))
                         if ang < pi/2:
                             dist = sin(ang) * hyp
                             # print dist, radius
                             if dist < radius:
                                 continue
                     # print 'here'
-                    subpoints.append(dict((('x', spoint[0]),
-                                           ('y', spoint[1]),
-                                           ('z', spoint[2]))))
+                    subpoints.append([spoint[0],
+                                      spoint[1],
+                                      spoint[2]])
 
         # add last AND least point!!
-        points.append(dict((('x', self['x'][i + 1]),
-                            ('y', self['y'][i + 1]),
-                            ('z', self['z'][i + 1]))))
+        points.append([selfx1,
+                       selfy1,
+                       selfz1])
         # and its sphere
-        adj = square_distance(points[-1], dict((('x', self['x'][i]),
-                                                ('y', self['y'][i]),
-                                                ('z', self['z'][i]))))
+        adj = square_distance(points[-1], [selfx,
+                                           selfy,
+                                           selfz])
         hyp2 = adj + radius**2
         for xxx, yyy, zzz in sphere:
-            thing = dict((('x', xxx * radius + self['x'][i+1]),
-                          ('y', yyy * radius + self['y'][i+1]),
-                          ('z', zzz * radius + self['z'][i+1])))
+            thing = [xxx * radius + selfx1,
+                     yyy * radius + selfy1,
+                     zzz * radius + selfz1]
             if self._square_distance_to(i, thing) > hyp2:
                 subpoints.append(thing)
 
         # calculates the number of unaccessible peaces of surface
-        impossibles = 0
-        colors  = []
         radius2 = (radius - 1)**2
         red     = (100, 0, 0)
         green   = (0, 100, 0)
-        for spoint in subpoints:
-            for point in points:
-                if square_distance(point, spoint) < radius2:
-                    impossibles += 1
+        colors  = []
+        for x2, y2, z2 in subpoints:
+            for j, (x1, y1, z1) in enumerate(points):
+                if fast_square_distance(x1, y1, z1, x2, y2, z2) < radius2:
                     colors.append(red)
                     break
             else:
                 colors.append(green)
+                continue
+            points.insert(0, points.pop(j))
+        impossibles = colors.count(red)
 
         # some stats
         area = ((len(subpoints) - impossibles) * 4 * pi *
@@ -505,20 +546,20 @@ class IMPmodel(dict):
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"20\" note=\"%s\"/>\n')
             out = '<marker_set name=\"1\">\n'
-            for k in xrange(len(self)):
+            for k in xrange(nloci):
                 out += form % (k+1, self['x'][k], self['y'][k], self['z'][k],
                                100, 100, 100, k+1)
             form = ('<link id1=\"%s\" id2=\"%s\" r=\"50\" ' +
                     'g=\"50\" b=\"50\" radius=\"' +
                     str(self['radius']/8) +
                     '\"/>\n')
-            for i in xrange(1, len(self['x'])):
+            for i in xrange(1, nloci):
                 out += form % (i, i + 1)
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"5\"/>\n')
             for k_2, thing in enumerate(subpoints):
-                out += form % (2 + k + k_2, thing['x'], thing['y'], thing['z'],
+                out += form % (2 + k + k_2, thing[0], thing[1], thing[2],
                                colors[k_2][0], colors[k_2][1], colors[k_2][2])
             out += '</marker_set>\n'
             out_f = open(write_cmm_file, 'w')

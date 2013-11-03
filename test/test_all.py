@@ -10,6 +10,7 @@ from pytadbit                        import tadbit, batch_tadbit
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 from pytadbit.parsers.hic_parser     import __check_hic as check_hic
 from pytadbit.imp.structuralmodels   import load_structuralmodels
+from pytadbit.imp.impmodel           import load_impmodel_from_cmm
 from os                              import system, path, chdir
 from warnings                        import warn
 from distutils.spawn                 import find_executable
@@ -280,11 +281,11 @@ class TestTadbit(unittest.TestCase):
         exp.load_hic_data('20Kb/chrT/chrT_A.tsv', silent=True)
         exp.normalize_hic(method='visibility', silent=True)
         models = exp.model_region(50, 70, n_models=110, n_keep=25,
-                                  n_cpus=2,
+                                  n_cpus=4,
                                   config={'kforce': 5, 'maxdist': 500,
                                           'scale': 0.005,
                                           'upfreq': 1.0, 'lowfreq': -0.6})
-        models.save_models('models.pick')
+        # models.save_models('models.pick')
         
         avg = models.average_model()
         xis = [256.800659, 192.261123, 140.659133, 100.450248, 46.9496421,
@@ -386,9 +387,28 @@ class TestTadbit(unittest.TestCase):
         # clean
         system('rm -f model.*')
         system('rm -f lala')
-        
 
-    def test_16_tadbit_c(self):
+
+    def test_16_models_stats(self):
+        models = load_structuralmodels('models.pick') 
+        # write cmm
+        models.write_cmm('.', model_num=2)
+        model = load_impmodel_from_cmm('model.69.cmm')
+        # clean
+        system('rm -f model.*')
+        # stats
+        self.assertEqual(round(200.1036138, 3), round(model.distance(2, 3), 3))
+        self.assertEqual(round(1066.338425, 3), round(model.distance(8, 20), 3))
+        self.assertEqual(round(622.797, 3), round(model.radius_of_gyration(), 3))
+        self.assertEqual(round(4000.3976, 3), round(model.contour(), 3))
+        self.assertEqual(round(2262.614600764699, 3),
+                         round(model.shortest_axe()+model.longest_axe(), 3))
+        self.assertEqual([15, 16], model.inaccessible_particles(1000))
+        self.assertEqual([round(i, 3) for i in (764, 1135, 5.760424289622245, 8.671545233767619)],
+                         [round(i, 3) for i in model.accessible_surface(300, nump=150)])
+
+
+    def test_17_tadbit_c(self):
         """
         Runs tests written in c, around the detection of TADs
         """
