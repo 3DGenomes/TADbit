@@ -14,6 +14,7 @@ from numpy                          import linspace
 from warnings                       import warn
 from re                             import findall, compile as compil
 from math                           import sqrt, sin, pi
+from random                         import random
 try:
     from matplotlib import pyplot as plt
 except ImportError:
@@ -404,7 +405,7 @@ class IMPmodel(dict):
            dots in the mesh *3-* the estimated area of the mesh (in square
            micrometers) *4-* the area of the mesh of a virtually straight strand
            of chromatin defined as 
-           :math:`contour\\times 2\pi r + 4\pi r^2\\times 2` (also in
+           :math:`contour\\times 2\pi r + 4\pi r^2` (also in
            micrometers)
 
         """
@@ -415,6 +416,9 @@ class IMPmodel(dict):
         nloci = len(self)
         # number of dots in a circle is dependent the ones in a sphere
         numc = sqrt(nump) * sqrt(pi)
+        # keeps the remaining of integer conversion, to correct
+        remaining = int(100*(numc - int(numc)) + 0.5)
+        c_count = 0
         # number of circles per sphere needed to get previous equality are
         # dependent of:
         fact = float(nump)/numc/(2*radius)
@@ -479,11 +483,11 @@ class IMPmodel(dict):
             orthoy = 1. / normer
             orthoz /= normer
             # define the number of circle to draw in this section
-            between = int(fact * sqrt(adj1))
+            between = int(fact * sqrt(adj1) + 0.5)
             stepx = difx / between
             stepy = dify / between
             stepz = difz / between
-            
+
             # define slices
             for k in xrange(between - 1, 0, -1):
                 point = [selfx - k * stepx,
@@ -495,16 +499,12 @@ class IMPmodel(dict):
                 pointz = point[2]
 
                 # define circles
-                for spoint in generate_circle_points(orthox + pointx,
-                                                     orthoy + pointy,
-                                                     orthoz + pointz,
-                                                     pointx         ,
-                                                     pointy         ,
-                                                     pointz         ,
-                                                     difx           ,
-                                                     dify           ,
-                                                     difz           ,
-                                                     numc):
+                for spoint in generate_circle_points(
+                    orthox + pointx, orthoy + pointy, orthoz + pointz,
+                    pointx         , pointy         , pointz         ,
+                    difx           , dify           , difz           ,
+                    # correction for integer of numc
+                    numc + (1 if c_count%100 < remaining else 0)):
                     # check that the point of the circle is not too close from
                     # next edge
                     if i < nloci - 2:
@@ -537,7 +537,8 @@ class IMPmodel(dict):
                     subpoints.append([spoint[0],
                                       spoint[1],
                                       spoint[2]])
-
+                c_count += 1
+                
         # add last AND least point!!
         points.append([selfx1,
                        selfy1,
@@ -571,13 +572,16 @@ class IMPmodel(dict):
         impossibles = colors.count(red)
 
         # some stats
-        area = ((len(subpoints) - impossibles) * 4 * pi *
-                (float(radius) / 1000)**2 / nump)
+        dot_area = 4 * pi * (float(radius) / 1000)**2 / nump
+        area = ((len(subpoints) - impossibles) * dot_area)
         total = (self.contour() / 1000 * 2 * pi * float(radius) / 1000 + 4 * pi
                  * (float(radius) / 1000)**2)
         if verbose:
-            print ' Accessible surface: %s microm^2' % (
-                (round(area, 2)))
+            print (' Accessible surface: %s micrometers^2' +
+                   '(%s accessible times %s micrometers)') % (
+                round(area, 2), len(subpoints) - impossibles, dot_area)
+            print '    (%s accessible dots of %s total times %s micrometers)' % (
+                len(subpoints) - impossibles, len(subpoints), round(dot_area, 5))
             print '  - %s%% of the contour mesh' % (
                 round((1-float(impossibles)/len(subpoints))*100, 2))
             print '  - %s%% of a virtual straight chromatin (%s microm^2)' % (

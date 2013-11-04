@@ -78,10 +78,11 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome', centromere_search=True,
                               experiment_tads=[exp1, exp2, exp3, exp4],
-                              experiment_hic_data=[PATH + '/40Kb/chrT/chrT_A.tsv',
-                                                   PATH + '/20Kb/chrT/chrT_B.tsv',
-                                                   PATH + '/20Kb/chrT/chrT_C.tsv',
-                                                   PATH + '/20Kb/chrT/chrT_D.tsv'],
+                              experiment_hic_data=[
+                                  PATH + '/40Kb/chrT/chrT_A.tsv',
+                                  PATH + '/20Kb/chrT/chrT_B.tsv',
+                                  PATH + '/20Kb/chrT/chrT_C.tsv',
+                                  PATH + '/20Kb/chrT/chrT_D.tsv'],
                               experiment_names=['exp1', 'exp2', 'exp3', 'exp4'],
                               experiment_resolutions=[40000,20000,20000,20000],
                               silent=True)
@@ -90,7 +91,8 @@ class TestTadbit(unittest.TestCase):
 
         test_chr.align_experiments(verbose=False, randomize=False,
                                    method='global')
-        score1, pval1 = test_chr.align_experiments(verbose=False,method='global',
+        score1, pval1 = test_chr.align_experiments(verbose=False,
+                                                   method='global',
                                                    randomize=True, rnd_num=100)
         _, pval2 = test_chr.align_experiments(verbose=False, randomize=True,
                                               rnd_method='shuffle', rnd_num=100)
@@ -107,9 +109,10 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome',
                               experiment_resolutions=[20000]*3,
-                              experiment_hic_data=[PATH + '/20Kb/chrT/chrT_A.tsv',
-                                                   PATH + '/20Kb/chrT/chrT_D.tsv',
-                                                   PATH + '/20Kb/chrT/chrT_C.tsv'],
+                              experiment_hic_data=[
+                                  PATH + '/20Kb/chrT/chrT_A.tsv',
+                                  PATH + '/20Kb/chrT/chrT_D.tsv',
+                                  PATH + '/20Kb/chrT/chrT_C.tsv'],
                               experiment_names=['exp1', 'exp2', 'exp3'])
         test_chr.find_tad(['exp1', 'exp2', 'exp3'], batch_mode=True,
                           verbose=False)
@@ -145,7 +148,8 @@ class TestTadbit(unittest.TestCase):
         test_chr = Chromosome(name='Test Chromosome',
                               experiment_tads=[exp4],
                               experiment_names=['exp1'],
-                              experiment_hic_data=[PATH + '/20Kb/chrT/chrT_D.tsv'],
+                              experiment_hic_data=[
+                                  PATH + '/20Kb/chrT/chrT_D.tsv'],
                               experiment_resolutions=[20000,20000])
         all_tads = []
         for _, tad in test_chr.iter_tads('exp1'):
@@ -441,9 +445,12 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(lines[1], '1\t11.0\t25.667\t40.667\t50.667\n')
         self.assertEqual(lines[15], '15\t94.667\t100.0\t100.0\t100.0\n')
         # measure angle
-        self.assertEqual(round(models.angle_between_3_particles(2,8,15), 3), 142.038)
-        self.assertEqual(round(models.angle_between_3_particles(19,20,21), 3), 73.046)
-        self.assertEqual(round(models.angle_between_3_particles(15,14,11), 3), 143.099)
+        self.assertEqual(round(models.angle_between_3_particles(2,8,15), 3),
+                         142.038)
+        self.assertEqual(round(models.angle_between_3_particles(19,20,21), 3),
+                         73.046)
+        self.assertEqual(round(models.angle_between_3_particles(15,14,11), 3),
+                         143.099)
         # coordinates
         self.assertEqual([round(x, 3) for x in models.particle_coordinates(15)],
                          [2372.253, -1193.602, -1145.397])
@@ -452,9 +459,12 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(models.dihedral_angle(15,19,20,21), 3), 79.439)
         self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 3), 8.136)
         # median distance
-        self.assertEqual(round(models.median_3d_dist(3, 20, plot=False), 3), 1734.296)
-        self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1, plot=False), 3), 1702.746)
-        self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5), plot=False), 3), 245.389)
+        self.assertEqual(round(models.median_3d_dist(3, 20, plot=False), 3),
+                         1734.296)
+        self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1,
+                                                     plot=False), 3), 1702.746)
+        self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5),
+                                                     plot=False), 3), 245.389)
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -483,13 +493,15 @@ class TestTadbit(unittest.TestCase):
         # stats
         self.assertEqual(round(200.1036138, 3), round(model.distance(2, 3), 3))
         self.assertEqual(round(1066.338425, 3), round(model.distance(8, 20), 3))
-        self.assertEqual(round(622.797, 3), round(model.radius_of_gyration(), 3))
+        self.assertEqual(round(622.797, 3),
+                         round(model.radius_of_gyration(), 3))
         self.assertEqual(round(4000.3976, 3), round(model.contour(), 3))
         self.assertEqual(round(2262.614600764699, 3),
                          round(model.shortest_axe()+model.longest_axe(), 3))
         self.assertEqual([15, 16], model.inaccessible_particles(1000))
-        self.assertEqual([round(i, 3) for i in (641, 968, 4.833026138282538, 8.671545233767619)],
-                         [round(i, 3) for i in model.accessible_surface(300, nump=150)])
+        self.assertEqual([round(i, 3) for i in (649, 979, 4.893344, 8.6715452)],
+                         [round(i, 3)
+                          for i in model.accessible_surface(300, nump=150)])
         if CHKTIME:
             print '16', time() - t0
 
