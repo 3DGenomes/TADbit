@@ -223,6 +223,17 @@ class IMPmodel(dict):
 
     def radius_of_gyration(self):
         """
+        Defined as:
+        
+        .. math::
+
+          \sqrt{\\frac{\sum_{i=1}^{N} (x_i-x_{com})^2+(y_i-y_{com})^2+(z_i-z_{com})^2}{N}}
+
+        with:
+        
+        * :math:`N` the number of particles in the model
+        * :math:`com` the center of mass
+        
         :returns: the radius of gyration for the components of the tensor
         """
         com = self.center_of_mass()
@@ -340,26 +351,61 @@ class IMPmodel(dict):
         :param 100 nump: number of points to draw around a given particle. This
            number also sets the number of points drawn around edges, as each
            point occupies a given surface:
+        :param False verbose: prints stats about the surface
 
+        This function will first define a mesh around the chromatin,
+        representing all possible position of the center of the object we want
+        to fit. This mesh will be at a distance of *radius* from the chromatin
+        strand. All dots in the mesh represents an equal area (*a*), the whole
+        surface of the chromatin strand being: :math:`A=n \\times a` (*n* being
+        the total number of dots in the mesh).
+
+        The mesh consists of spheres around particles of the model, and
+        cylinders around edges joining particles (no overlap is allowed between
+        sphere and cylinders or cylinder and cylinder when they are
+        consecutive).
+        
+        If we want that all dots of the mesh representing the surface of the
+        chromatin, corresponds to an equal area (:math:`a`)
            .. math::
 
-             \\frac{4\pi r^2}{s} = \\frac{2\pi r d}{c}
+             a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}
 
            with:
 
-           * *s* number of points in sphere
-           * *c* number of points in circle
-           * *d* distance between circles
+           * :math:`r` radius of the object to fit (as the input parameter **radius**)
+           * :math:`s` number of points in sphere
+           * :math:`c` number of points in circle (as the input parameter **nump**)
+           * :math:`N_{(d)}` number of circles in an edge of length :math:`d`
 
-           if :math:`d = \\frac{r}{4}`, there is 8 times more points in a
-           sphere than in a circle.
-        :param False verbose: prints stats about the surface
+           According to this, when the distance between two particles is equal
+           to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.
 
-        :returns: a list of 1- the number of dots in the mesh that could be
-           occupied by an object of the given radius 2- the total number of dots
-           in the mesh 3- the estimated area of the mesh (in square micrometers)
-           4- the area of the mesh of a virtually straight strand of chromatin
-           having the same 'contour' as the model.
+           As :
+
+           .. math::
+
+             2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}
+           
+           It is fair to state the number of dots represented along a circle as:
+
+           .. math::
+
+             c = \sqrt{s} \\times \sqrt{\pi}
+
+           Thus the number of circles in an edge of length :math:`d` must be:
+
+           .. math::
+
+             N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}
+
+        :returns: a list of *1-* the number of dots in the mesh that could be
+           occupied by an object of the given radius *2-* the total number of
+           dots in the mesh *3-* the estimated area of the mesh (in square
+           micrometers) *4-* the area of the mesh of a virtually straight strand
+           of chromatin defined as 
+           :math:`contour\\times 2\pi r + 4\pi r^2\\times 2` (also in
+           micrometers)
 
         """
 
@@ -367,16 +413,13 @@ class IMPmodel(dict):
         subpoints = []
         sphere = generate_sphere_points(nump)
         nloci = len(self)
-        # number of dots in a circle is a quarter of the ones in a sphere  
-        fact = 4
-        if nump > 100:
-            fact = int(nump/100 + 0.5) + 3
-        elif nump < 50:
-            fact = 2
-        else:
-            fact = 4
-        numc = nump / fact
-            
+        # number of dots in a circle is dependent the ones in a sphere
+        numc = sqrt(nump) * sqrt(pi)
+        # number of circles per sphere needed to get previous equality are
+        # dependent of:
+        fact = float(nump)/numc/(2*radius)
+
+        # starts big loop
         i = 0
         for i in xrange(nloci-1):
             selfx   = self['x'][i]
@@ -436,7 +479,7 @@ class IMPmodel(dict):
             orthoy = 1. / normer
             orthoz /= normer
             # define the number of circle to draw in this section
-            between = int(sqrt(adj1) / (radius/fact))
+            between = int(fact * sqrt(adj1))
             stepx = difx / between
             stepy = dify / between
             stepz = difz / between
@@ -511,7 +554,7 @@ class IMPmodel(dict):
             if self._square_distance_to(i, thing) > hyp2:
                 subpoints.append(thing)
 
-        # calculates the number of unaccessible peaces of surface
+        # calculates the number of inaccessible peaces of surface
         radius2 = (radius - 1)**2
         red     = (100, 0, 0)
         green   = (0, 100, 0)

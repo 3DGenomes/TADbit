@@ -15,18 +15,27 @@ from os                              import system, path, chdir
 from warnings                        import warn
 from distutils.spawn                 import find_executable
 
+CHKTIME = False
+
+if CHKTIME:
+    from time import time
+
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
 class TestTadbit(unittest.TestCase):
     """
     test main tadbit functions
     """
-   
+    
     def test_01_tadbit(self):
 
         print 'PYTHON SIDE'
         print '-----------'
+        
+        if CHKTIME:
+            t0 = time()
 
+        
         global exp1, exp2, exp3, exp4
         exp1 = tadbit(PATH + '/40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
                       verbose=False, no_heuristic=False, n_cpus='max')
@@ -43,8 +52,13 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(exp1['start'], breaks)
         self.assertEqual(exp1['score'], scores)
 
+        if CHKTIME:
+            print '1', time() - t0
 
     def test_02_batch_tadbit(self):
+        if CHKTIME:
+            t0 = time()
+
         global batch_exp
         batch_exp = batch_tadbit('20Kb/chrT/', max_tad_size=20, verbose=False,
                                  no_heuristic=True)
@@ -53,9 +67,14 @@ class TestTadbit(unittest.TestCase):
                   7.0, None]
         self.assertEqual(batch_exp['start'], breaks)
         self.assertEqual(batch_exp['score'], scores)
+        if CHKTIME:
+            print '2', time() - t0
 
 
     def test_03_tad_multi_aligner(self):
+
+        if CHKTIME:
+            t0 = time()
 
         test_chr = Chromosome(name='Test Chromosome', centromere_search=True,
                               experiment_tads=[exp1, exp2, exp3, exp4],
@@ -72,15 +91,20 @@ class TestTadbit(unittest.TestCase):
         test_chr.align_experiments(verbose=False, randomize=False,
                                    method='global')
         score1, pval1 = test_chr.align_experiments(verbose=False,method='global',
-                                                   randomize=True)
+                                                   randomize=True, rnd_num=100)
         _, pval2 = test_chr.align_experiments(verbose=False, randomize=True,
-                                              rnd_method='shuffle')
+                                              rnd_method='shuffle', rnd_num=100)
         self.assertEqual(round(-26.095, 3), round(score1, 3))
         self.assertEqual(round(0.001, 1), round(pval1, 1))
         self.assertTrue(abs(0.175 - pval2) < 0.2)
+        if CHKTIME:
+            print '3', time() - t0
 
                               
     def test_04_chromosome_batch(self):
+        if CHKTIME:
+            t0 = time()
+
         test_chr = Chromosome(name='Test Chromosome',
                               experiment_resolutions=[20000]*3,
                               experiment_hic_data=[PATH + '/20Kb/chrT/chrT_A.tsv',
@@ -93,9 +117,14 @@ class TestTadbit(unittest.TestCase):
         found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
         self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 35.0, 43.0,
                           49.0, 61.0, 66.0, 75.0, 89.0, 94.0, 99.0], found)
+        if CHKTIME:
+            print '4', time() - t0
 
 
     def test_05_save_load(self):
+        if CHKTIME:
+            t0 = time()
+
         test_chr1 = Chromosome(name='Test Chromosome',
                               experiment_tads=[exp1, exp2],
                               experiment_names=['exp1', 'exp2'],
@@ -105,9 +134,14 @@ class TestTadbit(unittest.TestCase):
         system('rm -f lolo')
         system('rm -f lolo_hic')
         self.assertEqual(str(test_chr1.__dict__), str(test_chr2.__dict__))
+        if CHKTIME:
+            print '5', time() - t0
 
 
     def test_06_tad_clustering(self):
+        if CHKTIME:
+            t0 = time()
+
         test_chr = Chromosome(name='Test Chromosome',
                               experiment_tads=[exp4],
                               experiment_names=['exp1'],
@@ -120,9 +154,14 @@ class TestTadbit(unittest.TestCase):
                                         method='score')
         self.assertEqual(align1, [0, 1, '-', 2, 3, '-', 4, 5, 6, 7, 8, 9, 10])
         self.assertEqual(align2,[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+        if CHKTIME:
+            print '6', time() - t0
         
 
     def test_07_forbidden_regions(self):
+        if CHKTIME:
+            t0 = time()
+
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000,
                               centromere_search=True,)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
@@ -144,9 +183,14 @@ class TestTadbit(unittest.TestCase):
         know2 = ([38], ['Centromere'])
         self.assertEqual(items1, know1)
         self.assertEqual(items2, know2)
+        if CHKTIME:
+            print '7', time() - t0
 
 
     def test_08_changing_resolution(self):
+        if CHKTIME:
+            t0 = time()
+
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
@@ -175,12 +219,17 @@ class TestTadbit(unittest.TestCase):
         check_hic(exp.hic_data[0], exp.size)
         self.assertTrue(sum20 == sum80 == sum160 == sum360 == sum40 \
                         == sum21 == sum2400 == sum41)
+        if CHKTIME:
+            print '8', time() - t0
 
 
     def test_09_hic_normalization(self):
         """
         writes interaction pair file.
         """
+        if CHKTIME:
+            t0 = time()
+
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
@@ -191,12 +240,17 @@ class TestTadbit(unittest.TestCase):
         sumz = sum([exp._zscores[k1][k2] for k1 in exp._zscores.keys()
                     for k2 in exp._zscores[k1]])
         self.assertEqual(round(sumz, 4), round(37.48799557280391, 4))
+        if CHKTIME:
+            print '9', time() - t0
 
 
     def test_10_generate_weights(self):
         """
         method names are: 'sqrt' or 'over_tot'
         """
+        if CHKTIME:
+            t0 = time()
+
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
@@ -205,12 +259,17 @@ class TestTadbit(unittest.TestCase):
         exp.norm = None
         exp.normalize_hic(method='sqrt')
         self.assertEqual(tadbit_weigths[0], exp.norm[0])
+        if CHKTIME:
+            print '10', time() - t0
 
 
     def test_11_write_interaction_pairs(self):
         """
         writes interaction pair file.
         """
+        if CHKTIME:
+            t0 = time()
+
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
@@ -224,12 +283,17 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(lines[25], '1\t28\t0.00796578796261\n')
         self.assertEqual(lines[2000], '26\t70\t0.00109722560121\n')
         system('rm -f lala')
+        if CHKTIME:
+            print '11', time() - t0
 
 
     def test_12_3d_modelling_optimization(self):
         """
         quick test to generate 3D coordinates from 3? simple models???
         """
+        if CHKTIME:
+            t0 = time()
+
         try:
             __import__('IMP')
         except ImportError:
@@ -263,12 +327,17 @@ class TestTadbit(unittest.TestCase):
         wanted = (0.71387060499157218, 0.005, 500, 1.0, -0.59999999999999998)
         self.assertEqual([round(i, 4)for i in sort_result],
                          [round(i, 4)for i in wanted])
+        if CHKTIME:
+            print '12', time() - t0
 
 
     def test_13_3d_modelling_centroid(self):
         """
         quick test to generate 3D coordinates from 3? simple models???
         """
+        if CHKTIME:
+            t0 = time()
+
         try:
             __import__('IMP')
         except ImportError:
@@ -285,7 +354,7 @@ class TestTadbit(unittest.TestCase):
                                   config={'kforce': 5, 'maxdist': 500,
                                           'scale': 0.005,
                                           'upfreq': 1.0, 'lowfreq': -0.6})
-        # models.save_models('models.pick')
+        models.save_models('models.pick')
         
         avg = models.average_model()
         xis = [256.800659, 192.261123, 140.659133, 100.450248, 46.9496421,
@@ -312,11 +381,16 @@ class TestTadbit(unittest.TestCase):
 
         centroid = models.centroid_model()
         self.assertEqual(centroid['rand_init'], 69)
+        if CHKTIME:
+            print '13', time() - t0
 
 
     def test_14_3d_clustering(self):
         """
         """
+        if CHKTIME:
+            t0 = time()
+
         models = load_structuralmodels('models.pick')
         wnt = {1: [95, 69, 101, 55, 94, 81, 30, 32, 25,
                    72, 52, 56, 2, 98, 89, 40],
@@ -326,19 +400,24 @@ class TestTadbit(unittest.TestCase):
             self.assertEqual(models.clusters, wnt)
         models.cluster_models(method='ward', verbose=False)
         self.assertEqual(models.clusters, wnt)
+        if CHKTIME:
+            print '14', time() - t0
 
 
     def test_15_3d_modelling(self):
         """
         """
+        if CHKTIME:
+            t0 = time()
+
         models = load_structuralmodels('models.pick') 
         models.cluster_models(method='ward', verbose=False)
         # density
         models.density_plot(savedata='lala', plot=False)
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
-        self.assertEqual(lines[1], '1\t99.988\t100.022\tNone\tNone\tNone\tNone\tNone\tNone\tNone\tNone\n')
-        self.assertEqual(lines[15], '15\t99.939\t99.985\t99.969\t99.998\t99.97\t99.998\t99.974\t99.996\t99.977\t100.0\n')
+        self.assertEqual(lines[1], '1\t10.474\t11.994\tNone\tNone\tNone\tNone\tNone\tNone\tNone\tNone\n')
+        self.assertEqual(lines[15], '15\t99.995\t100.022\t99.992\t100.008\t99.976\t99.996\t99.978\t99.997\t99.978\t99.999\n')
         # contacts
         cmap = models.get_contact_matrix(cutoff=300)
         self.assertEqual(round(
@@ -362,9 +441,9 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(lines[1], '1\t11.0\t25.667\t40.667\t50.667\n')
         self.assertEqual(lines[15], '15\t94.667\t100.0\t100.0\t100.0\n')
         # measure angle
-        self.assertEqual(round(models.angle_between_3_particles(2,8,15), 3), 128.338)
-        self.assertEqual(round(models.angle_between_3_particles(19,20,21), 3), 60.163)
-        self.assertEqual(round(models.angle_between_3_particles(15,14,11), 3), 64.474)
+        self.assertEqual(round(models.angle_between_3_particles(2,8,15), 3), 142.038)
+        self.assertEqual(round(models.angle_between_3_particles(19,20,21), 3), 73.046)
+        self.assertEqual(round(models.angle_between_3_particles(15,14,11), 3), 143.099)
         # coordinates
         self.assertEqual([round(x, 3) for x in models.particle_coordinates(15)],
                          [2372.253, -1193.602, -1145.397])
@@ -373,9 +452,9 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(models.dihedral_angle(15,19,20,21), 3), 79.439)
         self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 3), 8.136)
         # median distance
-        self.assertEqual(round(models.median_3d_dist(3, 20, plot=False), 3), 1553.974)
-        self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1, plot=False), 3), 1522.16)
-        self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5), plot=False), 3), 266.024)
+        self.assertEqual(round(models.median_3d_dist(3, 20, plot=False), 3), 1734.296)
+        self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1, plot=False), 3), 1702.746)
+        self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5), plot=False), 3), 245.389)
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -387,9 +466,14 @@ class TestTadbit(unittest.TestCase):
         # clean
         system('rm -f model.*')
         system('rm -f lala')
+        if CHKTIME:
+            print '15', time() - t0
 
 
     def test_16_models_stats(self):
+        if CHKTIME:
+            t0 = time()
+
         models = load_structuralmodels('models.pick') 
         # write cmm
         models.write_cmm('.', model_num=2)
@@ -404,14 +488,19 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(2262.614600764699, 3),
                          round(model.shortest_axe()+model.longest_axe(), 3))
         self.assertEqual([15, 16], model.inaccessible_particles(1000))
-        self.assertEqual([round(i, 3) for i in (764, 1135, 5.760424289622245, 8.671545233767619)],
+        self.assertEqual([round(i, 3) for i in (641, 968, 4.833026138282538, 8.671545233767619)],
                          [round(i, 3) for i in model.accessible_surface(300, nump=150)])
+        if CHKTIME:
+            print '16', time() - t0
 
 
     def test_17_tadbit_c(self):
         """
         Runs tests written in c, around the detection of TADs
         """
+        if CHKTIME:
+            t0 = time()
+
         print '\n\nC SIDE'
         print '------'
         chdir(PATH + '/../src/test/')
@@ -420,6 +509,8 @@ class TestTadbit(unittest.TestCase):
         return_code = system('make test')
         chdir(PATH)
         self.assertEqual(return_code, 0)
+        if CHKTIME:
+            print '17', time() - t0
 
 
 if __name__ == "__main__":
