@@ -12,7 +12,7 @@ from pytadbit.imp.impmodel          import IMPmodel
 from pytadbit.centroid              import centroid_wrapper
 from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
-from math                           import acos, degrees, pi, sqrt
+from math                           import acos, degrees, pi
 from numpy                          import median as np_median
 from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan

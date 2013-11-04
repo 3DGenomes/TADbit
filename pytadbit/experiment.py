@@ -635,16 +635,26 @@ class Experiment(object):
         out.close()
 
 
-    def get_hic_matrix(self):
+    def get_hic_matrix(self, focus=None):
         """
         Return the Hi-C matrix.
+
+        :param None focus: if a tuple is passed (start, end), wil return a Hi-C
+           matrix starting at start, and ending at end (all inclusive).
 
         :returns: list of lists representing the Hi-C data matrix of the
            current experiment
         """
         siz = self.size
         hic = self.hic_data[0]
-        return [[hic[i+siz * j] for i in xrange(siz)] for j in xrange(siz)]
+        if focus:
+            start, end = focus
+            start -= 1
+        else:
+            start = 0
+            end   = siz
+        return [[hic[i + siz * j] for i in xrange(start, end)]
+                for j in xrange(start, end)]
 
 
     def print_hic_matrix(self, print_it=True):

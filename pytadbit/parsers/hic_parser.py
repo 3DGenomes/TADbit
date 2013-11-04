@@ -27,8 +27,6 @@ def _read_matrix(f_h):
         start = 0
     # parse the rest of the file
     for line in f_h:
-        if not line:
-            continue
         values = line.split()[start:]
         try:
             nums.append([int(v) for v in values])
