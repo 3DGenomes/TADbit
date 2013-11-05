@@ -447,28 +447,7 @@ class IMPmodel(dict):
             points.append(point)
             # if i != 53 and i != 52 and i != 51: continue
             # get minimum length from next particle to display the sphere dot
-            adj1 = square_distance(point, [selfx1,
-                                           selfy1,
-                                           selfz1])
-            hyp1 = adj1 + radius**2
-            # get minimum length from prev particle to display the sphere dot
-            if i:
-                adj2 = square_distance(point, [selfx_1,
-                                               selfy_1,
-                                               selfz_1])
-                hyp2 = adj2 + radius**2
-
-            # set sphere around each particle
-            for xxx, yyy, zzz in sphere:
-                thing = [xxx * radius + selfx,
-                         yyy * radius + selfy,
-                         zzz * radius + selfz]
-                # only place mesh outside torsion angle
-                if self._square_distance_to(i+1, thing) > hyp1:
-                    if not i:
-                        subpoints.append(thing)
-                    elif self._square_distance_to(i-1, thing) > hyp2:
-                        subpoints.append(thing)
+            adj1 = distance(point, [selfx1, selfy1, selfz1])
 
             # find a vector orthogonal to the axe between particle i and i+1
             difx = selfx - selfx1
@@ -483,10 +462,32 @@ class IMPmodel(dict):
             orthoy = 1. / normer
             orthoz /= normer
             # define the number of circle to draw in this section
-            between = int(fact * sqrt(adj1) + 0.5)
+            between = int(fact * adj1 + 0.5)
             stepx = difx / between
             stepy = dify / between
             stepz = difz / between
+
+            hyp1 = sqrt(adj1**2 + radius**2)
+
+            hyp1 = (hyp1 - hyp1 * adj1 / (2 * between) / adj1)**2
+            
+            # get minimum length from prev particle to display the sphere dot
+            if i:
+                adj2 = distance(point, [selfx_1, selfy_1, selfz_1])
+                hyp2 = sqrt(adj2**2 + radius**2)
+                hyp2 = (hyp2 - hyp2 * adj2 / (2 * between) / adj2)**2
+
+            # set sphere around each particle
+            for xxx, yyy, zzz in sphere:
+                thing = [xxx * radius + selfx,
+                         yyy * radius + selfy,
+                         zzz * radius + selfz]
+                # only place mesh outside torsion angle
+                if self._square_distance_to(i+1, thing) > hyp1:
+                    if not i:
+                        subpoints.append(thing)
+                    elif self._square_distance_to(i-1, thing) > hyp2:
+                        subpoints.append(thing)
 
             # define slices
             for k in xrange(between - 1, 0, -1):
@@ -544,10 +545,9 @@ class IMPmodel(dict):
                        selfy1,
                        selfz1])
         # and its sphere
-        adj = square_distance(points[-1], [selfx,
-                                           selfy,
-                                           selfz])
-        hyp2 = adj + radius**2
+        adj = distance(points[-1], [selfx, selfy, selfz])
+        hyp2 = sqrt(adj**2 + radius**2)
+        hyp2 = (hyp2 - hyp2 * adj / (2 * between) / adj)**2
         for xxx, yyy, zzz in sphere:
             thing = [xxx * radius + selfx1,
                      yyy * radius + selfy1,
