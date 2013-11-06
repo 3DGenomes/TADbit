@@ -1,0 +1,248 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytadbit.tadbit &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pytadbit.tadbit</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">24 Oct 2012</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">listdir</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">read_matrix</span>
+<span class="kn">from</span> <span class="nn">pytadbit.tadbit_py</span> <span class="kn">import</span> <span class="n">_tadbit_wrapper</span>
+
+
+<div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;max&quot;</span><span class="p">,</span>
+           <span class="n">no_heuristic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">use_visibility</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The TADBit algorithm works on raw chromosome interaction count data.</span>
+<span class="sd">    The normalization is neither necessary nor recommended,</span>
+<span class="sd">    since the data is assumed to be discrete counts.</span>
+<span class="sd">    </span>
+<span class="sd">    TADBit is a breakpoint detection algorithm that returns the optimal</span>
+<span class="sd">    segmentation of the chromosome under BIC-penalized likelihood. The</span>
+<span class="sd">    model assumes that counts have a Poisson distribution and that the</span>
+<span class="sd">    expected value of the counts decreases like a power-law with the</span>
+<span class="sd">    linear distance on the chromosome. This expected value of the counts</span>
+<span class="sd">    at position (i,j) is corrected by the counts at diagonal positions</span>
+<span class="sd">    (i,i) and (j,j). This normalizes for different restriction enzynme</span>
+<span class="sd">    site densities and &#39;mappability&#39; of the reads in case a bin contains</span>
+<span class="sd">    repeated regions.</span>
+
+<span class="sd">    :param x: a square matrix of interaction counts in the HI-C data or a list</span>
+<span class="sd">       of such matrices for replicated experiments. The counts must be evenly</span>
+<span class="sd">       sampled and not normalized. x might be either a list of list, a path to</span>
+<span class="sd">       a file or a file handler</span>
+<span class="sd">    :param 1 n_cpus: The number of CPUs to allocate to TADBit. If</span>
+<span class="sd">       n_cpus=&#39;max&#39; the total number of CPUs will be used</span>
+<span class="sd">    :param auto max_tad_size: an integer defining maximum size of TAD. Default</span>
+<span class="sd">       (auto) defines it as the number of rows/columns</span>
+<span class="sd">    :param False no_heuristic: whether to use or not some heuristics</span>
+<span class="sd">    :param False get_weights: either to return the weights corresponding to the</span>
+<span class="sd">       Hi-C count (weights are a normalization dependent of the count of each</span>
+<span class="sd">       columns)</span>
+
+<span class="sd">    :returns: the :py:func:`list` of topologically associated domains&#39;</span>
+<span class="sd">       boundaries, and the corresponding list associated log likelihoods.</span>
+<span class="sd">       Depending on the value of the get_weights parameter, may also return</span>
+<span class="sd">       weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nums</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">n_cpus</span> <span class="o">=</span> <span class="n">n_cpus</span> <span class="k">if</span> <span class="n">n_cpus</span> <span class="o">!=</span> <span class="s">&#39;max&#39;</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">max_tad_size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="n">max_tad_size</span> <span class="ow">is</span> <span class="s">&quot;auto&quot;</span> <span class="k">else</span> <span class="n">max_tad_size</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">nbks</span><span class="p">,</span> <span class="n">passages</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bkpts</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> \
+       <span class="n">_tadbit_wrapper</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span>             <span class="c"># list of lists representing matrices</span>
+                       <span class="n">size</span><span class="p">,</span>             <span class="c"># size of one row/column</span>
+                       <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">),</span>        <span class="c"># number of matrices</span>
+                       <span class="n">n_cpus</span><span class="p">,</span>      <span class="c"># number of threads</span>
+                       <span class="nb">int</span><span class="p">(</span><span class="n">verbose</span><span class="p">),</span>     <span class="c"># verbose 0/1</span>
+                       <span class="n">max_tad_size</span><span class="p">,</span>     <span class="c"># max_tad_size</span>
+                       <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span> <span class="c"># heuristic 0/1</span>
+                       <span class="nb">int</span><span class="p">(</span><span class="n">use_visibility</span><span class="p">)</span> <span class="c"># TODO: remove this</span>
+                       <span class="p">)</span>
+
+    <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">bkpts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">nbks</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">passages</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">[],</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="k">for</span> <span class="n">brk</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">result</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s">&#39;end&#39;</span>  <span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_weights</span><span class="p">:</span>
+        <span class="c"># in tadbit we are not using directly weights, but the</span>
+        <span class="c"># multiplication by the real value</span>
+        <span class="n">tadbit_weights</span> <span class="o">=</span> <span class="p">[[</span><span class="n">i</span><span class="o">/</span><span class="n">j</span> <span class="k">if</span> <span class="n">j</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span>
+                           <span class="nb">zip</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">weights</span><span class="p">[</span><span class="n">k</span><span class="p">])]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">))]</span>
+        <span class="k">if</span> <span class="n">use_visibility</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">tadbit_weights</span> <span class="o">=</span> <span class="p">[[</span><span class="n">t</span><span class="o">*</span><span class="n">total</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tadbit_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]]]</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">tadbit_weights</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="batch_tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.batch_tadbit">[docs]</a><span class="k">def</span> <span class="nf">batch_tadbit</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use tadbit on directories of data files.</span>
+<span class="sd">    All files in the specified directory will be considered data file. The</span>
+<span class="sd">    presence of non data files will cause the function to either crash or</span>
+<span class="sd">    produce aberrant results.</span>
+<span class="sd">    </span>
+<span class="sd">    Each file has to contain the data for a single unit/chromosome. The</span>
+<span class="sd">    files can be separated in sub-directories corresponding to single</span>
+<span class="sd">    experiments or any other organization. Data files that should be</span>
+<span class="sd">    considered replicates have to start with the same characters, until</span>
+<span class="sd">    the character sep. For instance, all replicates of the unit</span>
+<span class="sd">    &#39;chr1&#39; should start with &#39;chr1\_&#39;, using the default value of sep.</span>
+<span class="sd">    </span>
+<span class="sd">    The data files are read through read.delim. You can pass options</span>
+<span class="sd">    to read.delim through the list read_options. For instance</span>
+<span class="sd">    if the files have no header, use read_options=list(header=FALSE) and if</span>
+<span class="sd">    they also have row names, read_options=list(header=FALSE, row.names=1).</span>
+<span class="sd">    </span>
+<span class="sd">    Other arguments such as max_size, n_CPU and verbose are passed to</span>
+<span class="sd">    :func:`tadbit`.</span>
+<span class="sd">  </span>
+<span class="sd">    :param directory: the directory containing the data files</span>
+<span class="sd">    :param kwargs: arguments passed to :func:`tadbit` function</span>
+<span class="sd">    :param None parser: a parser function that takes file name as input and</span>
+<span class="sd">        returns a tuple representing the matrix of data. Tuple is a</span>
+<span class="sd">        concatenation of column1 + column2 + column3 + ...</span>
+
+<span class="sd">    :returns: A :py:func:`list` where each element has the name of the</span>
+<span class="sd">        unit/chromosome, and is the output of :func:`tadbit` run on the</span>
+<span class="sd">        corresponding files assumed to be replicates</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">matrix</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">f_name</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">f_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">f_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parser</span><span class="p">:</span>
+            <span class="n">matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="p">(</span><span class="n">f_name</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">f_name</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="print_result_r"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.print_result_r">[docs]</a><span class="k">def</span> <span class="nf">print_result_r</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print a table summarizing the TADs found by tadbit. This function outputs</span>
+<span class="sd">    something similar to the R function.</span>
+
+<span class="sd">    :param result: the :py:class:`dict` that returns :func:`tadbit`</span>
+<span class="sd">    :param True write: print table. If False, returns the string</span>
+
+<span class="sd">    :returns: if write is False, returns a string corresponding to the table of</span>
+<span class="sd">       results</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">table</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%-6s%6s%6s%6s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])):</span>
+        <span class="n">table</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%-6s%6s%6s%6s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                                      <span class="n">result</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                                      <span class="n">result</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">write</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">table</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">table</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installing TADBit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../biblio.html">Bibliography</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Nov 06, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
