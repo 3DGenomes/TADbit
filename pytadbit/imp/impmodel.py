@@ -315,6 +315,8 @@ class IMPmodel(dict):
         :returns: a list of numbers, each being the ID of a particles that would
            never be reached by the given object
 
+        TODO: remove this function
+
         """
         inaccessibles = []
         sphere = generate_sphere_points(100)
