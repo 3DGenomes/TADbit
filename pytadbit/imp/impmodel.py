@@ -406,12 +406,15 @@ class IMPmodel(dict):
            micrometers) *4-* the area of the mesh of a virtually straight strand
            of chromatin defined as 
            :math:`contour\\times 2\pi r + 4\pi r^2` (also in
-           micrometers)
+           micrometers) *5-* a list of number of (accessibles, inaccessible) for
+           each particle (percentage burried can be infered afterwards by
+           accessible/(accessible+inaccessible) )
 
         """
 
         points = []
         subpoints = []
+        particles = {}
         sphere = generate_sphere_points(nump)
         nloci = len(self)
         # number of dots in a circle is dependent the ones in a sphere
@@ -488,6 +491,9 @@ class IMPmodel(dict):
                         subpoints.append(thing)
                     elif self._square_distance_to(i-1, thing) > hyp2:
                         subpoints.append(thing)
+                    else:
+                        continue
+                    particles.setdefault(i, []).append(len(subpoints)-1)
 
             # define slices
             for k in xrange(between - 1, 0, -1):
@@ -571,9 +577,17 @@ class IMPmodel(dict):
             points.insert(0, points.pop(j))
         impossibles = colors.count(red)
 
-        # check if some particles are inaccessible
-        # for i in xrange(nloci):
-            
+        acc_parts = []
+        for p in particles:
+            acc = 0
+            ina = 0
+            for dot in particles[p]:
+                if colors[dot]==green:
+                    acc += 1
+                else:
+                    ina += 1
+            acc_parts.append((acc, ina))
+
         # some stats
         dot_area = 4 * pi * (float(radius) / 1000)**2 / nump
         area = ((len(subpoints) - impossibles) * dot_area)
@@ -615,7 +629,7 @@ class IMPmodel(dict):
             out_f = open(write_cmm_file, 'w')
             out_f.write(out)
             out_f.close()
-        return (len(subpoints) - impossibles, len(subpoints), area, total)
+        return (len(subpoints) - impossibles, len(subpoints), area, total, acc_parts)
 
 
     def write_cmm(self, directory, color=color_residues, rndname=True,
