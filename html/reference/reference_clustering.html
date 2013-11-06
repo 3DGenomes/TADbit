@@ -1,0 +1,161 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>TAD clustering &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Reference Guide" href="index.html" />
+    <link rel="next" title="Parsers" href="reference_parser.html" />
+    <link rel="prev" title="Tadbit functions" href="reference_tadbit.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_parser.html" title="Parsers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_tadbit.html" title="Tadbit functions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tad-clustering">
+<h1>TAD clustering<a class="headerlink" href="#tad-clustering" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pytadbit.tad_clustering.tad_cmo.optimal_cmo">
+<tt class="descclassname">pytadbit.tad_clustering.tad_cmo.</tt><tt class="descname">optimal_cmo</tt><big>(</big><em>hic1</em>, <em>hic2</em>, <em>num_v=None</em>, <em>max_num_v=None</em>, <em>verbose=False</em>, <em>method='frobenius'</em>, <em>long_nw=True</em>, <em>long_dist=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/tad_clustering/tad_cmo.html#optimal_cmo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tad_clustering.tad_cmo.optimal_cmo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Note: penalty is defined as the minimum value of the pre-scoring matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>hic1</strong> &#8211; first matrix to align</li>
+<li><strong>hic2</strong> &#8211; second matrix to align</li>
+<li><strong>num_v</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; number of eigen vectors to consider, max is:
+max(min(len(hic1), len(hic2)))</li>
+<li><strong>max_num_v</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; maximum number of eigen vectors to consider.</li>
+<li><strong>method</strong> (<em>score</em>) &#8211; distance function to use as alignment score. if &#8216;score&#8217;
+distance will be the result of the last value of the Needleman-Wunsch
+algorithm. If &#8216;frobenius&#8217; a modification of the Frobenius distance will
+be used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">two lists, one per aligned matrix, plus a dict summarizing the
+goodness of the alignment with the distance between matrices, their 
+Spearman correlation Rho value and pvalue.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">Tadbit functions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">TAD clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_imp.html">Generate a 3D models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_tadbit.html"
+                        title="previous chapter">Tadbit functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_parser.html"
+                        title="next chapter">Parsers</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_parser.html" title="Parsers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_tadbit.html" title="Tadbit functions"
+             >previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Nov 06, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

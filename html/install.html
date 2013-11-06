@@ -1,0 +1,246 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing TADBit on GNU/Linux &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Tadbit 0.1 documentation" href="index.html" />
+    <link rel="next" title="Tutorials" href="tutorial.html" />
+    <link rel="prev" title="Introduction" href="intro.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorials"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installing-tadbit-on-gnu-linux">
+<h1><a class="toc-backref" href="#id2">Installing TADBit on GNU/Linux</a><a class="headerlink" href="#installing-tadbit-on-gnu-linux" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#installing-tadbit-on-gnu-linux" id="id2">Installing TADBit on GNU/Linux</a><ul>
+<li><a class="reference internal" href="#dependencies" id="id3">Dependencies</a><ul>
+<li><a class="reference internal" href="#python-libraries" id="id4">Python libraries</a></li>
+<li><a class="reference internal" href="#imp-3d-modeling" id="id5">IMP - 3D modeling</a></li>
+<li><a class="reference internal" href="#mcl-clustering" id="id6">MCL - clustering</a></li>
+<li><a class="reference internal" href="#chimera-visualization" id="id7">Chimera - visualization</a></li>
+<li><a class="reference internal" href="#liftover" id="id8">LiftOver</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tadbit" id="id9">TADBit</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><em>Note: at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).</em></p>
+<p>TADBit requires python &gt;= 2.6 as well as several dependencies that are listed below.</p>
+<div class="section" id="dependencies">
+<h2><a class="toc-backref" href="#id3">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="python-libraries">
+<h3><a class="toc-backref" href="#id4">Python libraries</a><a class="headerlink" href="#python-libraries" title="Permalink to this headline">¶</a></h3>
+<p><strong>Required:</strong></p>
+<div class="highlight-python"><pre>apt-get install python-scipy
+apt-get install python-numpy</pre>
+</div>
+<p>Optional packages (but <strong>highly</strong> recommended):</p>
+<div class="highlight-python"><pre>apt-get install python-matplotlib</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><strong>Alternative install</strong>, you can install <em>python-setuptools</em> and use easy_install to get these packages (e.g. &#8220;<tt class="docutils literal"><span class="pre">easy_install</span> <span class="pre">scipy</span></tt>&#8221;).</p>
+</div>
+</div>
+<div class="section" id="imp-3d-modeling">
+<h3><a class="toc-backref" href="#id5">IMP - 3D modeling</a><a class="headerlink" href="#imp-3d-modeling" title="Permalink to this headline">¶</a></h3>
+<p>The three-dimensional (3D) structure of a given genomic region is done via the IMP package. TADBit has been tested with <strong>IMP version 2.0.1</strong> (recommended IMP version to be installed). The installation procedure reported in this manual describes how to install IMP on Ubuntu machines (installation tested on Ubuntu versions 12.04 and 13.04). However, we do not provide support for installing IMP; installation instructions for IMP can be found on the IMP website (<a class="reference external" href="http://salilab.org/imp/nightly/doc/html/">http://salilab.org/imp/nightly/doc/html/</a>).</p>
+<p>Install the required libraries:</p>
+<div class="highlight-python"><pre>sudo apt-get install cmake
+sudo apt-get install libboost1.49-all-dev
+sudo apt-get install libhdf5-dev
+sudo apt-get install swig
+sudo apt-get install libcgal-dev
+sudo apt-get install python-dev</pre>
+</div>
+<p>Download the IMP tarball file from <a class="reference external" href="http://salilab.org/imp/">http://salilab.org/imp/</a> and uncompress it:</p>
+<div class="highlight-python"><pre>wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
+tar xzvf imp-2.0.1.tar.gz</pre>
+</div>
+<p>Move into the IMP directory and compile the code (<em>Note:</em> the <cite>-j</cite> option stands for the number of CPUs you want to assign to the compiler; the higher the faster).</p>
+<div class="highlight-python"><pre>cd imp-2.0.1
+cmake . -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
+make -j4</pre>
+</div>
+<p>Once the compilation has finished, open the file setup_environment.sh in your IMP directory and copy the first lines into your <cite>~/.bashrc</cite> file (if this file in not present in your home directory, create it). These lines should look like:</p>
+<div class="highlight-python"><pre>LD_LIBRARY_PATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH
+
+PYTHONPATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
+export PYTHONPATH</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Important note
+Do not copy the lines above, copy them from setup_environment.sh, where <tt class="docutils literal"><span class="pre">SOMETHING</span></tt> is replaced by your real path to IMP.</p>
+</div>
+</div>
+<div class="section" id="mcl-clustering">
+<h3><a class="toc-backref" href="#id6">MCL - clustering</a><a class="headerlink" href="#mcl-clustering" title="Permalink to this headline">¶</a></h3>
+<p>MCL is the program used for clustering the 3D models generated by IMP. It can be downloaded from <a class="reference external" href="http://micans.org/mcl/">http://micans.org/mcl/</a>; on Debian/Ubuntu machines it can be automatically installed with:</p>
+<div class="highlight-python"><pre>sudo apt-get install mcl</pre>
+</div>
+<p><em>Note: if the MCL executable is not found by TADBit, an alternative clustering method will be used. Nevertheless we strongly recommend to use MCL.</em></p>
+</div>
+<div class="section" id="chimera-visualization">
+<h3><a class="toc-backref" href="#id7">Chimera - visualization</a><a class="headerlink" href="#chimera-visualization" title="Permalink to this headline">¶</a></h3>
+<p>Chimera is a program used for visualization and analysis of molecular structures. It is used in TADBit to visualize the generated 3D models. Chimera is available at: <a class="reference external" href="http://www.cgl.ucsf.edu/chimera/">http://www.cgl.ucsf.edu/chimera/</a></p>
+<p><em>This software is only needed for the visualization of 3D models from inside TADBit.</em></p>
+</div>
+<div class="section" id="liftover">
+<h3><a class="toc-backref" href="#id8">LiftOver</a><a class="headerlink" href="#liftover" title="Permalink to this headline">¶</a></h3>
+<p>TADBit provides a wrapper for the LiftOver tool <a class="reference internal" href="biblio.html#fujita2011">[Fujita2011]</a> (download it from: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/admin/exe/">http://hgdownload.cse.ucsc.edu/admin/exe/</a> ).</p>
+<p>This can be used to ease the conversion of genomic TAD coordinates (e.g.: to align human TADs with mouse TADs).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A &#8216;chain&#8217; file may also be downloaded. For example, to convert coordinates to hg19, the chain file needed may be found at: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/">http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/</a></p>
+</div>
+</div>
+</div>
+<div class="section" id="tadbit">
+<h2><a class="toc-backref" href="#id9">TADBit</a><a class="headerlink" href="#tadbit" title="Permalink to this headline">¶</a></h2>
+<p>Once all the needed library/software have been installed, TADBit can be downloaded, unpacked and installed as:</p>
+<div class="highlight-python"><pre>wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
+unzip tadbit.zip
+cd tadbit-master/src
+sudo python setup.py install</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<dl class="docutils">
+<dt>IMP not found problem</dt>
+<dd>If you are under <strong>debian/Ubuntu machines</strong>, and you have
+followed the quick tutorial proposed here to install IMP,
+you may encounter some warning message stating that IMP is
+not installed. This is because root user is not using the
+PYTHONPATH declared in your bashrc file. You can perfectly
+ignore the warning, or just proceed like this:</dd>
+</dl>
+<div class="last highlight-python"><pre>sudo PYTHONPATH=$PYTHONPATH python setup.py install</pre>
+</div>
+</div>
+<p>Finally, run the test script to check that the installation completed successfully.</p>
+<p>To do so, move to the test directory and run:</p>
+<div class="highlight-python"><pre>cd ../test
+python test_all.py</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Installing TADBit on GNU/Linux</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#python-libraries">Python libraries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#imp-3d-modeling">IMP - 3D modeling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mcl-clustering">MCL - clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chimera-visualization">Chimera - visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#liftover">LiftOver</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tadbit">TADBit</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="intro.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="next chapter">Tutorials</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorials"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Nov 06, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

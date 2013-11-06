@@ -1,0 +1,319 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytadbit.utils.three_dim_stats &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pytadbit.utils.three_dim_stats</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">30 Oct 2013</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pytadbit.eqv_rms_drms</span> <span class="kn">import</span> <span class="n">rmsdRMSD_wrapper</span>
+<span class="kn">from</span> <span class="nn">pytadbit.consistency</span> <span class="kn">import</span> <span class="n">consistency_wrapper</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">acos</span>
+
+
+<span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns list of 3d coordinates of points on a sphere using the</span>
+<span class="sd">    Golden Section Spiral algorithm.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">inc</span> <span class="o">=</span> <span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">-</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">offset</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">offset</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">inc</span>
+        <span class="c"># points.append(dict(((&#39;x&#39;, cos(phi) * r),(&#39;y&#39;, y),(&#39;z&#39;, sin(phi) * r))))</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">points</span>
+
+
+<span class="k">def</span> <span class="nf">generate_circle_points</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns list of 3d coordinates of points on a circle using the</span>
+<span class="sd">    Rodrigues rotation formula</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">u_2</span> <span class="o">=</span> <span class="n">u</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">v_2</span> <span class="o">=</span> <span class="n">v</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">w_2</span> <span class="o">=</span> <span class="n">w</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">dst</span> <span class="o">=</span> <span class="n">u_2</span> <span class="o">+</span> <span class="n">v_2</span> <span class="o">+</span> <span class="n">w_2</span>
+    <span class="n">sqrtdst</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
+    <span class="n">uxvywz</span> <span class="o">=</span>  <span class="o">-</span> <span class="n">u</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="n">v</span><span class="o">*</span><span class="n">y</span> <span class="o">-</span> <span class="n">w</span><span class="o">*</span><span class="n">z</span>
+    <span class="n">b_v</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">v</span>
+    <span class="n">c_w</span> <span class="o">=</span> <span class="n">c</span><span class="o">*</span><span class="n">w</span>
+    <span class="n">a_u</span> <span class="o">=</span> <span class="n">a</span><span class="o">*</span><span class="n">u</span>
+    <span class="n">one</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_2</span> <span class="o">+</span> <span class="n">w_2</span><span class="p">)</span> <span class="o">-</span> <span class="n">u</span><span class="o">*</span><span class="p">(</span><span class="n">b_v</span> <span class="o">+</span> <span class="n">c_w</span> <span class="o">+</span> <span class="n">uxvywz</span><span class="p">))</span>
+    <span class="n">two</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="n">u_2</span> <span class="o">+</span> <span class="n">w_2</span><span class="p">)</span> <span class="o">-</span> <span class="n">v</span><span class="o">*</span><span class="p">(</span><span class="n">a_u</span> <span class="o">+</span> <span class="n">c_w</span> <span class="o">+</span> <span class="n">uxvywz</span><span class="p">))</span>
+    <span class="n">tre</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">u_2</span> <span class="o">+</span> <span class="n">v_2</span><span class="p">)</span> <span class="o">-</span> <span class="n">w</span><span class="o">*</span><span class="p">(</span><span class="n">a_u</span> <span class="o">+</span> <span class="n">b_v</span> <span class="o">+</span> <span class="n">uxvywz</span><span class="p">))</span>
+    <span class="n">onep</span> <span class="o">=</span> <span class="n">sqrtdst</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">c</span><span class="o">*</span><span class="n">v</span> <span class="o">+</span> <span class="n">b</span><span class="o">*</span><span class="n">w</span> <span class="o">-</span> <span class="n">w</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">twop</span> <span class="o">=</span> <span class="n">sqrtdst</span> <span class="o">*</span> <span class="p">(</span> <span class="n">c</span><span class="o">*</span><span class="n">u</span> <span class="o">-</span> <span class="n">a</span><span class="o">*</span><span class="n">w</span> <span class="o">+</span> <span class="n">w</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="n">u</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">trep</span> <span class="o">=</span> <span class="n">sqrtdst</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">b</span><span class="o">*</span><span class="n">u</span> <span class="o">+</span> <span class="n">a</span><span class="o">*</span><span class="n">v</span> <span class="o">-</span> <span class="n">v</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">u</span><span class="o">*</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)):</span>
+        <span class="n">ang</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">offset</span>
+        <span class="n">cosang</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span>
+        <span class="n">dcosang</span> <span class="o">=</span> <span class="n">cosang</span> <span class="o">*</span> <span class="n">dst</span>
+        <span class="n">sinang</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">([(</span><span class="n">one</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cosang</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">dcosang</span> <span class="o">+</span> <span class="n">onep</span> <span class="o">*</span> <span class="n">sinang</span><span class="p">)</span> <span class="o">/</span> <span class="n">dst</span><span class="p">,</span>
+                       <span class="p">(</span><span class="n">two</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cosang</span><span class="p">)</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">dcosang</span> <span class="o">+</span> <span class="n">twop</span> <span class="o">*</span> <span class="n">sinang</span><span class="p">)</span> <span class="o">/</span> <span class="n">dst</span><span class="p">,</span>
+                       <span class="p">(</span><span class="n">tre</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cosang</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">dcosang</span> <span class="o">+</span> <span class="n">trep</span> <span class="o">*</span> <span class="n">sinang</span><span class="p">)</span> <span class="o">/</span> <span class="n">dst</span><span class="p">]</span>
+                      <span class="p">)</span>
+    <span class="k">return</span> <span class="n">points</span>
+
+
+<span class="k">def</span> <span class="nf">square_distance</span><span class="p">(</span><span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param part1: coordinate (dict format with x, y, z keys)</span>
+<span class="sd">    :param part2: coordinate (dict format with x, y, z keys)</span>
+
+<span class="sd">    :returns: square distance between two points in space</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># return ((part1[&#39;x&#39;] - part2[&#39;x&#39;])**2 +</span>
+    <span class="c">#         (part1[&#39;y&#39;] - part2[&#39;y&#39;])**2 +</span>
+    <span class="c">#         (part1[&#39;z&#39;] - part2[&#39;z&#39;])**2)</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">part1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+            <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+            <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="c"># return np.sum((part1-part2)**2)</span>
+
+<span class="k">def</span> <span class="nf">fast_square_distance</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">z2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param part1: coordinate (dict format with x, y, z keys)</span>
+<span class="sd">    :param part2: coordinate (dict format with x, y, z keys)</span>
+
+<span class="sd">    :returns: square distance between two points in space</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># return ((part1[&#39;x&#39;] - part2[&#39;x&#39;])**2 +</span>
+    <span class="c">#         (part1[&#39;y&#39;] - part2[&#39;y&#39;])**2 +</span>
+    <span class="c">#         (part1[&#39;z&#39;] - part2[&#39;z&#39;])**2)</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+            <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+            <span class="p">(</span><span class="n">z1</span> <span class="o">-</span> <span class="n">z2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="c"># return np.sum((part1-part2)**2)</span>
+
+
+<span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param part1: coordinate in list format (x, y, z)</span>
+<span class="sd">    :param part2: coordinate in list format (x, y, z)</span>
+
+<span class="sd">    :returns: distance between two points in space</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">part1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">angle_between_3_points</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">,</span> <span class="n">point3</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given three particles A, B and C, the angle g (angle ACB, shown below):</span>
+
+<span class="sd">    ::</span>
+
+
+<span class="sd">                          A</span>
+<span class="sd">                         /|</span>
+<span class="sd">                        /i|</span>
+<span class="sd">                      c/  |</span>
+<span class="sd">                      /   |</span>
+<span class="sd">                     /    |</span>
+<span class="sd">                    B )g  |b</span>
+<span class="sd">                     \    |</span>
+<span class="sd">                      \   |</span>
+<span class="sd">                      a\  |</span>
+<span class="sd">                        \h|</span>
+<span class="sd">                         \|</span>
+<span class="sd">                          C</span>
+
+<span class="sd">    is given by the theorem of Al-Kashi:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">      b^2 = a^2 + c^2 - 2ac\cos(g)</span>
+
+<span class="sd">    :param point1: list of 3 coordinate for x, y and z</span>
+<span class="sd">    :param point2: list of 3 coordinate for x, y and z</span>
+<span class="sd">    :param point3: list of 3 coordinate for x, y and z</span>
+
+<span class="sd">    :returns: angle in radians</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">point2</span><span class="p">,</span> <span class="n">point3</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point3</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">acos</span><span class="p">((</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">a</span> <span class="o">*</span> <span class="n">c</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="k">return</span> <span class="n">g</span>
+
+
+<span class="k">def</span> <span class="nf">calc_consistency</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+    <span class="n">combines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">pm</span> <span class="ow">in</span> <span class="n">consistency_wrapper</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
+                                  <span class="p">[</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
+                                  <span class="p">[</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;z&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
+                                  <span class="n">nloci</span><span class="p">,</span> <span class="n">dcutoff</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)),</span>
+                                  <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pm</span><span class="p">):</span>
+            <span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">p</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">combines</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="calc_eqv_rmsd"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd">[docs]</a><span class="k">def</span> <span class="nf">calc_eqv_rmsd</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    :param nloci: number of particles per model</span>
+<span class="sd">    :param 200 dcutoff: distance in nanometer from which it is considered</span>
+<span class="sd">       that two particles are separated.</span>
+<span class="sd">    :param 0.75 fact: Factor for equivalent positions</span>
+<span class="sd">    :param False one: if True assumes that only two models are passed, and</span>
+<span class="sd">       returns the rmsd of their comparison</span>
+
+<span class="sd">    :returns: a score of each pairwise comparison according to:</span>
+
+<span class="sd">       ::</span>
+
+<span class="sd">                               dRMSD[i] / max(dRMSD)</span>
+<span class="sd">         score[i] = eqvs[i] * -----------------------</span>
+<span class="sd">                                RMSD[i] / max(RMSD)</span>
+
+<span class="sd">       where eqvs[i] is the number of equivalent position for the ith</span>
+<span class="sd">       pairwise model comparison.</span>
+<span class="sd">       </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">rmsdRMSD_wrapper</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">))],</span>
+                              <span class="p">[</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">))],</span>
+                              <span class="p">[</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;z&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">))],</span>
+                              <span class="n">nloci</span><span class="p">,</span> <span class="n">dcutoff</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)),</span>
+                              <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">one</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">scores</span>
+
+</div>
+<span class="k">def</span> <span class="nf">dihedral</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates dihedral angle between 4 points in 3D (array with x,y,z)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v1</span> <span class="o">=</span> <span class="n">getNormedVector</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">v2</span> <span class="o">=</span> <span class="n">getNormedVector</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span>
+    <span class="n">v3</span> <span class="o">=</span> <span class="n">getNormedVector</span><span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">v4</span> <span class="o">=</span> <span class="n">getNormedVector</span><span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span>
+    <span class="n">v1v2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+    <span class="n">v2v3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">v3</span><span class="p">,</span> <span class="n">v4</span><span class="p">)</span>
+    <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">([</span><span class="n">v2</span><span class="p">,</span> <span class="n">v1v2</span><span class="p">,</span> <span class="n">v2v3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">getAngle</span><span class="p">(</span><span class="n">v1v2</span><span class="p">,</span> <span class="n">v2v3</span><span class="p">)</span>
+    <span class="n">angle</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">sign</span><span class="p">)</span> <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;=</span> <span class="mi">90</span> <span class="k">else</span> <span class="p">(</span><span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span><span class="p">,</span> <span class="o">-</span> <span class="n">sign</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">angle</span>
+
+
+<span class="k">def</span> <span class="nf">getNormedVector</span><span class="p">(</span><span class="n">dif</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">dif</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dif</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">getAngle</span><span class="p">(</span><span class="n">v1v2</span><span class="p">,</span> <span class="n">v2v3</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+            <span class="n">v1v2</span>   <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v1v2</span><span class="p">),</span>
+            <span class="n">v2v3</span><span class="o">.</span><span class="n">T</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v2v3</span><span class="p">)))</span>
+        <span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing TADBit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Nov 06, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

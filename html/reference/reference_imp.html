@@ -1,0 +1,1535 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Generate a 3D models &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Reference Guide" href="index.html" />
+    <link rel="next" title="Utilities" href="reference_utils.html" />
+    <link rel="prev" title="Alignment class" href="reference_boundary_alignment.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_utils.html" title="Utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_boundary_alignment.html" title="Alignment class"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="generate-a-3d-models">
+<h1>Generate a 3D models<a class="headerlink" href="#generate-a-3d-models" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pytadbit.imp.imp_modelling.generate_3d_models">
+<tt class="descclassname">pytadbit.imp.imp_modelling.</tt><tt class="descname">generate_3d_models</tt><big>(</big><em>zscores</em>, <em>resolution</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.005}</em>, <em>values=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates three-dimensional models starting from Hi-C data. 
+The final analysis will be performed on the n_keep top models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>zscores</strong> &#8211; the dictionary of the Z-score values calculated from the 
+Hi-C pairwise interactions</li>
+<li><strong>resolution</strong> &#8211; number of nucleotides per Hi-C bin. This will be the 
+number of nucleotides in each model&#8217;s particle</li>
+<li><strong>n_models</strong> (<em>5000</em>) &#8211; number of models to generate</li>
+<li><strong>n_keep</strong> (<em>1000</em>) &#8211; number of models used in the final analysis (usually 
+the top 20% of the generated models). The models are ranked according to
+their objective function value (the lower the better)</li>
+<li><strong>keep_all</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether or not to keep the discarded models (if 
+True, models will be stored under StructuralModels.bad_models)</li>
+<li><strong>close_bins</strong> (<em>1</em>) &#8211; number of particles away (i.e. the bin number 
+difference) a particle pair must be in order to be considered as
+neighbors (e.g. 1 means consecutive particles)</li>
+<li><strong>n_cpus</strong> &#8211; number of CPUs to use</li>
+<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if set to True, information about the distance, force
+and Z-score between particles will be printed</li>
+<li><strong>values</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the normalized Hi-C data in a list of lists (equivalent 
+to a square matrix)</li>
+<li><strong>config</strong> (<em>CONFIG[&#8216;dmel_01&#8217;]</em>) &#8211; <p>a dictionary containing the standard 
+parameters used to generate the models. The dictionary should contain
+the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
+seen by doing:</p>
+<div class="highlight-python"><pre>from pytadbit.imp.CONFIG import CONFIG
+
+where CONFIG is a dictionary of dictionaries to be passed to this function:</pre>
+</div>
+<div class="highlight-python"><pre>CONFIG = {
+ 'dmel_01': {
+     # Paramaters for the Hi-C dataset from:
+     'reference' : 'victor corces dataset 2013',
+
+     # Force applied to the restraints inferred to neighbor particles
+     'kforce'    : 5,
+
+     # Minimum distance between two non-bonded particles
+     'lowrdist'  : 100,
+
+     # Maximum experimental contact distance
+     'maxdist'   : 600, # OPTIMIZATION: 500-1200
+
+     # Maximum threshold used to decide which experimental values have to be
+     # included in the computation of restraints. Z-score values greater than upfreq
+     # and less than lowfreq will be included, while all the others will be rejected
+     'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
+
+     # Minimum thresholds used to decide which experimental values have to be
+     # included in the computation of restraints. Z-score values bigger than upfreq
+     # and less that lowfreq will be include, whereas all the others will be rejected
+     'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+
+     # Space occupied by a nucleotide (nm)
+     'scale'     : 0.005
+
+     }
+ }</pre>
+</div>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a StructuralModels object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="impmodel-class">
+<h2>IMPmodel class<a class="headerlink" href="#impmodel-class" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pytadbit.imp.impmodel.load_impmodel_from_cmm">
+<tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">load_impmodel_from_cmm</tt><big>(</big><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an IMPmodel object using an cmm file of the form:</p>
+<div class="highlight-python"><pre>&lt;marker_set name="1"&gt;
+  &lt;marker id="1" x="7347.50964739" y="-7743.92836303" z="-8283.39749204" r="0.00990099009901" g="0" b="0.990099009901" radius="500.0" note="1"/&gt;
+  &lt;marker id="2" x="7647.90254377" y="-7308.1816344" z="-7387.75932893" r="0.019801980198" g="0" b="0.980198019802" radius="500.0" note="2"/&gt;
+  &lt;link id1="1" id2="2" r="1" g="1" b="1" radius="250.0"/&gt;
+&lt;/marker_set&gt;</pre>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params f_name:</th><td class="field-body">path where to find the file</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params None rand_init:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">IMP random initial number used to generate the model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; radius of each particle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">IMPmodel</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.imp.impmodel.load_impmodel_from_xyz">
+<tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">load_impmodel_from_xyz</tt><big>(</big><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an IMPmodel object using an xyz file of the form:</p>
+<div class="highlight-python"><pre>p1           1      44.847     412.828    -162.673
+p2           2     -55.574     396.869    -129.782</pre>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params f_name:</th><td class="field-body">path where to find the file</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params None rand_init:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">IMP random initial number used to generate the model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; radius of each particle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">IMPmodel</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="pytadbit.imp.impmodel.IMPmodel">
+<em class="property">class </em><tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">IMPmodel</tt><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for the IMP modeling results. The container is a dictionary
+with the following keys:</p>
+<ul>
+<li><p class="first">log_objfun: The list of IMP objective function values</p>
+</li>
+<li><dl class="first docutils">
+<dt>objfun: The final objective function value of the corresponding model</dt>
+<dd><p class="first last">(from log_objfun). This value will be used to rank all the generated
+models</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>rand_init: The random number generator feed (needed for model</dt>
+<dd><p class="first last">reproducibility)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>x, y, z: The spatial 3D coordinates of each particles. Each coordinate is</dt>
+<dd><p class="first last">represented as a list</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.accessible_surface">
+<tt class="descname">accessible_surface</tt><big>(</big><em>radius</em>, <em>write_cmm_file=None</em>, <em>nump=100</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.accessible_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.accessible_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a mesh surface around the model (distance equal to input
+<strong>radius</strong>) and checks if each point of this mesh could be replaced by
+an object (i.e. a protein) of a given <strong>radius</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>radius</strong> &#8211; radius of the object we want to fit in the model.</li>
+<li><strong>write_cmm_file</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to file in which to write cmm with the
+colored meshed (red inaccessible points, green accessible points)</li>
+<li><strong>nump</strong> (<em>100</em>) &#8211; number of points to draw around a given particle. This
+number also sets the number of points drawn around edges, as each
+point occupies a given surface:</li>
+<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; prints stats about the surface</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This function will first define a mesh around the chromatin,
+representing all possible position of the center of the object we want
+to fit. This mesh will be at a distance of <em>radius</em> from the chromatin
+strand. All dots in the mesh represents an equal area (<em>a</em>), the whole
+surface of the chromatin strand being: <span class="math">\(A=n \times a\)</span> (<em>n</em> being
+the total number of dots in the mesh).</p>
+<p>The mesh consists of spheres around particles of the model, and
+cylinders around edges joining particles (no overlap is allowed between
+sphere and cylinders or cylinder and cylinder when they are
+consecutive).</p>
+<p>If we want that all dots of the mesh representing the surface of the
+chromatin, corresponds to an equal area (<span class="math">\(a\)</span>)</p>
+<blockquote>
+<div><div class="math">
+\[a = \frac{4\pi r^2}{s} = \frac{2\pi r N_{(d)}}{c}\]</div>
+<p>with:</p>
+<ul class="simple">
+<li><span class="math">\(r\)</span> radius of the object to fit (as the input parameter <strong>radius</strong>)</li>
+<li><span class="math">\(s\)</span> number of points in sphere</li>
+<li><span class="math">\(c\)</span> number of points in circle (as the input parameter <strong>nump</strong>)</li>
+<li><span class="math">\(N_{(d)}\)</span> number of circles in an edge of length <span class="math">\(d\)</span></li>
+</ul>
+<p>According to this, when the distance between two particles is equal
+to <span class="math">\(2r\)</span> (<span class="math">\(N=2r\)</span>), we would have <span class="math">\(s=c\)</span>.</p>
+<p>As :</p>
+<div class="math">
+\[2\pi r = \sqrt{4\pi r^2} \times \sqrt{\pi}\]</div>
+<p>It is fair to state the number of dots represented along a circle as:</p>
+<div class="math">
+\[c = \sqrt{s} \times \sqrt{\pi}\]</div>
+<p>Thus the number of circles in an edge of length <span class="math">\(d\)</span> must be:</p>
+<div class="math">
+\[N_{(d)}=\frac{s}{\sqrt{s}\sqrt{\pi}}\times\frac{d}{2r}\]</div>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of <em>1-</em> the number of dots in the mesh that could be
+occupied by an object of the given radius <em>2-</em> the total number of
+dots in the mesh <em>3-</em> the estimated area of the mesh (in square
+micrometers) <em>4-</em> the area of the mesh of a virtually straight strand
+of chromatin defined as 
+<span class="math">\(contour\times 2\pi r + 4\pi r^2\)</span> (also in
+micrometers)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.center_of_mass">
+<tt class="descname">center_of_mass</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the center of mass of a given model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.contour">
+<tt class="descname">contour</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.contour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.contour" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the totals length of the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.cube_side">
+<tt class="descname">cube_side</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.cube_side"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_side" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the diagonal length of the cube containing the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.cube_volume">
+<tt class="descname">cube_volume</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.cube_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_volume" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the volume of  the cube containing the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.distance">
+<tt class="descname">distance</tt><big>(</big><em>part1</em>, <em>part2</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.distance" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>part1</strong> &#8211; index of a particle in the model</li>
+<li><strong>part2</strong> &#8211; index of a particle in the model</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">distance between one point of the model and an external
+coordinate</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.inaccessible_particles">
+<tt class="descname">inaccessible_particles</tt><big>(</big><em>radius</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.inaccessible_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.inaccessible_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gives the number of loci/particles that are accessible to an object
+(i.e. a protein) of a given size.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> &#8211; radius of the object that we want to fit in the model</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of numbers, each being the ID of a particles that would
+never be reached by the given object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.longest_axe">
+<tt class="descname">longest_axe</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.longest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.longest_axe" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the maximum distance between two particles in the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.min_max_by_axis">
+<tt class="descname">min_max_by_axis</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.min_max_by_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.min_max_by_axis" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the minimum and maximum coordinates for each x, y and z axis</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.objective_function">
+<tt class="descname">objective_function</tt><big>(</big><em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function plots the objective function value per each Monte-Carlo
+step.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>log</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; log plot</li>
+<li><strong>smooth</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; curve smoothing</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.radius_of_gyration">
+<tt class="descname">radius_of_gyration</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.radius_of_gyration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defined as:</p>
+<div class="math">
+\[\sqrt{\frac{\sum_{i=1}^{N} (x_i-x_{com})^2+(y_i-y_{com})^2+(z_i-z_{com})^2}{N}}\]</div>
+<p>with:</p>
+<ul class="simple">
+<li><span class="math">\(N\)</span> the number of particles in the model</li>
+<li><span class="math">\(com\)</span> the center of mass</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the radius of gyration for the components of the tensor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.shortest_axe">
+<tt class="descname">shortest_axe</tt><big>(</big><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.shortest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.shortest_axe" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the minimum distance between two particles in the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.view_model">
+<tt class="descname">view_model</tt><big>(</big><em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>centroid=False</em>, <em>gyradius=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.view_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.view_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a selected model in the three dimensions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model_num</strong> &#8211; model to visualize</li>
+<li><strong>tool</strong> (<em>&#8216;chimera&#8217;</em>) &#8211; path to the external tool used to visualize the
+model</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image OR movie
+generated (depending on the extension; accepted formats are png, mov
+and webm). if set to None, the image or movie will be shown using
+the default GUI.</li>
+<li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer.
+The chimera list is:</p>
+<div class="highlight-python"><pre>focus
+set bg_color white
+windowsize 800 600
+bonddisplay never #0
+represent wire
+shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+clip yon -500
+~label
+set subdivision 1
+set depth_cue
+set dc_color black
+set dc_start 0.5
+set dc_end 1
+scale 0.8</pre>
+</div>
+<p>Followed by the movie command to record movies:</p>
+<div class="highlight-python"><pre>movie record supersample 1
+turn y 3 120
+wait 120
+movie stop
+movie encode output SAVEFIG</pre>
+</div>
+<p>Or the copy command for images:</p>
+<div class="highlight-python"><pre>copy file SAVEFIG png</pre>
+</div>
+<p>Passing as the following list as &#8216;cmd&#8217; parameter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;focus&#39;</span><span class="p">,</span> <span class="s">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
+       <span class="s">&#39;bonddisplay never #0&#39;</span><span class="p">,</span>
+       <span class="s">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span>
+       <span class="s">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s">&#39;~label&#39;</span><span class="p">,</span> <span class="s">&#39;set subdivision 1&#39;</span><span class="p">,</span>
+       <span class="s">&#39;set depth_cue&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_start 0.5&#39;</span><span class="p">,</span>
+       <span class="s">&#39;set dc_end 1&#39;</span><span class="p">,</span> <span class="s">&#39;scale 0.8&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>will return the default image (other commands can be passed to
+modified the final image/movie).</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.write_cmm">
+<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x1053232a8&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a model in the cmm format, read by Chimera
+(<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
+<p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
+ALL the models will be written.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> &#8211; location where the file will be written (note: the
+name of the file will be model_1.cmm if model number is 1)</li>
+<li><strong>model_num</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the number of the model to save</li>
+<li><strong>rndname</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; If True, file names will be formatted as:
+model.RND.cmm, where RND is the random number feed used by IMP to
+generate the corresponding model. If False, the format will be:
+model_NUM_RND.cmm where NUM is the rank of the model in terms of
+objective function value</li>
+<li><strong>color</strong> (<em>color_residues</em>) &#8211; either a coloring function like
+<tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.imp_model.color_residues()</span></tt> or a list of (r, g, b)
+tuples (as long as the number of particles)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.write_xyz">
+<tt class="descname">write_xyz</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>get_path=False</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impmodel.html#IMPmodel.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a xyz file containing the 3D coordinates of each particle in the
+model.</p>
+<p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
+ALL the models will be written.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> &#8211; location where the file will be written (note: the
+file name will be model.1.xyz, if the model number is 1)</li>
+<li><strong>model_num</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the number of the model to save</li>
+<li><strong>rndname</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; If True, file names will be formatted as:
+model.RND.xyz, where RND is the random number feed used by IMP to
+generate the corresponding model. If False, the format will be:
+model_NUM_RND.xyz where NUM is the rank of the model in terms of
+objective function value</li>
+<li><strong>get_path</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to return, or not, the full path where
+the file has been written</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="impoptimizer-class">
+<h2>IMPoptimizer class<a class="headerlink" href="#impoptimizer-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pytadbit.imp.impoptimizer.IMPoptimizer">
+<em class="property">class </em><tt class="descclassname">pytadbit.imp.impoptimizer.</tt><tt class="descname">IMPoptimizer</tt><big>(</big><em>experiment</em>, <em>start</em>, <em>end</em>, <em>n_models=500</em>, <em>cutoff=300</em>, <em>n_keep=100</em>, <em>close_bins=1</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impoptimizer.html#IMPoptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class optimizes a set of paramaters (scale, maxdist, lowfreq and
+upfreq) in order to maximize the correlation between the models generated 
+by IMP and the input data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>experiment</strong> &#8211; an instance of the class pytadbit.experiment.Experiment</li>
+<li><strong>start</strong> &#8211; first bin to model (bin number)</li>
+<li><strong>end</strong> &#8211; last bin to model (bin number)</li>
+<li><strong>n_models</strong> (<em>5000</em>) &#8211; number of models to generate</li>
+<li><strong>n_keep</strong> (<em>1000</em>) &#8211; number of models used in the final analysis (usually 
+the top 20% of the generated models). The models are ranked according to
+their objective function value (the lower the better)</li>
+<li><strong>close_bins</strong> (<em>1</em>) &#8211; number of particles away (i.e. the bin number 
+difference) a particle pair must be in order to be considered as 
+neighbors (e.g. 1 means consecutive particles)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file">
+<tt class="descname">load_from_file</tt><big>(</big><em>f_name</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.load_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the optimized parameters from a file generated with the function:
+pytadbit.imp.impoptimizer.IMPoptimizer.write_result.
+This function does not overwrite the parameters that were already 
+loaded or calculated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f_name</strong> &#8211; file name with the absolute path</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d">
+<tt class="descname">plot_2d</tt><big>(</big><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>A grid of heatmaps representing the result of the optimization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>axes</strong> (<em>&#8216;scale&#8217;,&#8217;maxdist&#8217;,&#8217;upfreq&#8217;,&#8217;lowfreq&#8217;</em>) &#8211; list of axes to be
+represented in the plot. The order will define which parameter will
+be placed on the x, y, z or w axe.</li>
+<li><strong>show_best</strong> (<em>0</em>) &#8211; number of best correlation values to highlight in 
+the plot</li>
+<li><strong>skip</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if passed (as a dictionary), fix a given axe,
+e.g.: {&#8216;scale&#8217;: 0.001, &#8216;maxdist&#8217;: 500}</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d">
+<tt class="descname">plot_3d</tt><big>(</big><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>A grid of heatmaps representing the result of the optimization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axes</strong> (<em>&#8216;scale&#8217;,&#8217;maxdist&#8217;,&#8217;upfreq&#8217;,&#8217;lowfreq&#8217;</em>) &#8211; tuple of axes to be
+represented in the plot. The order will define which parameter will 
+be placed on the x, y, z or w axe.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search">
+<tt class="descname">run_grid_search</tt><big>(</big><em>upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1), scale_range=[0.01], maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function calculates the correlation between the models generated 
+by IMP and the input data for the four main IMP parameters (scale, 
+maxdist, lowfreq and upfreq) in the given ranges of values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_cpus</strong> &#8211; number of CPUs to use</li>
+<li><strong>lowfreq_range</strong> (<em>(-1,0,0.1)</em>) &#8211; range of lowfreq values to be 
+optimized. The last value of the input tuple is the incremental 
+step for the lowfreq values</li>
+<li><strong>upfreq_range</strong> (<em>(0,1,0.1)</em>) &#8211; range of upfreq values to be optimized.
+The last value of the input tuple is the incremental step for the
+upfreq values</li>
+<li><strong>maxdist_range</strong> (<em>(400,1400,100)</em>) &#8211; upper and lower bounds
+used to search for the optimal maximum experimental distance. The 
+last value of the input tuple is the incremental step for maxdist 
+values</li>
+<li><strong>scale_range</strong> (<em>[0.01]</em>) &#8211; upper and lower bounds used to search for 
+the optimal scale parameter (nm per nucleotide). The last value of
+the input tuple is the incremental step for scale parameter values</li>
+<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; print the results to the standard output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impoptimizer.IMPoptimizer.write_result">
+<tt class="descname">write_result</tt><big>(</big><em>f_name</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.write_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.write_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function writes a log file of all the values tested for each 
+parameter, and the resulting correlation value.</p>
+<p>This file can be used to load or merge data a posteriori using 
+the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f_name</strong> &#8211; file name with the absolute path</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="structuralmodels-class">
+<h2>StructuralModels class<a class="headerlink" href="#structuralmodels-class" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pytadbit.imp.structuralmodels.load_structuralmodels">
+<tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">load_structuralmodels</tt><big>(</big><em>path_f</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#load_structuralmodels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.load_structuralmodels" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> &#8211; to the pickled StructuralModels object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.imp_model.StructuralModels</span></tt>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels">
+<em class="property">class </em><tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">StructuralModels</tt><big>(</big><em>nloci</em>, <em>models</em>, <em>bad_models</em>, <em>resolution</em>, <em>original_data=None</em>, <em>zscores=None</em>, <em>clusters=None</em>, <em>config=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates three-dimensional models starting from Hi-C data.
+The final analysis will be performed on the n_keep top models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nloci</strong> &#8211; number of particles in the selected region</li>
+<li><strong>models</strong> &#8211; a dictionary containing the generated
+<a class="reference internal" href="#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></tt></a> to be used as &#8216;best models&#8217;</li>
+<li><strong>bad_models</strong> &#8211; a dictionary of <a class="reference internal" href="#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></tt></a>,
+these model will not be used, just stored in case the set of
+&#8216;best models&#8217; needs to be extended later-on (
+<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.define_best_models" title="pytadbit.imp.structuralmodels.StructuralModels.define_best_models"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.define_best_models()</span></tt></a>
+).</li>
+<li><strong>resolution</strong> &#8211; number of nucleotides per Hi-C bin. This will be the
+number of nucleotides in each model&#8217;s particle.</li>
+<li><strong>original_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a list of list (equivalent to a square matrix) of
+the normalized Hi-C data, used to build this list of models.</li>
+<li><strong>clusters</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a dictionary of type
+<tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.ClusterOfModels</span></tt></li>
+<li><strong>config</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a dictionary containing the parameter to be used for the
+generation of three dimensional models.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles">
+<tt class="descname">angle_between_3_particles</tt><big>(</big><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>models=None</em>, <em>cluster=None</em>, <em>radian=False</em>, <em>all_angles=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.angle_between_3_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
+<div class="highlight-python"><pre>      A
+     /|
+    /i|
+  c/  |
+  /   |
+ /    |
+B )g  |b
+ \    |
+  \   |
+  a\  |
+    \h|
+     \|
+      C</pre>
+</div>
+<p>is given by the theorem of Al-Kashi:</p>
+<div class="math">
+\[b^2 = a^2 + c^2 - 2ac\cos(g)\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parta</strong> &#8211; A particle number</li>
+<li><strong>partb</strong> &#8211; A particle number</li>
+<li><strong>partc</strong> &#8211; A particle number</li>
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>radian</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, return value in radians (in degrees
+otherwise)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">an angle, either in degrees or radians. If all_angles is true
+returns a list of the angle g, h, i (see picture above)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.average_model">
+<tt class="descname">average_model</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.average_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.average_model" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; prints the distance of each model to average model
+(in stderr)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the average model of a given group of models (a new and
+ARTIFICIAL model)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.centroid_model">
+<tt class="descname">centroid_model</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.centroid_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.centroid_model" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; prints the distance of each model to average model
+(in stderr)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the centroid model of a given group of models (the most model
+representative)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.cluster_analysis_dendrogram">
+<tt class="descname">cluster_analysis_dendrogram</tt><big>(</big><em>n_best_clusters=None</em>, <em>color=False</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_analysis_dendrogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_analysis_dendrogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Representation of the clustering results. The length of the leaves if
+proportional to the final objective function value of each model. The
+branch widths are proportional to the number of models in a given
+cluster (or group of clusters, if it is an internal branch).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_best_clusters</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; number of clusters to represent (by
+default all clusters will be shown)</li>
+<li><strong>color</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; color the dendrogram based on the significance of
+the clustering (basically it depends of the internal branch lengths)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.cluster_models">
+<tt class="descname">cluster_models</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=200</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>This function performs a clustering analysis of the generated models</dt>
+<dd><p class="first">based on structural comparison. The result will be stored in
+StructuralModels.clusters</p>
+<p>Clustering is done according to a score of pairwise comparison
+calculated as:</p>
+<div class="last highlight-python"><pre>                      dRMSD[i] / max(dRMSD)
+score[i] = eqvs[i] * -----------------------
+                       RMSD[i] / max(RMSD)</pre>
+</div>
+</dd>
+</dl>
+<p>where eqvs[i] is the number of equivalent position for the ith
+pairwise model comparison.</p>
+<blockquote>
+<div><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">param 0.75 fact:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">factor to define the percentage of equivalent
+positions to be considered in the clustering</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param 200 dcutoff:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">distance threshold (nm) to determine if two
+particles are in contact
+where eqvs[i] is the number of equivalent position for the ith
+pairwise model comparison</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param &#8216;mcl&#8217; method:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">clustering method to use, which can be either
+&#8216;mcl&#8217; or &#8216;ward&#8217;. The last one uses scipy implementation, and is
+NOT RECOMMENDED.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param &#8216;mcl&#8217; mcl_bin:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">path to the mcl executable file, in case of the
+&#8216;mcl is not in the PATH&#8217; warning message</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param None tmp_file:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">path to a temporary file created during
+the clustering computation. Default will be created in /tmp/ folder</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param True verbose:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">same as print StructuralModels.clusters</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.contact_map">
+<tt class="descname">contact_map</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=150</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.contact_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.contact_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a contact map representing the frequency of interaction (defined
+by a distance cutoff) between two particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>cutoff</strong> (<em>150</em>) &#8211; distance cutoff (nm) to define whether two particles
+are in contact or not</li>
+<li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
+appearance</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI</li>
+<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the contact map data
+generated, in three columns format (particle1, particle2, percentage
+of models where these two particles are in contact)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data">
+<tt class="descname">correlate_with_real_data</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=200</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>cutoff</strong> (<em>200</em>) &#8211; distance cutoff (nm) to define whether two particles
+are in contact or not</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI</li>
+<li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; to display the plot</li>
+<li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
+appearance</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">correlation coefficient rho, between the two
+matrices. A rho value greater than 0.7 indicates a very good
+correlation</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.define_best_models">
+<tt class="descname">define_best_models</tt><big>(</big><em>nbest</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.define_best_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.define_best_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the number of top models (based on the objective function) to
+keep. If keep_all is set to True in
+<tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.imp_model.generate_3d_models()</span></tt> or in
+<a class="reference internal" href="reference_experiment.html#pytadbit.experiment.Experiment.model_region" title="pytadbit.experiment.Experiment.model_region"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.model_region()</span></tt></a>, then the full set
+of models (n_models parameter) will be used, otherwise only the n_keep
+models will be available.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nbest</strong> &#8211; number of top models to keep (usually 20% of the
+generated models).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.density_plot">
+<tt class="descname">density_plot</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>error=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>plot=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.density_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.density_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the number of nucleotides per nm of chromatin vs the modeled
+region bins.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>2, 3, 4, 5) steps</strong> (<em>(1,</em>) &#8211; how many particles to group for the
+estimation. By default 5 curves are drawn</li>
+<li><strong>error</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; represent the error of the estimates</li>
+<li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
+appearance</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI</li>
+<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the density data
+generated (1 column per step + 1 for particle number).</li>
+<li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; e.g. only saves data. No plotting done</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle">
+<tt class="descname">dihedral_angle</tt><big>(</big><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>partd</em>, <em>models=None</em>, <em>cluster=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.dihedral_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.fetch_model_by_rand_init">
+<tt class="descname">fetch_model_by_rand_init</tt><big>(</big><em>rand_init</em>, <em>all_models=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.fetch_model_by_rand_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.fetch_model_by_rand_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Models are stored according to their objective function value (first
+best), but in order to reproduce a model, we need its initial random
+number. This method helps to fetch the model corresponding to a given
+initial random number stored under
+StructuralModels.models[N][&#8216;rand_init&#8217;].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rand_init</strong> &#8211; the wanted rand_init number.</li>
+<li><strong>all_models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether or not to use &#8216;bad&#8217; models</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">index of 3d model</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix">
+<tt class="descname">get_contact_matrix</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=150</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a matrix with the number of interactions observed below a given
+cutoff distance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>cutoff</strong> (<em>150</em>) &#8211; distance cutoff (nm) to define whether two particles
+are in contact or not</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">matrix frequency of interaction</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.median_3d_dist">
+<tt class="descname">median_3d_dist</tt><big>(</big><em>part1</em>, <em>part2</em>, <em>models=None</em>, <em>cluster=None</em>, <em>plot=True</em>, <em>median=True</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.median_3d_dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.median_3d_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the median distance between two particles over a set of models</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>part1</strong> &#8211; number corresponding to the first particle</li>
+<li><strong>part2</strong> &#8211; number corresponding to the second particle</li>
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True, display a histogram and a box-plot of the
+distribution of the calculated distances. If False, return either
+the full list of the calculated distances or their median value</li>
+<li><strong>median</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; return either the full list of the calculated
+distances (False) or their median value (True), when &#8216;plot&#8217; is set
+to False</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">if &#8216;plot&#8217; is False, return either the full list of the
+calculated distances or their median value distances, either the
+list of distances.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.model_consistency">
+<tt class="descname">model_consistency</tt><big>(</big><em>cutoffs=(50</em>, <em>100</em>, <em>150</em>, <em>200)</em>, <em>models=None</em>, <em>cluster=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>plot=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.model_consistency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.model_consistency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the particle consistency, over a given set of models, vs the
+modeled region bins. The consistency is a measure of the variability
+(or stability) of the modeled region (the higher the consistency value,
+the higher stability).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cutoffs</strong> (<em>(50,100,150,200)</em>) &#8211; list of distance cutoffs (nm) used to
+compute the consistency. Two particle are considered consistent if
+their distance is less than the given cutoff</li>
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>tmp_path</strong> (<em>&#8216;/tmp/tmp_cons&#8217;</em>) &#8211; location of the input files for
+TM-score program</li>
+<li><strong>tmsc</strong> (<em>&#8216;&#8217;</em>) &#8211; path to the TMscore_consistency script (assumed to be
+installed by default)</li>
+<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the consistency data
+generated (1 column per cutoff + 1 for particle number).</li>
+<li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; e.g. only saves data. No plotting done</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.objective_function_model">
+<tt class="descname">objective_function_model</tt><big>(</big><em>model</em>, <em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.objective_function_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.objective_function_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function plots the objective function value per each Monte-Carlo
+step</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> &#8211; the number of the model to plot</li>
+<li><strong>log</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; log plot</li>
+<li><strong>smooth</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; curve smoothing</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.particle_coordinates">
+<tt class="descname">particle_coordinates</tt><big>(</big><em>part</em>, <em>models=None</em>, <em>cluster=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.particle_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.particle_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.save_models">
+<tt class="descname">save_models</tt><big>(</big><em>path_f</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.save_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.save_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves all the models in pickle format (python object written to disk).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path_f</strong> &#8211; path where to save the pickle file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.view_models">
+<tt class="descname">view_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a selected model in the three dimensions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>tool</strong> (<em>&#8216;chimera&#8217;</em>) &#8211; path to the external tool used to visualize the
+model</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image OR movie
+generated (depending on the extension; accepted formats are png, mov
+and webm). if set to None, the image or movie will be shown using
+the default GUI.</li>
+<li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer. The chimera list is:</p>
+<div class="highlight-python"><pre>focus
+set bg_color white
+windowsize 800 600
+bonddisplay never #0
+represent wire
+shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+clip yon -500
+~label
+set subdivision 1
+set depth_cue
+set dc_color black
+set dc_start 0.5
+set dc_end 1
+scale 0.8</pre>
+</div>
+<p>Followed by the movie command to record movies:</p>
+<div class="highlight-python"><pre>movie record supersample 1
+turn y 3 120
+wait 120
+movie stop
+movie encode output SAVEFIG</pre>
+</div>
+<p>Or the copy command for images:</p>
+<div class="highlight-python"><pre>copy file SAVEFIG png</pre>
+</div>
+<p>Passing as the following list as &#8216;cmd&#8217; parameter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;focus&#39;</span><span class="p">,</span> <span class="s">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s">&#39;windowsize 800 600&#39;</span><span class="p">,</span> <span class="s">&#39;bonddisplay never #0&#39;</span><span class="p">,</span> <span class="s">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span> <span class="s">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s">&#39;~label&#39;</span><span class="p">,</span> <span class="s">&#39;set subdivision 1&#39;</span><span class="p">,</span> <span class="s">&#39;set depth_cue&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_start 0.5&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_end 1&#39;</span><span class="p">,</span> <span class="s">&#39;scale 0.8&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>will return the default image (other commands can be passed to
+modified the final image/movie).</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.walking_angle">
+<tt class="descname">walking_angle</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>signed=True</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the angle between successive loci in a given model or set of
+models. In order to limit the noise of the measure angle is calculated
+between 3 loci, between each are two other loci. E.g. in the scheme
+bellow, angle are calculated between loci A, D and G.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>3) steps</strong> (<em>(1,</em>) &#8211; how many particles to group for the estimation.
+By default 2 curves are drawn</li>
+<li><strong>signed</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; whether to compute the sign of the angle according
+to a normal plane, or not.</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI</li>
+<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the angle data
+generated (1 column per step + 1 for particle number).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><pre>                      C..........D
+                   ...            ...
+                ...                 ...
+             ...                       ...
+  A..........B                            .E
+ ..                                        .
+.                                          .
+                                           .                 .
+                                           .                .
+                                           F...............G</pre>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral">
+<tt class="descname">walking_dihedral</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>plot=True</em>, <em>savefig=None</em>, <em>axe=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the dihedral angle between successive plans. A plan is formed by 3
+successive loci.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+<li><strong>3) steps</strong> (<em>(1,</em>) &#8211; how many particles to group for the estimation.
+By default 2 curves are drawn</li>
+<li><strong>signed</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; whether to compute the sign of the angle according
+to a normal plane, or not.</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI</li>
+<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the angle data
+generated (1 column per step + 1 for particle number).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><pre>                      C..........D
+                   ...            ...
+                ...                 ...
+             ...                       ...
+  A..........B                            .E
+ ..                                        .
+.                                          .
+                                           .                 .
+                                           .                .
+                                           F...............G</pre>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.write_cmm">
+<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>color=&lt;function color_residues at 0x1053232a8&gt;</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_cmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a model in the cmm format, read by Chimera
+(<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
+<p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
+ALL the models will be written.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> &#8211; location where the file will be written (note: the
+name of the file will be model_1.cmm if model number is 1)</li>
+<li><strong>model_num</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the number of the model to save</li>
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a list of numbers corresponding to a given set of
+models to save</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; save the models in the cluster number &#8216;cluster&#8217;</li>
+<li><strong>rndname</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; If True, file names will be formatted as:
+model.RND.cmm, where RND is the random number feed used by IMP to
+generate the corresponding model. If False, the format will be:
+model_NUM_RND.cmm where NUM is the rank of the model in terms of
+objective function value</li>
+<li><strong>color</strong> (<em>color_residues</em>) &#8211; either a coloring function like
+<tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.imp_model.color_residues()</span></tt> or a list of (r, g, b)
+tuples (as long as the number of particles)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.write_xyz">
+<tt class="descname">write_xyz</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>get_path=False</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a xyz file containing the 3D coordinates of each particle in the
+model.</p>
+<p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
+ALL the models will be written.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> &#8211; location where the file will be written (note: the
+file name will be model.1.xyz, if the model number is 1)</li>
+<li><strong>model_num</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the number of the model to save</li>
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a list of numbers corresponding to a given set of
+models to be written</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; save the models in the cluster number &#8216;cluster&#8217;</li>
+<li><strong>rndname</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; If True, file names will be formatted as:
+model.RND.xyz, where RND is the random number feed used by IMP to
+generate the corresponding model. If False, the format will be:
+model_NUM_RND.xyz where NUM is the rank of the model in terms of
+objective function value</li>
+<li><strong>get_path</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to return, or not, the full path where
+the file has been written</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.zscore_plot">
+<tt class="descname">zscore_plot</tt><big>(</big><em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/imp/structuralmodels.html#StructuralModels.zscore_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.zscore_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
+of which is binary showing in red Z-scores higher than upper cut-off;
+and in blue Z-scores lower than lower cut-off. Last plot is an histogram
+of the distribution of Z-scores, showing selected regions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
+appearance</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">Tadbit functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Generate a 3D models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#impmodel-class">IMPmodel class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#impoptimizer-class">IMPoptimizer class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#structuralmodels-class">StructuralModels class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_boundary_alignment.html"
+                        title="previous chapter">Alignment class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_utils.html"
+                        title="next chapter">Utilities</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_utils.html" title="Utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_boundary_alignment.html" title="Alignment class"
+             >previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Nov 06, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,482 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Chromosome class &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Reference Guide" href="index.html" />
+    <link rel="next" title="Experiment class" href="reference_experiment.html" />
+    <link rel="prev" title="Reference Guide" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_experiment.html" title="Experiment class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Reference Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="chromosome-class">
+<h1>Chromosome class<a class="headerlink" href="#chromosome-class" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pytadbit.chromosome.Chromosome">
+<em class="property">class </em><tt class="descclassname">pytadbit.chromosome.</tt><tt class="descname">Chromosome</tt><big>(</big><em>name</em>, <em>experiment_resolutions=None</em>, <em>experiment_tads=None</em>, <em>experiment_hic_data=None</em>, <em>experiment_names=None</em>, <em>max_tad_size=5000000</em>, <em>chr_len=0</em>, <em>parser=None</em>, <em>centromere_search=False</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Chromosome object designed to deal with Topologically Associating Domains
+predictions from different experiments, in different cell types for a given
+chromosome of DNA, and to compare them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; name of the chromosome (might be a chromosome name for example)</li>
+<li><strong>resolutions</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of resolutions corresponding to a list of
+experiments passed.</li>
+<li><strong>experiment_hic_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of paths to files
+containing the Hi-C count matrices corresponding to different experiments</li>
+<li><strong>experiment_tads</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of paths to files
+containing the definition of TADs corresponding to different experiments</li>
+<li><strong>experiment_names</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of the names of each 
+experiment</li>
+<li><strong>max_tad_size</strong> (<em>5000000</em>) &#8211; maximum TAD size allowed. TADs longer than
+this value will not be considered, and size of the corresponding
+chromosome size will be reduced accordingly</li>
+<li><strong>chr_len</strong> (<em>0</em>) &#8211; size of the DNA chromosome in bp. By default it will be
+inferred from the distribution of TADs</li>
+<li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
+representing the data matrix and the length of a row/column. With
+the file example.tsv:</p>
+<div class="highlight-python"><pre>chrT_001       chrT_002        chrT_003        chrT_004
+chrT_001       629     164     88      105
+chrT_002       164     612     175     110
+chrT_003       88      175     437     100
+chrT_004       105     110     100     278</pre>
+</div>
+<p>the output of parser(&#8216;example.tsv&#8217;) would be be:
+<tt class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
+<span class="pre">110,</span> <span class="pre">100,</span> <span class="pre">278]),</span> <span class="pre">4]</span></tt></p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Chromosome object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.add_experiment">
+<tt class="descname">add_experiment</tt><big>(</big><em>name</em>, <em>resolution=None</em>, <em>tad_def=None</em>, <em>hic_data=None</em>, <em>replace=False</em>, <em>parser=None</em>, <em>conditions=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.add_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.add_experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a Hi-C experiment to Chromosome</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; name of the experiment or of the Experiment object</li>
+<li><strong>resolution</strong> &#8211; resolution of the experiment (needed if name is not
+an Experiment object)</li>
+<li><strong>hic_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
+the Hi-C data</li>
+<li><strong>tad_def</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with precomputed TADs for this
+experiment</li>
+<li><strong>replace</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the experiments loaded under the same
+name</li>
+<li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
+representing the data matrix and the length of a row/column. With 
+a file example.tsv containing:</p>
+<div class="highlight-python"><pre>chrT_001   chrT_002        chrT_003        chrT_004
+chrT_001   629     164     88      105
+chrT_002   164     612     175     110
+chrT_003   88      175     437     100
+chrT_004   105     110     100     278</pre>
+</div>
+<p>the output of parser(&#8216;example.tsv&#8217;) would be:
+<tt class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
+<span class="pre">110,</span> <span class="pre">100,</span> <span class="pre">278]),</span> <span class="pre">4]</span></tt></p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.align_experiments">
+<tt class="descname">align_experiments</tt><big>(</big><em>names=None</em>, <em>verbose=False</em>, <em>randomize=False</em>, <em>rnd_method='interpolate'</em>, <em>rnd_num=1000</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.align_experiments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.align_experiments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Align the predicted boundaries of two different experiments. The 
+resulting alignment will be stored in the self.experiment list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>names</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of names of the experiments to align. If None,
+align all</li>
+<li><strong>experiment1</strong> &#8211; name of the first experiment to align</li>
+<li><strong>experiment2</strong> &#8211; name of the second experiment to align</li>
+<li><strong>penalty</strong> (<em>-0.1</em>) &#8211; penalty for inserting a gap in the alignment</li>
+<li><strong>max_dist</strong> (<em>100000</em>) &#8211; maximum distance between two boundaries
+allowing match (100Kb seems fair with HUMAN chromosomes)</li>
+<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, print some information about the 
+alignments</li>
+<li><strong>randomize</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; check the alignment quality by comparing
+randomized boundaries over Chromosomes of the same size. This will
+return a extra value, the p-value of accepting that the observed
+alignment is not better than a random alignment</li>
+<li><strong>rnd_method</strong> (<em>interpolate</em>) &#8211; by default uses the interpolation of TAD
+distribution. The alternative method is &#8216;shuffle&#8217;, where TADs are
+simply shuffled</li>
+<li><strong>rnd_num</strong> (<em>1000</em>) &#8211; number of randomizations to do</li>
+<li><strong>method</strong> (<em>reciprocal</em>) &#8211; if global, Needleman-Wunsch is used to align
+(see <a class="reference internal" href="reference_aligner.html#pytadbit.boundary_aligner.globally.needleman_wunsch" title="pytadbit.boundary_aligner.globally.needleman_wunsch"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.boundary_aligner.globally.needleman_wunsch()</span></tt></a>);
+if reciprocal, a method based on reciprocal closest boundaries is
+used (see <a class="reference internal" href="reference_aligner.html#pytadbit.boundary_aligner.reciprocally.reciprocal" title="pytadbit.boundary_aligner.reciprocally.reciprocal"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.boundary_aligner.reciprocally.reciprocal()</span></tt></a>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the alignment and the score of the alignment (by default)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.find_tad">
+<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>no_heuristic=False</em>, <em>batch_mode=False</em>, <em>use_visibility=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function to calculate the
+position of Topologically Associated Domains</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>experiment</strong> &#8211; A square matrix of interaction counts of Hi-C
+data or a list of such matrices for replicated experiments. The
+counts must be evenly sampled and not normalized. &#8216;experiment&#8217;
+can be either a list of lists, a path to a file or a file handler</li>
+<li><strong>n_cpus</strong> (<em>1</em>) &#8211; The number of CPUs to allocate to TADBit. If
+n_cpus=&#8217;max&#8217; the total number of CPUs will be used</li>
+<li><strong>max_tad_size</strong> (<em>auto</em>) &#8211; an integer defining the maximum size of a 
+TAD. Default (auto) defines it as the number of rows/columns</li>
+<li><strong>no_heuristic</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to use or not some heuristics</li>
+<li><strong>batch_mode</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, all the experiments will be 
+concatenated into one for the search of TADs. The resulting TADs 
+found are stored under the name &#8216;batch&#8217; plus a concatenation of the
+experiment names passed (e.g.: if experiments=[&#8216;exp1&#8217;, &#8216;exp2&#8217;], the
+name would be: &#8216;batch_exp1_exp2&#8217;).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.get_experiment">
+<tt class="descname">get_experiment</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.get_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.get_experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>This can also be done directly with Chromosome.experiments[name].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; name of the experiment to select</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></tt></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.get_tad_hic">
+<tt class="descname">get_tad_hic</tt><big>(</big><em>tad</em>, <em>x_name</em>, <em>normed=True</em>, <em>matrix_num=0</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.get_tad_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.get_tad_hic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the Hi-C data matrix corresponding to a given TAD.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tad</strong> &#8211; a given TAD (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></a>)</li>
+<li><strong>x_name</strong> &#8211; name of the experiment</li>
+<li><strong>normed</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True, normalize the Hi-C data</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Hi-C data matrix for the given TAD</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.iter_tads">
+<tt class="descname">iter_tads</tt><big>(</big><em>x_name</em>, <em>normed=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.iter_tads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.iter_tads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the TADs corresponding to the given experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x_name</strong> &#8211; name of the experiment</li>
+<li><strong>normed</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; normalize Hi-C data returned</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields :</th><td class="field-body"><p class="first last">Hi-C data corresponding to each TAD</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.save_chromosome">
+<tt class="descname">save_chromosome</tt><big>(</big><em>out_f</em>, <em>fast=True</em>, <em>divide=True</em>, <em>force=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.save_chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.save_chromosome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a Chromosome object to a file (it uses <a class="reference external" href="http://docs.python.org/library/pickle.html#pickle.load" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">pickle.load()</span></tt></a> from
+the <a class="reference external" href="http://docs.python.org/library/pickle.html#cPickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">cPickle</span></tt></a>). Once saved, the object can be loaded with
+<a class="reference internal" href="#pytadbit.chromosome.load_chromosome" title="pytadbit.chromosome.load_chromosome"><tt class="xref py py-func docutils literal"><span class="pre">load_chromosome()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>out_f</strong> &#8211; path to the file where to store the <a class="reference external" href="http://docs.python.org/library/pickle.html#cPickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">cPickle</span></tt></a>
+object</li>
+<li><strong>fast</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True, skip Hi-C data and weights</li>
+<li><strong>divide</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True writes two pickles, one with what would
+result by using the fast option, and the second with the Hi-C and 
+weights data. The second file name will be extended by &#8216;_hic&#8217; (ie:
+with out_f=&#8217;chromosome12.pik&#8217; we would obtain chromosome12.pik and
+chromosome12.pik_hic). When loaded <a class="reference internal" href="#pytadbit.chromosome.load_chromosome" title="pytadbit.chromosome.load_chromosome"><tt class="xref py py-func docutils literal"><span class="pre">load_chromosome()</span></tt></a> will
+automatically search for both files</li>
+<li><strong>force</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; overwrite the existing file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.set_max_tad_size">
+<tt class="descname">set_max_tad_size</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.set_max_tad_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.set_max_tad_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the maximum size allowed for TADs. It also applies to the
+computed experiments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> &#8211; an int value (default is 5000000)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.chromosome.Chromosome.visualize">
+<tt class="descname">visualize</tt><big>(</big><em>name</em>, <em>tad=None</em>, <em>focus=None</em>, <em>paint_tads=False</em>, <em>axe=None</em>, <em>show=True</em>, <em>logarithm=True</em>, <em>normalized=False</em>, <em>relative=True</em>, <em>decorate=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#Chromosome.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.visualize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize the matrix of Hi-C interactions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; name of the experiment to visualize</li>
+<li><strong>tad</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a given TAD in the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+ <span class="s">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+ <span class="s">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+ <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Alternatively</strong> a list of the TADs can be passed (all the TADs
+between the first and last one passed will be showed. Thus, passing
+more than two TADs might be superfluous)</p>
+</li>
+<li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple with the start and end positions of the 
+region to visualize</li>
+<li><strong>paint_tads</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; draw a box around the TADs defined for this
+experiment</li>
+<li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; an axe object from matplotlib can be passed in order
+to customize the picture</li>
+<li><strong>show</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; either to pop-up matplotlib image or not</li>
+<li><strong>logarithm</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; show the logarithm values</li>
+<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; show the normalized data (weights might have
+been calculated previously). <em>Note: white rows/columns may appear in
+the matrix displayed; these rows correspond to filtered rows (see</em>
+<a class="reference internal" href="reference_utils.html#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="pytadbit.utils.hic_filtering.hic_filtering_for_modelling"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.hic_filtering.hic_filtering_for_modelling()</span></tt></a> <em>)</em></li>
+<li><strong>relative</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; color scale is relative to the whole matrix of
+data, not only to the region displayed</li>
+<li><strong>decorate</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; draws color bar, title and axes labels</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="load-chromosome">
+<h2>Load chromosome<a class="headerlink" href="#load-chromosome" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pytadbit.chromosome.load_chromosome">
+<tt class="descclassname">pytadbit.chromosome.</tt><tt class="descname">load_chromosome</tt><big>(</big><em>in_f</em>, <em>fast=2</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#load_chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.load_chromosome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a Chromosome object from a file. A Chromosome object can be saved with
+the <a class="reference internal" href="#pytadbit.chromosome.Chromosome.save_chromosome" title="pytadbit.chromosome.Chromosome.save_chromosome"><tt class="xref py py-func docutils literal"><span class="pre">Chromosome.save_chromosome()</span></tt></a> function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>in_f</strong> &#8211; path to a saved Chromosome object file</li>
+<li><strong>fast</strong> (<em>2</em>) &#8211; if fast=2 do not load the Hi-C data (in the case that they 
+were saved in a separate file see <a class="reference internal" href="#pytadbit.chromosome.Chromosome.save_chromosome" title="pytadbit.chromosome.Chromosome.save_chromosome"><tt class="xref py py-func docutils literal"><span class="pre">Chromosome.save_chromosome()</span></tt></a>).
+If fast is equal to 1, the weights will be skipped from load to save 
+memory. Finally if fast=0, both the weights and Hi-C data will be loaded</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Chromosome object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>TODO: remove first try/except type error... this is loading old experiments</p>
+</dd></dl>
+
+</div>
+<div class="section" id="experimentlist-class">
+<h2>ExperimentList class<a class="headerlink" href="#experimentlist-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pytadbit.chromosome.ExperimentList">
+<em class="property">class </em><tt class="descclassname">pytadbit.chromosome.</tt><tt class="descname">ExperimentList</tt><big>(</big><em>thing</em>, <em>crm</em><big>)</big><a class="reference internal" href="../modules/pytadbit/chromosome.html#ExperimentList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.ExperimentList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inherited from python built in <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a>, modified for tadbit
+<tt class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></tt>.</p>
+<p>Mainly, <cite>getitem</cite>, <cite>setitem</cite>, and <cite>append</cite> were modified in order to
+be able to search for experiments by index or by name, and to add 
+experiments simply using Chromosome.experiments.append(Experiment).</p>
+<p>The whole ExperimentList object is linked to a Chromosome instance
+(<tt class="xref py py-class docutils literal"><span class="pre">pytadbit.Chromosome</span></tt>).</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Chromosome class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#load-chromosome">Load chromosome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#experimentlist-class">ExperimentList class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">Tadbit functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_imp.html">Generate a 3D models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Reference Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_experiment.html"
+                        title="next chapter">Experiment class</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_experiment.html" title="Experiment class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Reference Guide"
+             >previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Nov 06, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

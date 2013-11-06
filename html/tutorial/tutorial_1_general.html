@@ -1,0 +1,378 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Getting started &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Tutorials" href="../tutorial.html" />
+    <link rel="next" title="Alignment of TAD boundaries" href="tutorial_2_boundary_alignment.html" />
+    <link rel="prev" title="Tutorials" href="../tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_2_boundary_alignment.html" title="Alignment of TAD boundaries"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../tutorial.html" title="Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../tutorial.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="getting-started">
+<span id="getting-start"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="hi-c-data-format">
+<h2>Hi-C data format<a class="headerlink" href="#hi-c-data-format" title="Permalink to this headline">¶</a></h2>
+<p>Hi-C data are usually represented as symmetric matrices in a tab separated file, as in the example below:</p>
+<div class="highlight-python"><pre>chrT_001      chrT_002        chrT_003        chrT_004        chrT_005        chrT_006
+chrT_001      629     164     88      105     10      35
+chrT_002      86      612     175     110     40      29
+chrT_003      159     216     437     105     43      73
+chrT_004      100     111     146     278     70      42
+chrT_005      16      36      26      79      243     39
+chrT_006      19      50      53      42      37      224</pre>
+</div>
+<p>TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as this
+<em>(note: this example loads human chromosome 19 from</em> <a class="reference internal" href="../biblio.html#lieberman-aiden2009">[Lieberman-Aiden2009]</a> <em>results.)</em>:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">Chromosome</span>
+
+<span class="c"># initiate a chromosome object that will store all Hi-C data and analysis</span>
+<span class="n">my_chrom</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;chr19&#39;</span><span class="p">,</span> <span class="n">centromere_search</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># load Hi-C data</span>
+<span class="n">my_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s">&#39;k562&#39;</span><span class="p">,</span>
+                        <span class="n">hic_data</span><span class="o">=</span><span class="s">&quot;../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt&quot;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">my_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s">&#39;gm06690&#39;</span><span class="p">,</span>
+                        <span class="n">hic_data</span><span class="o">=</span><span class="s">&quot;../../scripts/sample_data/HIC_gm06690_chr19_chr19_100000_obs.txt&quot;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">TADBit assumes that Hi-C data matrices starts at chromosome position 1. If your matrix do not represents the full chromosome length, fill the missing columns and rows with zeros.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">by default TADBit will not search for centromeres, however, as, in this example, we know that we are working with chromosome 19, we can ask TADBit search for it as explained in <a class="reference internal" href="#forbidden-regions"><em>Forbidden regions and centromeres</em></a></p>
+</div>
+<div class="section" id="unconventional-data-format">
+<h3>Unconventional data format<a class="headerlink" href="#unconventional-data-format" title="Permalink to this headline">¶</a></h3>
+<p>If TADBit is unable to parse the input file, the user can create its own parser and pass it to the Chromosome instance. For example, one might be interested in using <a class="reference internal" href="../biblio.html#dixon2012">[Dixon2012]</a> data that appear like this:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">strange</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;</span>
+<span class="s">  chr21     0       20000   0       0       0       0       0       0       0       0</span>
+<span class="s">  chr21     20000   40000   0       0       0       0       0       0       0       0</span>
+<span class="s">  chr21     40000   60000   0       0       0       0       0       0       0       0</span>
+<span class="s">  chr21     60000   80000   0       0       0       0       0       0       0       0</span>
+<span class="s">  chr21     80000   100000  0       0       0       0       0       0       0       0</span>
+<span class="s">  chr21     100000  120000  0       0       0       0       0       0       0       0</span>
+<span class="s">  chr21     120000  140000  0       0       0       0       0       0       0       0</span>
+<span class="s">  chr21     140000  160000  0       0       0       0       0       0       0       0</span>
+<span class="s">&#39;&#39;&#39;</span>
+</pre></div>
+</div>
+<p>In this case the user could implement a simple parser like this one:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">read_dixon_matrix</span><span class="p">(</span><span class="n">f_handle</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    reads from file handler (already openned)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nums</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_handle</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">start</span><span class="p">:]</span>
+        <span class="n">nums</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">f_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">))]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And call it as follow:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">other_chrom</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;An other chromosome&#39;</span><span class="p">)</span>
+<span class="n">other_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s">&#39;First Hi-C experiment&#39;</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="n">strange</span><span class="p">,</span>
+                           <span class="n">parser</span><span class="o">=</span><span class="n">read_dixon_matrix</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">20000</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/utils/hic_filtering.py:146: UserWarning: WARNING: Too few data to filter columns. SKIPPING...
+  warn('WARNING: Too few data to filter columns. SKIPPING...')</pre>
+</div>
+<p>Experiments, when loaded, are stored in a special kind of list attached to chromosome objects:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>[Experiment k562 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None),
+ Experiment gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None)]</pre>
+</div>
+<p>A specific Experiment can be accessed either by its name or by its position in <a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.ExperimentList" title="pytadbit.chromosome.ExperimentList"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.chromosome.ExperimentList</span></tt></a> :</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&quot;k562&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="bp">True</span>
+</pre></div>
+</div>
+<p>Each Experiment is an independent object with a list of associated functions
+(see <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment" title="pytadbit.experiment.Experiment"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.experiment.Experiment</span></tt></a>).</p>
+</div>
+</div>
+<div class="section" id="basic-manipulation-of-experiments">
+<span id="exp-operations"></span><h2>Basic manipulation of Experiments<a class="headerlink" href="#basic-manipulation-of-experiments" title="Permalink to this headline">¶</a></h2>
+<p>Two Hi-C experiments can be summed up easily, resulting in a new Hi-c experiment contatining the sum of the interaction counts of the summed experiments:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">exp</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&quot;k562&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&quot;gm06690&quot;</span><span class="p">]</span>
+<span class="k">print</span> <span class="n">exp</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None)</pre>
+</div>
+<p>The resulting experiment (which default name is the concatenation of the summed experiments) can be added to the experiments of a given chromosome.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>[Experiment k562 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None)]</pre>
+</div>
+</div>
+</div>
+<div class="section" id="find-topologically-associating-domains">
+<span id="run-tadbit"></span><h1>Find Topologically Associating Domains<a class="headerlink" href="#find-topologically-associating-domains" title="Permalink to this headline">¶</a></h1>
+<p>Once an experiment has been loaded, the location of Topologically Associating Domains (TADs) can be estimated as:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">find_tad</span><span class="p">(</span><span class="s">&#39;k562&#39;</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">my_chrom</span><span class="o">.</span><span class="n">find_tad</span><span class="p">(</span><span class="s">&#39;gm06690&#39;</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.find_tad" title="pytadbit.chromosome.Chromosome.find_tad"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.find_tad()</span></tt></a> is called from our Chromosome object but is applied to a
+specific experiment. Therefore, TADs found by TADBbit will be associated to this specific experiment.
+They can be accessed as following:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">exp</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&quot;k562&quot;</span><span class="p">]</span>
+<span class="n">exp</span><span class="o">.</span><span class="n">tads</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span>
+ <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">12.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">12.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">6.0</span><span class="p">},</span>
+ <span class="mi">3</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">31.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">31.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">6.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">13.0</span><span class="p">},</span>
+ <span class="mi">4</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">45.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">45.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">32.0</span><span class="p">},</span>
+ <span class="mi">5</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">58.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">58.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">46.0</span><span class="p">},</span>
+ <span class="mi">6</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">69.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">69.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">6.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">59.0</span><span class="p">},</span>
+ <span class="mi">7</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">77.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">77.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">70.0</span><span class="p">},</span>
+ <span class="mi">8</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">103.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">103.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">78.0</span><span class="p">},</span>
+ <span class="mi">9</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">108.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">108.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">104.0</span><span class="p">},</span>
+ <span class="mi">10</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">114.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">114.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">109.0</span><span class="p">},</span>
+ <span class="mi">11</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">124.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">124.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">115.0</span><span class="p">},</span>
+ <span class="mi">12</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">131.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">131.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">125.0</span><span class="p">},</span>
+ <span class="mi">13</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">136.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">136.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">132.0</span><span class="p">},</span>
+ <span class="mi">14</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">144.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">144.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">137.0</span><span class="p">},</span>
+ <span class="mi">15</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">163.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">163.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">6.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">145.0</span><span class="p">},</span>
+ <span class="mi">16</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">183.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">183.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">164.0</span><span class="p">},</span>
+ <span class="mi">17</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">188.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">188.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">184.0</span><span class="p">},</span>
+ <span class="mi">18</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">194.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">194.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">189.0</span><span class="p">},</span>
+ <span class="mi">19</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">244.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">244.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">195.0</span><span class="p">},</span>
+ <span class="mi">20</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">323.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">323.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">245.0</span><span class="p">},</span>
+ <span class="mi">21</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">329.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">329.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">324.0</span><span class="p">},</span>
+ <span class="mi">22</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">347.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">347.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">330.0</span><span class="p">},</span>
+ <span class="mi">23</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">355.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">355.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">348.0</span><span class="p">},</span>
+ <span class="mi">24</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">377.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">377.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">6.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">356.0</span><span class="p">},</span>
+ <span class="mi">25</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">383.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">383.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">378.0</span><span class="p">},</span>
+ <span class="mi">26</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">399.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">399.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">384.0</span><span class="p">},</span>
+ <span class="mi">27</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">412.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">412.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">9.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">400.0</span><span class="p">},</span>
+ <span class="mi">28</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">434.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">434.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">413.0</span><span class="p">},</span>
+ <span class="mi">29</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">446.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">446.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">435.0</span><span class="p">},</span>
+ <span class="mi">30</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">452.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">452.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">447.0</span><span class="p">},</span>
+ <span class="mi">31</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">457.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">457.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">453.0</span><span class="p">},</span>
+ <span class="mi">32</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">471.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">471.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">458.0</span><span class="p">},</span>
+ <span class="mi">33</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">477.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">477.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">472.0</span><span class="p">},</span>
+ <span class="mi">34</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">485.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">485.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">478.0</span><span class="p">},</span>
+ <span class="mi">35</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">497.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">497.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">486.0</span><span class="p">},</span>
+ <span class="mi">36</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">505.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">505.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">498.0</span><span class="p">},</span>
+ <span class="mi">37</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">523.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">523.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">506.0</span><span class="p">},</span>
+ <span class="mi">38</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">530.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">530.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">524.0</span><span class="p">},</span>
+ <span class="mi">39</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">553.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">553.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">531.0</span><span class="p">},</span>
+ <span class="mi">40</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">562.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">562.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">554.0</span><span class="p">},</span>
+ <span class="mi">41</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">593.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">593.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">6.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">563.0</span><span class="p">},</span>
+ <span class="mi">42</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">608.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">608.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">7.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">594.0</span><span class="p">},</span>
+ <span class="mi">43</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;brk&#39;</span><span class="p">:</span> <span class="mf">638.0</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="mf">638.0</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mf">609.0</span><span class="p">}}</span>
+</pre></div>
+</div>
+<p>The &#8220;tads&#8221; variable returned in this example is a dictionary of TADs, each of each is in turn a new dictionary containing information about the start and end positions of a TAD.</p>
+<p>&#8220;start&#8221; and &#8220;end&#8221; values correspond respectively to the start and end positions of the given TAD in the chromosome (note that this numbers have to be multiplied by the resolution of the experiment, &#8220;exp.resolution&#8221;). The &#8220;brk&#8221; key corresponds to the value of &#8220;end&#8221;, all &#8220;brk&#8221; together corresponds to all TAD&#8217;s boundaries.</p>
+<div class="section" id="finding-tads-in-related-hi-c-experiments">
+<h2>Finding TADs in related Hi-C experiments<a class="headerlink" href="#finding-tads-in-related-hi-c-experiments" title="Permalink to this headline">¶</a></h2>
+<p>TADBit also allows to search for TADs in a chromosome using the information of several Hi-C experiments. To do this experiments do not need to be summed up (like in <a class="reference internal" href="#exp-operations"><em>Basic manipulation of Experiments</em></a>), as the find_tad function has a batch_mode:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">find_tad</span><span class="p">([</span><span class="s">&#39;k562&#39;</span><span class="p">,</span> <span class="s">&#39;gm06690&#39;</span><span class="p">],</span> <span class="n">batch_mode</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>[Experiment k562 (resolution: 100Kb, TADs: 43, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: None)]</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In this case a new experiment is also created (e.g. &#8220;batch_gm06690_k562&#8221;), it contains the TADs detected when taking into account the two experiments &#8220;gm06690&#8221; and &#8220;k562&#8221;.</p>
+</div>
+</div>
+<div class="section" id="forbidden-regions-and-centromeres">
+<span id="forbidden-regions"></span><h2>Forbidden regions and centromeres<a class="headerlink" href="#forbidden-regions-and-centromeres" title="Permalink to this headline">¶</a></h2>
+<p>Once TADs are detected by the core <a class="reference internal" href="../reference/reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function, TADBit checks that they are not
+larger than a given value (3 Mb by default). If a TAD is larger than this value, it will be marked with a
+<strong>negative score</strong>, and will be automatically excluded from the main TADBit functions.</p>
+<p>Another inspection performed by TADBit is the presence of centromeric regions. TADBit assumes that the larger
+gap found in a Hi-C matrix corresponds to the centromere. This search is updated and refined each time a new
+experiment is linked to a given Chromosome. Typically, TADs calculated by the core
+<a class="reference internal" href="../reference/reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function include centromeric regions; if a centromere is found, TADBit will
+split the TAD containing it into two TADs, one ending before the centromere and one starting after. As
+centromeric regions are not necessarily TAD boundaries, the TADs surrounding them are marked with a negative
+score (as for forbidden regions).</p>
+</div>
+<div class="section" id="data-visualization">
+<h2>Data visualization<a class="headerlink" href="#data-visualization" title="Permalink to this headline">¶</a></h2>
+<p>Once loaded, the Hi-C data can be visualized using the <a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize" title="pytadbit.chromosome.Chromosome.visualize"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.visualize()</span></tt></a>
+function. The only parameter needed is which experiment to show. Therefore, the human chromosome 19 from <a class="reference internal" href="../biblio.html#lieberman-aiden2009">[Lieberman-Aiden2009]</a> can be visualized with:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s">&quot;k562&quot;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/chromosome.py:568: RuntimeWarning: divide by zero encountered in log2
+  img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,</pre>
+</div>
+<img alt="../images/tutorial_1_general_42_1.png" src="../images/tutorial_1_general_42_1.png" />
+<div class="highlight-python"><pre>&lt;matplotlib.image.AxesImage at 0x43b5a50&gt;</pre>
+</div>
+<p>This plot shows the log2 interaction counts, resulting from the given Hi-C experiment.</p>
+<p>If the steps in the previous section (<a class="reference internal" href="#run-tadbit"><em>Find Topologically Associating Domains</em></a>) have been done and TADs habe been defined, they can
+be visualized in the same kind of plot:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s">&quot;k562&quot;</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s">&quot;gm06690&quot;</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../images/tutorial_1_general_44_0.png" src="../images/tutorial_1_general_44_0.png" />
+<img alt="../images/tutorial_1_general_44_1.png" src="../images/tutorial_1_general_44_1.png" />
+<p><em>Note: centromere are TAD-free and two TADs which size &gt; 3 Mb are shaded</em></p>
+</div>
+<div class="section" id="saving-and-restoring-data">
+<h2>Saving and restoring data<a class="headerlink" href="#saving-and-restoring-data" title="Permalink to this headline">¶</a></h2>
+<p>In order to avoid having to calculate TAD positions each time, TADBit allows to save and load Chromosome
+objects, with all the associated experiments. To save a Chromosome object:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">save_chromosome</span><span class="p">(</span><span class="s">&quot;some_path.tdb&quot;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And to load it:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
+
+<span class="n">my_chrom</span> <span class="o">=</span> <span class="n">load_chromosome</span><span class="p">(</span><span class="s">&quot;some_path.tdb&quot;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>[Experiment k562 (resolution: 100Kb, TADs: 43, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: None)]</pre>
+</div>
+<p><em>Note: while information about TADs can be saved, in order to save disk space, raw Hi-C data are not stored in this way but can be loaded again for each experiment:</em></p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">expr</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&quot;k562&quot;</span><span class="p">]</span>
+
+<span class="n">expr</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">(</span><span class="s">&quot;../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">Getting started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#find-topologically-associating-domains">Find Topologically Associating Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_3_clustering.html">TAD clustering</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../tutorial.html"
+                        title="previous chapter">Tutorials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_2_boundary_alignment.html"
+                        title="next chapter">Alignment of TAD boundaries</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_2_boundary_alignment.html" title="Alignment of TAD boundaries"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../tutorial.html" title="Tutorials"
+             >previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../tutorial.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Nov 06, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
