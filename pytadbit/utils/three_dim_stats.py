@@ -31,7 +31,10 @@ def generate_sphere_points(n=100):
 def generate_circle_points(x, y, z, a, b, c, u, v, w, n):
     """
     Returns list of 3d coordinates of points on a circle using the
-    Rodrigues rotation formula
+    Rodrigues rotation formula.
+    
+    see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*
+    for details
     """
     points = []
     offset = 2 * pi / float(n)
@@ -69,13 +72,9 @@ def square_distance(part1, part2):
 
     :returns: square distance between two points in space
     """
-    # return ((part1['x'] - part2['x'])**2 +
-    #         (part1['y'] - part2['y'])**2 +
-    #         (part1['z'] - part2['z'])**2)
     return ((part1[0] - part2[0])**2 +
             (part1[1] - part2[1])**2 +
             (part1[2] - part2[2])**2)
-    # return np.sum((part1-part2)**2)
 
 def fast_square_distance(x1, y1, z1, x2, y2, z2):
     """
@@ -84,13 +83,9 @@ def fast_square_distance(x1, y1, z1, x2, y2, z2):
 
     :returns: square distance between two points in space
     """
-    # return ((part1['x'] - part2['x'])**2 +
-    #         (part1['y'] - part2['y'])**2 +
-    #         (part1['z'] - part2['z'])**2)
     return ((x1 - x2)**2 +
             (y1 - y2)**2 +
             (z1 - z2)**2)
-    # return np.sum((part1-part2)**2)
 
 
 def distance(part1, part2):

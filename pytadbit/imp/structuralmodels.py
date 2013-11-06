@@ -148,10 +148,10 @@ class StructuralModels(object):
 
     def centroid_model(self, models=None, cluster=None, verbose=False):
         """
-        :param None models: if None (default) the contact map will be computed
+        :param None models: if None (default) the centroid model will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the centroid model only for the models in the
            cluster number 'cluster'
         :param False verbose: prints the distance of each model to average model
            (in stderr)
@@ -174,10 +174,10 @@ class StructuralModels(object):
 
     def average_model(self, models=None, cluster=None, verbose=False):
         """
-        :param None models: if None (default) the contact map will be computed
+        :param None models: if None (default) the average model will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the average model only for the models in the
            cluster number 'cluster'
         :param False verbose: prints the distance of each model to average model
            (in stderr)
@@ -384,10 +384,10 @@ class StructuralModels(object):
         Plots the number of nucleotides per nm of chromatin vs the modeled
         region bins.
 
-        :param None models: if None (default) the contact map will be computed
+        :param None models: if None (default) the density plot will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the density plot only for the models in the
            cluster number 'cluster'
         :param (1, 2, 3, 4, 5) steps: how many particles to group for the
            estimation. By default 5 curves are drawn
@@ -513,10 +513,10 @@ class StructuralModels(object):
         Returns a matrix with the number of interactions observed below a given
         cutoff distance.
 
-        :param None models: if None (default) the contact map will be computed
+        :param None models: if None (default) the contact matrix will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the contact matrix only for the models in the
            cluster number 'cluster'
         :param 150 cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not
@@ -707,10 +707,10 @@ class StructuralModels(object):
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=200,
                                  plot=False, axe=None, savefig=None):
         """
-        :param None models: if None (default) the contact map will be computed
+        :param None models: if None (default) the correlation will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the correlation only for the models in the
            cluster number 'cluster'
         :param 200 cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not
@@ -780,10 +780,10 @@ class StructuralModels(object):
         :param (50,100,150,200) cutoffs: list of distance cutoffs (nm) used to
            compute the consistency. Two particle are considered consistent if
            their distance is less than the given cutoff
-        :param None models:  if None (default) the contact map will be computed
+        :param None models:  if None (default) the consistency will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the consistency only for the models in the
            cluster number 'cluster'
         :param '/tmp/tmp_cons' tmp_path: location of the input files for
            TM-score program
@@ -864,10 +864,10 @@ class StructuralModels(object):
         """
         Visualize a selected model in the three dimensions.
 
-        :param None models:  if None (default) the contact map will be computed
+        :param None models:  if None (default) the visualization will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the visualization only for the models in the
            cluster number 'cluster'
         :param 'chimera' tool: path to the external tool used to visualize the
            model
@@ -966,10 +966,10 @@ class StructuralModels(object):
         :param parta: A particle number
         :param partb: A particle number
         :param partc: A particle number
-        :param None models:  if None (default) the contact map will be computed
+        :param None models:  if None (default) the angle will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the angle only for the models in the
            cluster number 'cluster'
         :param False radian: if True, return value in radians (in degrees
            otherwise)
@@ -1047,10 +1047,10 @@ class StructuralModels(object):
         Plots the dihedral angle between successive plans. A plan is formed by 3
         successive loci.
 
-        :param None models: if None (default) the contact map will be computed
+        :param None models: if None (default) the dihedral angle will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the dihedral angle only for the models in the
            cluster number 'cluster'
         :param (1, 3) steps: how many particles to group for the estimation.
            By default 2 curves are drawn
@@ -1132,10 +1132,10 @@ class StructuralModels(object):
         between 3 loci, between each are two other loci. E.g. in the scheme
         bellow, angle are calculated between loci A, D and G.
 
-        :param None models: if None (default) the contact map will be computed
-           using all the models. A list of numbers corresponding to a given set
+        :param None models: if None (default) all models will be used for
+           computation. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the angle only for the models in the
            cluster number 'cluster'
         :param (1, 3) steps: how many particles to group for the estimation.
            By default 2 curves are drawn
@@ -1250,10 +1250,10 @@ class StructuralModels(object):
 
         :param part1: number corresponding to the first particle
         :param part2: number corresponding to the second particle
-        :param None models:  if None (default) the contact map will be computed
+        :param None models:  if None (default) the distance will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
-        :param None cluster: compute the contact map only for the models in the
+        :param None cluster: compute the distance only for the models in the
            cluster number 'cluster'
         :param True plot: if True, display a histogram and a box-plot of the
            distribution of the calculated distances. If False, return either

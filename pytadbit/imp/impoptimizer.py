@@ -99,11 +99,27 @@ class IMPoptimizer(object):
             scale_arange = scale_range
 
         # round everything
-        self.maxdist_range = [my_round(i) for i in maxdist_arange]
-        self.upfreq_range  = [my_round(i) for i in upfreq_arange ]
-        self.lowfreq_range = [my_round(i) for i in lowfreq_arange]
-        self.scale_range   = [my_round(i) for i in scale_arange  ]
-
+        if not self.maxdist_range:
+            self.maxdist_range = [my_round(i) for i in maxdist_arange]
+        else:
+            self.maxdist_range = sorted([my_round(i) for i in maxdist_arange] +
+                                        self.maxdist_range)
+        if not self.upfreq_range:
+            self.upfreq_range  = [my_round(i) for i in upfreq_arange ]
+        else:
+            self.upfreq_range = sorted([my_round(i) for i in upfreq_arange] +
+                                       self.upfreq_range)
+        if not self.lowfreq_range:
+            self.lowfreq_range = [my_round(i) for i in lowfreq_arange]
+        else:
+            self.lowfreq_range = sorted([my_round(i) for i in lowfreq_arange] +
+                                        self.lowfreq_range)
+        if not self.scale_range:
+            self.scale_range   = [my_round(i) for i in scale_arange  ]
+        else:
+            self.scale_range = sorted([my_round(i) for i in scale_arange] +
+                                      self.scale_range)
+        
         # grid search
         count = 0
         for scale in self.scale_range:
@@ -229,7 +245,7 @@ class IMPoptimizer(object):
                         except KeyError:
                             continue
         out.close()
-        
+
 
     def load_from_file(self, f_name):
         """
