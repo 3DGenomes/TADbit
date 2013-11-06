@@ -25,9 +25,9 @@ def main():
         radius, nump=nump, verbose=False, write_cmm_file=opts.outfcmm)
 
     print '\n GLOBAL STATS:\n -------------\n'
-    print '  - accesible particles              : %s' % accesible_parts
-    print '  - total number particles calculated: %s' % number_parts
-    print '  - proportion of accesible particles: %.2f%%' % (100*float(accesible_parts)/number_parts)
+    print '  - accesible dots (of the mesh)     : %s' % accesible_parts
+    print '  - total number dots calculated     : %s' % number_parts
+    print '  - proportion of accesible dots     : %.2f%%' % (100*float(accesible_parts)/number_parts)
     print '  - accessible area                  : %.4f square micrometers' % accessible_area
     print '  - total area (straight chromatin)  : %.4f square micrometers' % total_area     
     print '  - proportion of accesible surface  : %.2f%%' % (100*float(accessible_area)/total_area)

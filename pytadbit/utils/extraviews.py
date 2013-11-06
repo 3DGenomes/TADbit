@@ -349,7 +349,7 @@ def plot_3d_optimization_result(result,
         cbar.ax.set_ylabel('Correlation value')
         tit = 'Optimal IMP parameters (subplot %s=%s)\n' % (axes[0], wax[i])
         tit += 'Best: %s=%%s, %s=%%s, %s=%%s, %s=%%s' % (axes[0], axes[1],
-                                                         axes[3], axes[4])
+                                                         axes[2], axes[3])
         plt.title(tit % tuple([my_round(r, 3) for r in sort_result[1:]]))
     plt.show()
 

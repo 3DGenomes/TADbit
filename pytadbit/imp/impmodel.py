@@ -370,37 +370,37 @@ class IMPmodel(dict):
         
         If we want that all dots of the mesh representing the surface of the
         chromatin, corresponds to an equal area (:math:`a`)
-           .. math::
+         .. math::
 
-             a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}
+           a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}
 
-           with:
+         with:
 
-           * :math:`r` radius of the object to fit (as the input parameter **radius**)
-           * :math:`s` number of points in sphere
-           * :math:`c` number of points in circle (as the input parameter **nump**)
-           * :math:`N_{(d)}` number of circles in an edge of length :math:`d`
+         * :math:`r` radius of the object to fit (as the input parameter **radius**)
+         * :math:`s` number of points in sphere
+         * :math:`c` number of points in circle (as the input parameter **nump**)
+         * :math:`N_{(d)}` number of circles in an edge of length :math:`d`
 
-           According to this, when the distance between two particles is equal
-           to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.
+         According to this, when the distance between two particles is equal
+         to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.
 
-           As :
+         As :
 
-           .. math::
+         .. math::
 
-             2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}
-           
-           It is fair to state the number of dots represented along a circle as:
+           2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}
+         
+         It is fair to state the number of dots represented along a circle as:
 
-           .. math::
+         .. math::
 
-             c = \sqrt{s} \\times \sqrt{\pi}
+           c = \sqrt{s} \\times \sqrt{\pi}
 
-           Thus the number of circles in an edge of length :math:`d` must be:
+         Thus the number of circles in an edge of length :math:`d` must be:
 
-           .. math::
+         .. math::
 
-             N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}
+           N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}
 
         :returns: a list of *1-* the number of dots in the mesh that could be
            occupied by an object of the given radius *2-* the total number of
@@ -421,6 +421,7 @@ class IMPmodel(dict):
         nloci = len(self)
         # number of dots in a circle is dependent the ones in a sphere
         numc = sqrt(nump) * sqrt(pi)
+        right_angle = pi / 2 - pi / numc
         # keeps the remaining of integer conversion, to correct
         remaining = int(100*(numc - int(numc)) + 0.5)
         c_count = 0
@@ -523,7 +524,7 @@ class IMPmodel(dict):
                             spoint,
                             (selfx1, selfy1, selfz1),
                             (selfx2, selfy2, selfz2))
-                        if ang < pi / 2 - pi / numc:
+                        if ang < right_angle:
                             dist = sin(ang) * hyp
                             # print dist, radius
                             if dist < radius:
@@ -537,7 +538,7 @@ class IMPmodel(dict):
                             spoint,
                             (selfx, selfy, selfz),
                             (selfx_1, selfy_1, selfz_1))
-                        if ang < pi / 2 - pi / numc:
+                        if ang < right_angle:
                             dist = sin(ang) * hyp
                             # print dist, radius
                             if dist < radius:
@@ -565,8 +566,8 @@ class IMPmodel(dict):
 
         # calculates the number of inaccessible peaces of surface
         radius2 = (radius - 1)**2
-        red     = (100, 0, 0)
-        green   = (0, 100, 0)
+        red     = (1, 0, 0)
+        green   = (0, 1, 0)
         colors  = []
         for x2, y2, z2 in subpoints:
             for j, (x1, y1, z1) in enumerate(points):
@@ -611,22 +612,24 @@ class IMPmodel(dict):
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"20\" note=\"%s\"/>\n')
-            out = '<marker_set name=\"1\">\n'
-            for k in xrange(nloci):
-                out += form % (k+1, self['x'][k], self['y'][k], self['z'][k],
-                               100, 100, 100, k+1)
-            form = ('<link id1=\"%s\" id2=\"%s\" r=\"50\" ' +
-                    'g=\"50\" b=\"50\" radius=\"' +
-                    str(self['radius']/8) +
-                    '\"/>\n')
-            for i in xrange(1, nloci):
-                out += form % (i, i + 1)
+            # out = '<marker_set name=\"1\">\n'
+            # for k in xrange(nloci):
+            #     out += form % (k+1, self['x'][k], self['y'][k], self['z'][k],
+            #                    100, 100, 100, k+1)
+            # form = ('<link id1=\"%s\" id2=\"%s\" r=\"50\" ' +
+            #         'g=\"50\" b=\"50\" radius=\"' +
+            #         str(self['radius']/8) +
+            #         '\"/>\n')
+            # out += '</marker_set>\n'
+            out = '<marker_set name=\"2\">\n'
+            # for i in xrange(1, nloci):
+            #     out += form % (i, i + 1)
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"7\"/>\n')
             for k_2, thing in enumerate(subpoints):
-                out += form % (2 + k + k_2, thing[0], thing[1], thing[2],
-                               colors[k_2][0], colors[k_2][1], colors[k_2][2])
+                out += form % (1 + k_2, thing[0], thing[1], thing[2],
+                                colors[k_2][0], colors[k_2][1], colors[k_2][2])
             out += '</marker_set>\n'
             out_f = open(write_cmm_file, 'w')
             out_f.write(out)

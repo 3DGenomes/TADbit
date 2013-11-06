@@ -21,10 +21,11 @@ def main():
         # os.system('ipython nbconvert --format=rst ' + fname)
         os.system('ipython nbconvert --to rst ' + fname)
         extra = (fname.split('_')[0] + '/') if '_' in fname else ''
-        out = open('../source/' + extra + fname[:-6] + '.rst', 'w')
         passing = False
+        lines = []
         for line in open(fname[:-6] + '.rst'):
             if '## REMOVE' in line:
+                lines = lines[:-2]
                 passing=True
             elif '## STOP REMOVE' in line:
                 passing=False
@@ -36,7 +37,9 @@ def main():
                 line = re.sub(fname[:-6] + '_files/', '../nbpictures/', line)
             else:
                 line = re.sub(fname[:-6] + '_files/', 'nbpictures/', line)
-            out.write(line)
+            lines.append(line)
+        out = open('../source/' + extra + fname[:-6] + '.rst', 'w')
+        out.write(''.join(lines))
         out.close()
         os.system('rm -f ' + fname[:-6] + '.rst')
         try:

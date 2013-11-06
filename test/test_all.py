@@ -499,8 +499,12 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(2262.614600764699, 3),
                          round(model.shortest_axe()+model.longest_axe(), 3))
         self.assertEqual([15, 16], model.inaccessible_particles(1000))
-        self.assertEqual([round(i, 3) for i in (649, 979, 4.893344, 8.6715452)],
-                         [round(i, 3)
+        acc_inacc = [(89, 21), (26, 46), (24, 45), (20, 51), (15, 74), (29, 59),
+                     (28, 43), (28, 61), (39, 49), (27, 44), (14, 58), (26, 46),
+                     (32, 39), (41, 46), (26, 55), (6, 63), (24, 47), (55, 33),
+                     (26, 64), (39, 50)]
+        self.assertEqual([round(i, 3) for i in 851.0, 1951.0, 6.416, 8.672] + [acc_inacc],
+                         [i if type(i) is list else round(i, 3)
                           for i in model.accessible_surface(300, nump=150)])
         if CHKTIME:
             print '16', time() - t0
