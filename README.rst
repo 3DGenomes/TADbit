@@ -11,7 +11,7 @@ Links
 Documentation
 -------------
 
- * `PythonTADBit documentation <http://3dgenomes.github.io/tadbit/>`_ 
+* `TADBit documentation <http://3dgenomes.github.io/tadbit/>`_ 
 
 
 Build status
