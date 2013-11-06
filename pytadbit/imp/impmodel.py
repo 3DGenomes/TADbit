@@ -515,7 +515,7 @@ class IMPmodel(dict):
                             spoint,
                             (selfx1, selfy1, selfz1),
                             (selfx2, selfy2, selfz2))
-                        if ang < pi / 2:
+                        if ang < pi / 2 - pi / numc:
                             dist = sin(ang) * hyp
                             # print dist, radius
                             if dist < radius:
@@ -529,7 +529,7 @@ class IMPmodel(dict):
                             spoint,
                             (selfx, selfy, selfz),
                             (selfx_1, selfy_1, selfz_1))
-                        if ang < pi/2:
+                        if ang < pi / 2 - pi / numc:
                             dist = sin(ang) * hyp
                             # print dist, radius
                             if dist < radius:
@@ -571,6 +571,9 @@ class IMPmodel(dict):
             points.insert(0, points.pop(j))
         impossibles = colors.count(red)
 
+        # check if some particles are inaccessible
+        # for i in xrange(nloci):
+            
         # some stats
         dot_area = 4 * pi * (float(radius) / 1000)**2 / nump
         area = ((len(subpoints) - impossibles) * dot_area)
@@ -604,7 +607,7 @@ class IMPmodel(dict):
                 out += form % (i, i + 1)
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
-                    'radius=\"5\"/>\n')
+                    'radius=\"7\"/>\n')
             for k_2, thing in enumerate(subpoints):
                 out += form % (2 + k + k_2, thing[0], thing[1], thing[2],
                                colors[k_2][0], colors[k_2][1], colors[k_2][2])
