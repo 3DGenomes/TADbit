@@ -589,11 +589,10 @@ class IMPmodel(dict):
             acc_parts.append((acc, ina))
 
         # some stats
-        # convert angstrom to micrometers
-        dot_area = 4 * pi * (float(radius) / 10000)**2 / nump
+        dot_area = 4 * pi * (float(radius) / 1000)**2 / nump
         area = ((len(subpoints) - impossibles) * dot_area)
-        total = (self.contour() / 10000 * 2 * pi * float(radius) / 10000 + 4 * pi
-                 * (float(radius) / 10000)**2)
+        total = (self.contour() / 1000 * 2 * pi * float(radius) / 1000 + 4 * pi
+                 * (float(radius) / 1000)**2)
         if verbose:
             print (' Accessible surface: %s micrometers^2' +
                    '(%s accessible times %s micrometers)') % (
