@@ -9,8 +9,8 @@
     
     <title>Three-dimensional modeling of chromatine structure &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
-    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -21,9 +21,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../static/jquery.js"></script>
-    <script type="text/javascript" src="../static/underscore.js"></script>
-    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Tutorials" href="../tutorial.html" />
@@ -191,7 +191,7 @@ IMP model of 101 particles with:
 <span class="n">model</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_15_0.png" src="../images/tutorial_6_modelling_and_analysis_15_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_15_0.png" src="../_images/tutorial_6_modelling_and_analysis_15_0.png" />
 <p>One important aspect is to identfy whether the set of models has a good correlation with the input HiC data. This can be done with a single function that affects the models.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Re-select again the top 1000 models</span>
 <span class="n">models</span><span class="o">.</span><span class="n">define_best_models</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
@@ -199,7 +199,7 @@ IMP model of 101 particles with:
 <span class="n">models</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_17_0.png" src="../images/tutorial_6_modelling_and_analysis_17_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_17_0.png" src="../_images/tutorial_6_modelling_and_analysis_17_0.png" />
 <div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mf">0.77166317374901683</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -229,13 +229,13 @@ Total number of clusters: 2
 <span class="n">cl</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">cluster_analysis_dendrogram</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_24_0.png" src="../images/tutorial_6_modelling_and_analysis_24_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_24_0.png" src="../_images/tutorial_6_modelling_and_analysis_24_0.png" />
 <p>One can also show the similarity betwen clusters for a limited number of them (5 in this example)</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Show de dendogram for only the 5 top clusters and no colors</span>
 <span class="n">cl</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">cluster_analysis_dendrogram</span><span class="p">(</span><span class="n">n_best_clusters</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_26_0.png" src="../images/tutorial_6_modelling_and_analysis_26_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_26_0.png" src="../_images/tutorial_6_modelling_and_analysis_26_0.png" />
 </div>
 <div class="section" id="models-consistency">
 <h3>Models consistency<a class="headerlink" href="#models-consistency" title="Permalink to this headline">¶</a></h3>
@@ -244,7 +244,7 @@ Total number of clusters: 2
 <span class="n">models</span><span class="o">.</span><span class="n">model_consistency</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cutoffs</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_29_0.png" src="../images/tutorial_6_modelling_and_analysis_29_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_29_0.png" src="../_images/tutorial_6_modelling_and_analysis_29_0.png" />
 <p>Be aware that this measure makes sense using only models within a cluster and not models from different clusters.</p>
 </div>
 <div class="section" id="dna-density-plots">
@@ -254,12 +254,12 @@ Total number of clusters: 2
 <span class="n">models</span><span class="o">.</span><span class="n">density_plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_33_0.png" src="../images/tutorial_6_modelling_and_analysis_33_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_33_0.png" src="../_images/tutorial_6_modelling_and_analysis_33_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Get a similar plot for only the top cluster and show the standar deviation for a specific(s) running window (steps)</span>
 <span class="n">models</span><span class="o">.</span><span class="n">density_plot</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">error</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_34_0.png" src="../images/tutorial_6_modelling_and_analysis_34_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_34_0.png" src="../_images/tutorial_6_modelling_and_analysis_34_0.png" />
 </div>
 <div class="section" id="models-contact-map">
 <h3>Models contact map<a class="headerlink" href="#models-contact-map" title="Permalink to this headline">¶</a></h3>
@@ -277,9 +277,9 @@ Total number of clusters: 2
 <span class="n">models</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_39_0.png" src="../images/tutorial_6_modelling_and_analysis_39_0.png" />
-<img alt="../images/tutorial_6_modelling_and_analysis_39_1.png" src="../images/tutorial_6_modelling_and_analysis_39_1.png" />
-<img alt="../images/tutorial_6_modelling_and_analysis_39_2.png" src="../images/tutorial_6_modelling_and_analysis_39_2.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_39_0.png" src="../_images/tutorial_6_modelling_and_analysis_39_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_39_1.png" src="../_images/tutorial_6_modelling_and_analysis_39_1.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_39_2.png" src="../_images/tutorial_6_modelling_and_analysis_39_2.png" />
 <div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mf">0.7634028416555525</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -299,18 +299,18 @@ Total number of clusters: 2
 <span class="n">models</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_44_0.png" src="../images/tutorial_6_modelling_and_analysis_44_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_44_0.png" src="../_images/tutorial_6_modelling_and_analysis_44_0.png" />
 <p>We may also want to use only the 10 first models (lowest energy), or the models belonging to a cluster (example cluster 1).</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Plot the distance distributions between particles 13 and 30 in the top 100 models</span>
 <span class="n">models</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_46_0.png" src="../images/tutorial_6_modelling_and_analysis_46_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_46_0.png" src="../_images/tutorial_6_modelling_and_analysis_46_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Plot the distance distributions between particles 13 and 30 in the models from cluster 0</span>
 <span class="n">models</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">54</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_6_modelling_and_analysis_47_0.png" src="../images/tutorial_6_modelling_and_analysis_47_0.png" />
+<img alt="../_images/tutorial_6_modelling_and_analysis_47_0.png" src="../_images/tutorial_6_modelling_and_analysis_47_0.png" />
 </div>
 </div>
 <div class="section" id="save-and-load-models-and-analysis">

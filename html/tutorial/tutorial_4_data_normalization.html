@@ -9,8 +9,8 @@
     
     <title>Hi-C data processing &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
-    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -21,9 +21,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../static/jquery.js"></script>
-    <script type="text/javascript" src="../static/underscore.js"></script>
-    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Tutorials" href="../tutorial.html" />
@@ -71,7 +71,7 @@
 <span class="n">zeroes</span> <span class="o">=</span> <span class="n">filter_by_mean</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">get_hic_matrix</span><span class="p">(),</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_4_data_normalization_3_0.png" src="../images/tutorial_4_data_normalization_3_0.png" />
+<img alt="../_images/tutorial_4_data_normalization_3_0.png" src="../_images/tutorial_4_data_normalization_3_0.png" />
 <p>Than, according to the fit represented above, we would discard all columns in the Hi-C raw data having cumulative count of interaction below the dashed red line in the graph above (~46). This columns will be removed from the modeling, and their associated particles will have no experimental data.</p>
 <p><em>This step is done automatically within tadbit each time an experiment is loaded. In order to ensure that we do remove outlier columns, tadbit checks if this root corresponds to a</em> <strong>concave down</strong> <em>region and if it stands</em> <strong>between zero and the median</strong> <em>of the overall distribution. The result of these &#8220;bad&#8221; columns is stored in the variable Experiment._zeros, that represents the columns to be skipped in the consecutive steps.</em></p>
 </div>

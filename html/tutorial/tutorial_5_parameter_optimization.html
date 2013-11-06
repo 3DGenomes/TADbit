@@ -9,8 +9,8 @@
     
     <title>Parameter optimization for IMP. &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
-    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -21,9 +21,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../static/jquery.js"></script>
-    <script type="text/javascript" src="../static/underscore.js"></script>
-    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Tutorials" href="../tutorial.html" />
@@ -203,19 +203,19 @@ file not found for experiment: batch_gm06690_k562</pre>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_5_parameter_optimization_17_0.png" src="../images/tutorial_5_parameter_optimization_17_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_17_0.png" src="../_images/tutorial_5_parameter_optimization_17_0.png" />
 <p>We can also ask to mark on the plot the best N combination of parameters with the &#8220;show_best&#8221; parameter.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization and mark the best 10 parameter sets</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_5_parameter_optimization_19_0.png" src="../images/tutorial_5_parameter_optimization_19_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_19_0.png" src="../_images/tutorial_5_parameter_optimization_19_0.png" />
 <p>One can also visualize the parameter optimization according to ne of the three optimization parameters.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization based on the lowfreq parameter.</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;scale&#39;</span><span class="p">),</span><span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_5_parameter_optimization_21_0.png" src="../images/tutorial_5_parameter_optimization_21_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_21_0.png" src="../_images/tutorial_5_parameter_optimization_21_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;scale&quot;</span><span class="p">:</span><span class="mf">0.008</span><span class="p">},</span> <span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -231,7 +231,7 @@ file not found for experiment: batch_gm06690_k562</pre>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../images/tutorial_5_parameter_optimization_26_0.png" src="../images/tutorial_5_parameter_optimization_26_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_26_0.png" src="../_images/tutorial_5_parameter_optimization_26_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">write_result</span><span class="p">(</span><span class="s">&#39;results.log&#39;</span><span class="p">)</span>
 </pre></div>
 </div>

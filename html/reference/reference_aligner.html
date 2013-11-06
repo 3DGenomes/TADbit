@@ -9,8 +9,8 @@
     
     <title>Boundary Aligner &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
-    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -21,9 +21,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../static/jquery.js"></script>
-    <script type="text/javascript" src="../static/underscore.js"></script>
-    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
@@ -57,7 +57,7 @@
 <h1>Boundary Aligner<a class="headerlink" href="#boundary-aligner" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pytadbit.boundary_aligner.aligner.align">
-<tt class="descclassname">pytadbit.boundary_aligner.aligner.</tt><tt class="descname">align</tt><big>(</big><em>sequences</em>, <em>method='reciprocal'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../modules/pytadbit/boundary_aligner/aligner.html#align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.aligner.align" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.boundary_aligner.aligner.</tt><tt class="descname">align</tt><big>(</big><em>sequences</em>, <em>method='reciprocal'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/boundary_aligner/aligner.html#align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.aligner.align" title="Permalink to this definition">¶</a></dt>
 <dd><p>Align Topologically Associating Domains. Supports multiple alignment by
 building a consensus TAD and aligning each TAD to it.
 Note: as long as we are using multiple alignments in an iterative way,
@@ -76,13 +76,13 @@ problem.</p>
 
 <dl class="function">
 <dt id="pytadbit.boundary_aligner.locally.smith_waterma">
-<tt class="descclassname">pytadbit.boundary_aligner.locally.</tt><tt class="descname">smith_waterma</tt><big>(</big><em>tads1</em>, <em>tads2</em><big>)</big><a class="reference internal" href="../modules/pytadbit/boundary_aligner/locally.html#smith_waterma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.locally.smith_waterma" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.boundary_aligner.locally.</tt><tt class="descname">smith_waterma</tt><big>(</big><em>tads1</em>, <em>tads2</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/boundary_aligner/locally.html#smith_waterma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.locally.smith_waterma" title="Permalink to this definition">¶</a></dt>
 <dd><p>WARNING: not working!</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.boundary_aligner.reciprocally.reciprocal">
-<tt class="descclassname">pytadbit.boundary_aligner.reciprocally.</tt><tt class="descname">reciprocal</tt><big>(</big><em>tads1</em>, <em>tads2</em>, <em>penalty=None</em>, <em>verbose=False</em>, <em>max_dist=100000</em><big>)</big><a class="reference internal" href="../modules/pytadbit/boundary_aligner/reciprocally.html#reciprocal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.reciprocally.reciprocal" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.boundary_aligner.reciprocally.</tt><tt class="descname">reciprocal</tt><big>(</big><em>tads1</em>, <em>tads2</em>, <em>penalty=None</em>, <em>verbose=False</em>, <em>max_dist=100000</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/boundary_aligner/reciprocally.html#reciprocal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.reciprocally.reciprocal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method based on reciprocal closest boundaries (bd). bd1 will be aligned
 with bd2 (closest boundary from bd1) if and only if bd1 is the closest
 boundary of bd2 too (and of course if the distance between bd1 and bd2 is
@@ -110,7 +110,7 @@ not be aligned together</li>
 
 <dl class="function">
 <dt id="pytadbit.boundary_aligner.globally.needleman_wunsch">
-<tt class="descclassname">pytadbit.boundary_aligner.globally.</tt><tt class="descname">needleman_wunsch</tt><big>(</big><em>tads1</em>, <em>tads2</em>, <em>penalty=-6.0</em>, <em>ext_pen=-5.6</em>, <em>max_dist=500000</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/boundary_aligner/globally.html#needleman_wunsch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.globally.needleman_wunsch" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.boundary_aligner.globally.</tt><tt class="descname">needleman_wunsch</tt><big>(</big><em>tads1</em>, <em>tads2</em>, <em>penalty=-6.0</em>, <em>ext_pen=-5.6</em>, <em>max_dist=500000</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/boundary_aligner/globally.html#needleman_wunsch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.globally.needleman_wunsch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Align two lists of TAD boundaries.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

@@ -9,8 +9,8 @@
     
     <title>Experiment class &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../static/nature.css" type="text/css" />
-    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -21,9 +21,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../static/jquery.js"></script>
-    <script type="text/javascript" src="../static/underscore.js"></script>
-    <script type="text/javascript" src="../static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
@@ -57,7 +57,7 @@
 <h1>Experiment class<a class="headerlink" href="#experiment-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.experiment.Experiment">
-<em class="property">class </em><tt class="descclassname">pytadbit.experiment.</tt><tt class="descname">Experiment</tt><big>(</big><em>name</em>, <em>resolution</em>, <em>hic_data=None</em>, <em>tad_def=None</em>, <em>parser=None</em>, <em>no_warn=False</em>, <em>weights=None</em>, <em>conditions=None</em>, <em>filter_columns=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.experiment.</tt><tt class="descname">Experiment</tt><big>(</big><em>name</em>, <em>resolution</em>, <em>hic_data=None</em>, <em>tad_def=None</em>, <em>parser=None</em>, <em>no_warn=False</em>, <em>weights=None</em>, <em>conditions=None</em>, <em>filter_columns=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hi-C experiment.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -99,7 +99,7 @@ content of low values</li>
 TODO: normalization</p>
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.get_hic_matrix">
-<tt class="descname">get_hic_matrix</tt><big>(</big><em>focus=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.get_hic_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.get_hic_matrix" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_hic_matrix</tt><big>(</big><em>focus=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.get_hic_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.get_hic_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Hi-C matrix.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -117,7 +117,7 @@ current experiment</td>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.get_hic_zscores">
-<tt class="descname">get_hic_zscores</tt><big>(</big><em>normalized=True</em>, <em>zscored=True</em>, <em>remove_zeros=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.get_hic_zscores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.get_hic_zscores" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_hic_zscores</tt><big>(</big><em>normalized=True</em>, <em>zscored=True</em>, <em>remove_zeros=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.get_hic_zscores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.get_hic_zscores" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C raw data. The result will be stored into
 the private Experiment._zscore list.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -138,7 +138,7 @@ weights (see <a class="reference internal" href="#pytadbit.experiment.Experiment
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.load_hic_data">
-<tt class="descname">load_hic_data</tt><big>(</big><em>hic_data</em>, <em>parser=None</em>, <em>wanted_resolution=None</em>, <em>data_resolution=None</em>, <em>filter_columns=True</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.load_hic_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.load_hic_data" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load_hic_data</tt><big>(</big><em>hic_data</em>, <em>parser=None</em>, <em>wanted_resolution=None</em>, <em>data_resolution=None</em>, <em>filter_columns=True</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.load_hic_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.load_hic_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a Hi-C experiment to the Chromosome object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -178,7 +178,7 @@ of low values</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.load_tad_def">
-<tt class="descname">load_tad_def</tt><big>(</big><em>tad_def</em>, <em>weights=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.load_tad_def"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.load_tad_def" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load_tad_def</tt><big>(</big><em>tad_def</em>, <em>weights=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.load_tad_def"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.load_tad_def" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the Topologically Associated Domains definition detection to Slice</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -200,7 +200,7 @@ documentation)</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.model_region">
-<tt class="descname">model_region</tt><big>(</big><em>start</em>, <em>end</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>n_cpus=1</em>, <em>verbose=0</em>, <em>keep_all=False</em>, <em>close_bins=1</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.005}</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.model_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.model_region" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">model_region</tt><big>(</big><em>start</em>, <em>end</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>n_cpus=1</em>, <em>verbose=0</em>, <em>keep_all=False</em>, <em>close_bins=1</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.005}</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.model_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.model_region" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -264,7 +264,7 @@ function:</p>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.normalize_hic">
-<tt class="descname">normalize_hic</tt><big>(</big><em>method='visibility'</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">normalize_hic</tt><big>(</big><em>method='visibility'</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C data. This normalization step does the same of
 the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function (default parameters),</p>
 <p>It fills the Experiment.norm variable with the Hi-C values divided by
@@ -312,7 +312,7 @@ corresponds to method=&#8217;sqrt&#8217;.</p>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.optimal_imp_parameters">
-<tt class="descname">optimal_imp_parameters</tt><big>(</big><em>start, end, n_models=500, n_keep=100, n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1, lowfreq_range=(-1, 0, 0.1), scale_range=[0.005], maxdist_range=(400, 1400, 100), cutoff=300, outfile=None, verbose=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.optimal_imp_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.optimal_imp_parameters" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">optimal_imp_parameters</tt><big>(</big><em>start, end, n_models=500, n_keep=100, n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1, lowfreq_range=(-1, 0, 0.1), scale_range=[0.005], maxdist_range=(400, 1400, 100), cutoff=300, outfile=None, verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.optimal_imp_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.optimal_imp_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the optimal set of parameters to be used for the 3D modeling in
 IMP.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -386,7 +386,7 @@ the input tuple is the incremental step for scale parameter values</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.print_hic_matrix">
-<tt class="descname">print_hic_matrix</tt><big>(</big><em>print_it=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.print_hic_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.print_hic_matrix" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">print_hic_matrix</tt><big>(</big><em>print_it=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.print_hic_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.print_hic_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Hi-C matrix as string</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -401,7 +401,7 @@ current experiment</td>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.set_resolution">
-<tt class="descname">set_resolution</tt><big>(</big><em>resolution</em>, <em>keep_original=True</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.set_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.set_resolution" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">set_resolution</tt><big>(</big><em>resolution</em>, <em>keep_original=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.set_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.set_resolution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a new value for the resolution. Copy the original data into
 Experiment._ori_hic and replace the Experiment.hic_data
 with the data corresponding to new data 
@@ -423,7 +423,7 @@ must be a multiple of the original resolution, and higher than it</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.write_interaction_pairs">
-<tt class="descname">write_interaction_pairs</tt><big>(</big><em>fname</em>, <em>normalized=True</em>, <em>zscored=True</em>, <em>diagonal=False</em>, <em>cutoff=None</em>, <em>header=False</em>, <em>true_position=False</em>, <em>uniq=True</em>, <em>remove_zeros=False</em>, <em>focus=None</em><big>)</big><a class="reference internal" href="../modules/pytadbit/experiment.html#Experiment.write_interaction_pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.write_interaction_pairs" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_interaction_pairs</tt><big>(</big><em>fname</em>, <em>normalized=True</em>, <em>zscored=True</em>, <em>diagonal=False</em>, <em>cutoff=None</em>, <em>header=False</em>, <em>true_position=False</em>, <em>uniq=True</em>, <em>remove_zeros=False</em>, <em>focus=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.write_interaction_pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.write_interaction_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a tab separated file with all the pairwise interactions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
