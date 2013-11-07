@@ -8,21 +8,22 @@ from math import sqrt
 
 # Exception to handle failed autoread.
 class AutoReadFail(Exception):
-   pass
+    pass
 
 # Helper functions for the autoreader.
 def is_asymmetric(matrix):
-   maxn = len(matrix)
-   for i in range(maxn):
-      for j in range(i+1, maxn):
-         if matrix[i][j] != matrix[j][i]: return True
-   return False
+    maxn = len(matrix)
+    for i in range(maxn):
+        maxi = matrix[i] # slightly more efficient
+        for j in range(i+1, maxn):
+            if maxi[j] != matrix[j][i]: return True
+    return False
 
 def symmetrize(matrix):
-   maxn = len(matrix)
-   for i in range(maxn):
-      for j in range(i+1, maxn):
-         matrix[i][j] = matrix[j][i] = matrix[i][j] + matrix[j][i]
+    maxn = len(matrix)
+    for i in range(maxn):
+        for j in range(i+1, maxn):
+            matrix[i][j] = matrix[j][i] = matrix[i][j] + matrix[j][i]
 
 
 def autoreader(f):
@@ -38,9 +39,9 @@ def autoreader(f):
     # Skip initial comment lines and read in the whole file
     # as a list of lists.
     for line in f:
-       if line[0] != '#': break
-    items = [line.rstrip().split()]
-    items += [line.rstrip().split() for line in f]
+        if line[0] != '#': break
+    items = [line.split()]
+    items += [line.split() for line in f]
 
     # Count the number of elements per line after the first.
     # Wrapping in a set is a trick to make sure that every line
@@ -54,45 +55,52 @@ def autoreader(f):
     nrow = len(items)
     # Auto-detect the format, there are only 4 cases.
     if ncol == nrow:
-       if all([item.isdigit() for item in items[0]]):
-          # Case 1: pure integer matrix.
-          header = False
-          startat = 0
-       else:
-          # Case 2: matrix with row and column names.
-          header = True
-          startat = 1
+        if all([item.isdigit() for item in items[0]]):
+            # Case 1: pure integer matrix.
+            header = False
+            startat = 0
+        else:
+            # Case 2: matrix with row and column names.
+            header = True
+            startat = 1
     else:
-       if len(items[0]) == len(items[1]):
-          # Case 3: matrix with row information.
-          header = False
-          startat = ncol - nrow
-       else:
-          # Case 4: matrix with header and row information.
-          header = True
-          startat = ncol - nrow + 1
+        if len(items[0]) == len(items[1]):
+            # Case 3: matrix with row information.
+            header = False
+            startat = ncol - nrow
+        else:
+            # Case 4: matrix with header and row information.
+            header = True
+            startat = ncol - nrow + 1
 
     # Trim the matrix.
     if header:
-       items = items[1:]
-       nrow -= 1
+        # faster to do del
+        del(items[0])
+        nrow -= 1
     if startat > 0:
-       items = [line[startat:] for line in items]
-       ncol -= startat
+        items = [line[startat:] for line in items]
+        ncol -= startat
 
     if ncol != nrow: raise AutoReadFail('non square matrix')
 
     # Time to get the numeric values.
     try:
-       items = [[int(a) for a in line] for line in items]
+        items = [[int(a) for a in line] for line in items]
     except ValueError:
-       raise AutoReadFail('non integer values')
+        try:
+            # dekker data 2009, uses integer but puts a comma... 
+            items = [[int(float(a)) for a in line] for line in items]
+            warn('WARNING: non integer values')
+        except ValueError:
+            raise AutoReadFail('ERROR: non numerical values')
 
     if is_asymmetric(items):
-       warn('input matrix not symmetric: symmetrizing')
-       symmetrize(items)
+        warn('input matrix not symmetric: symmetrizing')
+        symmetrize(items)
 
-    return tuple(a for line in items for a in line), ncol
+    # it is much faster to transform a list to a tuple than an iterator to a tuple..
+    return tuple([a for line in items for a in line]), ncol
 
 
 def read_matrix(things, parser=None):
@@ -135,7 +143,10 @@ def read_matrix(things, parser=None):
             try:
                 matrix, size = parser(open(thing))
             except IOError:
-                matrix, size = parser(thing.split('\n'))
+                if len(thing.split('\n')) > 1:
+                    matrix, size = parser(thing.split('\n'))
+                else:
+                    raise Exception('\n   ERROR: file %s not found\n' % thing)
             matrices.append(matrix)
             sizes.append(size)
         elif type(thing) is list:
@@ -162,21 +173,8 @@ def read_matrix(things, parser=None):
                 print 'Error found:', exc
         else:
             raise Exception('Unable to read this file or whatever it is :)')
-    if all([s==sizes[0] for s in sizes]) and \
-           all([__check_hic(m, sizes[0]) for m in matrices]):
+    if all([s==sizes[0] for s in sizes]):
         return matrices, sizes[0]
     raise Exception('All matrices must have the same size ' +
                     '(same chromosome and same bins).')
 
-
-# This function is no longer required because the data is
-# force-symmetrized by the C engine.
-def __check_hic(hic, size):
-    """
-    check if hi-c data is symmetric
-    """
-    #for i in xrange(size):
-    #    for j in xrange(i + 1, size):
-    #        if not hic[i * size + j] == hic[j * size + i]:
-    #            raise AttributeError('ERROR: matrix should be symmetric.\n')
-    return True
