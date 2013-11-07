@@ -20,3 +20,6 @@ Build status
 .. image::  https://travis-ci.org/3DGenomes/tadbit.png?branch=master
    :target: https://travis-ci.org/3DGenomes/tadbit
 
+.. image:: https://coveralls.io/repos/3DGenomes/tadbit/badge.png
+   :target: https://coveralls.io/r/3DGenomes/tadbit
+
