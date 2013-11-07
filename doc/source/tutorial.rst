@@ -25,4 +25,5 @@ Three-dimentional modelling
    tutorial/tutorial_4_data_normalization
    tutorial/tutorial_5_parameter_optimization
    tutorial/tutorial_6_modelling_and_analysis
+   tutorial/tutorial_7_single_model_analysis
 

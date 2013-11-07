@@ -370,37 +370,37 @@ class IMPmodel(dict):
         
         If we want that all dots of the mesh representing the surface of the
         chromatin, corresponds to an equal area (:math:`a`)
-         .. math::
+        .. math::
 
-           a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}
+          a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}
 
-         with:
+        with:
 
-         * :math:`r` radius of the object to fit (as the input parameter **radius**)
-         * :math:`s` number of points in sphere
-         * :math:`c` number of points in circle (as the input parameter **nump**)
-         * :math:`N_{(d)}` number of circles in an edge of length :math:`d`
+        * :math:`r` radius of the object to fit (as the input parameter **radius**)
+        * :math:`s` number of points in sphere
+        * :math:`c` number of points in circle (as the input parameter **nump**)
+        * :math:`N_{(d)}` number of circles in an edge of length :math:`d`
 
-         According to this, when the distance between two particles is equal
-         to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.
+        According to this, when the distance between two particles is equal
+        to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.
 
-         As :
+        As :
 
-         .. math::
+        .. math::
 
-           2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}
-         
-         It is fair to state the number of dots represented along a circle as:
+          2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}
+        
+        It is fair to state the number of dots represented along a circle as:
 
-         .. math::
+        .. math::
 
-           c = \sqrt{s} \\times \sqrt{\pi}
+          c = \sqrt{s} \\times \sqrt{\pi}
 
-         Thus the number of circles in an edge of length :math:`d` must be:
+        Thus the number of circles in an edge of length :math:`d` must be:
 
-         .. math::
+        .. math::
 
-           N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}
+          N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}
 
         :returns: a list of *1-* the number of dots in the mesh that could be
            occupied by an object of the given radius *2-* the total number of

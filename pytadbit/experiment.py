@@ -12,6 +12,7 @@ from pytadbit.parsers.tad_parser         import parse_tads
 from warnings                            import warn
 from math                                import sqrt
 from pytadbit.imp.CONFIG                 import CONFIG
+from pytadbit.imp.impoptimizer           import IMPoptimizer
 
 try:
     from pytadbit.imp.imp_modelling          import generate_3d_models
@@ -490,28 +491,19 @@ class Experiment(object):
              - the range of lowfreq used
 
         """
-        zscores, values = self._sub_experiment_zscore(start, end)
-        (matrix, scale_arange, max_dist_arange,
-         upfreq_arange, lowfreq_arange) = grid_search(
-            upfreq_range=upfreq_range, lowfreq_range=lowfreq_range,
-            scale_range=scale_range, zscores=zscores,
-            resolution=self.resolution, values=values,
-            maxdist_range=maxdist_range, n_cpus=n_cpus, n_models=n_models,
-            n_keep=n_keep, cutoff=cutoff,
-            close_bins=close_bins, verbose=verbose)
+
+        optimizer = IMPoptimizer(self, start, end, n_keep=n_keep, cutoff=cutoff,
+                                 n_models=n_models, close_bins=close_bins)
+        optimizer.run_grid_search(maxdist_range=maxdist_range,
+                                  upfreq_range=upfreq_range,
+                                  lowfreq_range=lowfreq_range,
+                                  scale_range=scale_range,
+                                  n_cpus=n_cpus, verbose=verbose)
+
         if outfile:
-            out = open(outfile, 'w')
-            out.write('# scale\tmax_dist\tup_freq\tlow_freq\tcorrelation\n')
-            for h, hh in enumerate(scale_arange):
-                for i, ii in enumerate(max_dist_arange):
-                    for j, jj in enumerate(upfreq_arange):
-                        for k, kk in enumerate(lowfreq_arange):
-                            out.write('%s\t%s\t%s\t%s\t%s\n' % (
-                                hh, ii, jj, kk, matrix[h, i, j, k]))
-            out.close()
-        return (('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                (scale_arange, max_dist_arange, upfreq_arange, lowfreq_arange),
-                matrix)
+            optimizer.write_result(outfile)
+
+        return optimizer
 
     
     def _sub_experiment_zscore(self, start, end):

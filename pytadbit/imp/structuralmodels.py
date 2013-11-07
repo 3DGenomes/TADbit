@@ -1266,8 +1266,6 @@ class StructuralModels(object):
            calculated distances or their median value distances, either the
            list of distances.
         """
-        part1 -= 1
-        part2 -= 1
         if models:
             models=models
         elif cluster > -1:
@@ -1281,7 +1279,7 @@ class StructuralModels(object):
                 return np_median(dists)
             else:
                 return dists
-        plot_hist_box(dists, part1 + 1, part2 + 1, axe, savefig)
+        plot_hist_box(dists, part1, part2, axe, savefig)
 
 
     def __square_3d_dist(self, part1, part2, models=None, cluster=None):

@@ -4,8 +4,9 @@
 
 """
 from pytadbit.imp.imp_modelling import generate_3d_models
-from pytadbit.utils.extraviews import plot_2d_optimization_result
-from pytadbit.utils.extraviews import plot_3d_optimization_result
+from pytadbit.utils.extraviews  import plot_2d_optimization_result
+from pytadbit.utils.extraviews  import plot_3d_optimization_result
+from warnings                   import warn
 import numpy as np
 
 class IMPoptimizer(object):
@@ -44,9 +45,9 @@ class IMPoptimizer(object):
         self.upfreq_range = []
         self.results = {}
 
-        
+
     def run_grid_search(self, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1),
-                    scale_range=[0.01],
+                    scale_range=[0.005],
                     maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True):
         """
         This function calculates the correlation between the models generated 
@@ -64,7 +65,7 @@ class IMPoptimizer(object):
            used to search for the optimal maximum experimental distance. The 
            last value of the input tuple is the incremental step for maxdist 
            values
-        :param [0.01] scale_range: upper and lower bounds used to search for 
+        :param [0.005] scale_range: upper and lower bounds used to search for 
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
         :param True verbose: print the results to the standard output
@@ -102,30 +103,34 @@ class IMPoptimizer(object):
         if not self.maxdist_range:
             self.maxdist_range = [my_round(i) for i in maxdist_arange]
         else:
-            self.maxdist_range = sorted([my_round(i) for i in maxdist_arange] +
+            self.maxdist_range = sorted([my_round(i) for i in maxdist_arange
+                                         if not my_round(i) in self.maxdist_range] +
                                         self.maxdist_range)
         if not self.upfreq_range:
             self.upfreq_range  = [my_round(i) for i in upfreq_arange ]
         else:
-            self.upfreq_range = sorted([my_round(i) for i in upfreq_arange] +
+            self.upfreq_range = sorted([my_round(i) for i in upfreq_arange
+                                        if not my_round(i) in self.upfreq_range] +
                                        self.upfreq_range)
         if not self.lowfreq_range:
             self.lowfreq_range = [my_round(i) for i in lowfreq_arange]
         else:
-            self.lowfreq_range = sorted([my_round(i) for i in lowfreq_arange] +
+            self.lowfreq_range = sorted([my_round(i) for i in lowfreq_arange
+                                         if not my_round(i) in self.lowfreq_range] +
                                         self.lowfreq_range)
         if not self.scale_range:
             self.scale_range   = [my_round(i) for i in scale_arange  ]
         else:
-            self.scale_range = sorted([my_round(i) for i in scale_arange] +
+            self.scale_range = sorted([my_round(i) for i in scale_arange
+                                       if not my_round(i) in self.scale_range] +
                                       self.scale_range)
         
         # grid search
         count = 0
-        for scale in self.scale_range:
-            for maxdist in self.maxdist_range:
-                for upfreq in self.upfreq_range:
-                    for lowfreq in self.lowfreq_range:
+        for scale in [my_round(i) for i in scale_arange]:
+            for maxdist in [my_round(i) for i in maxdist_arange]:
+                for upfreq in [my_round(i) for i in upfreq_arange]:
+                    for lowfreq in [my_round(i) for i in lowfreq_arange]:
                         if (scale, maxdist, upfreq, lowfreq) in self.results:
                             continue
                         tmp = {'kforce'   : 5,
@@ -159,6 +164,28 @@ class IMPoptimizer(object):
         self.maxdist_range.sort(key=float)
         self.lowfreq_range.sort(key=float)
         self.upfreq_range.sort( key=float)
+
+
+    def get_best_parameters_dict(self, reference=None):
+        """
+        :param None reference: a description of the dataset optimized
+
+        :returns: a dict that can be used for modelling, see config parameter in
+           :func:`pytadbit.experiment.Experiment.model_region`
+           
+        """
+        if not self.results:
+            warn('WARNING: no optimization done yet')
+            return
+        best = ((None, None, None, None), 0.0)
+        for (sca, mxd, ufq, lfq), val in self.results.iteritems():
+            if val > best[-1]:
+                best = ((sca, mxd, ufq, lfq), val)
+        return dict((('scale'  , float(best[0][0])),
+                     ('maxdist', float(best[0][1])),
+                     ('upfreq' , float(best[0][2])),
+                     ('lowfreq', float(best[0][3])),
+                     ('reference', reference or ''), ('kforce', 5)))
 
 
     def plot_2d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),

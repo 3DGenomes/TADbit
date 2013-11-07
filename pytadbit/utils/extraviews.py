@@ -244,7 +244,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
 
 
 
-def chimera_view(cmm_files, chimera_bin='chimera', shape='tube',
+def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
                  chimera_cmd=None, savefig=None, centroid=False,
                  gyradius=False):
     """
@@ -271,8 +271,8 @@ set depth_cue
 set dc_color black
 set dc_start 0.5
 set dc_end 1
-scale 0.8
-''' + ('define centroid radius %s color 1,0,0,0.2' % (
+scale 0.8\n
+''' + ('define centroid radius %s color 1,0,0,0.2\n' % (
                       gyradius if gyradius else 10) if centroid else ''))
         if savefig:
             if savefig.endswith('.png'):
