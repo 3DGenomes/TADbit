@@ -23,4 +23,3 @@ script.cmd
 *.o
 *.gcno
 testset
-src/test/data/*

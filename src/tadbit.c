@@ -52,7 +52,7 @@ fg(
         double *g
 ){
 // SYNOPSIS:                                                            
-//   Subfroutine of 'll' that computes 'f' and 'g' for Newton-Raphson   
+//   Subroutine of 'll' that computes 'f' and 'g' for Newton-Raphson    
 //   cycles.                                                            
 //                                                                      
 // ARGUMENTS:                                                           
@@ -635,8 +635,68 @@ allocate_new_jobs(
 
 }
 
+int
+enforce_symmetry
+(
+  int **obs,
+  const int n,
+  const int m
+)
+// SYNOPSIS:                                                            
+//   Check if the argument is symmetric, and if not symmetrize it by    
+//   summing with the transpose matrix (except the diagonal which is    
+//   not modified).                                                     
+//                                                                      
+// ARGUMENTS:                                                           
+//   'obs': (m) matrices to symmetrize.                                 
+//   'n': dimension of the matrices.                                    
+//   'm': number of matrices.                                           
+//                                                                      
+// RETURN:                                                              
+//   0 if the argument is symmetric, 1 otherwise.                       
+//                                                                      
+// SIDE-EFFECTS:                                                        
+//   Update 'obs' if it is not symmetric (not modified otherwise).      
+//                                                                      
+{
+   int i;
+   int j;
+   int k;
+
+   int symmetric = 1;
+   for (k = 0 ; k < m && symmetric ; k++) {
+   for (i = 0 ; i < n && symmetric ; i++) {
+   for (j = i+1 ; j < n && symmetric ; j++) {
+      // Set 'symmetric' to false if one asymmetry is found.
+      // This will force break out of the loop.
+      if (obs[k][i+j*n] != obs[k][j+i*n]) {
+         symmetric = 0;
+      }
+   }
+   }
+   }
+
+   // Exit if the data is symmetric.
+   if (symmetric) return 0;
+
+   // Else warn the user and symmetrize.
+   fprintf(stderr, "input matrix not symmetric: symmetrizing\n");
+   for (k = 0 ; k < m ; k++) {
+   for (i = 0 ; i < n ; i++) {
+   for (j = i+1 ; j < n ; j++) {
+      obs[k][j+i*n] = obs[k][i+j*n] = obs[k][i+j*n] + obs[k][j+i*n];
+   }
+   }
+   }
+
+   return 1;
+
+}
+
+
 void
-tadbit(
+tadbit
+(
   // input //
   int **obs,
   int n,
@@ -675,7 +735,6 @@ tadbit(
    // matrix 'dist' is the distance to the main diagonal. Every
    // element of coordinate (i,j) is on a diagonal; the distance
    // is the log-shift to the main diagonal 'i-j'.
-
    double *init_dist = (double *) malloc(N*N * sizeof(double));
 
    for (l = 0, i = 0; i < N ; i++) {
@@ -703,6 +762,7 @@ tadbit(
       n -= remove[i];
    }
 
+   // Exit if there are too few rows/columns after removal.
    if (n < 6) {
       // Signal failure.
       seg->maxbreaks = -1;
@@ -740,6 +800,9 @@ tadbit(
    // We will not need the initial observations any more.
    free(init_dist);
    obs = new_obs;
+
+   // Make sure the data is symmetric.
+   enforce_symmetry(obs, n, m);
 
 
    // Compute row/column sums (identical by symmetry).

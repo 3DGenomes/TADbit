@@ -29,6 +29,59 @@ unredirect_sderr
    setvbuf(stderr, NULL, _IONBF, 0);
 }
 
+void
+test_enforce_symmetry
+(void)
+{
+
+   int case1[16] = {
+      1,2,3,4,
+      1,2,3,4,
+      1,2,3,4,
+      1,2,3,4,
+   };
+   int case2[16] = {
+      1,1,1,1,
+      2,2,2,2,
+      3,3,3,3,
+      4,4,4,4,
+   };
+
+   int **obs = malloc(2 * sizeof(int *));
+   obs[0] = case1;
+   obs[1] = case2;
+
+   int expected[16] = {
+      1,3,4,5,
+      3,2,5,6,
+      4,5,3,7,
+      5,6,7,4,
+   };
+  
+   redirect_stderr_to(error_buffer);
+   int asymmetry = enforce_symmetry(obs, 4, 2);
+   unredirect_sderr();   
+
+   // Check the output.
+   g_assert_cmpint(asymmetry, ==, 1);
+   for (int i = 0 ; i < 16 ; i++) {
+      g_assert_cmpint(expected[i], ==, obs[0][i]);
+      g_assert_cmpint(expected[i], ==, obs[1][i]);
+   }
+
+   // Check the error message.
+   g_assert_cmpstr(error_buffer, ==,
+         "input matrix not symmetric: symmetrizing\n");
+
+
+   // Now the matrices are symmetric.
+   asymmetry = enforce_symmetry(obs, 4, 2);
+   g_assert_cmpint(asymmetry, ==, 0);
+
+   free(obs);
+   return;
+
+}
 
 void
 test_tadbit
@@ -186,12 +239,12 @@ test_tadbit_on_real_input
    int i;
 
    int *obs[2];
-   obs[0] = malloc(1413*1413 * sizeof(int));
-   obs[1] = malloc(1413*1413 * sizeof(int));
+   obs[0] = malloc(3191*3191 * sizeof(int));
+   obs[1] = malloc(3191*3191 * sizeof(int));
 
    FILE *f[2];
-   f[0] = fopen("data/HindIII_T60.tsv", "r");
-   f[1] = fopen("data/NcoI_T60.tsv", "r");
+   f[0] = fopen("data/hESC_chr19-rep1.txt", "r");
+   f[1] = fopen("data/hESC_chr19-rep2.txt", "r");
 
    g_assert(f[0] != NULL);
    g_assert(f[1] != NULL);
@@ -204,18 +257,21 @@ test_tadbit_on_real_input
    // Read both files the same way.
    for (int j = 0 ; j < 2 ; j++) {
       // Discard header.
-      read = getline(&line, &len, f[j]);
+      //read = getline(&line, &len, f[j]);
       i = 0;
       while ((read = getline(&line, &len, f[j])) != -1) {
          pch = strtok(line, "\t");
-         pch = strtok(NULL, "\t");
+         // Discard row name.
+         //pch = strtok(NULL, "\t");
          while (pch != NULL) {
             obs[j][i++] = atoi(pch);
             pch = strtok(NULL, "\t");
          }
-         g_assert(i % 1413 == 0);
+         // Check the number of items in each row.
+         g_assert_cmpint(i % 3191, == , 0);
       }
-      g_assert(i == 1413*1413);
+      // Check the total number of items read.
+      g_assert_cmpint(i, == , 3191*3191);
    }
 
    fclose(f[0]);
@@ -223,13 +279,16 @@ test_tadbit_on_real_input
    free(line);
 
    tadbit_output *seg = malloc(sizeof(tadbit_output));
-   tadbit(obs, 1413, 2, 16, 1, 200, 0, 1, seg);
+   redirect_stderr_to(error_buffer);
+   tadbit(obs, 3191, 2, 8, 1, 200, 0, 0, seg);
+   unredirect_sderr();
+
    int nTADs1 = seg->nbreaks_opt;
 
-   tadbit(obs, 1413, 2, 16, 1, 200, 0, 0, seg);
-   int nTADs2 = seg->nbreaks_opt;
+   //tadbit(obs, 1413, 2, 16, 1, 200, 0, 0, seg);
+   //int nTADs2 = seg->nbreaks_opt;
 
-   fprintf(stderr, "%d, %d\n", nTADs1, nTADs2);
+   //fprintf(stderr, "%d, %d\n", nTADs1, nTADs2);
    destroy_tadbit_output(seg);
 
    free(obs[0]);
@@ -250,8 +309,9 @@ main(
 
    g_test_init(&argc, &argv, NULL);
    //g_test_add_func("/ll", test_ll);
+   g_test_add_func("/enforce_symmetry", test_enforce_symmetry);
    g_test_add_func("/tadbit", test_tadbit);
-   //g_test_add_func("/tadbit_on_real_input", test_tadbit_on_real_input);
+   g_test_add_func("/tadbit_on_real_input", test_tadbit_on_real_input);
 
    int g_test_result = g_test_run();
    close(backup);

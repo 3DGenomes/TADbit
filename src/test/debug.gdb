@@ -1,2 +1,2 @@
-b test_tadbit_on_real_input
+b test_enforce_symmetry
 r

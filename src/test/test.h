@@ -12,7 +12,8 @@ int _max_cache_index;
 int *_cache_index;
 
 double
-ll(
+ll
+(
   const int    n,
   const int    i_,
   const int    _i,
@@ -26,3 +27,10 @@ ll(
         double *c
 );
 
+int
+enforce_symmetry
+(
+  int **obs,
+  int n,
+  int m
+);
