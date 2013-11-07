@@ -1,11 +1,11 @@
 .. currentmodule:: pytadbit.imp.impmodel
 
-IMPmodel class
-==============
-
 .. autofunction:: load_impmodel_from_cmm
 
 .. autofunction:: load_impmodel_from_xyz
+
+IMPmodel class
+==============
 
 .. autoclass:: IMPmodel
    :members:
