@@ -1,0 +1,14 @@
+.. currentmodule:: pytadbit.imp.impmodel
+
+IMPmodel class
+==============
+
+.. autofunction:: load_impmodel_from_cmm
+
+.. autofunction:: load_impmodel_from_xyz
+
+.. autoclass:: IMPmodel
+   :members:
+   :no-undoc-members:
+
+.. currentmodule:: pytadbit.imp.structuralmodels

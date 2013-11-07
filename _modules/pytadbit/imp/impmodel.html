@@ -68,7 +68,7 @@
     <span class="n">warn</span><span class="p">(</span><span class="s">&#39;matplotlib not found</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="load_impmodel_from_cmm"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.load_impmodel_from_cmm">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_cmm</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="load_impmodel_from_cmm"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.load_impmodel_from_cmm">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_cmm</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Loads an IMPmodel object using an cmm file of the form:</span>
 
@@ -105,7 +105,7 @@
     <span class="k">return</span> <span class="n">model</span>
 
 </div>
-<div class="viewcode-block" id="load_impmodel_from_xyz"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.load_impmodel_from_xyz">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_xyz</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="load_impmodel_from_xyz"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.load_impmodel_from_xyz">[docs]</a><span class="k">def</span> <span class="nf">load_impmodel_from_xyz</span><span class="p">(</span><span class="n">f_name</span><span class="p">,</span> <span class="n">rand_init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loads an IMPmodel object using an xyz file of the form:</span>
 
@@ -136,7 +136,7 @@
     <span class="k">return</span> <span class="n">model</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel">[docs]</a><span class="k">class</span> <span class="nc">IMPmodel</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel">[docs]</a><span class="k">class</span> <span class="nc">IMPmodel</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A container for the IMP modeling results. The container is a dictionary</span>
 <span class="sd">    with the following keys:</span>
@@ -180,7 +180,7 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">])</span>
 
 
-<div class="viewcode-block" id="IMPmodel.objective_function"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.objective_function">[docs]</a>    <span class="k">def</span> <span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<div class="viewcode-block" id="IMPmodel.objective_function"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.objective_function">[docs]</a>    <span class="k">def</span> <span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                            <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function plots the objective function value per each Monte-Carlo</span>
@@ -233,7 +233,7 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.distance"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.distance">[docs]</a>    <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.distance"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.distance">[docs]</a>    <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param part1: index of a particle in the model</span>
 <span class="sd">        :param part2: index of a particle in the model</span>
@@ -259,7 +259,7 @@
                 <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">part1</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="IMPmodel.center_of_mass"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.center_of_mass">[docs]</a>    <span class="k">def</span> <span class="nf">center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.center_of_mass"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.center_of_mass">[docs]</a>    <span class="k">def</span> <span class="nf">center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :returns: the center of mass of a given model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -269,7 +269,7 @@
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(((</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">r_x</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">r_y</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;z&#39;</span><span class="p">,</span> <span class="n">r_z</span><span class="p">)))</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.radius_of_gyration"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration">[docs]</a>    <span class="k">def</span> <span class="nf">radius_of_gyration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.radius_of_gyration"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration">[docs]</a>    <span class="k">def</span> <span class="nf">radius_of_gyration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Defined as:</span>
 <span class="sd">        </span>
@@ -291,7 +291,7 @@
         <span class="k">return</span> <span class="n">rog</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.contour"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.contour">[docs]</a>    <span class="k">def</span> <span class="nf">contour</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.contour"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.contour">[docs]</a>    <span class="k">def</span> <span class="nf">contour</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :returns: the totals length of the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -301,7 +301,7 @@
         <span class="k">return</span> <span class="n">dist</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.longest_axe"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.longest_axe">[docs]</a>    <span class="k">def</span> <span class="nf">longest_axe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.longest_axe"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.longest_axe">[docs]</a>    <span class="k">def</span> <span class="nf">longest_axe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :returns: the maximum distance between two particles in the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -314,7 +314,7 @@
         <span class="k">return</span> <span class="n">maxdist</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.shortest_axe"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.shortest_axe">[docs]</a>    <span class="k">def</span> <span class="nf">shortest_axe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.shortest_axe"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.shortest_axe">[docs]</a>    <span class="k">def</span> <span class="nf">shortest_axe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :returns: the minimum distance between two particles in the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -327,7 +327,7 @@
         <span class="k">return</span> <span class="n">mindist</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.min_max_by_axis"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.min_max_by_axis">[docs]</a>    <span class="k">def</span> <span class="nf">min_max_by_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.min_max_by_axis"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.min_max_by_axis">[docs]</a>    <span class="k">def</span> <span class="nf">min_max_by_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :returns: the minimum and maximum coordinates for each x, y and z axis</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -336,7 +336,7 @@
                 <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">]),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">])))</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.cube_side"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.cube_side">[docs]</a>    <span class="k">def</span> <span class="nf">cube_side</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.cube_side"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.cube_side">[docs]</a>    <span class="k">def</span> <span class="nf">cube_side</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :returns: the diagonal length of the cube containing the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -345,14 +345,14 @@
                     <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">]))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.cube_volume"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.cube_volume">[docs]</a>    <span class="k">def</span> <span class="nf">cube_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.cube_volume"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.cube_volume">[docs]</a>    <span class="k">def</span> <span class="nf">cube_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :returns: the volume of  the cube containing the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cube_side</span><span class="p">()</span><span class="o">**</span><span class="mi">3</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.inaccessible_particles"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.inaccessible_particles">[docs]</a>    <span class="k">def</span> <span class="nf">inaccessible_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPmodel.inaccessible_particles"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.inaccessible_particles">[docs]</a>    <span class="k">def</span> <span class="nf">inaccessible_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gives the number of loci/particles that are accessible to an object</span>
 <span class="sd">        (i.e. a protein) of a given size.</span>
@@ -388,7 +388,7 @@
         <span class="k">return</span> <span class="n">inaccessibles</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.accessible_surface"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.accessible_surface">[docs]</a>    <span class="k">def</span> <span class="nf">accessible_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">write_cmm_file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<div class="viewcode-block" id="IMPmodel.accessible_surface"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.accessible_surface">[docs]</a>    <span class="k">def</span> <span class="nf">accessible_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">write_cmm_file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                            <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include_edges</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates a mesh surface around the model (distance equal to input</span>
@@ -685,7 +685,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span> <span class="o">-</span> <span class="n">impossibles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">),</span> <span class="n">area</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">acc_parts</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.write_cmm"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.write_cmm">[docs]</a>    <span class="k">def</span> <span class="nf">write_cmm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_residues</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<div class="viewcode-block" id="IMPmodel.write_cmm"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_cmm">[docs]</a>    <span class="k">def</span> <span class="nf">write_cmm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_residues</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                   <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save a model in the cmm format, read by Chimera</span>
@@ -736,7 +736,7 @@
         <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.write_xyz"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.write_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">write_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">get_path</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+<div class="viewcode-block" id="IMPmodel.write_xyz"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">write_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">get_path</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                   <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes a xyz file containing the 3D coordinates of each particle in the</span>
@@ -775,7 +775,7 @@
             <span class="k">return</span> <span class="bp">None</span>
 
 </div>
-<div class="viewcode-block" id="IMPmodel.view_model"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.view_model">[docs]</a>    <span class="k">def</span> <span class="nf">view_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="o">=</span><span class="s">&#39;chimera&#39;</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">centroid</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+<div class="viewcode-block" id="IMPmodel.view_model"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.view_model">[docs]</a>    <span class="k">def</span> <span class="nf">view_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="o">=</span><span class="s">&#39;chimera&#39;</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">centroid</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                    <span class="n">gyradius</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize a selected model in the three dimensions.</span>

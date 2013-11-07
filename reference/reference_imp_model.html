@@ -1,0 +1,578 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IMPmodel class &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Reference Guide" href="index.html" />
+    <link rel="next" title="Utilities" href="reference_utils.html" />
+    <link rel="prev" title="IMPoptimizer class" href="reference_imp_optimizer.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_utils.html" title="Utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_imp_optimizer.html" title="IMPoptimizer class"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="impmodel-class">
+<h1>IMPmodel class<a class="headerlink" href="#impmodel-class" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pytadbit.imp.impmodel.load_impmodel_from_cmm">
+<tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">load_impmodel_from_cmm</tt><big>(</big><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an IMPmodel object using an cmm file of the form:</p>
+<div class="highlight-python"><pre>&lt;marker_set name="1"&gt;
+  &lt;marker id="1" x="7347.50964739" y="-7743.92836303" z="-8283.39749204" r="0.00990099009901" g="0" b="0.990099009901" radius="500.0" note="1"/&gt;
+  &lt;marker id="2" x="7647.90254377" y="-7308.1816344" z="-7387.75932893" r="0.019801980198" g="0" b="0.980198019802" radius="500.0" note="2"/&gt;
+  &lt;link id1="1" id2="2" r="1" g="1" b="1" radius="250.0"/&gt;
+&lt;/marker_set&gt;</pre>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params f_name:</th><td class="field-body">path where to find the file</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params None rand_init:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">IMP random initial number used to generate the model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; radius of each particle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">IMPmodel</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.imp.impmodel.load_impmodel_from_xyz">
+<tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">load_impmodel_from_xyz</tt><big>(</big><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an IMPmodel object using an xyz file of the form:</p>
+<div class="highlight-python"><pre>p1           1      44.847     412.828    -162.673
+p2           2     -55.574     396.869    -129.782</pre>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params f_name:</th><td class="field-body">path where to find the file</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params None rand_init:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">IMP random initial number used to generate the model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; radius of each particle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">IMPmodel</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="pytadbit.imp.impmodel.IMPmodel">
+<em class="property">class </em><tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">IMPmodel</tt><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for the IMP modeling results. The container is a dictionary
+with the following keys:</p>
+<ul>
+<li><p class="first">log_objfun: The list of IMP objective function values</p>
+</li>
+<li><dl class="first docutils">
+<dt>objfun: The final objective function value of the corresponding model</dt>
+<dd><p class="first last">(from log_objfun). This value will be used to rank all the generated
+models</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>rand_init: The random number generator feed (needed for model</dt>
+<dd><p class="first last">reproducibility)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>x, y, z: The spatial 3D coordinates of each particles. Each coordinate is</dt>
+<dd><p class="first last">represented as a list</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.accessible_surface">
+<tt class="descname">accessible_surface</tt><big>(</big><em>radius</em>, <em>write_cmm_file=None</em>, <em>nump=100</em>, <em>verbose=False</em>, <em>include_edges=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.accessible_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.accessible_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a mesh surface around the model (distance equal to input
+<strong>radius</strong>) and checks if each point of this mesh could be replaced by
+an object (i.e. a protein) of a given <strong>radius</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>radius</strong> &#8211; radius of the object we want to fit in the model.</li>
+<li><strong>write_cmm_file</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to file in which to write cmm with the
+colored meshed (red inaccessible points, green accessible points)</li>
+<li><strong>nump</strong> (<em>100</em>) &#8211; number of points to draw around a given particle. This
+number also sets the number of points drawn around edges, as each
+point occupies a given surface:</li>
+<li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; prints stats about the surface</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This function will first define a mesh around the chromatin,
+representing all possible position of the center of the object we want
+to fit. This mesh will be at a distance of <em>radius</em> from the chromatin
+strand. All dots in the mesh represents an equal area (<em>a</em>), the whole
+surface of the chromatin strand being: <span class="math">\(A=n \times a\)</span> (<em>n</em> being
+the total number of dots in the mesh).</p>
+<p>The mesh consists of spheres around particles of the model, and
+cylinders around edges joining particles (no overlap is allowed between
+sphere and cylinders or cylinder and cylinder when they are
+consecutive).</p>
+<p>If we want that all dots of the mesh representing the surface of the
+chromatin, corresponds to an equal area (<span class="math">\(a\)</span>)
+.. math:</p>
+<div class="highlight-python"><pre>a = \frac{4\pi r^2}{s} = \frac{2\pi r N_{(d)}}{c}</pre>
+</div>
+<p>with:</p>
+<ul class="simple">
+<li><span class="math">\(r\)</span> radius of the object to fit (as the input parameter <strong>radius</strong>)</li>
+<li><span class="math">\(s\)</span> number of points in sphere</li>
+<li><span class="math">\(c\)</span> number of points in circle (as the input parameter <strong>nump</strong>)</li>
+<li><span class="math">\(N_{(d)}\)</span> number of circles in an edge of length <span class="math">\(d\)</span></li>
+</ul>
+<p>According to this, when the distance between two particles is equal
+to <span class="math">\(2r\)</span> (<span class="math">\(N=2r\)</span>), we would have <span class="math">\(s=c\)</span>.</p>
+<p>As :</p>
+<div class="math">
+\[2\pi r = \sqrt{4\pi r^2} \times \sqrt{\pi}\]</div>
+<p>It is fair to state the number of dots represented along a circle as:</p>
+<div class="math">
+\[c = \sqrt{s} \times \sqrt{\pi}\]</div>
+<p>Thus the number of circles in an edge of length <span class="math">\(d\)</span> must be:</p>
+<div class="math">
+\[N_{(d)}=\frac{s}{\sqrt{s}\sqrt{\pi}}\times\frac{d}{2r}\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of <em>1-</em> the number of dots in the mesh that could be
+occupied by an object of the given radius <em>2-</em> the total number of
+dots in the mesh <em>3-</em> the estimated area of the mesh (in square
+micrometers) <em>4-</em> the area of the mesh of a virtually straight strand
+of chromatin defined as 
+<span class="math">\(contour\times 2\pi r + 4\pi r^2\)</span> (also in
+micrometers) <em>5-</em> a list of number of (accessibles, inaccessible) for
+each particle (percentage burried can be infered afterwards by
+accessible/(accessible+inaccessible) )</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.center_of_mass">
+<tt class="descname">center_of_mass</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the center of mass of a given model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.contour">
+<tt class="descname">contour</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.contour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.contour" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the totals length of the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.cube_side">
+<tt class="descname">cube_side</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.cube_side"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_side" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the diagonal length of the cube containing the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.cube_volume">
+<tt class="descname">cube_volume</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.cube_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_volume" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the volume of  the cube containing the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.distance">
+<tt class="descname">distance</tt><big>(</big><em>part1</em>, <em>part2</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.distance" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>part1</strong> &#8211; index of a particle in the model</li>
+<li><strong>part2</strong> &#8211; index of a particle in the model</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">distance between one point of the model and an external
+coordinate</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.inaccessible_particles">
+<tt class="descname">inaccessible_particles</tt><big>(</big><em>radius</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.inaccessible_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.inaccessible_particles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gives the number of loci/particles that are accessible to an object
+(i.e. a protein) of a given size.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> &#8211; radius of the object that we want to fit in the model</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of numbers, each being the ID of a particles that would
+never be reached by the given object</td>
+</tr>
+</tbody>
+</table>
+<p>TODO: remove this function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.longest_axe">
+<tt class="descname">longest_axe</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.longest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.longest_axe" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the maximum distance between two particles in the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.min_max_by_axis">
+<tt class="descname">min_max_by_axis</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.min_max_by_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.min_max_by_axis" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the minimum and maximum coordinates for each x, y and z axis</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.objective_function">
+<tt class="descname">objective_function</tt><big>(</big><em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function plots the objective function value per each Monte-Carlo
+step.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>log</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; log plot</li>
+<li><strong>smooth</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; curve smoothing</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.radius_of_gyration">
+<tt class="descname">radius_of_gyration</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.radius_of_gyration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defined as:</p>
+<div class="math">
+\[\sqrt{\frac{\sum_{i=1}^{N} (x_i-x_{com})^2+(y_i-y_{com})^2+(z_i-z_{com})^2}{N}}\]</div>
+<p>with:</p>
+<ul class="simple">
+<li><span class="math">\(N\)</span> the number of particles in the model</li>
+<li><span class="math">\(com\)</span> the center of mass</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the radius of gyration for the components of the tensor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.shortest_axe">
+<tt class="descname">shortest_axe</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.shortest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.shortest_axe" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the minimum distance between two particles in the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.view_model">
+<tt class="descname">view_model</tt><big>(</big><em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>centroid=False</em>, <em>gyradius=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.view_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.view_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a selected model in the three dimensions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model_num</strong> &#8211; model to visualize</li>
+<li><strong>tool</strong> (<em>&#8216;chimera&#8217;</em>) &#8211; path to the external tool used to visualize the
+model</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image OR movie
+generated (depending on the extension; accepted formats are png, mov
+and webm). if set to None, the image or movie will be shown using
+the default GUI.</li>
+<li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer.
+The chimera list is:</p>
+<div class="highlight-python"><pre>focus
+set bg_color white
+windowsize 800 600
+bonddisplay never #0
+represent wire
+shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+clip yon -500
+~label
+set subdivision 1
+set depth_cue
+set dc_color black
+set dc_start 0.5
+set dc_end 1
+scale 0.8</pre>
+</div>
+<p>Followed by the movie command to record movies:</p>
+<div class="highlight-python"><pre>movie record supersample 1
+turn y 3 120
+wait 120
+movie stop
+movie encode output SAVEFIG</pre>
+</div>
+<p>Or the copy command for images:</p>
+<div class="highlight-python"><pre>copy file SAVEFIG png</pre>
+</div>
+<p>Passing as the following list as &#8216;cmd&#8217; parameter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;focus&#39;</span><span class="p">,</span> <span class="s">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
+       <span class="s">&#39;bonddisplay never #0&#39;</span><span class="p">,</span>
+       <span class="s">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span>
+       <span class="s">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s">&#39;~label&#39;</span><span class="p">,</span> <span class="s">&#39;set subdivision 1&#39;</span><span class="p">,</span>
+       <span class="s">&#39;set depth_cue&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_start 0.5&#39;</span><span class="p">,</span>
+       <span class="s">&#39;set dc_end 1&#39;</span><span class="p">,</span> <span class="s">&#39;scale 0.8&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>will return the default image (other commands can be passed to
+modified the final image/movie).</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.write_cmm">
+<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x52d2c08&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a model in the cmm format, read by Chimera
+(<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
+<p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
+ALL the models will be written.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> &#8211; location where the file will be written (note: the
+name of the file will be model_1.cmm if model number is 1)</li>
+<li><strong>model_num</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the number of the model to save</li>
+<li><strong>rndname</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; If True, file names will be formatted as:
+model.RND.cmm, where RND is the random number feed used by IMP to
+generate the corresponding model. If False, the format will be:
+model_NUM_RND.cmm where NUM is the rank of the model in terms of
+objective function value</li>
+<li><strong>color</strong> (<em>color_residues</em>) &#8211; either a coloring function like
+<tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.imp_model.color_residues()</span></tt> or a list of (r, g, b)
+tuples (as long as the number of particles)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.write_xyz">
+<tt class="descname">write_xyz</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>get_path=False</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a xyz file containing the 3D coordinates of each particle in the
+model.</p>
+<p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
+ALL the models will be written.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> &#8211; location where the file will be written (note: the
+file name will be model.1.xyz, if the model number is 1)</li>
+<li><strong>model_num</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the number of the model to save</li>
+<li><strong>rndname</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; If True, file names will be formatted as:
+model.RND.xyz, where RND is the random number feed used by IMP to
+generate the corresponding model. If False, the format will be:
+model_NUM_RND.xyz where NUM is the rank of the model in terms of
+objective function value</li>
+<li><strong>get_path</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to return, or not, the full path where
+the file has been written</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">Tadbit functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">IMPmodel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_imp_optimizer.html"
+                        title="previous chapter">IMPoptimizer class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_utils.html"
+                        title="next chapter">Utilities</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_utils.html" title="Utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_imp_optimizer.html" title="IMPoptimizer class"
+             >previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
