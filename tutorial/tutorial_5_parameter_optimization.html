@@ -107,7 +107,7 @@ file not found for experiment: batch_gm06690_k562</pre>
 <div class="highlight-python"><pre>Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None)
 100 200</pre>
 </div>
-<div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:529: UserWarning: WARNING: normalizing according to visibility method
+<div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:521: UserWarning: WARNING: normalizing according to visibility method
   warn('WARNING: normalizing according to visibility method')</pre>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Optimize parameters. Be aware that this step is CPU intensive. If you want to se the progress, set verbose=True.</span>
@@ -192,6 +192,18 @@ file not found for experiment: batch_gm06690_k562</pre>
 <p class="first admonition-title">Note</p>
 <p class="last">The above warning is given when a small matrix is loaded. TADBit has a filtering function that is applied to all Hi-C matrices with the aim of removing entire rows with very low counts. Those rows/colums are treated then for modeling as &#8220;missing-data&#8221; points. This flitering function can only be applied for relatively large matrices.</p>
 </div>
+<div class="section" id="optimizing-from-experiment">
+<h3>Optimizing from Experiment<a class="headerlink" href="#optimizing-from-experiment" title="Permalink to this headline">¶</a></h3>
+<p>The exact same as above can be done from Experiment objects directly:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">optimal_imp_parameters</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                                       <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+                                       <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.005</span><span class="p">],</span> <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: visibility)
+100 200</pre>
+</div>
+</div>
 </div>
 <div class="section" id="visualize-the-results">
 <h2>Visualize the results<a class="headerlink" href="#visualize-the-results" title="Permalink to this headline">¶</a></h2>
@@ -202,65 +214,103 @@ file not found for experiment: batch_gm06690_k562</pre>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_5_parameter_optimization_17_0.png" src="../_images/tutorial_5_parameter_optimization_17_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_20_0.png" src="../_images/tutorial_5_parameter_optimization_20_0.png" />
 <p>We can also ask to mark on the plot the best N combination of parameters with the &#8220;show_best&#8221; parameter.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization and mark the best 10 parameter sets</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_5_parameter_optimization_19_0.png" src="../_images/tutorial_5_parameter_optimization_19_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_22_0.png" src="../_images/tutorial_5_parameter_optimization_22_0.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">axes_range</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">scale_range</span><span class="p">],</span>
+                    <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">],</span>
+                    <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">],</span>
+                    <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">]]</span>
+
+<span class="k">print</span> <span class="n">axes_range</span>
+<span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">_result_to_array</span><span class="p">()</span>
+<span class="n">wax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+<span class="n">zax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">xax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+<span class="n">yax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+<span class="n">sort_result</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span> <span class="n">wax</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">zax</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">xax</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="n">yax</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wax</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zax</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">yax</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xax</span><span class="p">))</span>
+                              <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">])</span>
+                              <span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                             <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">print</span> <span class="n">sort_result</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[[</span><span class="mf">0.005</span><span class="p">],</span> <span class="p">[</span><span class="mf">300.0</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">,</span> <span class="mf">700.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]]</span>
+<span class="p">(</span><span class="mf">0.77138038673540765</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">,</span> <span class="mf">300.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>One can also visualize the parameter optimization according to ne of the three optimization parameters.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization based on the lowfreq parameter.</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;scale&#39;</span><span class="p">),</span><span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_5_parameter_optimization_21_0.png" src="../_images/tutorial_5_parameter_optimization_21_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_25_0.png" src="../_images/tutorial_5_parameter_optimization_25_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;scale&quot;</span><span class="p">:</span><span class="mf">0.005</span><span class="p">},</span> <span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_5_parameter_optimization_22_0.png" src="../_images/tutorial_5_parameter_optimization_22_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_26_0.png" src="../_images/tutorial_5_parameter_optimization_26_0.png" />
 <p>TADBit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.</span>
-<span class="n">optimizer</span><span class="o">.</span><span class="n">plot_3d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="s">&#39;scale&#39;</span><span class="p">))</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">plot_3d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_5_parameter_optimization_24_0.png" src="../_images/tutorial_5_parameter_optimization_24_0.png" />
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
-                          <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.005</span><span class="p">],</span> <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">450</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<img alt="../_images/tutorial_5_parameter_optimization_28_0.png" src="../_images/tutorial_5_parameter_optimization_28_0.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
+                          <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.005</span><span class="p">],</span> <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span><span class="mi">250</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="mi">350</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">scale_range</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">maxdist_range</span>
 </pre></div>
 </div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="s">&#39;200&#39;</span><span class="p">,</span> <span class="s">&#39;250&#39;</span><span class="p">,</span> <span class="s">&#39;300&#39;</span><span class="p">,</span> <span class="s">&#39;350&#39;</span><span class="p">,</span> <span class="s">&#39;500&#39;</span><span class="p">,</span> <span class="s">&#39;700&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
+<img alt="../_images/tutorial_5_parameter_optimization_31_0.png" src="../_images/tutorial_5_parameter_optimization_31_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">write_result</span><span class="p">(</span><span class="s">&#39;results.log&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span> <span class="o">=</span> <span class="n">IMPoptimizer</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="highlight-python"><pre>Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: visibility)
+100 200</pre>
+</div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="s">&#39;results.log&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">125</span><span class="p">]</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">105</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="s">&#39;0.005&#39;</span><span class="p">,</span> <span class="s">&#39;300&#39;</span><span class="p">,</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;-0.4&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">scale_range</span>
+<img alt="../_images/tutorial_5_parameter_optimization_36_0.png" src="../_images/tutorial_5_parameter_optimization_36_0.png" />
+</div>
+<div class="section" id="retrieve-best-parameters">
+<h2>Retrieve best parameters<a class="headerlink" href="#retrieve-best-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Once done, best results can be returned as a dictionary to be used for modeling (see next section of the tutorial)</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">config</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">get_best_parameters_dict</span><span class="p">(</span><span class="n">reference</span><span class="o">=</span><span class="s">&#39;gm cell from Job Dekker 2009&#39;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">config</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">upfreq_range</span>
-</pre></div>
-</div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">lowfreq_range</span>
-</pre></div>
-</div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">maxdist_range</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&#39;maxdist&#39;</span><span class="p">:</span> <span class="mf">250.0</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span> <span class="s">&#39;kforce&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;reference&#39;</span><span class="p">:</span> <span class="s">&#39;gm cell from Job Dekker 2009&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="s">&#39;scale&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">}</span>
 </pre></div>
 </div>
 </div>
@@ -282,6 +332,7 @@ file not found for experiment: batch_gm06690_k562</pre>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4_data_normalization.html">Hi-C data processing</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="">Parameter optimization for IMP.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_6_modelling_and_analysis.html">Three-dimensional modeling of chromatine structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial_7_single_model_analysis.html">Structural analysis of a chromatin model</a></li>
 </ul>
 </li>
 </ul>

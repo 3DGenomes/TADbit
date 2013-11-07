@@ -83,7 +83,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
 .. parsed-literal::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:529: UserWarning: WARNING: normalizing according to visibility method
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:521: UserWarning: WARNING: normalizing according to visibility method
       warn('WARNING: normalizing according to visibility method')
 
 
@@ -174,6 +174,25 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
    The above warning is given when a small matrix is loaded. TADBit has a filtering function that is applied to all Hi-C matrices with the aim of removing entire rows with very low counts. Those rows/colums are treated then for modeling as "missing-data" points. This flitering function can only be applied for relatively large matrices.
 
 
+Optimizing from Experiment
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The exact same as above can be done from Experiment objects directly:
+
+.. code:: python
+
+    optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
+                                           lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
+                                           scale_range=[0.005], maxdist_range=(300, 700, 200), verbose=False)
+
+
+.. parsed-literal::
+
+    Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: visibility)
+    100 200
+
+
 Visualize the results
 ---------------------
 
@@ -188,7 +207,7 @@ Visualize the results
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_17_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_20_0.png
 
 
 We can also ask to mark on the plot the best N combination of parameters with the "show_best" parameter.
@@ -200,7 +219,37 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_19_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_22_0.png
+
+
+.. code:: python
+
+    axes_range = [[float(i) for i in optimizer.scale_range],
+                        [float(i) for i in optimizer.maxdist_range],
+                        [float(i) for i in optimizer.upfreq_range],
+                        [float(i) for i in optimizer.lowfreq_range]]
+    
+    print axes_range
+    [round(i, 3) for i in axes_range[3]]
+    result = optimizer._result_to_array()
+    wax = [round(i, 3) for i in axes_range[0]]
+    zax = [round(i, 3) for i in axes_range[1]]
+    xax = [round(i, 3) for i in axes_range[3]]
+    yax = [round(i, 3) for i in axes_range[2]]
+    sort_result = sorted([(result[i, j, k, l], wax[i], zax[j], xax[l], yax[k])
+                                  for i in range(len(wax))
+                                  for j in range(len(zax))
+                                  for k in range(len(yax))
+                                  for l in range(len(xax))
+                                  if not np.isnan(result[i, j, k, l])
+                                  ], key=lambda x: x[0],
+                                 reverse=True)[0]
+    print sort_result
+
+.. parsed-literal::
+
+    [[0.005], [300.0, 500.0, 700.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
+    (0.77138038673540765, 0.005, 300.0, -0.4, 0.4)
 
 
 One can also visualize the parameter optimization according to ne of the three optimization parameters.
@@ -212,7 +261,7 @@ One can also visualize the parameter optimization according to ne of the three o
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_21_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_25_0.png
 
 
 .. code:: python
@@ -221,7 +270,7 @@ One can also visualize the parameter optimization according to ne of the three o
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_22_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_26_0.png
 
 
 TADBit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
@@ -229,50 +278,90 @@ TADBit also provides the possibility to view it all together in a 3D plot (note 
 .. code:: python
 
     # Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.
-    optimizer.plot_3d(axes=('maxdist', 'upfreq', 'lowfreq', 'scale'))
+    optimizer.plot_3d(axes=('scale', 'maxdist', 'upfreq', 'lowfreq'))
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_24_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_28_0.png
 
 
 .. code:: python
 
-    optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, -0.0, 0.1), upfreq_range=(0.3, 0.5, 0.05), 
-                              scale_range=[0.005], maxdist_range=(200, 450, 50), verbose=False)
+    optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1., -0.0, 0.1), upfreq_range=(0.3, 0.6, 0.05), 
+                              scale_range=[0.005], maxdist_range=[200,250,300,350], verbose=False)
 
 .. code:: python
 
     optimizer.scale_range
     optimizer.maxdist_range
 
+
+
+
+.. parsed-literal::
+
+    ['200', '250', '300', '350', '500', '700']
+
+
+
 .. code:: python
 
     optimizer.plot_2d(show_best=100)
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_31_0.png
+
+
 .. code:: python
 
     optimizer.write_result('results.log')
 .. code:: python
 
     optimizer2 = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=1000)
+
+.. parsed-literal::
+
+    Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: visibility)
+    100 200
+
+
 .. code:: python
 
     optimizer2.load_from_file('results.log')
 .. code:: python
 
-    optimizer2.results.keys()[125]
+    optimizer2.results.keys()[105]
+
+
+
+.. parsed-literal::
+
+    ('0.005', '300', '0.2', '-0.4')
+
+
+
 .. code:: python
 
     optimizer2.plot_2d(show_best=20)
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_36_0.png
+
+
+Retrieve best parameters
+------------------------
+
+
+Once done, best results can be returned as a dictionary to be used for modeling (see next section of the tutorial)
+
 .. code:: python
 
-    optimizer.scale_range
-.. code:: python
+    config = optimizer.get_best_parameters_dict(reference='gm cell from Job Dekker 2009')
+    
+    print config
 
-    optimizer.upfreq_range
-.. code:: python
 
-    optimizer.lowfreq_range
-.. code:: python
+.. parsed-literal::
 
-    optimizer.maxdist_range
+    {'maxdist': 250.0, 'upfreq': 0.4, 'kforce': 5, 'reference': 'gm cell from Job Dekker 2009', 'lowfreq': -0.1, 'scale': 0.005}
+
