@@ -113,12 +113,14 @@ def read_matrix(things, parser=None):
                     '(same chromosome and same bins).')
 
 
+# This function is no longer required because the data is
+# force-symmetrized by the C engine.
 def __check_hic(hic, size):
     """
     check if hi-c data is symmetric
     """
-    for i in xrange(size):
-        for j in xrange(i + 1, size):
-            if not hic[i * size + j] == hic[j * size + i]:
-                raise AttributeError('ERROR: matrix should be symmetric.\n')
+    #for i in xrange(size):
+    #    for j in xrange(i + 1, size):
+    #        if not hic[i * size + j] == hic[j * size + i]:
+    #            raise AttributeError('ERROR: matrix should be symmetric.\n')
     return True
