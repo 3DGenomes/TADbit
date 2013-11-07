@@ -6,7 +6,7 @@
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.three_dim_stats import generate_sphere_points
-from pytadbit.utils.three_dim_stats import fast_square_distance, square_distance, distance
+from pytadbit.utils.three_dim_stats import fast_square_distance, distance
 from pytadbit.utils.three_dim_stats import angle_between_3_points
 from pytadbit.utils.three_dim_stats import generate_circle_points
 from scipy.interpolate              import spline
@@ -14,7 +14,7 @@ from numpy                          import linspace
 from warnings                       import warn
 from re                             import findall, compile as compil
 from math                           import sqrt, sin, pi
-from random                         import random
+
 try:
     from matplotlib import pyplot as plt
 except ImportError:

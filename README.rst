@@ -8,6 +8,18 @@ Hi-C experiments generate genomic interaction data that is usually summarized at
 Links
 =====
 
+Documentation
+-------------
+
+* `TADBit documentation <http://3dgenomes.github.io/tadbit/>`_ 
+
+
+Build status
+------------
+
 .. image::  https://travis-ci.org/3DGenomes/tadbit.png?branch=master
    :target: https://travis-ci.org/3DGenomes/tadbit
+
+.. image:: https://coveralls.io/repos/3DGenomes/tadbit/badge.png
+   :target: https://coveralls.io/r/3DGenomes/tadbit
 
