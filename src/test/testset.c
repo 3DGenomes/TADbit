@@ -223,7 +223,7 @@ test_ll
       }
    }
 
-   double loglik = ll(20, 0, 9, 0, 9, 1, obs, d, w, lg, c);
+   ll(20, 0, 9, 0, 9, 1, obs, d, w, lg, c);
 
    free(c);
 
@@ -283,7 +283,7 @@ test_tadbit_on_real_input
    tadbit(obs, 3191, 2, 8, 1, 200, 0, 0, seg);
    unredirect_sderr();
 
-   int nTADs1 = seg->nbreaks_opt;
+   //int nTADs1 = seg->nbreaks_opt;
 
    //tadbit(obs, 1413, 2, 16, 1, 200, 0, 0, seg);
    //int nTADs2 = seg->nbreaks_opt;
@@ -311,7 +311,9 @@ main(
    //g_test_add_func("/ll", test_ll);
    g_test_add_func("/enforce_symmetry", test_enforce_symmetry);
    g_test_add_func("/tadbit", test_tadbit);
-   g_test_add_func("/tadbit_on_real_input", test_tadbit_on_real_input);
+   if (g_test_thorough()) {
+      g_test_add_func("/tadbit_on_real_input", test_tadbit_on_real_input);
+   }
 
    int g_test_result = g_test_run();
    close(backup);

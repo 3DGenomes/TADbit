@@ -13,8 +13,11 @@ clean:
 	rm -f testset *.o *.gcda *.gcno *.gcov gmon.out analysis.txt \
 		callgrind.out.* cache.txt
 
-test:
+test: testset
 	gtester --verbose --keep-going testset
+
+fulltest: testset
+	gtester --verbose --keep-going -m=thorough testset
 
 debug:
 	gdb --command=debug.gdb --args testset
