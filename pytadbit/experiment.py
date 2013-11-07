@@ -12,11 +12,10 @@ from pytadbit.parsers.tad_parser         import parse_tads
 from warnings                            import warn
 from math                                import sqrt
 from pytadbit.imp.CONFIG                 import CONFIG
-from pytadbit.imp.impoptimizer           import IMPoptimizer
 
 try:
+    from pytadbit.imp.impoptimizer           import IMPoptimizer
     from pytadbit.imp.imp_modelling          import generate_3d_models
-    from pytadbit.imp.modelling_optimization import grid_search
 except ImportError:
     warn('IMP not found, check PYTHONPATH\n')
 
