@@ -55,6 +55,7 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             print '1', time() - t0
 
+
     def test_02_batch_tadbit(self):
         if CHKTIME:
             t0 = time()

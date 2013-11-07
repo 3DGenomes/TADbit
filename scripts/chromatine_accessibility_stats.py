@@ -16,13 +16,14 @@ def main():
     elif opts.model_path.endswith('.xyz'):
         model = load_impmodel_from_xyz(opts.model_path)
 
-    nump = int(opts.nump)
+    nump   = int(opts.nump)
     radius = int(opts.radius)
     (accesible_parts,
      number_parts,
      accessible_area,
      total_area, by_part) = model.accessible_surface(
-        radius, nump=nump, verbose=False, write_cmm_file=opts.outfcmm)
+        radius, nump=nump, verbose=False, write_cmm_file=opts.outfcmm,
+        include_edges=opts.slow)
 
     print '\n GLOBAL STATS:\n -------------\n'
     print '  - accesible dots (of the mesh)     : %s' % accesible_parts
@@ -62,6 +63,8 @@ def get_options():
                       help='''[%default] density of the mesh, 100 mean 100 dots
                       checked around each particle. 70, means 70% of the
                       particle is not accessible''')
+    parser.add_option('--fast', dest='slow', default=True, action='store_false',
+                      help='''skip computation of the accessibility of edges''')
     parser.add_option('--outfile', dest='outf', action="store", metavar="PATH", 
                       help=
                       '''path to outfile, 2 columns, particle number, and

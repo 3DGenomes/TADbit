@@ -342,7 +342,7 @@ class IMPmodel(dict):
 
 
     def accessible_surface(self, radius, write_cmm_file=None, nump=100,
-                           verbose=False):
+                           verbose=False, include_edges=True):
         """
         Calculates a mesh surface around the model (distance equal to input
         **radius**) and checks if each point of this mesh could be replaced by
@@ -497,7 +497,6 @@ class IMPmodel(dict):
                     else:
                         continue
                     particles.setdefault(i, []).append(len(subpoints)-1)
-
             # define slices
             for k in xrange(between - 1, 0, -1):
                 point = [selfx - k * stepx,
@@ -508,6 +507,8 @@ class IMPmodel(dict):
                 pointy = point[1]
                 pointz = point[2]
 
+                if not include_edges:
+                    continue
                 # define circles
                 for spoint in generate_circle_points(
                     orthox + pointx, orthoy + pointy, orthoz + pointz,
