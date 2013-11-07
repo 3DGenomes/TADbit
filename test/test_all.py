@@ -316,22 +316,13 @@ class TestTadbit(unittest.TestCase):
                                             upfreq_range=(0, 1.1, 1),
                                             maxdist_range=(500, 1000, 500),
                                             verbose=False)
-        _, axes_range, result = result
 
         # get best correlations
-        sort_result =  sorted([(result[i, j, k, l], axes_range[0][i],
-                                axes_range[1][j], axes_range[2][l],
-                                axes_range[3][k])
-                               for i in range(len(axes_range[0]))
-                               for j in range(len(axes_range[1]))
-                               for k in range(len(axes_range[3]))
-                               for l in range(len(axes_range[2]))
-                               if str(result[i, j, k, l]) != '--'],
-                              key=lambda x: x[0],
-                              reverse=True)[0]
-        wanted = (0.71387060499157218, 0.005, 500, 1.0, -0.59999999999999998)
-        self.assertEqual([round(i, 4)for i in sort_result],
-                         [round(i, 4)for i in wanted])
+        config = result.get_best_parameters_dict()
+        wanted = {'maxdist': 500.0, 'upfreq': 0.0, 'kforce': 5,
+                  'reference': '', 'lowfreq': -0.1, 'scale': 0.005}
+        self.assertEqual([round(i, 4) for i in config.values()if not type(i) is str],
+                         [round(i, 4) for i in wanted.values()if not type(i) is str])
         if CHKTIME:
             print '12', time() - t0
 
@@ -421,8 +412,8 @@ class TestTadbit(unittest.TestCase):
         models.density_plot(savedata='lala', plot=False)
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
-        self.assertEqual(lines[1], '1\t10.474\t11.994\tNone\tNone\tNone\tNone\tNone\tNone\tNone\tNone\n')
-        self.assertEqual(lines[15], '15\t99.995\t100.022\t99.992\t100.008\t99.976\t99.996\t99.978\t99.997\t99.978\t99.999\n')
+        self.assertEqual(lines[1], '1\t99.988\t100.022\tNone\tNone\tNone\tNone\tNone\tNone\tNone\tNone\n')
+        self.assertEqual(lines[15], '15\t99.939\t99.985\t99.969\t99.998\t99.97\t99.998\t99.974\t99.996\t99.977\t100.0\n')
         # contacts
         cmap = models.get_contact_matrix(cutoff=300)
         self.assertEqual(round(
@@ -447,11 +438,11 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(lines[15], '15\t94.667\t100.0\t100.0\t100.0\n')
         # measure angle
         self.assertEqual(round(models.angle_between_3_particles(2,8,15), 3),
-                         142.038)
+                         128.338)
         self.assertEqual(round(models.angle_between_3_particles(19,20,21), 3),
-                         73.046)
+                         60.163)
         self.assertEqual(round(models.angle_between_3_particles(15,14,11), 3),
-                         143.099)
+                         64.474)
         # coordinates
         self.assertEqual([round(x, 3) for x in models.particle_coordinates(15)],
                          [2372.253, -1193.602, -1145.397])
@@ -461,11 +452,11 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 3), 8.136)
         # median distance
         self.assertEqual(round(models.median_3d_dist(3, 20, plot=False), 3),
-                         1734.296)
+                         1553.974)
         self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1,
-                                                     plot=False), 3), 1702.746)
+                                                     plot=False), 3), 1522.16)
         self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5),
-                                                     plot=False), 3), 245.389)
+                                                     plot=False), 3), 266.024)
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))

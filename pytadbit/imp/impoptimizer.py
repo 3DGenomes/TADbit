@@ -30,8 +30,6 @@ class IMPoptimizer(object):
                  n_models=500, cutoff=300, n_keep=100, close_bins=1):
 
         self.resolution = experiment.resolution
-        print experiment
-        print start, end
         (self.zscores,
          self.values) = experiment._sub_experiment_zscore(start, end)
         self.n_models   = n_models
