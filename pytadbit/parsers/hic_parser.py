@@ -1,43 +1,98 @@
 """
-19 Dec 2012
-
+November 7, 2013.
 
 """
 
+from warnings import warn
 from math import sqrt
 
-def _read_matrix(f_h):
-    """
-    reads from file
-    """
-    nums = []
-    while True:
-        values = f_h.next().split()
-        if values[0].startswith('#'):
-            # skip comments
-            continue
-        break
-    # check if we have headers/row-names in the file
-    start = 1
-    if values[0].isdigit():
-        try:
-            nums.append([int(v) for v in values])
-        except ValueError:
-            nums.append([int(float(v)) for v in values])
-        start = 0
-    # parse the rest of the file
-    for line in f_h:
-        values = line.split()[start:]
-        try:
-            nums.append([int(v) for v in values])
-        except ValueError:
-            nums.append([int(float(v)) for v in values])
+# Exception to handle failed autoread.
+class AutoReadFail(Exception):
+   pass
+
+# Helper functions for the autoreader.
+def is_asymmetric(matrix):
+   maxn = len(matrix)
+   for i in range(maxn):
+      for j in range(i+1, maxn):
+         if matrix[i][j] != matrix[j][i]: return True
+   return False
+
+def symmetrize(matrix):
+   maxn = len(matrix)
+   for i in range(maxn):
+      for j in range(i+1, maxn):
+         matrix[i][j] = matrix[j][i] = matrix[i][j] + matrix[j][i]
+
+
+def autoreader(f):
+    """Auto-detect matrix format of HiC data file.
+    
+    ARGUMENTS:
+       f: an iterable (typically an open file).
+    
+    RETURN:
+       A tuple with integer values and the dimension of
+       the matrix."""
+
+    # Skip initial comment lines and read in the whole file
+    # as a list of lists.
+    for line in f:
+       if line[0] != '#': break
+    items = [line.rstrip().split()]
+    items += [line.rstrip().split() for line in f]
+
+    # Count the number of elements per line after the first.
+    # Wrapping in a set is a trick to make sure that every line
+    # has the same number of elements.
+    S = set([len(line) for line in items[1:]])
+    ncol = S.pop()
+    # If the set 'S' is not empty, at least two lines have a
+    # different number of items.
+    if S: raise AutoReadFail('unequal column number')
+
+    nrow = len(items)
+    # Auto-detect the format, there are only 4 cases.
+    if ncol == nrow:
+       if all([item.isdigit() for item in items[0]]):
+          # Case 1: pure integer matrix.
+          header = False
+          startat = 0
+       else:
+          # Case 2: matrix with row and column names.
+          header = True
+          startat = 1
+    else:
+       if len(items[0]) == len(items[1]):
+          # Case 3: matrix with row information.
+          header = False
+          startat = ncol - nrow
+       else:
+          # Case 4: matrix with header and row information.
+          header = True
+          startat = ncol - nrow + 1
+
+    # Trim the matrix.
+    if header:
+       items = items[1:]
+       nrow -= 1
+    if startat > 0:
+       items = [line[startat:] for line in items]
+       ncol -= startat
+
+    if ncol != nrow: raise AutoReadFail('non square matrix')
+
+    # Time to get the numeric values.
     try:
-        f_h.close()
-    except AttributeError:
-        pass
-    size = len(nums)
-    return tuple([nums[j][i] for i in xrange(size) for j in xrange(size)]), size
+       items = [[int(a) for a in line] for line in items]
+    except ValueError:
+       raise AutoReadFail('non integer values')
+
+    if is_asymmetric(items):
+       warn('input matrix not symmetric: symmetrizing')
+       symmetrize(items)
+
+    return tuple(a for line in items for a in line), ncol
 
 
 def read_matrix(things, parser=None):
@@ -65,7 +120,7 @@ def read_matrix(things, parser=None):
         returns number or rows
 
     """
-    parser = parser or _read_matrix
+    parser = parser or autoreader
     if type(things) is not list:
         things = [things]
     matrices = []
@@ -73,6 +128,7 @@ def read_matrix(things, parser=None):
     for thing in things:
         if type(thing) is file:
             matrix, size = parser(thing)
+            thing.close()
             matrices.append(matrix)
             sizes.append(size)
         elif type(thing) is str:
