@@ -93,14 +93,16 @@ test_tadbit
 
    tadbit(obs, 20, 2, 1, 0, 20, 1, 1, seg);
 
+   // Check max breaks and optimal number of breaks.
    g_assert_cmpint(seg->maxbreaks, ==, 4);
    g_assert_cmpint(seg->nbreaks_opt, ==, 1);
-   g_assert_cmpint(seg->nbreaks_opt, ==, 1);
+   // Check the position of the optimal break.
    for (int i = 0 ; i < 20 ; i++) {
       g_assert_cmpint(seg->bkpts[i+1*20], == , i == 9);
    }
 
 
+   // Check the computed weights.
    for (int j = 0 ; j < 20 ; j++) {
       for (int i = j ; i < 20 ; i++) {
          g_assert_cmpfloat(
@@ -112,13 +114,6 @@ test_tadbit
 
    free(obs);
    destroy_tadbit_output(seg);
-
-   //seg->weights = resized_weights;
-   //seg->passages = resized_passages;
-   //seg->llikmat = resized_llikmat;
-   //seg->mllik = mllik;
-   //seg->bkpts = resized_bkpts;
-
    
 }
 
@@ -254,7 +249,7 @@ main(
    backup = dup(STDERR_FILENO);
 
    g_test_init(&argc, &argv, NULL);
-   g_test_add_func("/ll", test_ll);
+   //g_test_add_func("/ll", test_ll);
    g_test_add_func("/tadbit", test_tadbit);
    //g_test_add_func("/tadbit_on_real_input", test_tadbit_on_real_input);
 
