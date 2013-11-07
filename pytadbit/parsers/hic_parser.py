@@ -120,5 +120,5 @@ def __check_hic(hic, size):
     for i in xrange(size):
         for j in xrange(i + 1, size):
             if not hic[i * size + j] == hic[j * size + i]:
-                raise AttributeError('ERROR: matrix should be square.\n')
+                raise AttributeError('ERROR: matrix should be symmetric.\n')
     return True
