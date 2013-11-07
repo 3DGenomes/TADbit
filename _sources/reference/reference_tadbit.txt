@@ -1,5 +1,5 @@
-Tadbit functions
-================
+TAD detection functions
+=======================
 
 .. currentmodule:: pytadbit.tadbit
 
