@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -67,7 +66,7 @@ chrT_005      16      36      26      79      243     39
 chrT_006      19      50      53      42      37      224</pre>
 </div>
 <p>TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as this
-<em>(note: this example loads human chromosome 19 from</em> <a class="reference internal" href="../biblio.html#lieberman-aiden2009">[Lieberman-Aiden2009]</a> <em>results.)</em>:</p>
+<em>(note: this example loads human chromosome 19 from</em> <a class="reference internal" href="../biblio.html#lieberman-aiden2009" id="id1">[Lieberman-Aiden2009]</a> <em>results.)</em>:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">Chromosome</span>
 
 <span class="c"># initiate a chromosome object that will store all Hi-C data and analysis</span>
@@ -90,7 +89,7 @@ chrT_006      19      50      53      42      37      224</pre>
 </div>
 <div class="section" id="unconventional-data-format">
 <h3>Unconventional data format<a class="headerlink" href="#unconventional-data-format" title="Permalink to this headline">¶</a></h3>
-<p>If TADBit is unable to parse the input file, the user can create its own parser and pass it to the Chromosome instance. For example, one might be interested in using <a class="reference internal" href="../biblio.html#dixon2012">[Dixon2012]</a> data that appear like this:</p>
+<p>If TADBit is unable to parse the input file, the user can create its own parser and pass it to the Chromosome instance. For example, one might be interested in using <a class="reference internal" href="../biblio.html#dixon2012" id="id2">[Dixon2012]</a> data that appear like this:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">strange</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;</span>
 <span class="s">  chr21     0       20000   0       0       0       0       0       0       0       0</span>
 <span class="s">  chr21     20000   40000   0       0       0       0       0       0       0       0</span>
@@ -258,7 +257,7 @@ score (as for forbidden regions).</p>
 <div class="section" id="data-visualization">
 <h2>Data visualization<a class="headerlink" href="#data-visualization" title="Permalink to this headline">¶</a></h2>
 <p>Once loaded, the Hi-C data can be visualized using the <a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize" title="pytadbit.chromosome.Chromosome.visualize"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.visualize()</span></tt></a>
-function. The only parameter needed is which experiment to show. Therefore, the human chromosome 19 from <a class="reference internal" href="../biblio.html#lieberman-aiden2009">[Lieberman-Aiden2009]</a> can be visualized with:</p>
+function. The only parameter needed is which experiment to show. Therefore, the human chromosome 19 from <a class="reference internal" href="../biblio.html#lieberman-aiden2009" id="id3">[Lieberman-Aiden2009]</a> can be visualized with:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s">&quot;k562&quot;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -371,8 +370,8 @@ objects, with all the associated experiments. To save a Chromosome object:</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 06, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

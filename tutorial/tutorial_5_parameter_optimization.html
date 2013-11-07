@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -108,7 +107,7 @@ file not found for experiment: batch_gm06690_k562</pre>
 <div class="highlight-python"><pre>Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None)
 100 200</pre>
 </div>
-<div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/experiment.py:529: UserWarning: WARNING: normalizing according to visibility method
+<div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:529: UserWarning: WARNING: normalizing according to visibility method
   warn('WARNING: normalizing according to visibility method')</pre>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Optimize parameters. Be aware that this step is CPU intensive. If you want to se the progress, set verbose=True.</span>
@@ -216,26 +215,31 @@ file not found for experiment: batch_gm06690_k562</pre>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_5_parameter_optimization_21_0.png" src="../_images/tutorial_5_parameter_optimization_21_0.png" />
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;scale&quot;</span><span class="p">:</span><span class="mf">0.008</span><span class="p">},</span> <span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;scale&quot;</span><span class="p">:</span><span class="mf">0.005</span><span class="p">},</span> <span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
+<img alt="../_images/tutorial_5_parameter_optimization_22_0.png" src="../_images/tutorial_5_parameter_optimization_22_0.png" />
 <p>TADBit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_3d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="s">&#39;scale&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+<img alt="../_images/tutorial_5_parameter_optimization_24_0.png" src="../_images/tutorial_5_parameter_optimization_24_0.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
                           <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.005</span><span class="p">],</span> <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">450</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">scale_range</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">maxdist_range</span>
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_5_parameter_optimization_26_0.png" src="../_images/tutorial_5_parameter_optimization_26_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">write_result</span><span class="p">(</span><span class="s">&#39;results.log&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span> <span class="o">=</span> <span class="n">IMPoptimizer</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="mi">405</span><span class="p">,</span> <span class="mi">449</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span> <span class="o">=</span> <span class="n">IMPoptimizer</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span><span class="o">.</span><span class="n">load_from_file</span><span class="p">(</span><span class="s">&#39;results.log&#39;</span><span class="p">)</span>
@@ -247,58 +251,16 @@ file not found for experiment: batch_gm06690_k562</pre>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><pre>---------------------------------------------------------------------------
-NameError                                 Traceback (most recent call last)
-
-&lt;ipython-input-19-00d2bf34d6a8&gt; in &lt;module&gt;()
-----&gt; 1 optimizer2.plot_2d(show_best=20)
-
-
-NameError: name 'optimizer2' is not defined</pre>
-</div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">scale_range</span>
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="mf">0.005</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">upfreq_range</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span>
- <span class="mf">0.10000000000000001</span><span class="p">,</span>
- <span class="mf">0.20000000000000001</span><span class="p">,</span>
- <span class="mf">0.29999999999999999</span><span class="p">,</span>
- <span class="mf">0.30000000000000004</span><span class="p">,</span>
- <span class="mf">0.40000000000000002</span><span class="p">,</span>
- <span class="mf">0.5</span><span class="p">,</span>
- <span class="mf">0.60000000000000009</span><span class="p">,</span>
- <span class="mf">0.70000000000000007</span><span class="p">,</span>
- <span class="mf">0.80000000000000004</span><span class="p">,</span>
- <span class="mf">0.90000000000000002</span><span class="p">,</span>
- <span class="mf">1.0</span><span class="p">]</span>
-</pre></div>
-</div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">lowfreq_range</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.90000000000000002</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.80000000000000004</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.70000000000000007</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.60000000000000009</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.50000000000000011</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.40000000000000013</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.30000000000000016</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.20000000000000018</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">0.1000000000000002</span><span class="p">,</span>
- <span class="o">-</span><span class="mf">2.2204460492503131e-16</span><span class="p">]</span>
-</pre></div>
-</div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">maxdist_range</span>
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">350</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">450</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">900</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -369,8 +331,8 @@ NameError: name 'optimizer2' is not defined</pre>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 06, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

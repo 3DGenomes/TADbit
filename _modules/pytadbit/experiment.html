@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -60,6 +59,7 @@
 <span class="kn">from</span> <span class="nn">warnings</span>                            <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">math</span>                                <span class="kn">import</span> <span class="n">sqrt</span>
 <span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span>                 <span class="kn">import</span> <span class="n">CONFIG</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span>           <span class="kn">import</span> <span class="n">IMPoptimizer</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pytadbit.imp.imp_modelling</span>          <span class="kn">import</span> <span class="n">generate_3d_models</span>
@@ -538,28 +538,19 @@
 <span class="sd">             - the range of lowfreq used</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">zscores</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_experiment_zscore</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">scale_arange</span><span class="p">,</span> <span class="n">max_dist_arange</span><span class="p">,</span>
-         <span class="n">upfreq_arange</span><span class="p">,</span> <span class="n">lowfreq_arange</span><span class="p">)</span> <span class="o">=</span> <span class="n">grid_search</span><span class="p">(</span>
-            <span class="n">upfreq_range</span><span class="o">=</span><span class="n">upfreq_range</span><span class="p">,</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="n">lowfreq_range</span><span class="p">,</span>
-            <span class="n">scale_range</span><span class="o">=</span><span class="n">scale_range</span><span class="p">,</span> <span class="n">zscores</span><span class="o">=</span><span class="n">zscores</span><span class="p">,</span>
-            <span class="n">resolution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
-            <span class="n">maxdist_range</span><span class="o">=</span><span class="n">maxdist_range</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="n">n_models</span><span class="p">,</span>
-            <span class="n">n_keep</span><span class="o">=</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span>
-            <span class="n">close_bins</span><span class="o">=</span><span class="n">close_bins</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">IMPoptimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span>
+                                 <span class="n">n_models</span><span class="o">=</span><span class="n">n_models</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="n">close_bins</span><span class="p">)</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">maxdist_range</span><span class="o">=</span><span class="n">maxdist_range</span><span class="p">,</span>
+                                              <span class="n">upfreq_range</span><span class="o">=</span><span class="n">upfreq_range</span><span class="p">,</span>
+                                              <span class="n">lowfreq_range</span><span class="o">=</span><span class="n">lowfreq_range</span><span class="p">,</span>
+                                              <span class="n">scale_range</span><span class="o">=</span><span class="n">scale_range</span><span class="p">,</span>
+                                              <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">outfile</span><span class="p">:</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
-            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;# scale</span><span class="se">\t</span><span class="s">max_dist</span><span class="se">\t</span><span class="s">up_freq</span><span class="se">\t</span><span class="s">low_freq</span><span class="se">\t</span><span class="s">correlation</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">h</span><span class="p">,</span> <span class="n">hh</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">scale_arange</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">max_dist_arange</span><span class="p">):</span>
-                    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">upfreq_arange</span><span class="p">):</span>
-                        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lowfreq_arange</span><span class="p">):</span>
-                            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                                <span class="n">hh</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">,</span> <span class="n">kk</span><span class="p">,</span> <span class="n">matrix</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]))</span>
-            <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">((</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">),</span>
-                <span class="p">(</span><span class="n">scale_arange</span><span class="p">,</span> <span class="n">max_dist_arange</span><span class="p">,</span> <span class="n">upfreq_arange</span><span class="p">,</span> <span class="n">lowfreq_arange</span><span class="p">),</span>
-                <span class="n">matrix</span><span class="p">)</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">write_result</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">optimizer</span>
 
     </div>
     <span class="k">def</span> <span class="nf">_sub_experiment_zscore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
@@ -778,8 +769,8 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 06, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

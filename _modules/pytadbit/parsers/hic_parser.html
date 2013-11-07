@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -160,15 +159,17 @@
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;All matrices must have the same size &#39;</span> <span class="o">+</span>
                     <span class="s">&#39;(same chromosome and same bins).&#39;</span><span class="p">)</span>
 
-</div>
+
+<span class="c"># This function is no longer required because the data is</span>
+<span class="c"># force-symmetrized by the C engine.</span></div>
 <span class="k">def</span> <span class="nf">__check_hic</span><span class="p">(</span><span class="n">hic</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    check if hi-c data is symmetric</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">hic</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">size</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">hic</span><span class="p">[</span><span class="n">j</span> <span class="o">*</span> <span class="n">size</span> <span class="o">+</span> <span class="n">i</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;ERROR: matrix should be square.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="c">#for i in xrange(size):</span>
+    <span class="c">#    for j in xrange(i + 1, size):</span>
+    <span class="c">#        if not hic[i * size + j] == hic[j * size + i]:</span>
+    <span class="c">#            raise AttributeError(&#39;ERROR: matrix should be symmetric.\n&#39;)</span>
     <span class="k">return</span> <span class="bp">True</span>
 </pre></div>
 
@@ -215,8 +216,8 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 06, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

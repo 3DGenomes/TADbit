@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -52,8 +51,9 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">pytadbit.imp.imp_modelling</span> <span class="kn">import</span> <span class="n">generate_3d_models</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span> <span class="kn">import</span> <span class="n">plot_2d_optimization_result</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span> <span class="kn">import</span> <span class="n">plot_3d_optimization_result</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>  <span class="kn">import</span> <span class="n">plot_2d_optimization_result</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>  <span class="kn">import</span> <span class="n">plot_3d_optimization_result</span>
+<span class="kn">from</span> <span class="nn">warnings</span>                   <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <div class="viewcode-block" id="IMPoptimizer"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impoptimizer.IMPoptimizer">[docs]</a><span class="k">class</span> <span class="nc">IMPoptimizer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -92,9 +92,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
 
-        
+
 <div class="viewcode-block" id="IMPoptimizer.run_grid_search"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search">[docs]</a>    <span class="k">def</span> <span class="nf">run_grid_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
-                    <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">],</span>
+                    <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.005</span><span class="p">],</span>
                     <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function calculates the correlation between the models generated </span>
@@ -112,7 +112,7 @@
 <span class="sd">           used to search for the optimal maximum experimental distance. The </span>
 <span class="sd">           last value of the input tuple is the incremental step for maxdist </span>
 <span class="sd">           values</span>
-<span class="sd">        :param [0.01] scale_range: upper and lower bounds used to search for </span>
+<span class="sd">        :param [0.005] scale_range: upper and lower bounds used to search for </span>
 <span class="sd">           the optimal scale parameter (nm per nucleotide). The last value of</span>
 <span class="sd">           the input tuple is the incremental step for scale parameter values</span>
 <span class="sd">        :param True verbose: print the results to the standard output</span>
@@ -147,17 +147,37 @@
             <span class="n">scale_arange</span> <span class="o">=</span> <span class="n">scale_range</span>
 
         <span class="c"># round everything</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">maxdist_arange</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span>  <span class="o">=</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">upfreq_arange</span> <span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lowfreq_arange</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span>   <span class="o">=</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">scale_arange</span>  <span class="p">]</span>
-
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">maxdist_arange</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">maxdist_arange</span>
+                                         <span class="k">if</span> <span class="ow">not</span> <span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">]</span> <span class="o">+</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span>  <span class="o">=</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">upfreq_arange</span> <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">upfreq_arange</span>
+                                        <span class="k">if</span> <span class="ow">not</span> <span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">]</span> <span class="o">+</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lowfreq_arange</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lowfreq_arange</span>
+                                         <span class="k">if</span> <span class="ow">not</span> <span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">]</span> <span class="o">+</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span>   <span class="o">=</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">scale_arange</span>  <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">scale_arange</span>
+                                       <span class="k">if</span> <span class="ow">not</span> <span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">]</span> <span class="o">+</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">)</span>
+        
         <span class="c"># grid search</span>
         <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">maxdist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">upfreq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">lowfreq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">scale_arange</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">maxdist</span> <span class="ow">in</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">maxdist_arange</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">upfreq</span> <span class="ow">in</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">upfreq_arange</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">lowfreq</span> <span class="ow">in</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lowfreq_arange</span><span class="p">]:</span>
                         <span class="k">if</span> <span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
                             <span class="k">continue</span>
                         <span class="n">tmp</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;kforce&#39;</span>   <span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
@@ -191,6 +211,41 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span> <span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="IMPoptimizer.get_best_parameters_dict"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_parameters_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param None reference: a description of the dataset optimized</span>
+
+<span class="sd">        :returns: a dict that can be used for modelling, see config parameter in</span>
+<span class="sd">           :func:`pytadbit.experiment.Experiment.model_region`</span>
+<span class="sd">           </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: no optimization done yet.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result_to_array</span><span class="p">()</span>
+        <span class="n">axes_range</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">],</span>
+                      <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">],</span>
+                      <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">],</span>
+                      <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">]]</span>
+        <span class="n">wax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">zax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">xax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+        <span class="n">yax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+        <span class="n">sort_result</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span> <span class="n">wax</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">zax</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">xax</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="n">yax</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wax</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zax</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">yax</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xax</span><span class="p">))</span>
+                              <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">])</span>
+                              <span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                             <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">res3</span><span class="p">,</span> <span class="n">res4</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sort_result</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(((</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">res1</span><span class="p">),</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">res2</span><span class="p">),</span>
+                     <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">res3</span><span class="p">),</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">res4</span><span class="p">),</span>
+                     <span class="p">(</span><span class="s">&#39;reference&#39;</span><span class="p">,</span> <span class="n">reference</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;kforce&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)))</span>
 
 </div>
 <div class="viewcode-block" id="IMPoptimizer.plot_2d"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d">[docs]</a>    <span class="k">def</span> <span class="nf">plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">),</span>
@@ -277,7 +332,7 @@
                         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                             <span class="k">continue</span>
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        
+
 </div>
 <div class="viewcode-block" id="IMPoptimizer.load_from_file"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -372,8 +427,8 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 06, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

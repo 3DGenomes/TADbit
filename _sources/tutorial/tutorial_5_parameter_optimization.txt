@@ -83,7 +83,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
 .. parsed-literal::
 
-    /usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/experiment.py:529: UserWarning: WARNING: normalizing according to visibility method
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:529: UserWarning: WARNING: normalizing according to visibility method
       warn('WARNING: normalizing according to visibility method')
 
 
@@ -217,7 +217,12 @@ One can also visualize the parameter optimization according to ne of the three o
 
 .. code:: python
 
-    optimizer.plot_2d(skip={"scale":0.008}, show_best=10)
+    optimizer.plot_2d(skip={"scale":0.005}, show_best=10)
+
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_22_0.png
+
 
 TADBit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
 
@@ -226,25 +231,30 @@ TADBit also provides the possibility to view it all together in a 3D plot (note 
     # Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.
     optimizer.plot_3d(axes=('maxdist', 'upfreq', 'lowfreq', 'scale'))
 
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_24_0.png
+
+
 .. code:: python
 
-    optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, -0.0, 0.1), upfreq_range=(0.3, 0.6, 0.1), 
+    optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, -0.0, 0.1), upfreq_range=(0.3, 0.5, 0.05), 
                               scale_range=[0.005], maxdist_range=(200, 450, 50), verbose=False)
 
 .. code:: python
 
+    optimizer.scale_range
+    optimizer.maxdist_range
+
+.. code:: python
+
     optimizer.plot_2d(show_best=100)
-
-
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_26_0.png
-
-
 .. code:: python
 
     optimizer.write_result('results.log')
 .. code:: python
 
-    optimizer2 = IMPoptimizer(exp, 405, 449, n_models=100, n_keep=50)
+    optimizer2 = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=1000)
 .. code:: python
 
     optimizer2.load_from_file('results.log')
@@ -254,85 +264,15 @@ TADBit also provides the possibility to view it all together in a 3D plot (note 
 .. code:: python
 
     optimizer2.plot_2d(show_best=20)
-
-::
-
-
-    ---------------------------------------------------------------------------
-    NameError                                 Traceback (most recent call last)
-
-    <ipython-input-19-00d2bf34d6a8> in <module>()
-    ----> 1 optimizer2.plot_2d(show_best=20)
-    
-
-    NameError: name 'optimizer2' is not defined
-
-
 .. code:: python
 
     optimizer.scale_range
-
-
-
-.. parsed-literal::
-
-    [0.005]
-
-
-
 .. code:: python
 
     optimizer.upfreq_range
-
-
-
-.. parsed-literal::
-
-    [0.0,
-     0.10000000000000001,
-     0.20000000000000001,
-     0.29999999999999999,
-     0.30000000000000004,
-     0.40000000000000002,
-     0.5,
-     0.60000000000000009,
-     0.70000000000000007,
-     0.80000000000000004,
-     0.90000000000000002,
-     1.0]
-
-
-
 .. code:: python
 
     optimizer.lowfreq_range
-
-
-
-.. parsed-literal::
-
-    [-1.0,
-     -0.90000000000000002,
-     -0.80000000000000004,
-     -0.70000000000000007,
-     -0.60000000000000009,
-     -0.50000000000000011,
-     -0.40000000000000013,
-     -0.30000000000000016,
-     -0.20000000000000018,
-     -0.1000000000000002,
-     -2.2204460492503131e-16]
-
-
-
 .. code:: python
 
     optimizer.maxdist_range
-
-
-
-.. parsed-literal::
-
-    [200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000]
-
-

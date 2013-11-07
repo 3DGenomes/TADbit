@@ -23,3 +23,12 @@ Utilities
 .. currentmodule:: pytadbit.utils.three_dim_stats
 
 .. autofunction:: calc_eqv_rmsd
+
+.. autofunction:: square_distance
+
+.. autofunction:: distance
+
+.. autofunction:: angle_between_3_points
+
+.. autofunction:: dihedral
+

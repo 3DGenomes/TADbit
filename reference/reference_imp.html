@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -215,7 +214,7 @@ models</p>
 </ul>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.accessible_surface">
-<tt class="descname">accessible_surface</tt><big>(</big><em>radius</em>, <em>write_cmm_file=None</em>, <em>nump=100</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.accessible_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.accessible_surface" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">accessible_surface</tt><big>(</big><em>radius</em>, <em>write_cmm_file=None</em>, <em>nump=100</em>, <em>verbose=False</em>, <em>include_edges=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.accessible_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.accessible_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates a mesh surface around the model (distance equal to input
 <strong>radius</strong>) and checks if each point of this mesh could be replaced by
 an object (i.e. a protein) of a given <strong>radius</strong></p>
@@ -247,10 +246,10 @@ cylinders around edges joining particles (no overlap is allowed between
 sphere and cylinders or cylinder and cylinder when they are
 consecutive).</p>
 <p>If we want that all dots of the mesh representing the surface of the
-chromatin, corresponds to an equal area (<span class="math">\(a\)</span>)</p>
-<blockquote>
-<div><div class="math">
-\[a = \frac{4\pi r^2}{s} = \frac{2\pi r N_{(d)}}{c}\]</div>
+chromatin, corresponds to an equal area (<span class="math">\(a\)</span>)
+.. math:</p>
+<div class="highlight-python"><pre>a = \frac{4\pi r^2}{s} = \frac{2\pi r N_{(d)}}{c}</pre>
+</div>
 <p>with:</p>
 <ul class="simple">
 <li><span class="math">\(r\)</span> radius of the object to fit (as the input parameter <strong>radius</strong>)</li>
@@ -269,7 +268,6 @@ to <span class="math">\(2r\)</span> (<span class="math">\(N=2r\)</span>), we wou
 <p>Thus the number of circles in an edge of length <span class="math">\(d\)</span> must be:</p>
 <div class="math">
 \[N_{(d)}=\frac{s}{\sqrt{s}\sqrt{\pi}}\times\frac{d}{2r}\]</div>
-</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -280,7 +278,9 @@ dots in the mesh <em>3-</em> the estimated area of the mesh (in square
 micrometers) <em>4-</em> the area of the mesh of a virtually straight strand
 of chromatin defined as 
 <span class="math">\(contour\times 2\pi r + 4\pi r^2\)</span> (also in
-micrometers)</td>
+micrometers) <em>5-</em> a list of number of (accessibles, inaccessible) for
+each particle (percentage burried can be infered afterwards by
+accessible/(accessible+inaccessible) )</td>
 </tr>
 </tbody>
 </table>
@@ -375,6 +375,7 @@ never be reached by the given object</td>
 </tr>
 </tbody>
 </table>
+<p>TODO: remove this function</p>
 </dd></dl>
 
 <dl class="method">
@@ -520,7 +521,7 @@ modified the final image/movie).</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.write_cmm">
-<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x10d078d70&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x4d9a758&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the cmm format, read by Chimera
 (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
@@ -609,6 +610,22 @@ neighbors (e.g. 1 means consecutive particles)</li>
 </tbody>
 </table>
 <dl class="method">
+<dt id="pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict">
+<tt class="descname">get_best_parameters_dict</tt><big>(</big><em>reference=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.get_best_parameters_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reference</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a description of the dataset optimized</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a dict that can be used for modelling, see config parameter in
+<a class="reference internal" href="reference_experiment.html#pytadbit.experiment.Experiment.model_region" title="pytadbit.experiment.Experiment.model_region"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.model_region()</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file">
 <tt class="descname">load_from_file</tt><big>(</big><em>f_name</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.load_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads the optimized parameters from a file generated with the function:
@@ -666,7 +683,7 @@ be placed on the x, y, z or w axe.</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search">
-<tt class="descname">run_grid_search</tt><big>(</big><em>upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1), scale_range=[0.01], maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">run_grid_search</tt><big>(</big><em>upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1), scale_range=[0.005], maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function calculates the correlation between the models generated 
 by IMP and the input data for the four main IMP parameters (scale, 
 maxdist, lowfreq and upfreq) in the given ranges of values.</p>
@@ -686,7 +703,7 @@ upfreq values</li>
 used to search for the optimal maximum experimental distance. The 
 last value of the input tuple is the incremental step for maxdist 
 values</li>
-<li><strong>scale_range</strong> (<em>[0.01]</em>) &#8211; upper and lower bounds used to search for 
+<li><strong>scale_range</strong> (<em>[0.005]</em>) &#8211; upper and lower bounds used to search for 
 the optimal scale parameter (nm per nucleotide). The last value of
 the input tuple is the incremental step for scale parameter values</li>
 <li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; print the results to the standard output</li>
@@ -794,10 +811,10 @@ B )g  |b
 <li><strong>parta</strong> &#8211; A particle number</li>
 <li><strong>partb</strong> &#8211; A particle number</li>
 <li><strong>partc</strong> &#8211; A particle number</li>
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the angle will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the angle only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>radian</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, return value in radians (in degrees
 otherwise)</li>
@@ -820,10 +837,10 @@ returns a list of the angle g, h, i (see picture above)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the average model will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the average model only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; prints the distance of each model to average model
 (in stderr)</li>
@@ -846,10 +863,10 @@ ARTIFICIAL model)</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the centroid model will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the centroid model only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; prints the distance of each model to average model
 (in stderr)</li>
@@ -890,18 +907,17 @@ the clustering (basically it depends of the internal branch lengths)</li>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.cluster_models">
 <tt class="descname">cluster_models</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=200</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>This function performs a clustering analysis of the generated models</dt>
-<dd><p class="first">based on structural comparison. The result will be stored in
+<dd><blockquote>
+<div><p>This function performs a clustering analysis of the generated models
+based on structural comparison. The result will be stored in
 StructuralModels.clusters</p>
 <p>Clustering is done according to a score of pairwise comparison
 calculated as:</p>
-<div class="last highlight-python"><pre>                      dRMSD[i] / max(dRMSD)
+<div class="highlight-python"><pre>                      dRMSD[i] / max(dRMSD)
 score[i] = eqvs[i] * -----------------------
                        RMSD[i] / max(RMSD)</pre>
 </div>
-</dd>
-</dl>
+</div></blockquote>
 <p>where eqvs[i] is the number of equivalent position for the ith
 pairwise model comparison.</p>
 <blockquote>
@@ -979,10 +995,10 @@ of models where these two particles are in contact)</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the correlation will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the correlation only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>cutoff</strong> (<em>200</em>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not</li>
@@ -1033,10 +1049,10 @@ region bins.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the density plot will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the density plot only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>2, 3, 4, 5) steps</strong> (<em>(1,</em>) &#8211; how many particles to group for the
 estimation. By default 5 curves are drawn</li>
@@ -1095,10 +1111,10 @@ cutoff distance.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact matrix will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact matrix only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>cutoff</strong> (<em>150</em>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not</li>
@@ -1123,10 +1139,10 @@ are in contact or not</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>part1</strong> &#8211; number corresponding to the first particle</li>
 <li><strong>part2</strong> &#8211; number corresponding to the second particle</li>
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the distance will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the distance only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True, display a histogram and a box-plot of the
 distribution of the calculated distances. If False, return either
@@ -1161,10 +1177,10 @@ the higher stability).</p>
 <li><strong>cutoffs</strong> (<em>(50,100,150,200)</em>) &#8211; list of distance cutoffs (nm) used to
 compute the consistency. Two particle are considered consistent if
 their distance is less than the given cutoff</li>
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the consistency will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the consistency only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>tmp_path</strong> (<em>&#8216;/tmp/tmp_cons&#8217;</em>) &#8211; location of the input files for
 TM-score program</li>
@@ -1228,10 +1244,10 @@ step</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the visualization will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the visualization only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>tool</strong> (<em>&#8216;chimera&#8217;</em>) &#8211; path to the external tool used to visualize the
 model</li>
@@ -1291,10 +1307,10 @@ bellow, angle are calculated between loci A, D and G.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
-using all the models. A list of numbers corresponding to a given set
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) all models will be used for
+computation. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the angle only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>3) steps</strong> (<em>(1,</em>) &#8211; how many particles to group for the estimation.
 By default 2 curves are drawn</li>
@@ -1332,10 +1348,10 @@ successive loci.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact map will be computed
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the dihedral angle will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the dihedral angle only for the models in the
 cluster number &#8216;cluster&#8217;</li>
 <li><strong>3) steps</strong> (<em>(1,</em>) &#8211; how many particles to group for the estimation.
 By default 2 curves are drawn</li>
@@ -1365,7 +1381,7 @@ generated (1 column per step + 1 for particle number).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.write_cmm">
-<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>color=&lt;function color_residues at 0x10d078d70&gt;</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_cmm" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>color=&lt;function color_residues at 0x4d9a758&gt;</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the cmm format, read by Chimera
 (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
@@ -1528,8 +1544,8 @@ if None, the image will be shown using matplotlib GUI</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 06, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

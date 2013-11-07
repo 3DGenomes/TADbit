@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -196,10 +195,10 @@
 </div>
 <div class="viewcode-block" id="StructuralModels.centroid_model"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.structuralmodels.StructuralModels.centroid_model">[docs]</a>    <span class="k">def</span> <span class="nf">centroid_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param None models: if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models: if None (default) the centroid model will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the centroid model only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param False verbose: prints the distance of each model to average model</span>
 <span class="sd">           (in stderr)</span>
@@ -222,10 +221,10 @@
 </div>
 <div class="viewcode-block" id="StructuralModels.average_model"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.structuralmodels.StructuralModels.average_model">[docs]</a>    <span class="k">def</span> <span class="nf">average_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param None models: if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models: if None (default) the average model will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the average model only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param False verbose: prints the distance of each model to average model</span>
 <span class="sd">           (in stderr)</span>
@@ -432,10 +431,10 @@
 <span class="sd">        Plots the number of nucleotides per nm of chromatin vs the modeled</span>
 <span class="sd">        region bins.</span>
 
-<span class="sd">        :param None models: if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models: if None (default) the density plot will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the density plot only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param (1, 2, 3, 4, 5) steps: how many particles to group for the</span>
 <span class="sd">           estimation. By default 5 curves are drawn</span>
@@ -561,10 +560,10 @@
 <span class="sd">        Returns a matrix with the number of interactions observed below a given</span>
 <span class="sd">        cutoff distance.</span>
 
-<span class="sd">        :param None models: if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models: if None (default) the contact matrix will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the contact matrix only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param 150 cutoff: distance cutoff (nm) to define whether two particles</span>
 <span class="sd">           are in contact or not</span>
@@ -755,10 +754,10 @@
 <div class="viewcode-block" id="StructuralModels.correlate_with_real_data"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data">[docs]</a>    <span class="k">def</span> <span class="nf">correlate_with_real_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
                                  <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param None models: if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models: if None (default) the correlation will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the correlation only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param 200 cutoff: distance cutoff (nm) to define whether two particles</span>
 <span class="sd">           are in contact or not</span>
@@ -828,10 +827,10 @@
 <span class="sd">        :param (50,100,150,200) cutoffs: list of distance cutoffs (nm) used to</span>
 <span class="sd">           compute the consistency. Two particle are considered consistent if</span>
 <span class="sd">           their distance is less than the given cutoff</span>
-<span class="sd">        :param None models:  if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models:  if None (default) the consistency will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the consistency only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param &#39;/tmp/tmp_cons&#39; tmp_path: location of the input files for</span>
 <span class="sd">           TM-score program</span>
@@ -912,10 +911,10 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize a selected model in the three dimensions.</span>
 
-<span class="sd">        :param None models:  if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models:  if None (default) the visualization will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the visualization only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param &#39;chimera&#39; tool: path to the external tool used to visualize the</span>
 <span class="sd">           model</span>
@@ -1014,10 +1013,10 @@
 <span class="sd">        :param parta: A particle number</span>
 <span class="sd">        :param partb: A particle number</span>
 <span class="sd">        :param partc: A particle number</span>
-<span class="sd">        :param None models:  if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models:  if None (default) the angle will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the angle only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param False radian: if True, return value in radians (in degrees</span>
 <span class="sd">           otherwise)</span>
@@ -1095,10 +1094,10 @@
 <span class="sd">        Plots the dihedral angle between successive plans. A plan is formed by 3</span>
 <span class="sd">        successive loci.</span>
 
-<span class="sd">        :param None models: if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models: if None (default) the dihedral angle will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the dihedral angle only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param (1, 3) steps: how many particles to group for the estimation.</span>
 <span class="sd">           By default 2 curves are drawn</span>
@@ -1180,10 +1179,10 @@
 <span class="sd">        between 3 loci, between each are two other loci. E.g. in the scheme</span>
 <span class="sd">        bellow, angle are calculated between loci A, D and G.</span>
 
-<span class="sd">        :param None models: if None (default) the contact map will be computed</span>
-<span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
+<span class="sd">        :param None models: if None (default) all models will be used for</span>
+<span class="sd">           computation. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the angle only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param (1, 3) steps: how many particles to group for the estimation.</span>
 <span class="sd">           By default 2 curves are drawn</span>
@@ -1298,10 +1297,10 @@
 
 <span class="sd">        :param part1: number corresponding to the first particle</span>
 <span class="sd">        :param part2: number corresponding to the second particle</span>
-<span class="sd">        :param None models:  if None (default) the contact map will be computed</span>
+<span class="sd">        :param None models:  if None (default) the distance will be computed</span>
 <span class="sd">           using all the models. A list of numbers corresponding to a given set</span>
 <span class="sd">           of models can be passed</span>
-<span class="sd">        :param None cluster: compute the contact map only for the models in the</span>
+<span class="sd">        :param None cluster: compute the distance only for the models in the</span>
 <span class="sd">           cluster number &#39;cluster&#39;</span>
 <span class="sd">        :param True plot: if True, display a histogram and a box-plot of the</span>
 <span class="sd">           distribution of the calculated distances. If False, return either</span>
@@ -1314,8 +1313,6 @@
 <span class="sd">           calculated distances or their median value distances, either the</span>
 <span class="sd">           list of distances.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">part1</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="n">part2</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">models</span><span class="p">:</span>
             <span class="n">models</span><span class="o">=</span><span class="n">models</span>
         <span class="k">elif</span> <span class="n">cluster</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
@@ -1329,7 +1326,7 @@
                 <span class="k">return</span> <span class="n">np_median</span><span class="p">(</span><span class="n">dists</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">dists</span>
-        <span class="n">plot_hist_box</span><span class="p">(</span><span class="n">dists</span><span class="p">,</span> <span class="n">part1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">part2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">savefig</span><span class="p">)</span>
+        <span class="n">plot_hist_box</span><span class="p">(</span><span class="n">dists</span><span class="p">,</span> <span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">savefig</span><span class="p">)</span>
 
 </div>
     <span class="k">def</span> <span class="nf">__square_3d_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -1522,8 +1519,8 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 06, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

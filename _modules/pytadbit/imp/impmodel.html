@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -54,7 +53,7 @@
 
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">color_residues</span><span class="p">,</span> <span class="n">chimera_view</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">generate_sphere_points</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">fast_square_distance</span><span class="p">,</span> <span class="n">square_distance</span><span class="p">,</span> <span class="n">distance</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">fast_square_distance</span><span class="p">,</span> <span class="n">distance</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">angle_between_3_points</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">generate_circle_points</span>
 <span class="kn">from</span> <span class="nn">scipy.interpolate</span>              <span class="kn">import</span> <span class="n">spline</span>
@@ -62,7 +61,7 @@
 <span class="kn">from</span> <span class="nn">warnings</span>                       <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">re</span>                             <span class="kn">import</span> <span class="n">findall</span><span class="p">,</span> <span class="nb">compile</span> <span class="k">as</span> <span class="n">compil</span>
 <span class="kn">from</span> <span class="nn">math</span>                           <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">pi</span>
-<span class="kn">from</span> <span class="nn">random</span>                         <span class="kn">import</span> <span class="n">random</span>
+
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -363,6 +362,8 @@
 <span class="sd">        :returns: a list of numbers, each being the ID of a particles that would</span>
 <span class="sd">           never be reached by the given object</span>
 
+<span class="sd">        TODO: remove this function</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inaccessibles</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">sphere</span> <span class="o">=</span> <span class="n">generate_sphere_points</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
@@ -388,7 +389,7 @@
 
 </div>
 <div class="viewcode-block" id="IMPmodel.accessible_surface"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.accessible_surface">[docs]</a>    <span class="k">def</span> <span class="nf">accessible_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">write_cmm_file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-                           <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+                           <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include_edges</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates a mesh surface around the model (distance equal to input</span>
 <span class="sd">        **radius**) and checks if each point of this mesh could be replaced by</span>
@@ -416,37 +417,37 @@
 <span class="sd">        </span>
 <span class="sd">        If we want that all dots of the mesh representing the surface of the</span>
 <span class="sd">        chromatin, corresponds to an equal area (:math:`a`)</span>
-<span class="sd">           .. math::</span>
+<span class="sd">        .. math::</span>
 
-<span class="sd">             a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}</span>
+<span class="sd">          a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}</span>
 
-<span class="sd">           with:</span>
+<span class="sd">        with:</span>
 
-<span class="sd">           * :math:`r` radius of the object to fit (as the input parameter **radius**)</span>
-<span class="sd">           * :math:`s` number of points in sphere</span>
-<span class="sd">           * :math:`c` number of points in circle (as the input parameter **nump**)</span>
-<span class="sd">           * :math:`N_{(d)}` number of circles in an edge of length :math:`d`</span>
+<span class="sd">        * :math:`r` radius of the object to fit (as the input parameter **radius**)</span>
+<span class="sd">        * :math:`s` number of points in sphere</span>
+<span class="sd">        * :math:`c` number of points in circle (as the input parameter **nump**)</span>
+<span class="sd">        * :math:`N_{(d)}` number of circles in an edge of length :math:`d`</span>
 
-<span class="sd">           According to this, when the distance between two particles is equal</span>
-<span class="sd">           to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.</span>
+<span class="sd">        According to this, when the distance between two particles is equal</span>
+<span class="sd">        to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.</span>
 
-<span class="sd">           As :</span>
+<span class="sd">        As :</span>
 
-<span class="sd">           .. math::</span>
+<span class="sd">        .. math::</span>
 
-<span class="sd">             2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}</span>
-<span class="sd">           </span>
-<span class="sd">           It is fair to state the number of dots represented along a circle as:</span>
+<span class="sd">          2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}</span>
+<span class="sd">        </span>
+<span class="sd">        It is fair to state the number of dots represented along a circle as:</span>
 
-<span class="sd">           .. math::</span>
+<span class="sd">        .. math::</span>
 
-<span class="sd">             c = \sqrt{s} \\times \sqrt{\pi}</span>
+<span class="sd">          c = \sqrt{s} \\times \sqrt{\pi}</span>
 
-<span class="sd">           Thus the number of circles in an edge of length :math:`d` must be:</span>
+<span class="sd">        Thus the number of circles in an edge of length :math:`d` must be:</span>
 
-<span class="sd">           .. math::</span>
+<span class="sd">        .. math::</span>
 
-<span class="sd">             N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}</span>
+<span class="sd">          N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}</span>
 
 <span class="sd">        :returns: a list of *1-* the number of dots in the mesh that could be</span>
 <span class="sd">           occupied by an object of the given radius *2-* the total number of</span>
@@ -454,16 +455,20 @@
 <span class="sd">           micrometers) *4-* the area of the mesh of a virtually straight strand</span>
 <span class="sd">           of chromatin defined as </span>
 <span class="sd">           :math:`contour\\times 2\pi r + 4\pi r^2` (also in</span>
-<span class="sd">           micrometers)</span>
+<span class="sd">           micrometers) *5-* a list of number of (accessibles, inaccessible) for</span>
+<span class="sd">           each particle (percentage burried can be infered afterwards by</span>
+<span class="sd">           accessible/(accessible+inaccessible) )</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">subpoints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">particles</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">sphere</span> <span class="o">=</span> <span class="n">generate_sphere_points</span><span class="p">(</span><span class="n">nump</span><span class="p">)</span>
         <span class="n">nloci</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="c"># number of dots in a circle is dependent the ones in a sphere</span>
         <span class="n">numc</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">nump</span><span class="p">)</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
+        <span class="n">right_angle</span> <span class="o">=</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">pi</span> <span class="o">/</span> <span class="n">numc</span>
         <span class="c"># keeps the remaining of integer conversion, to correct</span>
         <span class="n">remaining</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">numc</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">numc</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
         <span class="n">c_count</span> <span class="o">=</span> <span class="mi">0</span>
@@ -536,7 +541,9 @@
                         <span class="n">subpoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_square_distance_to</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">thing</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">hyp2</span><span class="p">:</span>
                         <span class="n">subpoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
-
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">particles</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="c"># define slices</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">between</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
                 <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="n">selfx</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="n">stepx</span><span class="p">,</span>
@@ -547,6 +554,8 @@
                 <span class="n">pointy</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">pointz</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">include_edges</span><span class="p">:</span>
+                    <span class="k">continue</span>
                 <span class="c"># define circles</span>
                 <span class="k">for</span> <span class="n">spoint</span> <span class="ow">in</span> <span class="n">generate_circle_points</span><span class="p">(</span>
                     <span class="n">orthox</span> <span class="o">+</span> <span class="n">pointx</span><span class="p">,</span> <span class="n">orthoy</span> <span class="o">+</span> <span class="n">pointy</span><span class="p">,</span> <span class="n">orthoz</span> <span class="o">+</span> <span class="n">pointz</span><span class="p">,</span>
@@ -563,7 +572,7 @@
                             <span class="n">spoint</span><span class="p">,</span>
                             <span class="p">(</span><span class="n">selfx1</span><span class="p">,</span> <span class="n">selfy1</span><span class="p">,</span> <span class="n">selfz1</span><span class="p">),</span>
                             <span class="p">(</span><span class="n">selfx2</span><span class="p">,</span> <span class="n">selfy2</span><span class="p">,</span> <span class="n">selfz2</span><span class="p">))</span>
-                        <span class="k">if</span> <span class="n">ang</span> <span class="o">&lt;</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">pi</span> <span class="o">/</span> <span class="n">numc</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">ang</span> <span class="o">&lt;</span> <span class="n">right_angle</span><span class="p">:</span>
                             <span class="n">dist</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span> <span class="o">*</span> <span class="n">hyp</span>
                             <span class="c"># print dist, radius</span>
                             <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">radius</span><span class="p">:</span>
@@ -577,7 +586,7 @@
                             <span class="n">spoint</span><span class="p">,</span>
                             <span class="p">(</span><span class="n">selfx</span><span class="p">,</span> <span class="n">selfy</span><span class="p">,</span> <span class="n">selfz</span><span class="p">),</span>
                             <span class="p">(</span><span class="n">selfx_1</span><span class="p">,</span> <span class="n">selfy_1</span><span class="p">,</span> <span class="n">selfz_1</span><span class="p">))</span>
-                        <span class="k">if</span> <span class="n">ang</span> <span class="o">&lt;</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">pi</span> <span class="o">/</span> <span class="n">numc</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">ang</span> <span class="o">&lt;</span> <span class="n">right_angle</span><span class="p">:</span>
                             <span class="n">dist</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span> <span class="o">*</span> <span class="n">hyp</span>
                             <span class="c"># print dist, radius</span>
                             <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">radius</span><span class="p">:</span>
@@ -605,8 +614,8 @@
 
         <span class="c"># calculates the number of inaccessible peaces of surface</span>
         <span class="n">radius2</span> <span class="o">=</span> <span class="p">(</span><span class="n">radius</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-        <span class="n">red</span>     <span class="o">=</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">green</span>   <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">red</span>     <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">green</span>   <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">colors</span>  <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">z2</span> <span class="ow">in</span> <span class="n">subpoints</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
@@ -618,6 +627,17 @@
                 <span class="k">continue</span>
             <span class="n">points</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
         <span class="n">impossibles</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">red</span><span class="p">)</span>
+
+        <span class="n">acc_parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">particles</span><span class="p">:</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">ina</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">dot</span> <span class="ow">in</span> <span class="n">particles</span><span class="p">[</span><span class="n">p</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">colors</span><span class="p">[</span><span class="n">dot</span><span class="p">]</span><span class="o">==</span><span class="n">green</span><span class="p">:</span>
+                    <span class="n">acc</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ina</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">acc_parts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">acc</span><span class="p">,</span> <span class="n">ina</span><span class="p">))</span>
 
         <span class="c"># some stats</span>
         <span class="n">dot_area</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">nump</span>
@@ -640,27 +660,29 @@
             <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;marker id=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> x=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> y=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> z=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
                     <span class="s">&#39; r=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> g=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
                     <span class="s">&#39;radius=</span><span class="se">\&quot;</span><span class="s">20</span><span class="se">\&quot;</span><span class="s"> note=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="s">&#39;&lt;marker_set name=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s">&gt;</span><span class="se">\n</span><span class="s">&#39;</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">):</span>
-                <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">],</span>
-                               <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;link id1=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> id2=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> r=</span><span class="se">\&quot;</span><span class="s">50</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
-                    <span class="s">&#39;g=</span><span class="se">\&quot;</span><span class="s">50</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="s">50</span><span class="se">\&quot;</span><span class="s"> radius=</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
-                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;radius&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span>
-                    <span class="s">&#39;</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nloci</span><span class="p">):</span>
-                <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="c"># out = &#39;&lt;marker_set name=\&quot;1\&quot;&gt;\n&#39;</span>
+            <span class="c"># for k in xrange(nloci):</span>
+            <span class="c">#     out += form % (k+1, self[&#39;x&#39;][k], self[&#39;y&#39;][k], self[&#39;z&#39;][k],</span>
+            <span class="c">#                    100, 100, 100, k+1)</span>
+            <span class="c"># form = (&#39;&lt;link id1=\&quot;%s\&quot; id2=\&quot;%s\&quot; r=\&quot;50\&quot; &#39; +</span>
+            <span class="c">#         &#39;g=\&quot;50\&quot; b=\&quot;50\&quot; radius=\&quot;&#39; +</span>
+            <span class="c">#         str(self[&#39;radius&#39;]/8) +</span>
+            <span class="c">#         &#39;\&quot;/&gt;\n&#39;)</span>
+            <span class="c"># out += &#39;&lt;/marker_set&gt;\n&#39;</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="s">&#39;&lt;marker_set name=</span><span class="se">\&quot;</span><span class="s">2</span><span class="se">\&quot;</span><span class="s">&gt;</span><span class="se">\n</span><span class="s">&#39;</span>
+            <span class="c"># for i in xrange(1, nloci):</span>
+            <span class="c">#     out += form % (i, i + 1)</span>
             <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;marker id=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> x=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> y=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> z=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
                     <span class="s">&#39; r=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> g=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
                     <span class="s">&#39;radius=</span><span class="se">\&quot;</span><span class="s">7</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">k_2</span><span class="p">,</span> <span class="n">thing</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subpoints</span><span class="p">):</span>
-                <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="n">k_2</span><span class="p">,</span> <span class="n">thing</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">thing</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">thing</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                               <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">k_2</span><span class="p">,</span> <span class="n">thing</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">thing</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">thing</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="s">&#39;&lt;/marker_set&gt;</span><span class="se">\n</span><span class="s">&#39;</span>
             <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_cmm_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
             <span class="n">out_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
             <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span> <span class="o">-</span> <span class="n">impossibles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">),</span> <span class="n">area</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span> <span class="o">-</span> <span class="n">impossibles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">),</span> <span class="n">area</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">acc_parts</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="IMPmodel.write_cmm"><a class="viewcode-back" href="../../../reference/reference_imp.html#pytadbit.imp.impmodel.IMPmodel.write_cmm">[docs]</a>    <span class="k">def</span> <span class="nf">write_cmm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_residues</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
@@ -867,8 +889,8 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 06, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Nov 07, 2013.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>
