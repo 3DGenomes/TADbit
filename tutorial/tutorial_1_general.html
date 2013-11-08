@@ -87,32 +87,26 @@ chrT_006      19      50      53      42      37      224</pre>
 <p class="first admonition-title">Note</p>
 <p class="last">by default TADBit will not search for centromeres, however, as, in this example, we know that we are working with chromosome 19, we can ask TADBit search for it as explained in <a class="reference internal" href="#forbidden-regions"><em>Forbidden regions and centromeres</em></a></p>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TADBit parser is also able to read compressed data directly (gzip files).</p>
+</div>
 <div class="section" id="unconventional-data-format">
 <h3>Unconventional data format<a class="headerlink" href="#unconventional-data-format" title="Permalink to this headline">¶</a></h3>
-<p>If TADBit is unable to parse the input file, the user can create its own parser and pass it to the Chromosome instance. For example, one might be interested in using <a class="reference internal" href="../biblio.html#dixon2012" id="id2">[Dixon2012]</a> data that appear like this:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">strange</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;</span>
-<span class="s">  chr21     0       20000   0       0       0       0       0       0       0       0</span>
-<span class="s">  chr21     20000   40000   0       0       0       0       0       0       0       0</span>
-<span class="s">  chr21     40000   60000   0       0       0       0       0       0       0       0</span>
-<span class="s">  chr21     60000   80000   0       0       0       0       0       0       0       0</span>
-<span class="s">  chr21     80000   100000  0       0       0       0       0       0       0       0</span>
-<span class="s">  chr21     100000  120000  0       0       0       0       0       0       0       0</span>
-<span class="s">  chr21     120000  140000  0       0       0       0       0       0       0       0</span>
-<span class="s">  chr21     140000  160000  0       0       0       0       0       0       0       0</span>
-<span class="s">&#39;&#39;&#39;</span>
-</pre></div>
-</div>
-<p>In this case the user could implement a simple parser like this one:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">read_dixon_matrix</span><span class="p">(</span><span class="n">f_handle</span><span class="p">):</span>
+<p>In some cases users may found data that are not readable by TADBit. In such case, a parser function can be written and passed as an argument to the <tt class="docutils literal"><span class="pre">add_experiment</span></tt> function:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">read_strange_file</span><span class="p">(</span><span class="n">f_handle</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    reads from file handler (already openned)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">nums</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_handle</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
             <span class="k">continue</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">start</span><span class="p">:]</span>
+        <span class="c"># modify the following line to fit your parsing needings</span>
+        <span class="c">##</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="c">##</span>
+        <span class="c"># feed the &quot;num&quot; list with the list of values you parsed</span>
         <span class="n">nums</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">f_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -124,7 +118,7 @@ chrT_006      19      50      53      42      37      224</pre>
 <p>And call it as follow:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">other_chrom</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;An other chromosome&#39;</span><span class="p">)</span>
 <span class="n">other_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s">&#39;First Hi-C experiment&#39;</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="n">strange</span><span class="p">,</span>
-                           <span class="n">parser</span><span class="o">=</span><span class="n">read_dixon_matrix</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">20000</span><span class="p">)</span>
+                           <span class="n">parser</span><span class="o">=</span><span class="n">read_strange_file</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">20000</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/utils/hic_filtering.py:146: UserWarning: WARNING: Too few data to filter columns. SKIPPING...
@@ -257,14 +251,14 @@ score (as for forbidden regions).</p>
 <div class="section" id="data-visualization">
 <h2>Data visualization<a class="headerlink" href="#data-visualization" title="Permalink to this headline">¶</a></h2>
 <p>Once loaded, the Hi-C data can be visualized using the <a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize" title="pytadbit.chromosome.Chromosome.visualize"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.visualize()</span></tt></a>
-function. The only parameter needed is which experiment to show. Therefore, the human chromosome 19 from <a class="reference internal" href="../biblio.html#lieberman-aiden2009" id="id3">[Lieberman-Aiden2009]</a> can be visualized with:</p>
+function. The only parameter needed is which experiment to show. Therefore, the human chromosome 19 from <a class="reference internal" href="../biblio.html#lieberman-aiden2009" id="id2">[Lieberman-Aiden2009]</a> can be visualized with:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s">&quot;k562&quot;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/chromosome.py:568: RuntimeWarning: divide by zero encountered in log2
   img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,</pre>
 </div>
-<img alt="../_images/tutorial_1_general_42_1.png" src="../_images/tutorial_1_general_42_1.png" />
+<img alt="../_images/tutorial_1_general_40_1.png" src="../_images/tutorial_1_general_40_1.png" />
 <div class="highlight-python"><pre>&lt;matplotlib.image.AxesImage at 0x43b5a50&gt;</pre>
 </div>
 <p>This plot shows the log2 interaction counts, resulting from the given Hi-C experiment.</p>
@@ -274,8 +268,8 @@ be visualized in the same kind of plot:</p>
 <span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s">&quot;gm06690&quot;</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_1_general_44_0.png" src="../_images/tutorial_1_general_44_0.png" />
-<img alt="../_images/tutorial_1_general_44_1.png" src="../_images/tutorial_1_general_44_1.png" />
+<img alt="../_images/tutorial_1_general_42_0.png" src="../_images/tutorial_1_general_42_0.png" />
+<img alt="../_images/tutorial_1_general_42_1.png" src="../_images/tutorial_1_general_42_1.png" />
 <p><em>Note: centromere are TAD-free and two TADs which size &gt; 3 Mb are shaded</em></p>
 </div>
 <div class="section" id="saving-and-restoring-data">

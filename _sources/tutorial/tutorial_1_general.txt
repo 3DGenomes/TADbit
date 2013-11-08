@@ -45,41 +45,31 @@ TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as 
 .. note::
    by default TADBit will not search for centromeres, however, as, in this example, we know that we are working with chromosome 19, we can ask TADBit search for it as explained in :ref:`forbidden_regions`
 
+.. note::
+   TADBit parser is also able to read compressed data directly (gzip files).
+
 
 Unconventional data format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-If TADBit is unable to parse the input file, the user can create its own parser and pass it to the Chromosome instance. For example, one might be interested in using [Dixon2012]_ data that appear like this:
-
-
-.. code:: python
-
-    strange = '''
-      chr21	0	20000	0	0	0	0	0	0	0	0
-      chr21	20000	40000	0	0	0	0	0	0	0	0
-      chr21	40000	60000	0	0	0	0	0	0	0	0
-      chr21	60000	80000	0	0	0	0	0	0	0	0
-      chr21	80000	100000	0	0	0	0	0	0	0	0
-      chr21	100000	120000	0	0	0	0	0	0	0	0
-      chr21	120000	140000	0	0	0	0	0	0	0	0
-      chr21	140000	160000	0	0	0	0	0	0	0	0
-    '''
-        
-In this case the user could implement a simple parser like this one:
+In some cases users may found data that are not readable by TADBit. In such case, a parser function can be written and passed as an argument to the ``add_experiment`` function:
 
 .. code:: python
 
-    def read_dixon_matrix(f_handle):
+    def read_strange_file(f_handle):
         """
         reads from file handler (already openned)
         """
         nums = []
-        start = 3
         for line in f_handle:
             if not line:
                 continue
-            values = line.split()[start:]
+            # modify the following line to fit your parsing needings
+            ##
+            values = line.split()
+            ##
+            # feed the "num" list with the list of values you parsed
             nums.append([int(v) for v in values])
             try:
                 f_handle.close()
@@ -93,7 +83,7 @@ And call it as follow:
 
     other_chrom = Chromosome(name='An other chromosome')
     other_chrom.add_experiment('First Hi-C experiment', hic_data=strange,
-                               parser=read_dixon_matrix, resolution=20000)
+                               parser=read_strange_file, resolution=20000)
 
 
 .. parsed-literal::
@@ -300,7 +290,7 @@ function. The only parameter needed is which experiment to show. Therefore, the 
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_42_1.png
+.. image:: ../nbpictures/tutorial_1_general_40_1.png
 
 
 
@@ -323,11 +313,11 @@ be visualized in the same kind of plot:
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_44_0.png
+.. image:: ../nbpictures/tutorial_1_general_42_0.png
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_44_1.png
+.. image:: ../nbpictures/tutorial_1_general_42_1.png
 
 
 *Note: centromere are TAD-free and two TADs which size > 3 Mb are shaded*
