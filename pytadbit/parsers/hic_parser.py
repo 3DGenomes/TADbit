@@ -40,8 +40,7 @@ def autoreader(f):
     # as a list of lists.
     for line in f:
         if line[0] != '#': break
-    items = [line.split()]
-    items += [line.split() for line in f]
+    items = [line.split()] + [line.split() for line in f]
 
     # Count the number of elements per line after the first.
     # Wrapping in a set is a trick to make sure that every line
@@ -50,7 +49,7 @@ def autoreader(f):
     ncol = S.pop()
     # If the set 'S' is not empty, at least two lines have a
     # different number of items.
-    if S: raise AutoReadFail('unequal column number')
+    if S: raise AutoReadFail('ERROR: unequal column number')
 
     nrow = len(items)
     # Auto-detect the format, there are only 4 cases.
@@ -58,48 +57,45 @@ def autoreader(f):
         if all([item.isdigit() for item in items[0]]):
             # Case 1: pure integer matrix.
             header = False
-            startat = 0
+            trim = 0
         else:
             # Case 2: matrix with row and column names.
             header = True
-            startat = 1
+            trim = 1
     else:
         if len(items[0]) == len(items[1]):
             # Case 3: matrix with row information.
             header = False
-            startat = ncol - nrow
+            trim = ncol - nrow
         else:
             # Case 4: matrix with header and row information.
             header = True
-            startat = ncol - nrow + 1
+            trim = ncol - nrow + 1
 
-    # Trim the matrix.
+    # Remove header line if needed.
     if header:
-        # faster to do del
         del(items[0])
         nrow -= 1
-    if startat > 0:
-        items = [line[startat:] for line in items]
-        ncol -= startat
 
-    if ncol != nrow: raise AutoReadFail('non square matrix')
-
-    # Time to get the numeric values.
+    # Get the numeric values and remove extra columns
     try:
-        items = [[int(a) for a in line] for line in items]
+        items = [[int(a) for a in line[trim:]] for line in items]
     except ValueError:
         try:
-            # dekker data 2009, uses integer but puts a comma... 
-            items = [[int(float(a)) for a in line] for line in items]
+            # Dekker data 2009, uses integer but puts a comma... 
+            items = [[int(float(a)) for a in line[trim:]] for line in items]
             warn('WARNING: non integer values')
         except ValueError:
-            raise AutoReadFail('ERROR: non numerical values')
+            raise AutoReadFail('ERROR: non numeric values')
+
+    # Check that the matrix is square.
+    ncol -= trim
+    if ncol != nrow: raise AutoReadFail('ERROR: non square matrix')
 
     if is_asymmetric(items):
-        warn('input matrix not symmetric: symmetrizing')
+        warn('WARNING: input matrix not symmetric: symmetrizing')
         symmetrize(items)
 
-    # it is much faster to transform a list to a tuple than an iterator to a tuple..
     return tuple([a for line in items for a in line]), ncol
 
 
