@@ -1,43 +1,102 @@
 """
-19 Dec 2012
-
+November 7, 2013.
 
 """
 
+from warnings import warn
 from math import sqrt
 
-def _read_matrix(f_h):
-    """
-    reads from file
-    """
-    nums = []
-    while True:
-        values = f_h.next().split()
-        if values[0].startswith('#'):
-            # skip comments
-            continue
-        break
-    # check if we have headers/row-names in the file
-    start = 1
-    if values[0].isdigit():
-        try:
-            nums.append([int(v) for v in values])
-        except ValueError:
-            nums.append([int(float(v)) for v in values])
-        start = 0
-    # parse the rest of the file
-    for line in f_h:
-        values = line.split()[start:]
-        try:
-            nums.append([int(v) for v in values])
-        except ValueError:
-            nums.append([int(float(v)) for v in values])
+# Exception to handle failed autoread.
+class AutoReadFail(Exception):
+    pass
+
+# Helper functions for the autoreader.
+def is_asymmetric(matrix):
+    maxn = len(matrix)
+    for i in range(maxn):
+        maxi = matrix[i] # slightly more efficient
+        for j in range(i+1, maxn):
+            if maxi[j] != matrix[j][i]: return True
+    return False
+
+def symmetrize(matrix):
+    maxn = len(matrix)
+    for i in range(maxn):
+        for j in range(i+1, maxn):
+            matrix[i][j] = matrix[j][i] = matrix[i][j] + matrix[j][i]
+
+
+def autoreader(f):
+    """Auto-detect matrix format of HiC data file.
+    
+    ARGUMENTS:
+       f: an iterable (typically an open file).
+    
+    RETURN:
+       A tuple with integer values and the dimension of
+       the matrix."""
+
+    # Skip initial comment lines and read in the whole file
+    # as a list of lists.
+    for line in f:
+        if line[0] != '#': break
+    items = [line.split()] + [line.split() for line in f]
+
+    # Count the number of elements per line after the first.
+    # Wrapping in a set is a trick to make sure that every line
+    # has the same number of elements.
+    S = set([len(line) for line in items[1:]])
+    ncol = S.pop()
+    # If the set 'S' is not empty, at least two lines have a
+    # different number of items.
+    if S: raise AutoReadFail('ERROR: unequal column number')
+
+    nrow = len(items)
+    # Auto-detect the format, there are only 4 cases.
+    if ncol == nrow:
+        if all([item.isdigit() for item in items[0]]):
+            # Case 1: pure integer matrix.
+            header = False
+            trim = 0
+        else:
+            # Case 2: matrix with row and column names.
+            header = True
+            trim = 1
+    else:
+        if len(items[0]) == len(items[1]):
+            # Case 3: matrix with row information.
+            header = False
+            trim = ncol - nrow
+        else:
+            # Case 4: matrix with header and row information.
+            header = True
+            trim = ncol - nrow + 1
+
+    # Remove header line if needed.
+    if header:
+        del(items[0])
+        nrow -= 1
+
+    # Get the numeric values and remove extra columns
     try:
-        f_h.close()
-    except AttributeError:
-        pass
-    size = len(nums)
-    return tuple([nums[j][i] for i in xrange(size) for j in xrange(size)]), size
+        items = [[int(a) for a in line[trim:]] for line in items]
+    except ValueError:
+        try:
+            # Dekker data 2009, uses integer but puts a comma... 
+            items = [[int(float(a)) for a in line[trim:]] for line in items]
+            warn('WARNING: non integer values')
+        except ValueError:
+            raise AutoReadFail('ERROR: non numeric values')
+
+    # Check that the matrix is square.
+    ncol -= trim
+    if ncol != nrow: raise AutoReadFail('ERROR: non square matrix')
+
+    if is_asymmetric(items):
+        warn('WARNING: input matrix not symmetric: symmetrizing')
+        symmetrize(items)
+
+    return tuple([a for line in items for a in line]), ncol
 
 
 def read_matrix(things, parser=None):
@@ -65,7 +124,7 @@ def read_matrix(things, parser=None):
         returns number or rows
 
     """
-    parser = parser or _read_matrix
+    parser = parser or autoreader
     if type(things) is not list:
         things = [things]
     matrices = []
@@ -73,13 +132,17 @@ def read_matrix(things, parser=None):
     for thing in things:
         if type(thing) is file:
             matrix, size = parser(thing)
+            thing.close()
             matrices.append(matrix)
             sizes.append(size)
         elif type(thing) is str:
             try:
                 matrix, size = parser(open(thing))
             except IOError:
-                matrix, size = parser(thing.split('\n'))
+                if len(thing.split('\n')) > 1:
+                    matrix, size = parser(thing.split('\n'))
+                else:
+                    raise Exception('\n   ERROR: file %s not found\n' % thing)
             matrices.append(matrix)
             sizes.append(size)
         elif type(thing) is list:
@@ -106,21 +169,8 @@ def read_matrix(things, parser=None):
                 print 'Error found:', exc
         else:
             raise Exception('Unable to read this file or whatever it is :)')
-    if all([s==sizes[0] for s in sizes]) and \
-           all([__check_hic(m, sizes[0]) for m in matrices]):
+    if all([s==sizes[0] for s in sizes]):
         return matrices, sizes[0]
     raise Exception('All matrices must have the same size ' +
                     '(same chromosome and same bins).')
 
-
-# This function is no longer required because the data is
-# force-symmetrized by the C engine.
-def __check_hic(hic, size):
-    """
-    check if hi-c data is symmetric
-    """
-    #for i in xrange(size):
-    #    for j in xrange(i + 1, size):
-    #        if not hic[i * size + j] == hic[j * size + i]:
-    #            raise AttributeError('ERROR: matrix should be symmetric.\n')
-    return True
