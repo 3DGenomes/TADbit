@@ -149,7 +149,10 @@ an object (i.e. a protein) of a given <strong>radius</strong></p>
 colored meshed (red inaccessible points, green accessible points)</li>
 <li><strong>nump</strong> (<em>100</em>) &#8211; number of points to draw around a given particle. This
 number also sets the number of points drawn around edges, as each
-point occupies a given surface:</li>
+point occupies a given surface (see maths below). <em>Note that this
+number is considerably lowered by the occupancy of edges, depending
+of the angle formed by the edges surrounding a given particle, only
+10% to 50% of the ``nump`` will be drawn in fact.</em></li>
 <li><strong>include_edges</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, edges will not be included in the
 calculation of the accessible surface, only particles. Note that
 statistics on particles (like last item returned) will not change,
@@ -449,7 +452,7 @@ modified the final image/movie).</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.write_cmm">
-<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x57dd668&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x4c6b668&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the cmm format, read by Chimera
 (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
