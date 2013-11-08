@@ -150,6 +150,14 @@ colored meshed (red inaccessible points, green accessible points)</li>
 <li><strong>nump</strong> (<em>100</em>) &#8211; number of points to draw around a given particle. This
 number also sets the number of points drawn around edges, as each
 point occupies a given surface:</li>
+<li><strong>include_edges</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, edges will not be included in the
+calculation of the accessible surface, only particles. Note that
+statistics on particles (like last item returned) will not change,
+and computation time will be significantly decreased.</li>
+<li><strong>view_mesh</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; launches chimera to display the mesh around the
+model</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to save chimera image</li>
+<li><strong>chimera_bin</strong> (<em>&#8216;chimera&#8217;</em>) &#8211; path to chimera binary to use</li>
 <li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; prints stats about the surface</li>
 </ul>
 </td>
@@ -167,10 +175,9 @@ cylinders around edges joining particles (no overlap is allowed between
 sphere and cylinders or cylinder and cylinder when they are
 consecutive).</p>
 <p>If we want that all dots of the mesh representing the surface of the
-chromatin, corresponds to an equal area (<span class="math">\(a\)</span>)
-.. math:</p>
-<div class="highlight-python"><pre>a = \frac{4\pi r^2}{s} = \frac{2\pi r N_{(d)}}{c}</pre>
-</div>
+chromatin, corresponds to an equal area (<span class="math">\(a\)</span>)</p>
+<div class="math">
+\[a = \frac{4\pi r^2}{s} = \frac{2\pi r N_{(d)}}{c}\]</div>
 <p>with:</p>
 <ul class="simple">
 <li><span class="math">\(r\)</span> radius of the object to fit (as the input parameter <strong>radius</strong>)</li>
@@ -442,7 +449,7 @@ modified the final image/movie).</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.write_cmm">
-<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x3d12668&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x57dd668&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the cmm format, read by Chimera
 (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
