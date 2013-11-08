@@ -8,7 +8,6 @@ import unittest
 from pytadbit                        import Chromosome, load_chromosome
 from pytadbit                        import tadbit, batch_tadbit
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
-from pytadbit.parsers.hic_parser     import __check_hic as check_hic
 from pytadbit.imp.structuralmodels   import load_structuralmodels
 from pytadbit.imp.impmodel           import load_impmodel_from_cmm
 from os                              import system, path, chdir
@@ -21,6 +20,18 @@ if CHKTIME:
     from time import time
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
+
+
+def check_hic(hic, size):
+    """
+    check if hi-c data is symmetric
+    """
+    for i in xrange(size):
+        for j in xrange(i + 1, size):
+            if not hic[i * size + j] == hic[j * size + i]:
+                raise AttributeError('ERROR: matrix should be symmetric.\n')
+    return True
+
 
 class TestTadbit(unittest.TestCase):
     """
