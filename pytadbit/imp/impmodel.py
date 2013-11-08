@@ -354,7 +354,10 @@ class IMPmodel(dict):
            colored meshed (red inaccessible points, green accessible points)
         :param 100 nump: number of points to draw around a given particle. This
            number also sets the number of points drawn around edges, as each
-           point occupies a given surface:
+           point occupies a given surface (see maths below). *Note that this
+           number is considerably lowered by the occupancy of edges, depending
+           of the angle formed by the edges surrounding a given particle, only
+           10% to 50% of the ``nump`` will be drawn in fact.*
         :param True include_edges: if False, edges will not be included in the
            calculation of the accessible surface, only particles. Note that
            statistics on particles (like last item returned) will not change,
