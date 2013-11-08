@@ -342,7 +342,8 @@ class IMPmodel(dict):
 
 
     def accessible_surface(self, radius, write_cmm_file=None, nump=100,
-                           verbose=False, include_edges=True):
+                           verbose=False, include_edges=True, view_mesh=False,
+                           savefig=None, chimera_bin='chimera'):
         """
         Calculates a mesh surface around the model (distance equal to input
         **radius**) and checks if each point of this mesh could be replaced by
@@ -354,6 +355,14 @@ class IMPmodel(dict):
         :param 100 nump: number of points to draw around a given particle. This
            number also sets the number of points drawn around edges, as each
            point occupies a given surface:
+        :param True include_edges: if False, edges will not be included in the
+           calculation of the accessible surface, only particles. Note that
+           statistics on particles (like last item returned) will not change,
+           and computation time will be significantly decreased.
+        :param False view_mesh: launches chimera to display the mesh around the
+           model
+        :param None savefig: path where to save chimera image
+        :param 'chimera' chimera_bin: path to chimera binary to use
         :param False verbose: prints stats about the surface
 
         This function will first define a mesh around the chromatin,
@@ -370,6 +379,7 @@ class IMPmodel(dict):
         
         If we want that all dots of the mesh representing the surface of the
         chromatin, corresponds to an equal area (:math:`a`)
+
         .. math::
 
           a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}
@@ -609,22 +619,13 @@ class IMPmodel(dict):
                 round((area/total)*100, 2), round(total, 2))
 
         # write cmm file
-        if write_cmm_file:
+        if savefig:
+            view_mesh = True
+        if write_cmm_file or view_mesh:
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"20\" note=\"%s\"/>\n')
-            # out = '<marker_set name=\"1\">\n'
-            # for k in xrange(nloci):
-            #     out += form % (k+1, self['x'][k], self['y'][k], self['z'][k],
-            #                    100, 100, 100, k+1)
-            # form = ('<link id1=\"%s\" id2=\"%s\" r=\"50\" ' +
-            #         'g=\"50\" b=\"50\" radius=\"' +
-            #         str(self['radius']/8) +
-            #         '\"/>\n')
-            # out += '</marker_set>\n'
             out = '<marker_set name=\"2\">\n'
-            # for i in xrange(1, nloci):
-            #     out += form % (i, i + 1)
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"7\"/>\n')
@@ -632,9 +633,34 @@ class IMPmodel(dict):
                 out += form % (1 + k_2, thing[0], thing[1], thing[2],
                                 colors[k_2][0], colors[k_2][1], colors[k_2][2])
             out += '</marker_set>\n'
-            out_f = open(write_cmm_file, 'w')
-            out_f.write(out)
-            out_f.close()
+            if view_mesh:
+                out_f = open('/tmp/tmp_mesh.cmm', 'w')
+                out_f.write(out)
+                out_f.close()
+            if write_cmm_file:
+                out_f = open(write_cmm_file, 'w')
+                out_f.write(out)
+                out_f.close()
+        if view_mesh:
+            chimera_cmd = [
+                'focus', 'set bg_color white', 'windowsize 800 600',
+                'clip yon -500', 'set subdivision 1', 'set depth_cue',
+                'set dc_color black', 'set dc_start 0.5', 'set dc_end 1',
+                'scale 0.8']
+            if savefig:
+                if savefig.endswith('.png'):
+                    chimera_cmd += ['copy file %s png' % (savefig)]
+                elif savefig[-4:] in ('.mov', 'webm'):
+                    chimera_cmd += [
+                        'movie record supersample 1', 'turn y 3 120',
+                        'wait 120', 'movie stop',
+                        'movie encode output %s' % savefig]
+            self.write_cmm('/tmp/')
+            chimera_view(['/tmp/tmp_mesh.cmm',
+                          '/tmp/model.%s.cmm' % (self['rand_init'])],
+                         chimera_bin=chimera_bin,
+                         savefig=savefig, chimera_cmd=chimera_cmd)
+
         return (len(subpoints) - impossibles, len(subpoints), area, total, acc_parts)
 
 
@@ -664,16 +690,16 @@ class IMPmodel(dict):
         out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
         form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                 ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
-                'radius=\"' +
-                str(self['radius']) +
+                'radius=\"' + str(30) +
+                # str(self['radius']) +
                 '\" note=\"%s\"/>\n')
         for i in xrange(len(self['x'])):
             out += form % (i + 1,
                            self['x'][i], self['y'][i], self['z'][i],
                            color[i][0], color[i][1], color[i][2], i + 1)
         form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
-                'g=\"1\" b=\"1\" radius=\"' +
-                str(self['radius']/2) +
+                'g=\"1\" b=\"1\" radius=\"' + str(10) +
+                # str(self['radius']/2) +
                 '\"/>\n')
         for i in xrange(1, len(self['x'])):
             out += form % (i, i + 1)

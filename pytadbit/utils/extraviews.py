@@ -254,7 +254,7 @@ def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
     for cmm_file in cmm_files:
         out.write('open %s\n' % (cmm_file))
     if len(cmm_files) > 1:
-        for i in xrange(len(cmm_files - 1)):
+        for i in xrange(len(cmm_files) - 1):
             out.write('match #%s #0\n' % (i))
     if not chimera_cmd:
         out.write('''

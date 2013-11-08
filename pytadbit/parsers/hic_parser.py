@@ -5,7 +5,8 @@ November 7, 2013.
 
 from warnings import warn
 from math import sqrt
-from gzopen import gzopen
+from pytadbit.parsers.gzopen import gzopen
+
 
 # Exception to handle failed autoread.
 class AutoReadFail(Exception):
