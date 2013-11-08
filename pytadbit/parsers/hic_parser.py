@@ -5,6 +5,7 @@ November 7, 2013.
 
 from warnings import warn
 from math import sqrt
+from gzopen import gzopen
 
 # Exception to handle failed autoread.
 class AutoReadFail(Exception):
@@ -137,7 +138,7 @@ def read_matrix(things, parser=None):
             sizes.append(size)
         elif type(thing) is str:
             try:
-                matrix, size = parser(open(thing))
+                matrix, size = parser(gzopen(thing))
             except IOError:
                 if len(thing.split('\n')) > 1:
                     matrix, size = parser(thing.split('\n'))
