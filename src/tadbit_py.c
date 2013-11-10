@@ -31,11 +31,10 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   const int verbose;
   const int max_tad_size;
   const int do_not_use_heuristic;
-  const int use_visibility;
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "Oiiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &do_not_use_heuristic, &use_visibility))
+  if (!PyArg_ParseTuple(args, "Oiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &do_not_use_heuristic))
     return NULL;
 
   // convert list of lists to pointer o pointers
@@ -50,7 +49,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
       list[i][j] = PyInt_AS_LONG(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
 
   // run tadbit
-  tadbit(list, n, m, n_threads, verbose, max_tad_size, do_not_use_heuristic, use_visibility, seg);
+  tadbit(list, n, m, n_threads, verbose, max_tad_size, do_not_use_heuristic, seg);
 
   // store each tadbit output
   int       mbreaks     = seg->maxbreaks;
@@ -124,6 +123,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyList_SetItem(py_result, 6, py_weights);
 
   // free many things... no leaks here!!
+  // TODO: use 'destroy_tadbit_output'
   free(seg);
   free(passages);
   free(llikmat);

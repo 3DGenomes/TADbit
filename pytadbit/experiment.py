@@ -229,6 +229,8 @@ class Experiment(object):
         
 
     def normalize_hic(self, method='visibility', silent=False):
+        # TODO: remove the code belonging to 'sqrt' normalization
+        # and remove the 'method' argument.
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -278,8 +280,9 @@ class Experiment(object):
         """
         if not self.hic_data:
             raise Exception('ERROR: No Hi-C data loaded\n')
-        if not method in ['sqrt', 'visibility']:
-            raise LookupError('Only "sqrt" and "visibility" methods are implemented')
+        #if not method in ['sqrt', 'visibility']:
+        #if not method in ['visibility']:
+            #raise LookupError('Only "sqrt" and "visibility" methods are implemented')
         if self.norm and not silent:
             warn('WARNING: removing previous weights\n')
         # removes columns where there is no data in the diagonal
@@ -295,11 +298,13 @@ class Experiment(object):
             for j in size_range:
                 rowsums[-1] += self.hic_data[0][i + j]
         self.norm = [[0. for _ in xrange(self.size * self.size)]]
-        if method == 'visibility':
-            total = sum(rowsums)
-            func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
-        elif method == 'sqrt':
-            func = lambda x, y: sqrt(rowsums[x] * rowsums[y])
+        #if method == 'visibility':
+        #    total = sum(rowsums)
+        #    func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
+        #elif method == 'sqrt':
+        #    func = lambda x, y: sqrt(rowsums[x] * rowsums[y])
+        total = sum(rowsums)
+        func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
         for i in size_range:
             for j in size_range:
                 try:
@@ -307,7 +312,8 @@ class Experiment(object):
                         self.hic_data[0][i * self.size + j] / func(i, j))
                 except ZeroDivisionError:
                     continue
-        self._normalization = method
+        #self._normalization = method
+        self._normalization = 'visibility'
 
 
     def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):
