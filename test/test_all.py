@@ -104,7 +104,7 @@ class TestTadbit(unittest.TestCase):
                               experiment_resolutions=[40000,20000,20000,20000],
                               silent=True)
         for exp in test_chr.experiments:
-            exp.normalize_hic(method='visibility', silent=True)
+            exp.normalize_hic(silent=True)
 
         test_chr.align_experiments(verbose=False, randomize=False,
                                    method='global')
@@ -277,14 +277,13 @@ class TestTadbit(unittest.TestCase):
         exp.get_hic_zscores(zscored=False)
         sumz = sum([exp._zscores[k1][k2] for k1 in exp._zscores.keys()
                     for k2 in exp._zscores[k1]])
-        self.assertEqual(round(sumz, 4), round(37.48799557280391, 4))
+        self.assertEqual(round(sumz, 4), round(3983.2639, 4))
         if CHKTIME:
             print '9', time() - t0
 
 
     def test_10_generate_weights(self):
         """
-        method names are: 'sqrt' or 'over_tot'
         """
         if CHKTIME:
             t0 = time()
@@ -295,9 +294,9 @@ class TestTadbit(unittest.TestCase):
         exp = test_chr.experiments[0]
         tadbit_weights = exp.norm[:]
         exp.norm = None
-        #exp.normalize_hic(method='sqrt')
         exp.normalize_hic()
-        self.assertEqual(tadbit_weights[0][:100], exp.norm[0][1:100])
+        self.assertEqual([round(i, 3) for i in tadbit_weights[0][:100]],
+                         [round(i, 3) for i in exp.norm[0][:100]])
         if CHKTIME:
             print '10', time() - t0
 
@@ -314,13 +313,12 @@ class TestTadbit(unittest.TestCase):
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data('20Kb/chrT/chrT_A.tsv', silent=True)
-        exp.get_hic_zscores()
         exp.get_hic_zscores(zscored=False)
         exp.write_interaction_pairs('lala')
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 4674)
-        self.assertEqual(lines[25], '1\t28\t0.00796578796261\n')
-        self.assertEqual(lines[2000], '26\t70\t0.00109722560121\n')
+        self.assertEqual(lines[25], '1\t28\t0.933380667098\n')
+        self.assertEqual(lines[2000], '26\t70\t0.115108273108\n')
         system('rm -f lala')
         if CHKTIME:
             print '11', time() - t0
@@ -343,7 +341,7 @@ class TestTadbit(unittest.TestCase):
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data('20Kb/chrT/chrT_A.tsv', silent=True)
-        exp.normalize_hic(method='visibility', silent=True)
+        exp.normalize_hic(silent=True)
         result = exp.optimal_imp_parameters(50,70, n_cpus=2,
                                             n_models=10, n_keep=2,
                                             lowfreq_range=(-0.6, 0, 0.5),
@@ -378,7 +376,7 @@ class TestTadbit(unittest.TestCase):
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data('20Kb/chrT/chrT_A.tsv', silent=True)
-        exp.normalize_hic(method='visibility', silent=True)
+        exp.normalize_hic(silent=True)
         models = exp.model_region(50, 70, n_models=110, n_keep=25,
                                   n_cpus=4,
                                   config={'kforce': 5, 'maxdist': 500,
@@ -387,21 +385,18 @@ class TestTadbit(unittest.TestCase):
         models.save_models('models.pick')
         
         avg = models.average_model()
-        xis = [256.800659, 192.261123, 140.659133, 100.450248, 46.9496421,
-               -86.281616, -162.32574, -224.36425, -265.56039, -113.91905,
-               -12.291224, -2.0760805, -141.23983, -132.74307, 25.4968967,
-               45.7021636, -20.619169, 2.43585228, 39.3904533, 132.945693,
-               178.332595]
-        yis = [777.838989, 653.305297, 523.345275, 392.911132, 257.727813,
-               353.407135, 273.915130, 151.659851, 257.066864, 165.820938,
-               78.4026641, -63.092754, -134.39276, -258.01034, -258.30206,
-               -398.19586, -527.28540, -659.35449, -542.74645, -551.93316,
-               -492.08663]
-        zis = [-779.30718, -654.69604, -526.70159, -396.44201, -264.52145,
-               -344.05822, -272.64324, -143.98304, -240.02696, -157.30371,
-               -78.534126, 60.9385299, 168.089416, 279.031097, 252.534454,
-               390.181549, 469.284545, 607.548950, 548.516906, 551.545471,
-               530.545471]
+        xis = [691.894, 576.03, 461.998, 350.654, 228.832, 249.183, 184.247,
+               66.02, 131.339, 105.844, 65.856, -46.289, -167.628, -254.734,
+               -196.974, -305.433, -391.167, -502.536, -438.747, -424.81,
+               -383.576]
+        yis = [-491.148, -424.611, -344.702, -256.15, -180.741, -354.946,
+               -334.481, -272.075, -398.058, -221.028, -68.147, 57.421,
+               31.059, 111.967, 239.04, 368.515, 408.923, 527.132, 470.932,
+               558.696, 572.405]
+        zis = [-751.145, -618.017, -489.136, -364.219, -231.151, -243.215,
+               -149.716, -15.725, -65.75, -64.688, -57.14, 49.595, 185.598,
+               291.651, 191.279, 292.817, 426.3, 520.773, 419.838, 367.156,
+               304.889]
         self.assertEqual([round(x, 3) for x in avg['x']],
                          [round(x, 3) for x in xis])
         self.assertEqual([round(x, 3) for x in avg['y']],
@@ -410,7 +405,7 @@ class TestTadbit(unittest.TestCase):
                          [round(x, 3) for x in zis])
 
         centroid = models.centroid_model()
-        self.assertEqual(centroid['rand_init'], 69)
+        self.assertEqual(centroid['rand_init'], 97)
         if CHKTIME:
             print '13', time() - t0
 
@@ -422,12 +417,14 @@ class TestTadbit(unittest.TestCase):
             t0 = time()
 
         models = load_structuralmodels('models.pick')
-        wnt = {1: [95, 69, 101, 55, 94, 81, 30, 32, 25,
-                   72, 52, 56, 2, 98, 89, 40],
-               2: [92, 78, 97, 43, 31, 54, 62, 28, 13]}
+        wnt = {1: [103, 69, 80, 40, 32, 30, 95, 101, 72, 77, 52],
+               2: [78, 57, 97, 34, 96, 14, 88, 71, 56],
+               3: [106, 27, 13, 41, 43]}
         if find_executable('mcl'):
             models.cluster_models(method='mcl', verbose=False)
             self.assertEqual(models.clusters, wnt)
+        wnt = {1: [78, 57, 97, 34, 106, 27, 96, 13, 41, 14, 88, 43, 77],
+               2: [103, 69, 80, 40, 32, 30, 95, 101, 72, 71, 52, 56]}
         models.cluster_models(method='ward', verbose=False)
         self.assertEqual(models.clusters, wnt)
         if CHKTIME:
@@ -446,13 +443,13 @@ class TestTadbit(unittest.TestCase):
         models.density_plot(savedata='lala', plot=False)
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
-        self.assertEqual(lines[1], '1\t99.988\t100.022\tNone\tNone\tNone\tNone\tNone\tNone\tNone\tNone\n')
-        self.assertEqual(lines[15], '15\t99.939\t99.985\t99.969\t99.998\t99.97\t99.998\t99.974\t99.996\t99.977\t100.0\n')
+        self.assertEqual(lines[1], '1\t99.979\t100.009\tNone\tNone\tNone\tNone\tNone\tNone\tNone\tNone\n')
+        self.assertEqual(lines[15], '15\t99.937\t99.972\t99.966\t99.988\t99.965\t99.984\t99.972\t99.987\t99.972\t99.988\n')
         # contacts
         cmap = models.get_contact_matrix(cutoff=300)
         self.assertEqual(round(
             sum([i if i >=0 else 0 for i in reduce(lambda x, y: x+y, cmap)]),
-            3), 80.8)
+            3), 81.44)
         # define best models
         models.define_best_models(10)
         self.assertEqual(len(models), 10)
@@ -462,35 +459,35 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(m1, models[9])
         # correlation
         corr, pval = models.correlate_with_real_data(cutoff=300)
-        self.assertEqual(round(corr, 4), round(0.63597740365044708, 4))
+        self.assertEqual(round(corr, 4), 0.6482)
         self.assertEqual(round(pval, 4), round(0, 4))
         # consistency
         models.model_consistency(plot=False, savedata='lala')
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
-        self.assertEqual(lines[1], '1\t11.0\t25.667\t40.667\t50.667\n')
-        self.assertEqual(lines[15], '15\t94.667\t100.0\t100.0\t100.0\n')
+        self.assertEqual(lines[1], '1\t15.0\t28.333\t42.333\t53.0\n')
+        self.assertEqual(lines[15], '15\t83.667\t100.0\t100.0\t100.0\n')
         # measure angle
         self.assertEqual(round(models.angle_between_3_particles(2,8,15), 3),
-                         128.338)
+                         129.571)
         self.assertEqual(round(models.angle_between_3_particles(19,20,21), 3),
-                         60.163)
+                         60.176)
         self.assertEqual(round(models.angle_between_3_particles(15,14,11), 3),
-                         64.474)
+                         65.447)
         # coordinates
         self.assertEqual([round(x, 3) for x in models.particle_coordinates(15)],
-                         [2372.253, -1193.602, -1145.397])
+                         [6545.505, -5979.032, 1252.336])
         # dihedral_angle
-        self.assertEqual(round(models.dihedral_angle(2,8,15, 16), 3), -13.443)
-        self.assertEqual(round(models.dihedral_angle(15,19,20,21), 3), 79.439)
-        self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 3), 8.136)
+        self.assertEqual(round(models.dihedral_angle(2,8,15, 16), 3), -59.15)
+        self.assertEqual(round(models.dihedral_angle(15,19,20,21), 3), -30.979)
+        self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 3), -1.224)
         # median distance
         self.assertEqual(round(models.median_3d_dist(3, 20, plot=False), 3),
-                         1553.974)
+                         1563.867)
         self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1,
-                                                     plot=False), 3), 1522.16)
+                                                     plot=False), 3), 1574.936)
         self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5),
-                                                     plot=False), 3), 266.024)
+                                                     plot=False), 3), 266.02)
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -513,23 +510,23 @@ class TestTadbit(unittest.TestCase):
         models = load_structuralmodels('models.pick') 
         # write cmm
         models.write_cmm('.', model_num=2)
-        model = load_impmodel_from_cmm('model.69.cmm')
+        model = load_impmodel_from_cmm('model.78.cmm')
         # clean
         system('rm -f model.*')
         # stats
-        self.assertEqual(round(200.1036138, 3), round(model.distance(2, 3), 3))
-        self.assertEqual(round(1066.338425, 3), round(model.distance(8, 20), 3))
-        self.assertEqual(round(622.797, 3),
+        self.assertEqual(199.968, round(model.distance(2, 3), 3))
+        self.assertEqual(1053.752, round(model.distance(8, 20), 3))
+        self.assertEqual(622.85,
                          round(model.radius_of_gyration(), 3))
-        self.assertEqual(round(4000.3976, 3), round(model.contour(), 3))
-        self.assertEqual(round(2262.614600764699, 3),
+        self.assertEqual(4000.523, round(model.contour(), 3))
+        self.assertEqual(2273.677,
                          round(model.shortest_axe()+model.longest_axe(), 3))
         self.assertEqual([15, 16], model.inaccessible_particles(1000))
-        acc_inacc = [(89, 21), (26, 46), (24, 45), (20, 51), (15, 74), (29, 59),
-                     (28, 43), (28, 61), (39, 49), (27, 44), (14, 58), (26, 46),
-                     (32, 39), (41, 46), (26, 55), (6, 63), (24, 47), (55, 33),
-                     (26, 64), (39, 50)]
-        self.assertEqual([round(i, 3) for i in 851.0, 1951.0, 6.416, 8.672] + [acc_inacc],
+        acc_inacc = [(87, 23), (24, 49), (22, 50), (21, 48), (17, 70), (27, 62),
+                     (27, 46), (29, 60), (41, 49), (27, 44), (15, 56), (28, 41),
+                     (24, 46), (34, 52), (26, 56), (6, 64), (23, 48), (53, 36),
+                     (25, 60), (40, 48)]
+        self.assertEqual([round(i, 3) for i in 830.0, 1947.0, 6.258, 8.672] + [acc_inacc],
                          [i if type(i) is list else round(i, 3)
                           for i in model.accessible_surface(300, nump=150)])
         if CHKTIME:

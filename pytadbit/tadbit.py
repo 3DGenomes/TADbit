@@ -69,10 +69,10 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
     if get_weights:
         # in tadbit we are not using directly weights, but the
         # multiplication by the real value
-        tadbit_weights = [[i/j if j else 0.0 for i, j in
+        oks = [i for i in xrange(size) if nums[0][i*size+i]]
+        total = sum([nums[0][i*size+j] for i in oks for j in oks])
+        tadbit_weights = [[i/j*total if j else 0.0 for i, j in
                            zip(nums[k], weights[k])] for k in xrange(len(nums))]
-        total = sum(nums[0])
-        tadbit_weights = [[t*total for t in tadbit_weights[0]]]
         return result, tadbit_weights
     return result
 
