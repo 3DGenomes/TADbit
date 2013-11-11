@@ -35,12 +35,12 @@ def main():
     print ''
 
     out = open(opts.outf, 'w')
-    for i, part in enumerate(by_part):
+    for part, acc, ina in by_part:
         if opts.burry:
-            burried = 1 if (100*float(part[1]) / sum(part)) > float(opts.burry) else 0
-            out.write('%s\t%.2f\n' % (i+1, burried))
+            burried = 1 if (100*float(ina) / (acc + ina)) > float(opts.burry) else 0
+            out.write('%s\t%.2f\n' % (part, burried))
         else:
-            out.write('%s\t%.2f\n' % (i+1, 100*float(part[1]) / sum(part)))
+            out.write('%s\t%.2f\n' % (part, 100*float(ina) / (acc + ina)))
     out.close()
 
 

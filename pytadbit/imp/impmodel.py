@@ -429,7 +429,7 @@ class IMPmodel(dict):
 
         points = []
         subpoints = []
-        particles = {}
+        positions = {}
         sphere = generate_sphere_points(nump)
         nloci = len(self)
         # number of dots in a circle is dependent the ones in a sphere
@@ -464,7 +464,6 @@ class IMPmodel(dict):
                           ('z', selfz)))
             point = [self['x'][i], self['y'][i], self['z'][i]]
             points.append(point)
-            # if i != 53 and i != 52 and i != 51: continue
             # get minimum length from next particle to display the sphere dot
             adj1 = distance(point, [selfx1, selfy1, selfz1])
 
@@ -487,14 +486,16 @@ class IMPmodel(dict):
             stepz = difz / between
 
             hyp1 = sqrt(adj1**2 + radius**2)
-
-            hyp1 = (hyp1 - hyp1 * adj1 / (2 * between) / adj1)**2
+            # this is an attempt of correction for the integrity of dots
+            # uses intercept theorem
+            hyp1 = (hyp1 - hyp1 / (2 * (1 + between)))**2
             
             # get minimum length from prev particle to display the sphere dot
             if i:
                 adj2 = distance(point, [selfx_1, selfy_1, selfz_1])
                 hyp2 = sqrt(adj2**2 + radius**2)
-                hyp2 = (hyp2 - hyp2 * adj2 / (2 * between) / adj2)**2
+                # this is an attempt of correction for the integrity of dots
+                hyp2 = (hyp2 - hyp2 / (2 * (1 + between)))**2
 
             # set sphere around each particle
             for xxx, yyy, zzz in sphere:
@@ -509,7 +510,7 @@ class IMPmodel(dict):
                         subpoints.append(thing)
                     else:
                         continue
-                    particles.setdefault(i, []).append(len(subpoints)-1)
+                    positions.setdefault(i, []).append(len(subpoints)-1)
             # define slices
             for k in xrange(between - 1, 0, -1):
                 point = [selfx - k * stepx,
@@ -532,8 +533,7 @@ class IMPmodel(dict):
                     # check that the point of the circle is not too close from
                     # next edge
                     if i < nloci - 2:
-                        hyp = distance((selfx1, selfy1,
-                                        selfz1), spoint)
+                        hyp = distance((selfx1, selfy1, selfz1), spoint)
                         ang = angle_between_3_points(
                             spoint,
                             (selfx1, selfy1, selfz1),
@@ -561,12 +561,12 @@ class IMPmodel(dict):
                     subpoints.append([spoint[0],
                                       spoint[1],
                                       spoint[2]])
+                    positions.setdefault(i + float(k)/between, []).append(
+                        len(subpoints) - 1)
                 c_count += 1
                 
         # add last AND least point!!
-        points.append([selfx1,
-                       selfy1,
-                       selfz1])
+        points.append([selfx1, selfy1, selfz1])
         # and its sphere
         adj = distance(points[-1], [selfx, selfy, selfz])
         hyp2 = sqrt(adj**2 + radius**2)
@@ -577,6 +577,7 @@ class IMPmodel(dict):
                      zzz * radius + selfz1]
             if self._square_distance_to(i, thing) > hyp2:
                 subpoints.append(thing)
+            positions.setdefault(i+1, []).append(len(subpoints)-1)
 
         # calculates the number of inaccessible peaces of surface
         radius2 = (radius - 1)**2
@@ -595,15 +596,15 @@ class IMPmodel(dict):
         impossibles = colors.count(red)
 
         acc_parts = []
-        for p in particles:
+        for p in sorted(positions.keys()):
             acc = 0
             ina = 0
-            for dot in particles[p]:
+            for dot in positions[p]:
                 if colors[dot]==green:
                     acc += 1
                 else:
                     ina += 1
-            acc_parts.append((acc, ina))
+            acc_parts.append((p + 1, acc, ina))
 
         # some stats
         dot_area = 4 * pi * (float(radius) / 1000)**2 / nump
