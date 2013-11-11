@@ -288,10 +288,10 @@ class Experiment(object):
         size_range = [i for i in xrange(self.size) if not i in forbidden]
         rowsums = []
         for i in xrange(self.size):
-            i *= self.size
             rowsums.append(0)
             if i in forbidden:
                 continue
+            i *= self.size
             for j in size_range:
                 rowsums[-1] += self.hic_data[0][i + j]
         self.norm = [[0. for _ in xrange(self.size * self.size)]]
