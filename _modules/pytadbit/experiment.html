@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
@@ -59,11 +60,10 @@
 <span class="kn">from</span> <span class="nn">warnings</span>                            <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">math</span>                                <span class="kn">import</span> <span class="n">sqrt</span>
 <span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span>                 <span class="kn">import</span> <span class="n">CONFIG</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span>           <span class="kn">import</span> <span class="n">IMPoptimizer</span>
 
 <span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span>           <span class="kn">import</span> <span class="n">IMPoptimizer</span>
     <span class="kn">from</span> <span class="nn">pytadbit.imp.imp_modelling</span>          <span class="kn">import</span> <span class="n">generate_3d_models</span>
-    <span class="kn">from</span> <span class="nn">pytadbit.imp.modelling_optimization</span> <span class="kn">import</span> <span class="n">grid_search</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">warn</span><span class="p">(</span><span class="s">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
 
@@ -276,7 +276,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">norm</span>  <span class="o">=</span> <span class="n">weights</span> <span class="ow">or</span> <span class="n">norm</span>
         
 </div>
-<div class="viewcode-block" id="Experiment.normalize_hic"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;visibility&#39;</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.normalize_hic"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Normalize the Hi-C data. This normalization step does the same of</span>
 <span class="sd">        the :func:`pytadbit.tadbit.tadbit` function (default parameters),</span>
@@ -288,66 +288,44 @@
 <span class="sd">        square root of the product of the sum of column i by the sum of row</span>
 <span class="sd">        j.</span>
 
-<span class="sd">        :param visibility method: either &#39;sqrt&#39; or &#39;visibility&#39;. Depending on</span>
-<span class="sd">           this parameter, the weight of the Hi-C count in row I, column J of</span>
-<span class="sd">           the Hi-C matrix will be, under &#39;sqrt&#39;:</span>
-<span class="sd">           ::</span>
-<span class="sd">              </span>
-<span class="sd">                                   _________________________________________</span>
-<span class="sd">                         \        / N                    N                  |</span>
-<span class="sd">                          \      / ___                  ___             </span>
-<span class="sd">            weight(I,J) =  \    /  \                    \           </span>
-<span class="sd">                            \  /   /__ (matrix(i, J)) * /__  (matrix(I, j))</span>
-<span class="sd">                             \/    i=0                  j=0</span>
+<span class="sd">        normalization is done according to this formula:</span>
 
-<span class="sd">           and under &#39;visibility&#39;: </span>
-<span class="sd">           ::</span>
+<span class="sd">        ::</span>
+<span class="sd"> </span>
+<span class="sd">                            N                    N                 </span>
+<span class="sd">                           ___                  ___                </span>
+<span class="sd">                           \                    \                  </span>
+<span class="sd">                           /__ (matrix(i, J)) * /__  (matrix(I, j))</span>
+<span class="sd">                           i=0                  j=0                </span>
+<span class="sd">           weight(I,J) =  -----------------------------------------         </span>
+<span class="sd">                                    N     N                                 </span>
+<span class="sd">                                   ___   ___                                </span>
+<span class="sd">                                   \     \                                  </span>
+<span class="sd">                                   /__   /__ (matrix(i, j))</span>
+<span class="sd">                                   j=0   i=0                                </span>
 <span class="sd">   </span>
-<span class="sd">                             N                    N                 </span>
-<span class="sd">                            ___                  ___                </span>
-<span class="sd">                            \                    \                  </span>
-<span class="sd">                            /__ (matrix(i, J)) * /__  (matrix(I, j))</span>
-<span class="sd">                            i=0                  j=0                </span>
-<span class="sd">            weight(I,J) =  -----------------------------------------         </span>
-<span class="sd">                                     N     N                                 </span>
-<span class="sd">                                    ___   ___                                </span>
-<span class="sd">                                    \     \                                  </span>
-<span class="sd">                                    /__   /__ (matrix(i, j))</span>
-<span class="sd">                                    j=0   i=0                                </span>
-<span class="sd">   </span>
-<span class="sd">   </span>
-<span class="sd">           </span>
-<span class="sd">           with N being the number or rows/columns of the Hi-C matrix in both</span>
-<span class="sd">           cases.</span>
-
-<span class="sd">           Note that the default behavior (also used in</span>
-<span class="sd">           :func:`pytadbit.tadbit.tadbit`)</span>
-<span class="sd">           corresponds to method=&#39;sqrt&#39;.</span>
+<span class="sd"> </span>
+<span class="sd"> </span>
+<span class="sd">        with N being the number or rows/columns of the Hi-C matrix in both</span>
+<span class="sd">        cases.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: No Hi-C data loaded</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;sqrt&#39;</span><span class="p">,</span> <span class="s">&#39;visibility&#39;</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="s">&#39;Only &quot;sqrt&quot; and &quot;visibility&quot; methods are implemented&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: removing previous weights</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
         <span class="c"># removes columns where there is no data in the diagonal</span>
-        <span class="n">forbidden</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-                     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]]</span>
-        <span class="n">size_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">forbidden</span><span class="p">]</span>
-        <span class="n">rowsums</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
-            <span class="n">i</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
-            <span class="n">rowsums</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">forbidden</span><span class="p">:</span>
-                <span class="k">continue</span>
+        <span class="n">size_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]]</span>
+        <span class="n">rowsums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">size_range</span><span class="p">:</span>
+            <span class="n">isi</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">size_range</span><span class="p">:</span>
-                <span class="n">rowsums</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span>
+                <span class="n">rowsums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">isi</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)]]</span>
-        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s">&#39;visibility&#39;</span><span class="p">:</span>
-            <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rowsums</span><span class="p">)</span>
-            <span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">rowsums</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="n">rowsums</span><span class="p">[</span><span class="n">y</span><span class="p">])</span> <span class="o">/</span> <span class="n">total</span>
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s">&#39;sqrt&#39;</span><span class="p">:</span>
-            <span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">rowsums</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="n">rowsums</span><span class="p">[</span><span class="n">y</span><span class="p">])</span>
+
+        <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rowsums</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">rowsums</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="n">rowsums</span><span class="p">[</span><span class="n">y</span><span class="p">])</span> <span class="o">/</span> <span class="n">total</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">size_range</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">size_range</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -355,7 +333,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="n">func</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>
                 <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
                     <span class="k">continue</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">=</span> <span class="s">&#39;visibility&#39;</span>
 
 </div>
 <div class="viewcode-block" id="Experiment.get_hic_zscores"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_zscores">[docs]</a>    <span class="k">def</span> <span class="nf">get_hic_zscores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">zscored</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">remove_zeros</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -541,11 +519,11 @@
 
         <span class="n">optimizer</span> <span class="o">=</span> <span class="n">IMPoptimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span>
                                  <span class="n">n_models</span><span class="o">=</span><span class="n">n_models</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="n">close_bins</span><span class="p">)</span>
-        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">maxdist_range</span><span class="o">=</span><span class="n">maxdist_range</span><span class="p">,</span>
-                                              <span class="n">upfreq_range</span><span class="o">=</span><span class="n">upfreq_range</span><span class="p">,</span>
-                                              <span class="n">lowfreq_range</span><span class="o">=</span><span class="n">lowfreq_range</span><span class="p">,</span>
-                                              <span class="n">scale_range</span><span class="o">=</span><span class="n">scale_range</span><span class="p">,</span>
-                                              <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">maxdist_range</span><span class="o">=</span><span class="n">maxdist_range</span><span class="p">,</span>
+                                  <span class="n">upfreq_range</span><span class="o">=</span><span class="n">upfreq_range</span><span class="p">,</span>
+                                  <span class="n">lowfreq_range</span><span class="o">=</span><span class="n">lowfreq_range</span><span class="p">,</span>
+                                  <span class="n">scale_range</span><span class="o">=</span><span class="n">scale_range</span><span class="p">,</span>
+                                  <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">outfile</span><span class="p">:</span>
             <span class="n">optimizer</span><span class="o">.</span><span class="n">write_result</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
@@ -731,6 +709,9 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
 <h3><a href="../../index.html">Table Of Contents</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
@@ -770,7 +751,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 08, 2013.
+      Last updated on Nov 12, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>

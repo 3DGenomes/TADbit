@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -389,7 +390,8 @@
 
 </div>
 <div class="viewcode-block" id="IMPmodel.accessible_surface"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.accessible_surface">[docs]</a>    <span class="k">def</span> <span class="nf">accessible_surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">write_cmm_file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-                           <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include_edges</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+                           <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include_edges</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">view_mesh</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">chimera_bin</span><span class="o">=</span><span class="s">&#39;chimera&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates a mesh surface around the model (distance equal to input</span>
 <span class="sd">        **radius**) and checks if each point of this mesh could be replaced by</span>
@@ -400,7 +402,18 @@
 <span class="sd">           colored meshed (red inaccessible points, green accessible points)</span>
 <span class="sd">        :param 100 nump: number of points to draw around a given particle. This</span>
 <span class="sd">           number also sets the number of points drawn around edges, as each</span>
-<span class="sd">           point occupies a given surface:</span>
+<span class="sd">           point occupies a given surface (see maths below). *Note that this</span>
+<span class="sd">           number is considerably lowered by the occupancy of edges, depending</span>
+<span class="sd">           of the angle formed by the edges surrounding a given particle, only</span>
+<span class="sd">           10% to 50% of the ``nump`` will be drawn in fact.*</span>
+<span class="sd">        :param True include_edges: if False, edges will not be included in the</span>
+<span class="sd">           calculation of the accessible surface, only particles. Note that</span>
+<span class="sd">           statistics on particles (like last item returned) will not change,</span>
+<span class="sd">           and computation time will be significantly decreased.</span>
+<span class="sd">        :param False view_mesh: launches chimera to display the mesh around the</span>
+<span class="sd">           model</span>
+<span class="sd">        :param None savefig: path where to save chimera image</span>
+<span class="sd">        :param &#39;chimera&#39; chimera_bin: path to chimera binary to use</span>
 <span class="sd">        :param False verbose: prints stats about the surface</span>
 
 <span class="sd">        This function will first define a mesh around the chromatin,</span>
@@ -417,6 +430,7 @@
 <span class="sd">        </span>
 <span class="sd">        If we want that all dots of the mesh representing the surface of the</span>
 <span class="sd">        chromatin, corresponds to an equal area (:math:`a`)</span>
+
 <span class="sd">        .. math::</span>
 
 <span class="sd">          a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}</span>
@@ -656,22 +670,13 @@
                 <span class="nb">round</span><span class="p">((</span><span class="n">area</span><span class="o">/</span><span class="n">total</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 
         <span class="c"># write cmm file</span>
-        <span class="k">if</span> <span class="n">write_cmm_file</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">view_mesh</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">write_cmm_file</span> <span class="ow">or</span> <span class="n">view_mesh</span><span class="p">:</span>
             <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;marker id=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> x=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> y=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> z=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
                     <span class="s">&#39; r=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> g=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
                     <span class="s">&#39;radius=</span><span class="se">\&quot;</span><span class="s">20</span><span class="se">\&quot;</span><span class="s"> note=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-            <span class="c"># out = &#39;&lt;marker_set name=\&quot;1\&quot;&gt;\n&#39;</span>
-            <span class="c"># for k in xrange(nloci):</span>
-            <span class="c">#     out += form % (k+1, self[&#39;x&#39;][k], self[&#39;y&#39;][k], self[&#39;z&#39;][k],</span>
-            <span class="c">#                    100, 100, 100, k+1)</span>
-            <span class="c"># form = (&#39;&lt;link id1=\&quot;%s\&quot; id2=\&quot;%s\&quot; r=\&quot;50\&quot; &#39; +</span>
-            <span class="c">#         &#39;g=\&quot;50\&quot; b=\&quot;50\&quot; radius=\&quot;&#39; +</span>
-            <span class="c">#         str(self[&#39;radius&#39;]/8) +</span>
-            <span class="c">#         &#39;\&quot;/&gt;\n&#39;)</span>
-            <span class="c"># out += &#39;&lt;/marker_set&gt;\n&#39;</span>
             <span class="n">out</span> <span class="o">=</span> <span class="s">&#39;&lt;marker_set name=</span><span class="se">\&quot;</span><span class="s">2</span><span class="se">\&quot;</span><span class="s">&gt;</span><span class="se">\n</span><span class="s">&#39;</span>
-            <span class="c"># for i in xrange(1, nloci):</span>
-            <span class="c">#     out += form % (i, i + 1)</span>
             <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;marker id=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> x=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> y=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> z=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
                     <span class="s">&#39; r=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> g=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
                     <span class="s">&#39;radius=</span><span class="se">\&quot;</span><span class="s">7</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
@@ -679,9 +684,34 @@
                 <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">k_2</span><span class="p">,</span> <span class="n">thing</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">thing</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">thing</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
                                 <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="n">k_2</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="s">&#39;&lt;/marker_set&gt;</span><span class="se">\n</span><span class="s">&#39;</span>
-            <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_cmm_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
-            <span class="n">out_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-            <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">view_mesh</span><span class="p">:</span>
+                <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;/tmp/tmp_mesh.cmm&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+                <span class="n">out_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+                <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">write_cmm_file</span><span class="p">:</span>
+                <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_cmm_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+                <span class="n">out_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+                <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">view_mesh</span><span class="p">:</span>
+            <span class="n">chimera_cmd</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s">&#39;focus&#39;</span><span class="p">,</span> <span class="s">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
+                <span class="s">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s">&#39;set subdivision 1&#39;</span><span class="p">,</span> <span class="s">&#39;set depth_cue&#39;</span><span class="p">,</span>
+                <span class="s">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_start 0.5&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_end 1&#39;</span><span class="p">,</span>
+                <span class="s">&#39;scale 0.8&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">savefig</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.png&#39;</span><span class="p">):</span>
+                    <span class="n">chimera_cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s">&#39;copy file </span><span class="si">%s</span><span class="s"> png&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">savefig</span><span class="p">)]</span>
+                <span class="k">elif</span> <span class="n">savefig</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;.mov&#39;</span><span class="p">,</span> <span class="s">&#39;webm&#39;</span><span class="p">):</span>
+                    <span class="n">chimera_cmd</span> <span class="o">+=</span> <span class="p">[</span>
+                        <span class="s">&#39;movie record supersample 1&#39;</span><span class="p">,</span> <span class="s">&#39;turn y 3 120&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;wait 120&#39;</span><span class="p">,</span> <span class="s">&#39;movie stop&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;movie encode output </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">savefig</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_cmm</span><span class="p">(</span><span class="s">&#39;/tmp/&#39;</span><span class="p">)</span>
+            <span class="n">chimera_view</span><span class="p">([</span><span class="s">&#39;/tmp/tmp_mesh.cmm&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;/tmp/model.</span><span class="si">%s</span><span class="s">.cmm&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])],</span>
+                         <span class="n">chimera_bin</span><span class="o">=</span><span class="n">chimera_bin</span><span class="p">,</span>
+                         <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">,</span> <span class="n">chimera_cmd</span><span class="o">=</span><span class="n">chimera_cmd</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span> <span class="o">-</span> <span class="n">impossibles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">),</span> <span class="n">area</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">acc_parts</span><span class="p">)</span>
 
 </div>
@@ -711,16 +741,16 @@
         <span class="n">out</span> <span class="o">=</span> <span class="s">&#39;&lt;marker_set name=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&gt;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])</span>
         <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;marker id=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> x=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> y=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> z=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
                 <span class="s">&#39; r=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> g=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
-                <span class="s">&#39;radius=</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
-                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;radius&#39;</span><span class="p">])</span> <span class="o">+</span>
+                <span class="s">&#39;radius=</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span>
+                <span class="c"># str(self[&#39;radius&#39;]) +</span>
                 <span class="s">&#39;</span><span class="se">\&quot;</span><span class="s"> note=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">])):</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
                            <span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
                            <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;link id1=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> id2=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> r=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
-                <span class="s">&#39;g=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s"> radius=</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
-                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;radius&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span>
+                <span class="s">&#39;g=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s"> radius=</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span>
+                <span class="c"># str(self[&#39;radius&#39;]/2) +</span>
                 <span class="s">&#39;</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">])):</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
@@ -851,6 +881,9 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
 <h3><a href="../../../index.html">Table Of Contents</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
@@ -890,7 +923,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 08, 2013.
+      Last updated on Nov 12, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>

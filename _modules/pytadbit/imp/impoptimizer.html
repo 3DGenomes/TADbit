@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -77,8 +78,6 @@
                  <span class="n">n_models</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">resolution</span>
-        <span class="k">print</span> <span class="n">experiment</span>
-        <span class="k">print</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span>
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zscores</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">_sub_experiment_zscore</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_models</span>   <span class="o">=</span> <span class="n">n_models</span>
@@ -221,30 +220,17 @@
 <span class="sd">           :func:`pytadbit.experiment.Experiment.model_region`</span>
 <span class="sd">           </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">axes</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: no optimization done yet.&#39;</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: no optimization done yet&#39;</span><span class="p">)</span>
             <span class="k">return</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result_to_array</span><span class="p">()</span>
-        <span class="n">axes_range</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">],</span>
-                      <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">],</span>
-                      <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">],</span>
-                      <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">]]</span>
-        <span class="n">wax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-        <span class="n">zax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
-        <span class="n">xax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
-        <span class="n">yax</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">axes_range</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
-        <span class="n">sort_result</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span> <span class="n">wax</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">zax</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">xax</span><span class="p">[</span><span class="n">l</span><span class="p">],</span> <span class="n">yax</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wax</span><span class="p">))</span>
-                              <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zax</span><span class="p">))</span>
-                              <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">yax</span><span class="p">))</span>
-                              <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xax</span><span class="p">))</span>
-                              <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">])</span>
-                              <span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                             <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">res3</span><span class="p">,</span> <span class="n">res4</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sort_result</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(((</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">res1</span><span class="p">),</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">res2</span><span class="p">),</span>
-                     <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">res3</span><span class="p">),</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">res4</span><span class="p">),</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="p">((</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">sca</span><span class="p">,</span> <span class="n">mxd</span><span class="p">,</span> <span class="n">ufq</span><span class="p">,</span> <span class="n">lfq</span><span class="p">),</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="n">best</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">best</span> <span class="o">=</span> <span class="p">((</span><span class="n">sca</span><span class="p">,</span> <span class="n">mxd</span><span class="p">,</span> <span class="n">ufq</span><span class="p">,</span> <span class="n">lfq</span><span class="p">),</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(((</span><span class="s">&#39;scale&#39;</span>  <span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span>
+                     <span class="p">(</span><span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])),</span>
+                     <span class="p">(</span><span class="s">&#39;upfreq&#39;</span> <span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])),</span>
+                     <span class="p">(</span><span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])),</span>
                      <span class="p">(</span><span class="s">&#39;reference&#39;</span><span class="p">,</span> <span class="n">reference</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;kforce&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)))</span>
 
 </div>
@@ -389,6 +375,9 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
 <h3><a href="../../../index.html">Table Of Contents</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
@@ -428,7 +417,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 08, 2013.
+      Last updated on Nov 12, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>

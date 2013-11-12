@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="Experiment class" href="reference_experiment.html" />
@@ -181,7 +182,7 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.find_tad">
-<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>no_heuristic=False</em>, <em>batch_mode=False</em>, <em>use_visibility=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>no_heuristic=False</em>, <em>batch_mode=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function to calculate the
 position of Topologically Associated Domains</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -409,11 +410,15 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
 <h3><a href="../index.html">Table Of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Identification and Analysis of TADs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="">Chromosome class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#load-chromosome">Load chromosome</a></li>
@@ -421,12 +426,14 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">Tadbit functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_imp.html">Generate a 3D models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_imp_model.html">IMPmodel class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_imp_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
 </ul>
 </li>
@@ -474,7 +481,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 07, 2013.
+      Last updated on Nov 12, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>

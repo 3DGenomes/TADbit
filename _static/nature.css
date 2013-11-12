@@ -60,7 +60,8 @@ div.footer a {
 }
  
 div.related {
-    background-color: #6BA81E;
+    //background-color: #6BA81E;
+    background-color: #800000;
     line-height: 32px;
     color: #fff;
     text-shadow: 0px 1px 0 #444;

@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
@@ -57,7 +58,7 @@
 
 
 <div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;max&quot;</span><span class="p">,</span>
-           <span class="n">no_heuristic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">use_visibility</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+           <span class="n">no_heuristic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The TADBit algorithm works on raw chromosome interaction count data.</span>
 <span class="sd">    The normalization is neither necessary nor recommended,</span>
@@ -102,7 +103,6 @@
                        <span class="nb">int</span><span class="p">(</span><span class="n">verbose</span><span class="p">),</span>     <span class="c"># verbose 0/1</span>
                        <span class="n">max_tad_size</span><span class="p">,</span>     <span class="c"># max_tad_size</span>
                        <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span> <span class="c"># heuristic 0/1</span>
-                       <span class="nb">int</span><span class="p">(</span><span class="n">use_visibility</span><span class="p">)</span> <span class="c"># TODO: remove this</span>
                        <span class="p">)</span>
 
     <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">bkpts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">nbks</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
@@ -117,11 +117,10 @@
     <span class="k">if</span> <span class="n">get_weights</span><span class="p">:</span>
         <span class="c"># in tadbit we are not using directly weights, but the</span>
         <span class="c"># multiplication by the real value</span>
-        <span class="n">tadbit_weights</span> <span class="o">=</span> <span class="p">[[</span><span class="n">i</span><span class="o">/</span><span class="n">j</span> <span class="k">if</span> <span class="n">j</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span>
+        <span class="n">oks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]]</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">oks</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">oks</span><span class="p">])</span>
+        <span class="n">tadbit_weights</span> <span class="o">=</span> <span class="p">[[</span><span class="n">i</span><span class="o">/</span><span class="n">j</span><span class="o">*</span><span class="n">total</span> <span class="k">if</span> <span class="n">j</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span>
                            <span class="nb">zip</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">weights</span><span class="p">[</span><span class="n">k</span><span class="p">])]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">))]</span>
-        <span class="k">if</span> <span class="n">use_visibility</span><span class="p">:</span>
-            <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">tadbit_weights</span> <span class="o">=</span> <span class="p">[[</span><span class="n">t</span><span class="o">*</span><span class="n">total</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tadbit_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]]]</span>
         <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">tadbit_weights</span>
     <span class="k">return</span> <span class="n">result</span>
 
@@ -202,6 +201,9 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
 <h3><a href="../../index.html">Table Of Contents</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
@@ -241,7 +243,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 08, 2013.
+      Last updated on Nov 12, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>

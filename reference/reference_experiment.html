@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="TAD detection functions" href="reference_tadbit.html" />
@@ -264,7 +265,7 @@ function:</p>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.normalize_hic">
-<tt class="descname">normalize_hic</tt><big>(</big><em>method='visibility'</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">normalize_hic</tt><big>(</big><em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C data. This normalization step does the same of
 the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function (default parameters),</p>
 <p>It fills the Experiment.norm variable with the Hi-C values divided by
@@ -272,21 +273,7 @@ the calculated weight.</p>
 <p>The weight of a given cell in column i and row j corresponds to the
 square root of the product of the sum of column i by the sum of row
 j.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>method</strong> (<em>visibility</em>) &#8211; <p>either &#8216;sqrt&#8217; or &#8216;visibility&#8217;. Depending on
-this parameter, the weight of the Hi-C count in row I, column J of
-the Hi-C matrix will be, under &#8216;sqrt&#8217;:</p>
-<div class="highlight-python"><pre>                       _________________________________________
-             \        / N                    N                  |
-              \      / ___                  ___             
-weight(I,J) =  \    /  \                    \           
-                \  /   /__ (matrix(i, J)) * /__  (matrix(I, j))
-                 \/    i=0                  j=0</pre>
-</div>
-<p>and under &#8216;visibility&#8217;:</p>
+<p>normalization is done according to this formula:</p>
 <div class="highlight-python"><pre>                 N                    N                 
                 ___                  ___                
                 \                    \                  
@@ -301,13 +288,6 @@ weight(I,J) =  -----------------------------------------
 </div>
 <p>with N being the number or rows/columns of the Hi-C matrix in both
 cases.</p>
-<p>Note that the default behavior (also used in
-<a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a>)
-corresponds to method=&#8217;sqrt&#8217;.</p>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
@@ -457,6 +437,9 @@ passed to this parameter.</li>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
 <h3><a href="../index.html">Table Of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
@@ -521,7 +504,7 @@ passed to this parameter.</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 08, 2013.
+      Last updated on Nov 12, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>

@@ -24,6 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
@@ -46,45 +47,106 @@
             
   <h1>Source code for pytadbit.parsers.hic_parser</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">19 Dec 2012</span>
-
+<span class="sd">November 7, 2013.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.gzopen</span> <span class="kn">import</span> <span class="n">gzopen</span>
 
-<span class="k">def</span> <span class="nf">_read_matrix</span><span class="p">(</span><span class="n">f_h</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    reads from file</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">nums</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="n">f_h</span><span class="o">.</span><span class="n">next</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
-            <span class="c"># skip comments</span>
-            <span class="k">continue</span>
-        <span class="k">break</span>
-    <span class="c"># check if we have headers/row-names in the file</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">nums</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="n">nums</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="c"># parse the rest of the file</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_h</span><span class="p">:</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">start</span><span class="p">:]</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">nums</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="n">nums</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+
+<span class="c"># Exception to handle failed autoread.</span>
+<span class="k">class</span> <span class="nc">AutoReadFail</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="c"># Helper functions for the autoreader.</span>
+<span class="k">def</span> <span class="nf">is_asymmetric</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">maxn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxn</span><span class="p">):</span>
+        <span class="n">maxi</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="c"># slightly more efficient</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxn</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">maxi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span> <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+<span class="k">def</span> <span class="nf">symmetrize</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">maxn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxn</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxn</span><span class="p">):</span>
+            <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">autoreader</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Auto-detect matrix format of HiC data file.</span>
+<span class="sd">    </span>
+<span class="sd">    ARGUMENTS:</span>
+<span class="sd">       f: an iterable (typically an open file).</span>
+<span class="sd">    </span>
+<span class="sd">    RETURN:</span>
+<span class="sd">       A tuple with integer values and the dimension of</span>
+<span class="sd">       the matrix.&quot;&quot;&quot;</span>
+
+    <span class="c"># Skip initial comment lines and read in the whole file</span>
+    <span class="c"># as a list of lists.</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;#&#39;</span><span class="p">:</span> <span class="k">break</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span> <span class="o">+</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+    <span class="c"># Count the number of elements per line after the first.</span>
+    <span class="c"># Wrapping in a set is a trick to make sure that every line</span>
+    <span class="c"># has the same number of elements.</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+    <span class="n">ncol</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="c"># If the set &#39;S&#39; is not empty, at least two lines have a</span>
+    <span class="c"># different number of items.</span>
+    <span class="k">if</span> <span class="n">S</span><span class="p">:</span> <span class="k">raise</span> <span class="n">AutoReadFail</span><span class="p">(</span><span class="s">&#39;ERROR: unequal column number&#39;</span><span class="p">)</span>
+
+    <span class="n">nrow</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+    <span class="c"># Auto-detect the format, there are only 4 cases.</span>
+    <span class="k">if</span> <span class="n">ncol</span> <span class="o">==</span> <span class="n">nrow</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]]):</span>
+            <span class="c"># Case 1: pure integer matrix.</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">trim</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Case 2: matrix with row and column names.</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">trim</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="c"># Case 3: matrix with row information.</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">trim</span> <span class="o">=</span> <span class="n">ncol</span> <span class="o">-</span> <span class="n">nrow</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Case 4: matrix with header and row information.</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">trim</span> <span class="o">=</span> <span class="n">ncol</span> <span class="o">-</span> <span class="n">nrow</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c"># Remove header line if needed.</span>
+    <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
+        <span class="k">del</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">nrow</span> <span class="o">-=</span> <span class="mi">1</span>
+
+    <span class="c"># Get the numeric values and remove extra columns</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">f_h</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]),</span> <span class="n">size</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="n">trim</span><span class="p">:]]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># Dekker data 2009, uses integer but puts a comma... </span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="n">trim</span><span class="p">:]]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: non integer values&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">AutoReadFail</span><span class="p">(</span><span class="s">&#39;ERROR: non numeric values&#39;</span><span class="p">)</span>
+
+    <span class="c"># Check that the matrix is square.</span>
+    <span class="n">ncol</span> <span class="o">-=</span> <span class="n">trim</span>
+    <span class="k">if</span> <span class="n">ncol</span> <span class="o">!=</span> <span class="n">nrow</span><span class="p">:</span> <span class="k">raise</span> <span class="n">AutoReadFail</span><span class="p">(</span><span class="s">&#39;ERROR: non square matrix&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_asymmetric</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: input matrix not symmetric: symmetrizing&#39;</span><span class="p">)</span>
+        <span class="n">symmetrize</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">]),</span> <span class="n">ncol</span>
 
 
 <div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../../../reference/reference_parser.html#pytadbit.parsers.hic_parser.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">things</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -112,7 +174,7 @@
 <span class="sd">        returns number or rows</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">parser</span> <span class="ow">or</span> <span class="n">_read_matrix</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">parser</span> <span class="ow">or</span> <span class="n">autoreader</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">things</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
         <span class="n">things</span> <span class="o">=</span> <span class="p">[</span><span class="n">things</span><span class="p">]</span>
     <span class="n">matrices</span> <span class="o">=</span> <span class="p">[]</span>
@@ -120,13 +182,17 @@
     <span class="k">for</span> <span class="n">thing</span> <span class="ow">in</span> <span class="n">things</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">file</span><span class="p">:</span>
             <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
+            <span class="n">thing</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
             <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">thing</span><span class="p">))</span>
+                <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">gzopen</span><span class="p">(</span><span class="n">thing</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-                <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">thing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">   ERROR: file </span><span class="si">%s</span><span class="s"> not found</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">thing</span><span class="p">)</span>
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
             <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
@@ -153,31 +219,20 @@
                 <span class="k">print</span> <span class="s">&#39;Error found:&#39;</span><span class="p">,</span> <span class="n">exc</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Unable to read this file or whatever it is :)&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">s</span><span class="o">==</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">])</span> <span class="ow">and</span> \
-           <span class="nb">all</span><span class="p">([</span><span class="n">__check_hic</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matrices</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">s</span><span class="o">==</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">]):</span>
         <span class="k">return</span> <span class="n">matrices</span><span class="p">,</span> <span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;All matrices must have the same size &#39;</span> <span class="o">+</span>
                     <span class="s">&#39;(same chromosome and same bins).&#39;</span><span class="p">)</span>
-
-
-<span class="c"># This function is no longer required because the data is</span>
-<span class="c"># force-symmetrized by the C engine.</span></div>
-<span class="k">def</span> <span class="nf">__check_hic</span><span class="p">(</span><span class="n">hic</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    check if hi-c data is symmetric</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c">#for i in xrange(size):</span>
-    <span class="c">#    for j in xrange(i + 1, size):</span>
-    <span class="c">#        if not hic[i * size + j] == hic[j * size + i]:</span>
-    <span class="c">#            raise AttributeError(&#39;ERROR: matrix should be symmetric.\n&#39;)</span>
-    <span class="k">return</span> <span class="bp">True</span>
-</pre></div>
+</pre></div></div>
 
           </div>
         </div>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
 <h3><a href="../../../index.html">Table Of Contents</a></h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
@@ -217,7 +272,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 08, 2013.
+      Last updated on Nov 12, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
