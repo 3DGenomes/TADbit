@@ -8,7 +8,7 @@ TAD clustering
 .. contents::
    :depth: 3
 
-TADBit allows to compare the topology of TADs using directly a Hi-C matrix. This comparison is done using 
+TADbit allows to compare the topology of TADs using directly a Hi-C matrix. This comparison is done using 
 the same methodology used for protein structure comparison with contact map overlap (CMO) [DiLena2010]_.
 
 The function that allows such comparison is :func:`pytadbit.tad_clustering.tad_cmo.optimal_cmo`. The 

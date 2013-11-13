@@ -7,7 +7,7 @@
     
     <title>Chromosome class &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -181,7 +181,7 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.find_tad">
-<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>no_heuristic=False</em>, <em>batch_mode=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>no_heuristic=False</em>, <em>batch_mode=False</em>, <em>use_visibility=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function to calculate the
 position of Topologically Associated Domains</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -193,7 +193,7 @@ position of Topologically Associated Domains</p>
 data or a list of such matrices for replicated experiments. The
 counts must be evenly sampled and not normalized. &#8216;experiment&#8217;
 can be either a list of lists, a path to a file or a file handler</li>
-<li><strong>n_cpus</strong> (<em>1</em>) &#8211; The number of CPUs to allocate to TADBit. If
+<li><strong>n_cpus</strong> (<em>1</em>) &#8211; The number of CPUs to allocate to TADbit. If
 n_cpus=&#8217;max&#8217; the total number of CPUs will be used</li>
 <li><strong>max_tad_size</strong> (<em>auto</em>) &#8211; an integer defining the maximum size of a 
 TAD. Default (auto) defines it as the number of rows/columns</li>
@@ -414,10 +414,8 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
             </a></p>
 <h3><a href="../index.html">Table Of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Identification and Analysis of TADs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="">Chromosome class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#load-chromosome">Load chromosome</a></li>

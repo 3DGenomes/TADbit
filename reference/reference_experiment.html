@@ -7,7 +7,7 @@
     
     <title>Experiment class &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -264,7 +264,7 @@ function:</p>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.normalize_hic">
-<tt class="descname">normalize_hic</tt><big>(</big><em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">normalize_hic</tt><big>(</big><em>method='visibility'</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C data. This normalization step does the same of
 the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function (default parameters),</p>
 <p>It fills the Experiment.norm variable with the Hi-C values divided by
@@ -272,7 +272,21 @@ the calculated weight.</p>
 <p>The weight of a given cell in column i and row j corresponds to the
 square root of the product of the sum of column i by the sum of row
 j.</p>
-<p>normalization is done according to this formula:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>method</strong> (<em>visibility</em>) &#8211; <p>either &#8216;sqrt&#8217; or &#8216;visibility&#8217;. Depending on
+this parameter, the weight of the Hi-C count in row I, column J of
+the Hi-C matrix will be, under &#8216;sqrt&#8217;:</p>
+<div class="highlight-python"><pre>                       _________________________________________
+             \        / N                    N                  |
+              \      / ___                  ___             
+weight(I,J) =  \    /  \                    \           
+                \  /   /__ (matrix(i, J)) * /__  (matrix(I, j))
+                 \/    i=0                  j=0</pre>
+</div>
+<p>and under &#8216;visibility&#8217;:</p>
 <div class="highlight-python"><pre>                 N                    N                 
                 ___                  ___                
                 \                    \                  
@@ -287,6 +301,13 @@ weight(I,J) =  -----------------------------------------
 </div>
 <p>with N being the number or rows/columns of the Hi-C matrix in both
 cases.</p>
+<p>Note that the default behavior (also used in
+<a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a>)
+corresponds to method=&#8217;sqrt&#8217;.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -441,10 +462,8 @@ passed to this parameter.</li>
             </a></p>
 <h3><a href="../index.html">Table Of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Identification and Analysis of TADs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Experiment class</a></li>

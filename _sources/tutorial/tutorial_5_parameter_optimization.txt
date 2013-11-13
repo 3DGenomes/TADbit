@@ -171,7 +171,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
 
 .. note::
-   The above warning is given when a small matrix is loaded. TADBit has a filtering function that is applied to all Hi-C matrices with the aim of removing entire rows with very low counts. Those rows/colums are treated then for modeling as "missing-data" points. This flitering function can only be applied for relatively large matrices.
+   The above warning is given when a small matrix is loaded. TADbit has a filtering function that is applied to all Hi-C matrices with the aim of removing entire rows with very low counts. Those rows/colums are treated then for modeling as "missing-data" points. This flitering function can only be applied for relatively large matrices.
 
 
 Optimizing from Experiment
@@ -273,7 +273,7 @@ One can also visualize the parameter optimization according to ne of the three o
 .. image:: ../nbpictures/tutorial_5_parameter_optimization_26_0.png
 
 
-TADBit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
+TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
 
 .. code:: python
 

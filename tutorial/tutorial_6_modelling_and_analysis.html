@@ -91,8 +91,8 @@ file not found for experiment: batch_gm06690_k562
 </div>
 <div class="section" id="model-the-3d-structure-of-a-selected-tad">
 <h2>Model the 3D structure of a selected TAD<a class="headerlink" href="#model-the-3d-structure-of-a-selected-tad" title="Permalink to this headline">¶</a></h2>
-<p>TADBit uses the Integrative Modeling Platform (IMP, <a class="reference external" href="http://www.integrativemodeling.org">http://www.integrativemodeling.org</a>) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.</p>
-<p>All models are based on specific sets of experimental data for which TADBit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.</p>
+<p>TADbit uses the Integrative Modeling Platform (IMP, <a class="reference external" href="http://www.integrativemodeling.org">http://www.integrativemodeling.org</a>) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.</p>
+<p>All models are based on specific sets of experimental data for which TADbit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># See pre-defined sets of parameters</span>
 <span class="n">CONFIG</span>
 </pre></div>
@@ -307,7 +307,7 @@ Total number of clusters: 19
 <span class="n">models</span><span class="o">.</span><span class="n">contact_map</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="s">&quot;contact.txt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The goal of TADBit is to find a 3D structure (or ensemble of structures) that best satisfies the original Hi-C matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix for parts of the models.</p>
+<p>The goal of TADbit is to find a 3D structure (or ensemble of structures) that best satisfies the original Hi-C matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix for parts of the models.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Correlate the contact map with the original input HiC matrix for cluster 0</span>
 <span class="n">models</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 <span class="c"># Correlate the contact map with the original input HiC matrix for cluster 1</span>
@@ -40572,7 +40572,7 @@ J6dSDaLK7pEWJ8W5QJlLSsNVNknrSZ06eq3ALAsZ3kFThAAcU7trAQAAAAAAAA67jLOBALeH94EB
             </a></p>
 <h3><a href="../index.html">Table Of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADBit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a><ul class="current">

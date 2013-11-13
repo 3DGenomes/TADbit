@@ -50,9 +50,9 @@ Model the 3D structure of a selected TAD
 ----------------------------------------
 
 
-TADBit uses the Integrative Modeling Platform (IMP, http://www.integrativemodeling.org) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.
+TADbit uses the Integrative Modeling Platform (IMP, http://www.integrativemodeling.org) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.
 
-All models are based on specific sets of experimental data for which TADBit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.
+All models are based on specific sets of experimental data for which TADbit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.
 
 .. code:: python
 
@@ -355,7 +355,7 @@ Given a set of selected models (either from a cluster or a list) one can calcula
     # Get a contact map for the top 50 models at a distance cut-off of 300nm
     models.contact_map(models=range(5,10), cutoff=1200, savedata="contact.txt")
 
-The goal of TADBit is to find a 3D structure (or ensemble of structures) that best satisfies the original Hi-C matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix for parts of the models.
+The goal of TADbit is to find a 3D structure (or ensemble of structures) that best satisfies the original Hi-C matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix for parts of the models.
 
 .. code:: python
 
