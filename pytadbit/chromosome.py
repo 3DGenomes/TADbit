@@ -383,7 +383,7 @@ class Chromosome(object):
            data or a list of such matrices for replicated experiments. The
            counts must be evenly sampled and not normalized. 'experiment'
            can be either a list of lists, a path to a file or a file handler
-        :param 1 n_cpus: The number of CPUs to allocate to TADBit. If
+        :param 1 n_cpus: The number of CPUs to allocate to TADbit. If
            n_cpus='max' the total number of CPUs will be used
         :param auto max_tad_size: an integer defining the maximum size of a 
            TAD. Default (auto) defines it as the number of rows/columns

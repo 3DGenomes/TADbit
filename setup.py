@@ -119,7 +119,7 @@ def main():
 
 
     setup(
-        name         = 'TADBit',
+        name         = 'TADbit',
         version      = '0.1',
         author       = 'Davide Bau, Francois Serra, Guillaume Filion and Marc Marti-Renom',
         author_email = 'serra.francois@gmail.com',

@@ -22,7 +22,7 @@ Hi-C data are usually represented as symmetric matrices in a tab separated file,
   chrT_006      19      50      53      42      37      224
 
 
-TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as this 
+TADbit allows to load most of this kind of matrices. A Hi-C matrix is loaded as this 
 *(note: this example loads human chromosome 19 from* [Lieberman-Aiden2009]_ *results.)*:
 
 
@@ -40,20 +40,20 @@ TADBit allows to load most of this kind of matrices. A Hi-C matrix is loaded as 
                             hic_data="../../scripts/sample_data/HIC_gm06690_chr19_chr19_100000_obs.txt", resolution=100000)
 
 .. warning::
-   TADBit assumes that Hi-C data matrices starts at chromosome position 1. If your matrix do not represents the full chromosome length, fill the missing columns and rows with zeros.
+   TADbit assumes that Hi-C data matrices starts at chromosome position 1. If your matrix do not represents the full chromosome length, fill the missing columns and rows with zeros.
 
 .. note::
-   by default TADBit will not search for centromeres, however, as, in this example, we know that we are working with chromosome 19, we can ask TADBit search for it as explained in :ref:`forbidden_regions`
+   by default TADbit will not search for centromeres, however, as, in this example, we know that we are working with chromosome 19, we can ask TADbit search for it as explained in :ref:`forbidden_regions`
 
 .. note::
-   TADBit parser is also able to read compressed data directly (gzip files).
+   TADbit parser is also able to read compressed data directly (gzip files).
 
 
 Unconventional data format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-In some cases users may found data that are not readable by TADBit. In such case, a parser function can be written and passed as an argument to the ``add_experiment`` function:
+In some cases users may found data that are not readable by TADbit. In such case, a parser function can be written and passed as an argument to the ``add_experiment`` function:
 
 .. code:: python
 
@@ -88,7 +88,7 @@ And call it as follow:
 
 .. parsed-literal::
 
-    /usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/utils/hic_filtering.py:146: UserWarning: WARNING: Too few data to filter columns. SKIPPING...
+    /usr/local/lib/python2.7/dist-packages/TADbit-0.1-py2.7-linux-x86_64.egg/pytadbit/utils/hic_filtering.py:146: UserWarning: WARNING: Too few data to filter columns. SKIPPING...
       warn('WARNING: Too few data to filter columns. SKIPPING...')
 
 
@@ -236,7 +236,7 @@ Finding TADs in related Hi-C experiments
 ----------------------------------------
 
 
-TADBit also allows to search for TADs in a chromosome using the information of several Hi-C experiments. To do this experiments do not need to be summed up (like in :ref:`exp_operations`), as the find_tad function has a batch_mode:
+TADbit also allows to search for TADs in a chromosome using the information of several Hi-C experiments. To do this experiments do not need to be summed up (like in :ref:`exp_operations`), as the find_tad function has a batch_mode:
 
 .. code:: python
 
@@ -259,14 +259,14 @@ Forbidden regions and centromeres
 ---------------------------------
 
 
-Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, TADBit checks that they are not 
+Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, TADbit checks that they are not 
 larger than a given value (3 Mb by default). If a TAD is larger than this value, it will be marked with a 
-**negative score**, and will be automatically excluded from the main TADBit functions.
+**negative score**, and will be automatically excluded from the main TADbit functions.
 
-Another inspection performed by TADBit is the presence of centromeric regions. TADBit assumes that the larger 
+Another inspection performed by TADbit is the presence of centromeric regions. TADbit assumes that the larger 
 gap found in a Hi-C matrix corresponds to the centromere. This search is updated and refined each time a new 
 experiment is linked to a given Chromosome. Typically, TADs calculated by the core 
-:func:`pytadbit.tadbit.tadbit` function include centromeric regions; if a centromere is found, TADBit will 
+:func:`pytadbit.tadbit.tadbit` function include centromeric regions; if a centromere is found, TADbit will 
 split the TAD containing it into two TADs, one ending before the centromere and one starting after. As 
 centromeric regions are not necessarily TAD boundaries, the TADs surrounding them are marked with a negative 
 score (as for forbidden regions).
@@ -285,7 +285,7 @@ function. The only parameter needed is which experiment to show. Therefore, the 
 
 .. parsed-literal::
 
-    /usr/local/lib/python2.7/dist-packages/TADBit-0.1-py2.7-linux-x86_64.egg/pytadbit/chromosome.py:568: RuntimeWarning: divide by zero encountered in log2
+    /usr/local/lib/python2.7/dist-packages/TADbit-0.1-py2.7-linux-x86_64.egg/pytadbit/chromosome.py:568: RuntimeWarning: divide by zero encountered in log2
       img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
 
 
@@ -326,7 +326,7 @@ Saving and restoring data
 -------------------------
 
 
-In order to avoid having to calculate TAD positions each time, TADBit allows to save and load Chromosome 
+In order to avoid having to calculate TAD positions each time, TADbit allows to save and load Chromosome 
 objects, with all the associated experiments. To save a Chromosome object:
 
 .. code:: python

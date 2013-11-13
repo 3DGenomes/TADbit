@@ -12,11 +12,11 @@ from pytadbit.tadbit_py import _tadbit_wrapper
 def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
            no_heuristic=False, get_weights=False, use_visibility=False):
     """
-    The TADBit algorithm works on raw chromosome interaction count data.
+    The TADbit algorithm works on raw chromosome interaction count data.
     The normalization is neither necessary nor recommended,
     since the data is assumed to be discrete counts.
     
-    TADBit is a breakpoint detection algorithm that returns the optimal
+    TADbit is a breakpoint detection algorithm that returns the optimal
     segmentation of the chromosome under BIC-penalized likelihood. The
     model assumes that counts have a Poisson distribution and that the
     expected value of the counts decreases like a power-law with the
@@ -30,7 +30,7 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
        of such matrices for replicated experiments. The counts must be evenly
        sampled and not normalized. x might be either a list of list, a path to
        a file or a file handler
-    :param 1 n_cpus: The number of CPUs to allocate to TADBit. If
+    :param 1 n_cpus: The number of CPUs to allocate to TADbit. If
        n_cpus='max' the total number of CPUs will be used
     :param auto max_tad_size: an integer defining maximum size of TAD. Default
        (auto) defines it as the number of rows/columns

@@ -7,7 +7,7 @@ Alignment of TAD boundaries
    :depth: 3
 
 
-TADBit allows to use the information from different Hi-C experiments and to put it together in order to 
+TADbit allows to use the information from different Hi-C experiments and to put it together in order to 
 decide whether some TAD boundaries are conserved or not.
 
 Following with the example in the previous section (:ref:`getting_start`), we will load one extra experiment 
@@ -112,7 +112,7 @@ The first function to call to check the quality of the generated alignments is t
     
 
 
-The different colors, corresponding to the TADBit confidence in detecting the boundaries, show how conserved the boundaries are between (in this case) cell types.
+The different colors, corresponding to the TADbit confidence in detecting the boundaries, show how conserved the boundaries are between (in this case) cell types.
 
 Alignment can also be viewed using matplotlib:
 
