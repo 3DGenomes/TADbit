@@ -22,7 +22,7 @@ def main():
      number_parts,
      accessible_area,
      total_area, by_part) = model.accessible_surface(
-        radius, nump=nump, verbose=False, write_cmm_file=opts.outfcmm,
+        radius, nump=nump, verbose=True, write_cmm_file=opts.outfcmm,
         include_edges=opts.slow)
 
     print '\n GLOBAL STATS:\n -------------\n'

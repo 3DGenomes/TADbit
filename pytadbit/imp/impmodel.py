@@ -6,9 +6,8 @@
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.three_dim_stats import generate_sphere_points
-from pytadbit.utils.three_dim_stats import fast_square_distance, distance
-from pytadbit.utils.three_dim_stats import angle_between_3_points
-from pytadbit.utils.three_dim_stats import generate_circle_points
+from pytadbit.utils.three_dim_stats import fast_square_distance
+from pytadbit.utils.three_dim_stats import build_mesh
 from scipy.interpolate              import spline
 from numpy                          import linspace
 from warnings                       import warn
@@ -427,164 +426,35 @@ class IMPmodel(dict):
 
         """
 
-        points = []
-        subpoints = []
-        positions = {}
-        sphere = generate_sphere_points(nump)
-        nloci = len(self)
-        # number of dots in a circle is dependent the ones in a sphere
-        numc = sqrt(nump) * sqrt(pi)
-        right_angle = pi / 2 - pi / numc
-        # keeps the remaining of integer conversion, to correct
-        remaining = int(100*(numc - int(numc)) + 0.5)
-        c_count = 0
-        # number of circles per sphere needed to get previous equality are
-        # dependent of:
-        fact = float(nump)/numc/(2*radius)
+        superadius = 100
+        points, dots, superdots, points2dots = build_mesh(
+            self['x'], self['y'], self['z'], len(self), nump, radius,
+            superadius, include_edges)
 
-        # starts big loop
-        i = 0
-        for i in xrange(nloci-1):
-            selfx   = self['x'][i]
-            selfy   = self['y'][i]
-            selfz   = self['z'][i]
-            selfx1  = self['x'][i+1]
-            selfy1  = self['y'][i+1]
-            selfz1  = self['z'][i+1]
-            if i < nloci - 2:
-                selfx2  = self['x'][i+2]
-                selfy2  = self['y'][i+2]
-                selfz2  = self['z'][i+2]
-            if i:
-                selfx_1 = self['x'][i-1]
-                selfy_1 = self['y'][i-1]
-                selfz_1 = self['z'][i-1]            
-            point = dict((('x', selfx),
-                          ('y', selfy),
-                          ('z', selfz)))
-            point = [self['x'][i], self['y'][i], self['z'][i]]
-            points.append(point)
-            # get minimum length from next particle to display the sphere dot
-            adj1 = distance(point, [selfx1, selfy1, selfz1])
-
-            # find a vector orthogonal to the axe between particle i and i+1
-            difx = selfx - selfx1
-            dify = selfy - selfy1
-            difz = selfz - selfz1
-            # orthox = 1.
-            # orthoy = 1.
-            orthoz = -(difx + dify) / difz
-            #normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius
-            normer = sqrt(2. + orthoz**2) / radius
-            orthox = 1. / normer
-            orthoy = 1. / normer
-            orthoz /= normer
-            # define the number of circle to draw in this section
-            between = int(fact * adj1 + 0.5)
-            stepx = difx / between
-            stepy = dify / between
-            stepz = difz / between
-
-            hyp1 = sqrt(adj1**2 + radius**2)
-            # this is an attempt of correction for the integrity of dots
-            # uses intercept theorem
-            hyp1 = (hyp1 - hyp1 / (2 * (1 + between)))**2
-            
-            # get minimum length from prev particle to display the sphere dot
-            if i:
-                adj2 = distance(point, [selfx_1, selfy_1, selfz_1])
-                hyp2 = sqrt(adj2**2 + radius**2)
-                # this is an attempt of correction for the integrity of dots
-                hyp2 = (hyp2 - hyp2 / (2 * (1 + between)))**2
-
-            # set sphere around each particle
-            for xxx, yyy, zzz in sphere:
-                thing = [xxx * radius + selfx,
-                         yyy * radius + selfy,
-                         zzz * radius + selfz]
-                # only place mesh outside torsion angle
-                if self._square_distance_to(i+1, thing) > hyp1:
-                    if not i:
-                        subpoints.append(thing)
-                    elif self._square_distance_to(i-1, thing) > hyp2:
-                        subpoints.append(thing)
-                    else:
-                        continue
-                    positions.setdefault(i, []).append(len(subpoints)-1)
-            # define slices
-            for k in xrange(between - 1, 0, -1):
-                point = [selfx - k * stepx,
-                         selfy - k * stepy,
-                         selfz - k * stepz]
-                points.append(point)
-                pointx = point[0]
-                pointy = point[1]
-                pointz = point[2]
-
-                if not include_edges:
-                    continue
-                # define circles
-                for spoint in generate_circle_points(
-                    orthox + pointx, orthoy + pointy, orthoz + pointz,
-                    pointx         , pointy         , pointz         ,
-                    difx           , dify           , difz           ,
-                    # correction for integer of numc
-                    numc + (1 if c_count%100 < remaining else 0)):
-                    # check that the point of the circle is not too close from
-                    # next edge
-                    if i < nloci - 2:
-                        hyp = distance((selfx1, selfy1, selfz1), spoint)
-                        ang = angle_between_3_points(
-                            spoint,
-                            (selfx1, selfy1, selfz1),
-                            (selfx2, selfy2, selfz2))
-                        if ang < right_angle:
-                            dist = sin(ang) * hyp
-                            # print dist, radius
-                            if dist < radius:
-                                continue
-                    # check that the point of the circle is not too close from
-                    # previous edge
-                    if i:
-                        hyp = distance((selfx, selfy,
-                                        selfz), spoint)
-                        ang = angle_between_3_points(
-                            spoint,
-                            (selfx, selfy, selfz),
-                            (selfx_1, selfy_1, selfz_1))
-                        if ang < right_angle:
-                            dist = sin(ang) * hyp
-                            # print dist, radius
-                            if dist < radius:
-                                continue
-                    # print 'here'
-                    subpoints.append([spoint[0],
-                                      spoint[1],
-                                      spoint[2]])
-                    positions.setdefault(i + float(k)/between, []).append(
-                        len(subpoints) - 1)
-                c_count += 1
-                
-        # add last AND least point!!
-        points.append([selfx1, selfy1, selfz1])
-        # and its sphere
-        adj = distance(points[-1], [selfx, selfy, selfz])
-        hyp2 = sqrt(adj**2 + radius**2)
-        hyp2 = (hyp2 - hyp2 * adj / (2 * between) / adj)**2
-        for xxx, yyy, zzz in sphere:
-            thing = [xxx * radius + selfx1,
-                     yyy * radius + selfy1,
-                     zzz * radius + selfz1]
-            if self._square_distance_to(i, thing) > hyp2:
-                subpoints.append(thing)
-            positions.setdefault(i+1, []).append(len(subpoints)-1)
+        
+        # calculates the number of inaccessible peaces of surface
+        radius2 = (superadius - 2)**2
+        outdot  = []
+        for x2, y2, z2 in superdots:
+            for j, (x1, y1, z1) in enumerate(points):
+                if fast_square_distance(x1, y1, z1, x2, y2, z2) < radius2:
+                    outdot.append(False)
+                    break
+            else:
+                outdot.append(True)
+                continue
+            points.insert(0, points.pop(j))
 
         # calculates the number of inaccessible peaces of surface
         radius2 = (radius - 1)**2
+        grey    = (0.6, 0.6, 0.6)
         red     = (1, 0, 0)
         green   = (0, 1, 0)
         colors  = []
-        for x2, y2, z2 in subpoints:
+        for i, (x2, y2, z2) in enumerate(dots):
+            if outdot[i]:
+                colors.append(grey)
+                continue
             for j, (x1, y1, z1) in enumerate(points):
                 if fast_square_distance(x1, y1, z1, x2, y2, z2) < radius2:
                     colors.append(red)
@@ -593,13 +463,13 @@ class IMPmodel(dict):
                 colors.append(green)
                 continue
             points.insert(0, points.pop(j))
-        impossibles = colors.count(red)
+        possibles = colors.count(green)
 
         acc_parts = []
-        for p in sorted(positions.keys()):
+        for p in sorted(points2dots.keys()):
             acc = 0
             ina = 0
-            for dot in positions[p]:
+            for dot in points2dots[p]:
                 if colors[dot]==green:
                     acc += 1
                 else:
@@ -608,17 +478,17 @@ class IMPmodel(dict):
 
         # some stats
         dot_area = 4 * pi * (float(radius) / 1000)**2 / nump
-        area = ((len(subpoints) - impossibles) * dot_area)
+        area = (possibles * dot_area)
         total = (self.contour() / 1000 * 2 * pi * float(radius) / 1000 + 4 * pi
                  * (float(radius) / 1000)**2)
         if verbose:
             print (' Accessible surface: %s micrometers^2' +
                    '(%s accessible times %s micrometers)') % (
-                round(area, 2), len(subpoints) - impossibles, dot_area)
+                round(area, 2), possibles, dot_area)
             print '    (%s accessible dots of %s total times %s micrometers)' % (
-                len(subpoints) - impossibles, len(subpoints), round(dot_area, 5))
+                possibles, outdot.count(False), round(dot_area, 5))
             print '  - %s%% of the contour mesh' % (
-                round((1-float(impossibles)/len(subpoints))*100, 2))
+                round((float(possibles)/outdot.count(False))*100, 2))
             print '  - %s%% of a virtual straight chromatin (%s microm^2)' % (
                 round((area/total)*100, 2), round(total, 2))
 
@@ -633,9 +503,12 @@ class IMPmodel(dict):
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
                     'radius=\"7\"/>\n')
-            for k_2, thing in enumerate(subpoints):
+            for k_2, thing in enumerate(dots):
                 out += form % (1 + k_2, thing[0], thing[1], thing[2],
                                 colors[k_2][0], colors[k_2][1], colors[k_2][2])
+            for k_3, thing in enumerate(superdots):
+                out += form % (1 + k_3 + k_2 + 1, thing[0], thing[1], thing[2],
+                                0.1, 0.1, 0.1)
             out += '</marker_set>\n'
             if view_mesh:
                 out_f = open('/tmp/tmp_mesh.cmm', 'w')
@@ -665,7 +538,7 @@ class IMPmodel(dict):
                          chimera_bin=chimera_bin,
                          savefig=savefig, chimera_cmd=chimera_cmd)
 
-        return (len(subpoints) - impossibles, len(subpoints), area, total, acc_parts)
+        return (possibles, outdot.count(False), area, total, acc_parts)
 
 
     def write_cmm(self, directory, color=color_residues, rndname=True,
