@@ -5,7 +5,7 @@ script to calculate the accessibilty, per particle, of a given model.
 from pytadbit.imp.impmodel import load_impmodel_from_cmm
 from pytadbit.imp.impmodel import load_impmodel_from_xyz
 from optparse                  import OptionParser
-
+from sys import stdout
 
 
 def main():
@@ -23,7 +23,8 @@ def main():
      accessible_area,
      total_area, by_part) = model.accessible_surface(
         radius, nump=nump, verbose=True, write_cmm_file=opts.outfcmm,
-        include_edges=opts.slow)
+        include_edges=opts.slow, superradius=(int(opts.superradius) if
+                                              opts.superradius else None))
 
     print '\n GLOBAL STATS:\n -------------\n'
     print '  - accesible dots (of the mesh)     : %s' % accesible_parts
@@ -34,7 +35,10 @@ def main():
     print '  - proportion of accesible surface  : %.2f%%' % (100*float(accessible_area)/total_area)
     print ''
 
-    out = open(opts.outf, 'w')
+    if opts.outf:
+        out = open(opts.outf, 'w')
+    else:
+        out = stdout
     for part, acc, ina in by_part:
         if opts.burry:
             burried = 1 if (100*float(ina) / (acc + ina)) > float(opts.burry) else 0
@@ -54,8 +58,11 @@ def get_options():
     parser.add_option('--infile', dest='model_path', metavar="PATH",
                       action='store', default=None,
                       help='''path to a cmm or xyz file''')
-    parser.add_option('--radius', dest='radius', default=300,
+    parser.add_option('--radius', dest='radius', default=75,
                       help='''[%default] radius of the object to fit''')
+    parser.add_option('--superradius', dest='superradius', default=None,
+                      help='''[%default] radius of the large object to fit to
+                      exclude outer part of the model''')
     parser.add_option('--dens', dest='nump', default=100, 
                       help='''[%default] density of the mesh, 100 mean 100
                       dots checked around each particle''')
@@ -66,7 +73,7 @@ def get_options():
     parser.add_option('--fast', dest='slow', default=True, action='store_false',
                       help='''skip computation of the accessibility of edges''')
     parser.add_option('--outfile', dest='outf', action="store", metavar="PATH", 
-                      help=
+                      default=None, help=
                       '''path to outfile, 2 columns, particle number, and
                       percentage of burriement (if burriement value is passed,
                       than only 0 or 1)''')

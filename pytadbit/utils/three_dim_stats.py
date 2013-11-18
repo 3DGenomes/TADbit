@@ -282,7 +282,8 @@ def getAngle(v1v2, v2v3):
         )
 
 
-def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
+def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
+    superradius = superradius or 1
     # number of dots in a circle is dependent the ones in a sphere
     numc = sqrt(nump) * sqrt(pi)
     right_angle = pi / 2 - pi / numc
@@ -359,9 +360,9 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
                      yyy * radius + modely,
                      zzz * radius + modelz]
             # same for super mesh
-            superthing = [xxx * superadius + modelx,
-                          yyy * superadius + modely,
-                          zzz * superadius + modelz]
+            superthing = [xxx * superradius + modelx,
+                          yyy * superradius + modely,
+                          zzz * superradius + modelz]
             # only place mesh outside torsion angle
             if fast_square_distance(modelx1, modely1, modelz1,
                                     thing[0], thing[1], thing[2]) > hyp1:
@@ -383,8 +384,8 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
                 numc + (1 if c_count%100 < remaining else 0)):
                 dot = [spoint[0] * radius + pointx, spoint[1] * radius + pointy,
                        spoint[2] * radius + pointz]
-                superdot = [spoint[0] * superadius + pointx, spoint[1] * superadius + pointy,
-                            spoint[2] * superadius + pointz]
+                superdot = [spoint[0] * superradius + pointx, spoint[1] * superradius + pointy,
+                            spoint[2] * superradius + pointz]
                 # check that dot in circle is not too close from next edge
                 if i < nloci - 2:
                     hyp = distance((modelx1, modely1, modelz1), dot)
@@ -431,9 +432,9 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
         thing = [xxx * radius + modelx1,
                  yyy * radius + modely1,
                  zzz * radius + modelz1]
-        superthing = [xxx * superadius + modelx,
-                      yyy * superadius + modely,
-                      zzz * superadius + modelz]
+        superthing = [xxx * superradius + modelx,
+                      yyy * superradius + modely,
+                      zzz * superradius + modelz]
         if fast_square_distance(modelx1, modely1, modelz1,
                                 thing[0], thing[1], thing[2]) > hyp2:
             subpoints.append(thing)

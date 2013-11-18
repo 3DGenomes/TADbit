@@ -340,13 +340,18 @@ class IMPmodel(dict):
         return inaccessibles
 
 
-    def accessible_surface(self, radius, write_cmm_file=None, nump=100,
-                           verbose=False, include_edges=True, view_mesh=False,
-                           savefig=None, chimera_bin='chimera'):
+    def accessible_surface(self, radius, nump=100, superradius=200,
+                           include_edges=True, view_mesh=False, savefig=None,
+                           write_cmm_file=None, verbose=False,
+                           chimera_bin='chimera'):
         """
         Calculates a mesh surface around the model (distance equal to input
         **radius**) and checks if each point of this mesh could be replaced by
         an object (i.e. a protein) of a given **radius**
+
+        Outer part of the model can be excluded from the estimation of
+        accessible surface, as the occupancy outside the model is unkown (see
+        superradius option).
 
         :param radius: radius of the object we want to fit in the model.
         :param None write_cmm_file: path to file in which to write cmm with the
@@ -366,6 +371,8 @@ class IMPmodel(dict):
         :param None savefig: path where to save chimera image
         :param 'chimera' chimera_bin: path to chimera binary to use
         :param False verbose: prints stats about the surface
+        :param 200 superradius: radius of an object used to exclude outer
+           surface of the model. Superradius must be higher than radius.
 
         This function will first define a mesh around the chromatin,
         representing all possible position of the center of the object we want
@@ -426,24 +433,26 @@ class IMPmodel(dict):
 
         """
 
-        superadius = 100
         points, dots, superdots, points2dots = build_mesh(
             self['x'], self['y'], self['z'], len(self), nump, radius,
-            superadius, include_edges)
+            superradius, include_edges)
 
         
         # calculates the number of inaccessible peaces of surface
-        radius2 = (superadius - 2)**2
-        outdot  = []
-        for x2, y2, z2 in superdots:
-            for j, (x1, y1, z1) in enumerate(points):
-                if fast_square_distance(x1, y1, z1, x2, y2, z2) < radius2:
-                    outdot.append(False)
-                    break
-            else:
-                outdot.append(True)
-                continue
-            points.insert(0, points.pop(j))
+        if superradius:
+            radius2 = (superradius - 2)**2
+            outdot  = []
+            for x2, y2, z2 in superdots:
+                for j, (x1, y1, z1) in enumerate(points):
+                    if fast_square_distance(x1, y1, z1, x2, y2, z2) < radius2:
+                        outdot.append(False)
+                        break
+                else:
+                    outdot.append(True)
+                    continue
+                points.insert(0, points.pop(j))
+        else:
+            outdot = [False] * len(superdots)
 
         # calculates the number of inaccessible peaces of surface
         radius2 = (radius - 1)**2
@@ -496,9 +505,6 @@ class IMPmodel(dict):
         if savefig:
             view_mesh = True
         if write_cmm_file or view_mesh:
-            form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
-                    ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
-                    'radius=\"20\" note=\"%s\"/>\n')
             out = '<marker_set name=\"2\">\n'
             form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                     ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
@@ -506,9 +512,11 @@ class IMPmodel(dict):
             for k_2, thing in enumerate(dots):
                 out += form % (1 + k_2, thing[0], thing[1], thing[2],
                                 colors[k_2][0], colors[k_2][1], colors[k_2][2])
-            for k_3, thing in enumerate(superdots):
-                out += form % (1 + k_3 + k_2 + 1, thing[0], thing[1], thing[2],
-                                0.1, 0.1, 0.1)
+            if superradius:
+                for k_3, thing in enumerate(superdots):
+                    out += form % (1 + k_3 + k_2 + 1,
+                                   thing[0], thing[1], thing[2],
+                                    0.1, 0.1, 0.1)
             out += '</marker_set>\n'
             if view_mesh:
                 out_f = open('/tmp/tmp_mesh.cmm', 'w')
