@@ -282,7 +282,8 @@ def getAngle(v1v2, v2v3):
         )
 
 
-def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
+def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
+    superradius = superradius or 1
     # number of dots in a circle is dependent the ones in a sphere
     numc = sqrt(nump) * sqrt(pi)
     right_angle = pi / 2 - pi / numc
@@ -356,9 +357,9 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
                      yyy * radius + modely,
                      zzz * radius + modelz]
             # same for super mesh
-            superthing = [xxx * superadius + modelx,
-                          yyy * superadius + modely,
-                          zzz * superadius + modelz]
+            superthing = [xxx * superradius + modelx,
+                          yyy * superradius + modely,
+                          zzz * superradius + modelz]
             # only place mesh outside torsion angle
             if fast_square_distance(modelx1, modely1, modelz1,
                                     thing[0], thing[1], thing[2]) > hyp1:
@@ -378,11 +379,12 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
                 orthox, orthoy, orthoz, difx ,dify, difz,
                 # correction for integer of numc
                 numc + (1 if c_count%100 < remaining else 0)):
-                dot = [spoint[0] * radius + ptx, spoint[1] * radius + pty,
+                dot = [spoint[0] * radius + ptx,
+                       spoint[1] * radius + pty,
                        spoint[2] * radius + ptz]
-                superdot = [spoint[0] * superadius + ptx,
-                            spoint[1] * superadius + pty,
-                            spoint[2] * superadius + ptz]
+                superdot = [spoint[0] * superradius + ptx,
+                            spoint[1] * superradius + pty,
+                            spoint[2] * superradius + ptz]
                 # check that dot in circle is not too close from next edge
                 if i < nloci - 2:
                     hyp = distance((modelx1, modely1, modelz1), dot)
@@ -430,9 +432,9 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
         thing = [xxx * radius + modelx1,
                  yyy * radius + modely1,
                  zzz * radius + modelz1]
-        superthing = [xxx * superadius + modelx1,
-                      yyy * superadius + modely1,
-                      zzz * superadius + modelz1]
+        superthing = [xxx * superradius + modelx1,
+                      yyy * superradius + modely1,
+                      zzz * superradius + modelz1]
         if fast_square_distance(modelx, modely, modelz,
                                 thing[0], thing[1], thing[2]) > hyp2:
             subpoints.append(thing)
