@@ -300,7 +300,7 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
     positions = {} # a dict to get dots belonging to a given point
     sphere    = generate_sphere_points(nump)
     i = 0
-    for i in xrange(nloci-1):
+    for i in xrange(nloci - 1):
         modelx   = xis[i]
         modely   = yis[i]
         modelz   = zis[i]
@@ -315,10 +315,7 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
             modelx_1 = xis[i-1]
             modely_1 = yis[i-1]
             modelz_1 = zis[i-1]            
-        point = dict((('x', modelx),
-                      ('y', modely),
-                      ('z', modelz)))
-        point = [xis[i], yis[i], zis[i]]
+        point = [modelx, modely, modelz]
         points.append(point)
         # get minimum length from next particle to display the sphere dot
         adj1 = distance(point, [modelx1, modely1, modelz1])
@@ -376,15 +373,16 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
                     continue
                 positions.setdefault(i, []).append(len(subpoints)-1)
 
-        def _add_circle(k):
+        def _add_circle(k, ptx, pty, ptz):
             for spoint in generate_circle_points(
                 orthox, orthoy, orthoz, difx ,dify, difz,
                 # correction for integer of numc
                 numc + (1 if c_count%100 < remaining else 0)):
-                dot = [spoint[0] * radius + pointx, spoint[1] * radius + pointy,
-                       spoint[2] * radius + pointz]
-                superdot = [spoint[0] * superadius + pointx, spoint[1] * superadius + pointy,
-                            spoint[2] * superadius + pointz]
+                dot = [spoint[0] * radius + ptx, spoint[1] * radius + pty,
+                       spoint[2] * radius + ptz]
+                superdot = [spoint[0] * superadius + ptx,
+                            spoint[1] * superadius + pty,
+                            spoint[2] * superadius + ptz]
                 # check that dot in circle is not too close from next edge
                 if i < nloci - 2:
                     hyp = distance((modelx1, modely1, modelz1), dot)
@@ -418,23 +416,24 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superadius, include_edges):
             if not include_edges:
                 continue
             # define circles
-            _add_circle(k)
+            _add_circle(k, pointx, pointy, pointz)
             c_count += 1
 
-    # add last AND least point!!
-    points.append([modelx1, modely1, modelz1])
+    # add last point!!
+    point = [xis[i+1], yis[i+1], zis[i+1]]
+    points.append(point)
     # and its sphere
-    adj = distance(points[-1], [modelx, modely, modelz])
+    adj = distance(point, [modelx, modely, modelz])
     hyp2 = sqrt(adj**2 + radius**2)
-    hyp2 = (hyp2 - hyp2 * adj / (2 * between) / adj)**2
+    hyp2 = (hyp2 - hyp2 / (2 * (1 + between)))**2
     for xxx, yyy, zzz in sphere:
         thing = [xxx * radius + modelx1,
                  yyy * radius + modely1,
                  zzz * radius + modelz1]
-        superthing = [xxx * superadius + modelx,
-                      yyy * superadius + modely,
-                      zzz * superadius + modelz]
-        if fast_square_distance(modelx1, modely1, modelz1,
+        superthing = [xxx * superadius + modelx1,
+                      yyy * superadius + modely1,
+                      zzz * superadius + modelz1]
+        if fast_square_distance(modelx, modely, modelz,
                                 thing[0], thing[1], thing[2]) > hyp2:
             subpoints.append(thing)
             supersubpoints.append(superthing)
