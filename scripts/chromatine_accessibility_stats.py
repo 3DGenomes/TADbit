@@ -44,7 +44,10 @@ def main():
             burried = 1 if (100*float(ina) / (acc + ina)) > float(opts.burry) else 0
             out.write('%s\t%.2f\n' % (part, burried))
         else:
-            out.write('%s\t%.2f\n' % (part, 100*float(ina) / (acc + ina)))
+            try:
+                out.write('%s\t%.2f\n' % (part, 100*float(ina) / (acc + ina)))
+            except ZeroDivisionError:
+                out.write('%s\t%s\n' % (part, 'nan'))
     out.close()
 
 

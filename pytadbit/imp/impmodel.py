@@ -481,7 +481,7 @@ class IMPmodel(dict):
             for dot in points2dots[p]:
                 if colors[dot]==green:
                     acc += 1
-                else:
+                elif colors[dot]==red:
                     ina += 1
             acc_parts.append((p + 1, acc, ina))
 
