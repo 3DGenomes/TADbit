@@ -32,3 +32,4 @@ Utilities
 
 .. autofunction:: dihedral
 
+.. autofunction:: generate_circle_points

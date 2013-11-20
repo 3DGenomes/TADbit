@@ -293,6 +293,39 @@ B )g  |b
 <dd><p>Calculates dihedral angle between 4 points in 3D (array with x,y,z)</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="pytadbit.utils.three_dim_stats.generate_circle_points">
+<tt class="descclassname">pytadbit.utils.three_dim_stats.</tt><tt class="descname">generate_circle_points</tt><big>(</big><em>x</em>, <em>y</em>, <em>z</em>, <em>u</em>, <em>v</em>, <em>w</em>, <em>n</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#generate_circle_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.generate_circle_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of 3d coordinates of points on a circle using the
+Rodrigues rotation formula.</p>
+<p>see <em>Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions</em>
+for details</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> &#8211; x coordinate of a point somewhere on the circle</li>
+<li><strong>y</strong> &#8211; y coordinate of a point somewhere on the circle</li>
+<li><strong>z</strong> &#8211; z coordinate of a point somewhere on the circle</li>
+<li><strong>a</strong> &#8211; x coordinate of the center</li>
+<li><strong>b</strong> &#8211; y coordinate of the center</li>
+<li><strong>c</strong> &#8211; z coordinate of the center</li>
+<li><strong>u</strong> &#8211; 1st element of a vector in the same plane as the circle</li>
+<li><strong>v</strong> &#8211; 2nd element of a vector in the same plane as the circle</li>
+<li><strong>w</strong> &#8211; 3rd element of a vector in the same plane as the circle</li>
+<li><strong>n</strong> &#8211; number of points in the circle</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>TODO: try simplification for a=b=c=0 (and do the translation in the main</dt>
+<dd>function)</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -366,7 +399,7 @@ B )g  |b
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 13, 2013.
+      Last updated on Nov 20, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit"><img
