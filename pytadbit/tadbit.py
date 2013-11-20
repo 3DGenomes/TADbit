@@ -10,7 +10,7 @@ from pytadbit.tadbit_py import _tadbit_wrapper
 
 
 def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
-           no_heuristic=False, get_weights=False, use_visibility=False):
+           no_heuristic=False, get_weights=False):
     """
     The TADbit algorithm works on raw chromosome interaction count data.
     The normalization is neither necessary nor recommended,
@@ -55,7 +55,6 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
                        int(verbose),     # verbose 0/1
                        max_tad_size,     # max_tad_size
                        int(no_heuristic), # heuristic 0/1
-                       int(use_visibility) # TODO: remove this
                        )
 
     breaks = [i for i in xrange(size) if bkpts[i + nbks * size] == 1]
@@ -70,11 +69,10 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
     if get_weights:
         # in tadbit we are not using directly weights, but the
         # multiplication by the real value
-        tadbit_weights = [[i/j if j else 0.0 for i, j in
+        oks = [i for i in xrange(size) if nums[0][i*size+i]]
+        total = sum([nums[0][i*size+j] for i in oks for j in oks])
+        tadbit_weights = [[i/j*total if j else 0.0 for i, j in
                            zip(nums[k], weights[k])] for k in xrange(len(nums))]
-        if use_visibility:
-            total = sum(nums[0])
-            tadbit_weights = [[t*total for t in tadbit_weights[0]]]
         return result, tadbit_weights
     return result
 

@@ -373,8 +373,7 @@ class Chromosome(object):
 
 
     def find_tad(self, experiments, name=None, n_cpus=1, verbose=True,
-                 max_tad_size="auto", no_heuristic=False, batch_mode=False,
-                 use_visibility=False):
+                 max_tad_size="auto", no_heuristic=False, batch_mode=False):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
         position of Topologically Associated Domains
@@ -409,7 +408,7 @@ class Chromosome(object):
             resolution = xprs[0].resolution
             for xpr in sorted(xprs, key=lambda x: x.name):
                 if xpr.resolution != resolution:
-                    raise Exception('All Experiments might have the same ' +
+                    raise Exception('All Experiments must have the same ' +
                                     'resolution\n')
                 matrix.append(xpr.hic_data[0])
                 if name.startswith('batch'):
@@ -418,8 +417,7 @@ class Chromosome(object):
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
-                                     get_weights=True,
-                                     use_visibility=use_visibility)
+                                     get_weights=True)
             experiment = Experiment(name, resolution, hic_data=matrix,
                                     tad_def=result, weights=weights)
             self.add_experiment(experiment)

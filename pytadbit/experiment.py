@@ -228,7 +228,7 @@ class Experiment(object):
         self.norm  = weights or norm
         
 
-    def normalize_hic(self, method='visibility', silent=False):
+    def normalize_hic(self, silent=False):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -240,66 +240,44 @@ class Experiment(object):
         square root of the product of the sum of column i by the sum of row
         j.
 
-        :param visibility method: either 'sqrt' or 'visibility'. Depending on
-           this parameter, the weight of the Hi-C count in row I, column J of
-           the Hi-C matrix will be, under 'sqrt':
-           ::
-              
-                                   _________________________________________
-                         \        / N                    N                  |
-                          \      / ___                  ___             
-            weight(I,J) =  \    /  \                    \           
-                            \  /   /__ (matrix(i, J)) * /__  (matrix(I, j))
-                             \/    i=0                  j=0
+        normalization is done according to this formula:
 
-           and under 'visibility': 
-           ::
+        ::
+ 
+                            N                    N                 
+                           ___                  ___                
+                           \                    \                  
+                           /__ (matrix(i, J)) * /__  (matrix(I, j))
+                           i=0                  j=0                
+           weight(I,J) =  -----------------------------------------         
+                                    N     N                                 
+                                   ___   ___                                
+                                   \     \                                  
+                                   /__   /__ (matrix(i, j))
+                                   j=0   i=0                                
    
-                             N                    N                 
-                            ___                  ___                
-                            \                    \                  
-                            /__ (matrix(i, J)) * /__  (matrix(I, j))
-                            i=0                  j=0                
-            weight(I,J) =  -----------------------------------------         
-                                     N     N                                 
-                                    ___   ___                                
-                                    \     \                                  
-                                    /__   /__ (matrix(i, j))
-                                    j=0   i=0                                
-   
-   
-           
-           with N being the number or rows/columns of the Hi-C matrix in both
-           cases.
-
-           Note that the default behavior (also used in
-           :func:`pytadbit.tadbit.tadbit`)
-           corresponds to method='sqrt'.
+ 
+ 
+        with N being the number or rows/columns of the Hi-C matrix in both
+        cases.
         """
+
         if not self.hic_data:
             raise Exception('ERROR: No Hi-C data loaded\n')
-        if not method in ['sqrt', 'visibility']:
-            raise LookupError('Only "sqrt" and "visibility" methods are implemented')
         if self.norm and not silent:
             warn('WARNING: removing previous weights\n')
         # removes columns where there is no data in the diagonal
-        forbidden = [i for i in xrange(self.size)
-                     if not self.hic_data[0][i*self.size+i]]
-        size_range = [i for i in xrange(self.size) if not i in forbidden]
-        rowsums = []
-        for i in xrange(self.size):
-            rowsums.append(0)
-            if i in forbidden:
-                continue
-            i *= self.size
+        size_range = [i for i in xrange(self.size)
+                      if self.hic_data[0][i*self.size+i]]
+        rowsums = [0 for _ in xrange(self.size)]
+        for i in size_range:
+            isi = i * self.size
             for j in size_range:
-                rowsums[-1] += self.hic_data[0][i + j]
+                rowsums[i] += self.hic_data[0][isi + j]
         self.norm = [[0. for _ in xrange(self.size * self.size)]]
-        if method == 'visibility':
-            total = sum(rowsums)
-            func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
-        elif method == 'sqrt':
-            func = lambda x, y: sqrt(rowsums[x] * rowsums[y])
+
+        total = sum(rowsums)
+        func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
         for i in size_range:
             for j in size_range:
                 try:
@@ -307,7 +285,7 @@ class Experiment(object):
                         self.hic_data[0][i * self.size + j] / func(i, j))
                 except ZeroDivisionError:
                     continue
-        self._normalization = method
+        self._normalization = 'visibility'
 
 
     def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):

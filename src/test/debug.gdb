@@ -1,2 +1,2 @@
-b test_enforce_symmetry
+b 235
 r

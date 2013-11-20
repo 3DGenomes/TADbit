@@ -705,7 +705,6 @@ tadbit
   const int verbose,
   int max_tad_size,
   const int do_not_use_heuristic,
-  const int use_visibility,
   // output //
   tadbit_output *seg
 )
@@ -812,30 +811,20 @@ tadbit
       for (i = 0 ; i < n ; i++) rowsums[k][i] = 0.0;
    }
 
-   for (i = 0 ; i < n ; i++)
    for (k = 0 ; k < m ; k++)
-   for (l = 0 ; l < n ; l++)
-      rowsums[k][i] += obs[k][i+l*n];
+   for (i = 0 ; i < n ; i++)
+   for (j = 0 ; j < n ; j++)
+      rowsums[k][i] += obs[k][i+j*n];
 
    // Compute the weights.
    double **weights = (double **) malloc(m * sizeof(double *));
    for (k = 0 ; k < m ; k++) {
       weights[k] = (double *) malloc(n*n * sizeof(double));
       for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0;
-      // Compute scalar product.
+      // Compute product.
       for (j = 0 ; j < n ; j++) {
       for (i = 0 ; i < n ; i++) {
-         // TODO: test whether second normalization makes more
-         // sense and remove the square root normalization.
-         //weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
-         //weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
-         if (use_visibility) {
-           //weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j] / totalsum[k];
-           weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j];
-         }
-         else {
-           weights[k][i+j*n] = sqrt(rowsums[k][i]*rowsums[k][j]);
-         }
+         weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j];
       }
       }
    }

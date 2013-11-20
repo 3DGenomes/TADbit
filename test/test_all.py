@@ -60,8 +60,11 @@ class TestTadbit(unittest.TestCase):
                       n_cpus='max',
                       verbose=False, no_heuristic=False, get_weights=True)
 
-        breaks = [0, 4, 10, 15, 23, 29, 38, 45]
-        scores = [7.0, 7.0, 5.0, 7.0, 4.0, 6.0, 8.0, None]
+        # Breaks and scores with square root normalization.
+        #breaks = [0, 4, 10, 15, 23, 29, 38, 45]
+        #scores = [7.0, 7.0, 5.0, 7.0, 4.0, 6.0, 8.0, None]
+        breaks = [0, 4, 10, 15, 20, 25, 31, 36, 45]
+        scores = [7.0, 7.0, 4.0, 4.0, 4.0, 4.0, 4.0, 7.0, None]
         self.assertEqual(exp1['start'], breaks)
         self.assertEqual(exp1['score'], scores)
 
@@ -74,11 +77,13 @@ class TestTadbit(unittest.TestCase):
             t0 = time()
 
         global batch_exp
-        batch_exp = batch_tadbit(PATH + '/20Kb/chrT/', max_tad_size=20,
+        batch_exp = batch_tadbit(PATH + '/20Kb/chrT/', max_tad_size=20, 
                                  verbose=False, no_heuristic=True)
-        breaks = [0, 4, 9, 15, 20, 29, 36, 44, 50, 62, 67, 76, 90, 95]
-        scores = [4.0, 7.0, 4.0, 8.0, 4.0, 4.0, 7.0, 7.0, 10.0, 10.0, 9.0, 8.0,
-                  7.0, None]
+        # Breaks and scores with square root normalization.
+        #breaks = [0, 4, 9, 15, 20, 29, 36, 44, 50, 62, 67, 76, 90, 95]
+        #scores = [4.0, 7.0, 4.0, 8.0, 4.0, 4.0, 7.0, 7.0, 10.0, 10.0, 9.0, 8.0, 7.0, None]
+        breaks = [0, 4, 14, 19, 34, 44, 50, 62, 67, 72, 90, 95]
+        scores = [4.0, 6.0, 6.0, 6.0, 6.0, 6.0, 5.0, 6.0, 4.0, 6.0, 5.0, None]
         self.assertEqual(batch_exp['start'], breaks)
         self.assertEqual(batch_exp['score'], scores)
         if CHKTIME:
@@ -101,7 +106,7 @@ class TestTadbit(unittest.TestCase):
                               experiment_resolutions=[40000,20000,20000,20000],
                               silent=True)
         for exp in test_chr.experiments:
-            exp.normalize_hic(method='visibility', silent=True)
+            exp.normalize_hic(silent=True)
 
         test_chr.align_experiments(verbose=False, randomize=False,
                                    method='global')
@@ -110,9 +115,13 @@ class TestTadbit(unittest.TestCase):
                                                    randomize=True, rnd_num=100)
         _, pval2 = test_chr.align_experiments(verbose=False, randomize=True,
                                               rnd_method='shuffle', rnd_num=100)
-        self.assertEqual(round(-26.095, 3), round(score1, 3))
+        # Values with alignments obtained with square root normalization.
+        #self.assertEqual(round(-26.095, 3), round(score1, 3))
+        #self.assertEqual(round(0.001, 1), round(pval1, 1))
+        #self.assertTrue(abs(0.175 - pval2) < 0.2)
+        self.assertEqual(round(-11.002, 3), round(score1, 3))
         self.assertEqual(round(0.001, 1), round(pval1, 1))
-        self.assertTrue(abs(0.175 - pval2) < 0.2)
+        self.assertTrue(abs(0.04 - pval2) < 0.1)
         if CHKTIME:
             print '3', time() - t0
 
@@ -132,8 +141,12 @@ class TestTadbit(unittest.TestCase):
                           verbose=False)
         tads = test_chr.get_experiment('batch_exp1_exp2_exp3').tads
         found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
-        self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 35.0, 43.0,
-                          49.0, 61.0, 66.0, 75.0, 89.0, 94.0, 99.0], found)
+        # Values obtained with square root normalization.
+        #self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 35.0, 43.0,
+        #                  49.0, 61.0, 66.0, 75.0, 89.0, 94.0, 99.0], found)
+        self.assertEqual([3.0, 14.0, 19.0, 33.0, 43.0, 49.0, 61.0, 66.0,
+                           71.0, 89.0, 94.0, 99.0], found)
+        
         if CHKTIME:
             print '4', time() - t0
 
@@ -168,10 +181,15 @@ class TestTadbit(unittest.TestCase):
         all_tads = []
         for _, tad in test_chr.iter_tads('exp1'):
             all_tads.append(tad)
-        align1, align2, _ = optimal_cmo(all_tads[7], all_tads[10], 7,
+        #align1, align2, _ = optimal_cmo(all_tads[7], all_tads[10], 7,
+        #                                method='score')
+        align1, align2, _ = optimal_cmo(all_tads[1], all_tads[3], 7,
                                         method='score')
-        self.assertEqual(align1, [0, 1, '-', 2, 3, '-', 4, 5, 6, 7, 8, 9, 10])
-        self.assertEqual(align2,[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+        # Values with square root normalization.
+        #self.assertEqual(align1, [0, 1, '-', 2, 3, '-', 4, 5, 6, 7, 8, 9, 10])
+        #self.assertEqual(align2,[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+        self.assertEqual(align1, [0, 1, 2, '-', '-', 3, 4, 5, 6, 7, 8, '-', 9])
+        self.assertEqual(align2, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
         if CHKTIME:
             print '6', time() - t0
         
@@ -184,8 +202,11 @@ class TestTadbit(unittest.TestCase):
                               centromere_search=True,)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
-        brks = [2.0, 7.0, 12.0, 18.0, 38.0, 43.0, 49.0,
-                61.0, 66.0, 75.0, 89.0, 94.0, 99.0]
+        # Values with square root normalization.
+        #brks = [2.0, 7.0, 12.0, 18.0, 38.0, 43.0, 49.0,
+        #        61.0, 66.0, 75.0, 89.0, 94.0, 99.0]
+        brks = [3.0, 14.0, 19.0, 33.0, 38.0, 43.0, 49.0, 61.0,
+                  66.0, 71.0, 83.0, 89.0, 94.0, 99.0]
         tads = test_chr.experiments['exp1'].tads
         found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
         self.assertEqual(brks, found)
@@ -193,11 +214,12 @@ class TestTadbit(unittest.TestCase):
         test_chr.add_experiment('exp2', 20000, tad_def=exp3,
                                 hic_data=PATH + '/20Kb/chrT/chrT_C.tsv')
         items2 = test_chr.forbidden.keys(), test_chr.forbidden.values()
-        know1 = ([32, 33, 34, 38, 39, 19, 20, 21, 22,
-                  23, 24, 25, 26, 27, 28, 29, 30, 31],
-                 [None, None, None, 'Centromere', 'Centromere',
-                  None, None, None, None, None, None, None,
-                  None, None, None, None, None, None])
+        know1 = ([38, 39], ['Centromere', 'Centromere'])
+        #know1 = ([32, 33, 34, 38, 39, 19, 20, 21, 22,
+        #          23, 24, 25, 26, 27, 28, 29, 30, 31],
+        #         [None, None, None, 'Centromere', 'Centromere',
+        #          None, None, None, None, None, None, None,
+        #          None, None, None, None, None, None])
         know2 = ([38], ['Centromere'])
         self.assertEqual(items1, know1)
         self.assertEqual(items2, know2)
@@ -257,14 +279,13 @@ class TestTadbit(unittest.TestCase):
         exp.get_hic_zscores(zscored=False)
         sumz = sum([exp._zscores[k1][k2] for k1 in exp._zscores.keys()
                     for k2 in exp._zscores[k1]])
-        self.assertEqual(round(sumz, 4), round(37.48799557280391, 4))
+        self.assertEqual(round(sumz, 4), round(3983.2639, 4))
         if CHKTIME:
             print '9', time() - t0
 
 
     def test_10_generate_weights(self):
         """
-        method names are: 'sqrt' or 'over_tot'
         """
         if CHKTIME:
             t0 = time()
@@ -273,10 +294,11 @@ class TestTadbit(unittest.TestCase):
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
-        tadbit_weigths = exp.norm[:]
+        tadbit_weights = exp.norm[:]
         exp.norm = None
-        exp.normalize_hic(method='sqrt')
-        self.assertEqual(tadbit_weigths[0], exp.norm[0])
+        exp.normalize_hic()
+        self.assertEqual([round(i, 3) for i in tadbit_weights[0][:100]],
+                         [round(i, 3) for i in exp.norm[0][:100]])
         if CHKTIME:
             print '10', time() - t0
 
@@ -293,13 +315,12 @@ class TestTadbit(unittest.TestCase):
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
-        exp.get_hic_zscores()
         exp.get_hic_zscores(zscored=False)
         exp.write_interaction_pairs('lala')
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 4674)
-        self.assertEqual(lines[25], '1\t28\t0.00796578796261\n')
-        self.assertEqual(lines[2000], '26\t70\t0.00109722560121\n')
+        self.assertEqual(lines[25], '1\t28\t0.933380667098\n')
+        self.assertEqual(lines[2000], '26\t70\t0.115108273108\n')
         system('rm -f lala')
         if CHKTIME:
             print '11', time() - t0
@@ -322,7 +343,7 @@ class TestTadbit(unittest.TestCase):
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
-        exp.normalize_hic(method='visibility', silent=True)
+        exp.normalize_hic(silent=True)
         result = exp.optimal_imp_parameters(50,70, n_cpus=2,
                                             n_models=10, n_keep=2,
                                             lowfreq_range=(-0.6, 0, 0.5),
@@ -357,7 +378,7 @@ class TestTadbit(unittest.TestCase):
                                 hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
-        exp.normalize_hic(method='visibility', silent=True)
+        exp.normalize_hic(silent=True)
         models = exp.model_region(50, 70, n_models=110, n_keep=25,
                                   n_cpus=4,
                                   config={'kforce': 5, 'maxdist': 500,
