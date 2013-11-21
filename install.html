@@ -98,6 +98,10 @@ sudo apt-get install swig
 sudo apt-get install libcgal-dev
 sudo apt-get install python-dev</pre>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For Ubuntu 13.10 <em>libboost1.53-all-dev</em> should be installed instead.</p>
+</div>
 <p>Download the IMP tarball file from <a class="reference external" href="http://salilab.org/imp/">http://salilab.org/imp/</a> and uncompress it:</p>
 <div class="highlight-python"><pre>wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
 tar xzvf imp-2.0.1.tar.gz</pre>
@@ -147,7 +151,7 @@ Do not copy the lines above, copy them from setup_environment.sh, where <tt clas
 <p>Once all the needed library/software have been installed, TADbit can be downloaded, unpacked and installed as:</p>
 <div class="highlight-python"><pre>wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
 unzip tadbit.zip
-cd tadbit-master/src
+cd tadbit-master
 sudo python setup.py install</pre>
 </div>
 <div class="admonition note">
@@ -166,7 +170,7 @@ ignore the warning, or just proceed like this:</dd>
 </div>
 <p>Finally, run the test script to check that the installation completed successfully.</p>
 <p>To do so, move to the test directory and run:</p>
-<div class="highlight-python"><pre>cd ../test
+<div class="highlight-python"><pre>cd test
 python test_all.py</pre>
 </div>
 </div>
@@ -240,7 +244,7 @@ python test_all.py</pre>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 20, 2013.
+      Last updated on Nov 21, 2013.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit"><img

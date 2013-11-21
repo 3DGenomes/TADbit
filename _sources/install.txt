@@ -53,6 +53,11 @@ Install the required libraries:
     sudo apt-get install python-dev
 
 
+.. note::
+  
+  For Ubuntu 13.10 *libboost1.53-all-dev* should be installed instead.
+
+
 Download the IMP tarball file from http://salilab.org/imp/ and uncompress it:
 
 ::
@@ -129,7 +134,7 @@ Once all the needed library/software have been installed, TADbit can be download
 
   wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
   unzip tadbit.zip
-  cd tadbit-master/src
+  cd tadbit-master
   sudo python setup.py install
 
 .. note:: IMP not found problem
@@ -151,6 +156,6 @@ To do so, move to the test directory and run:
 
 ::
 
-  cd ../test
+  cd test
   python test_all.py
 
