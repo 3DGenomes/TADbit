@@ -426,16 +426,15 @@ class Chromosome(object):
             experiments = [experiments]
         for experiment in experiments:
             if not type(experiment) == Experiment:
-                xpr = self.get_experiment(experiment)
-            result, weights = tadbit(xpr.hic_data,
+                experiment = self.get_experiment(experiment)
+            result, weights = tadbit(experiment.hic_data,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
-                                     get_weights=True,
-                                     use_visibility=use_visibility)
-            xpr.load_tad_def(result, weights=weights)
+                                     get_weights=True)
+            experiment.load_tad_def(result, weights=weights)
             if self._search_centromere:
-                self._get_forbidden_region(xpr)
+                self._get_forbidden_region(experiment)
 
 
     def __update_size(self, xpr):

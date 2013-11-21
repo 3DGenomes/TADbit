@@ -66,6 +66,7 @@ class Experiment(object):
         self._ori_resolution = resolution
         self.hic_data        = None
         self._ori_hic        = None
+        self._ori_size       = None
         self.conditions      = sorted(conditions) if conditions else []
         self.size            = None
         self.tads            = {}
@@ -132,7 +133,7 @@ class Experiment(object):
         # if we want to go back to original resolution
         if resolution == self._ori_resolution:
             self.hic_data   = self._ori_hic
-            self.size       = self.resolution / self._ori_resolution * self.size
+            self.size       = self._ori_size
             self.resolution = self._ori_resolution
             return
         # if current resolution is the original one
@@ -199,7 +200,7 @@ class Experiment(object):
         """
         nums, size = read_matrix(hic_data, parser=parser)
         self.hic_data = nums
-        self.size     = size
+        self._ori_size       = self.size       = size
         self._ori_resolution = self.resolution = data_resolution or self._ori_resolution
         wanted_resolution = wanted_resolution or self.resolution
         self.set_resolution(wanted_resolution, keep_original=False)
