@@ -23,3 +23,4 @@ script.cmd
 *.o
 *.gcno
 testset
+.ipynb_checkpoints
