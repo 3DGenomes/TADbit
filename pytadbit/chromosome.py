@@ -511,6 +511,10 @@ class Chromosome(object):
                                    key=lambda x: int(x['start']))[0 ]['start'])
                 end   = int(sorted(tad,
                                    key=lambda x: int(x['end'  ]))[-1]['end'  ])
+        if len(xper.hic_data) > 1:
+            hic_data = [sum(i) for i in xper.hic_data[i] + zip(*xper.hic_data)]
+        else:
+            hic_data = xper.hic_data[0]
         if relative:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
@@ -522,8 +526,8 @@ class Chromosome(object):
                 vmin = fun(vmin or (1 if logarithm else 0))
                 vmax = fun(max(xper.norm[0]))
             else:
-                vmin = fun(min(xper.hic_data[0]) or (1 if logarithm else 0))
-                vmax = fun(max(xper.hic_data[0]))
+                vmin = fun(min(hic_data) or (1 if logarithm else 0))
+                vmax = fun(max(hic_data))
         if not axe:
             plt.figure(figsize=(8, 6))
             axe = plt.subplot(111)
@@ -538,7 +542,7 @@ class Chromosome(object):
                         for j in xrange(start - 1, end)]
                 else:
                     matrix = [
-                        [xper.hic_data[0][i+size*j]
+                        [hic_data[i+size*j]
                          for i in xrange(start - 1, end)]
                         for j in xrange(start - 1, end)]
             elif type(tad) is list:
@@ -556,7 +560,7 @@ class Chromosome(object):
                            for i in xrange(size)]
                           for j in xrange(size)]
             else:
-                matrix = [[xper.hic_data[0][i+size*j]\
+                matrix = [[hic_data[i+size*j]\
                            for i in xrange(size)] \
                           for j in xrange(size)]
         if relative:
@@ -591,8 +595,8 @@ class Chromosome(object):
             return img
         for i, tad in xper.tads.iteritems():
             if start:
-                print int(tad['start']) + 1, start
-                print int(tad['end']) + 1, end
+                # print int(tad['start']) + 1, start
+                # print int(tad['end']) + 1, end
                 if int(tad['start']) + 1 < start:
                     continue
                 if int(tad['end']) + 1 > end:
