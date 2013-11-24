@@ -227,6 +227,8 @@ class Experiment(object):
         tads, norm = parse_tads(tad_def)
         self.tads = tads
         self.norm  = weights or norm
+        if self.norm:
+            self._normalization = 'visibility'
         
 
     def normalize_hic(self, silent=False):

@@ -512,7 +512,7 @@ class Chromosome(object):
                 end   = int(sorted(tad,
                                    key=lambda x: int(x['end'  ]))[-1]['end'  ])
         if len(xper.hic_data) > 1:
-            hic_data = [sum(i) for i in xper.hic_data[i] + zip(*xper.hic_data)]
+            hic_data = [sum(i) for i in zip(*xper.hic_data)]
         else:
             hic_data = xper.hic_data[0]
         if relative:
