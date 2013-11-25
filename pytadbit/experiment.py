@@ -407,7 +407,7 @@ class Experiment(object):
         """
         if self._normalization != 'visibility':
             warn('WARNING: normalizing according to visibility method')
-            self.normalize_hic(method='visibility')
+            self.normalize_hic()
         zscores, values = self._sub_experiment_zscore(start, end)
         return generate_3d_models(zscores, self.resolution, values=values,
                                   n_models=n_models, outfile=outfile,
@@ -499,7 +499,7 @@ class Experiment(object):
         """
         if self._normalization != 'visibility':
             warn('WARNING: normalizing according to visibility method')
-            self.normalize_hic(method='visibility')
+            self.normalize_hic()
         from pytadbit import Chromosome
         matrix = self.get_hic_matrix()
         end += 1
