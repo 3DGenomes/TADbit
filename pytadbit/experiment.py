@@ -404,6 +404,8 @@ class Experiment(object):
                   }
               }
 
+        :returns: a :calss:`pytadbit.imp.structuralmodels.StructuralModels` object.
+
         """
         if self._normalization != 'visibility':
             warn('WARNING: normalizing according to visibility method')

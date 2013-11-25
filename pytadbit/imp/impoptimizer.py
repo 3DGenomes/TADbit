@@ -37,10 +37,11 @@ class IMPoptimizer(object):
         self.close_bins = close_bins
         self.cutoff     = cutoff
 
-        self.scale_range = []
+        self.scale_range   = []
         self.maxdist_range = []
         self.lowfreq_range = []
-        self.upfreq_range = []
+        self.upfreq_range  = []
+        
         self.results = {}
 
 
