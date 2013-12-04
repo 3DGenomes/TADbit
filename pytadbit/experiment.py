@@ -350,7 +350,6 @@ class Experiment(object):
                      verbose=0, keep_all=False, close_bins=1, outfile=None,
                      config=CONFIG['dmel_01']):
         """
-
         :param start:  first bin to model (bin number)
         :param end: last bin to model (bin number)
         :param 5000 n_models: number of modes to generate
@@ -403,6 +402,8 @@ class Experiment(object):
                   'scale'     : 0.005
                   }
               }
+
+        :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
         """
         if self._normalization != 'visibility':
