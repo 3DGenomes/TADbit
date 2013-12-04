@@ -25,6 +25,7 @@ class IMPoptimizer(object):
     :param 1 close_bins: number of particles away (i.e. the bin number 
        difference) a particle pair must be in order to be considered as 
        neighbors (e.g. 1 means consecutive particles)
+    :param 300 cutoff:
     """
     def __init__(self, experiment, start, end, 
                  n_models=500, cutoff=300, n_keep=100, close_bins=1):
