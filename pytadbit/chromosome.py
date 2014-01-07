@@ -44,7 +44,7 @@ def load_chromosome(in_f, fast=2):
     crm = Chromosome(dico['name'])
     try:
         exp_order = dico['experiment_order']
-    except IndexError:
+    except KeyError:
         exp_order = dico['experiments'].keys()
     for name in exp_order:
         xpr = Experiment(name, dico['experiments'][name]['resolution'], 
