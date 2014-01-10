@@ -155,6 +155,18 @@ class Experiment(object):
         self.set_resolution(reso1)
         other.set_resolution(reso2)
         xpr.crm = self.crm
+        xpr.identifier  = self.identifier  if self.identifier  == other.identifier  else '%s+%s' % (self.identifier , other.identifier )
+        xpr.cell_type   = self.cell_type   if self.cell_type   == other.cell_type   else '%s+%s' % (self.cell_type  , other.cell_type  )
+        xpr.enzyme      = self.enzyme      if self.enzyme      == other.enzyme      else '%s+%s' % (self.enzyme     , other.enzyme     )
+        xpr.description = self.description if self.description == other.description else '%s+%s' % (self.description, other.description)
+        xpr.exp_type    = self.exp_type    if self.exp_type    == other.exp_type    else '%s+%s' % (self.exp_type   , other.exp_type   )
+        for des in self.description:
+            if not des in other.description:
+                continue
+            if self.description[des] == other.description[des]:
+                xpr.description[des] = self.description[des]
+            else:
+                xpr.description[des] = '%s+%s' % (self.description[des], other.description[des])
         return xpr
 
 
