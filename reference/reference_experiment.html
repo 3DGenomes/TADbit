@@ -56,7 +56,7 @@
 <h1>Experiment class<a class="headerlink" href="#experiment-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.experiment.Experiment">
-<em class="property">class </em><tt class="descclassname">pytadbit.experiment.</tt><tt class="descname">Experiment</tt><big>(</big><em>name</em>, <em>resolution</em>, <em>hic_data=None</em>, <em>tad_def=None</em>, <em>parser=None</em>, <em>no_warn=False</em>, <em>weights=None</em>, <em>conditions=None</em>, <em>filter_columns=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.experiment.</tt><tt class="descname">Experiment</tt><big>(</big><em>name</em>, <em>resolution</em>, <em>hic_data=None</em>, <em>tad_def=None</em>, <em>parser=None</em>, <em>no_warn=False</em>, <em>weights=None</em>, <em>conditions=None</em>, <em>filter_columns=True</em>, <em>identifier=None</em>, <em>cell_type=None</em>, <em>enzyme=None</em>, <em>exp_type='Hi-C'</em>, <em>**kw_descr</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hi-C experiment.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -66,6 +66,11 @@
 <li><strong>name</strong> &#8211; name of the experiment</li>
 <li><strong>resolution</strong> &#8211; the resolution of the experiment (size of a bin in
 bases)</li>
+<li><strong>identifier</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; some identifier relative to the Hi-C data</li>
+<li><strong>cell_type</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cell type on which the experiment was done</li>
+<li><strong>enzyme</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restriction enzyme used in  the Hi-C experiment</li>
+<li><strong>exp_type</strong> (<em>Hi-C</em>) &#8211; name of the experiment used (currently only Hi-C is
+supported)</li>
 <li><strong>hic_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; whether a file or a list of lists corresponding to
 the Hi-C data</li>
 <li><strong>tad_def</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a file or a dict with precomputed TADs for this
@@ -89,6 +94,26 @@ This parameter may be used to compare the effect of this conditions on
 the TADs</li>
 <li><strong>filter_columns</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; filter the columns with unexpectedly high 
 content of low values</li>
+<li><strong>**kw_descr</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>any other argument passed would be stored as
+complementary descriptive field. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">exp</span>  <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s">&#39;k562_rep2&#39;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                  <span class="n">identifier</span><span class="o">=</span><span class="s">&#39;SRX015263&#39;</span><span class="p">,</span> <span class="n">cell_type</span><span class="o">=</span><span class="s">&#39;K562&#39;</span><span class="p">,</span>
+                  <span class="n">enzyme</span><span class="o">=</span><span class="s">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">cylce</span><span class="o">=</span><span class="s">&#39;synchronized&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">exp</span>
+
+<span class="c"># Experiment k562_rep2:</span>
+<span class="c">#    resolution        : 100Kb</span>
+<span class="c">#    TADs              : None</span>
+<span class="c">#    Hi-C rows         : None</span>
+<span class="c">#    normalized        : None</span>
+<span class="c">#    identifier        : SRX015263</span>
+<span class="c">#    cell type         : K562</span>
+<span class="c">#    restriction enzyme: HindIII</span>
+<span class="c">#    cylce             : synchronized</span>
+</pre></div>
+</div>
+<p><em>note that these fields may appear in the header of generated out files</em></p>
+</li>
 </ul>
 </td>
 </tr>
@@ -504,7 +529,7 @@ passed to this parameter.</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 25, 2013.
+      Last updated on Jan 10, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit"><img

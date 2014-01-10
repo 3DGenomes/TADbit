@@ -56,7 +56,7 @@
 <h1>Chromosome class<a class="headerlink" href="#chromosome-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.chromosome.Chromosome">
-<em class="property">class </em><tt class="descclassname">pytadbit.chromosome.</tt><tt class="descname">Chromosome</tt><big>(</big><em>name</em>, <em>experiment_resolutions=None</em>, <em>experiment_tads=None</em>, <em>experiment_hic_data=None</em>, <em>experiment_names=None</em>, <em>max_tad_size=5000000</em>, <em>chr_len=0</em>, <em>parser=None</em>, <em>centromere_search=False</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.chromosome.</tt><tt class="descname">Chromosome</tt><big>(</big><em>name</em>, <em>species=None</em>, <em>assembly=None</em>, <em>experiment_resolutions=None</em>, <em>experiment_tads=None</em>, <em>experiment_hic_data=None</em>, <em>experiment_names=None</em>, <em>max_tad_size=5000000</em>, <em>chr_len=0</em>, <em>parser=None</em>, <em>centromere_search=False</em>, <em>silent=False</em>, <em>**kw_descr</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Chromosome object designed to deal with Topologically Associating Domains
 predictions from different experiments, in different cell types for a given
 chromosome of DNA, and to compare them.</p>
@@ -66,6 +66,8 @@ chromosome of DNA, and to compare them.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>name</strong> &#8211; name of the chromosome (might be a chromosome name for example)</li>
+<li><strong>species</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; species name</li>
+<li><strong>assembly</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; version number of the genomic assembly used</li>
 <li><strong>resolutions</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of resolutions corresponding to a list of
 experiments passed.</li>
 <li><strong>experiment_hic_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of paths to files
@@ -91,6 +93,24 @@ chrT_004       105     110     100     278</pre>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be be:
 <tt class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
 <span class="pre">110,</span> <span class="pre">100,</span> <span class="pre">278]),</span> <span class="pre">4]</span></tt></p>
+</li>
+<li><strong>**kw_descr</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>any other argument passed would be stored as
+complementary descriptive field. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">crm</span>  <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="s">&#39;19&#39;</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="s">&#39;mus musculus&#39;</span><span class="p">,</span>
+                  <span class="n">subspecies</span><span class="o">=</span><span class="s">&#39;musculus musculus&#39;</span><span class="p">,</span>
+                  <span class="n">skin_color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">crm</span>
+
+<span class="c"># Chromosome 19:</span>
+<span class="c">#    0  experiment loaded: </span>
+<span class="c">#    0  alignment loaded: </span>
+<span class="c">#    species         : mus musculus</span>
+<span class="c">#    assembly version: UNKNOWN</span>
+<span class="c">#    subspecies      : musculus musculus</span>
+<span class="c">#    skin_color      : black</span>
+</pre></div>
+</div>
+<p><em>note that these fields may appear in the header of generated out files</em></p>
 </li>
 </ul>
 </td>
@@ -478,7 +498,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 25, 2013.
+      Last updated on Jan 10, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit"><img
