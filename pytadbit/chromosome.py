@@ -49,11 +49,23 @@ def load_chromosome(in_f, fast=2):
     for name in exp_order:
         xpr = Experiment(name, dico['experiments'][name]['resolution'], 
                          no_warn=True)
-        xpr.tads       = dico['experiments'][name]['tads']
-        xpr.norm       = dico['experiments'][name]['wght']
-        xpr.hic_data   = dico['experiments'][name]['hi-c']
-        xpr.conditions = dico['experiments'][name]['cond']
-        xpr.size       = dico['experiments'][name]['size']
+        xpr.tads        = dico['experiments'][name]['tads']
+        xpr.norm        = dico['experiments'][name]['wght']
+        xpr.hic_data    = dico['experiments'][name]['hi-c']
+        xpr.conditions  = dico['experiments'][name]['cond']
+        xpr.size        = dico['experiments'][name]['size']
+        try: # new in version post-CSDM13
+            xpr.identifier  = dico['experiments'][name]['iden']
+            xpr.cell_type   = dico['experiments'][name]['cell']
+            xpr.exp_type    = dico['experiments'][name]['expt']
+            xpr.enzyme      = dico['experiments'][name]['enzy']
+            xpr.description = dico['experiments'][name]['desc']
+        except KeyError:
+            xpr.identifier  = None
+            xpr.cell_type   = None
+            xpr.exp_type    = None
+            xpr.enzyme      = None
+            xpr.description = {}
         try:
             crm.experiments.append(xpr)
         except TypeError:
@@ -63,6 +75,14 @@ def load_chromosome(in_f, fast=2):
     crm.max_tad_size    = dico['max_tad_size']
     crm.forbidden       = dico['forbidden']
     crm._centromere     = dico['_centromere']
+    try: # new in version post-CSDM13
+        crm.species         = dico['species']
+        crm.assembly        = dico['assembly']
+        crm.description     = dico['description']
+    except KeyError:
+        crm.species         = None
+        crm.assembly        = None
+        crm.description     = {}
     if type(dico['experiments'][name]['hi-c']) == str or fast!= int(2):
         try:
             dicp = load(open(in_f + '_hic'))
@@ -85,6 +105,8 @@ class Chromosome(object):
     chromosome of DNA, and to compare them.
 
     :param name: name of the chromosome (might be a chromosome name for example)
+    :param None species: species name
+    :param None assembly: version number of the genomic assembly used
     :param None resolutions: list of resolutions corresponding to a list of
        experiments passed.
     :param None experiment_hic_data: :py:func:`list` of paths to files
@@ -113,15 +135,33 @@ class Chromosome(object):
        the output of parser('example.tsv') would be be:
        ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
        110, 100, 278]), 4]``
+    :param None **kw_descr: any other argument passed would be stored as
+       complementary descriptive field. For example::
+       
+           crm  = Chromosome('19', species='mus musculus',
+                             subspecies='musculus musculus',
+                             skin_color='black')
+           print crm
+
+           # Chromosome 19:
+           #    0  experiment loaded: 
+           #    0  alignment loaded: 
+           #    species         : mus musculus
+           #    assembly version: UNKNOWN
+           #    subspecies      : musculus musculus
+           #    skin_color      : black
+
+       *note that these fields may appear in the header of generated out files*
 
     :return: Chromosome object
 
 
     """
-    def __init__(self, name, experiment_resolutions=None, experiment_tads=None,
+    def __init__(self, name, species=None, assembly=None,
+                 experiment_resolutions=None, experiment_tads=None,
                  experiment_hic_data=None, experiment_names=None,
                  max_tad_size=5000000, chr_len=0, parser=None,
-                 centromere_search=False, silent=False):
+                 centromere_search=False, silent=False, **kw_descr):
         self.name             = name
         self.max_tad_size     = max_tad_size
         self.size             = self._given_size = self.r_size = chr_len
@@ -131,6 +171,9 @@ class Chromosome(object):
         self.experiments      = ExperimentList([], self)
         self._centromere      = None
         self.alignment        = AlignmentDict()
+        self.description      = kw_descr
+        self.species          = species
+        self.assembly         = assembly
         
         self._search_centromere = centromere_search
         if experiment_tads:
@@ -154,6 +197,24 @@ class Chromosome(object):
                     self.add_experiment(name, experiment_resolutions[i],
                                         hic_data=handler, parser=parser)
 
+    def __repr__(self):
+        outstr = 'Chromosome %s:\n' % (self.name)
+        outstr += ('   %-2s experiment%s loaded: ' % (
+            len(self.experiments), 's' * (len(self.experiments) > 0)) +
+                   ', '.join([e.name for e in self.experiments]) + '\n')
+        outstr += ('   %-2s alignment%s loaded: ' % (
+            len(self.alignment), 's' * (len(self.alignment) > 0)) +
+                   ', '.join([a.name for a in self.alignment]) + '\n')
+        try: # new in version post-CSDM13
+            outstr += '   species         : %s\n' % (self.species or 'UNKNOWN')
+            outstr += '   assembly version: %s\n' % (self.assembly or 'UNKNOWN')
+            for desc in self.description:
+                outstr += '   %-16s: %s\n' % (desc, self.description[desc])
+        except AttributeError:
+            pass
+        return outstr
+        
+       
 
     def _get_forbidden_region(self, xpr):
         """
@@ -231,7 +292,13 @@ class Chromosome(object):
                 'tads'      : xpr.tads,
                 'resolution': xpr.resolution,
                 'hi-c'      : None,
-                'wght'      : None}
+                'wght'      : None,
+                'iden'      : xpr.identifier,
+                'cell'      : xpr.cell_type,
+                'expt'      : xpr.exp_type,
+                'enzy'      : xpr.enzyme,
+                'desc'      : xpr.description
+                }
             if fast:
                 continue
             if divide:
@@ -243,12 +310,15 @@ class Chromosome(object):
             else:
                 dico['experiments'][xpr.name]['wght'] = xpr.norm
                 dico['experiments'][xpr.name]['hi-c'] = xpr.hic_data
-        dico['name']            = self.name
-        dico['size']            = self.size
-        dico['r_size']          = self.r_size
-        dico['max_tad_size']    = self.max_tad_size
-        dico['forbidden']       = self.forbidden
-        dico['_centromere']     = self._centromere
+        dico['name']         = self.name
+        dico['size']         = self.size
+        dico['r_size']       = self.r_size
+        dico['max_tad_size'] = self.max_tad_size
+        dico['forbidden']    = self.forbidden
+        dico['_centromere']  = self._centromere
+        dico['species']      = self.species
+        dico['assembly']     = self.assembly
+        dico['description']  = self.description
         out = open(out_f, 'w')
         dump(dico, out)
         out.close()

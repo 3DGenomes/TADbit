@@ -26,6 +26,11 @@ class Experiment(object):
     :param name: name of the experiment
     :param resolution: the resolution of the experiment (size of a bin in
        bases)
+    :param None identifier: some identifier relative to the Hi-C data
+    :param None cell_type: cell type on which the experiment was done
+    :param None enzyme: restriction enzyme used in  the Hi-C experiment
+    :param Hi-C exp_type: name of the experiment used (currently only Hi-C is
+       supported)
     :param None hic_data: whether a file or a list of lists corresponding to
        the Hi-C data
     :param None tad_def: a file or a dict with precomputed TADs for this
@@ -51,6 +56,25 @@ class Experiment(object):
        the TADs
     :param True filter_columns: filter the columns with unexpectedly high 
        content of low values
+    :param None **kw_descr: any other argument passed would be stored as
+       complementary descriptive field. For example::
+       
+           exp  = Experiment('k562_rep2', resolution=100000,
+                             identifier='SRX015263', cell_type='K562',
+                             enzyme='HindIII', cylce='synchronized')
+           print exp
+
+           # Experiment k562_rep2:
+           #    resolution        : 100Kb
+           #    TADs              : None
+           #    Hi-C rows         : None
+           #    normalized        : None
+           #    identifier        : SRX015263
+           #    cell type         : K562
+           #    restriction enzyme: HindIII
+           #    cylce             : synchronized
+
+       *note that these fields may appear in the header of generated out files*
 
     TODO: doc conditions
     TODO: normalization
@@ -59,9 +83,15 @@ class Experiment(object):
 
     def __init__(self, name, resolution, hic_data=None, tad_def=None,
                  parser=None, no_warn=False, weights=None,
-                 conditions=None, filter_columns=True):
+                 conditions=None, filter_columns=True, identifier=None,
+                 cell_type=None, enzyme=None, exp_type='Hi-C', **kw_descr):
         self.name            = name
         self.resolution      = resolution
+        self.identifier      = identifier
+        self.cell_type       = cell_type
+        self.enzyme          = enzyme
+        self.description     = kw_descr
+        self.exp_type        = exp_type
         self.crm             = None
         self._ori_resolution = resolution
         self.hic_data        = None
@@ -88,6 +118,23 @@ class Experiment(object):
             self.name, nicer(self.resolution), len(self.tads) or None,
             self.size, self._normalization if self._normalization else 'None')
 
+
+    def __str__(self):
+        outstr = 'Experiment %s:\n' % (self.name)
+        outstr += '   resolution        : %s\n' % (nicer(self.resolution))
+        outstr += '   TADs              : %s\n' % (len(self.tads) or None)
+        outstr += '   Hi-C rows         : %s\n' % (self.size)
+        outstr += '   normalized        : %s\n' % (self._normalization or None)
+        try: # new in version post-CSDM13
+            outstr += '   identifier        : %s\n' % (self.identifier or 'UNKNOWN')
+            outstr += '   cell type         : %s\n' % (self.cell_type or 'UNKNOWN')
+            outstr += '   restriction enzyme: %s\n' % (self.enzyme or 'UNKNOWN')
+            for desc in self.description:
+                outstr += '   %-18s: %s\n' % (desc, self.description[desc])
+        except AttributeError:
+            pass
+        return outstr
+        
 
     def __add__(self, other):
         """
