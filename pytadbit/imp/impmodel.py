@@ -24,23 +24,11 @@ def model_header(model):
     """
     Defines the header to write in output files for a given model
     """
-    if not 'experiment' in model:
+    if not 'description' in model:
         return ''
-    xpr = model['experiment']
-    crm = xpr.crm
-    outstr =  '# ID              : %s\n' % xpr.identifier
-    outstr += '# SPECIES         : %s\n' % crm.species
-    outstr += '# CELL TYPE       : %s\n' % xpr.cell_type
-    outstr += '# EXPERIMENT TYPE : %s\n' % xpr.exp_type
-    outstr += '# RESOLUTION      : %s\n' % xpr.resolution
-    outstr += '# ASSEMBLY        : %s\n' % crm.assembly
-    outstr += '# CHROMOSOME      : %s\n' % model['coord']['crm']
-    outstr += '# START           : %s\n' % model['coord']['start']
-    outstr += '# END             : %s\n' % model['coord']['end']
-    for desc in xpr.description:
-        outstr += '# %-15s :  %s\n' % (desc, xpr.description[desc])
-    for desc in crm.description:
-        outstr += '# %-15s :  %s\n' % (desc, crm.description[desc])
+    outstr = ''
+    for desc in sorted(model['description']):
+        outstr += '# %-15s :  %s\n' % (desc.upper(), model['description'][desc])
     return outstr
     
 
@@ -113,7 +101,12 @@ def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
             rand_init = None
     model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
                       ('objfun', None), ('radius', radius)))
-    expr = compil('[0-9]+\s[A-Za-z0-9_]+:[0-9]+-[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)')
+    expr = compil('[0-9]+\s[A-Za-z0-9_ ]+:[0-9]+-[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)')
+    model['description'] = {}
+    for line in open(f_name):
+        if line.startswith('# '):
+            key, val = line.strip('# ').split(':')
+            model['description'][key.strip().lower()] = val.strip()
     for xxx, yyy, zzz in findall(expr, open(f_name).read()):
         model['x'].append(float(xxx))
         model['y'].append(float(yyy))
@@ -739,9 +732,9 @@ class IMPmodel(dict):
             out += form % (
                 i + 1,
                 '%s:%s-%s' % (
-                    self['experiment'].crm.name,
-                    self['coord']['start'] + self['experiment'].resolution * i + 1,
-                    self['coord']['start'] + self['experiment'].resolution * (i + 1)),
+                    self['description']['chromosome'],
+                    int(self['description']['start']) + int(self['description']['resolution']) * i + 1,
+                    int(self['description']['start']) + int(self['description']['resolution']) * (i + 1)),
                 round(self['x'][i], 3),
                 round(self['y'][i], 3), round(self['z'][i], 3))
         out_f = open(path_f, 'w')

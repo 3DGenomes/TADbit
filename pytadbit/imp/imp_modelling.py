@@ -164,10 +164,25 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     models, bad_models = multi_process_model_generation(
         n_cpus, n_models, n_keep, keep_all, verbose)
 
-    for m in models.values() + bad_models.values():
-        m['experiment'] = experiment
-        m['coord']      = coords
-    
+    try:
+        xpr = experiment
+        crm = xpr.crm
+        for m in models.values() + bad_models.values():
+            m['description'] = {'identifier'     : xpr.identifier,
+                                'chromosome'     : coords['crm'],
+                                'start'          : str(coords['start']),
+                                'end'            : str(coords['end']),
+                                'species'        : crm.species,
+                                'cell type'      : xpr.cell_type,
+                                'experiment type': xpr.exp_type,
+                                'resolution'     : xpr.resolution,
+                                'assembly'       : crm.assembly}
+            for desc in xpr.description:
+                m['description'][desc] = xpr.description[desc]
+            for desc in crm.description:
+                m['description'][desc] = xpr.description[desc]
+    except AttributeError: # case we are doing optimization
+        pass
     if outfile:
         if exists(outfile):
             old_models, old_bad_models = load(open(outfile))
