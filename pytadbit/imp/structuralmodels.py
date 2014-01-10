@@ -70,7 +70,7 @@ class StructuralModels(object):
 
     def __init__(self, nloci, models, bad_models, resolution,
                  original_data=None, zscores=None, clusters=None,
-                 config=None):
+                 config=None, experiment=None):
 
         self.__models       = models
         self._bad_models    = bad_models
@@ -80,6 +80,7 @@ class StructuralModels(object):
         self._original_data = original_data # only used for correlation
         self._zscores       = zscores       # only used for plotting
         self._config        = config
+        self.experiment     = experiment
 
 
     def __getitem__(self, nam):

@@ -457,11 +457,14 @@ class Experiment(object):
             warn('WARNING: normalizing according to visibility method')
             self.normalize_hic()
         zscores, values = self._sub_experiment_zscore(start, end)
+        coords = {'crm'  : self.crm.name,
+                  'start': start,
+                  'end'  : end}
         return generate_3d_models(zscores, self.resolution, values=values,
                                   n_models=n_models, outfile=outfile,
                                   n_keep=n_keep, n_cpus=n_cpus, verbose=verbose,
                                   keep_all=keep_all, close_bins=close_bins,
-                                  config=config)
+                                  config=config, experiment=self, coords=coords)
 
 
     def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,

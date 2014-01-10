@@ -31,7 +31,8 @@ IMP.set_log_level(IMP.SILENT)
 
 def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
                        close_bins=1, n_cpus=1, keep_all=False, verbose=0,
-                       outfile=None, config=CONFIG['dmel_01'], values=None):
+                       outfile=None, config=CONFIG['dmel_01'], values=None,
+                       experiment=None, coords=None):
     """
     This function generates three-dimensional models starting from Hi-C data. 
     The final analysis will be performed on the n_keep top models.
@@ -40,6 +41,14 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
        Hi-C pairwise interactions
     :param resolution:  number of nucleotides per Hi-C bin. This will be the 
        number of nucleotides in each model's particle
+    :param None experiment: experiment from which to do the modelling (used only
+       for descriptive purpose)
+    :param None coords: a dictionary like::
+    
+         {'crm'  : '19',
+          'start': 14637,
+          'end'  : 15689}
+           
     :param 5000 n_models: number of models to generate
     :param 1000 n_keep: number of models used in the final analysis (usually 
        the top 20% of the generated models). The models are ranked according to
@@ -154,6 +163,10 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
 
     models, bad_models = multi_process_model_generation(
         n_cpus, n_models, n_keep, keep_all, verbose)
+
+    for m in models.values() + bad_models.values():
+        m['experiment'] = experiment
+        m['coord']      = coords
     
     if outfile:
         if exists(outfile):
@@ -168,7 +181,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     else:
         return StructuralModels(NLOCI, models, bad_models, resolution,
                                 original_data=values, zscores=zscores,
-				config=CONFIG)
+				config=CONFIG, experiment=experiment)
 
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):

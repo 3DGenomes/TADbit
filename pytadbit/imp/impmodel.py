@@ -12,13 +12,37 @@ from scipy.interpolate              import spline
 from numpy                          import linspace
 from warnings                       import warn
 from re                             import findall, compile as compil
-from math                           import sqrt, sin, pi
+from math                           import sqrt, pi
 
 try:
     from matplotlib import pyplot as plt
 except ImportError:
     warn('matplotlib not found\n')
 
+
+def model_header(model):
+    """
+    Defines the header to write in output files for a given model
+    """
+    if not 'experiment' in model:
+        return ''
+    xpr = model['experiment']
+    crm = xpr.crm
+    outstr =  '# ID              : %s\n' % xpr.identifier
+    outstr += '# SPECIES         : %s\n' % crm.species
+    outstr += '# CELL TYPE       : %s\n' % xpr.cell_type
+    outstr += '# EXPERIMENT TYPE : %s\n' % xpr.exp_type
+    outstr += '# RESOLUTION      : %s\n' % xpr.resolution
+    outstr += '# ASSEMBLY        : %s\n' % crm.assembly
+    outstr += '# CHROMOSOME      : %s\n' % model['coord']['crm']
+    outstr += '# START           : %s\n' % model['coord']['start']
+    outstr += '# END             : %s\n' % model['coord']['end']
+    for desc in xpr.description:
+        outstr += '# %-15s :  %s\n' % (desc, xpr.description[desc])
+    for desc in crm.description:
+        outstr += '# %-15s :  %s\n' % (desc, crm.description[desc])
+    return outstr
+    
 
 def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
     '''
@@ -58,6 +82,46 @@ def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
 
 
 def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
+    """
+    Loads an IMPmodel object using an xyz file of the form:
+
+    ::
+
+          # ID              : some identifier
+          # SPECIES         : None
+          # CELL TYPE       : None
+          # EXPERIMENT TYPE : Hi-C
+          # RESOLUTION      : 20000
+          # ASSEMBLY        : None
+          # CHROMOSOME      : Test Chromosome
+          # START           : 50
+          # END             : 70
+          1  19:1-10000        44.847     412.828    -162.673
+          2  19:10001-20000   -55.574     396.869    -129.782
+
+    :params f_name: path where to find the file
+    :params None rand_init: IMP random initial number used to generate the model
+    :param None radius: radius of each particle
+
+    :return: IMPmodel
+
+    """
+    if not rand_init:
+        try:
+            rand_init = int(f_name.split('.')[-2])
+        except:
+            rand_init = None
+    model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
+                      ('objfun', None), ('radius', radius)))
+    expr = compil('[0-9]+\s[A-Za-z0-9_]+:[0-9]+-[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)')
+    for xxx, yyy, zzz in findall(expr, open(f_name).read()):
+        model['x'].append(float(xxx))
+        model['y'].append(float(yyy))
+        model['z'].append(float(zzz))
+    return model
+
+
+def load_impmodel_from_xyz_OLD(f_name, rand_init=None, radius=None):
     """
     Loads an IMPmodel object using an xyz file of the form:
 
@@ -600,7 +664,7 @@ class IMPmodel(dict):
         out_f.close()
 
 
-    def write_xyz(self, directory, model_num=None, get_path=False,
+    def write_xyz_OLD(self, directory, model_num=None, get_path=False,
                   rndname=True):
         """
         Writes a xyz file containing the 3D coordinates of each particle in the
@@ -630,6 +694,56 @@ class IMPmodel(dict):
         for i in xrange(len(self['x'])):
             out += form % ('p' + str(i + 1), i + 1, round(self['x'][i], 3),
                            round(self['y'][i], 3), round(self['z'][i], 3))
+        out_f = open(path_f, 'w')
+        out_f.write(out)
+        out_f.close()
+        if get_path:
+            return path_f
+        else:
+            return None
+
+
+    def write_xyz(self, directory, model_num=None, get_path=False,
+                  rndname=True, header=True):
+        """
+        Writes a xyz file containing the 3D coordinates of each particle in the
+        model.
+
+        **Note:** If none of model_num, models or cluster parameter are set,
+        ALL the models will be written.
+
+        :param directory: location where the file will be written (note: the
+           file name will be model.1.xyz, if the model number is 1)
+        :param None model_num: the number of the model to save
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.xyz, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.xyz where NUM is the rank of the model in terms of
+           objective function value
+        :param False get_path: whether to return, or not, the full path where
+           the file has been written
+        :param True header: write a header describing the experiment from which
+           the model was calculated.
+        """
+        if rndname:
+            path_f = '%s/model.%s.xyz' % (directory, self['rand_init'])
+        else:
+            path_f = '%s/model_%s_rnd%s.xyz' % (directory, model_num,
+                                                self['rand_init'])
+        out = ''
+        if header:
+            out += model_header(self)
+        form = "%4s %21s%12.3f%12.3f%12.3f\n"
+        # TODO: do not use resolution directly -> specific to Hi-C
+        for i in xrange(len(self['x'])):
+            out += form % (
+                i + 1,
+                '%s:%s-%s' % (
+                    self['experiment'].crm.name,
+                    self['coord']['start'] + self['experiment'].resolution * i + 1,
+                    self['coord']['start'] + self['experiment'].resolution * (i + 1)),
+                round(self['x'][i], 3),
+                round(self['y'][i], 3), round(self['z'][i], 3))
         out_f = open(path_f, 'w')
         out_f.write(out)
         out_f.close()
