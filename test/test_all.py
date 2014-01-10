@@ -493,8 +493,8 @@ class TestTadbit(unittest.TestCase):
         models.write_xyz('.', models=range(5))
         models.write_xyz('.', cluster=2)
         # clean
-        # system('rm -f model.*')
-        # system('rm -f lala')
+        system('rm -f model.*')
+        system('rm -f lala')
         if CHKTIME:
             print '15', time() - t0
 
@@ -508,7 +508,7 @@ class TestTadbit(unittest.TestCase):
         models.write_cmm('.', model_num=2)
         model = load_impmodel_from_cmm('model.%s.cmm' % models[2]['rand_init'])
         # clean
-        # system('rm -f model.*')
+        system('rm -f model.*')
         # stats
         self.assertEqual(200, round(model.distance(2, 3), 0))
         self.assertEqual(11, round(model.distance(8, 20)/100, 0))
