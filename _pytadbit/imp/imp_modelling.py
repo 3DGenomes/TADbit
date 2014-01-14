@@ -44,7 +44,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     :param None experiment: experiment from which to do the modelling (used only
        for descriptive purpose)
     :param None coords: a dictionary like::
-    
+
          {'crm'  : '19',
           'start': 14637,
           'end'  : 15689}

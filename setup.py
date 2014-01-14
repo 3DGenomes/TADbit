@@ -125,7 +125,7 @@ def main():
         author_email = 'serra.francois@gmail.com',
         ext_modules  = [pytadbit_module, eqv_rmsd_module, centroid_module,
                         consistency_module],
-        package_dir  = {'pytadbit': PATH + '/pytadbit'},
+        package_dir  = {'pytadbit': PATH + '/_pytadbit'},
         packages     = ['pytadbit', 'pytadbit.parsers',
                         'pytadbit.boundary_aligner', 'pytadbit.utils',
                         'pytadbit.tad_clustering', 'pytadbit.imp'],
