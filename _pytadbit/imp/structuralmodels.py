@@ -14,7 +14,6 @@ from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
 from math                           import acos, degrees, pi
 from numpy                          import median as np_median
-from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
@@ -599,7 +598,8 @@ class StructuralModels(object):
             show=True
         else:
             fig = axe.get_figure()
-        ims = axe.imshow(log2(matrix), origin='lower', interpolation="nearest",
+        ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
+                         vmin=0, vmax=100,
                          extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')
@@ -753,8 +753,8 @@ class StructuralModels(object):
         ax = fig.add_subplot(121)
         self.contact_map(models, cluster, cutoff, axe=ax)
         ax = fig.add_subplot(122)
-        ims = ax.imshow(log2(self._original_data), origin='lower',
-                        interpolation="nearest",
+        ims = ax.imshow(self._original_data, origin='lower',
+                        interpolation="nearest", vmin=0, vmax=100,
                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
