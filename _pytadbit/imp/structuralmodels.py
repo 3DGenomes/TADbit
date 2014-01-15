@@ -495,11 +495,18 @@ class StructuralModels(object):
                         color=colors[steps.index(k)], ls='--')
         ax.set_ylabel('Density (bp / nm)')
         ax.set_xlabel('Particle number')
-        ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
-                          for k in steps] + (
-                      ['+/- 2 standard deviations'
-                       for k in steps] if error else []), fontsize='small',
-                  bbox_to_anchor=(1, 0.5), loc='center left')
+        try:
+            ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
+                              for k in steps] + (
+                          ['+/- 2 standard deviations'
+                           for k in steps] if error else []), fontsize='small',
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        except TypeError:
+            ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
+                              for k in steps] + (
+                          ['+/- 2 standard deviations'
+                           for k in steps] if error else []), 
+                      bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title('Chromatin density')
         plt.subplots_adjust(left=0.1, right=0.78)
@@ -843,8 +850,14 @@ class StructuralModels(object):
             plots += axe.plot(range(1, self.nloci + 1),
                               consistencies[cut], color='darkred',
                               alpha= 1 - i / float(len(cutoffs)))
-        axe.legend(plots, ['%s nm' % (k) for k in cutoffs[::-1]],
-                   fontsize='small', loc='center left', bbox_to_anchor=(1, 0.5))
+        try:
+            axe.legend(plots, ['%s nm' % (k) for k in cutoffs[::-1]],
+                       fontsize='small', loc='center left',
+                       bbox_to_anchor=(1, 0.5))
+        except TypeError:
+            axe.legend(plots, ['%s nm' % (k) for k in cutoffs[::-1]],
+                       loc='center left',
+                       bbox_to_anchor=(1, 0.5))            
         axe.set_xlim((1, self.nloci))
         axe.set_ylim((0, 100))
         axe.set_xlabel('Particle')
@@ -1232,9 +1245,14 @@ class StructuralModels(object):
 
         ax.set_ylabel('Angle in degrees')
         ax.set_xlabel('Particle number')
-        ax.legend(plots, ['Average for %s angle%s' % (k, 's' if k else '')
-                          for k in steps], fontsize='small',
-                  bbox_to_anchor=(1, 0.5), loc='center left')
+        try:
+            ax.legend(plots, ['Average for %s angle%s' % (k, 's' if k else '')
+                              for k in steps], fontsize='small',
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        except TypeError:
+            ax.legend(plots, ['Average for %s angle%s' % (k, 's' if k else '')
+                              for k in steps],
+                      bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title('Angle between consecutive loci')
         plt.subplots_adjust(left=0.1, right=0.8)
