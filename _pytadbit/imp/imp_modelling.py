@@ -123,8 +123,10 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     if CONFIG['lowrdist'] >= CONFIG['maxdist']:
         raise Exception('ERROR: we must prevent you from doing this for ' +
                         'the safe of our universe...\n' + 
-                        'In this case, maxdist must be higher than %s ' % (
-                            CONFIG['lowrdist']))
+                        'In this case, maxdist must be higher than %s\n' % (
+                            CONFIG['lowrdist']) +
+                        '   -> 2 times resolution times scale -- 2*%s*%s)' % (
+                            resolution, CONFIG['scale']))
 
     # get SLOPE and regression for all particles of the z-score data
     global SLOPE, INTERCEPT

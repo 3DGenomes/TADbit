@@ -1,2 +1,0 @@
-useDynLib(tadbit)
-export(tadbit, batch_tadbit)
