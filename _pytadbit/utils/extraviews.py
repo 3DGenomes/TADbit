@@ -111,6 +111,7 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     
     # set dict to store data of each cluster (count and energy), depending on
     # x position in graph.
+    debug = False
     leaves = {}
     dist = ddata['icoord'][0][2] - ddata['icoord'][0][1]
     for i, x in enumerate(ddata['leaves']):
@@ -118,7 +119,7 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     minnrj = min(objfun.values())
     maxnrj = max(objfun.values())
     difnrj = maxnrj - minnrj
-    total = sum(clust_count.values())
+    total = max(clust_count.values())
     if not kwargs.get('no_plot', False):
         for i, d, c in zip(ddata['icoord'], ddata['dcoord'],
                            ddata['color_list']):
@@ -126,22 +127,23 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
             y = d[1]
             # plt.plot(x, y, 'ro')
             plt.hlines(y, i[1], i[2], lw=2, color='grey')
-            # for eaxch branch
+            # for each branch
             for i1, d1, d2 in zip(i[1:3], [d[0], d[3]], [d[1], d[2]]):
                 try:
-                    lw = float(clust_count[leaves[i1] + 1])/total*10*len(leaves)
+                    lw = (fig.get_figwidth() * 10.0 * float(
+                        clust_count[leaves[i1] + 1]) / total)
                 except KeyError:
                     lw = 1.0
                 nrj = objfun[leaves[i1] + 1] if (leaves[i1] + 1) in objfun else maxnrj
-                ax.vlines(i1, d1-(difnrj-(nrj-minnrj)), d2, lw=lw,
-                          color=(c if color else 'grey'))
-                if leaves[i1] + 1 in objfun:
+                d1 = d1 - (difnrj - (nrj - minnrj))
+                ax.vlines(i1, d1, d2, lw=lw, color=(c if color else 'grey'))
+                if leaves[i1] + 1 in objfun or debug:
                     ax.annotate("%.3g" % (leaves[i1] + 1),
-                                (i1, d1-(difnrj-(nrj-minnrj))),
+                                (i1, d1),
                                 xytext=(0, -8),
                                 textcoords='offset points',
                                 va='top', ha='center')
-            leaves[(i[1] + i[2])/2] = dads[leaves[i[1]] + 1]
+            leaves[(i[1] + i[2])/2] = dads[leaves[i[1]] + 1] - 1
     try:
         cutter = 10**int(np.log10(difnrj))
     except OverflowError: # case that the two are exactly the same
@@ -161,7 +163,8 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     ax.figure.suptitle("Dendogram of clusters of 3D models")
     ax.set_title("Branch length proportional to model's objective function " +
                  "final value\n" +
-                 "Branch width to the number of models in the cluster",
+                 "Branch width to the number of models in the cluster " +
+                 "(relative to %s models)" % (total),
                  size='small')
     if savefig:
         fig.savefig(savefig)

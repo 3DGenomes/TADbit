@@ -350,6 +350,8 @@ class StructuralModels(object):
         """
 
         if not self.clusters:
+            warn('WARNING: no clusters found, clustering with default' +
+                 ' parameters\n')
             self.cluster_models()
         if not n_best_clusters:
             n_best_clusters = len(self.clusters)
