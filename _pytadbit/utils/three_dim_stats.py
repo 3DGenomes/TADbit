@@ -236,13 +236,12 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False):
 
     :returns: a score of each pairwise comparison according to:
 
-       ::
+       .. math::
+                                     
+         score_i = eqvs_i \\times \\frac{dRMSD_i / max(dRMSD)}
+                                         {RMSD_i / max(RMSD)}
 
-                               dRMSD[i] / max(dRMSD)
-         score[i] = eqvs[i] * -----------------------
-                                RMSD[i] / max(RMSD)
-
-       where eqvs[i] is the number of equivalent position for the ith
+       where :math:`eqvs_i` is the number of equivalent position for the ith
        pairwise model comparison.
        
     """

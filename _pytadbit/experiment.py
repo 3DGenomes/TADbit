@@ -304,21 +304,10 @@ class Experiment(object):
 
         normalization is done according to this formula:
 
-        ::
- 
-                            N                    N                 
-                           ___                  ___                
-                           \                    \                  
-                           /__ (matrix(i, J)) * /__  (matrix(I, j))
-                           i=0                  j=0                
-           weight(I,J) =  -----------------------------------------         
-                                    N     N                                 
-                                   ___   ___                                
-                                   \     \                                  
-                                   /__   /__ (matrix(i, j))
-                                   j=0   i=0                                
-   
- 
+        .. math::
+
+          weight_{(I,J)} = \\frac{\\sum^N_{i=0}(matrix(i,J)) \\times \\sum^N_{j=0}(matrix(I,j))}
+                                 {\\sum^N_{j=0}\\sum^N_{i=0}(matrix(i,j))}
  
         with N being the number or rows/columns of the Hi-C matrix in both
         cases.

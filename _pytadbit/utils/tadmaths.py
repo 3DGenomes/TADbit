@@ -82,9 +82,9 @@ def calinski_harabasz(scores, clusters):
 
         CH(k) = \\frac{B(k) / (k-1)}{W(k)/(n - k)}
 
-    Where :math:`B(k)` and :math:`W(k)` are between and within cluster sums of
-    squares, with :math:`k` clusters, and :math:`n` the total number of
-    points (models in this case).
+    Where :math:`B(k)` and :math:`W(k)` are the between and within cluster sums
+    of squares, with :math:`k` clusters, and :math:`n` the total number of
+    elements (models in this case).
    
     :param scores: a dict with, as keys, a tuple with a pair of models; and, as
        value, the distance between these models.

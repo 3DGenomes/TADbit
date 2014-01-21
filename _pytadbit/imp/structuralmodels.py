@@ -231,8 +231,10 @@ class StructuralModels(object):
            where eqvs[i] is the number of equivalent position for the ith
            pairwise model comparison
         :param 'mcl' method: clustering method to use, which can be either
-           'mcl' or 'ward'. The last one uses scipy implementation, and is
-           NOT RECOMMENDED.
+           'mcl' or 'ward'. MCL method is recommended. WARD method uses a scipy
+           implementation of this hierarchical clustering, and selects the best
+           number of clusters using the
+           :func:`pytadbit.utils.tadmaths.calinski_harabasz` function.
         :param 'mcl' mcl_bin: path to the mcl executable file, in case of the
            'mcl is not in the PATH' warning message
         :param None tmp_file: path to a temporary file created during
