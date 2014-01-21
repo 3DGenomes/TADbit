@@ -12,4 +12,5 @@ from pytadbit.imp.impmodel import IMPmodel
 try:
     from pytadbit.imp.impoptimizer import IMPoptimizer
 except ImportError:
+    from warnings import warn
     warn('IMP not found, check PYTHONPATH\n')
