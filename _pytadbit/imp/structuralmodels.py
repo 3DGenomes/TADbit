@@ -879,7 +879,7 @@ class StructuralModels(object):
 
 
     def view_models(self, models=None, cluster=None, tool='chimera',
-                    savefig=None, cmd=None):
+                    savefig=None, cmd=None, color=color_residues, **kwargs):
         """
         Visualize a selected model in the three dimensions.
 
@@ -894,6 +894,9 @@ class StructuralModels(object):
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
            the default GUI.
+        :param color_residues color: either a coloring function like
+           :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
+           tuples (as long as the number of particles)
         :param None cmd: list of commands to be passed to the viewer. The chimera list is:
 
            ::
@@ -936,6 +939,9 @@ class StructuralModels(object):
 
            will return the default image (other commands can be passed to
            modified the final image/movie).
+        :param kwargs: any extra argument will be passed to the coloring
+           function
+           
 
         """
         if models:
@@ -947,7 +953,7 @@ class StructuralModels(object):
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
                   else m for m in models]
         for model_num in models:
-            self.write_cmm('/tmp/', model_num=model_num)
+            self.write_cmm('/tmp/', model_num=model_num, color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self[m]['rand_init'])
                       for m in models],
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
@@ -1340,7 +1346,7 @@ class StructuralModels(object):
 
 
     def write_cmm(self, directory, model_num=None, models=None, cluster=None,
-                  color=color_residues, rndname=True):
+                  color=color_residues, rndname=True, **kwargs):
         """
         Save a model in the cmm format, read by Chimera
         (http://www.cgl.ucsf.edu/chimera).
@@ -1362,6 +1368,8 @@ class StructuralModels(object):
         :param color_residues color: either a coloring function like
            :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
            tuples (as long as the number of particles)
+        :param kwargs: any extra argument will be passed to the coloring
+           function
         """
         if model_num > -1:
             models = [model_num]
@@ -1377,7 +1385,7 @@ class StructuralModels(object):
             except KeyError:
                 model = self._bad_models[model_num]
             model.write_cmm(directory, color=color, rndname=rndname,
-                            model_num=model_num)
+                            model_num=model_num, **kwargs)
 
 
     def write_xyz(self, directory, model_num=None, models=None, cluster=None,

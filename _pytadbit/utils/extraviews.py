@@ -71,15 +71,71 @@ def colorize(string, num, ftype='ansi'):
                        '\033[m' if ftype=='ansi' else '</span>')
 
 
-def color_residues(n_part):
+def color_residues(model):
     """
-    :param n_part: number of particles
+    :param model: a given IMPmodel
     
     :returns: a list of rgb tuples (red, green, blue)
     """
     result = []
-    for n in xrange(n_part):
-        red = float(n + 1) / n_part
+    for n in xrange(len(model['x'])):
+        red = float(n + 1) / len(model['x'])
+        result.append((red, 0, 1 - red))
+    return result
+
+
+def tad_coloring(model, tads):
+    """
+    Colors TADs from blue to red (first to last TAD). TAD borders are displayed
+    in scale of grey, from light to dark grey (again first to last border)
+    
+    :param model: a given IMPmodel
+    :param tads: a dictionary of TADs, Experiments.tads can be directly passed
+    
+    :returns: a list of rgb tuples (red, green, blue)
+    """
+    start = float(model['descrition']['start']) / model['description']['resolution']
+    end   = float(model['descrition']['end'  ]) / model['description']['resolution']
+    ltads = [t for t in tads if tads[t]['start']>start and tads[t]['end']<end]
+    ntads = len(ltads)
+    print ntads
+    grey = 0.95
+    grey_step = (0.95 - 0.4) / ntads
+    result = []
+    for t in tads:
+        if tads[t]['start']<start or tads[t]['end']>end:
+            continue
+        red = float(t + 1 - min(ltads)) / ntads
+        for _ in range(int(tads[t]['start']), int(tads[t]['end'] + 1)):
+            result.append((red, 0, 1 - red))
+        result.append((grey, grey, grey))
+        grey -= grey_step
+    return result
+
+
+def tad_border_coloring(model, tads):
+    """
+    Colors TAD borders from blue to red (bad to good score). TAD are displayed
+    in scale of grey, from light to dark grey (first to last particle in the
+    TAD)
+    
+    :param model: a given IMPmodel
+    :param tads: a dictionary of TADs, Experiments.tads can be directly passed
+    
+    :returns: a list of rgb tuples (red, green, blue)
+    """
+    start = float(model['descrition']['start']) / model['description']['resolution']
+    end   = float(model['descrition']['end'  ]) / model['description']['resolution']
+    result = []
+    for t in tads:
+        if tads[t]['start'] < start or tads[t]['end'] > end:
+            continue
+        grey = 0.95
+        grey_step = (0.95 - 0.4) / (tads[t]['end'] - tads[t]['start'] + 1)
+        red = float(tads[t]['score']) / 10
+        for _ in range(int(tads[t]['start']), int(tads[t]['end'] + 1)):
+            result.append((grey, grey, grey))
+            grey -= grey_step
         result.append((red, 0, 1 - red))
     return result
 

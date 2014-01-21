@@ -8,6 +8,7 @@ from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.three_dim_stats import generate_sphere_points
 from pytadbit.utils.three_dim_stats import fast_square_distance
 from pytadbit.utils.three_dim_stats import build_mesh
+from pytadbit.utils.extraviews      import color_residues
 from scipy.interpolate              import spline
 from numpy                          import linspace
 from warnings                       import warn
@@ -607,7 +608,7 @@ class IMPmodel(dict):
 
 
     def write_cmm(self, directory, color=color_residues, rndname=True,
-                  model_num=None):
+                  model_num=None, **kwargs):
         """
         Save a model in the cmm format, read by Chimera
         (http://www.cgl.ucsf.edu/chimera).
@@ -626,9 +627,11 @@ class IMPmodel(dict):
         :param color_residues color: either a coloring function like
            :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
            tuples (as long as the number of particles)
+        :param kwargs: any extra argument will be passed to the coloring
+           function
         """
         if type(color) != list:
-            color = color(len(self['x']))
+            color = color(self), **kwargs)
         out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
         form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                 ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
@@ -747,7 +750,7 @@ class IMPmodel(dict):
 
 
     def view_model(self, tool='chimera', savefig=None, cmd=None, centroid=False,
-                   gyradius=False):
+                   gyradius=False, color=color_residues, **kwargs):
         """
         Visualize a selected model in the three dimensions.
 
@@ -758,6 +761,9 @@ class IMPmodel(dict):
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
            the default GUI.
+        :param color_residues color: either a coloring function like
+           :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
+           tuples (as long as the number of particles)
         :param None cmd: list of commands to be passed to the viewer.
            The chimera list is:
 
@@ -811,7 +817,7 @@ class IMPmodel(dict):
         if gyradius:
             gyradius = self.radius_of_gyration()
             centroid = True
-        self.write_cmm('/tmp/')
+        self.write_cmm('/tmp/', color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
                      centroid=centroid, gyradius=gyradius)
