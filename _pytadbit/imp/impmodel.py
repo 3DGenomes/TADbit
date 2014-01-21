@@ -631,7 +631,7 @@ class IMPmodel(dict):
            function
         """
         if type(color) != list:
-            color = color(self), **kwargs)
+            color = color(self, **kwargs)
         out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
         form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                 ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
