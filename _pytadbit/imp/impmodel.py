@@ -8,7 +8,8 @@ from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.utils.three_dim_stats import generate_sphere_points
 from pytadbit.utils.three_dim_stats import fast_square_distance
 from pytadbit.utils.three_dim_stats import build_mesh
-from pytadbit.utils.extraviews      import color_residues
+from pytadbit.utils.extraviews      import tad_coloring
+from pytadbit.utils.extraviews      import tad_border_coloring
 from scipy.interpolate              import spline
 from numpy                          import linspace
 from warnings                       import warn
@@ -607,7 +608,7 @@ class IMPmodel(dict):
         return (possibles, outdot.count(False), area, total, acc_parts)
 
 
-    def write_cmm(self, directory, color=color_residues, rndname=True,
+    def write_cmm(self, directory, color='index', rndname=True,
                   model_num=None, **kwargs):
         """
         Save a model in the cmm format, read by Chimera
@@ -624,14 +625,43 @@ class IMPmodel(dict):
            generate the corresponding model. If False, the format will be:
            model_NUM_RND.cmm where NUM is the rank of the model in terms of
            objective function value
-        :param color_residues color: either a coloring function like
-           :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
-           tuples (as long as the number of particles)
+        :param 'index' color: can be:
+
+             * a string as:
+                 * '**index**' to color particles according to their position in the
+                   model (:func:`pytadbit.utils.extraviews.color_residues`)
+                 * '**tad**' to color particles according to the TAD they belong to
+                   (:func:`pytadbit.utils.extraviews.tad_coloring`)
+                 * '**border**' to color particles marking borders. Color according to
+                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
+                   coloring function like.
+             * a function, that takes as argument a model and any other parameter
+               passed through the kwargs.
+             * a list of (r, g, b) tuples (as long as the number of particles).
+               Each r, g, b between 0 and 1.
         :param kwargs: any extra argument will be passed to the coloring
            function
         """
-        if type(color) != list:
+        if type(color) is str:
+            if color == 'index':
+                color = color_residues(self, **kwargs)
+            elif color == 'tad':
+                if not 'tads' in kwargs:
+                    raise Exception('ERROR: missing TADs\n   ' +
+                                    'pass an Experiment.tads disctionary\n')
+                color = tad_coloring(self, **kwargs)
+            elif color == 'border':
+                if not 'tads' in kwargs:
+                    raise Exception('ERROR: missing TADs\n   ' +
+                                    'pass an Experiment.tads disctionary\n')
+                color = tad_border_coloring(self, **kwargs)
+            else:
+                raise NotImplementedError(('%s type of coloring is not yet ' +
+                                           'implemeted\n') % color)
+        elif hasattr(color, '__call__'): # its a function
             color = color(self, **kwargs)
+        elif type(color) is not list:
+            raise TypeError('one of function, list or string is required\n')
         out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
         form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                 ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
@@ -750,7 +780,7 @@ class IMPmodel(dict):
 
 
     def view_model(self, tool='chimera', savefig=None, cmd=None, centroid=False,
-                   gyradius=False, color=color_residues, **kwargs):
+                   gyradius=False, color='index', **kwargs):
         """
         Visualize a selected model in the three dimensions.
 
@@ -761,9 +791,20 @@ class IMPmodel(dict):
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
            the default GUI.
-        :param color_residues color: either a coloring function like
-           :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
-           tuples (as long as the number of particles)
+        :param 'index' color: can be:
+
+             * a string as:
+                 * '**index**' to color particles according to their position in the
+                   model (:func:`pytadbit.utils.extraviews.color_residues`)
+                 * '**tad**' to color particles according to the TAD they belong to
+                   (:func:`pytadbit.utils.extraviews.tad_coloring`)
+                 * '**border**' to color particles marking borders. Color according to
+                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
+                   coloring function like.
+             * a function, that takes as argument a model and any other parameter
+               passed through the kwargs.
+             * a list of (r, g, b) tuples (as long as the number of particles).
+               Each r, g, b between 0 and 1.
         :param None cmd: list of commands to be passed to the viewer.
            The chimera list is:
 

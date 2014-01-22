@@ -6,7 +6,7 @@
 from pytadbit.utils.three_dim_stats import calc_consistency
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
 from pytadbit.utils.tadmaths        import calinski_harabasz
-from pytadbit.utils.extraviews      import color_residues, chimera_view
+from pytadbit.utils.extraviews      import chimera_view
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
 from pytadbit.imp.impmodel          import IMPmodel
 from pytadbit.centroid              import centroid_wrapper
@@ -879,7 +879,7 @@ class StructuralModels(object):
 
 
     def view_models(self, models=None, cluster=None, tool='chimera',
-                    savefig=None, cmd=None, color=color_residues, **kwargs):
+                    savefig=None, cmd=None, color='index', **kwargs):
         """
         Visualize a selected model in the three dimensions.
 
@@ -894,9 +894,20 @@ class StructuralModels(object):
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
            the default GUI.
-        :param color_residues color: either a coloring function like
-           :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
-           tuples (as long as the number of particles)
+        :param 'index' color: can be:
+
+             * a string as:
+                 * '**index**' to color particles according to their position in the
+                   model (:func:`pytadbit.utils.extraviews.color_residues`)
+                 * '**tad**' to color particles according to the TAD they belong to
+                   (:func:`pytadbit.utils.extraviews.tad_coloring`)
+                 * '**border**' to color particles marking borders. Color according to
+                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
+                   coloring function like.
+             * a function, that takes as argument a model and any other parameter
+               passed through the kwargs.
+             * a list of (r, g, b) tuples (as long as the number of particles).
+               Each r, g, b between 0 and 1.
         :param None cmd: list of commands to be passed to the viewer. The chimera list is:
 
            ::
@@ -952,6 +963,8 @@ class StructuralModels(object):
             models = self.__models
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
                   else m for m in models]
+        if color in ['tad', 'border'] and not 'tads' in kwargs:
+            kwargs.update((('tads', self.experiment.tads), ))
         for model_num in models:
             self.write_cmm('/tmp/', model_num=model_num, color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self[m]['rand_init'])
@@ -1346,7 +1359,7 @@ class StructuralModels(object):
 
 
     def write_cmm(self, directory, model_num=None, models=None, cluster=None,
-                  color=color_residues, rndname=True, **kwargs):
+                  color='index', rndname=True, **kwargs):
         """
         Save a model in the cmm format, read by Chimera
         (http://www.cgl.ucsf.edu/chimera).
@@ -1365,9 +1378,20 @@ class StructuralModels(object):
            generate the corresponding model. If False, the format will be:
            model_NUM_RND.cmm where NUM is the rank of the model in terms of
            objective function value
-        :param color_residues color: either a coloring function like
-           :func:`pytadbit.imp.imp_model.color_residues` or a list of (r, g, b)
-           tuples (as long as the number of particles)
+        :param 'index' color: can be:
+
+             * a string as:
+                 * '**index**' to color particles according to their position in the
+                   model (:func:`pytadbit.utils.extraviews.color_residues`)
+                 * '**tad**' to color particles according to the TAD they belong to
+                   (:func:`pytadbit.utils.extraviews.tad_coloring`)
+                 * '**border**' to color particles marking borders. Color according to
+                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
+                   coloring function like.
+             * a function, that takes as argument a model and any other parameter
+               passed through the kwargs.
+             * a list of (r, g, b) tuples (as long as the number of particles).
+               Each r, g, b between 0 and 1.
         :param kwargs: any extra argument will be passed to the coloring
            function
         """

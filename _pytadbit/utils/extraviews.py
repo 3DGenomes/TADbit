@@ -73,9 +73,9 @@ def colorize(string, num, ftype='ansi'):
 
 def color_residues(model):
     """
-    :param model: a given IMPmodel
+    :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`
     
-    :returns: a list of rgb tuples (red, green, blue)
+    :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
     result = []
     for n in xrange(len(model['x'])):
@@ -84,26 +84,25 @@ def color_residues(model):
     return result
 
 
-def tad_coloring(model, tads):
+def tad_coloring(model, tads=None):
     """
     Colors TADs from blue to red (first to last TAD). TAD borders are displayed
     in scale of grey, from light to dark grey (again first to last border)
     
-    :param model: a given IMPmodel
+    :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`
     :param tads: a dictionary of TADs, Experiments.tads can be directly passed
     
-    :returns: a list of rgb tuples (red, green, blue)
+    :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
-    start = float(model['descrition']['start']) / model['description']['resolution']
-    end   = float(model['descrition']['end'  ]) / model['description']['resolution']
+    start = float(model['description']['start']) / model['description']['resolution']
+    end   = float(model['description']['end'  ]) / model['description']['resolution']
     ltads = [t for t in tads if tads[t]['start']>start and tads[t]['end']<end]
     ntads = len(ltads)
-    print ntads
     grey = 0.95
     grey_step = (0.95 - 0.4) / ntads
     result = []
     for t in tads:
-        if tads[t]['start']<start or tads[t]['end']>end:
+        if tads[t]['start'] < start or tads[t]['end'] > end:
             continue
         red = float(t + 1 - min(ltads)) / ntads
         for _ in range(int(tads[t]['start']), int(tads[t]['end'] + 1)):
@@ -113,19 +112,19 @@ def tad_coloring(model, tads):
     return result
 
 
-def tad_border_coloring(model, tads):
+def tad_border_coloring(model, tads=None):
     """
     Colors TAD borders from blue to red (bad to good score). TAD are displayed
     in scale of grey, from light to dark grey (first to last particle in the
     TAD)
     
-    :param model: a given IMPmodel
+    :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`
     :param tads: a dictionary of TADs, Experiments.tads can be directly passed
     
-    :returns: a list of rgb tuples (red, green, blue)
+    :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
-    start = float(model['descrition']['start']) / model['description']['resolution']
-    end   = float(model['descrition']['end'  ]) / model['description']['resolution']
+    start = float(model['description']['start']) / model['description']['resolution']
+    end   = float(model['description']['end'  ]) / model['description']['resolution']
     result = []
     for t in tads:
         if tads[t]['start'] < start or tads[t]['end'] > end:
