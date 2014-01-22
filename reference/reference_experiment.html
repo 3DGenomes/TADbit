@@ -301,18 +301,9 @@ the calculated weight.</p>
 square root of the product of the sum of column i by the sum of row
 j.</p>
 <p>normalization is done according to this formula:</p>
-<div class="highlight-python"><pre>                 N                    N                 
-                ___                  ___                
-                \                    \                  
-                /__ (matrix(i, J)) * /__  (matrix(I, j))
-                i=0                  j=0                
-weight(I,J) =  -----------------------------------------         
-                         N     N                                 
-                        ___   ___                                
-                        \     \                                  
-                        /__   /__ (matrix(i, j))
-                        j=0   i=0                                </pre>
-</div>
+<div class="math">
+\[weight_{(I,J)} = \frac{\sum^N_{i=0}(matrix(i,J)) \times \sum^N_{j=0}(matrix(I,j))}
+                       {\sum^N_{j=0}\sum^N_{i=0}(matrix(i,j))}\]</div>
 <p>with N being the number or rows/columns of the Hi-C matrix in both
 cases.</p>
 </dd></dl>
@@ -529,11 +520,11 @@ passed to this parameter.</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 10, 2014.
+      Last updated on Jan 22, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
-        <a href="https://github.com/3DGenomes/tadbit"><img
-            style="position: fixed; top: 0; right: 0; border: 0;"
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
             src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>

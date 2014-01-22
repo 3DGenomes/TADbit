@@ -63,9 +63,9 @@ one the most accurate way to compare clustering methods
 <p>The CH score is:</p>
 <div class="math">
 \[CH(k) = \frac{B(k) / (k-1)}{W(k)/(n - k)}\]</div>
-<p>Where <span class="math">\(B(k)\)</span> and <span class="math">\(W(k)\)</span> are between and within cluster sums of
-squares, with <span class="math">\(k\)</span> clusters, and <span class="math">\(n\)</span> the total number of
-points (models in this case).</p>
+<p>Where <span class="math">\(B(k)\)</span> and <span class="math">\(W(k)\)</span> are the between and within cluster sums
+of squares, with <span class="math">\(k\)</span> clusters, and <span class="math">\(n\)</span> the total number of
+elements (models in this case).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -156,6 +156,66 @@ cluster number &#8216;cluster&#8217;</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="pytadbit.utils.extraviews.color_residues">
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">color_residues</tt><big>(</big><em>model</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#color_residues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.color_residues" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> &#8211; a given <a class="reference internal" href="reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></tt></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of rgb tuples (red, green, blue), each between 0 and 1.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.utils.extraviews.tad_coloring">
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_coloring</tt><big>(</big><em>model</em>, <em>tads=None</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Colors TADs from blue to red (first to last TAD). TAD borders are displayed
+in scale of grey, from light to dark grey (again first to last border)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> &#8211; a given <a class="reference internal" href="reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></tt></a></li>
+<li><strong>tads</strong> &#8211; a dictionary of TADs, Experiments.tads can be directly passed</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of rgb tuples (red, green, blue), each between 0 and 1.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.utils.extraviews.tad_border_coloring">
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_border_coloring</tt><big>(</big><em>model</em>, <em>tads=None</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Colors TAD borders from blue to red (bad to good score). TAD are displayed
+in scale of grey, from light to dark grey (first to last particle in the
+TAD)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> &#8211; a given <a class="reference internal" href="reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></tt></a></li>
+<li><strong>tads</strong> &#8211; a dictionary of TADs, Experiments.tads can be directly passed</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of rgb tuples (red, green, blue), each between 0 and 1.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pytadbit.utils.hic_filtering.hic_filtering_for_modelling">
 <tt class="descclassname">pytadbit.utils.hic_filtering.</tt><tt class="descname">hic_filtering_for_modelling</tt><big>(</big><em>matrx</em>, <em>method='mean'</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
@@ -195,11 +255,10 @@ returns the rmsd of their comparison</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>a score of each pairwise comparison according to:</p>
-<div class="highlight-python"><pre>                      dRMSD[i] / max(dRMSD)
-score[i] = eqvs[i] * -----------------------
-                       RMSD[i] / max(RMSD)</pre>
-</div>
-<p>where eqvs[i] is the number of equivalent position for the ith
+<div class="math">
+\[score_i = eqvs_i \times \frac{dRMSD_i / max(dRMSD)}
+                                {RMSD_i / max(RMSD)}\]</div>
+<p>where <span class="math">\(eqvs_i\)</span> is the number of equivalent position for the ith
 pairwise model comparison.</p>
 </p>
 </td>
@@ -399,11 +458,11 @@ for details</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 10, 2014.
+      Last updated on Jan 22, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
-        <a href="https://github.com/3DGenomes/tadbit"><img
-            style="position: fixed; top: 0; right: 0; border: 0;"
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
             src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>

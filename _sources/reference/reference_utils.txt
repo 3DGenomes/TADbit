@@ -14,6 +14,12 @@ Utilities
 
 .. autofunction:: pytadbit.utils.extraviews.compare_models
 
+.. autofunction:: pytadbit.utils.extraviews.color_residues
+
+.. autofunction:: pytadbit.utils.extraviews.tad_coloring
+
+.. autofunction:: pytadbit.utils.extraviews.tad_border_coloring
+
 
 .. currentmodule:: pytadbit.utils.hic_filtering
 

@@ -404,7 +404,7 @@ step.</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.view_model">
-<tt class="descname">view_model</tt><big>(</big><em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>centroid=False</em>, <em>gyradius=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.view_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.view_model" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">view_model</tt><big>(</big><em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>centroid=False</em>, <em>gyradius=False</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.view_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.view_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize a selected model in the three dimensions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -418,6 +418,28 @@ model</li>
 generated (depending on the extension; accepted formats are png, mov
 and webm). if set to None, the image or movie will be shown using
 the default GUI.</li>
+<li><strong>color</strong> (<em>&#8216;index&#8217;</em>) &#8211; <p>can be:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>a string as:</dt>
+<dd><ul class="first last">
+<li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+<li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+<li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+coloring function like.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>a function, that takes as argument a model and any other parameter
+passed through the kwargs.</li>
+<li>a list of (r, g, b) tuples (as long as the number of particles).
+Each r, g, b between 0 and 1.</li>
+</ul>
+</li>
 <li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer.
 The chimera list is:</p>
 <div class="highlight-python"><pre>focus
@@ -466,7 +488,7 @@ modified the final image/movie).</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.write_cmm">
-<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color=&lt;function color_residues at 0x4143b18&gt;</em>, <em>rndname=True</em>, <em>model_num=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color='index'</em>, <em>rndname=True</em>, <em>model_num=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the cmm format, read by Chimera
 (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
@@ -484,9 +506,30 @@ model.RND.cmm, where RND is the random number feed used by IMP to
 generate the corresponding model. If False, the format will be:
 model_NUM_RND.cmm where NUM is the rank of the model in terms of
 objective function value</li>
-<li><strong>color</strong> (<em>color_residues</em>) &#8211; either a coloring function like
-<tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.imp_model.color_residues()</span></tt> or a list of (r, g, b)
-tuples (as long as the number of particles)</li>
+<li><strong>color</strong> (<em>&#8216;index&#8217;</em>) &#8211; <p>can be:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>a string as:</dt>
+<dd><ul class="first last">
+<li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+<li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+<li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+coloring function like.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>a function, that takes as argument a model and any other parameter
+passed through the kwargs.</li>
+<li>a list of (r, g, b) tuples (as long as the number of particles).
+Each r, g, b between 0 and 1.</li>
+</ul>
+</li>
+<li><strong>kwargs</strong> &#8211; any extra argument will be passed to the coloring
+function</li>
 </ul>
 </td>
 </tr>
@@ -629,11 +672,11 @@ the file has been written</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 10, 2014.
+      Last updated on Jan 22, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
-        <a href="https://github.com/3DGenomes/tadbit"><img
-            style="position: fixed; top: 0; right: 0; border: 0;"
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
             src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>

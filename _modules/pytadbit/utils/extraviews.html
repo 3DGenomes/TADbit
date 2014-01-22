@@ -103,7 +103,7 @@
              <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">colorize</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s">&#39;ansi&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="colorize"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.colorize">[docs]</a><span class="k">def</span> <span class="nf">colorize</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s">&#39;ansi&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Colorize with ANSII colors a string for printing in shell. this acording to</span>
 <span class="sd">    a given number between 0 and 10</span>
@@ -117,8 +117,8 @@
     <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">color</span><span class="p">[</span><span class="n">num</span><span class="p">],</span> <span class="n">string</span><span class="p">,</span>
                        <span class="s">&#39;</span><span class="se">\033</span><span class="s">[m&#39;</span> <span class="k">if</span> <span class="n">ftype</span><span class="o">==</span><span class="s">&#39;ansi&#39;</span> <span class="k">else</span> <span class="s">&#39;&lt;/span&gt;&#39;</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">color_residues</span><span class="p">(</span><span class="n">n_part</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="color_residues"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.color_residues">[docs]</a><span class="k">def</span> <span class="nf">color_residues</span><span class="p">(</span><span class="n">n_part</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param n_part: number of particles</span>
 <span class="sd">    </span>
@@ -130,7 +130,7 @@
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">red</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">red</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">result</span>
 
-
+</div>
 <span class="k">def</span> <span class="nf">augmented_dendrogram</span><span class="p">(</span><span class="n">clust_count</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">objfun</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                          <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -615,11 +615,11 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 14, 2014.
+      Last updated on Jan 22, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
-        <a href="https://github.com/3DGenomes/tadbit"><img
-            style="position: fixed; top: 0; right: 0; border: 0;"
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
             src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>
