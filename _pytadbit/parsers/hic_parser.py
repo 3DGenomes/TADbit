@@ -90,8 +90,10 @@ def autoreader(f):
         except ValueError:
             try:
                 # Some data may contain 'NaN' or 'NA'
-                items = [[0 if a in ['NA', 'NaN'] else int(float(a)+.5)
-                          for a in line[trim:]] for line in items]
+                items = [
+                    [float('nan') if a.lower() in ['na', 'nan']
+                     else int(float(a)+.5) for a in line[trim:]]
+                for line in items]
                 warn('WARNING: NA or NaN founds, set to zero')
             except ValueError:
                 raise AutoReadFail('ERROR: non numeric values')

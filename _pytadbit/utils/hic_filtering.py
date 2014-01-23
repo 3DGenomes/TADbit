@@ -126,7 +126,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
     x = [sum(hist == i) for i in range(1, nbins + 1)]
     if draw_hist:
         hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
-    xp = range(0, cols[-1])
+    xp = range(0, int(cols[-1]))
     # check if the binning is correct
     # we want at list half of the bins with some data
     try:
@@ -140,7 +140,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
             if draw_hist:
                 plt.clf()
                 hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
-            xp = range(0, cols[-1])
+            xp = range(0, int(cols[-1]))
     except ValueError:
         if not silent:
             warn('WARNING: Too few data to filter columns. SKIPPING...')
@@ -250,8 +250,12 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False):
     else:
         raise Exception
     # remove row and columns that have a zero in the diagonal
+    # also removes rows or columns containing a NaN
     for i in xrange(len(matrx)):
         if matrx[i][i] == 0:
+            if not i in bads:
+                bads[i] = None
+        elif repr(sum(matrx[i])) == 'nan':
             if not i in bads:
                 bads[i] = None
     return bads

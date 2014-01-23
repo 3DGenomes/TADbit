@@ -322,15 +322,19 @@ class Experiment(object):
                       if self.hic_data[0][i*self.size+i]]
         rowsums = [0 for _ in xrange(self.size)]
         for i in size_range:
+            if i in self._zeros: continue
             isi = i * self.size
             for j in size_range:
+                if j in self._zeros: continue
                 rowsums[i] += self.hic_data[0][isi + j]
         self.norm = [[0. for _ in xrange(self.size * self.size)]]
 
         total = sum(rowsums)
         func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
         for i in size_range:
+            if i in self._zeros: continue
             for j in size_range:
+                if j in self._zeros: continue
                 try:
                     self.norm[0][i * self.size + j] = (
                         self.hic_data[0][i * self.size + j] / func(i, j))
