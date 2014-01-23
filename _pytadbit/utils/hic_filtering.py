@@ -250,7 +250,6 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False):
     else:
         raise Exception
     # remove row and columns that have a zero in the diagonal
-    print bads
     for i in xrange(len(matrx)):
         if matrx[i][i] == 0:
             if not i in bads:
