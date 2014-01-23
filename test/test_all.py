@@ -379,7 +379,7 @@ class TestTadbit(unittest.TestCase):
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
         exp.normalize_hic(silent=True)
-        models = exp.model_region(50, 70, n_models=110, n_keep=25,
+        models = exp.model_region(51, 71, n_models=110, n_keep=25,
                                   n_cpus=4,
                                   config={'kforce': 5, 'maxdist': 500,
                                           'scale': 0.005,

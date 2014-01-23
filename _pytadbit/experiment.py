@@ -348,7 +348,7 @@ class Experiment(object):
            weights (see :func:`normalize_hic`)
         :param True zscored: calculate the z-score of the data
         :param True remove_zeros: remove null interactions
-        
+
         """
         values = []
         zeros = {}
@@ -394,12 +394,13 @@ class Experiment(object):
                 # self._zscores[j][i] = zsc
 
 
-    def model_region(self, start, end, n_models=5000, n_keep=1000, n_cpus=1,
-                     verbose=0, keep_all=False, close_bins=1, outfile=None,
-                     config=CONFIG['dmel_01']):
+    def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
+                     n_cpus=1, verbose=0, keep_all=False, close_bins=1,
+                     outfile=None, config=CONFIG['dmel_01']):
         """
-        :param start:  first bin to model (bin number)
-        :param end: last bin to model (bin number)
+        :param 1 start: first bin to model (bin number)
+        :param None end: last bin to model (bin number). By default goes to the
+           last bin.
         :param 5000 n_models: number of modes to generate
         :param 1000 n_keep: number of models used in the final analysis 
            (usually the top 20% of the generated models). The models are ranked
@@ -457,6 +458,8 @@ class Experiment(object):
         if self._normalization != 'visibility':
             warn('WARNING: normalizing according to visibility method')
             self.normalize_hic()
+        if not end:
+            end = self.size
         zscores, values = self._sub_experiment_zscore(start, end)
         coords = {'crm'  : self.crm.name,
                   'start': start,
@@ -554,12 +557,12 @@ class Experiment(object):
             self.normalize_hic()
         from pytadbit import Chromosome
         matrix = self.get_hic_matrix()
-        end += 1
-        new_matrix = [[] for _ in range(end-start)]
-        for i in xrange(start, end):
-            for j in xrange(start, end):
-                new_matrix[i - start].append(matrix[i][j])
-                
+        if start < 1:
+            raise ValueError('start should be higher than 1\n')
+        start -= 1 # things starts at 0 for python. we keep the end coordinate
+                   # at its original value because it is inclusive
+        new_matrix = [[matrix[i][j] for i in xrange(start, end)]
+                      for j in xrange(start, end)]
         tmp = Chromosome('tmp')
         tmp.add_experiment('exp1', hic_data=[new_matrix],
                            resolution=self.resolution, filter_columns=False)
@@ -569,8 +572,8 @@ class Experiment(object):
         exp.norm = [[self.norm[0][i + siz * j] for i in xrange(start, end)
                      for j in xrange(start, end)]]
         exp._zeros = dict([(z - start, None) for z in self._zeros
-                           if start <= z <= end])
-        if len(exp._zeros) == (end + 1 - start):
+                           if start <= z <= end - 1])
+        if len(exp._zeros) == (end - start):
             raise Exception('ERROR: no interaction found in selected regions')
         # ... but the z-scores in this particular region
         exp.get_hic_zscores(remove_zeros=True)

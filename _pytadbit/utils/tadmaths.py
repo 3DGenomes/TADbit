@@ -55,11 +55,14 @@ def zscore(values, size):
     """
     # do not take into account the diagonal
     nop = dict([(i + size * i,  None) for i in xrange(size)])
+    # Set the virtual minimum of the matrix to half the non-null real minimum
     minv = min([v for v in values if v]) / 2
+    if minv > 1:
+        minv /= 2
     # get the log10 of values
     vals = [log10(v) if v > 0 and not v in nop else log10(minv) for v in values]
     mean_v = np.mean(vals)
-    std_v = np.std(vals)
+    std_v  = np.std(vals)
     # replace values by z-score
     for i in xrange(len(values)):
         if values[i] > 0:
