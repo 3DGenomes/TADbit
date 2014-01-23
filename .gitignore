@@ -24,3 +24,4 @@ script.cmd
 *.gcno
 testset
 .ipynb_checkpoints
+.cache
