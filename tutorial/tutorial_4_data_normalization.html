@@ -103,6 +103,11 @@ matrix (where highest values are expected), TADbit assumes that this
 observation is artefactual and removes the whole row and column passing
 through this bin.</p>
 </div>
+<div class="section" id="dealing-with-nans">
+<h3>Dealing with NaNs<a class="headerlink" href="#dealing-with-nans" title="Permalink to this headline">¶</a></h3>
+<p>Any row or column that contains a <em>NaN</em> value will be removed from
+further steps.</p>
+</div>
 </div>
 <div class="section" id="data-normalization">
 <h2>Data normalization<a class="headerlink" href="#data-normalization" title="Permalink to this headline">¶</a></h2>
@@ -110,12 +115,19 @@ through this bin.</p>
 This normalization is achieve in two steps, first we generate weight for each pair of interactions, depending on the interaction count in the corresponding row/column, second we calculate the <a class="reference external" href="http://en.wikipedia.org/wiki/Standard_score#Calculation_from_raw_score">z-score</a> of each of these interaction pairs.</p>
 <div class="section" id="calculation-of-weights">
 <h3>Calculation of weights<a class="headerlink" href="#calculation-of-weights" title="Permalink to this headline">¶</a></h3>
-<p>Weights can be calculated according to two formulas (see <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic" title="pytadbit.experiment.Experiment.normalize_hic"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.experiment.Experiment.normalize_hic</span></tt></a>), however, in the context of three-dimensional modeling, the &#8220;over_tot&#8221; method is recommended, as the distribution of values generated is closer to normal.</p>
-<p>Hi-C interaction count are thus normalized according to this formula:</p>
+<p>Weights are calculated according to this formula (see <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic" title="pytadbit.experiment.Experiment.normalize_hic"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.experiment.Experiment.normalize_hic</span></tt></a>):</p>
 <div class="math">
 \[weight(I, J) = \frac{\sum^N_{i=0}{(matrix(i, J))} \times \sum^N_{j=0}{(matrix(I, j))}}{\sum^N_{i=0}{\sum^N_{j=0}{(matrix(i, j))}}}\]</div>
 <p>&#8220;matrix&#8221;, being our row data (count of interactions), N the number of rows/columns.</p>
 <p>The result is stored in a new matrix, called weight. The values that will be used in the next step are the multiplication of this weights per the raw data.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Filtered rows/columns are not taken into account for normalization</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When modelling a portion of a chromosome values used are taken from the normalization of the whole chromosome, <strong>no local normalization is done</strong>.</p>
+</div>
 </div>
 <div class="section" id="calculation-of-the-z-score">
 <h3>Calculation of the z-score<a class="headerlink" href="#calculation-of-the-z-score" title="Permalink to this headline">¶</a></h3>

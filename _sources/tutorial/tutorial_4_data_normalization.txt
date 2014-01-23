@@ -69,6 +69,13 @@ matrix (where highest values are expected), TADbit assumes that this
 observation is artefactual and removes the whole row and column passing
 through this bin.
 
+Dealing with NaNs
+~~~~~~~~~~~~~~~~~
+
+
+Any row or column that contains a *NaN* value will be removed from
+further steps.
+
 Data normalization
 ------------------
 
@@ -80,9 +87,7 @@ Calculation of weights
 ~~~~~~~~~~~~~~~~~~~~~~
 
 
-Weights can be calculated according to two formulas (see :class:`pytadbit.experiment.Experiment.normalize_hic`), however, in the context of three-dimensional modeling, the "over_tot" method is recommended, as the distribution of values generated is closer to normal.
-
-Hi-C interaction count are thus normalized according to this formula:
+Weights are calculated according to this formula (see :class:`pytadbit.experiment.Experiment.normalize_hic`):
 
 .. math::
 
@@ -92,6 +97,14 @@ Hi-C interaction count are thus normalized according to this formula:
 "matrix", being our row data (count of interactions), N the number of rows/columns.
 
 The result is stored in a new matrix, called weight. The values that will be used in the next step are the multiplication of this weights per the raw data.
+
+.. note::
+
+  Filtered rows/columns are not taken into account for normalization
+
+.. note::
+
+  When modelling a portion of a chromosome values used are taken from the normalization of the whole chromosome, **no local normalization is done**.
 
 Calculation of the z-score
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
