@@ -225,14 +225,15 @@ documentation)</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.model_region">
-<tt class="descname">model_region</tt><big>(</big><em>start</em>, <em>end</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>n_cpus=1</em>, <em>verbose=0</em>, <em>keep_all=False</em>, <em>close_bins=1</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.005}</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.model_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.model_region" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">model_region</tt><big>(</big><em>start=1</em>, <em>end=None</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>n_cpus=1</em>, <em>verbose=0</em>, <em>keep_all=False</em>, <em>close_bins=1</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.005}</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.model_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.model_region" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>start</strong> &#8211; first bin to model (bin number)</li>
-<li><strong>end</strong> &#8211; last bin to model (bin number)</li>
+<li><strong>start</strong> (<em>1</em>) &#8211; first bin to model (bin number)</li>
+<li><strong>end</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; last bin to model (bin number). By default goes to the
+last bin.</li>
 <li><strong>n_models</strong> (<em>5000</em>) &#8211; number of modes to generate</li>
 <li><strong>n_keep</strong> (<em>1000</em>) &#8211; number of models used in the final analysis 
 (usually the top 20% of the generated models). The models are ranked
@@ -520,7 +521,7 @@ passed to this parameter.</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 22, 2014.
+      Last updated on Jan 23, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

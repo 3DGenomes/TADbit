@@ -7,9 +7,18 @@ Data filtering
 --------------
 
 
-To model chromatin structure, we need to ensure that our data is clean enough. The first step is thus to draw the distribution of the sum of interactions per raw/columns in the Hi-C matrix. According to this distribution, we may remove some columns if they present a suspiciously low count of interaction.
+Remove outliers
+~~~~~~~~~~~~~~~
 
-Here an example, where "exp" is an preloaded Experiment corresponding to human's 19th chromosome:
+
+To model chromatin structure, we need to ensure that our data is clean
+enough. The first step is thus to draw the distribution of the sum of
+interactions per raw/columns in the Hi-C matrix. According to this
+distribution, we may remove some columns if they present a suspiciously
+low count of interaction.
+
+Here an example, where "exp" is an preloaded Experiment corresponding to
+human's 19th chromosome:
 
 .. code:: python
 
@@ -25,13 +34,40 @@ Here an example, where "exp" is an preloaded Experiment corresponding to human's
     zeroes = filter_by_mean(exp.get_hic_matrix(), draw_hist=True)
 
 
+.. parsed-literal::
 
-.. image:: ../nbpictures/tutorial_4_data_normalization_3_0.png
+    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
+      warn('WARNING: non integer values')
+    /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:320: ComplexWarning: Casting complex values to real discards the imaginary part
+      return array(a, dtype, copy=False, order=order)
 
 
-Than, according to the fit represented above, we would discard all columns in the Hi-C raw data having cumulative count of interaction below the dashed red line in the graph above (~46). This columns will be removed from the modeling, and their associated particles will have no experimental data.
 
-*This step is done automatically within tadbit each time an experiment is loaded. In order to ensure that we do remove outlier columns, tadbit checks if this root corresponds to a* **concave down** *region and if it stands* **between zero and the median** *of the overall distribution. The result of these "bad" columns is stored in the variable Experiment._zeros, that represents the columns to be skipped in the consecutive steps.*
+.. image:: ../nbpictures/tutorial_4_data_normalization_4_1.png
+
+
+Than, according to the fit represented above, we would discard all
+columns in the Hi-C raw data having cumulative count of interaction
+below the dashed red line in the graph above (~46). This columns will be
+removed from the modeling, and their associated particles will have no
+experimental data.
+
+*This step is done automatically within tadbit each time an experiment
+is loaded. In order to ensure that we do remove outlier columns, tadbit
+checks if this root corresponds to a* **concave down** *region and if it
+stands* **between zero and the median** *of the overall distribution.
+The result of these "bad" columns is stored in the variable
+Experiment.\_zeros, that represents the columns to be skipped in the
+consecutive steps.*
+
+Remove row/columns where diagonal is null
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+In case TADbit find a null value right in the diagonal of the Hi-C data
+matrix (where highest values are expected), TADbit assumes that this
+observation is artefactual and removes the whole row and column passing
+through this bin.
 
 Data normalization
 ------------------

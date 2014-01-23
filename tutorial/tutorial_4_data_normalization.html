@@ -56,8 +56,15 @@
 <h1>Hi-C data processing<a class="headerlink" href="#hi-c-data-processing" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="data-filtering">
 <h2>Data filtering<a class="headerlink" href="#data-filtering" title="Permalink to this headline">¶</a></h2>
-<p>To model chromatin structure, we need to ensure that our data is clean enough. The first step is thus to draw the distribution of the sum of interactions per raw/columns in the Hi-C matrix. According to this distribution, we may remove some columns if they present a suspiciously low count of interaction.</p>
-<p>Here an example, where &#8220;exp&#8221; is an preloaded Experiment corresponding to human&#8217;s 19th chromosome:</p>
+<div class="section" id="remove-outliers">
+<h3>Remove outliers<a class="headerlink" href="#remove-outliers" title="Permalink to this headline">¶</a></h3>
+<p>To model chromatin structure, we need to ensure that our data is clean
+enough. The first step is thus to draw the distribution of the sum of
+interactions per raw/columns in the Hi-C matrix. According to this
+distribution, we may remove some columns if they present a suspiciously
+low count of interaction.</p>
+<p>Here an example, where &#8220;exp&#8221; is an preloaded Experiment corresponding to
+human&#8217;s 19th chromosome:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">Chromosome</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.hic_filtering</span> <span class="kn">import</span> <span class="n">filter_by_mean</span>
 
@@ -70,9 +77,32 @@
 <span class="n">zeroes</span> <span class="o">=</span> <span class="n">filter_by_mean</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">get_hic_matrix</span><span class="p">(),</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_4_data_normalization_3_0.png" src="../_images/tutorial_4_data_normalization_3_0.png" />
-<p>Than, according to the fit represented above, we would discard all columns in the Hi-C raw data having cumulative count of interaction below the dashed red line in the graph above (~46). This columns will be removed from the modeling, and their associated particles will have no experimental data.</p>
-<p><em>This step is done automatically within tadbit each time an experiment is loaded. In order to ensure that we do remove outlier columns, tadbit checks if this root corresponds to a</em> <strong>concave down</strong> <em>region and if it stands</em> <strong>between zero and the median</strong> <em>of the overall distribution. The result of these &#8220;bad&#8221; columns is stored in the variable Experiment._zeros, that represents the columns to be skipped in the consecutive steps.</em></p>
+<div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
+  warn('WARNING: non integer values')
+/usr/lib/python2.7/dist-packages/numpy/core/numeric.py:320: ComplexWarning: Casting complex values to real discards the imaginary part
+  return array(a, dtype, copy=False, order=order)</pre>
+</div>
+<img alt="../_images/tutorial_4_data_normalization_4_1.png" src="../_images/tutorial_4_data_normalization_4_1.png" />
+<p>Than, according to the fit represented above, we would discard all
+columns in the Hi-C raw data having cumulative count of interaction
+below the dashed red line in the graph above (~46). This columns will be
+removed from the modeling, and their associated particles will have no
+experimental data.</p>
+<p><em>This step is done automatically within tadbit each time an experiment
+is loaded. In order to ensure that we do remove outlier columns, tadbit
+checks if this root corresponds to a</em> <strong>concave down</strong> <em>region and if it
+stands</em> <strong>between zero and the median</strong> <em>of the overall distribution.
+The result of these &#8220;bad&#8221; columns is stored in the variable
+Experiment._zeros, that represents the columns to be skipped in the
+consecutive steps.</em></p>
+</div>
+<div class="section" id="remove-row-columns-where-diagonal-is-null">
+<h3>Remove row/columns where diagonal is null<a class="headerlink" href="#remove-row-columns-where-diagonal-is-null" title="Permalink to this headline">¶</a></h3>
+<p>In case TADbit find a null value right in the diagonal of the Hi-C data
+matrix (where highest values are expected), TADbit assumes that this
+observation is artefactual and removes the whole row and column passing
+through this bin.</p>
+</div>
 </div>
 <div class="section" id="data-normalization">
 <h2>Data normalization<a class="headerlink" href="#data-normalization" title="Permalink to this headline">¶</a></h2>
@@ -170,7 +200,7 @@ This normalization is achieve in two steps, first we generate weight for each pa
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 21, 2014.
+      Last updated on Jan 23, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
