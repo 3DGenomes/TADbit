@@ -144,7 +144,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
     except ValueError:
         if not silent:
             warn('WARNING: Too few data to filter columns. SKIPPING...')
-        return []
+        return {}
     # find best polynomial fit in a given range
     for order in range(4, 14):
         z = np.polyfit(y, x, order)
@@ -249,4 +249,10 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False):
         bads = filter_by_stdev(matrx)
     else:
         raise Exception
+    # remove row and columns that have a zero in the diagonal
+    print bads
+    for i in xrange(len(matrx)):
+        if matrx[i][i] == 0:
+            if not i in bads:
+                bads[i] = None
     return bads
