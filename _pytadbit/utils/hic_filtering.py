@@ -251,11 +251,13 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False):
         raise Exception
     # remove row and columns that have a zero in the diagonal
     # also removes rows or columns containing a NaN
+    has_nans = False
     for i in xrange(len(matrx)):
         if matrx[i][i] == 0:
             if not i in bads:
                 bads[i] = None
         elif repr(sum(matrx[i])) == 'nan':
+            has_nans = True
             if not i in bads:
                 bads[i] = None
-    return bads
+    return bads, has_nans

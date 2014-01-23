@@ -267,8 +267,15 @@ class Experiment(object):
         #     xrange(0, self.size**2, self.size))
         #                  if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
         if filter_columns:
-            self._zeros = hic_filtering_for_modelling(self.get_hic_matrix(),
-                                                      silent=silent)
+            self._zeros, has_nans = hic_filtering_for_modelling(
+                self.get_hic_matrix(), silent=silent)
+            if has_nans: # to make it simple
+                for i in xrange(len(self.hic_data[0])):
+                    if repr(self.hic_data[0][i]) == 'nan':
+                        print i
+                        self.hic_data[0] = tuple(list(self.hic_data[0][:i]) +
+                                                 [0] +
+                                                 list(self.hic_data[0][i + 1:]))
         
 
     def load_tad_def(self, tad_def, weights=None):

@@ -663,6 +663,7 @@ class Chromosome(object):
             if show:
                 plt.show()
             return img
+        pwidth = 1
         for i, tad in xper.tads.iteritems():
             if start:
                 # print int(tad['start']) + 1, start
@@ -676,11 +677,13 @@ class Chromosome(object):
             else:
                 t_start = int(tad['start']) + .5
                 t_end   = int(tad['end']) + 1.5
-            axe.hlines(t_start, t_start, t_end, colors='k')
-            axe.hlines(t_end, t_start, t_end, colors='k')
-            axe.vlines(t_start, t_start, t_end, colors='k')
-            axe.vlines(t_end, t_start, t_end, colors='k')
-            if not i % (len(xper.tads) / 10):
+            nwidth = float(tad['score']) / 3
+            axe.hlines(t_start, t_start, t_end, colors='k', lw=pwidth)
+            axe.hlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
+            axe.vlines(t_start, t_start, t_end, colors='k', lw=pwidth)
+            axe.vlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
+            pwidth = nwidth
+            if not i % ((len(xper.tads) / 10) or 1):
                 if i % 2:
                     axe.text(t_start + abs(t_start-t_end)/2,
                              t_end + 1, str(i), va='bottom', ha='center')
