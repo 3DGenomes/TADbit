@@ -10,73 +10,14 @@ WARNING: Ensembl REST server is beta and only provides for latest genome builts
 WARNING: needs internet :)
 """
 
-import httplib2, sys
+import httplib2, sys, re, os
 import json
-from os                           import system, listdir
+from os                           import listdir
 from os.path                      import isdir
 from optparse                     import OptionParser
 from pytadbit.utils.file_handling import check_pik
-from pytadbit                     import load_chromosome
-
-def get_best_alignment_coord(ali_list):
-    """
-    returns coordinates of the longest ungapped alignment
-    """
-    best_sumlen = 0
-    best_ali = None
-    for i, ali in enumerate(ali_list):
-        sumlen = len([c for c in zip(*[ali['alignments'][0]['seq'],
-                                       ali['alignments'][1]['seq']])
-                      if not '-' in c])
-        if sumlen > best_sumlen:
-            best_ali = i
-            best_sumlen = sumlen
-    return {'chr'    : ali_list[best_ali]['alignments'][1]['seq_region'],
-            'start'  : ali_list[best_ali]['alignments'][1]['start'],
-            'end'    : ali_list[best_ali]['alignments'][1]['end'],
-            'strand' : ali_list[best_ali]['alignments'][1]['strand']}
-
-
-def rest_query(crm, beg, end, seed_spe='homo_sapiens', targ_spe='mus_musculus',
-               alignment='LASTZ_NET', server="http://beta.rest.ensembl.org"):
-    """
-    Given a seed genomic segment find the coordinate of its syntenis segment on
-    a given target species.
-    
-    :param crm: chromosome name
-    :param beg: region start position
-    :param end: region end position
-    :param seed_spe: name of the seed species (from which com the original
-       coordinates). Scientific name with underscore instead of spaces
-    :param targ_spe: name of the target species
-    :param 'LASTZ_NET' alignment: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
-       for more explanations
-    :param 'http://beta.rest.ensembl.org' server: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
-       for more explanations
-
-    :returns: a dict with the coordinates of the syntenic segment found (chr,
-       start, end, strand)
-       
-    """
-    http = httplib2.Http(".cache")
-    output = 'json'
-    strand = 1
-    ext = ("/alignment/block/region/%s/%s:%s-%s:%s?" +
-           "species_set=%s&species_set=%s;method=%s")
-    ext = ext % (seed_spe, crm, beg, end, strand, seed_spe, targ_spe, alignment)
-    resp, content = http.request(
-        server + ext, method="GET",
-        headers={"Content-Type":"application/%s" % output})
-
-    if content.startswith('Content-Type application/json had a problem'):
-        print 'Region %s:%s-%s not found' % (crm, beg, end)
-        return
-    
-    if not resp.status == 200:
-        print "Invalid response: ", resp.status
-        sys.exit()
-
-    return get_best_alignment_coord(json.loads(content))
+from pytadbit                     import load_chromosome, Chromosome
+from time                         import sleep
 
 
 def load_genome(genome_path, res=None, verbose=False):
@@ -103,128 +44,369 @@ def load_genome(genome_path, res=None, verbose=False):
         raise AssertionError('Not all Experiments have the ' +
                              'same resolution\n')
     res = resolutions[0]
-    return ref_genome, res
-  
+    return ref_genome
 
+
+def get_best_alignment_coord(ali_list):
+    """
+    returns coordinates of the longest ungapped alignment
+    """
+    best_sumlen = 0
+    best_ali = None
+    for i, ali in enumerate(ali_list):
+        sumlen = len([c for c in zip(*[ali['alignments'][0]['seq'],
+                                       ali['alignments'][1]['seq']])
+                      if not '-' in c])
+        if sumlen > best_sumlen:
+            best_ali = i
+            best_sumlen = sumlen
+    return {'chr'    : ali_list[best_ali]['alignments'][1]['seq_region'],
+            'start'  : ali_list[best_ali]['alignments'][1]['start'],
+            'end'    : ali_list[best_ali]['alignments'][1]['end'],
+            'strand' : ali_list[best_ali]['alignments'][1]['strand']}
+
+
+def get_best_map_coord(map_list):
+    """
+    returns coordinates of the longest mapped region
+    """
+    best_length = 0
+    best_mapped = None
+    for i, mapped in enumerate(map_list):
+        length = mapped['mapped']['end'] - mapped['mapped']['start']
+        if length > best_length:
+            best_mapped = i
+            best_length = length
+    return {'chr'    : map_list[best_mapped]['mapped']['seq_region_name'],
+            'start'  : map_list[best_mapped]['mapped']['start'],
+            'end'    : map_list[best_mapped]['mapped']['end'],
+            'strand' : map_list[best_mapped]['mapped']['strand']}
+
+
+def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
+                     to_species='mus_musculus', alignment='LASTZ_NET',
+                     server="http://beta.rest.ensembl.org"):
+    """
+    Given a seed genomic segment find the coordinate of its syntenis segment on
+    a given target species.
+    
+    :param crm: chromosome name
+    :param beg: region start position
+    :param end: region end position
+    :param seed_spe: name of the seed species (from which com the original
+       coordinates). Scientific name with underscore instead of spaces
+    :param targ_spe: name of the target species
+    :param 'LASTZ_NET' alignment: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
+       for more explanations
+    :param 'http://beta.rest.ensembl.org' server: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
+       for more explanations
+
+    :returns: a dict with the coordinates of the syntenic segment found (chr,
+       start, end, strand)
+       
+    """
+    output = 'json'
+    strand = 1
+    ext = ("/alignment/block/region/%s/%s:%s-%s:%s?" +
+           "species_set=%s&species_set=%s;method=%s")
+    ext = ext % (from_species, crm, beg, end, strand, from_species,
+                 to_species, alignment)
+    resp, content = HTTP.request(
+        server + ext, method="GET",
+        headers={"Content-Type":"application/%s" % output})
+
+    if content.startswith('Content-Type application/json had a problem'):
+        return 'Region %s:%s-%s not found' % (crm, beg, end)
+    
+    if not resp.status == 200:
+        try:
+            jsonel = json.loads(content)['error']
+            if re.findall('greater than ([0-9]+) for ',
+                          jsonel):
+                end = int(re.findall('greater than ([0-9]+) for ',
+                                     jsonel)[0])
+                return end
+        except Exception, e:
+            print str(e)
+            print content
+            print "Invalid response: ", resp.status
+        raise Exception
+
+    return get_best_alignment_coord(json.loads(content))
+
+
+def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
+                  server="http://beta.rest.ensembl.org"):
+    """
+    Given a seed genomic segment find the coordinate of its syntenis segment on
+    a given target species.
+    
+    :param crm: chromosome name
+    :param beg: region start position
+    :param end: region end position
+    :param seed_spe: name of the seed species (from which com the original
+       coordinates). Scientific name with underscore instead of spaces
+    :param targ_spe: name of the target species
+    :param 'LASTZ_NET' alignment: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
+       for more explanations
+    :param 'http://beta.rest.ensembl.org' server: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
+       for more explanations
+
+    :returns: a dict with the coordinates of the syntenic segment found (chr,
+       start, end, strand)
+       
+    """
+    output = 'json'
+    strand = 1
+    ext = ('/map/%s/%s/%s:%s..%s:%s/%s')
+    ext = ext % (species, from_map, crm, beg, end, strand, to_map)
+    resp, content = HTTP.request(
+        server + ext, method="GET",
+        headers={"Content-Type":"application/%s" % output})
+    if content.startswith('Content-Type application/json had a problem'):
+        return 'Region %s:%s-%s not found' % (crm, beg, end)
+    
+    if not resp.status == 200:
+        try:
+            jsonel = json.loads(content)['error']
+            if re.findall('greater than ([0-9]+) for ',
+                          jsonel):
+                end = int(re.findall('greater than ([0-9]+) for ',
+                                     jsonel)[0])
+                return end
+        except Exception, e:
+            print str(e)
+            print content
+            print "Invalid response: ", resp.status
+        raise Exception
+    try:
+        map_list = json.loads(content)['mappings']
+    except KeyError:
+        return
+    if not map_list:
+        return 'Region %s:%s-%s not found' % (crm, beg, end)
+    return get_best_map_coord(map_list)
+
+
+def map_tad(i, tad, crm, resolution, from_species, synteny=True, **kwargs):
+    beg = int(tad['end']       * resolution)
+    end = int((tad['end'] + 1) * resolution)
+    if synteny:
+        do_mapping = syntenic_segment
+    else:
+        do_mapping = remap_segment
+    while True:
+        try:
+            coords = do_mapping(crm, beg, end, from_species, **kwargs)
+            if type(coords) is int:
+                if coords > beg:
+                    beg = int(tad['end']       * resolution)
+                    end = coords
+                else:
+                    beg = int((tad['end'] - 1) * resolution)
+                    end = coords
+            else:
+                break
+        except Exception, e:
+            print str(e)
+            print '\n... reconnecting...'
+            print ' ' * ((i%50) + 9 + (i%50)/10),
+            sleep(1)
+            global HTTP
+            HTTP = httplib2.Http(".cache")
+    return coords
+
+
+def convert_chromosome(crm, from_species, synteny=True, trace=None, **kwargs):
+    new_crm = Chromosome(crm.name, species=crm.species, assembly=crm.assembly)
+    mapped_coordinates = {}
+    log = []
+    crm_name = crm.name.replace('chr', '').replace('crm', '')
+    for exp in crm.experiments:
+        print '      Experiment %10s (%s TADs)' % (exp.name, len(exp.tads))
+        tads = {'end': [], 'start': [], 'score': []}
+        sys.stdout.write('         ')
+        connections = 0 # variable to avoid reaching the limit of 6 connection
+                        # per second allowed by Ensembl.
+        for i, tad in enumerate(exp.tads.values()):
+            if not tad['end'] in mapped_coordinates:
+                # MAP
+                coords = map_tad(i, tad, crm_name, exp.resolution,
+                                 from_species, synteny=synteny, **kwargs)
+                mapped_coordinates[tad['end']] = coords
+                connections += 1
+                if connections == 5:
+                    sleep(.8)
+                    connections = 0
+            else:
+                connections -= 1
+                coords = mapped_coordinates[tad['end']]
+            ## keep trace
+            trace.setdefault(crm_name, {})
+            if not tad['end'] in trace[crm_name]:
+                trace[crm_name][tad['end']] = {
+                    'from': {
+                        'crm'  : crm_name,
+                        'start': int(tad['end']       * exp.resolution),
+                        'end'  : int((tad['end'] + 1) * exp.resolution)}}
+            if not synteny and not 'mapped to' in trace[crm_name][tad['end']]:
+                trace[crm_name][tad['end']]['mapped to'] = coords
+            elif not 'syntenic at' in trace[crm_name][tad['end']]:
+                trace[crm_name][tad['end']]['syntenic at'] = coords
+            if type(coords) is dict:
+                tads['start'].append(
+                    (tads['end'][-1] + 1) if tads['end'] else 0.0)
+                tads['end'  ].append(float(int(coords['end'])/exp.resolution))
+                tads['score'].append(tad['score'])
+                sys.stdout.write('.')
+            else:
+                if not coords in log:
+                    log.append(coords)
+                sys.stdout.write('E')
+            if not (i + 1) % 50:
+                sys.stdout.write ('%3s\n         ' % (i + 1))
+            elif not (i+1) % 10:
+                sys.stdout.write(' ')
+                sys.stdout.flush()
+            else:
+                sys.stdout.flush()
+        new_crm.add_experiment(exp.name, tad_def=tads, cell_type=exp.cell_type,
+                               identifier=exp.identifier, enzyme=exp.enzyme,
+                               resolution=exp.resolution)
+        print ''
+    if log:
+        log.sort(key=lambda x: int(x.split(':')[1].split('-')[0]))
+        sys.stdout.write('              '+'\n              '.join(log))
+        sys.stdout.write('\n              ')
+    log = []
+    return new_crm
+
+    
 def main():
     """
     main function
     """
     opts = get_options()
-    res = opts.res
-
-    # load all chromosomes of reference genome
+    
+    # load all chromosomes of original genome
+    genome = {}
     if opts.verbose:
-        print 'Load seed chromosomes from %s' % (opts.ref_genome)
-    ref_genome, res_ref = load_genome(opts.ref_genome, res=opts.res,
-                                      verbose=opts.verbose)
-    
-    # load all chromosomes of target genome
-    alt_genomes = {}
-    for i, genome in enumerate(opts.genomes):
-        if opts.verbose:
-            print 'Load target chromosomes from %s' % (genome)
-        alt_genomes[i], res_alt = load_genome(genome, res=opts.res,
-                                              verbose=opts.verbose)
+        print '\nLoad %s chromosomes from \n%s:' % (
+            opts.original_species.capitalize().replace('_', ' ') + "'s",
+            ' '*10 + opts.genome)
+    genome = load_genome(opts.genome, res=opts.res, verbose=opts.verbose)
 
-    ## create a new genome with TAD borders from each genome
-    # first map alt_genome TAD borders to reference genome
+    # remap TADs
+    if opts.verbose:
+        print '\nCreating new TADbit chromosomes with new coordinates\n'
     new_genome = {}
-    for crm in alt_genome:
-        for exp in alt_genome[crm].experiments:
-            new_genome.setdefault(exp.name, {})
-            for tad in exp.tads.values():
-                coords = rest_query(crm.name, tad['start'], tad['end'],
-                                    seed_spe='homo_sapiens',
-                                    targ_spe='mus_musculus')
-                if coords:
-                    new_genome[exp.name].setdefault(coords['chr'],
-                                                    {'end': [], 'score': []})
-                    new_genome[exp.name][coords['chr']]['end'].append(coords['end'])
-                    new_genome[exp.name][coords['chr']]['score'].append(tad['score'])
+    trace = {}
+    global HTTP
+    HTTP = httplib2.Http(".cache")
 
-    ### HERE!!
+    # create directory for output
+    rootdir = os.path.abspath(opts.out_path)
+    if not os.path.exists(rootdir):
+        os.mkdir(rootdir)
     
-    # then check if borders in reference genome are found in alt_genome
-    # otherwise remove them
-    reorder(new_genome)
-    for exp in new_genome:
-        for crm in new_genome[exp]:
-            try:
-                ref_genome[crm].add_experiment(
-                    exp, res, tad_handler = new_genome[exp][crm])
-            except KeyError:
-                print ('Chromosome {} skipped, not in reference ' +
-                       'genome').format(crm)
+    # start iteration over chromosomes
+    for crm in genome:
+        print '\n   Chromosome:', crm
+        new_crm = None
+        crmdir = os.path.join(rootdir, crm)
+        if not os.path.exists(crmdir):
+            os.mkdir(crmdir)
+        if opts.skip:
+            if os.path.exists(os.path.join(crmdir, crm + '.tdb')):
+                continue
+        # remap
+        if opts.original_assembly:
+            print '\n     remapping from %s to %s:' % (
+                opts.original_assembly, opts.target_assembly)
+            new_crm = convert_chromosome(genome[crm], opts.original_species,
+                                         from_map=opts.original_assembly,
+                                         to_map=opts.target_assembly,
+                                         synteny=False, trace=trace)
+        # syntenic region
+        if opts.target_species:
+            print '\n     converting from %s to %s:' % (
+                opts.original_species, opts.target_species)
+            new_crm = convert_chromosome(new_crm or genome[crm],
+                                         from_species=opts.original_species,
+                                         to_species=opts.target_species,
+                                         synteny=True, trace=trace)
+        new_genome[crm] = new_crm
+        # save new chromosome
+        new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
 
-    system('mkdir -p ' + opts.out_path)
-    for crm in ref_genome:
-        system('mkdir -p ' + opts.out_path + '/' + crm)
-        out_f = opts.out_path + '/' + crm + '/chr' + crm + '.tdb'
-        ref_genome[crm].save_chromosome(out_f, force=True)
+        for t in trace[crm]:
+            print '%3s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s' %(
+                t,
+                trace[crm][t]['from']['crm'], trace[crm][t]['from']['start'], trace[crm][t]['from']['end'],
+                trace[crm][t]['mapped to']['chr'], trace[crm][t]['mapped to']['start'], trace[crm][t]['mapped to']['end'],
+                trace[crm][t]['syntenic at']['chr'], trace[crm][t]['syntenic at']['start'], trace[crm][t]['syntenic at']['end'],
+                )
 
 
 def get_options():
     '''
     parse option from call
     '''
-    def vararg_callback(option, _, value, parser):
-        assert value is None
-        value = []
-        rargs = parser.rargs
-        while rargs:
-            arg = rargs[0]
-            if ((arg[:2] == "--" and len(arg) > 2) or
-                (arg[:1] == "-" and len(arg) > 1 and arg[1] != "-")):
-                break
-            else:
-                value.append(arg)
-                del rargs[0]
-        setattr(parser.values, option.dest, value)
-    #
+
     parser = OptionParser(
         usage=("%prog [options] file [options] file [options] " +
                "file [options [file ...]]"))
-    parser.add_option('--genomes', dest='genomes', metavar="PATH",
-                      action='callback', default=None,
-                      callback=vararg_callback, 
-                      help='''path(s) to a directory/ies with a list of
+    parser.add_option('--genome', dest='genome', metavar="PATH",
+                      action='store', default=None,
+                      help='''path to a directory with a list of
                       chromosomes saved through tadbit (required if not
                       passing chromosomes)''')
-    parser.add_option('--ref_genome', dest='ref_genome', metavar="PATH", 
-                      help='''path to a directory with a list of chromosomes
-                      saved through tadbit (required with genomes option)''')
     parser.add_option('--crm', dest='crm', metavar="PATH", 
                       help='''path to input file, a chromosome saved through
-                      tadbit (required if not passing genomes)''')
-    parser.add_option('--ref_crm', dest='ref_crm', metavar="PATH", 
-                      help='''path to second input file, a reference chromosome
-                      saved through tadbit (required)''')
-    parser.add_option('--chain', dest='chain_path', action="store", \
-                      help=
-                      '''path to UCSC chain file (required)''')
+                      tadbit (required if not passing genome)''')
+    parser.add_option('--species', dest='original_species', metavar="STRING",
+                      help='''Species name (no spaces in name, use underscore)
+                      of the input chromosome(s) (i.e.: homo_sapiens''')
+    parser.add_option('--to_species', dest='target_species', metavar="STRING",
+                      default=None,
+                      help='''Name of the species name (no spaces in name, use
+                      underscore) to which we want to remap the chromosome(s)
+                      (i.e.: mus_musculus''')
+    parser.add_option('--from_map', dest='original_assembly', metavar="STRING",
+                      default=None,
+                      help='''NCBI ID of the original assembly (i.e.: NCBIM37
+                      for mouse or NCBI36 for human)''')
+    parser.add_option('--to_map', dest='target_assembly', metavar="STRING",
+                      default=None,
+                      help='''NCBI ID of the assembly we want to map to (i.e.:
+                      GRCm38 for mouse or GRCh37 for human) -- Needed with
+                      "from_map"''')
     parser.add_option('-o', dest='out_path', metavar="PATH",
                       default='./',
-                      help='''path to out file where merged tadbit chromosome
-                      will be stored''')
+                      help='''[%default] path to out file where converted TADbit
+                      chromosome(s) will be stored''')
     parser.add_option('--res', dest='res',
                       default=None,
                       help='''Wanted resolution for the detection of TADs (i.e.:
                       100Kb)''')
-    parser.add_option('--crm_name', dest='crm_name',
-                      default=None,
-                      help='''Chromosome name for crm1 (e.g. 21).''')
-    parser.add_option('--tmp', dest='tmp_path', metavar="PATH",
-                      default='./',
-                      help='''path to temporary directory to store liftover
-                      outfiles''')
-    parser.add_option('--liftover', 
-                      dest='lft_path', default='/usr/local/bin/',\
-                      help='''[%default] path to liftover binary''')
+    parser.add_option('--verbose', 
+                      dest='verbose', default=True, action='store_false',
+                      help='''[%default] verbosity''')
+    parser.add_option('--continue', 
+                      dest='skip', default=True, action='store_false',
+                      help='''[%default] skips chromosomes already saved in the
+                      output directory''')
     opts = parser.parse_args()[0]
-    if not opts.crm or not opts.ref_crm or not opts.chain_path:
-        if not opts.genomes or not opts.ref_genome or not opts.chain_path:
+
+    if not opts.crm or not opts.ref_crm:
+        if not opts.genome or not opts.ref_genome:
             exit(parser.print_help())
+    if not opts.original_species:
+        print '   Needs an from_species argument\n\n'
+        exit(parser.print_help())
+    if opts.original_assembly and not opts.target_assembly:
+        print '   Needs an to_map argument if original assembly is passed\n\n'
+        exit(parser.print_help())
     return opts
 
 
