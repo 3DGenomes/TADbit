@@ -189,6 +189,9 @@ def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
 
 
 def map_tad(i, tad, crm, resolution, from_species, synteny=True, **kwargs):
+    """
+    TODO: do synteny search right after mapping, in order to keep the trace
+    """
     beg = int(tad['end']       * resolution)
     end = int((tad['end'] + 1) * resolution)
     if synteny:
