@@ -188,35 +188,65 @@ def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
     return get_best_map_coord(map_list)
 
 
-def map_tad(i, tad, crm, resolution, from_species, synteny=True, **kwargs):
+def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
+            trace=None, **kwargs):
     """
     TODO: do synteny search right after mapping, in order to keep the trace
     """
     beg = int(tad['end']       * resolution)
     end = int((tad['end'] + 1) * resolution)
-    if synteny:
-        do_mapping = syntenic_segment
-    else:
-        do_mapping = remap_segment
-    while True:
-        try:
-            coords = do_mapping(crm, beg, end, from_species, **kwargs)
-            if type(coords) is int:
-                if coords > beg:
-                    beg = int(tad['end']       * resolution)
-                    end = coords
+    ## keep trace
+    trace.setdefault(crm, {})
+    if not tad['end'] in trace[crm]:
+        trace[crm][tad['end']] = {'from': {
+            'crm'  : crm,
+            'start': int(tad['end']       * resolution),
+            'end'  : int((tad['end'] + 1) * resolution)}}
+    if mapping:
+        while True:
+            try:
+                coords = syntenic_segment(crm, beg, end, from_species, **kwargs)
+                if type(coords) is int:
+                    if coords > beg:
+                        beg = int(tad['end']       * resolution)
+                        end = coords
+                    else:
+                        beg = int((tad['end'] - 1) * resolution)
+                        end = coords
                 else:
-                    beg = int((tad['end'] - 1) * resolution)
-                    end = coords
-            else:
-                break
-        except Exception, e:
-            print str(e)
-            print '\n... reconnecting...'
-            print ' ' * ((i%50) + 9 + (i%50)/10),
-            sleep(1)
-            global HTTP
-            HTTP = httplib2.Http(".cache")
+                    if not 'syntenic at' in trace[crm][tad['end']]:
+                        trace[crm][tad['end']]['syntenic at'] = coords
+                    break
+            except Exception, e:
+                print str(e)
+                print '\n... reconnecting...'
+                print ' ' * ((i%50) + 9 + (i%50)/10),
+                sleep(1)
+                global HTTP
+                HTTP = httplib2.Http(".cache")
+
+    if synteny:
+        while True:
+            try:
+                coords = remap_segment(crm, beg, end, from_species, **kwargs)
+                if type(coords) is int:
+                    if coords > beg:
+                        beg = int(tad['end']       * resolution)
+                        end = coords
+                    else:
+                        beg = int((tad['end'] - 1) * resolution)
+                        end = coords
+                else:
+                    if not 'mapped to' in trace[crm][tad['end']]:
+                        trace[crm][tad['end']]['mapped to'] = coords
+                    break
+            except Exception, e:
+                print str(e)
+                print '\n... reconnecting...'
+                print ' ' * ((i%50) + 9 + (i%50)/10),
+                sleep(1)
+                global HTTP
+                HTTP = httplib2.Http(".cache")
     return coords
 
 
@@ -235,7 +265,8 @@ def convert_chromosome(crm, from_species, synteny=True, trace=None, **kwargs):
             if not tad['end'] in mapped_coordinates:
                 # MAP
                 coords = map_tad(i, tad, crm_name, exp.resolution,
-                                 from_species, synteny=synteny, **kwargs)
+                                 from_species, synteny=synteny, trace=trace,
+                                 **kwargs)
                 mapped_coordinates[tad['end']] = coords
                 connections += 1
                 if connections == 5:
@@ -244,18 +275,6 @@ def convert_chromosome(crm, from_species, synteny=True, trace=None, **kwargs):
             else:
                 connections -= 1
                 coords = mapped_coordinates[tad['end']]
-            ## keep trace
-            trace.setdefault(crm_name, {})
-            if not tad['end'] in trace[crm_name]:
-                trace[crm_name][tad['end']] = {
-                    'from': {
-                        'crm'  : crm_name,
-                        'start': int(tad['end']       * exp.resolution),
-                        'end'  : int((tad['end'] + 1) * exp.resolution)}}
-            if not synteny and not 'mapped to' in trace[crm_name][tad['end']]:
-                trace[crm_name][tad['end']]['mapped to'] = coords
-            elif not 'syntenic at' in trace[crm_name][tad['end']]:
-                trace[crm_name][tad['end']]['syntenic at'] = coords
             if type(coords) is dict:
                 tads['start'].append(
                     (tads['end'][-1] + 1) if tads['end'] else 0.0)
