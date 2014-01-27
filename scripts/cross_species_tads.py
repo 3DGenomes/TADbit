@@ -85,7 +85,7 @@ def get_best_map_coord(map_list):
 
 def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
                      to_species='mus_musculus', alignment='LASTZ_NET',
-                     server="http://beta.rest.ensembl.org"):
+                     server="http://beta.rest.ensembl.org", **kwargs):
     """
     Given a seed genomic segment find the coordinate of its syntenis segment on
     a given target species.
@@ -136,7 +136,7 @@ def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
 
 
 def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
-                  server="http://beta.rest.ensembl.org"):
+                  server="http://beta.rest.ensembl.org", **kwargs):
     """
     Given a seed genomic segment find the coordinate of its syntenis segment on
     a given target species.
@@ -202,30 +202,9 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
             'crm'  : crm,
             'start': int(tad['end']       * resolution),
             'end'  : int((tad['end'] + 1) * resolution)}}
-    if mapping:
-        while True:
-            try:
-                coords = syntenic_segment(crm, beg, end, from_species, **kwargs)
-                if type(coords) is int:
-                    if coords > beg:
-                        beg = int(tad['end']       * resolution)
-                        end = coords
-                    else:
-                        beg = int((tad['end'] - 1) * resolution)
-                        end = coords
-                else:
-                    if not 'syntenic at' in trace[crm][tad['end']]:
-                        trace[crm][tad['end']]['syntenic at'] = coords
-                    break
-            except Exception, e:
-                print str(e)
-                print '\n... reconnecting...'
-                print ' ' * ((i%50) + 9 + (i%50)/10),
-                sleep(1)
-                global HTTP
-                HTTP = httplib2.Http(".cache")
 
-    if synteny:
+    coords = {}
+    if mapping:
         while True:
             try:
                 coords = remap_segment(crm, beg, end, from_species, **kwargs)
@@ -238,7 +217,39 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                         end = coords
                 else:
                     if not 'mapped to' in trace[crm][tad['end']]:
-                        trace[crm][tad['end']]['mapped to'] = coords
+                        if type(coords) is dict:
+                            trace[crm][tad['end']]['mapped to'] = coords
+                        else:
+                            trace[crm][tad['end']]['syntenic at'] = {
+                                'chr': None, 'start':None, 'end': None}
+                    break
+            except Exception, e:
+                print str(e)
+                print '\n... reconnecting...'
+                print ' ' * ((i%50) + 9 + (i%50)/10),
+                sleep(1)
+                global HTTP
+                HTTP = httplib2.Http(".cache")
+
+    if synteny and type(coords) is dict:
+        crm, beg, end = coords['chr'], coords['start'], coords['end']
+        while True:
+            try:
+                coords = syntenic_segment(crm, beg, end, from_species, **kwargs)
+                if type(coords) is int:
+                    if coords > beg:
+                        beg = int(tad['end']       * resolution)
+                        end = coords
+                    else:
+                        beg = int((tad['end'] - 1) * resolution)
+                        end = coords
+                else:
+                    if not 'syntenic at' in trace[crm][tad['end']]:
+                        if type(coords) is dict:
+                            trace[crm][tad['end']]['syntenic at'] = coords
+                        else:
+                            trace[crm][tad['end']]['syntenic at'] = {
+                                'chr': None, 'start':None, 'end': None}
                     break
             except Exception, e:
                 print str(e)
@@ -250,7 +261,8 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
     return coords
 
 
-def convert_chromosome(crm, from_species, synteny=True, trace=None, **kwargs):
+def convert_chromosome(crm, from_species, synteny=True, mapping=True,
+                       trace=None, **kwargs):
     new_crm = Chromosome(crm.name, species=crm.species, assembly=crm.assembly)
     mapped_coordinates = {}
     log = []
@@ -265,12 +277,12 @@ def convert_chromosome(crm, from_species, synteny=True, trace=None, **kwargs):
             if not tad['end'] in mapped_coordinates:
                 # MAP
                 coords = map_tad(i, tad, crm_name, exp.resolution,
-                                 from_species, synteny=synteny, trace=trace,
-                                 **kwargs)
+                                 from_species, synteny=synteny, mapping=mapping,
+                                 trace=trace, **kwargs)
                 mapped_coordinates[tad['end']] = coords
                 connections += 1
                 if connections == 5:
-                    sleep(.8)
+                    sleep(.9)
                     connections = 0
             else:
                 connections -= 1
@@ -341,33 +353,38 @@ def main():
         if opts.skip:
             if os.path.exists(os.path.join(crmdir, crm + '.tdb')):
                 continue
-        # remap
+        # remap and syntenic region
         if opts.original_assembly:
             print '\n     remapping from %s to %s:' % (
                 opts.original_assembly, opts.target_assembly)
+            print '        and searching syntenic regions from %s to %s' %(
+                opts.original_species.capitalize().replace('_', ' '),
+                opts.target_species.capitalize().replace('_', ' '))
             new_crm = convert_chromosome(genome[crm], opts.original_species,
                                          from_map=opts.original_assembly,
                                          to_map=opts.target_assembly,
-                                         synteny=False, trace=trace)
-        # syntenic region
-        if opts.target_species:
-            print '\n     converting from %s to %s:' % (
-                opts.original_species, opts.target_species)
-            new_crm = convert_chromosome(new_crm or genome[crm],
-                                         from_species=opts.original_species,
                                          to_species=opts.target_species,
-                                         synteny=True, trace=trace)
+                                         synteny=True, mapping=True, trace=trace)
         new_genome[crm] = new_crm
         # save new chromosome
         new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
 
         for t in trace[crm]:
-            print '%3s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s' %(
-                t,
-                trace[crm][t]['from']['crm'], trace[crm][t]['from']['start'], trace[crm][t]['from']['end'],
-                trace[crm][t]['mapped to']['chr'], trace[crm][t]['mapped to']['start'], trace[crm][t]['mapped to']['end'],
-                trace[crm][t]['syntenic at']['chr'], trace[crm][t]['syntenic at']['start'], trace[crm][t]['syntenic at']['end'],
-                )
+            try:
+                print '%4s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s' %(
+                    int(t),
+                    trace[crm][t]['from']['crm']       , trace[crm][t]['from']['start']       , trace[crm][t]['from']['end'],
+                    trace[crm][t]['mapped to']['chr']  , trace[crm][t]['mapped to']['start']  , trace[crm][t]['mapped to']['end'],
+                    trace[crm][t]['syntenic at']['chr'], trace[crm][t]['syntenic at']['start'], trace[crm][t]['syntenic at']['end'],
+                    )
+            except KeyError:
+                print '%4s : %2s:%9s-%9s -> %22s -> %22s' %(
+                    int(t),
+                    trace[crm][t]['from']['crm']       , trace[crm][t]['from']['start']       , trace[crm][t]['from']['end'],
+                    'None',
+                    'None',
+                    )
+                
 
 
 def get_options():
