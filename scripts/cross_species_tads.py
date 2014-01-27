@@ -369,7 +369,7 @@ def main():
         # save new chromosome
         new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
 
-        for t in trace[crm]:
+        for t in sorted(trace[crm]):
             try:
                 print '%4s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s' %(
                     int(t),
