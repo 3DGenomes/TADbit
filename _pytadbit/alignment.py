@@ -265,7 +265,7 @@ class Alignment(object):
         self.__keys.append(name)
 
 
-    def draw(self, focus=None, extras=None, savefig=None):
+    def draw(self, focus=None, extras=None, savefig=None, **kwargs):
         """
         Draw alignments as a plot.
         
@@ -299,7 +299,7 @@ class Alignment(object):
         for iex, xpr in enumerate(experiments):
             if not xpr.name in self:
                 continue
-            zeros = xpr._zeros
+            zeros = xpr._zeros or {}
             try:
                 norms = xpr.norm[0]
             except TypeError:
@@ -399,7 +399,7 @@ class Alignment(object):
                         fontsize='small', loc='lower left',
                         bbox_to_anchor=(1, 0.5))
         if savefig:
-            plt.savefig(savefig)
+            plt.savefig(savefig, **kwargs)
         else:
             plt.show()
 

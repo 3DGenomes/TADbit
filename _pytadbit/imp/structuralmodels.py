@@ -22,6 +22,7 @@ from scipy.stats                    import spearmanr
 from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
+from os.path                        import exists
 
 try:
     from matplotlib import pyplot as plt
@@ -296,17 +297,26 @@ class StructuralModels(object):
                 mcl_bin, tmp_file, tmp_file), stdout=PIPE, stderr=PIPE,
                   shell=True).communicate()
             self.clusters = ClusterOfModels()
+            if not exists(tmp_file + '.mcl'):
+                raise Exception(
+                    'Problem with clustering, try increasing "dcutoff"\n')
+            new_singles = 0
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
                 self.clusters[cluster + 1] = []
                 for model in line.split():
                     model = int(model.split('_')[1])
                     self[model]['cluster'] = cluster + 1
                     self.clusters[cluster + 1].append(self[model]['rand_init'])
+                if len(self.clusters[cluster + 1]) == 1:
+                    self[str(self.clusters[cluster + 1][0])]['cluster'] = 'Singleton'
+                    new_singles += 1
                 self.clusters[cluster + 1].sort(
                     key=lambda x: self[str(x)]['objfun'])
         if verbose:
-            print 'Number of Singletons excluded from clustering: %s' % (
-                len([1 for model in self if model['cluster'] == 'Singleton']))
+            singletons = len([1 for model in self
+                              if model['cluster'] == 'Singleton'])
+            print ('Number of singletons excluded from clustering: %s (total' +
+                   ' singletons: %s)') % (singletons - new_singles, singletons)
             print self.clusters
 
 

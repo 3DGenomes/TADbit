@@ -488,9 +488,14 @@ class Chromosome(object):
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
                                      get_weights=True)
-            experiment = Experiment(name, resolution, hic_data=matrix,
-                                    tad_def=result, weights=weights)
-            self.add_experiment(experiment)
+            xpr = Experiment(name, resolution, hic_data=matrix,
+                             tad_def=result, weights=weights)
+            xpr._zeros = xprs[0]._zeros
+            for other in xprs[1:]:
+                xpr._zeros = dict([(k, None) for k in
+                                   set(xpr._zeros.keys()).intersection(
+                                       other._zeros.keys())])
+            self.add_experiment(xpr)
             return
         if type(experiments) is not list:
             experiments = [experiments]

@@ -160,6 +160,9 @@ class Experiment(object):
         xpr.enzyme      = self.enzyme      if self.enzyme      == other.enzyme      else '%s+%s' % (self.enzyme     , other.enzyme     )
         xpr.description = self.description if self.description == other.description else '%s+%s' % (self.description, other.description)
         xpr.exp_type    = self.exp_type    if self.exp_type    == other.exp_type    else '%s+%s' % (self.exp_type   , other.exp_type   )
+        xpr._zeros      = dict([(k, None) for k in
+                                set(self._zeros.keys()).intersection(
+                                    other._zeros.keys())])
         for des in self.description:
             if not des in other.description:
                 continue
@@ -291,6 +294,9 @@ class Experiment(object):
         
         """
         tads, norm = parse_tads(tad_def)
+        last = max(tads.keys())
+        if not self.size:
+            self.size = tads[last]['end']
         self.tads = tads
         self.norm  = weights or norm
         if self.norm:
