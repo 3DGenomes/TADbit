@@ -206,7 +206,8 @@ class StructuralModels(object):
 
 
     def cluster_models(self, fact=0.75, dcutoff=200, method='mcl',
-                       mcl_bin='mcl', tmp_file=None, verbose=True):
+                       mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
+                       mclargs=None):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison. The result will be stored in
@@ -241,6 +242,9 @@ class StructuralModels(object):
         :param None tmp_file: path to a temporary file created during
            the clustering computation. Default will be created in /tmp/ folder
         :param True verbose: same as print StructuralModels.clusters
+        :param 1 n_cpus: number of cpus to use in MCL clustering
+        :param mclargs: list with any other command line argument to be passed
+           to mcl (i.e,: ['-p', '3'])
 
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
@@ -293,8 +297,9 @@ class StructuralModels(object):
                 if score >= cut:
                     out_f.write('model_%s\tmodel_%s\t%s\n' % (md1, md2, score))
             out_f.close()
-            Popen('%s %s --abc -V all -o %s.mcl' % (
-                mcl_bin, tmp_file, tmp_file), stdout=PIPE, stderr=PIPE,
+            Popen('%s %s --abc -te %s -V all -o %s.mcl %s' % (
+                mcl_bin, tmp_file, n_cpus, tmp_file, ' '.join(
+                    mclargs)), stdout=PIPE, stderr=PIPE,
                   shell=True).communicate()
             self.clusters = ClusterOfModels()
             if not exists(tmp_file + '.mcl'):
