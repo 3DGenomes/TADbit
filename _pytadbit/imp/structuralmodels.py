@@ -244,7 +244,7 @@ class StructuralModels(object):
         :param True verbose: same as print StructuralModels.clusters
         :param 1 n_cpus: number of cpus to use in MCL clustering
         :param mclargs: list with any other command line argument to be passed
-           to mcl (i.e,: ['-p', '3'])
+           to mcl (i.e,: mclargs=['-pi', '10', '-I', '2.0'])
 
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
@@ -299,24 +299,28 @@ class StructuralModels(object):
             out_f.close()
             Popen('%s %s --abc -te %s -V all -o %s.mcl %s' % (
                 mcl_bin, tmp_file, n_cpus, tmp_file, ' '.join(
-                    mclargs)), stdout=PIPE, stderr=PIPE,
+                    mclargs or [])), stdout=PIPE, stderr=PIPE,
                   shell=True).communicate()
             self.clusters = ClusterOfModels()
             if not exists(tmp_file + '.mcl'):
                 raise Exception(
                     'Problem with clustering, try increasing "dcutoff"\n')
             new_singles = 0
+            cluster = 1
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
-                self.clusters[cluster + 1] = []
-                for model in line.split():
-                    model = int(model.split('_')[1])
-                    self[model]['cluster'] = cluster + 1
-                    self.clusters[cluster + 1].append(self[model]['rand_init'])
-                if len(self.clusters[cluster + 1]) == 1:
-                    self[str(self.clusters[cluster + 1][0])]['cluster'] = 'Singleton'
+                models = line.split()
+                if len(models) == 1:
+                    self[models[0].split('_')[1]]['cluster'] = 'Singleton'
                     new_singles += 1
-                self.clusters[cluster + 1].sort(
-                    key=lambda x: self[str(x)]['objfun'])
+                else:
+                    self.clusters[cluster] = []
+                    for model in models:
+                        model = int(model.split('_')[1])
+                        self[model]['cluster'] = cluster + 1
+                        self.clusters[cluster].append(self[model]['rand_init'])
+                    self.clusters[cluster].sort(
+                        key=lambda x: self[str(x)]['objfun'])
+                    cluster += 1
         if verbose:
             singletons = len([1 for model in self
                               if model['cluster'] == 'Singleton'])
