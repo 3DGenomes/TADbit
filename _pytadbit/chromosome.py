@@ -135,7 +135,7 @@ class Chromosome(object):
        the output of parser('example.tsv') would be be:
        ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,
        110, 100, 278]), 4]``
-    :param None **kw_descr: any other argument passed would be stored as
+    :param None kw_descr: any other argument passed would be stored as
        complementary descriptive field. For example::
        
            crm  = Chromosome('19', species='mus musculus',

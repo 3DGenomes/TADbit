@@ -56,7 +56,7 @@ class Experiment(object):
        the TADs
     :param True filter_columns: filter the columns with unexpectedly high 
        content of low values
-    :param None **kw_descr: any other argument passed would be stored as
+    :param None kw_descr: any other argument passed would be stored as
        complementary descriptive field. For example::
        
            exp  = Experiment('k562_rep2', resolution=100000,
