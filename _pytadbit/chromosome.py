@@ -7,6 +7,7 @@
 from os.path                           import exists
 from pytadbit.boundary_aligner.aligner import align
 from pytadbit                          import tadbit
+from pytadbit.utils.extraviews         import tadbit_savefig
 from pytadbit.experiment               import Experiment
 from string                            import ascii_lowercase as letters
 from warnings                          import warn
@@ -528,7 +529,7 @@ class Chromosome(object):
 
     def visualize(self, name, tad=None, focus=None, paint_tads=False, axe=None,
                   show=True, logarithm=True, normalized=False, relative=True,
-                  decorate=True):
+                  decorate=True, savefig=None):
         """
         Visualize the matrix of Hi-C interactions.
 
@@ -559,6 +560,9 @@ class Chromosome(object):
         :param True relative: color scale is relative to the whole matrix of
            data, not only to the region displayed
         :param True decorate: draws color bar, title and axes labels
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         """
         xper = self.get_experiment(name)
         if logarithm:
@@ -586,6 +590,9 @@ class Chromosome(object):
                                    key=lambda x: int(x['start']))[0 ]['start'])
                 end   = int(sorted(tad,
                                    key=lambda x: int(x['end'  ]))[-1]['end'  ])
+        else:
+            start = xper.tads[min(xper.tads)]['start'] + 1
+            end   = xper.tads[max(xper.tads)]['end'  ] + 1
         if len(xper.hic_data) > 1:
             hic_data = [sum(i) for i in zip(*xper.hic_data)]
         else:
@@ -654,12 +661,16 @@ class Chromosome(object):
                                      int(start or 1) + len(matrix) - 0.5))
         if decorate:
             cbar = axe.figure.colorbar(img)
-            cbar.ax.set_ylabel('Log2 Hi-C interactions count')
+            cbar.ax.set_ylabel('%sHi-C %sinteraction count' % (
+                'Log2 ' * logarithm, 'normalized ' * normalized))
             axe.set_title(('Chromosome %s experiment %s' +
                            ' %s') % (self.name, xper.name,
                                      'focus: %s-%s' % (start, end) if tad else ''))
             axe.set_xlabel('Genomic bin (resolution: %s)' % (xper.resolution))
-            axe.set_ylabel('Genomic bin (resolution: %s)' % (xper.resolution))
+            if paint_tads:
+                axe.set_ylabel('TAD number')
+            else:
+                axe.set_ylabel('Genomic bin (resolution: %s)' % (xper.resolution))
         if not paint_tads:            
             axe.set_ylim(int(start or 1) - 0.5,
                          int(start or 1) + len(matrix) - 0.5)
@@ -669,32 +680,19 @@ class Chromosome(object):
                 plt.show()
             return img
         pwidth = 1
-        for i, tad in xper.tads.iteritems():
-            if start:
-                # print int(tad['start']) + 1, start
-                # print int(tad['end']) + 1, end
-                if int(tad['start']) + 1 < start:
-                    continue
-                if int(tad['end']) + 1 > end:
-                    continue
-                t_start = int(tad['start']) + 1.5
-                t_end   = int(tad['end'])   + 2.5
-            else:
-                t_start = int(tad['start']) + .5
-                t_end   = int(tad['end']) + 1.5
-            nwidth = float(tad['score']) / 3
+        tads = dict([(t, xper.tads[t]) for t in xper.tads
+                     if  ((int(xper.tads[t]['start']) + 1 >= start
+                           and int(xper.tads[t]['end'  ]) + 1 <= end)
+                          or not start)])
+        for i, tad in tads.iteritems():
+            t_start = int(tad['start']) + .5
+            t_end   = int(tad['end'])   + 1.5
+            nwidth = float(tad['score']) / 4
             axe.hlines(t_start, t_start, t_end, colors='k', lw=pwidth)
             axe.hlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
             axe.vlines(t_start, t_start, t_end, colors='k', lw=pwidth)
             axe.vlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
             pwidth = nwidth
-            if not i % ((len(xper.tads) / 10) or 1):
-                if i % 2:
-                    axe.text(t_start + abs(t_start-t_end)/2,
-                             t_end + 1, str(i), va='bottom', ha='center')
-                else:
-                    axe.text(t_start + abs(t_start-t_end)/2,
-                             t_start - 1, str(i), va='top', ha='center')
             if tad['score'] < 0:
                 for j in xrange(0, int(t_end) - int(t_start), 2):
                     axe.plot((t_start    , t_start + j),
@@ -705,8 +703,20 @@ class Chromosome(object):
                      int(start or 1) + len(matrix) - 0.5)
         axe.set_xlim(int(start or 1) - 0.5,
                      int(start or 1) + len(matrix) - 0.5)
+        if paint_tads:
+            ticks = []
+            labels = []
+            for tad, tick in [(t, tads[t]['start'] + (tads[t]['end'] -
+                                                      tads[t]['start'] - 1))
+                              for t in tads.keys()[::(len(tads)/11 + 1)]]:
+                ticks.append(tick)
+                labels.append(tad + 1)
+            axe.set_yticks(ticks)
+            axe.set_yticklabels(labels)
         if show:
             plt.show()
+        if savefig:
+            tadbit_savefig(savefig)
 
 
     def get_tad_hic(self, tad, x_name, normed=True, matrix_num=0):

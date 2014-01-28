@@ -5,6 +5,7 @@
 """
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
+from pytadbit.utils.extraviews      import tadbit_savefig
 from pytadbit.utils.three_dim_stats import generate_sphere_points
 from pytadbit.utils.three_dim_stats import fast_square_distance
 from pytadbit.utils.three_dim_stats import build_mesh
@@ -199,6 +200,11 @@ class IMPmodel(dict):
 
         :param False log: log plot
         :param True smooth: curve smoothing
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
 
         """
         show = False
@@ -239,7 +245,7 @@ class IMPmodel(dict):
         if log:
             axe.set_yscale('log')
         if savefig:
-            fig.savefig(savefig)
+            tadbit_savefig(savefig)
         elif show:
             plt.show()
 

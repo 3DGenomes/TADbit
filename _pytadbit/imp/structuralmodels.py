@@ -6,7 +6,7 @@
 from pytadbit.utils.three_dim_stats import calc_consistency
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
 from pytadbit.utils.tadmaths        import calinski_harabasz
-from pytadbit.utils.extraviews      import chimera_view
+from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
 from pytadbit.imp.impmodel          import IMPmodel
 from pytadbit.centroid              import centroid_wrapper
@@ -419,7 +419,8 @@ class StructuralModels(object):
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
         :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         :param None savedata: path to a file where to save the density data
            generated (1 column per step + 1 for particle number).
         :param True plot: e.g. only saves data. No plotting done
@@ -534,7 +535,7 @@ class StructuralModels(object):
         ax.set_title('Chromatin density')
         plt.subplots_adjust(left=0.1, right=0.78)
         if savefig:
-            fig.savefig(savefig)
+            tadbit_savefig(savefig)
         elif not axe:
             plt.show()
 
@@ -607,7 +608,8 @@ class StructuralModels(object):
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
         :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         :param None savedata: path to a file where to save the contact map data
            generated, in three columns format (particle1, particle2, percentage
            of models where these two particles are in contact)
@@ -640,7 +642,7 @@ class StructuralModels(object):
                            '%s nm' % (cutoff))
         axe.set_title('Contact map')
         if savefig:
-            fig.savefig(savefig)
+            tadbit_savefig(savefig)
         elif show:
             plt.show()
 
@@ -655,7 +657,8 @@ class StructuralModels(object):
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
         :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
 
         """
 
@@ -731,7 +734,7 @@ class StructuralModels(object):
                      '%.2f; blue: < %.2f' % (self._config['upfreq'],
                                              self._config['lowfreq']))
         if savefig:
-            fig.savefig(savefig)
+            tadbit_savefig(savefig)
         elif not axe:
             plt.show()
 
@@ -747,7 +750,8 @@ class StructuralModels(object):
         :param 200 cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not
         :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         :param False plot: to display the plot
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
@@ -794,7 +798,7 @@ class StructuralModels(object):
         cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
 
         if savefig:
-            fig.savefig(savefig)
+            tadbit_savefig(savefig)
         elif not axe:
             plt.show()
         return corr
@@ -821,6 +825,11 @@ class StructuralModels(object):
            TM-score program
         :param '' tmsc: path to the TMscore_consistency script (assumed to be
            installed by default)
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         :param None savedata: path to a file where to save the consistency data
            generated (1 column per cutoff + 1 for particle number).
         :param True plot: e.g. only saves data. No plotting done
@@ -892,7 +901,7 @@ class StructuralModels(object):
         else:
             axe.set_title('Selected models')
         if savefig:
-            fig.savefig(savefig)
+            tadbit_savefig(savefig)
         elif show:
             plt.show()
 
@@ -1113,8 +1122,11 @@ class StructuralModels(object):
            By default 2 curves are drawn
         :param True signed: whether to compute the sign of the angle according
            to a normal plane, or not.
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
         :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).                
 
@@ -1176,7 +1188,7 @@ class StructuralModels(object):
                              lw=steps.index(k) + 1, alpha=0.5)
 
         if savefig:
-            fig.savefig(savefig)
+            tadbit_savefig(savefig)
         elif not axe:
             plt.show()
 
@@ -1198,8 +1210,11 @@ class StructuralModels(object):
            By default 2 curves are drawn
         :param True signed: whether to compute the sign of the angle according
            to a normal plane, or not.
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
         :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).                
 
@@ -1300,7 +1315,7 @@ class StructuralModels(object):
         plt.subplots_adjust(left=0.1, right=0.8)
 
         if savefig:
-            fig.savefig(savefig)
+            tadbit_savefig(savefig)
         elif not axe:
             plt.show()
 
@@ -1324,6 +1339,11 @@ class StructuralModels(object):
            distances (False) or their median value (True), when 'plot' is set
            to False
 
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         :returns: if 'plot' is False, return either the full list of the
            calculated distances or their median value distances, either the
            list of distances.
@@ -1372,6 +1392,9 @@ class StructuralModels(object):
         :param model: the number of the model to plot
         :param False log: log plot
         :param True smooth: curve smoothing
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         """
         self[model].objective_function(log=log, smooth=smooth, axe=axe,
                                        savefig=savefig)

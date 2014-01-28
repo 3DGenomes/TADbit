@@ -14,6 +14,14 @@ except ImportError:
     warn('matplotlib not found\n')
 
 
+def tadbit_savefig(savefig):
+    form = savefig[-4:].split('.')[1]
+    if not form in ['png', 'pdf', 'ps', 'eps', 'svg']:
+        raise NotImplementedError('File extension must be one of %s' %(
+            ['png', 'pdf', 'ps', 'eps', 'svg']))
+    plt.savefig(savefig, format=form)
+
+
 def nicer(res):
     """
     writes resolution number for human beings.
@@ -222,7 +230,7 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                  "(relative to %s models)" % (total),
                  size='small')
     if savefig:
-        fig.savefig(savefig)
+        tadbit_savefig(savefig)
     elif not axe:
         plt.show()
     return ddata
@@ -296,7 +304,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
     bpAx.set_title('Histogram and boxplot of distances between particles ' +
                    '%s and %s' % (part1, part2))
     if savefig:
-        fig.savefig(savefig)
+        tadbit_savefig(savefig)
     elif not axe:
         plt.show()
 

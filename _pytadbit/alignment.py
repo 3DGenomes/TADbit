@@ -4,12 +4,12 @@
 
 """
 
-from pytadbit.utils.extraviews import colorize
-from random import random, shuffle
-from sys import stdout
+from pytadbit.utils.extraviews         import colorize, tadbit_savefig
+from random                            import random, shuffle
+from sys                               import stdout
 from pytadbit.boundary_aligner.aligner import align
-from numpy import linspace, sin, pi
-from warnings import warn
+from numpy                             import linspace, sin, pi
+from warnings                          import warn
 
 try:
     from scipy.interpolate import interp1d
@@ -265,7 +265,7 @@ class Alignment(object):
         self.__keys.append(name)
 
 
-    def draw(self, focus=None, extras=None, savefig=None, **kwargs):
+    def draw(self, focus=None, extras=None, savefig=None):
         """
         Draw alignments as a plot.
         
@@ -273,6 +273,9 @@ class Alignment(object):
            alignment between these genomic bins
         :param None extras: list of coordinates (genomic bin) where to draw a
            red cross
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         """
         from matplotlib.cm import jet
         from matplotlib import pyplot as plt
@@ -399,7 +402,7 @@ class Alignment(object):
                         fontsize='small', loc='lower left',
                         bbox_to_anchor=(1, 0.5))
         if savefig:
-            plt.savefig(savefig, **kwargs)
+            tadbit_savefig(savefig)
         else:
             plt.show()
 
