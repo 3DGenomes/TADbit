@@ -88,8 +88,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   */
 
   // get passages
-  py_passages = PyList_New(n);
-  for(i = 0 ; i < n; i++)
+  py_passages = PyList_New(dim);
+  for(i = 0 ; i < dim; i++)
     PyList_SetItem(py_passages, i, PyFloat_FromDouble(passages[i]));
 
   // get llikmat

@@ -1026,27 +1026,29 @@ tadbit
    double *llikmatcpy = (double *) malloc (n*n * sizeof(double));
    double *mllikcpy = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkptscpy = (int *) malloc(n*MAXBREAKS * sizeof(int));
-   int *passages = (int *) malloc(n * sizeof(int));
+   int *passages = (int *) malloc(n*MAXBREAKS * sizeof(int));
    for (i = 0 ; i < n*MAXBREAKS ; i++) bkptscpy[i] = bkpts[i];
    for (i = 0 ; i < n*n ; i++) llikmatcpy[i] = llikmat[i];
-   for (i = 0 ; i < n ; i++) passages[i] = 0;
+   for (i = 0 ; i < n*MAXBREAKS ; i++) passages[i] = 0;
 
+   for (k = 0; k < MAXBREAKS; k++){
+   for (i = 0 ; i < n*n ; i++) llikmatcpy[i] = llikmat[i];
    for (l = 0 ; l < 10 ; l++) {
       i = 0;
       for (j = 0 ; j < n ; j++) {
-         if (bkptscpy[j+nbreaks_opt*n]) {
+         if (bkptscpy[j+k*n]) {
             // Apply a constant penalty every time a TAD is present
             // in the final decomposition. The penalty is set to
             // 'm*6' because it is the expected log-likelihood gain
             // for adding a new TAD around the optimum log-likelihood.
             llikmatcpy[i+j*n] -= m*6;
-            passages[j] += bkpts[j+nbreaks_opt*n];
+            passages[j+k*n] += bkpts[j+k*n];
             i = j+1;
          }
       }
       if (i < n) llikmatcpy[i+(n-1)*n] -= m*6;
-      DPwalk(llikmatcpy, n, nbreaks_opt+1, n_threads, mllikcpy, bkptscpy);
-   }
+      DPwalk(llikmatcpy, n, k+1, n_threads, mllikcpy, bkptscpy);
+   }}
    free(llikmatcpy);
    free(mllikcpy);
    free(bkptscpy);
@@ -1071,15 +1073,16 @@ tadbit
    }
 
    int *resized_bkpts = (int *) malloc(N*MAXBREAKS * sizeof(int));
-   int *resized_passages = (int *) malloc(N * sizeof(int));
+   int *resized_passages = (int *) malloc(N*MAXBREAKS * sizeof(int));
    for (i = 0 ; i < N*MAXBREAKS ; i++) resized_bkpts[i] = 0;
-   for (i = 0 ; i < N ; i++) resized_passages[i] = 0;
+   for (i = 0 ; i < N*MAXBREAKS ; i++) resized_passages[i] = 0;
 
    for (l = 0, i = 0 ; i < N ; i++) {
       if (remove[i]) continue;
-      resized_passages[i] = passages[l];
-      for (j = 0 ; j < MAXBREAKS ; j++)
-         resized_bkpts[i+j*N] = bkpts[l+j*n];
+      for (j = 0 ; j < MAXBREAKS ; j++){
+	resized_passages[i+j*N] = passages[l+j*n];
+	resized_bkpts[i+j*N] = bkpts[l+j*n];
+      }
       l++;
    }
 
