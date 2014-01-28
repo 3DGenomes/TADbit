@@ -70,9 +70,10 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject * temp;
 
   // get bkpts
-  int dim = nbreaks_opt*n;
-  py_bkpts = PyList_New(dim+n);
-  for(i = 0 ; i < dim+n; i++)
+  /* int dim = nbreaks_opt*n; */
+  int dim = (n / 5) * n;
+  py_bkpts = PyList_New(dim);
+  for(i = 0 ; i < dim; i++)
     PyList_SetItem(py_bkpts, i, PyInt_FromLong(bkpts[i]));
 
   /* This is to return directly the list of breaks found
