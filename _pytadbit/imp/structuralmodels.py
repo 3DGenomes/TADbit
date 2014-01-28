@@ -592,6 +592,11 @@ class StructuralModels(object):
                                  xrange(nbest, len(tmp_models))])
 
 
+    def deconvolute_plot(self, models=None, cluster=None):
+        """
+        """
+        
+
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
                     savefig=None, savedata=None):
         """
