@@ -54,12 +54,12 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
                        n_cpus,           # number of threads
                        int(verbose),     # verbose 0/1
                        max_tad_size,     # max_tad_size
+                       kwargs.get('nbks', 0),
                        int(no_heuristic),# heuristic 0/1
                        )
 
-    nbks = kwargs.get('nbks', nbks)
     breaks = [i for i in xrange(size) if bkpts[i + nbks * size] == 1]
-    scores = [passages[i + nbks * size] for i in xrange(size) if bkpts[i + nbks * size] == 1]
+    scores = [p for p in passages if p > 0]
 
     result = {'start': [], 'end'  : [], 'score': []}
     for brk in xrange(len(breaks)+1):

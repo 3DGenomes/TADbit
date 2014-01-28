@@ -30,11 +30,12 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   int n_threads;
   const int verbose;
   const int max_tad_size;
+  const int nbks;
   const int do_not_use_heuristic;
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "Oiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &do_not_use_heuristic))
+  if (!PyArg_ParseTuple(args, "Oiiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &nbks, &do_not_use_heuristic))
     return NULL;
 
   // convert list of lists to pointer o pointers
@@ -49,7 +50,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
       list[i][j] = PyInt_AS_LONG(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
 
   // run tadbit
-  tadbit(list, n, m, n_threads, verbose, max_tad_size, do_not_use_heuristic, seg);
+  tadbit(list, n, m, n_threads, verbose, max_tad_size, nbks, do_not_use_heuristic, seg);
 
   // store each tadbit output
   int       mbreaks     = seg->maxbreaks;
@@ -71,7 +72,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
 
   // get bkpts
   /* int dim = nbreaks_opt*n; */
-  int dim = (n / 5) * n;
+  const int MAXBREAKS = nbks ? nbks : n/5;
+  int dim = MAXBREAKS * n;
   py_bkpts = PyList_New(dim);
   for(i = 0 ; i < dim; i++)
     PyList_SetItem(py_bkpts, i, PyInt_FromLong(bkpts[i]));
@@ -88,8 +90,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   */
 
   // get passages
-  py_passages = PyList_New(dim);
-  for(i = 0 ; i < dim; i++)
+  py_passages = PyList_New(n);
+  for(i = 0 ; i < n; i++)
     PyList_SetItem(py_passages, i, PyFloat_FromDouble(passages[i]));
 
   // get llikmat
