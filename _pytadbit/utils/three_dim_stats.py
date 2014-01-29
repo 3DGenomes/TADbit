@@ -247,6 +247,7 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score'):
        pairwise model comparison.
        
     """
+    what = what.lower()
     if not what in ['score', 'rmsd', 'drmsd', 'eqv']:
         raise NotImplementedError("Only 'score', 'rmsd', 'drmsd' or 'eqv' " +
                                   "features are available\n")

@@ -207,7 +207,7 @@ class StructuralModels(object):
 
     def cluster_models(self, fact=0.75, dcutoff=200, method='mcl',
                        mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
-                       mclargs=None):
+                       mclargs=None, external=False, what='score'):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison. The result will be stored in
@@ -245,11 +245,15 @@ class StructuralModels(object):
         :param 1 n_cpus: number of cpus to use in MCL clustering
         :param mclargs: list with any other command line argument to be passed
            to mcl (i.e,: mclargs=['-pi', '10', '-I', '2.0'])
+        :param False external: if True returns the cluster found instead of
+           storing it as StructuralModels.clusters
+        :param 'score' what: Statistic used for clustering. Can be one of
+           'score', 'rmsd', 'drmsd' or 'eqv'.
 
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
-        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff)
+        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, what=what)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
             print('\nWARNING: MCL not found in path using WARD clustering\n')
@@ -280,6 +284,8 @@ class StructuralModels(object):
             clusters = dict([(i + 1, j) for i, j in
                              enumerate(sorted(clusters.values(),
                                               key=len, reverse=True))])
+            if external:
+                return clusters
             self.clusters = ClusterOfModels()
             for cluster in clusters:
                 self.clusters[cluster] = []
@@ -301,7 +307,7 @@ class StructuralModels(object):
                 mcl_bin, tmp_file, n_cpus, tmp_file, ' '.join(
                     mclargs or [])), stdout=PIPE, stderr=PIPE,
                   shell=True).communicate()
-            self.clusters = ClusterOfModels()
+            clusters = ClusterOfModels()
             if not exists(tmp_file + '.mcl'):
                 raise Exception(
                     'Problem with clustering, try increasing "dcutoff"\n')
@@ -310,17 +316,22 @@ class StructuralModels(object):
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
                 models = line.split()
                 if len(models) == 1:
-                    self[models[0].split('_')[1]]['cluster'] = 'Singleton'
+                    if not external:
+                        self[models[0].split('_')[1]]['cluster'] = 'Singleton'
                     new_singles += 1
                 else:
-                    self.clusters[cluster] = []
+                    clusters[cluster] = []
                     for model in models:
                         model = int(model.split('_')[1])
-                        self[model]['cluster'] = cluster + 1
-                        self.clusters[cluster].append(self[model]['rand_init'])
-                    self.clusters[cluster].sort(
+                        if not external:
+                            self[model]['cluster'] = cluster + 1
+                        clusters[cluster].append(self[model]['rand_init'])
+                    clusters[cluster].sort(
                         key=lambda x: self[str(x)]['objfun'])
                     cluster += 1
+            if external:
+                return clusters
+            self.clusters = clusters
         if verbose:
             singletons = len([1 for model in self
                               if model['cluster'] == 'Singleton'])
@@ -592,10 +603,18 @@ class StructuralModels(object):
                                  xrange(nbest, len(tmp_models))])
 
 
-    def deconvolute_plot(self, models=None, cluster=None):
+    def deconvolute(self, fact=0.75, dcutoff=200, method='mcl',
+                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
+                    mclargs=None, external=False, what='dRMSD'):
         """
         """
-        pass
+        clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
+                                       method=method, mcl_bin=mcl_bin,
+                                       tmp_file=tmp_file, verbose=verbose,
+                                       n_cpus=n_cpus, mclargs=mclargs,
+                                       external=external, what=what)
+        return clusters
+        
 
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
                     savefig=None, savedata=None):

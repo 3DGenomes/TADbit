@@ -392,7 +392,7 @@ class TestTadbit(unittest.TestCase):
                              [models[m]['y'] for m in xrange(len(models))] + [avg['y']],
                              [models[m]['z'] for m in xrange(len(models))] + [avg['z']],
                              len(models[0]), 200, range(len(models)+1),
-                             len(models)+1, int(False))
+                             len(models)+1, int(False), 'score')
         self.assertEqual(25, sorted([(k, sum([a[(i, j)] for i, j in a if i==k or j==k]))
                                      for k in range(26)], key=lambda x: x[1])[-1][0])
         centroid = models.centroid_model()
