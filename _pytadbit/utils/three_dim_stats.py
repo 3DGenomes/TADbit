@@ -224,7 +224,7 @@ def calc_consistency(models, nloci, dcutoff=200):
     return [float(p)/len(combines) * 100 for p in parts]
 
 
-def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False):
+def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score'):
     """
 
     :param nloci: number of particles per model
@@ -233,6 +233,8 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False):
     :param 0.75 fact: Factor for equivalent positions
     :param False one: if True assumes that only two models are passed, and
        returns the rmsd of their comparison
+    :param 'score' what: values to return. Can be one of 'score', 'rmsd',
+       'drmsd' or 'eqv'
 
     :returns: a score of each pairwise comparison according to:
 
@@ -245,11 +247,15 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False):
        pairwise model comparison.
        
     """
+    if not what in ['score', 'rmsd', 'drmsd', 'eqv']:
+        raise NotImplementedError("Only 'score', 'rmsd', 'drmsd' or 'eqv' " +
+                                  "features are available\n")
+            
     scores = rmsdRMSD_wrapper([models[m]['x'] for m in xrange(len(models))],
                               [models[m]['y'] for m in xrange(len(models))],
                               [models[m]['z'] for m in xrange(len(models))],
                               nloci, dcutoff, range(len(models)),
-                              len(models), int(one))
+                              len(models), int(one), what)
     return scores
 
 

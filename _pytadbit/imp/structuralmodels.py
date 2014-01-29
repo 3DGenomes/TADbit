@@ -595,7 +595,7 @@ class StructuralModels(object):
     def deconvolute_plot(self, models=None, cluster=None):
         """
         """
-        
+        pass
 
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
                     savefig=None, savedata=None):

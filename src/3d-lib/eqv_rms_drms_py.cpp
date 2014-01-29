@@ -38,9 +38,10 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   int one;
   int nmodels;
   float thres;
+  char *what;
   // cout << "START" << endl << flush;
  
-  if (!PyArg_ParseTuple(args, "OOOifOii", &py_xs, &py_ys, &py_zs, &size, &thres, &py_models, &nmodels, &one))
+    if (!PyArg_ParseTuple(args, "OOOifOiis", &py_xs, &py_ys, &py_zs, &size, &thres, &py_models, &nmodels, &one, &what))
     return NULL;
  
   float ***xyzn;
@@ -110,20 +111,51 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
     // give it to me
     return PyFloat_FromDouble(drmsds[0]);
   }
-  // cout << "START6" << endl << flush;
 
-  max_normed = maximumValue(nrmsds, msize) / maximumValue(drmsds, msize);
-  // cout << "START7" << endl << flush;
-
-  k=0;
-  for (j=0; j<nmodels; j++){
-    for (jj=j+1; jj<nmodels; jj++){
+  if (strcmp(what,"rmsd")==0){
+    k=0;
+    for (j=0; j<nmodels; j++){
+      for (jj=j+1; jj<nmodels; jj++){
+	py_subresult = PyFloat_FromDouble(nrmsds[k]);
+	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
+	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, jj), PyList_GET_ITEM(py_models, j )), py_subresult);
+	k++;
+      }
+    }
+  }else if (strcmp(what,"drmsd")==0){
+    k=0;
+    for (j=0; j<nmodels; j++){
+      for (jj=j+1; jj<nmodels; jj++){
+	py_subresult = PyFloat_FromDouble(drmsds[k]);
+	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
+	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, jj), PyList_GET_ITEM(py_models, j )), py_subresult);
+	k++;
+      }
+    }
+  }else if (strcmp(what,"eqv")==0){
+    k=0;
+    for (j=0; j<nmodels; j++){
+      for (jj=j+1; jj<nmodels; jj++){
+	py_subresult = PyFloat_FromDouble(scores[k] * nrmsds[k] / drmsds[k]);
+	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
+	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, jj), PyList_GET_ITEM(py_models, j )), py_subresult);
+	k++;
+      }
+    }
+  }else if (strcmp(what,"score")==0){
+    // cout << "START6" << endl << flush;
+    max_normed = maximumValue(nrmsds, msize) / maximumValue(drmsds, msize);
+    // cout << "START7" << endl << flush;
+    k=0;
+    for (j=0; j<nmodels; j++){
+      for (jj=j+1; jj<nmodels; jj++){
 	py_subresult = PyFloat_FromDouble(scores[k] * max_normed);
 	// py_subresult = PyFloat_FromDouble(scores[k]);
 	// cout << " " << j << " "<<jj<<" "<<scores[k] << " " << scores[k] * max_normed << " " << max_normed<<endl << flush;
 	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
 	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, jj), PyList_GET_ITEM(py_models, j )), py_subresult);
 	k++;
+      }
     }
   }
   // cout << "START8" << endl << flush;
