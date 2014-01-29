@@ -10,7 +10,7 @@ from pytadbit.tadbit_py import _tadbit_wrapper
 
 
 def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
-           no_heuristic=False, get_weights=False):
+           no_heuristic=False, get_weights=False, **kwargs):
     """
     The TADbit algorithm works on raw chromosome interaction count data.
     The normalization is neither necessary nor recommended,
@@ -51,10 +51,11 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
        _tadbit_wrapper(nums,             # list of lists representing matrices
                        size,             # size of one row/column
                        len(nums),        # number of matrices
-                       n_cpus,      # number of threads
+                       n_cpus,           # number of threads
                        int(verbose),     # verbose 0/1
                        max_tad_size,     # max_tad_size
-                       int(no_heuristic), # heuristic 0/1
+                       kwargs.get('ntads', 0),
+                       int(no_heuristic),# heuristic 0/1
                        )
 
     breaks = [i for i in xrange(size) if bkpts[i + nbks * size] == 1]

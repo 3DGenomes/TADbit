@@ -444,7 +444,8 @@ class Chromosome(object):
 
 
     def find_tad(self, experiments, name=None, n_cpus=1, verbose=True,
-                 max_tad_size="auto", no_heuristic=False, batch_mode=False):
+                 max_tad_size="auto", no_heuristic=False, batch_mode=False,
+                 **kwargs):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
         position of Topologically Associated Domains
@@ -488,7 +489,7 @@ class Chromosome(object):
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
-                                     get_weights=True)
+                                     get_weights=True, **kwargs)
             xpr = Experiment(name, resolution, hic_data=matrix,
                              tad_def=result, weights=weights)
             xpr._zeros = xprs[0]._zeros
@@ -507,7 +508,7 @@ class Chromosome(object):
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
                                      no_heuristic=no_heuristic,
-                                     get_weights=True)
+                                     get_weights=True, **kwargs)
             experiment.load_tad_def(result, weights=weights)
             if self._search_centromere:
                 self._get_forbidden_region(experiment)

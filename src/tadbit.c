@@ -704,6 +704,7 @@ tadbit
   int n_threads,
   const int verbose,
   int max_tad_size,
+  const int nbrks,
   const int do_not_use_heuristic,
   // output //
   tadbit_output *seg
@@ -772,7 +773,7 @@ tadbit
       return;
    }
 
-   const int MAXBREAKS = n/5;
+   const int MAXBREAKS = nbrks ? nbrks : n/5;
 
    _cache_index = (int *) malloc(n*n * sizeof(int));
    _max_cache_index = N+1;
@@ -1022,6 +1023,8 @@ tadbit
    free(tid);
    free(_cache_index);
 
+   nbreaks_opt = nbrks ? (int) nbrks - 1 : nbreaks_opt;
+
    // Compute breakpoint confidence by penalized dynamic progamming.
    double *llikmatcpy = (double *) malloc (n*n * sizeof(double));
    double *mllikcpy = (double *) malloc(MAXBREAKS * sizeof(double));
@@ -1050,6 +1053,7 @@ tadbit
    free(llikmatcpy);
    free(mllikcpy);
    free(bkptscpy);
+
    
    // Resize output to match original.
    int p;
