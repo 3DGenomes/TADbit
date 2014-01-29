@@ -26,7 +26,7 @@ from os.path                        import exists
 
 try:
     from matplotlib import pyplot as plt
-    from matplotlib.cm import jet
+    from matplotlib.cm import jet, bwr
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -604,7 +604,7 @@ class StructuralModels(object):
 
     def deconvolute(self, fact=0.75, dcutoff=200, method='mcl',
                     mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
-                    mclargs=None, what='dRMSD'):
+                    mclargs=None, what='dRMSD', n_best_clusters=10):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison (dRMSD).
@@ -635,7 +635,27 @@ class StructuralModels(object):
                                        tmp_file=tmp_file, verbose=verbose,
                                        n_cpus=n_cpus, mclargs=mclargs,
                                        external=True, what=what)
-        return clusters
+        fig = plt.figure(figsize=(15, 12))
+        n_best_clusters = min(len(clusters), n_best_clusters)
+        for i in xrange(n_best_clusters):
+            for j in xrange(i+1, n_best_clusters):
+                matrix1 = self.get_contact_matrix(clusters[i], cutoff=dcutoff)
+                matrix2 = self.get_contact_matrix(clusters[j], cutoff=dcutoff)
+                matrix3 = [[0 for _ in xrange(self.nloci)] for _ in xrange(self.nloci)]
+                ax = fig.add_subplot(n_best_clusters,n_best_clusters,
+                                     i * n_best_clusters+j)
+                for k in xrange(self.nloci):
+                    for l in xrange(self.nloci):
+                        matrix3[k][l] = matrix1[k][l] - matrix2[k][l]
+                ims = plt.imshow(matrix3, origin='lower', vmin=-1, vmax=1,
+                                 interpolation="nearest", cmap=bwr)
+                if not i:
+                    plt.title('Cluster #%s' % j)
+                if j == n_best_clusters - 1:
+                    cbar = ax.figure.colorbar(ims, cmap=jet, )
+                    cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(-100, 120, 20)])
+                    cbar.ax.set_ylabel('Cluster #%s' % i, rotation=-90, fontsize='large')
+        plt.show()
 
 
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,

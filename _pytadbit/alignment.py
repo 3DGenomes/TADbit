@@ -348,7 +348,7 @@ class Alignment(object):
                 axes[iex].plot(extras, [.5 for _ in xrange(len(extras))], 'rx')
             axes[iex].grid()
             axes[iex].patch.set_visible(False)
-        maxy = max(maxys) + 0.4
+        maxy = (ymax or max(maxys)) + 0.4
         maxxs = []
         for iex in range(len(experiments)):
             starting = focus[0] if focus else 1
