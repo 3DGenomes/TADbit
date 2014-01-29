@@ -54,7 +54,7 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
                        n_cpus,           # number of threads
                        int(verbose),     # verbose 0/1
                        max_tad_size,     # max_tad_size
-                       kwargs.get('nbks', 0),
+                       kwargs.get('ntads', 0),
                        int(no_heuristic),# heuristic 0/1
                        )
 
