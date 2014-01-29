@@ -230,8 +230,6 @@ class StructuralModels(object):
            positions to be considered in the clustering
         :param 200 dcutoff: distance threshold (nm) to determine if two
            particles are in contact
-           where eqvs[i] is the number of equivalent position for the ith
-           pairwise model comparison
         :param 'mcl' method: clustering method to use, which can be either
            'mcl' or 'ward'. MCL method is recommended. WARD method uses a scipy
            implementation of this hierarchical clustering, and selects the best
@@ -608,7 +606,30 @@ class StructuralModels(object):
                     mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
                     mclargs=None, what='dRMSD'):
         """
+        This function performs a clustering analysis of the generated models
+        based on structural comparison (dRMSD).
+        Then it performs a differential contact map between each possible pair
+        of cluster.
+
+        :param 0.75 fact: factor to define the percentage of equivalent
+           positions to be considered in the clustering
+        :param 200 dcutoff: distance threshold (nm) to determine if two
+           particles are in contact
+        :param 'mcl' method: clustering method to use, which can be either
+           'mcl' or 'ward'. MCL method is recommended. WARD method uses a scipy
+           implementation of this hierarchical clustering, and selects the best
+           number of clusters using the
+           :func:`pytadbit.utils.tadmaths.calinski_harabasz` function.
+        :param 'mcl' mcl_bin: path to the mcl executable file, in case of the
+           'mcl is not in the PATH' warning message
+        :param None tmp_file: path to a temporary file created during
+           the clustering computation. Default will be created in /tmp/ folder
+        :param True verbose: same as print StructuralModels.clusters
+        :param 1 n_cpus: number of cpus to use in MCL clustering
+        :param mclargs: list with any other command line argument to be passed
+           to mcl (i.e,: mclargs=['-pi', '10', '-I', '2.0'])
         """
+        fact /= self.nloci
         clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
                                        method=method, mcl_bin=mcl_bin,
                                        tmp_file=tmp_file, verbose=verbose,
