@@ -381,8 +381,8 @@ class Alignment(object):
                 axes[iex].axvspan(beg-.2, end+.2, alpha=0.2,
                                   color=ali_colors[i%(len(ali_colors))])
                 axes[iex].plot(((tad['end'] + 1.) / facts[iex], ), (0, ),
-                               color=jet(tad['score'] / 10),
-                               mec='none', 
+                               color=jet(tad['score'] / 10) if tad['score'] else 'w',
+                               mec='none' if tad['score'] else 'k', 
                                marker=6, ms=9, alpha=1,
                                clip_on=False)
         axes[iex].set_xlabel('Genomic bin')
