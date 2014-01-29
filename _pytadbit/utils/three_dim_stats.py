@@ -224,7 +224,8 @@ def calc_consistency(models, nloci, dcutoff=200):
     return [float(p)/len(combines) * 100 for p in parts]
 
 
-def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score'):
+def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score',
+                  normed=True):
     """
 
     :param nloci: number of particles per model
@@ -235,6 +236,8 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score'):
        returns the rmsd of their comparison
     :param 'score' what: values to return. Can be one of 'score', 'rmsd',
        'drmsd' or 'eqv'
+    :param True normed: normalize result by maximum value (only applies to rmsd
+       and drmsd)
 
     :returns: a score of each pairwise comparison according to:
 
@@ -256,7 +259,7 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score'):
                               [models[m]['y'] for m in xrange(len(models))],
                               [models[m]['z'] for m in xrange(len(models))],
                               nloci, dcutoff, range(len(models)),
-                              len(models), int(one), what)
+                              len(models), int(one), what, int(normed))
     return scores
 
 

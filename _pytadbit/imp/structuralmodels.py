@@ -253,7 +253,8 @@ class StructuralModels(object):
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
-        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, what=what)
+        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, what=what,
+                               normed=True)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
             print('\nWARNING: MCL not found in path using WARD clustering\n')
@@ -605,16 +606,16 @@ class StructuralModels(object):
 
     def deconvolute(self, fact=0.75, dcutoff=200, method='mcl',
                     mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
-                    mclargs=None, external=False, what='dRMSD'):
+                    mclargs=None, what='dRMSD'):
         """
         """
         clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
                                        method=method, mcl_bin=mcl_bin,
                                        tmp_file=tmp_file, verbose=verbose,
                                        n_cpus=n_cpus, mclargs=mclargs,
-                                       external=external, what=what)
+                                       external=True, what=what)
         return clusters
-        
+
 
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
                     savefig=None, savedata=None):

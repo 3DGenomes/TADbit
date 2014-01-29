@@ -39,9 +39,10 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   int nmodels;
   float thres;
   char *what;
+  int normed;
   // cout << "START" << endl << flush;
  
-    if (!PyArg_ParseTuple(args, "OOOifOiis", &py_xs, &py_ys, &py_zs, &size, &thres, &py_models, &nmodels, &one, &what))
+  if (!PyArg_ParseTuple(args, "OOOifOiisi", &py_xs, &py_ys, &py_zs, &size, &thres, &py_models, &nmodels, &one, &what, &normed))
     return NULL;
  
   float ***xyzn;
@@ -116,7 +117,10 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
     k=0;
     for (j=0; j<nmodels; j++){
       for (jj=j+1; jj<nmodels; jj++){
-	py_subresult = PyFloat_FromDouble(nrmsds[k]);
+	if (normed)
+	  py_subresult = PyFloat_FromDouble(1-nrmsds[k]/maximumValue(nrmsds, msize));
+	else
+	  py_subresult = PyFloat_FromDouble(nrmsds[k]);
 	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
 	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, jj), PyList_GET_ITEM(py_models, j )), py_subresult);
 	k++;
@@ -126,7 +130,10 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
     k=0;
     for (j=0; j<nmodels; j++){
       for (jj=j+1; jj<nmodels; jj++){
-	py_subresult = PyFloat_FromDouble(drmsds[k]);
+	if (normed)
+	  py_subresult = PyFloat_FromDouble(1-drmsds[k]/maximumValue(drmsds, msize));
+	else
+	  py_subresult = PyFloat_FromDouble(drmsds[k]);
 	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
 	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, jj), PyList_GET_ITEM(py_models, j )), py_subresult);
 	k++;

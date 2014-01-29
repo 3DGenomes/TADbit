@@ -265,7 +265,8 @@ class Alignment(object):
         self.__keys.append(name)
 
 
-    def draw(self, focus=None, extras=None, savefig=None):
+    def draw(self, focus=None, extras=None, ymax=None, ali_colors=('grey',),
+             savefig=None):
         """
         Draw alignments as a plot.
         
@@ -273,6 +274,8 @@ class Alignment(object):
            alignment between these genomic bins
         :param None extras: list of coordinates (genomic bin) where to draw a
            red cross
+        :param None ymax: limit the y axis up to a given value
+        :param ('grey', ): successive colors for alignment
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
@@ -358,6 +361,8 @@ class Alignment(object):
                            experiments[iex].name, {'ha':'left', 'va':'bottom'})
             axes[iex].set_yticks([float(i) / 2
                                   for i in range(1, int(maxy + .5) * 2)])
+            if ymax:
+                axes[iex].set_ylim((0, ymax))
         axes[iex].set_xlim((starting, max(maxxs)))
         pos = {'ha':'center', 'va':'bottom'}
         for i, col in enumerate(self.itercolumns()):
@@ -374,7 +379,7 @@ class Alignment(object):
                 if not tad['end']:
                     continue
                 axes[iex].axvspan(beg-.2, end+.2, alpha=0.2,
-                                  color='purple' if i%2 else 'darkgreen')
+                                  color=ali_colors[i%(len(ali_colors))])
                 axes[iex].plot(((tad['end'] + 1.) / facts[iex], ), (0, ),
                                color=jet(tad['score'] / 10),
                                mec='none', 
