@@ -629,10 +629,10 @@ class StructuralModels(object):
         :param 1 n_cpus: number of cpus to use in MCL clustering
         :param mclargs: list with any other command line argument to be passed
            to mcl (i.e,: mclargs=['-pi', '10', '-I', '2.0'])
+        :param 10 n_best_clusters: number of clusters to represent
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
-
         """
         fact /= self.nloci
         clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
@@ -640,42 +640,66 @@ class StructuralModels(object):
                                        tmp_file=tmp_file, verbose=verbose,
                                        n_cpus=n_cpus, mclargs=mclargs,
                                        external=True, what=what)
-        print clusters
-        fig = plt.figure(figsize=(15, 12))
         n_best_clusters = min(len(clusters), n_best_clusters)
-        axes = []
-        ims = []
-        for i in xrange(n_best_clusters):
-            for j in xrange(i+1, n_best_clusters):
-                matrix1 = self.get_contact_matrix([str(m) for m in clusters[i]],
-                                                  cutoff=dcutoff)
-                matrix2 = self.get_contact_matrix([str(m) for m in clusters[j]],
-                                                  cutoff=dcutoff)
-                matrix3 = [[0 for _ in xrange(self.nloci)]
-                           for _ in xrange(self.nloci)]
-                axes.append(fig.add_subplot(n_best_clusters,n_best_clusters,
-                                            i * n_best_clusters+j))
-                for k in xrange(self.nloci):
-                    for l in xrange(self.nloci):
-                        matrix3[k][l] = matrix1[k][l] - matrix2[k][l]
-                ims.append(axes[-1].imshow(matrix3, origin='lower', vmin=-1,
-                                           vmax=1,
-                                           interpolation="nearest", cmap=bwr))
+        fig, axes = plt.subplots(n_best_clusters - 1, n_best_clusters - 1,
+                               sharex=True, sharey=True, figsize=(12, 12))
+        # pre-calculate contact-matrices
+        cmatrices = [self.get_contact_matrix(
+            [str(m) for m in clusters[i]], cutoff=dcutoff)
+                     for i in xrange(n_best_clusters)]
+        # doing the plot
+        for i in xrange(n_best_clusters - 1):
+            for j in xrange(1, n_best_clusters):
+                if j < i+1:
+                    axes[i,j-1].set(adjustable='box-forced', aspect=1)
+                    axes[i,j-1].set_visible(False)
+                    continue
+                axes[i,j-1].set(adjustable='box-forced', aspect=1)
+                matrix3 = [[cmatrices[i][k][l] - cmatrices[j][k][l]
+                            for l in xrange(self.nloci)]
+                           for k in xrange(self.nloci)]
+                ims = axes[i,j-1].imshow(matrix3, origin='lower', cmap=bwr,
+                                         interpolation="nearest", vmin=-1, vmax=1,
+                                         extent=(0.5, len(matrix3) + 0.5,
+                                                 0.5, len(matrix3) + 0.5))
+                axes[i, j-1].grid()
                 if not i:
-                    plt.title('Cluster #%s' % (j + 1))
-                # if i != j + 1:
-                #     plt.setp(axes[-1].get_xticklabels(), visible=False)
-                # if j != i - 1:
-                #     plt.setp(axes[-1].get_yticklabels(), visible=False)
+                    axes[i,j-1].set_title('Cluster #%s' % (j + 1), color='blue')
+                if j != i+1:
+                    axes[i,j-1].yaxis.set_ticks_position('none')
+                else:
+                    plt.setp(axes[i,j-1].get_yticklabels(), visible=True)
+                    axes[i,j-1].yaxis.set_ticks_position('left')
+                if i != j-1:
+                    axes[i,j-1].xaxis.set_ticks_position('none')
+                else:
+                    plt.setp(axes[i,j-1].get_xticklabels(), visible=True)
+                    axes[i,j-1].xaxis.set_ticks_position('bottom')
                 if j == n_best_clusters - 1:
-                    cbar = axes[-1].figure.colorbar(ims[-1], cmap=jet, )
-                    cbar.set_ticks([float(k)/100
-                                     for k in xrange(-100, 125, 25)])
-                    cbar.set_ticklabels(['%3s%% ' % (p)
-                                          for p in xrange(-100, 125, 25)])
-                    cbar.set_label('Cluster #%s\n' % (i + 1), rotation=-90,
-                                   fontsize='large')
-                    cbar.ax.tick_params(labelsize=10)
+                    axes[i,j-1].yaxis.set_label_position('right')
+                    axes[i,j-1].set_ylabel('Cluster #%s' % (i + 1),
+                                           rotation=-90, fontsize='large',
+                                           color='red')
+                axes[i,j-1].set_xlim((0.5, len(matrix3) + 0.5))
+                axes[i,j-1].set_ylim((0.5, len(matrix3) + 0.5))
+        # new axe for the color bar
+        cell = fig.add_axes([0.125, 0.1, 0.01, 0.3])
+        cbar = fig.colorbar(ims, cax=cell, cmap=jet)
+        cbar.set_ticks([float(k)/100
+                        for k in xrange(-100, 150, 50)])
+        cbar.set_ticklabels(['%3s%% ' % (p)
+                             for p in xrange(-100, 150, 50)])
+        cbar.ax.set_ylabel('Percentage of models with a given \n' +
+                           'pair of particles closer than cutoff.\n'+
+                           'Red clusters minus blue clusters\n\n' +
+                           (''.join([' ' * 10 +
+                                     'Cluster #%-2s: %3s models\n' % (
+                               i+1, len(clusters[i]))
+                               for i in xrange(n_best_clusters)])),
+                           rotation=0)
+        plt.suptitle(('Deconvolution analysis for the %s top clusters ' +
+                      '(cutoff=%s nm)') % (
+                         n_best_clusters, dcutoff), size='x-large')
         if savefig:
             tadbit_savefig(savefig)
         else:
