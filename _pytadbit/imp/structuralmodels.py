@@ -638,11 +638,12 @@ class StructuralModels(object):
            of the file name will determine the desired format).
         """
         fact /= self.nloci
-        clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
-                                       method=method, mcl_bin=mcl_bin,
-                                       tmp_file=tmp_file, verbose=verbose,
+        clusters = self.cluster_models(fact=fact, dcutoff=dcutoff, mcl_bin=mcl_bin,
+                                       method=method, tmp_file=tmp_file,
                                        n_cpus=n_cpus, mclargs=mclargs,
                                        external=True, what=what)
+        if verbose:
+            print clusters
         n_best_clusters = min(len(clusters), n_best_clusters)
         fig, axes = plt.subplots(n_best_clusters - 1, n_best_clusters - 1,
                                sharex=True, sharey=True, figsize=(12, 12))
