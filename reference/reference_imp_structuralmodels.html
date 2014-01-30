@@ -442,12 +442,18 @@ correlation</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytadbit.imp.structuralmodels.StructuralModels.deconvolute">
-<tt class="descname">deconvolute</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=200</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>what='dRMSD'</em>, <em>n_best_clusters=10</em>, <em>savefig=None</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.deconvolute" title="Permalink to this definition">¶</a></dt>
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.deconvolve">
+<tt class="descname">deconvolve</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=200</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>what='dRMSD'</em>, <em>n_best_clusters=10</em>, <em>savefig=None</em>, <em>represent_models=False</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.deconvolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function performs a clustering analysis of the generated models
 based on structural comparison (dRMSD).
-Then it performs a differential contact map between each possible pair
+Then, performs a differential contact map between each possible pair
 of cluster.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Clusters defined here are different from the one defined when using
+<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="pytadbit.imp.structuralmodels.StructuralModels.cluster_models"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.cluster_models()</span></tt></a>.
+They are also not stored into StructuralModels.clusters</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
