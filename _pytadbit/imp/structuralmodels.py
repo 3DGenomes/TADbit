@@ -604,7 +604,8 @@ class StructuralModels(object):
 
     def deconvolute(self, fact=0.75, dcutoff=200, method='mcl',
                     mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
-                    mclargs=None, what='dRMSD', n_best_clusters=10):
+                    mclargs=None, what='dRMSD', n_best_clusters=10,
+                    savefig=None):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison (dRMSD).
@@ -628,6 +629,10 @@ class StructuralModels(object):
         :param 1 n_cpus: number of cpus to use in MCL clustering
         :param mclargs: list with any other command line argument to be passed
            to mcl (i.e,: mclargs=['-pi', '10', '-I', '2.0'])
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+
         """
         fact /= self.nloci
         clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
@@ -635,27 +640,46 @@ class StructuralModels(object):
                                        tmp_file=tmp_file, verbose=verbose,
                                        n_cpus=n_cpus, mclargs=mclargs,
                                        external=True, what=what)
+        print clusters
         fig = plt.figure(figsize=(15, 12))
         n_best_clusters = min(len(clusters), n_best_clusters)
+        axes = []
+        ims = []
         for i in xrange(n_best_clusters):
             for j in xrange(i+1, n_best_clusters):
-                matrix1 = self.get_contact_matrix(clusters[i], cutoff=dcutoff)
-                matrix2 = self.get_contact_matrix(clusters[j], cutoff=dcutoff)
-                matrix3 = [[0 for _ in xrange(self.nloci)] for _ in xrange(self.nloci)]
-                ax = fig.add_subplot(n_best_clusters,n_best_clusters,
-                                     i * n_best_clusters+j)
+                matrix1 = self.get_contact_matrix([str(m) for m in clusters[i]],
+                                                  cutoff=dcutoff)
+                matrix2 = self.get_contact_matrix([str(m) for m in clusters[j]],
+                                                  cutoff=dcutoff)
+                matrix3 = [[0 for _ in xrange(self.nloci)]
+                           for _ in xrange(self.nloci)]
+                axes.append(fig.add_subplot(n_best_clusters,n_best_clusters,
+                                            i * n_best_clusters+j))
                 for k in xrange(self.nloci):
                     for l in xrange(self.nloci):
                         matrix3[k][l] = matrix1[k][l] - matrix2[k][l]
-                ims = plt.imshow(matrix3, origin='lower', vmin=-1, vmax=1,
-                                 interpolation="nearest", cmap=bwr)
+                ims.append(axes[-1].imshow(matrix3, origin='lower', vmin=-1,
+                                           vmax=1,
+                                           interpolation="nearest", cmap=bwr))
                 if not i:
-                    plt.title('Cluster #%s' % j)
+                    plt.title('Cluster #%s' % (j + 1))
+                # if i != j + 1:
+                #     plt.setp(axes[-1].get_xticklabels(), visible=False)
+                # if j != i - 1:
+                #     plt.setp(axes[-1].get_yticklabels(), visible=False)
                 if j == n_best_clusters - 1:
-                    cbar = ax.figure.colorbar(ims, cmap=jet, )
-                    cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(-100, 120, 20)])
-                    cbar.ax.set_ylabel('Cluster #%s' % i, rotation=-90, fontsize='large')
-        plt.show()
+                    cbar = axes[-1].figure.colorbar(ims[-1], cmap=jet, )
+                    cbar.set_ticks([float(k)/100
+                                     for k in xrange(-100, 125, 25)])
+                    cbar.set_ticklabels(['%3s%% ' % (p)
+                                          for p in xrange(-100, 125, 25)])
+                    cbar.set_label('Cluster #%s\n' % (i + 1), rotation=-90,
+                                   fontsize='large')
+                    cbar.ax.tick_params(labelsize=10)
+        if savefig:
+            tadbit_savefig(savefig)
+        else:
+            plt.show()
 
 
     def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,

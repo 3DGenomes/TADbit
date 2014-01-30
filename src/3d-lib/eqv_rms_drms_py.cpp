@@ -115,10 +115,11 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
 
   if (strcmp(what,"rmsd")==0){
     k=0;
+    max_normed = maximumValue(nrmsds, msize);
     for (j=0; j<nmodels; j++){
       for (jj=j+1; jj<nmodels; jj++){
 	if (normed)
-	  py_subresult = PyFloat_FromDouble(1-nrmsds[k]/maximumValue(nrmsds, msize));
+	  py_subresult = PyFloat_FromDouble(1-nrmsds[k]/max_normed);
 	else
 	  py_subresult = PyFloat_FromDouble(nrmsds[k]);
 	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
@@ -128,10 +129,11 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
     }
   }else if (strcmp(what,"drmsd")==0){
     k=0;
+    max_normed = maximumValue(drmsds, msize);
     for (j=0; j<nmodels; j++){
       for (jj=j+1; jj<nmodels; jj++){
 	if (normed)
-	  py_subresult = PyFloat_FromDouble(1-drmsds[k]/maximumValue(drmsds, msize));
+	  py_subresult = PyFloat_FromDouble(1-drmsds[k]/max_normed);
 	else
 	  py_subresult = PyFloat_FromDouble(drmsds[k]);
 	PyDict_SetItem(py_result, PyTuple_Pack(2, PyList_GET_ITEM(py_models, j ), PyList_GET_ITEM(py_models, jj)), py_subresult);
