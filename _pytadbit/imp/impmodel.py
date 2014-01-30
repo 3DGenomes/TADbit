@@ -5,7 +5,7 @@
 """
 
 from pytadbit.utils.extraviews      import color_residues, chimera_view
-from pytadbit.utils.extraviews      import tadbit_savefig
+from pytadbit.utils.extraviews      import tadbit_savefig, plot_3d_model
 from pytadbit.utils.three_dim_stats import generate_sphere_points
 from pytadbit.utils.three_dim_stats import fast_square_distance
 from pytadbit.utils.three_dim_stats import build_mesh
@@ -792,7 +792,7 @@ class IMPmodel(dict):
 
         :param model_num: model to visualize
         :param 'chimera' tool: path to the external tool used to visualize the
-           model
+           model. Can also be 'plot', to use matplotlib.
         :param None savefig: path to a file where to save the image OR movie
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
@@ -864,6 +864,9 @@ class IMPmodel(dict):
         if gyradius:
             gyradius = self.radius_of_gyration()
             centroid = True
+        if tool=='plot':
+            plot_3d_model(self['x'], self['y'], self['z'], **kwargs)
+            return
         self.write_cmm('/tmp/', color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,

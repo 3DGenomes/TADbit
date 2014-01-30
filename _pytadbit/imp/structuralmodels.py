@@ -12,7 +12,7 @@ from pytadbit.imp.impmodel          import IMPmodel
 from pytadbit.centroid              import centroid_wrapper
 from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
-from math                           import acos, degrees, pi
+from math                           import acos, degrees, pi, sqrt
 from numpy                          import median as np_median
 from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan
@@ -378,6 +378,9 @@ class StructuralModels(object):
            default all clusters will be shown)
         :param False color: color the dendrogram based on the significance of
            the clustering (basically it depends of the internal branch lengths)
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
         """
 
         if not self.clusters:
@@ -1031,7 +1034,7 @@ class StructuralModels(object):
         :param None cluster: compute the visualization only for the models in the
            cluster number 'cluster'
         :param 'chimera' tool: path to the external tool used to visualize the
-           model
+           model. Can also be 'plot', to use matplotlib.
         :param None savefig: path to a file where to save the image OR movie
            generated (depending on the extension; accepted formats are png, mov
            and webm). if set to None, the image or movie will be shown using
@@ -1107,6 +1110,26 @@ class StructuralModels(object):
                   else m for m in models]
         if color in ['tad', 'border'] and not 'tads' in kwargs:
             kwargs.update((('tads', self.experiment.tads), ))
+        if tool == 'plot':
+            sqrmdl = sqrt(len(models))
+            cols = int(round(sqrmdl + (0.0 if int(sqrmdl)==sqrmdl else 0.5)))
+            rows = int(sqrmdl+.5)
+            fig = plt.figure()
+            for i in range(cols):
+                for j in range(rows):
+                    if i * rows + j >= len(models):
+                        break
+                    print i * rows + j
+                    axe = fig.add_subplot(rows, cols, i * rows + j+1,
+                    projection='3d')
+                    self[models[i * rows + j]].view_model(tool='plot', axe=axe)
+                    axe.set_title('Model %s' % models[i * rows + j])
+            if savefig:
+                tadbit_savefig(savefig)
+            else:
+                plt.show()
+            return
+            
         for model_num in models:
             self.write_cmm('/tmp/', model_num=model_num, color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self[m]['rand_init'])

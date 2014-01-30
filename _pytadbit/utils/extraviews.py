@@ -10,6 +10,7 @@ from itertools import combinations
 
 try:
     from matplotlib import pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -309,7 +310,30 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
         plt.show()
 
 
-
+def plot_3d_model(x, y, z, axe=None, savefig=None):
+    """
+    """
+    show=False
+    if not axe:
+        fig = plt.figure()
+        axe = fig.add_subplot(1,1,1, projection='3d')
+        show=True
+    axe._axis3don = False
+    N = len(x)
+    for i in xrange(N-1):
+        axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
+                 color=(float(i)/N,0, 1-float(i)/N), lw=3)
+        axe.plot([x[i]], [y[i]], [z[i]],
+                 color=(float(i)/N,0, 1-float(i)/N), marker='o', ms=5)
+    axe.plot([x[i+1]], [y[i+1]], [z[i+1]],
+             color=(float(i+1)/N,0, 1-float(i+1)/N), marker='o', ms=5)
+    if show:
+        if savefig:
+            tadbit_savefig(savefig)
+        else:
+            plt.show()
+    
+    
 def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
                  chimera_cmd=None, savefig=None, centroid=False,
                  gyradius=False):
