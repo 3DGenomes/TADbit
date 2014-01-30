@@ -361,6 +361,11 @@ step.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>log</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; log plot</li>
 <li><strong>smooth</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; curve smoothing</li>
+<li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
+appearance</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI (the extension
+of the file name will determine the desired format).</li>
 </ul>
 </td>
 </tr>
@@ -413,7 +418,7 @@ step.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>model_num</strong> &#8211; model to visualize</li>
 <li><strong>tool</strong> (<em>&#8216;chimera&#8217;</em>) &#8211; path to the external tool used to visualize the
-model</li>
+model. Can also be &#8216;plot&#8217;, to use matplotlib.</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image OR movie
 generated (depending on the extension; accepted formats are png, mov
 and webm). if set to None, the image or movie will be shown using
@@ -672,7 +677,7 @@ the file has been written</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 22, 2014.
+      Last updated on Jan 30, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
