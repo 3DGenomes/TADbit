@@ -55,6 +55,7 @@ def load_chromosome(in_f, fast=2):
         xpr.hic_data    = dico['experiments'][name]['hi-c']
         xpr.conditions  = dico['experiments'][name]['cond']
         xpr.size        = dico['experiments'][name]['size']
+        xpr._zeros      = dico['experiments'][name].get('zero', {})
         try: # new in version post-CSDM13
             xpr.identifier  = dico['experiments'][name]['iden']
             xpr.cell_type   = dico['experiments'][name]['cell']
@@ -298,7 +299,8 @@ class Chromosome(object):
                 'cell'      : xpr.cell_type,
                 'expt'      : xpr.exp_type,
                 'enzy'      : xpr.enzyme,
-                'desc'      : xpr.description
+                'desc'      : xpr.description,
+                'zero'      : xpr._zeros
                 }
             if fast:
                 continue
