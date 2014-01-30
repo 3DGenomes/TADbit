@@ -608,7 +608,7 @@ class StructuralModels(object):
     def deconvolve(self, fact=0.75, dcutoff=200, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
                    mclargs=None, what='dRMSD', n_best_clusters=10,
-                   savefig=None):
+                   savefig=None, represent_models=False):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison (dRMSD).
@@ -651,47 +651,52 @@ class StructuralModels(object):
         if verbose:
             print clusters
         n_best_clusters = min(len(clusters), n_best_clusters)
-        fig, axes = plt.subplots(n_best_clusters - 1, n_best_clusters - 1,
-                               sharex=True, sharey=True, figsize=(12, 12))
+        add = 1 if represent_models else 0
+        fig, axes = plt.subplots(n_best_clusters - 1 + add,
+                                 n_best_clusters - 1 + add,
+                                 sharex=True, sharey=True, figsize=(12, 12))
         # pre-calculate contact-matrices
         cmatrices = [self.get_contact_matrix(
             [str(m) for m in clusters[i]], cutoff=dcutoff)
                      for i in xrange(n_best_clusters)]
+        for i in xrange(n_best_clusters):
+            for j in xrange(n_best_clusters):
+                axes[i,j].set(adjustable='box-forced', aspect=1)
+                axes[i,j].set_visible(False)
         # doing the plot
         for i in xrange(n_best_clusters - 1):
             for j in xrange(1, n_best_clusters):
                 if j < i+1:
-                    axes[i,j-1].set(adjustable='box-forced', aspect=1)
-                    axes[i,j-1].set_visible(False)
                     continue
-                axes[i,j-1].set(adjustable='box-forced', aspect=1)
+                axes[i+add,j-1].set_visible(True)
+                axes[i+add,j-1].set(adjustable='box-forced', aspect=1)
                 matrix3 = [[cmatrices[i][k][l] - cmatrices[j][k][l]
                             for l in xrange(self.nloci)]
                            for k in xrange(self.nloci)]
-                ims = axes[i,j-1].imshow(matrix3, origin='lower', cmap=bwr,
+                ims = axes[i+add,j-1].imshow(matrix3, origin='lower', cmap=bwr,
                                          interpolation="nearest", vmin=-1, vmax=1,
                                          extent=(0.5, len(matrix3) + 0.5,
                                                  0.5, len(matrix3) + 0.5))
-                axes[i, j-1].grid()
-                if not i:
-                    axes[i,j-1].set_title('Cluster #%s' % (j + 1), color='blue')
+                axes[i+add, j-1].grid()
+                if not i and not represent_models:
+                    axes[i+add,j-1].set_title('Cluster #%s' % (j + 1), color='blue')
                 if j != i+1:
-                    axes[i,j-1].yaxis.set_ticks_position('none')
+                    axes[i+add,j-1].yaxis.set_ticks_position('none')
                 else:
-                    plt.setp(axes[i,j-1].get_yticklabels(), visible=True)
-                    axes[i,j-1].yaxis.set_ticks_position('left')
+                    plt.setp(axes[i+add,j-1].get_yticklabels(), visible=True)
+                    axes[i+add,j-1].yaxis.set_ticks_position('left')
                 if i != j-1:
-                    axes[i,j-1].xaxis.set_ticks_position('none')
+                    axes[i+add,j-1].xaxis.set_ticks_position('none')
                 else:
-                    plt.setp(axes[i,j-1].get_xticklabels(), visible=True)
-                    axes[i,j-1].xaxis.set_ticks_position('bottom')
-                if j == n_best_clusters - 1:
-                    axes[i,j-1].yaxis.set_label_position('right')
-                    axes[i,j-1].set_ylabel('Cluster #%s' % (i + 1),
+                    plt.setp(axes[i+add,j-1].get_xticklabels(), visible=True)
+                    axes[i+add,j-1].xaxis.set_ticks_position('bottom')
+                if j == n_best_clusters - 1 and not represent_models:
+                    axes[i+add,j-1].yaxis.set_label_position('right')
+                    axes[i+add,j-1].set_ylabel('Cluster #%s' % (i + 1),
                                            rotation=-90, fontsize='large',
                                            color='red')
-                axes[i,j-1].set_xlim((0.5, len(matrix3) + 0.5))
-                axes[i,j-1].set_ylim((0.5, len(matrix3) + 0.5))
+                axes[i+add,j-1].set_xlim((0.5, len(matrix3) + 0.5))
+                axes[i+add,j-1].set_ylim((0.5, len(matrix3) + 0.5))
         # new axe for the color bar
         cell = fig.add_axes([0.125, 0.1, 0.01, 0.3])
         cbar = fig.colorbar(ims, cax=cell, cmap=jet)
@@ -710,6 +715,21 @@ class StructuralModels(object):
         plt.suptitle(('Deconvolution analysis for the %s top clusters ' +
                       '(cutoff=%s nm)') % (
                          n_best_clusters, dcutoff), size='x-large')
+        if represent_models:
+            for i in range(1, n_best_clusters):
+                ax = fig.add_subplot(n_best_clusters, n_best_clusters,
+                                     i, projection='3d')
+                ax.set_title('Cluster #%s' % (i + 1), color='blue')
+                self[str(clusters[i][0])].view_model(tool='plot', axe=ax)
+            for i in range(n_best_clusters - 1):
+                ax = fig.add_subplot(n_best_clusters, n_best_clusters,
+                                     n_best_clusters * (i + 2), projection='3d')
+                self[str(clusters[i][0])].view_model(tool='plot', axe=ax)
+                ax.yaxis.set_label_position('top')
+                ax.set_title('Cluster #%s' % (i + 1), rotation=-90,
+                             fontsize='large', color='red', position=(1,.5),
+                             va='center', ha='left')
+            axes[0, n_best_clusters-1].set_visible(False)
         if savefig:
             tadbit_savefig(savefig)
         else:
