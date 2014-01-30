@@ -605,15 +605,21 @@ class StructuralModels(object):
                                  xrange(nbest, len(tmp_models))])
 
 
-    def deconvolute(self, fact=0.75, dcutoff=200, method='mcl',
-                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
-                    mclargs=None, what='dRMSD', n_best_clusters=10,
-                    savefig=None):
+    def deconvolve(self, fact=0.75, dcutoff=200, method='mcl',
+                   mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
+                   mclargs=None, what='dRMSD', n_best_clusters=10,
+                   savefig=None):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison (dRMSD).
-        Then it performs a differential contact map between each possible pair
+        Then, performs a differential contact map between each possible pair
         of cluster.
+
+        .. note::
+
+          Clusters defined here are different from the one defined when using
+          :func:`pytadbit.imp.structuralmodels.StructuralModels.cluster_models`.
+          They are also not stored into StructuralModels.clusters
 
         :param 0.75 fact: factor to define the percentage of equivalent
            positions to be considered in the clustering

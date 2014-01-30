@@ -275,7 +275,6 @@ class Experiment(object):
             if has_nans: # to make it simple
                 for i in xrange(len(self.hic_data[0])):
                     if repr(self.hic_data[0][i]) == 'nan':
-                        print i
                         self.hic_data[0] = tuple(list(self.hic_data[0][:i]) +
                                                  [0] +
                                                  list(self.hic_data[0][i + 1:]))
