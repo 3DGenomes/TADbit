@@ -659,8 +659,8 @@ class StructuralModels(object):
         cmatrices = [self.get_contact_matrix(
             [str(m) for m in clusters[i]], cutoff=dcutoff)
                      for i in xrange(n_best_clusters)]
-        for i in xrange(n_best_clusters):
-            for j in xrange(n_best_clusters):
+        for i in xrange(n_best_clusters - 1 + add):
+            for j in xrange(n_best_clusters - 1 + add):
                 axes[i,j].set(adjustable='box-forced', aspect=1)
                 axes[i,j].set_visible(False)
         # doing the plot
