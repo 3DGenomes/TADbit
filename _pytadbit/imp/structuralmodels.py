@@ -608,7 +608,7 @@ class StructuralModels(object):
     def deconvolve(self, fact=0.75, dcutoff=200, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
                    mclargs=None, what='dRMSD', n_best_clusters=10,
-                   savefig=None, represent_models=False):
+                   savefig=None, represent_models=False, figsize=(11, 11)):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison (dRMSD).
@@ -642,6 +642,7 @@ class StructuralModels(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param (11,11) figsize: dimension of the plot
         """
         fact /= self.nloci
         clusters = self.cluster_models(fact=fact, dcutoff=dcutoff, mcl_bin=mcl_bin,
@@ -654,7 +655,7 @@ class StructuralModels(object):
         add = 1 if represent_models else 0
         fig, axes = plt.subplots(n_best_clusters - 1 + add,
                                  n_best_clusters - 1 + add,
-                                 sharex=True, sharey=True, figsize=(12, 12))
+                                 sharex=True, sharey=True, figsize=figsize)
         # pre-calculate contact-matrices
         cmatrices = [self.get_contact_matrix(
             [str(m) for m in clusters[i]], cutoff=dcutoff)
@@ -679,39 +680,47 @@ class StructuralModels(object):
                                                  0.5, len(matrix3) + 0.5))
                 axes[i+add, j-1].grid()
                 if not i and not represent_models:
-                    axes[i+add,j-1].set_title('Cluster #%s' % (j + 1), color='blue')
+                    axes[i+add,j-1].set_title('Cluster #%s' % (j + 1),
+                                              color='blue')
                 if j != i+1:
                     axes[i+add,j-1].yaxis.set_ticks_position('none')
                 else:
                     plt.setp(axes[i+add,j-1].get_yticklabels(), visible=True)
                     axes[i+add,j-1].yaxis.set_ticks_position('left')
+                    for item in axes[i+add,j-1].get_yticklabels():
+                        item.set_fontsize(9)
                 if i != j-1:
                     axes[i+add,j-1].xaxis.set_ticks_position('none')
                 else:
                     plt.setp(axes[i+add,j-1].get_xticklabels(), visible=True)
                     axes[i+add,j-1].xaxis.set_ticks_position('bottom')
+                    for item in axes[i+add,j-1].get_xticklabels():
+                        item.set_fontsize(9)
                 if j == n_best_clusters - 1 and not represent_models:
                     axes[i+add,j-1].yaxis.set_label_position('right')
                     axes[i+add,j-1].set_ylabel('Cluster #%s' % (i + 1),
-                                           rotation=-90, fontsize='large',
-                                           color='red')
+                                               rotation=-90, fontsize='large',
+                                               color='red', va='bottom')
                 axes[i+add,j-1].set_xlim((0.5, len(matrix3) + 0.5))
                 axes[i+add,j-1].set_ylim((0.5, len(matrix3) + 0.5))
         # new axe for the color bar
-        cell = fig.add_axes([0.125, 0.1, 0.01, 0.3])
+        cell = fig.add_axes([0.125, 0.1, 0.01, 0.25])
         cbar = fig.colorbar(ims, cax=cell, cmap=jet)
         cbar.set_ticks([float(k)/100
                         for k in xrange(-100, 150, 50)])
         cbar.set_ticklabels(['%3s%% ' % (p)
                              for p in xrange(-100, 150, 50)])
-        cbar.ax.set_ylabel('Percentage of models with a given \n' +
-                           'pair of particles closer than cutoff.\n'+
-                           'Red clusters minus blue clusters\n\n' +
+        for item in cell.get_yticklabels():
+            item.set_fontsize(10)
+        cbar.ax.set_ylabel('\n\nPercentage of models with a\n' +
+                           'given pair of particles closer\n' +
+                           'than the %s nm cutoff\n' % dcutoff +
+                           '(red clusters minus blue)\n\n' +
                            (''.join([' ' * 10 +
                                      'Cluster #%-2s: %3s models\n' % (
                                i+1, len(clusters[i]))
                                for i in xrange(n_best_clusters)])),
-                           rotation=0)
+                           rotation=0, ha='left', va='center')
         plt.suptitle(('Deconvolution analysis for the %s top clusters ' +
                       '(cutoff=%s nm)') % (
                          n_best_clusters, dcutoff), size='x-large')
