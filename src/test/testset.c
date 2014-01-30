@@ -169,7 +169,7 @@ test_tadbit
    // -- OUTPUT -- //
    tadbit_output *seg = malloc(sizeof(tadbit_output));
 
-   tadbit(obs, 20, 2, 1, 0, 20, 1, seg);
+   tadbit(obs, 20, 2, 1, 0, 20, 0, 1, seg);
 
    // Check max breaks and optimal number of breaks.
    g_assert_cmpint(seg->maxbreaks, ==, 4);
@@ -287,7 +287,7 @@ test_tadbit_on_real_input
 
    tadbit_output *seg = malloc(sizeof(tadbit_output));
    redirect_stderr_to(error_buffer);
-   tadbit(obs, 3191, 2, 8, 1, 200, 0, seg);
+   tadbit(obs, 3191, 2, 8, 1, 200, 0, 0, seg);
    unredirect_sderr();
 
    destroy_tadbit_output(seg);
