@@ -250,6 +250,7 @@ class Chromosome(object):
 
     def get_experiment(self, name):
         """
+        Fetch an Experiment according to its name.
         This can also be done directly with Chromosome.experiments[name].
         
         :param name: name of the experiment to select
@@ -450,7 +451,7 @@ class Chromosome(object):
                  **kwargs):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
-        position of Topologically Associated Domains
+        position of Topologically Associated Domain boundaries
         
         :param experiment: A square matrix of interaction counts of Hi-C
            data or a list of such matrices for replicated experiments. The
@@ -534,7 +535,7 @@ class Chromosome(object):
                   show=True, logarithm=True, normalized=False, relative=True,
                   decorate=True, savefig=None):
         """
-        Visualize the matrix of Hi-C interactions.
+        Visualize the matrix of Hi-C interactions of a given experiment
 
         :param name: name of the experiment to visualize
         :param None tad: a given TAD in the form:
@@ -749,7 +750,7 @@ class Chromosome(object):
 
     def iter_tads(self, x_name, normed=True):
         """
-        Iterate over the TADs corresponding to the given experiment.
+        Iterate over the TADs corresponding to a given experiment.
         
         :param x_name: name of the experiment
         :param True normed: normalize Hi-C data returned

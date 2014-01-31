@@ -215,13 +215,13 @@ class StructuralModels(object):
 
         Clustering is done according to a score of pairwise comparison
         calculated as:
-        ::
-        
-                                    dRMSD[i] / max(dRMSD)
-              score[i] = eqvs[i] * -----------------------
-                                     RMSD[i] / max(RMSD)
 
-       where eqvs[i] is the number of equivalent position for the ith
+       .. math::
+                                     
+         score_i = eqvs_i \\times \\frac{dRMSD_i / max(dRMSD)}
+                                         {RMSD_i / max(RMSD)}
+
+       where :math:`eqvs_i` is the number of equivalent position for the ith
        pairwise model comparison.
 
 
@@ -377,8 +377,11 @@ class StructuralModels(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
-        :param kwargs: other arguments as fontsize, figsize or no_plot that can
-           be passed to the drawing function
+        :param 10.0 width_factor: multiplicator for the width of the line
+           representing the number of models in a given cluster.
+        :param 8 fontsize: size of the smallest font represented in the plot
+        :param (8,8) figsize: a tuple of width and height, to set the size of
+           the plot.
         """
 
         if not self.clusters:
