@@ -608,7 +608,8 @@ class StructuralModels(object):
     def deconvolve(self, fact=0.75, dcutoff=200, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
                    mclargs=None, what='dRMSD', n_best_clusters=10,
-                   savefig=None, represent_models=False, figsize=(11, 11)):
+                   savefig=None, represent_models=False, figsize=(11, 11),
+                   **kwargs):
         """
         This function performs a clustering analysis of the generated models
         based on structural comparison (dRMSD).
@@ -729,15 +730,21 @@ class StructuralModels(object):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      i, projection='3d')
                 ax.set_title('Cluster #%s' % (i + 1), color='blue')
-                self[str(clusters[i][0])].view_model(tool='plot', axe=ax)
+                self[str(clusters[i][0])].view_model(tool='plot', axe=ax,
+                                                     **kwargs)
+                for item in [ax]:
+                    item.patch.set_visible(False)                
             for i in range(n_best_clusters - 1):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      n_best_clusters * (i + 2), projection='3d')
-                self[str(clusters[i][0])].view_model(tool='plot', axe=ax)
+                self[str(clusters[i][0])].view_model(tool='plot', axe=ax,
+                                                     **kwargs)
                 ax.yaxis.set_label_position('top')
                 ax.set_title('Cluster #%s' % (i + 1), rotation=-90,
                              fontsize='large', color='red', position=(1,.5),
                              va='center', ha='left')
+                for item in [ax]:
+                    item.patch.set_visible(False)                
             axes[0, n_best_clusters-1].set_visible(False)
         if savefig:
             tadbit_savefig(savefig)

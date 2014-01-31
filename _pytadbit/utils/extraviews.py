@@ -310,7 +310,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
         plt.show()
 
 
-def plot_3d_model(x, y, z, axe=None, savefig=None):
+def plot_3d_model(x, y, z, label=False, axe=None, savefig=None):
     """
     """
     show=False
@@ -323,10 +323,12 @@ def plot_3d_model(x, y, z, axe=None, savefig=None):
     for i in xrange(N-1):
         axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
                  color=(float(i)/N,0, 1-float(i)/N), lw=3)
-        axe.plot([x[i]], [y[i]], [z[i]],
-                 color=(float(i)/N,0, 1-float(i)/N), marker='o', ms=5)
-    axe.plot([x[i+1]], [y[i+1]], [z[i+1]],
-             color=(float(i+1)/N,0, 1-float(i+1)/N), marker='o', ms=5)
+        if label:
+            axe.text(x[i], y[i], z[i],str(i), size=7)
+    if label:
+        axe.text(x[i+1], y[i+1], z[i+1],str(i+1), size=7)
+    axe.scatter(x, y, z, color=[(float(i + 1) / N, 0, 1 - float(i + 1) / N)
+                                for i in xrange(N)], s=50)
     if show:
         if savefig:
             tadbit_savefig(savefig)
