@@ -304,8 +304,11 @@ the clustering (basically it depends of the internal branch lengths)</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
-<li><strong>kwargs</strong> &#8211; other arguments as fontsize, figsize or no_plot that can
-be passed to the drawing function</li>
+<li><strong>width_factor</strong> (<em>10.0</em>) &#8211; multiplicator for the width of the line
+representing the number of models in a given cluster.</li>
+<li><strong>fontsize</strong> (<em>8</em>) &#8211; size of the smallest font represented in the plot</li>
+<li><strong>figsize</strong> (<em>(8,8)</em>) &#8211; a tuple of width and height, to set the size of
+the plot.</li>
 </ul>
 </td>
 </tr>
@@ -322,12 +325,11 @@ based on structural comparison. The result will be stored in
 StructuralModels.clusters</p>
 <p>Clustering is done according to a score of pairwise comparison
 calculated as:</p>
-<div class="highlight-python"><pre>                      dRMSD[i] / max(dRMSD)
-score[i] = eqvs[i] * -----------------------
-                       RMSD[i] / max(RMSD)</pre>
-</div>
 </div></blockquote>
-<p>where eqvs[i] is the number of equivalent position for the ith
+<div class="math">
+\[score_i = eqvs_i \times \frac{dRMSD_i / max(dRMSD)}
+                                {RMSD_i / max(RMSD)}\]</div>
+<p>where <span class="math">\(eqvs_i\)</span> is the number of equivalent position for the ith
 pairwise model comparison.</p>
 <blockquote>
 <div><table class="docutils field-list" frame="void" rules="none">
