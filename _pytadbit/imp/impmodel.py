@@ -165,7 +165,7 @@ class IMPmodel(dict):
     """
     def __str__(self):
         try:
-            return ('IMP model of %s particles with: \n' +
+            return ('IMP model ranked %s (%s particles) with: \n' +
                     ' - Final objective function value: %s\n' +
                     ' - random initial value: %s\n' +
                     ' - first coordinates:\n'+
@@ -173,6 +173,7 @@ class IMPmodel(dict):
                     '  %7s%7s%7s\n'+
                     '  %7s%7s%7s\n'+
                     '  %7s%7s%7s\n') % (
+                self['index'] + 1,
                 len(self['x']), self['objfun'], self['rand_init'],
                 int(self['x'][0]), int(self['y'][0]), int(self['z'][0]),
                 int(self['x'][1]), int(self['y'][1]), int(self['z'][1]),

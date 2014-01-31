@@ -311,23 +311,19 @@ class StructuralModels(object):
                 raise Exception(
                     'Problem with clustering, try increasing "dcutoff"\n')
             new_singles = 0
-            cluster = 1
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
                 models = line.split()
                 if len(models) == 1:
-                    if not external:
-                        self[models[0].split('_')[1]]['cluster'] = 'Singleton'
                     new_singles += 1
                 else:
-                    clusters[cluster] = []
+                    clusters[cluster + 1] = []
                     for model in models:
                         model = int(model.split('_')[1])
                         if not external:
                             self[model]['cluster'] = cluster + 1
-                        clusters[cluster].append(self[model]['rand_init'])
-                    clusters[cluster].sort(
+                        clusters[cluster + 1].append(self[model]['rand_init'])
+                    clusters[cluster + 1].sort(
                         key=lambda x: self[str(x)]['objfun'])
-                    cluster += 1
             if external:
                 return clusters
             self.clusters = clusters
@@ -367,7 +363,7 @@ class StructuralModels(object):
 
 
     def cluster_analysis_dendrogram(self, n_best_clusters=None, color=False,
-                                    axe=None, savefig=None):
+                                    axe=None, savefig=None, **kwargs):
         """
         Representation of the clustering results. The length of the leaves if
         proportional to the final objective function value of each model. The
@@ -381,6 +377,8 @@ class StructuralModels(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param kwargs: other arguments as fontsize, figsize or no_plot that can
+           be passed to the drawing function
         """
 
         if not self.clusters:
@@ -410,7 +408,7 @@ class StructuralModels(object):
             dads[b + 1] = i
 
         d = augmented_dendrogram(clust_count, dads, objfun, color,
-                                 axe, savefig, z)
+                                 axe, savefig, z, **kwargs)
         return d
 
 

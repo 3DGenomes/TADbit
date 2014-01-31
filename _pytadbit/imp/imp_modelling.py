@@ -170,7 +170,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     try:
         xpr = experiment
         crm = xpr.crm
-        for m in models.values() + bad_models.values():
+        for i, m in enumerate(models.values() + bad_models.values()):
             m['description'] = {'identifier'     : xpr.identifier,
                                 'chromosome'     : coords['crm'],
                                 'start'          : xpr.resolution * coords['start'],
@@ -184,6 +184,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
                 m['description'][desc] = xpr.description[desc]
             for desc in crm.description:
                 m['description'][desc] = xpr.description[desc]
+            m['index'] = i
     except AttributeError: # case we are doing optimization
         pass
     if outfile:

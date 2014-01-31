@@ -150,16 +150,17 @@ def tad_border_coloring(model, tads=None):
 
 def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                          axe=None, savefig=None, *args, **kwargs):
-
+    """
+    """
     from scipy.cluster.hierarchy import dendrogram
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure(figsize=kwargs.get('figsize', (8,8)))
     if axe:
         ax = axe
         fig = axe.get_figure()
-        ddata = dendrogram(*args, **kwargs)
+        ddata = dendrogram(*args)
         plt.clf()
     else:
-        ddata = dendrogram(*args, **kwargs)
+        ddata = dendrogram(*args)
         plt.clf()
         ax = fig.add_subplot(111)
         ax.patch.set_facecolor('lightgrey')
@@ -190,12 +191,13 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
             x = 0.5 * sum(i[1:3])
             y = d[1]
             # plt.plot(x, y, 'ro')
-            plt.hlines(y, i[1], i[2], lw=2, color='grey')
+            plt.hlines(y, i[1], i[2], lw=2, color=(c if color else 'grey'))
             # for each branch
             for i1, d1, d2 in zip(i[1:3], [d[0], d[3]], [d[1], d[2]]):
                 try:
-                    lw = (fig.get_figwidth() * 10.0 * float(
-                        clust_count[leaves[i1] + 1]) / total)
+                    lw = (fig.get_figwidth() *
+                          kwargs.get('width_factor', 5.0) *
+                          float(clust_count[leaves[i1] + 1]) / total)
                 except KeyError:
                     lw = 1.0
                 nrj = objfun[leaves[i1] + 1] if (leaves[i1] + 1) in objfun else maxnrj
@@ -203,7 +205,7 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
                 ax.vlines(i1, d1, d2, lw=lw, color=(c if color else 'grey'))
                 if leaves[i1] + 1 in objfun or debug:
                     ax.annotate("%.3g" % (leaves[i1] + 1),
-                                (i1, d1),
+                                (i1, d1), size=kwargs.get('fontsize', 8),
                                 xytext=(0, -8),
                                 textcoords='offset points',
                                 va='top', ha='center')
@@ -218,18 +220,21 @@ def augmented_dendrogram(clust_count=None, dads=None, objfun=None, color=False,
     form = lambda x: ''.join([(s + ',') if not i%3 and i else s
                               for i, s in enumerate(str(x)[::-1])][::-1])
     plt.yticks([bot+i for i in xrange(0, -bot-bot/cut, -bot/cut)],
-               # ["{:,}".format (int(minnrj)/cutter * cutter  + i)
+               # "{:,}".format (int(minnrj)/cutter * cutter  + i)
                ["%s" % (form(int(minnrj)/cutter * cutter  + i))
-                for i in xrange(0, -bot-bot/cut, -bot/cut)], size='small')
-    ax.set_ylabel('Minimum IMP objective function')
+                for i in xrange(0, -bot-bot/cut, -bot/cut)],
+               size=kwargs.get('fontsize', 8))
+    ax.set_ylabel('Minimum IMP objective function',
+                  size=kwargs.get('fontsize', 8) + 1)
     ax.set_xticks([])
     ax.set_xlim((plt.xlim()[0] - 2, plt.xlim()[1] + 2))
-    ax.figure.suptitle("Dendogram of clusters of 3D models")
+    ax.figure.suptitle("Dendogram of clusters of 3D models",
+                       size=kwargs.get('fontsize', 8) + 2)
     ax.set_title("Branch length proportional to model's objective function " +
                  "final value\n" +
                  "Branch width to the number of models in the cluster " +
                  "(relative to %s models)" % (total),
-                 size='small')
+                 size=kwargs.get('fontsize', 8))
     if savefig:
         tadbit_savefig(savefig)
     elif not axe:
