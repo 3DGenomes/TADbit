@@ -232,6 +232,9 @@ def filter_by_mad(matrx):
 
 def hic_filtering_for_modelling(matrx, method='mean', silent=False):
     """
+    Main filtering function, to remove artefactual columns in a given Hi-C
+    matrix
+    
     :param matrx: Hi-C matrix of a given experiment
     :param mean method: method to use for filtering Hi-C columns. Aims to
        remove columns with abnormally low count of interactions

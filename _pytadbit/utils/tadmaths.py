@@ -35,7 +35,13 @@ class Interpolate(object):
 
 def zscore(values, size):
     """
-    _______________________/___
+    Calculates the log10, Z-score of a given list of values.
+    
+    .. note::
+    
+      _______________________/___
+                            /
+                           /
                           /
                          /
                         /
@@ -46,12 +52,10 @@ def zscore(values, size):
                    /
                   /
                  /
-                /
-               /
-              /                     score
-          ___/_________________________________
-            /
-
+                /                     score
+            ___/_________________________________
+              /
+  
     """
     # do not take into account the diagonal
     nop = dict([(i + size * i,  None) for i in xrange(size)])

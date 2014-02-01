@@ -48,11 +48,11 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
     boundary of bd2 too (and of course if the distance between bd1 and bd2 is
     lower than max_dist).
 
-    :argument tads1: list of boundaries
-    :argument tads2: list of boundaries
-    :argument None penalty: if None, penalty will be two times max_dist
-    :argument verbose: print alignment
-    :argument 100000 max_dist: distance threshold from which two boundaries can
+    :param tads1: list of boundaries
+    :param tads2: list of boundaries
+    :param None penalty: if None, penalty will be two times max_dist
+    :param verbose: print alignment
+    :param 100000 max_dist: distance threshold from which two boundaries can
        not be aligned together
 
     :returns: the alignment and a score between 0 and 1 (0: bad, 1: good).

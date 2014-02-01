@@ -155,12 +155,8 @@ class IMPmodel(dict):
 
     - log_objfun: The list of IMP objective function values
     - objfun: The final objective function value of the corresponding model
-       (from log_objfun). This value will be used to rank all the generated
-       models
-    - rand_init: The random number generator feed (needed for model
-       reproducibility)
-    - x, y, z: The spatial 3D coordinates of each particles. Each coordinate is
-       represented as a list
+    - rand_init: Random number generator feed (needed for model reproducibility)
+    - x, y, z: 3D coordinates of each particles. Each represented as a list
 
     """
     def __str__(self):
@@ -253,6 +249,9 @@ class IMPmodel(dict):
 
     def distance(self, part1, part2):
         """
+        Calculates the distance between one point of the model and an external
+        coordinate
+        
         :param part1: index of a particle in the model
         :param part2: index of a particle in the model
 
@@ -279,6 +278,8 @@ class IMPmodel(dict):
 
     def center_of_mass(self):
         """
+        Gives the center of mass of a model
+        
         :returns: the center of mass of a given model
         """
         r_x = sum(self['x'])/len(self)
@@ -289,6 +290,8 @@ class IMPmodel(dict):
 
     def radius_of_gyration(self):
         """
+        Calculates the radius of gyration or gyradius of the model
+        
         Defined as:
         
         .. math::
@@ -311,6 +314,8 @@ class IMPmodel(dict):
 
     def contour(self):
         """
+        Total length of the model
+        
         :returns: the totals length of the model
         """
         dist = 0
@@ -334,6 +339,8 @@ class IMPmodel(dict):
 
     def shortest_axe(self):
         """
+        Minimum distance between two particles in the model
+        
         :returns: the minimum distance between two particles in the model
         """
         mindist = float('inf')
@@ -347,6 +354,8 @@ class IMPmodel(dict):
 
     def min_max_by_axis(self):
         """
+        Calculates the minimum and maximum coordinates of the model
+        
         :returns: the minimum and maximum coordinates for each x, y and z axis
         """
         return ((min(self['x']), max(self['x'])),
@@ -356,6 +365,8 @@ class IMPmodel(dict):
 
     def cube_side(self):
         """
+        Calculates the side of a cube containing the model.
+        
         :returns: the diagonal length of the cube containing the model
         """
         return sqrt((min(self['x']) - max(self['x']))**2 +
@@ -365,6 +376,8 @@ class IMPmodel(dict):
 
     def cube_volume(self):
         """
+        Calculates the volume of a cube containing the model.
+
         :returns: the volume of  the cube containing the model
         """
         return self.cube_side()**3
@@ -789,7 +802,8 @@ class IMPmodel(dict):
     def view_model(self, tool='chimera', savefig=None, cmd=None, centroid=False,
                    gyradius=False, color='index', **kwargs):
         """
-        Visualize a selected model in the three dimensions.
+        Visualize a selected model in the three dimensions. (either with Chimera
+        or through matplotlib).
 
         :param model_num: model to visualize
         :param 'chimera' tool: path to the external tool used to visualize the

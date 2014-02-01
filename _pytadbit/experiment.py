@@ -414,6 +414,9 @@ class Experiment(object):
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
                      outfile=None, config=CONFIG['dmel_01']):
         """
+        Generates of three-dimentional models using IMP, for a given segment of
+        chromosome.
+        
         :param 1 start: first bin to model (bin number)
         :param None end: last bin to model (bin number). By default goes to the
            last bin.

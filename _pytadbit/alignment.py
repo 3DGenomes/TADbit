@@ -18,6 +18,9 @@ except ImportError:
 
 
 class Alignment(object):
+    """
+    Alignment of TAD borders
+    """
     def __init__(self, name, alignment, experiments, score=None):
         self.name = name
         self.__experiments = experiments

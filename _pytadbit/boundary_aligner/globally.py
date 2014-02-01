@@ -103,7 +103,7 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
 
 def virgin_score(penalty, l_tads1, l_tads2):
     """
-    create empty matrix
+    creates empty matrix
     """
     zeros    = [0.0 for _ in xrange(l_tads2)]
     return [[penalty * j for j in xrange(l_tads2)]] + \
@@ -112,6 +112,5 @@ def virgin_score(penalty, l_tads1, l_tads2):
 
 def equal(a, b, cut_off=1e-9):
     """
-    is equal?
     """
     return abs(a-b) < cut_off

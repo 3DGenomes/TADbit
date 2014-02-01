@@ -82,6 +82,8 @@ def colorize(string, num, ftype='ansi'):
 
 def color_residues(model):
     """
+    Function to color residues from blue to red.
+    
     :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`
     
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
@@ -317,6 +319,18 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
 
 def plot_3d_model(x, y, z, label=False, axe=None, savefig=None):
     """
+    Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model
+    using matplotlib
+
+    :param x: list
+    :param y: list
+    :param z: list
+    :param False label: show labels
+    :param None axe: a matplotlib.axes.Axes object to define the plot
+       appearance
+    :param None savefig: path to a file where to save the image generated;
+       if None, the image will be shown using matplotlib GUI (the extension
+       of the file name will determine the desired format).
     """
     show=False
     if not axe:

@@ -7,6 +7,8 @@
 import inspect
 import pytadbit
 from string import uppercase
+import re
+
 
 def condition(member):
     return type(member.__doc__) != type(None)
@@ -36,54 +38,81 @@ def get_all(module, all_members=None):
             get_all(member, all_members)
             continue
         all_members[name] = {'dady': module.__name__, 'son': member}
-        # if not inspect.isclass(member):
-        #     print '   ' + name + ' '*(27-len(name)),
-        # else:
-        #     print name + ' '*(30-len(name)),
-        # print ('\n'+' '*23).join(member.__doc__.split(':param')[0].split(':returns')[0].split('::')[0].split('..')[0].strip().split('\n'))
-        # print '-'*105
         get_all(member, all_members)
     return all_members
 
 
-def print_doc(member, header=1, offset=34):
-    headers = {1: 5, 2: 7}
-    print ' '*(offset - len(member.__name__) - headers[header]),
-    print ('\n'+' '*offset).join([line.strip() for line in member.__doc__.split(':param')[0].split(':returns')[0].split('::')[0].split('..')[0].strip().split('\n')])
+def print_doc(member, header=1, indent=3, offset=45):
+    doc = member.__doc__
+    dochead = doc.split(':param')[0].split(':returns')[0]
+    dochead = dochead.split('::')[0].split('..')[0].strip()
+    dochead = re.sub(r':[a-z]+:`[a-zA-Z\.-_0-9]*\.?([a-zA-Z0-9_-]+)`', '\\1', dochead)
+    dochead = dochead.replace(']_', ']')
+    if header == 1:
+        title = ' '.join(member.split('.')[1:]).capitalize()
+        out =  '=' * (7 + len(title)) + '\n'
+        out += title + ' module\n'
+        out += '=' * (7 + len(title)) + '\n'
+        return out
+    elif header == 2:
+        title = member.__name__
+        indent=0
+        out =  (' ' * indent) + ('-' * (6 + len(title))) + '\n'
+        out += (' ' * indent) + title + ' class\n'
+        out += (' ' * indent) + ('-' * (6 + len(title))) + '\n'
+        out += ' ' * (offset / 2)
+        out += ('\n' + ' ' * (offset / 2)).join([line.strip()
+                                                 for line in dochead.split('\n')])
+        return out + '\n'
+    elif header == 3:
+        title = member.__name__
+        args = inspect.getargspec(member).args
+        extra = []
+        if 'savefig' in args or 'axe' in args:
+            extra.append('1')
+        if 'savedata' in args or 'outfile' in args or 'directory' in args:
+            extra.append('2')
+        title += ' (%s)' % (','.join(extra)) if extra else ''
+        out  =  (' ' * indent) + '- ' + title
+        out +=  ' ' * (offset - len(title) - 2 - indent)
+        reout = ''
+        for line in dochead.split('\n'):
+            reout += out + line.strip() + '\n'
+            out = ' ' * offset
+        return reout
 
 
 def main():
     """
     main function
     """
-    all_members = get_all(pytadbit)
 
+    all_members = get_all(pytadbit)
+    get_all(pytadbit.utils, all_members)
     modules = set([all_members[m]['son'].__module__ for m in all_members])
 
     for module in modules:
-        print '\n' + '*' * 100
-        print '\n>'+module
+        print print_doc(module, header=1)
         submodules = [m for m in all_members
                       if all_members[m]['son'].__module__ == module]
         dadies = set([all_members[m]['dady'] for m in submodules
                       if all_members[m]['dady'][0] in uppercase])
+        for member in sorted(
+            submodules,
+            key=lambda x:all_members[x]['son'].__name__[0] in uppercase):
+            if all_members[member]['dady'] in dadies or member in dadies:
+                continue
+            if all_members[member]['son'].__name__[0] in uppercase:
+                print print_doc(all_members[member]['son'], header=2, indent=3)
+            else:
+                print print_doc(all_members[member]['son'], header=3, indent=3)
         for dady in dadies:
-            print '\n * ' + dady,
-            print_doc(all_members[dady]['son'], offset=25)
-            print '-' * (34)
+            print print_doc(all_members[dady]['son'], offset=9, header=2)
             for member in submodules:
                 if all_members[member]['dady'] != dady:
                     continue
-                print '   - ' + member,
-                print_doc(all_members[member]['son'], header=2)
-        if dadies:
-            print '=' * 100
-        for member in submodules:
-            if all_members[member]['dady'] in dadies or member in dadies:
-                continue
-            print ' * ' + member,
-            print_doc(all_members[member]['son'], header=1, offset=32)
-        
+                print print_doc(all_members[member]['son'], header=3,
+                                indent=6)
 
 
 if __name__ == "__main__":

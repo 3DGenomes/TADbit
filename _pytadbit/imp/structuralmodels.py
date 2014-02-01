@@ -33,7 +33,10 @@ except ImportError:
 
 def load_structuralmodels(path_f):
     """
-
+    Loads :class:`pytadbit.imp.structuralmodels.StructuralModels` from a file
+    (generated with
+    :class:`pytadbit.imp.structuralmodels.StructuralModels.save_models`).
+    
     :param path: to the pickled StructuralModels object.
 
     :returns: a :class:`pytadbit.imp.imp_model.StructuralModels`.
@@ -47,8 +50,10 @@ def load_structuralmodels(path_f):
 
 class StructuralModels(object):
     """
-    This function generates three-dimensional models starting from Hi-C data.
-    The final analysis will be performed on the n_keep top models.
+    This class contains three-dimensional models generated from a single Hi-C
+    data. They can be reached either by their index (integer representing their
+    rank according to objective function value), or by their IMP random intial
+    number (as string).
 
     :param nloci: number of particles in the selected region
     :param models: a dictionary containing the generated
@@ -150,6 +155,8 @@ class StructuralModels(object):
 
     def centroid_model(self, models=None, cluster=None, verbose=False):
         """
+        Estimates and returns the centroid model of a given group of models.
+        
         :param None models: if None (default) the centroid model will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -176,6 +183,8 @@ class StructuralModels(object):
 
     def average_model(self, models=None, cluster=None, verbose=False):
         """
+        Builds and returns an average model representing a given group of models
+
         :param None models: if None (default) the average model will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -903,6 +912,9 @@ class StructuralModels(object):
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=200,
                                  plot=False, axe=None, savefig=None):
         """
+        Plots the result of a correlation between a given group of models and
+        original Hi-C data.
+        
         :param None models: if None (default) the correlation will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -1070,7 +1082,8 @@ class StructuralModels(object):
     def view_models(self, models=None, cluster=None, tool='chimera',
                     savefig=None, cmd=None, color='index', **kwargs):
         """
-        Visualize a selected model in the three dimensions.
+        Visualize a selected model in the three dimensions (either with Chimera
+        or through matplotlib).
 
         :param None models:  if None (default) the visualization will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -1185,6 +1198,9 @@ class StructuralModels(object):
                                   models=None, cluster=None,
                                   radian=False, all_angles=False):
         """
+        Calculates the angle between 3 particles.
+        
+
         Given three particles A, B and C, the angle g (angle ACB, shown below):
 
         ::
@@ -1254,6 +1270,14 @@ class StructuralModels(object):
 
     def particle_coordinates(self, part, models=None, cluster=None):
         """
+        Returns the mean coordinate of a given particle in a group of models.
+        
+        :param part: the index number of a particle
+        :param None models:  if None (default) the angle will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the angle only for the models in the
+           cluster number 'cluster'
         """
         if models:
             models=models
@@ -1280,6 +1304,13 @@ class StructuralModels(object):
     def dihedral_angle(self, parta, partb, partc, partd, models=None,
                        cluster=None):
         """
+        Calculates the dihedral angle between 2 planes formed by 4 particles.
+        
+        :param None models:  if None (default) the angle will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the angle only for the models in the
+           cluster number 'cluster'
         """
         parta = array(self.particle_coordinates(parta, models, cluster))
         partb = array(self.particle_coordinates(partb, models, cluster))
@@ -1291,8 +1322,8 @@ class StructuralModels(object):
     def walking_dihedral(self, models=None, cluster=None, steps=(1,3),
                          plot=True, savefig=None, axe=None):
         """
-        Plots the dihedral angle between successive plans. A plan is formed by 3
-        successive loci.
+        Plots the dihedral angle between successive planes. A plane is formed by
+        3 successive loci.
 
         :param None models: if None (default) the dihedral angle will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -1641,8 +1672,10 @@ class StructuralModels(object):
         Writes a xyz file containing the 3D coordinates of each particle in the
         model.
 
-        **Note:** If none of model_num, models or cluster parameter are set,
-        ALL the models will be written.
+        .. note::
+
+          If none of model_num, models or cluster parameter are set,
+          ALL the models will be written.
 
         :param directory: location where the file will be written (note: the
            file name will be model.1.xyz, if the model number is 1)
@@ -1677,7 +1710,7 @@ class StructuralModels(object):
             return path_f
 
 
-    def save_models(self, path_f):
+    def save_models(self, outfile):
         """
         Saves all the models in pickle format (python object written to disk).
 
@@ -1694,7 +1727,7 @@ class StructuralModels(object):
         to_save['config']        = self._config
         to_save['zscore']        = self._zscores
 
-        out = open(path_f, 'w')
+        out = open(outfile, 'w')
         dump(to_save, out)
         out.close()
 

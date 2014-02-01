@@ -29,14 +29,14 @@ def symmetrize(matrix):
 
 
 def autoreader(f):
-    """Auto-detect matrix format of HiC data file.
+    """
+    Auto-detect matrix format of HiC data file.
     
-    ARGUMENTS:
-       f: an iterable (typically an open file).
+    :param f: an iterable (typically an open file).
     
-    RETURN:
-       A tuple with integer values and the dimension of
-       the matrix."""
+    :returns: A tuple with integer values and the dimension of
+       the matrix.
+    """
 
     # Skip initial comment lines and read in the whole file
     # as a list of lists.
@@ -111,7 +111,8 @@ def autoreader(f):
 
 def read_matrix(things, parser=None):
     """
-    Read and checks a matrix from a file or a list.
+    Read and checks a matrix from a file (using
+    :func:`pytadbit.parser.hic_parser.autoreader`) or a list.
 
     :param things: might be either a file name, a file handler, a list of them
         or a list of list (all with same length)

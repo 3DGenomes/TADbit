@@ -9,6 +9,9 @@ from pytadbit.boundary_aligner.reciprocally import reciprocal
 
 def consensusize(ali1, ali2, passed):
     """
+    Given two alignments returns a consensus alignment. Used for the generation
+    of multiple alignments
+    
     :param ali1: first aligned sequence
     :param ali1: second aligned sequence
     :param passed: in case first aligned sequence is already a consensus, it
@@ -30,14 +33,18 @@ def consensusize(ali1, ali2, passed):
 
 def align(sequences, method='reciprocal', **kwargs):
     """
-    Align Topologically Associating Domains. Supports multiple alignment by
-    building a consensus TAD and aligning each TAD to it.
-    Note: as long as we are using multiple alignments in an iterative way,
-    the order of sequences we be relevant. Here experiments are sorted according
-    to the value of the first boundary found in order to try to reduce this
-    problem.
+    Align Topologically Associating Domain borders. Supports multiple alignment
+    by building a consensus TAD and aligning each TAD to it.
+
+    .. note::
+
+      as long as we are using multiple alignments in an iterative way,
+      the order of sequences will be relevant. Here experiments are sorted
+      according to the value of the first boundary found in order to try to
+      reduce this problem.
 
     :param reciprocal method: method used to align
+    :returns: the result of the aligner used
     """
     if method == 'global':
         aligner = needleman_wunsch
