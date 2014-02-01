@@ -46,40 +46,41 @@ def print_doc(member, header=1, indent=3, offset=45):
     doc = member.__doc__
     dochead = doc.split(':param')[0].split(':returns')[0]
     dochead = dochead.split('::')[0].split('..')[0].strip()
-    dochead = re.sub(r':[a-z]+:`[a-zA-Z\.-_0-9]*\.?([a-zA-Z0-9_-]+)`', '\\1', dochead)
+    dochead = re.sub(r':[a-z:]+:`(?:[a-zA-Z\.-_0-9]+\.)?([a-zA-Z0-9_-]+)`', '\\1', dochead)
     dochead = dochead.replace(']_', ']')
+    dochead = re.sub('\. [^\.]+:.*', '.', dochead)
     if header == 1:
         title = ' '.join(member.split('.')[1:]).capitalize()
-        out =  '=' * (7 + len(title)) + '\n'
-        out += title + ' module\n'
-        out += '=' * (7 + len(title)) + '\n'
+        # out =  '-' * (7 + len(title)) + '\n'
+        out = title + ' module\n'
+        out += '-' * (7 + len(title)) + '\n'
         return out
     elif header == 2:
         title = member.__name__
         indent=0
-        out =  (' ' * indent) + ('-' * (6 + len(title))) + '\n'
-        out += (' ' * indent) + title + ' class\n'
-        out += (' ' * indent) + ('-' * (6 + len(title))) + '\n'
+        # out =  (' ' * indent) + ('+' * (6 + len(title))) + '\n'
+        out = (' ' * indent) + title + ' class\n'
+        out += (' ' * indent) + ('+' * (6 + len(title))) + '\n'
         out += ' ' * (offset / 2)
-        out += ('\n' + ' ' * (offset / 2)).join([line.strip()
-                                                 for line in dochead.split('\n')])
+        out += ('\n' + ' ' * (offset / 2)).join(
+            [line.strip() for line in dochead.split('\n')])
         return out + '\n'
     elif header == 3:
-        title = member.__name__
+        title = '**' + member.__name__ + '**'
         args = inspect.getargspec(member).args
         extra = []
         if 'savefig' in args or 'axe' in args:
             extra.append('1')
         if 'savedata' in args or 'outfile' in args or 'directory' in args:
             extra.append('2')
-        title += ' (%s)' % (','.join(extra)) if extra else ''
+        title += ' (%s): ' % (','.join(extra)) if extra else ': '
         out  =  (' ' * indent) + '- ' + title
         out +=  ' ' * (offset - len(title) - 2 - indent)
         reout = ''
         for line in dochead.split('\n'):
-            reout += out + line.strip() + '\n'
+            reout += out + line.strip() # + '\n'
             out = ' ' * offset
-        return reout
+        return reout + '\n'
 
 
 def main():
@@ -91,6 +92,14 @@ def main():
     get_all(pytadbit.utils, all_members)
     modules = set([all_members[m]['son'].__module__ for m in all_members])
 
+    print '======================================='
+    print 'Summary of TADbit classes and functions'
+    print '=======================================\n'
+
+    print '**Note**:'
+    print '  - *1: for functions generating plots*'
+    print '  - *2: for functions generating out files*'
+    print ''
     for module in modules:
         print print_doc(module, header=1)
         submodules = [m for m in all_members
