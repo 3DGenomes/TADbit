@@ -57,17 +57,22 @@
 <dl class="function">
 <dt id="pytadbit.boundary_aligner.aligner.align">
 <tt class="descclassname">pytadbit.boundary_aligner.aligner.</tt><tt class="descname">align</tt><big>(</big><em>sequences</em>, <em>method='reciprocal'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/boundary_aligner/aligner.html#align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.boundary_aligner.aligner.align" title="Permalink to this definition">¶</a></dt>
-<dd><p>Align Topologically Associating Domains. Supports multiple alignment by
-building a consensus TAD and aligning each TAD to it.
-Note: as long as we are using multiple alignments in an iterative way,
-the order of sequences we be relevant. Here experiments are sorted according
-to the value of the first boundary found in order to try to reduce this
-problem.</p>
+<dd><p>Align Topologically Associating Domain borders. Supports multiple alignment
+by building a consensus TAD and aligning each TAD to it.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">as long as we are using multiple alignments in an iterative way,
+the order of sequences will be relevant. Here experiments are sorted
+according to the value of the first boundary found in order to try to
+reduce this problem.</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>method</strong> (<em>reciprocal</em>) &#8211; method used to align</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the result of the aligner used</td>
 </tr>
 </tbody>
 </table>
@@ -207,7 +212,7 @@ alignment of boundaries</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 21, 2014.
+      Last updated on Feb 01, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

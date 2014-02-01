@@ -203,7 +203,7 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 <dt id="pytadbit.chromosome.Chromosome.find_tad">
 <tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>no_heuristic=False</em>, <em>batch_mode=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function to calculate the
-position of Topologically Associated Domains</p>
+position of Topologically Associated Domain boundaries</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -233,7 +233,8 @@ name would be: &#8216;batch_exp1_exp2&#8217;).</li>
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.get_experiment">
 <tt class="descname">get_experiment</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.get_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.get_experiment" title="Permalink to this definition">¶</a></dt>
-<dd><p>This can also be done directly with Chromosome.experiments[name].</p>
+<dd><p>Fetch an Experiment according to its name.
+This can also be done directly with Chromosome.experiments[name].</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -271,7 +272,7 @@ name would be: &#8216;batch_exp1_exp2&#8217;).</li>
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.iter_tads">
 <tt class="descname">iter_tads</tt><big>(</big><em>x_name</em>, <em>normed=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.iter_tads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.iter_tads" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterate over the TADs corresponding to the given experiment.</p>
+<dd><p>Iterate over the TADs corresponding to a given experiment.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -335,7 +336,7 @@ computed experiments.</p>
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.visualize">
 <tt class="descname">visualize</tt><big>(</big><em>name</em>, <em>tad=None</em>, <em>focus=None</em>, <em>paint_tads=False</em>, <em>axe=None</em>, <em>show=True</em>, <em>logarithm=True</em>, <em>normalized=False</em>, <em>relative=True</em>, <em>decorate=True</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.visualize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize the matrix of Hi-C interactions.</p>
+<dd><p>Visualize the matrix of Hi-C interactions of a given experiment</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -501,7 +502,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 30, 2014.
+      Last updated on Feb 01, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -143,7 +143,10 @@ where CONFIG is a dictionary of dictionaries to be passed to this function:</pre
 <dl class="function">
 <dt id="pytadbit.imp.structuralmodels.load_structuralmodels">
 <tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">load_structuralmodels</tt><big>(</big><em>path_f</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#load_structuralmodels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.load_structuralmodels" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Loads <a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels" title="pytadbit.imp.structuralmodels.StructuralModels"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels</span></tt></a> from a file
+(generated with
+<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.save_models" title="pytadbit.imp.structuralmodels.StructuralModels.save_models"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.save_models</span></tt></a>).</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -158,8 +161,10 @@ where CONFIG is a dictionary of dictionaries to be passed to this function:</pre
 <dl class="class">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels">
 <em class="property">class </em><tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">StructuralModels</tt><big>(</big><em>nloci</em>, <em>models</em>, <em>bad_models</em>, <em>resolution</em>, <em>original_data=None</em>, <em>zscores=None</em>, <em>clusters=None</em>, <em>config=None</em>, <em>experiment=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function generates three-dimensional models starting from Hi-C data.
-The final analysis will be performed on the n_keep top models.</p>
+<dd><p>This class contains three-dimensional models generated from a single Hi-C
+data. They can be reached either by their index (integer representing their
+rank according to objective function value), or by their IMP random intial
+number (as string).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -189,7 +194,8 @@ generation of three dimensional models.</li>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles">
 <tt class="descname">angle_between_3_particles</tt><big>(</big><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>models=None</em>, <em>cluster=None</em>, <em>radian=False</em>, <em>all_angles=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.angle_between_3_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
+<dd><p>Calculates the angle between 3 particles.</p>
+<p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
 <div class="highlight-python"><pre>      A
      /|
     /i|
@@ -236,7 +242,8 @@ returns a list of the angle g, h, i (see picture above)</p>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.average_model">
 <tt class="descname">average_model</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.average_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.average_model" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Builds and returns an average model representing a given group of models</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -262,7 +269,8 @@ ARTIFICIAL model)</p>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.centroid_model">
 <tt class="descname">centroid_model</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.centroid_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.centroid_model" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Estimates and returns the centroid model of a given group of models.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -415,7 +423,9 @@ of models where these two particles are in contact)</li>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data">
 <tt class="descname">correlate_with_real_data</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=200</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Plots the result of a correlation between a given group of models and
+original Hi-C data.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -548,7 +558,23 @@ generated (1 column per step + 1 for particle number).</li>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle">
 <tt class="descname">dihedral_angle</tt><big>(</big><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>partd</em>, <em>models=None</em>, <em>cluster=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.dihedral_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculates the dihedral angle between 2 planes formed by 4 particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the angle will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the angle only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.fetch_model_by_rand_init">
@@ -706,11 +732,28 @@ of the file name will determine the desired format).</li>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.particle_coordinates">
 <tt class="descname">particle_coordinates</tt><big>(</big><em>part</em>, <em>models=None</em>, <em>cluster=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.particle_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.particle_coordinates" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the mean coordinate of a given particle in a group of models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>part</strong> &#8211; the index number of a particle</li>
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the angle will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the angle only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.save_models">
-<tt class="descname">save_models</tt><big>(</big><em>path_f</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.save_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.save_models" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save_models</tt><big>(</big><em>outfile</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.save_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.save_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves all the models in pickle format (python object written to disk).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -724,8 +767,9 @@ of the file name will determine the desired format).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.view_models">
-<tt class="descname">view_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize a selected model in the three dimensions.</p>
+<tt class="descname">view_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>centroid=True</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a selected model in the three dimensions (either with Chimera
+or through matplotlib).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -764,6 +808,8 @@ passed through the kwargs.</li>
 Each r, g, b between 0 and 1.</li>
 </ul>
 </li>
+<li><strong>centroid</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; higlights the centroid of the group of models
+represented (if False the first model of the list will be highlighted)</li>
 <li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer. The chimera list is:</p>
 <div class="highlight-python"><pre>focus
 set bg_color white
@@ -855,8 +901,8 @@ generated (1 column per step + 1 for particle number).</li>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral">
 <tt class="descname">walking_dihedral</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>plot=True</em>, <em>savefig=None</em>, <em>axe=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots the dihedral angle between successive plans. A plan is formed by 3
-successive loci.</p>
+<dd><p>Plots the dihedral angle between successive planes. A plane is formed by
+3 successive loci.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -955,8 +1001,11 @@ function</li>
 <tt class="descname">write_xyz</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>get_path=False</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a xyz file containing the 3D coordinates of each particle in the
 model.</p>
-<p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If none of model_num, models or cluster parameter are set,
 ALL the models will be written.</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1081,7 +1130,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 31, 2014.
+      Last updated on Feb 01, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

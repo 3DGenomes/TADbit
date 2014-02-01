@@ -119,28 +119,11 @@
 <em class="property">class </em><tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">IMPmodel</tt><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
 <dd><p>A container for the IMP modeling results. The container is a dictionary
 with the following keys:</p>
-<ul>
-<li><p class="first">log_objfun: The list of IMP objective function values</p>
-</li>
-<li><dl class="first docutils">
-<dt>objfun: The final objective function value of the corresponding model</dt>
-<dd><p class="first last">(from log_objfun). This value will be used to rank all the generated
-models</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>rand_init: The random number generator feed (needed for model</dt>
-<dd><p class="first last">reproducibility)</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>x, y, z: The spatial 3D coordinates of each particles. Each coordinate is</dt>
-<dd><p class="first last">represented as a list</p>
-</dd>
-</dl>
-</li>
+<ul class="simple">
+<li>log_objfun: The list of IMP objective function values</li>
+<li>objfun: The final objective function value of the corresponding model</li>
+<li>rand_init: Random number generator feed (needed for model reproducibility)</li>
+<li>x, y, z: 3D coordinates of each particles. Each represented as a list</li>
 </ul>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.accessible_surface">
@@ -234,7 +217,8 @@ accessible/(accessible+inaccessible) )</td>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.center_of_mass">
 <tt class="descname">center_of_mass</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.center_of_mass" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Gives the center of mass of a model</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -247,7 +231,8 @@ accessible/(accessible+inaccessible) )</td>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.contour">
 <tt class="descname">contour</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.contour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.contour" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Total length of the model</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -260,7 +245,8 @@ accessible/(accessible+inaccessible) )</td>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.cube_side">
 <tt class="descname">cube_side</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.cube_side"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_side" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Calculates the side of a cube containing the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -273,7 +259,8 @@ accessible/(accessible+inaccessible) )</td>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.cube_volume">
 <tt class="descname">cube_volume</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.cube_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_volume" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Calculates the volume of a cube containing the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -286,7 +273,9 @@ accessible/(accessible+inaccessible) )</td>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.distance">
 <tt class="descname">distance</tt><big>(</big><em>part1</em>, <em>part2</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.distance" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Calculates the distance between one point of the model and an external
+coordinate</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -339,7 +328,8 @@ never be reached by the given object</td>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.min_max_by_axis">
 <tt class="descname">min_max_by_axis</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.min_max_by_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.min_max_by_axis" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Calculates the minimum and maximum coordinates of the model</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -376,7 +366,8 @@ of the file name will determine the desired format).</li>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.radius_of_gyration">
 <tt class="descname">radius_of_gyration</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.radius_of_gyration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Defined as:</p>
+<dd><p>Calculates the radius of gyration or gyradius of the model</p>
+<p>Defined as:</p>
 <div class="math">
 \[\sqrt{\frac{\sum_{i=1}^{N} (x_i-x_{com})^2+(y_i-y_{com})^2+(z_i-z_{com})^2}{N}}\]</div>
 <p>with:</p>
@@ -397,7 +388,8 @@ of the file name will determine the desired format).</li>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.shortest_axe">
 <tt class="descname">shortest_axe</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.shortest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.shortest_axe" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Minimum distance between two particles in the model</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -409,8 +401,9 @@ of the file name will determine the desired format).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.view_model">
-<tt class="descname">view_model</tt><big>(</big><em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>centroid=False</em>, <em>gyradius=False</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.view_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.view_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visualize a selected model in the three dimensions.</p>
+<tt class="descname">view_model</tt><big>(</big><em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>center_of_mass=False</em>, <em>gyradius=False</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.view_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.view_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a selected model in the three dimensions. (either with Chimera
+or through matplotlib).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -445,6 +438,10 @@ passed through the kwargs.</li>
 Each r, g, b between 0 and 1.</li>
 </ul>
 </li>
+<li><strong>center_of_mass</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; draws a dot representing the center of
+mass of the model</li>
+<li><strong>gyradius</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; draws the center of mass of the model as a sphere
+with radius equal to the radius of gyration of the model</li>
 <li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer.
 The chimera list is:</p>
 <div class="highlight-python"><pre>focus
@@ -677,7 +674,7 @@ the file has been written</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 31, 2014.
+      Last updated on Feb 01, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
