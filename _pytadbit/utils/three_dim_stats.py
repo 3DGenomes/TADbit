@@ -133,6 +133,8 @@ def generate_circle_points(x, y, z, u, v, w, n):
 
 def square_distance(part1, part2):
     """
+    Calculates the square distance between two particles.
+    
     :param part1: coordinate (dict format with x, y, z keys)
     :param part2: coordinate (dict format with x, y, z keys)
 
@@ -144,6 +146,8 @@ def square_distance(part1, part2):
 
 def fast_square_distance(x1, y1, z1, x2, y2, z2):
     """
+    Calculates the square distance between two coordinates.
+
     :param part1: coordinate (dict format with x, y, z keys)
     :param part2: coordinate (dict format with x, y, z keys)
 
@@ -156,6 +160,8 @@ def fast_square_distance(x1, y1, z1, x2, y2, z2):
 
 def distance(part1, part2):
     """
+    Calculates the distance between two particles.
+
     :param part1: coordinate in list format (x, y, z)
     :param part2: coordinate in list format (x, y, z)
 
@@ -168,6 +174,8 @@ def distance(part1, part2):
 
 def angle_between_3_points(point1, point2, point3):
     """
+    Calculates the angle between 3 particles
+    
     Given three particles A, B and C, the angle g (angle ACB, shown below):
 
     ::
@@ -227,7 +235,10 @@ def calc_consistency(models, nloci, dcutoff=200):
 def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score',
                   normed=True):
     """
-
+    Calculates the RMSD, dRMSD, the number of equivalent positions and a score
+    combining these three measures. The measure are done between a group of
+    models in a one against all manner.
+    
     :param nloci: number of particles per model
     :param 200 dcutoff: distance in nanometer from which it is considered
        that two particles are separated.
@@ -292,6 +303,9 @@ def getAngle(v1v2, v2v3):
 
 
 def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
+    """
+    Main function for the calculation of the accessibility of a model.
+    """
     superradius = superradius or 1
     # number of dots in a circle is dependent the ones in a sphere
     numc = sqrt(nump) * sqrt(pi)

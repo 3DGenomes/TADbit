@@ -6,8 +6,10 @@
 
 import inspect
 import pytadbit
+from pytadbit.tad_clustering import tad_cmo
 from string import uppercase
 import re
+from sys import stderr
 
 
 def condition(member):
@@ -21,6 +23,8 @@ def get_all(module, all_members=None):
         return
     for name, member in members:
         if name.startswith('_'):
+            continue
+        if 'OLD' in name:
             continue
         if name.startswith('im_'):
             continue
@@ -90,8 +94,13 @@ def main():
 
     all_members = get_all(pytadbit)
     get_all(pytadbit.utils, all_members)
+    get_all(tad_cmo, all_members)
     modules = set([all_members[m]['son'].__module__ for m in all_members])
 
+    numclasses = 0
+    nummodules = len(modules)
+    nfunctions = 0
+    
     print '======================================='
     print 'Summary of TADbit classes and functions'
     print '=======================================\n'
@@ -102,27 +111,32 @@ def main():
     print ''
     for module in modules:
         print print_doc(module, header=1)
+        
         submodules = [m for m in all_members
                       if all_members[m]['son'].__module__ == module]
         dadies = set([all_members[m]['dady'] for m in submodules
                       if all_members[m]['dady'][0] in uppercase])
-        for member in sorted(
-            submodules,
-            key=lambda x:all_members[x]['son'].__name__[0] in uppercase):
+        for member in sorted(submodules,
+                             key=lambda x:all_members[x]['son'].__name__[0] in uppercase):
             if all_members[member]['dady'] in dadies or member in dadies:
                 continue
             if all_members[member]['son'].__name__[0] in uppercase:
                 print print_doc(all_members[member]['son'], header=2, indent=3)
+                numclasses += 1
             else:
+                nfunctions += 1
                 print print_doc(all_members[member]['son'], header=3, indent=3)
         for dady in dadies:
+            numclasses += 1
             print print_doc(all_members[dady]['son'], offset=9, header=2)
-            for member in submodules:
+            for member in sorted(submodules):
                 if all_members[member]['dady'] != dady:
                     continue
+                nfunctions += 1
                 print print_doc(all_members[member]['son'], header=3,
                                 indent=6)
-
-
+    stderr.write('Reporting %s modules, %s classes and %s functions\n' %(
+        nummodules, numclasses, nfunctions))
+    
 if __name__ == "__main__":
     exit(main())

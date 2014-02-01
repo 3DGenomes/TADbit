@@ -12,6 +12,7 @@ Documentation
 -------------
 
 * `TADbit documentation <http://3dgenomes.github.io/tadbit/>`_ 
+* `Summary of TADbit classes and functions <https://github.com/3DGenomes/tadbit/blob/master/doc/summary.rst>`_ 
 
 
 Build status

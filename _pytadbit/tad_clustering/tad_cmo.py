@@ -33,7 +33,7 @@ def _sort_match(matches):
 
 def core_nw_long(p_scores, penalty, l_p1, l_p2):
     """
-    Core of the Needleman-Wunsch algorithm 
+    Core of the long Needleman-Wunsch algorithm that aligns matrices
     """
     scores = virgin_score(penalty, l_p1 + 1, l_p2 + 1)
     ins = rmv = 0
@@ -67,59 +67,59 @@ def core_nw_long(p_scores, penalty, l_p1, l_p2):
     while i and j:
         score = scores[i][j]
         value = scores[i - 1][j - 1] + p_scores[i - 1][j - 1]
-        if equal(score, value):
+        if _equal(score, value):
             i -= 1
             j -= 1
             align1.insert(0, i)
             align2.insert(0, j)
             ins = rmv = 0
             continue
-        if equal(score, scores[i - 1][j] + pens[0]):
+        if _equal(score, scores[i - 1][j] + pens[0]):
             i -= 1
             align1.insert(0, i)
             align2.insert(0, '-')
             continue
-        if equal(score, scores[i][j - 1] + pens[0]):
+        if _equal(score, scores[i][j - 1] + pens[0]):
             j -= 1
             align1.insert(0, '-')
             align2.insert(0, j)
             continue
-        if equal(score, scores[i - 1][j] + pens[1]):
+        if _equal(score, scores[i - 1][j] + pens[1]):
             i -= 1
             align1.insert(0, i)
             align2.insert(0, '-')
             continue
-        if equal(score, scores[i][j - 1] + pens[1]):
+        if _equal(score, scores[i][j - 1] + pens[1]):
             j -= 1
             align1.insert(0, '-')
             align2.insert(0, j)
             continue
-        if equal(score, scores[i - 1][j] + pens[2]):
+        if _equal(score, scores[i - 1][j] + pens[2]):
             i -= 1
             align1.insert(0, i)
             align2.insert(0, '-')
             continue
-        if equal(score, scores[i][j - 1] + pens[2]):
+        if _equal(score, scores[i][j - 1] + pens[2]):
             j -= 1
             align1.insert(0, '-')
             align2.insert(0, j)
             continue
-        if equal(score, scores[i - 1][j] + pens[3]):
+        if _equal(score, scores[i - 1][j] + pens[3]):
             i -= 1
             align1.insert(0, i)
             align2.insert(0, '-')
             continue
-        if equal(score, scores[i][j - 1] + pens[3]):
+        if _equal(score, scores[i][j - 1] + pens[3]):
             j -= 1
             align1.insert(0, '-')
             align2.insert(0, j)
             continue
-        if equal(score, scores[i - 1][j] + pens[4]):
+        if _equal(score, scores[i - 1][j] + pens[4]):
             i -= 1
             align1.insert(0, i)
             align2.insert(0, '-')
             continue
-        if equal(score, scores[i][j - 1] + pens[4]):
+        if _equal(score, scores[i][j - 1] + pens[4]):
             j -= 1
             align1.insert(0, '-')
             align2.insert(0, j)
@@ -137,7 +137,7 @@ def core_nw_long(p_scores, penalty, l_p1, l_p2):
 
 def core_nw(p_scores, penalty, l_p1, l_p2):
     """
-    Core of the Needleman-Wunsch algorithm 
+    Core of the fast Needleman-Wunsch algorithm that aligns matrices
     """
     scores = virgin_score(penalty, l_p1 + 1, l_p2 + 1)
     for i in xrange(1, l_p1 + 1):
@@ -153,16 +153,16 @@ def core_nw(p_scores, penalty, l_p1, l_p2):
     while i and j:
         score = scores[i][j]
         value = scores[i - 1][j - 1] + p_scores[i - 1][j - 1]
-        if equal(score, value):
+        if _equal(score, value):
             i -= 1
             j -= 1
             align1.insert(0, i)
             align2.insert(0, j)
-        elif equal(score, scores[i - 1][j] + penalty):
+        elif _equal(score, scores[i - 1][j] + penalty):
             i -= 1
             align1.insert(0, i)
             align2.insert(0, '-')
-        elif equal(score, scores[i][j - 1] + penalty):
+        elif _equal(score, scores[i][j - 1] + penalty):
             j -= 1
             align1.insert(0, '-')
             align2.insert(0, j)
@@ -173,7 +173,7 @@ def core_nw(p_scores, penalty, l_p1, l_p2):
     return align1, align2, scores[i][j]
 
 
-def equal(a, b, cut_off=1e-9):
+def _equal(a, b, cut_off=1e-9):
     """
     Equality for floats
     """
@@ -183,8 +183,11 @@ def equal(a, b, cut_off=1e-9):
 def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                 method='frobenius', long_nw=True, long_dist=True):
     """
+    Calculates the optimal contact map overlap between 2 matrices 
 
-    Note: penalty is defined as the minimum value of the pre-scoring matrix.
+    .. note::
+
+      penalty is defined as the minimum value of the pre-scoring matrix.
     
     :param hic1: first matrix to align
     :param hic2: second matrix to align
@@ -230,13 +233,13 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
     vec2 = array([val2[i] * vec2[:, i] for i in xrange(num_v)]).transpose()
     nearest = float('inf')
     nw = core_nw_long if long_nw else core_nw
-    dister = get_dist_long if long_dist else get_dist
+    dister = _get_dist_long if long_dist else _get_dist
     best_alis = []
     for num in xrange(1, num_v + 1):
         for factors in product([1, -1], repeat=num):
             vec1p = factors * vec1[:, :num]
             vec2p = vec2[:, :num]
-            p_scores = prescoring(vec1p, vec2p, l_p1, l_p2)
+            p_scores = _prescoring(vec1p, vec2p, l_p1, l_p2)
             penalty = min([npmin(p_scores)] + [-npmax(p_scores)])
             align1, align2, dist = nw(p_scores, penalty, l_p1, l_p2)
             try:
@@ -264,7 +267,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                                             if x!='-' else '-'*3) for x in align1])
         print 'TADS 2: '+'|'.join(['%4s' % (str(int(x)) \
                                             if x!='-' else '-'*3) for x in align2])
-    rho, pval = get_score(align1, align2, hic1, hic2)
+    rho, pval = _get_score(align1, align2, hic1, hic2)
     # print best_pen
     if not best_pen:
         print 'WARNING: penalty NULL!!!\n\n'
@@ -281,7 +284,7 @@ def virgin_score(penalty, l_p1, l_p2):
            [[penalty * i] + zeros for i in xrange(1, l_p1)]
 
 
-def prescoring(vc1, vc2, l_p1, l_p2):
+def _prescoring(vc1, vc2, l_p1, l_p2):
     """
     yes... this is the bottle neck, almost 2/3 of the time spent here
     """
@@ -293,7 +296,7 @@ def prescoring(vc1, vc2, l_p1, l_p2):
     #return [[sum(vc1[i] * vc2[j]) for j in xrange(l_p2)] for i in xrange(l_p1)]
 
 
-def get_dist(align1, align2, tad1, tad2):
+def _get_dist(align1, align2, tad1, tad2):
     """
     Frobenius norm
     """
@@ -309,7 +312,7 @@ def get_dist(align1, align2, tad1, tad2):
            / (len(pp1)+1)
 
 
-def get_dist_long(align1, align2, tad1, tad2):
+def _get_dist_long(align1, align2, tad1, tad2):
     """
     Frobenius norm
     """
@@ -337,7 +340,7 @@ def get_dist_long(align1, align2, tad1, tad2):
            / (len(pp1)+1) + xpen
 
 
-def get_score(align1, align2, tad1, tad2):
+def _get_score(align1, align2, tad1, tad2):
     """
     Using Spearman Rho correation value, between matrices.
     Computed only in half of the matrix, and without the diagonal
@@ -354,7 +357,7 @@ def get_score(align1, align2, tad1, tad2):
     return spearmanr(pp1, pp2, axis=None)
 
 
-def get_OLD_score(align1, align2, p1, p2):
+def _get_OLD_score(align1, align2, p1, p2):
     """
     Original scoring function, based on contact map overlap.
     """
@@ -394,14 +397,14 @@ def matrix2binnary_contacts(tad1, tad2):
     return contacts1, contacts2
 
 
-def run_aleigen(contacts1, contacts2, num_v):
+def _run_aleigen(contacts1, contacts2, num_v):
     """
 
-    * c1, c2 = number of contacts of the first and seconf contact map
-               (after removing non-matching columns/rows)
-    * cmo = total number of matching contacts (above the first diagonal)
-      of the computed overlap
-    * score = 2*CMO/(C1+C2)
+        - c1, c2 = number of contacts of the first and seconf contact map
+                   (after removing non-matching columns/rows)
+        - cmo = total number of matching contacts (above the first diagonal)
+          of the computed overlap
+        - score = 2*CMO/(C1+C2)
 
     """
     f_string = '/tmp/lala%s.txt'

@@ -244,6 +244,8 @@ def _do_it(num, verbose):
 
 def generate_IMPmodel(rand_init, verbose=0):
     """
+    Generates one IMP model
+    
     :param rand_init: random number kept as model key, for reproducibility.
 
     :returns: a model, that is a dictionary with the log of the objective

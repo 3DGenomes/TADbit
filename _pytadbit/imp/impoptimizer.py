@@ -9,6 +9,7 @@ from pytadbit.utils.extraviews  import plot_3d_optimization_result
 from warnings                   import warn
 import numpy as np
 
+
 class IMPoptimizer(object):
     """
     This class optimizes a set of paramaters (scale, maxdist, lowfreq and
