@@ -799,8 +799,9 @@ class IMPmodel(dict):
             return None
 
 
-    def view_model(self, tool='chimera', savefig=None, cmd=None, centroid=False,
-                   gyradius=False, color='index', **kwargs):
+    def view_model(self, tool='chimera', savefig=None, cmd=None,
+                   center_of_mass=False, gyradius=False, color='index',
+                   **kwargs):
         """
         Visualize a selected model in the three dimensions. (either with Chimera
         or through matplotlib).
@@ -826,6 +827,10 @@ class IMPmodel(dict):
                passed through the kwargs.
              * a list of (r, g, b) tuples (as long as the number of particles).
                Each r, g, b between 0 and 1.
+        :param False center_of_mass: draws a dot representing the center of
+           mass of the model
+        :param False gyradius: draws the center of mass of the model as a sphere
+           with radius equal to the radius of gyration of the model
         :param None cmd: list of commands to be passed to the viewer.
            The chimera list is:
 
@@ -878,11 +883,11 @@ class IMPmodel(dict):
         """
         if gyradius:
             gyradius = self.radius_of_gyration()
-            centroid = True
+            center_of_mass = True
         if tool=='plot':
             plot_3d_model(self['x'], self['y'], self['z'], **kwargs)
             return
         self.write_cmm('/tmp/', color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
-                     centroid=centroid, gyradius=gyradius)
+                     center_of_mass=center_of_mass, gyradius=gyradius)

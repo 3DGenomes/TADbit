@@ -1080,7 +1080,8 @@ class StructuralModels(object):
 
 
     def view_models(self, models=None, cluster=None, tool='chimera',
-                    savefig=None, cmd=None, color='index', **kwargs):
+                    centroid=True, savefig=None, cmd=None, color='index',
+                    **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
         or through matplotlib).
@@ -1110,6 +1111,8 @@ class StructuralModels(object):
                passed through the kwargs.
              * a list of (r, g, b) tuples (as long as the number of particles).
                Each r, g, b between 0 and 1.
+        :param True centroid: higlights the centroid of the group of models
+           represented (if False the first model of the list will be highlighted)
         :param None cmd: list of commands to be passed to the viewer. The chimera list is:
 
            ::
@@ -1167,6 +1170,9 @@ class StructuralModels(object):
                   else m for m in models]
         if color in ['tad', 'border'] and not 'tads' in kwargs:
             kwargs.update((('tads', self.experiment.tads), ))
+        centroid_model = 0
+        if centroid and len(models) > 1:
+            centroid_model = models.index(self.centroid_model(models))
         if tool == 'plot':
             sqrmdl = sqrt(len(models))
             cols = int(round(sqrmdl + (0.0 if int(sqrmdl)==sqrmdl else 0.5)))
@@ -1186,12 +1192,12 @@ class StructuralModels(object):
             else:
                 plt.show()
             return
-            
         for model_num in models:
             self.write_cmm('/tmp/', model_num=model_num, color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self[m]['rand_init'])
                       for m in models],
-                     savefig=savefig, chimera_bin=tool, chimera_cmd=cmd)
+                     savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
+                     centroid=centroid_model)
 
 
     def angle_between_3_particles(self, parta, partb, partc,

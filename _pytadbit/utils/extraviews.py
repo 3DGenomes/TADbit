@@ -356,8 +356,8 @@ def plot_3d_model(x, y, z, label=False, axe=None, savefig=None):
     
     
 def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
-                 chimera_cmd=None, savefig=None, centroid=False,
-                 gyradius=False):
+                 chimera_cmd=None, savefig=None, center_of_mass=False,
+                 gyradius=False, centroid=0, **kwargs):
     """
     """
     pref_f = '/tmp/tmp.cmd'
@@ -365,16 +365,19 @@ def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
     for cmm_file in cmm_files:
         out.write('open %s\n' % (cmm_file))
     if len(cmm_files) > 1:
-        for i in xrange(len(cmm_files) - 1):
-            out.write('match #%s #0\n' % (i))
+        for i in xrange(len(cmm_files)):
+            if i == centroid:
+                continue
+            out.write('match #%s #%s\n' % (i, centroid))
+            out.write('color black #%s\n' % (i))
     if not chimera_cmd:
-        out.write('''
+        out.write(('''
 focus
 set bg_color white
 windowsize 800 600
-bonddisplay never #0
+bonddisplay never #%s
 represent wire
-shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+shape tube #%s radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
 clip yon -500
 ~label
 set subdivision 1
@@ -383,8 +386,9 @@ set dc_color black
 set dc_start 0.5
 set dc_end 1
 scale 0.8\n
-''' + ('define centroid radius %s color 1,0,0,0.2\n' % (
-                      gyradius if gyradius else 10) if centroid else ''))
+''' % (centroid, centroid)) + ('define centroid radius %s color 1,0,0,0.2\n' % (
+                      gyradius if gyradius else 10) if center_of_mass else '')
+        + (kwargs.get('extra', '')))
         if savefig:
             if savefig.endswith('.png'):
                 out.write('copy file %s png' % (savefig))
