@@ -9,7 +9,7 @@ from math import log
 def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
                      max_dist=500000, verbose=False):
     """
-    Align two lists of TAD boundaries.
+    Align two lists of TAD boundaries using a Needleman-Wunsh implementation
     
     :param tads1: list of boundaries for one chromosome under one condition
     :param tads2: list of boundaries for the same chromosome under other
@@ -29,7 +29,7 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
     l_tads2  = len(tads2)
     max_dist = log(1. / (abs(max_dist) + 1))
     dister = lambda x, y: log(1. / (abs(x - y) + 1))
-    scores = virgin_score(penalty, l_tads1, l_tads2)
+    scores = _virgin_score(penalty, l_tads1, l_tads2)
     pen = penalty
     for i in xrange(1, l_tads1):
         for j in xrange(1, l_tads2):
@@ -57,24 +57,24 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
             max_score = score
         d_dist     = dister(tads2[j], tads1[i])
         value      = scores[i-1][j-1] + d_dist
-        if equal(score, value):
+        if _equal(score, value):
             align1.insert(0, tads1[i])
             align2.insert(0, tads2[j])
             i -= 1
             j -= 1
-        elif equal(score, scores[i-1][j] + penalty):
+        elif _equal(score, scores[i-1][j] + penalty):
             align1.insert(0, tads1[i])
             align2.insert(0, '-')
             i -= 1
-        elif equal(score, scores[i-1][j] + ext_pen):
+        elif _equal(score, scores[i-1][j] + ext_pen):
             align1.insert(0, tads1[i])
             align2.insert(0, '-')
             i -= 1
-        elif equal(score, scores[i][j-1] + penalty):
+        elif _equal(score, scores[i][j-1] + penalty):
             align1.insert(0, '-')
             align2.insert(0, tads2[j])
             j -= 1
-        elif equal(score, scores[i][j-1] + ext_pen):
+        elif _equal(score, scores[i][j-1] + ext_pen):
             align1.insert(0, '-')
             align2.insert(0, tads2[j])
             j -= 1
@@ -101,7 +101,7 @@ def needleman_wunsch(tads1, tads2, penalty=-6., ext_pen=-5.6,
     return [align1, align2], max_score
 
 
-def virgin_score(penalty, l_tads1, l_tads2):
+def _virgin_score(penalty, l_tads1, l_tads2):
     """
     creates empty matrix
     """
@@ -110,7 +110,7 @@ def virgin_score(penalty, l_tads1, l_tads2):
            [[penalty * i] + zeros for i in xrange(1, l_tads1)]
 
 
-def equal(a, b, cut_off=1e-9):
+def _equal(a, b, cut_off=1e-9):
     """
     """
     return abs(a-b) < cut_off

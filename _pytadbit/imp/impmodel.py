@@ -326,6 +326,8 @@ class IMPmodel(dict):
 
     def longest_axe(self):
         """
+        Gives the distance between most distant particles of the model
+        
         :returns: the maximum distance between two particles in the model
         """
         maxdist = 0

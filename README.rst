@@ -1,5 +1,9 @@
-TADbit
-******
+
+.. image:: https://github.com/3DGenomes/tadbit/raw/master/doc/source/pictures/TADbit_logo_large.png
+   :height: 100
+   :width: 400
+   :scale: 50
+
 
 TADbit is a computational package that deals with 3C-based data (more specifically Hi-C data) to detect Topologically Associating Domain (TAD) borders and to further analyze TADs by: i) the identification of conserved TAD borders and ii) the definition of sets of TADs sharing structural features iii) the three-dimensional modeling of the chromatin.
 
