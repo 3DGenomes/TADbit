@@ -1,7 +1,7 @@
 
-.. image:: https://github.com/3DGenomes/tadbit/raw/master/doc/source/pictures/TADbit_logo_large.png
+.. image:: https://github.com/3DGenomes/tadbit/raw/master/doc/source/pictures/TADbit_logo.png
    :height: 100
-   :width: 400
+   :width: 480
    :scale: 50
 
 
