@@ -30,6 +30,8 @@ StructuralModels class
     rank according to objective function value), or by their IMP random intial
     number (as string).
 
+      - **align_models**:                    Three-dimentional aligner for structural models. The result of the                                             alignment will REPLACE the coordinates of each model.
+
       - **angle_between_3_particles**:       Calculates the angle between 3 particles.                                                                                                                                       Given three particles A, B and C, the angle g (angle ACB, shown below):
 
       - **average_model**:                   Builds and returns an average model representing a given group of models
