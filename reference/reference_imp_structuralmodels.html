@@ -192,6 +192,28 @@ generation of three dimensional models.</li>
 </tbody>
 </table>
 <dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.align_models">
+<tt class="descname">align_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.align_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Three-dimentional aligner for structural models. The result of the
+alignment will REPLACE the coordinates of each model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the average model will be computed
+using all the models. A list of numbers corresponding to a given set
+of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the average model only for the models in the
+cluster number &#8216;cluster&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles">
 <tt class="descname">angle_between_3_particles</tt><big>(</big><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>models=None</em>, <em>cluster=None</em>, <em>radian=False</em>, <em>all_angles=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.angle_between_3_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the angle between 3 particles.</p>
@@ -1130,7 +1152,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 01, 2014.
+      Last updated on Feb 03, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

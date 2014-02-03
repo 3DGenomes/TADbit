@@ -243,7 +243,10 @@ calculation of the z-score</p>
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.calc_eqv_rmsd">
 <tt class="descclassname">pytadbit.utils.three_dim_stats.</tt><tt class="descname">calc_eqv_rmsd</tt><big>(</big><em>models</em>, <em>nloci</em>, <em>dcutoff=200</em>, <em>one=False</em>, <em>what='score'</em>, <em>normed=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Calculates the RMSD, dRMSD, the number of equivalent positions and a score
+combining these three measures. The measure are done between a group of
+models in a one against all manner.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -277,7 +280,8 @@ pairwise model comparison.</p>
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.square_distance">
 <tt class="descclassname">pytadbit.utils.three_dim_stats.</tt><tt class="descname">square_distance</tt><big>(</big><em>part1</em>, <em>part2</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#square_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.square_distance" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Calculates the square distance between two particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -297,7 +301,8 @@ pairwise model comparison.</p>
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.distance">
 <tt class="descclassname">pytadbit.utils.three_dim_stats.</tt><tt class="descname">distance</tt><big>(</big><em>part1</em>, <em>part2</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.distance" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Calculates the distance between two particles.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -317,7 +322,8 @@ pairwise model comparison.</p>
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.angle_between_3_points">
 <tt class="descclassname">pytadbit.utils.three_dim_stats.</tt><tt class="descname">angle_between_3_points</tt><big>(</big><em>point1</em>, <em>point2</em>, <em>point3</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#angle_between_3_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.angle_between_3_points" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
+<dd><p>Calculates the angle between 3 particles</p>
+<p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
 <div class="highlight-python"><pre>      A
      /|
     /i|
@@ -465,7 +471,7 @@ for details</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 01, 2014.
+      Last updated on Feb 03, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
