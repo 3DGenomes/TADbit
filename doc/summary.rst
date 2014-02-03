@@ -79,6 +79,8 @@ Tad_clustering tad_cmo module
 
    - **core_nw**:                            Core of the fast Needleman-Wunsch algorithm that aligns matrices
 
+   - **virgin_score**:                       Fill a matrix with zeros, except first row and first column filled with     multiple values of penalty.
+
    - **core_nw_long**:                       Core of the long Needleman-Wunsch algorithm that aligns matrices
 
    - **optimal_cmo**:                        Calculates the optimal contact map overlap between 2 matrices
@@ -130,9 +132,9 @@ Utils extraviews module
 Boundary_aligner reciprocally module
 ------------------------------------
 
-   - **reciprocal**:                         Method based on reciprocal closest boundaries (bd). bd1 will be aligned                                             with bd2 (closest boundary from bd1) if and only if bd1 is the closest                                             boundary of bd2 too (and of course if the distance between bd1 and bd2 is                                             lower than max_dist).
-
    - **find_closest_reciprocal**:            Function to check the needleman_wunsch algorithm.
+
+   - **reciprocal**:                         Method based on reciprocal closest boundaries (bd). bd1 will be aligned                                             with bd2 (closest boundary from bd1) if and only if bd1 is the closest                                             boundary of bd2 too (and of course if the distance between bd1 and bd2 is                                             lower than max_dist).
 
 Utils tadmaths module
 ---------------------
@@ -203,7 +205,7 @@ IMPmodel class
 
       - **inaccessible_particles**:          Gives the number of loci/particles that are accessible to an object                                             (i.e. a protein) of a given size.
 
-      - **longest_axe**:                     
+      - **longest_axe**:                     Gives the distance between most distant particles of the model
 
       - **min_max_by_axis**:                 Calculates the minimum and maximum coordinates of the model
 
@@ -311,11 +313,7 @@ Experiment class
 Boundary_aligner globally module
 --------------------------------
 
-   - **equal**:                              
-
-   - **needleman_wunsch**:                   Align two lists of TAD boundaries.
-
-   - **virgin_score**:                       creates empty matrix
+   - **needleman_wunsch**:                   Align two lists of TAD boundaries using a Needleman-Wunsh implementation
 
 Utils hic_filtering module
 --------------------------

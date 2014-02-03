@@ -100,6 +100,14 @@ def main():
                                          'src/3d-lib/3dStats.cpp',
                                          'src/3d-lib/align.cpp'],
                                 extra_compile_args=["-ffast-math"])
+    # c++ module to align a pair of 3D models
+    eqv_rmsd_module = Extension('pytadbit.aligner3d',
+                                language = "c++",
+                                sources=['src/3d-lib/align_py.cpp',
+                                         'src/3d-lib/matrices.cc',
+                                         'src/3d-lib/3dStats.cpp',
+                                         'src/3d-lib/align.cpp'],
+                                extra_compile_args=["-ffast-math"])
     # c++ module to align and calculate consistency of a group of 3D models
     consistency_module = Extension('pytadbit.consistency',
                                    language = "c++",

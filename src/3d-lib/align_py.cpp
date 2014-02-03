@@ -1,11 +1,9 @@
 #include "Python.h"
-#include "3dStats.h"
 #include "align.h"
 
 
-
 /* The function doc string */
-PyDoc_STRVAR(centroid_wrapper__doc__,
+PyDoc_STRVAR(aligner3d__doc__,
 "From a list of lists of xyz positions,  the \n\
 number of equivalent positions, the RMSD and the dRMSD.\n\
    :param xyzs: list of lists of tuples of (x, y, z ) coordinates.\n\
@@ -21,127 +19,72 @@ number of equivalent positions, the RMSD and the dRMSD.\n\
 
 static PyObject* aligner3d_wrapper(PyObject* self, PyObject* args)
 {
-  PyObject *py_xs;
-  PyObject *py_ys;
-  PyObject *py_zs;
+  PyObject *py_xs1;
+  PyObject *py_ys1;
+  PyObject *py_zs1;
+  PyObject *py_xs2;
+  PyObject *py_ys2;
+  PyObject *py_zs2;
   int size;
 
-  if (!PyArg_ParseTuple(args, "OOO", &py_xs, &py_ys, &py_zs, &size))
+  if (!PyArg_ParseTuple(args, "OOOOOOi", &py_xs1, &py_ys1, &py_zs1, 
+			&py_xs2, &py_ys2, &py_zs2, &size))
     return NULL;
  
-  float **xyz;
+  float **xyz1;
+  float **xyz2;
   int i;
   int j;
-  int numP;
-  float dist2Avg;
-  map<string, float**>::iterator it1;
-  map<string, float**>::iterator it2;
-  map<float, string>::iterator it3;
-  float **avg;
-  bool add_first;
-  map<float, string> dist2Centroid;
-  set<string> modelList;
-  string modelId;
-  ostringstream tmpStr;
 
-
-  //map<string, float**> xyzlist;
-  map<string, float**> xyzlist;
-  
-  xyz = new float*[size];
+ 
+  xyz1 = new float*[size];
+  xyz2 = new float*[size];
   for(int i=0; i<size; i++) {
-    xyz[i] = new float[3];
-    memset(xyz[i], 0, 3*sizeof(float));
-  }
-
-  avg = new float*[size];
-  for(int i=0; i<size; i++) {
-    avg[i] = new float[3];
-    memset(avg[i], 0, 3*sizeof(float));
+    xyz1[i] = new float[3];
+    memset(xyz1[i], 0, 3*sizeof(float));
+    xyz2[i] = new float[3];
+    memset(xyz2[i], 0, 3*sizeof(float));
   }
 
 
   for (i=0; i<size; i++){
-    xyz[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(PyList_GET_ITEM(py_xs, j), i));
-    xyz[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(PyList_GET_ITEM(py_ys, j), i));
-    xyz[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(PyList_GET_ITEM(py_zs, j), i));
-    }
-    tmpStr.str("");
-    tmpStr.clear();
-    tmpStr << j;
-    modelId = tmpStr.str();
-    // cout << modelId << " model id "  << xyz[1][0]<<" "<<xyz[1][1]<<" "<<xyz[1][2]<<endl;
-    xyzlist.insert(make_pair(modelId, populateMap(size, xyz)));
+    xyz1[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_xs1, i));
+    xyz1[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_ys1, i));
+    xyz1[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zs1, i));
+    xyz2[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_xs2, i));
+    xyz2[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_ys2, i));
+    xyz2[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zs2, i));
   }
 
-  align(it2->second, it1->second, size);
-
-  numP = 1; 
-  add_first = 1;
-  it1=xyzlist.begin();
-  for ((it2=it1)++; it2!=xyzlist.end(); it2++) {
-    //cout << it1->first << " " << it2->first << endl;
-    // avgCoord(it1->second, it2->second, size, avg);
-    avgCoord(it1, it2, size, modelList, add_first, avg);
-    add_first = 0;
-    numP++;
-    // cout << "\n";
-  }
-
-  for (int i = 0; i < size; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      avg[i][j] /= numP;
-    }
-    // cout << "   p" << i << " " << i << " " << avg[i][0] << " " << avg[i][1] << " " << avg[i][2]  << endl;
-  }
-
-  for (it1=xyzlist.begin(); it1!=xyzlist.end(); it1++) {
-    dist2Avg = findCenrtroid(it1, avg, size);
-    dist2Centroid.insert(make_pair(dist2Avg, it1->first));
-  }
-
-  if (verbose){
-    for (it3=dist2Centroid.begin(); it3!=dist2Centroid.end(); it3++) {
-      cerr << it3->second << " rmsd2avg " << it3->first << endl;
-    }
-  }
-
-  for (int i=0; i<size; i++) {
-    delete[] xyz[i];
-  }
-  delete[] xyz;
+  align(xyz2, xyz1, size);
 
   // give it to me
-
-  if (getavg){
-    PyObject * py_result = NULL;
-    PyObject * py_subresult = NULL;
-    py_result = PyList_New(3);
-    i=0;
-    for (int j = 0; j < 3; ++j) {
-      py_subresult = PyList_New(size);
-      for (int i = 0; i < size; ++i) {
-	PyList_SetItem(py_subresult, i, PyFloat_FromDouble(avg[i][j]));
-      }
-      PyList_SetItem(py_result, j, py_subresult);
+  PyObject * py_result = NULL;
+  PyObject * py_subresult = NULL;
+  py_result = PyList_New(3);
+  for (int j = 0; j < 3; ++j) {
+    py_subresult = PyList_New(size);
+    for (int i = 0; i < size; ++i) {
+      PyList_SetItem(py_subresult, i, PyFloat_FromDouble(xyz2[i][j]));
     }
-    for (int i=0; i<size; i++) {
-      delete[] avg[i];
-    }
-    delete[] avg;
-    
-    return py_result;
+    PyList_SetItem(py_result, j, py_subresult);
   }
-
-  return PyInt_FromLong(atoi(dist2Centroid.begin()->second.c_str()));
+  for (int i=0; i<size; i++) {
+    delete[] xyz1[i];
+    delete[] xyz2[i];
+  }
+  delete[] xyz1;
+  delete[] xyz2;
+  
+  return py_result;
 }
 
 
  
-static PyMethodDef centroidMethods[] =
+static PyMethodDef aligner3dMethods[] =
   {
     {"aligner3d_wrapper", aligner3d_wrapper, METH_VARARGS, 
-    centroid_wrapper__doc__},
+    aligner3d__doc__},
     {NULL, NULL, 0, NULL}
   };
 
