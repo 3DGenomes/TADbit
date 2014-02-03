@@ -10,6 +10,7 @@ from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
 from pytadbit.imp.impmodel          import IMPmodel
 from pytadbit.centroid              import centroid_wrapper
+from pytadbit.aligner3d             import aligner3d_wrapper
 from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
 from math                           import acos, degrees, pi, sqrt
@@ -127,6 +128,33 @@ class StructuralModels(object):
             '\n'.join(['   - %-12s: %s' % (k, v)
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
+
+
+    def align_models(self, models=None, cluster=None):
+        """
+        Three-dimentional aligner for structural models. The result of the
+        alignment will REPLACE the coordinates of each model.
+        
+        :param None models: if None (default) the average model will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the average model only for the models in the
+           cluster number 'cluster'
+        """
+        if models:
+            models = models
+        elif cluster > -1:
+            models = [str(m) for m in self.clusters[cluster]]
+        else:
+            models = self.__models
+        firstx, firsty, firstz = models[0]['x'], models[0]['y'], models[0]['z']
+        for sec in models:
+            if sec == 0:
+                continue
+            coords = aligner3d_wrapper(firstx, firsty, firstz, models[sec]['x'],
+                                       models[sec]['y'], models[sec]['z'],
+                                       self.nloci)
+            models[sec]['x'], models[sec]['y'], models[sec]['z'] = coords
 
 
     def fetch_model_by_rand_init(self, rand_init, all_models=False):
@@ -669,7 +697,7 @@ class StructuralModels(object):
                                  sharex=True, sharey=True, figsize=figsize)
         # pre-calculate contact-matrices
         cmatrices = [self.get_contact_matrix(
-            [str(m) for m in clusters[i]], cutoff=dcutoff)
+            [str(m) for m in clusters[i + 1]], cutoff=dcutoff)
                      for i in xrange(n_best_clusters)]
         for i in xrange(n_best_clusters - 1 + add):
             for j in xrange(n_best_clusters - 1 + add):
@@ -729,7 +757,7 @@ class StructuralModels(object):
                            '(red clusters minus blue)\n\n' +
                            (''.join([' ' * 10 +
                                      'Cluster #%-2s: %3s models\n' % (
-                               i+1, len(clusters[i]))
+                               i+1, len(clusters[i+1]))
                                for i in xrange(n_best_clusters)])),
                            rotation=0, ha='left', va='center')
         plt.suptitle(('Deconvolution analysis for the %s top clusters ' +
@@ -740,14 +768,14 @@ class StructuralModels(object):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      i, projection='3d')
                 ax.set_title('Cluster #%s' % (i + 1), color='blue')
-                self[str(clusters[i][0])].view_model(tool='plot', axe=ax,
+                self[str(clusters[i+1][0])].view_model(tool='plot', axe=ax,
                                                      **kwargs)
                 for item in [ax]:
                     item.patch.set_visible(False)                
             for i in range(n_best_clusters - 1):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      n_best_clusters * (i + 2), projection='3d')
-                self[str(clusters[i][0])].view_model(tool='plot', axe=ax,
+                self[str(clusters[i+1][0])].view_model(tool='plot', axe=ax,
                                                      **kwargs)
                 ax.yaxis.set_label_position('top')
                 ax.set_title('Cluster #%s' % (i + 1), rotation=-90,
