@@ -1220,7 +1220,7 @@ class StructuralModels(object):
            
         """
         if models:
-            models = models
+            models = [m if type(m) is int else self[m]['index'] for m in models]
         elif cluster > -1:
             models = [str(m) for m in self.clusters[cluster]]
         else:
@@ -1247,9 +1247,9 @@ class StructuralModels(object):
             if show in ['all', 'stressed']:
                 fig = plt.figure()
                 axe = fig.add_subplot(1,1,1, projection='3d')
-                for i in xrange(len(models)):
+                for i in models:
                     if show=='all' or i==mdl or mdl=='all':
-                        self[models[i]].view_model(
+                        self[i].view_model(
                             tool='plot', axe=axe, color=color,
                             thin=False if stress=='all' else (i!=mdl),
                             **kwargs)
