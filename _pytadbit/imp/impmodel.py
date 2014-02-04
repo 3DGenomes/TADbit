@@ -891,7 +891,6 @@ class IMPmodel(dict):
             gyradius = self.radius_of_gyration()
             center_of_mass = True
         if tool=='plot':
-            print color
             plot_3d_model(self, color=color, **kwargs)
             return
         self.write_cmm('/tmp/', color=color, **kwargs)

@@ -1121,6 +1121,18 @@ class StructuralModels(object):
             plt.show()
 
 
+    def view_centroid(self, **kwargs):
+        """
+        shortcut for
+        models.view_models(tool='plot', show='stressed', stress='centroid')
+
+        :param kwargs: any parameters to be passed to view_models (i.e.:
+           models.view_centroid(azimuth=30, elevation=10, show_axe=True, label=True))
+        """
+        self.view_models(tool='plot', show='stressed', stress='centroid',
+                         **kwargs)
+        
+
     def view_models(self, models=None, cluster=None, tool='chimera',
                     show='all', stress='centroid', savefig=None,
                     cmd=None, color='index', **kwargs):
