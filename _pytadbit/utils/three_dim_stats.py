@@ -32,6 +32,37 @@ def generate_sphere_points(n=100):
     return points
 
 
+def get_center_of_mass(x, y, z):
+    """
+    get the center of mass of a given object with list of x, y, z coordinates
+    """
+    xm = ym = zm = 0.
+    size = len(x)
+    for i in xrange(size):
+        xm += x[i]
+        ym += y[i]
+        zm += z[i]
+    xm /= size
+    ym /= size
+    zm /= size
+    return xm, ym, zm
+
+
+def mass_center(x, y, z):
+    """
+    Transforms coordinates according to the center of mass
+
+    :param x: list of x coordinates
+    :param y: list of y coordinates
+    :param z: list of z coordinates
+    """
+    xm, ym, zm = get_center_of_mass(x, y, z)
+    for i in xrange(len(x)):
+        x[i] -= xm
+        y[i] -= ym
+        z[i] -= zm
+    
+
 # def generate_circle_points(x, y, z, a, b, c, u, v, w, n):
 #     """
 #     Returns list of 3d coordinates of points on a circle using the
@@ -81,6 +112,35 @@ def generate_sphere_points(n=100):
 #                        (tre * (1 - cosang) + z * dcosang + trep * sinang) / dst]
 #                       )
 #     return points
+
+
+def rotate_among_y_axis(x, y, z, angle):
+    """
+    Rotate and object with a list of x, y, z coordinates among its center of
+    mass
+    """
+    xj = []
+    yj = []
+    zj = []
+    for xi, yi, zi in zip(*(x, y, z)):
+        #dist = square_distance((xi, yi, zi), center_of_mass)
+        xj.append(xi*cos(angle) + zi*sin(angle))
+        yj.append(yi)
+        zj.append(xi*-sin(angle)+zi*cos(angle))
+    return xj, yj, zj
+
+
+def find_angle_rotation_improve_x(x, y, z, center_of_mass):
+    """
+    Finds the rotation angle needed to face the longest edge of the molecule
+    """
+    # find most distant point from center of mass:
+    coords = zip(*(x, y, z))
+    xdst, ydst, zdst = max(coords, key=lambda i: square_distance(i, center_of_mass))
+    dist = distance((xdst, ydst, zdst), center_of_mass)
+    angle = acos((-xdst**2 - (dist + sqrt(dist**2 - xdst**2))) /
+                 (2 * dist**2) + 1)
+    return angle
 
 
 def generate_circle_points(x, y, z, u, v, w, n):

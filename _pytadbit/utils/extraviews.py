@@ -105,7 +105,7 @@ def tad_coloring(model, tads=None):
     
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
-    start = float(model['description']['start']) / model['description']['resolution']
+    start = float(model['description']['start']) / model['description']['resolution'] - 1
     end   = float(model['description']['end'  ]) / model['description']['resolution']
     ltads = [t for t in tads if tads[t]['start']>start and tads[t]['end']<end]
     ntads = len(ltads)
@@ -116,7 +116,7 @@ def tad_coloring(model, tads=None):
         if tads[t]['start'] < start or tads[t]['end'] > end:
             continue
         red = float(t + 1 - min(ltads)) / ntads
-        for _ in range(int(tads[t]['start']), int(tads[t]['end'] + 1)):
+        for _ in range(int(tads[t]['start']), int(tads[t]['end'])):
             result.append((red, 0, 1 - red))
         result.append((grey, grey, grey))
         grey -= grey_step
@@ -134,7 +134,7 @@ def tad_border_coloring(model, tads=None):
     
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
-    start = float(model['description']['start']) / model['description']['resolution']
+    start = float(model['description']['start']) / model['description']['resolution'] - 1
     end   = float(model['description']['end'  ]) / model['description']['resolution']
     result = []
     for t in tads:
@@ -143,7 +143,7 @@ def tad_border_coloring(model, tads=None):
         grey = 0.95
         grey_step = (0.95 - 0.4) / (tads[t]['end'] - tads[t]['start'] + 1)
         red = float(tads[t]['score']) / 10
-        for _ in range(int(tads[t]['start']), int(tads[t]['end'] + 1)):
+        for _ in range(int(tads[t]['start']), int(tads[t]['end'])):
             result.append((grey, grey, grey))
             grey -= grey_step
         result.append((red, 0, 1 - red))
@@ -317,37 +317,79 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
         plt.show()
 
 
-def plot_3d_model(x, y, z, label=False, axe=None, savefig=None):
+def plot_3d_model(model, label=False, axe=None, thin=False, savefig=None,
+                  show_axe=False, azimuth=-90, elevation=0., color='index',
+                  **kwargs):
     """
     Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model
     using matplotlib
 
-    :param x: list
-    :param y: list
-    :param z: list
+    :param model: a :class:`pytadbit.imp.impmodel.IMPmodel`
     :param False label: show labels
     :param None axe: a matplotlib.axes.Axes object to define the plot
        appearance
+    :param False thin: draw a thin black line instead of representing particles
+       and edges
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
+    :param -90 azimuth: angle to rotate camera along the y axis
+    :param 0 elevation: angle to rotate camera along the x axis
+    :param 'index' color: can be:
+
+         * a string as:
+             * '**index**' to color particles according to their position in the
+               model (:func:`pytadbit.utils.extraviews.color_residues`)
+             * '**tad**' to color particles according to the TAD they belong to
+               (:func:`pytadbit.utils.extraviews.tad_coloring`)
+             * '**border**' to color particles marking borders. Color according to
+               their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
+               coloring function like.
+         * a function, that takes as argument a model and any other parameter
+           passed through the kwargs.
+         * a list of (r, g, b) tuples (as long as the number of particles).
+           Each r, g, b between 0 and 1.
     """
     show=False
+    if type(color) is str:
+        if color == 'index':
+            color = color_residues(model, **kwargs)
+        elif color == 'tad':
+            if not 'tads' in kwargs:
+                raise Exception('ERROR: missing TADs\n   ' +
+                                'pass an Experiment.tads disctionary\n')
+            color = tad_coloring(model, **kwargs)
+        elif color == 'border':
+            if not 'tads' in kwargs:
+                raise Exception('ERROR: missing TADs\n   ' +
+                                'pass an Experiment.tads disctionary\n')
+            color = tad_border_coloring(model, **kwargs)
+        else:
+            raise NotImplementedError(('%s type of coloring is not yet ' +
+                                       'implemeted\n') % color)
+    elif hasattr(color, '__call__'): # its a function
+        color = color(model, **kwargs)
+    elif type(color) is not list:
+        raise TypeError('one of function, list or string is required\n')
     if not axe:
         fig = plt.figure()
         axe = fig.add_subplot(1,1,1, projection='3d')
         show=True
-    axe._axis3don = False
-    N = len(x)
-    for i in xrange(N-1):
-        axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
-                 color=(float(i)/N,0, 1-float(i)/N), lw=3)
+    if not show_axe:
+        axe._axis3don = False
+    axe.view_init(elev=elevation, azim=azimuth)
+    x, y, z = model['x'], model['y'], model['z']
+    if thin:
+        axe.plot(x, y, z, color='black', lw=1, alpha=0.2)
+    else:
+        for i in xrange(len(x)-1):
+            axe.plot(x[i:i+2], y[i:i+2], z[i:i+2],
+                     color=color[i], lw=3)
+            if label:
+                axe.text(x[i], y[i], z[i], str(i), size=7)
         if label:
-            axe.text(x[i], y[i], z[i],str(i), size=7)
-    if label:
-        axe.text(x[i+1], y[i+1], z[i+1],str(i+1), size=7)
-    axe.scatter(x, y, z, color=[(float(i + 1) / N, 0, 1 - float(i + 1) / N)
-                                for i in xrange(N)], s=50)
+            axe.text(x[i+1], y[i+1], z[i+1],str(i+1), size=7)
+        axe.scatter(x, y, z, color=color, s=50)
     if show:
         if savefig:
             tadbit_savefig(savefig)

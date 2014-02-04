@@ -96,7 +96,15 @@ Utils three_dim_stats module
 
    - **generate_circle_points**:             Returns list of 3d coordinates of points on a circle using the                                             Rodrigues rotation formula.                                                                                          see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*                                             for details
 
+   - **rotate_among_y_axis**:                Rotate and object with a list of x, y, z coordinates among its center of                                             mass
+
    - **calc_eqv_rmsd**:                      Calculates the RMSD, dRMSD, the number of equivalent positions and a score                                             combining these three measures. The measure are done between a group of                                             models in a one against all manner.
+
+   - **mass_center**:                        Transforms coordinates according to the center of mass
+
+   - **get_center_of_mass**:                 get the center of mass of a given object with list of x, y, z coordinates
+
+   - **find_angle_rotation_improve_x**:      Finds the rotation angle needed to face the longest edge of the molecule
 
    - **fast_square_distance**:               Calculates the square distance between two coordinates.
 

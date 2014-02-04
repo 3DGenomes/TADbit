@@ -3,7 +3,7 @@
 
 
 """
-from pytadbit.utils.three_dim_stats import calc_consistency
+from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
 from pytadbit.utils.tadmaths        import calinski_harabasz
 from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
@@ -155,6 +155,7 @@ class StructuralModels(object):
                                        models[sec]['y'], models[sec]['z'],
                                        self.nloci)
             models[sec]['x'], models[sec]['y'], models[sec]['z'] = coords
+        mass_center(models[0]['x'], models[0]['y'], models[0]['z'])
 
 
     def fetch_model_by_rand_init(self, rand_init, all_models=False):
@@ -678,6 +679,11 @@ class StructuralModels(object):
         :param mclargs: list with any other command line argument to be passed
            to mcl (i.e,: mclargs=['-pi', '10', '-I', '2.0'])
         :param 10 n_best_clusters: number of clusters to represent
+        :param False represent_models: To generate an interactive visualization
+           of a representative model for each cluster. Representative model
+           depends on the value passed to this option, it can be either
+           'centroid' or 'best' (this last standing for the model with lowest
+           IMP objective function value).
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
@@ -768,8 +774,16 @@ class StructuralModels(object):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      i, projection='3d')
                 ax.set_title('Cluster #%s' % (i + 1), color='blue')
-                self[str(clusters[i+1][0])].view_model(tool='plot', axe=ax,
-                                                     **kwargs)
+                if represent_models=='centroid':
+                    mdl = str(self.centroid_model(
+                        models=[m for m in clusters[i+1]]))
+                else:
+                    if represent_models != 'best':
+                        warn("WARNING: represent_model value should be one of" +
+                             "'centroid' or 'best' not %s\n"  % (
+                                 represent_models) + "Showing best model.")
+                    mdl = str(clusters[i+1][0])
+                self[mdl].view_model(tool='plot', axe=ax, **kwargs)
                 for item in [ax]:
                     item.patch.set_visible(False)                
             for i in range(n_best_clusters - 1):
@@ -1108,8 +1122,8 @@ class StructuralModels(object):
 
 
     def view_models(self, models=None, cluster=None, tool='chimera',
-                    centroid=True, savefig=None, cmd=None, color='index',
-                    **kwargs):
+                    show='all', stress='centroid', savefig=None,
+                    cmd=None, color='index', **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
         or through matplotlib).
@@ -1139,8 +1153,12 @@ class StructuralModels(object):
                passed through the kwargs.
              * a list of (r, g, b) tuples (as long as the number of particles).
                Each r, g, b between 0 and 1.
-        :param True centroid: higlights the centroid of the group of models
-           represented (if False the first model of the list will be highlighted)
+        :param 'centroid' stress: higlights a given model, or group of models.
+           Can be either 'all', 'centroid' or 'best' ('best' being the model
+           with the lowest IMP objective function value
+        :param 'all' show: models to be displayed. Can be either 'all', 'grid'
+           or 'stressed'.
+
         :param None cmd: list of commands to be passed to the viewer. The chimera list is:
 
            ::
@@ -1183,10 +1201,11 @@ class StructuralModels(object):
 
            will return the default image (other commands can be passed to
            modified the final image/movie).
-        :param kwargs: any extra argument will be passed to the coloring
-           function
-           
+        :param kwargs: see :func:`pytadbit.utils.extraviews.plot_3d_model` or
+           :func:`pytadbit.utils.extraviews.chimera_view` for other arguments
+           to pass to this function. See also coloring function
 
+           
         """
         if models:
             models = models
@@ -1199,22 +1218,51 @@ class StructuralModels(object):
         if color in ['tad', 'border'] and not 'tads' in kwargs:
             kwargs.update((('tads', self.experiment.tads), ))
         centroid_model = 0
-        if centroid and len(models) > 1:
-            centroid_model = models.index(self.centroid_model(models))
+        if 'centroid' in [show, stress] and len(models) > 1:
+            centroid_model = self.centroid_model(models)
         if tool == 'plot':
-            sqrmdl = sqrt(len(models))
-            cols = int(round(sqrmdl + (0.0 if int(sqrmdl)==sqrmdl else 0.5)))
-            rows = int(sqrmdl+.5)
-            fig = plt.figure()
-            for i in range(cols):
-                for j in range(rows):
-                    if i * rows + j >= len(models):
-                        break
-                    print i * rows + j
-                    axe = fig.add_subplot(rows, cols, i * rows + j+1,
-                    projection='3d')
-                    self[models[i * rows + j]].view_model(tool='plot', axe=axe)
-                    axe.set_title('Model %s' % models[i * rows + j])
+            if stress=='centroid':
+                mdl = centroid_model
+            elif stress=='best':
+                mdl = self[sorted(models, key=lambda x:
+                                  self[x]['objfun'])[0]]['index']
+            else:
+                if stress != 'all':
+                    warn("WARNING: represent_model value should be one of" +
+                         "'centroid', 'best' or 'all' not %s\n"  % (
+                             stress) + "Stressing no models.")
+                mdl = 'all'
+            if show in ['all', 'stressed']:
+                fig = plt.figure()
+                axe = fig.add_subplot(1,1,1, projection='3d')
+                for i in xrange(len(models)):
+                    if show=='all' or i==mdl or mdl=='all':
+                        self[models[i]].view_model(
+                            tool='plot', axe=axe, color=color,
+                            thin=False if stress=='all' else (i!=mdl),
+                            **kwargs)
+                try:
+                    axe.set_title('Model %s stressed as %s' % (
+                        self[mdl]['rand_init'], stress))
+                except ValueError:
+                    axe.set_title('All models stressed')
+            else:
+                sqrmdl = sqrt(len(models))
+                cols = int(round(sqrmdl + (0.0 if int(sqrmdl)==sqrmdl else .5)))
+                rows = int(sqrmdl+.5)
+                fig = plt.figure()
+                for i in range(cols):
+                    for j in range(rows):
+                        if i * rows + j >= len(models):
+                            break
+                        axe = fig.add_subplot(rows, cols, i * rows + j+1,
+                                              projection='3d')
+                        self[models[i * rows + j]].view_model(
+                            tool='plot', axe=axe, color=color,
+                            thin=False if stress=='all' else i * rows + j!=mdl,
+                            **kwargs)
+                        axe.set_title(
+                            'Model %s' % self[models[i * rows + j]]['rand_init'])
             if savefig:
                 tadbit_savefig(savefig)
             else:

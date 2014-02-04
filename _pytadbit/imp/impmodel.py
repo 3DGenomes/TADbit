@@ -882,12 +882,17 @@ class IMPmodel(dict):
            will return the default image (other commands can be passed to
            modified the final image/movie).
 
+        :param kwargs: see :func:`pytadbit.utils.extraviews.plot_3d_model` or
+           :func:`pytadbit.utils.extraviews.chimera_view` for other arguments
+           to pass to this function
+
         """
         if gyradius:
             gyradius = self.radius_of_gyration()
             center_of_mass = True
         if tool=='plot':
-            plot_3d_model(self['x'], self['y'], self['z'], **kwargs)
+            print color
+            plot_3d_model(self, color=color, **kwargs)
             return
         self.write_cmm('/tmp/', color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],
