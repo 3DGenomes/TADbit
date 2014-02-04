@@ -20,6 +20,16 @@ from pytadbit                     import load_chromosome, Chromosome
 from time                         import sleep
 
 
+def decode_resolution(res):
+    if 'Kb' in res:
+        mult = 1000
+    elif 'Mb' in res:
+        mult = 1000000
+    else:
+        raise NotImplementedError('%s not know' % (res[-2:]))
+    return int(res[:-2]) * mult
+
+
 def load_genome(genome_path, res=None, verbose=False):
     ref_genome = {}
     for crm in listdir(genome_path):
@@ -438,7 +448,7 @@ def get_options():
     opts = parser.parse_args()[0]
 
     if not opts.crm or not opts.ref_crm:
-        if not opts.genome or not opts.ref_genome:
+        if not opts.genome:
             exit(parser.print_help())
     if not opts.original_species:
         print '   Needs an from_species argument\n\n'
@@ -446,6 +456,12 @@ def get_options():
     if opts.original_assembly and not opts.target_assembly:
         print '   Needs an to_map argument if original assembly is passed\n\n'
         exit(parser.print_help())
+    if opts.res:
+        try:
+            opts.res = int(opts.res)
+        except ValueError:
+            opts.res = decode_resolution(opts.res)
+
     return opts
 
 
