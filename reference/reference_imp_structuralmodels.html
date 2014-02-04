@@ -513,6 +513,11 @@ the clustering computation. Default will be created in /tmp/ folder</li>
 <li><strong>mclargs</strong> &#8211; list with any other command line argument to be passed
 to mcl (i.e,: mclargs=[&#8216;-pi&#8217;, &#8216;10&#8217;, &#8216;-I&#8217;, &#8216;2.0&#8217;])</li>
 <li><strong>n_best_clusters</strong> (<em>10</em>) &#8211; number of clusters to represent</li>
+<li><strong>represent_models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; To generate an interactive visualization
+of a representative model for each cluster. Representative model
+depends on the value passed to this option, it can be either
+&#8216;centroid&#8217; or &#8216;best&#8217; (this last standing for the model with lowest
+IMP objective function value).</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
@@ -789,7 +794,7 @@ cluster number &#8216;cluster&#8217;</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.view_models">
-<tt class="descname">view_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>centroid=True</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">view_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>show='all'</em>, <em>stress='centroid'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize a selected model in the three dimensions (either with Chimera
 or through matplotlib).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -830,8 +835,11 @@ passed through the kwargs.</li>
 Each r, g, b between 0 and 1.</li>
 </ul>
 </li>
-<li><strong>centroid</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; higlights the centroid of the group of models
-represented (if False the first model of the list will be highlighted)</li>
+<li><strong>stress</strong> (<em>&#8216;centroid&#8217;</em>) &#8211; higlights a given model, or group of models.
+Can be either &#8216;all&#8217;, &#8216;centroid&#8217; or &#8216;best&#8217; (&#8216;best&#8217; being the model
+with the lowest IMP objective function value</li>
+<li><strong>show</strong> (<em>&#8216;all&#8217;</em>) &#8211; models to be displayed. Can be either &#8216;all&#8217;, &#8216;grid&#8217;
+or &#8216;stressed&#8217;.</li>
 <li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer. The chimera list is:</p>
 <div class="highlight-python"><pre>focus
 set bg_color white
@@ -865,8 +873,9 @@ movie encode output SAVEFIG</pre>
 <p>will return the default image (other commands can be passed to
 modified the final image/movie).</p>
 </li>
-<li><strong>kwargs</strong> &#8211; any extra argument will be passed to the coloring
-function</li>
+<li><strong>kwargs</strong> &#8211; see <a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.plot_3d_model" title="pytadbit.utils.extraviews.plot_3d_model"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.plot_3d_model()</span></tt></a> or
+<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.chimera_view" title="pytadbit.utils.extraviews.chimera_view"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.chimera_view()</span></tt></a> for other arguments
+to pass to this function. See also coloring function</li>
 </ul>
 </td>
 </tr>
@@ -1152,7 +1161,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 03, 2014.
+      Last updated on Feb 04, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

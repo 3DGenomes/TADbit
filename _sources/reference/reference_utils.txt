@@ -20,6 +20,10 @@ Utilities
 
 .. autofunction:: pytadbit.utils.extraviews.tad_border_coloring
 
+.. autofunction:: pytadbit.utils.extraviews.plot_3d_model
+
+.. autofunction:: pytadbit.utils.extraviews.chimera_view
+
 
 .. currentmodule:: pytadbit.utils.hic_filtering
 
