@@ -11,9 +11,21 @@ from string import uppercase
 import re
 from sys import stderr
 
+from lxml.html import parse
+
+
+def parse_doc_index(url_base='http://3dgenomes.github.io/tadbit/'):
+    dom =  parse(url_base + 'genindex.html').getroot()
+    links = {}
+    for elt in dom.cssselect('a'):
+        if not elt.text or not '() ' in elt.text:
+            continue
+        links[elt.text.split('()')[0]] = url_base + elt.values()[0]
+    return links
 
 def condition(member):
     return type(member.__doc__) != type(None)
+
 
 def get_all(module, all_members=None):
     if not all_members:
@@ -22,23 +34,15 @@ def get_all(module, all_members=None):
     if not members:
         return
     for name, member in members:
-        if name.startswith('_'):
-            continue
-        if 'OLD' in name:
-            continue
-        if name.startswith('im_'):
-            continue
-        if name in all_members:
+        if (name.startswith('_') or 'OLD' in name or name.startswith('im_')
+            or name in all_members):
             continue
         try:
             if not 'pytadbit' in inspect.getsourcefile(member):
                 continue
         except TypeError:
             continue
-        if not hasattr(member, '__module__'):
-            get_all(member, all_members)
-            continue
-        if inspect.ismodule(member):
+        if not hasattr(member, '__module__') or inspect.ismodule(member):
             get_all(member, all_members)
             continue
         all_members[name] = {'dady': module.__name__, 'son': member}
@@ -55,14 +59,12 @@ def print_doc(member, header=1, indent=3, offset=45):
     dochead = re.sub('\. [^\.]+:.*', '.', dochead)
     if header == 1:
         title = ' '.join(member.split('.')[1:]).capitalize()
-        # out =  '-' * (7 + len(title)) + '\n'
         out = title + ' module\n'
         out += '-' * (7 + len(title)) + '\n'
         return out
     elif header == 2:
         title = member.__name__
         indent=0
-        # out =  (' ' * indent) + ('+' * (6 + len(title))) + '\n'
         out = (' ' * indent) + title + ' class\n'
         out += (' ' * indent) + ('+' * (6 + len(title))) + '\n'
         out += ' ' * (offset / 2)
@@ -70,7 +72,10 @@ def print_doc(member, header=1, indent=3, offset=45):
             [line.strip() for line in dochead.split('\n')])
         return out + '\n'
     elif header == 3:
-        title = '**' + member.__name__ + '**'
+        if member.__name__ in LINKS:
+            title = '`%s <%s>`_' % (member.__name__, LINKS[member.__name__])
+        else:
+            title = '**' + member.__name__ + '**'
         args = inspect.getargspec(member).args
         extra = []
         if 'savefig' in args or 'axe' in args:
@@ -82,7 +87,7 @@ def print_doc(member, header=1, indent=3, offset=45):
         out +=  ' ' * (offset - len(title) - 2 - indent)
         reout = ''
         for line in dochead.split('\n'):
-            reout += out + line.strip() # + '\n'
+            reout += out + line.strip()
             out = ' ' * offset
         return reout + '\n'
 
@@ -97,9 +102,11 @@ def main():
     get_all(tad_cmo, all_members)
     modules = set([all_members[m]['son'].__module__ for m in all_members])
 
-    numclasses = 0
+    global LINKS
+    LINKS = parse_doc_index()
+
+    numclasses = nfunctions = 0
     nummodules = len(modules)
-    nfunctions = 0
     
     print '======================================='
     print 'Summary of TADbit classes and functions'
