@@ -890,8 +890,9 @@ class IMPmodel(dict):
         if gyradius:
             gyradius = self.radius_of_gyration()
             center_of_mass = True
-        if tool=='plot':
-            plot_3d_model(self, color=color, **kwargs)
+        if tool == 'plot':
+            x, y, z = self['x'], self['y'], self['z']
+            plot_3d_model(x, y, z, color=color, **kwargs)
             return
         self.write_cmm('/tmp/', color=color, **kwargs)
         chimera_view(['/tmp/model.%s.cmm' % (self['rand_init'])],

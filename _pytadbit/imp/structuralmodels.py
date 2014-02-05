@@ -6,6 +6,7 @@
 from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
 from pytadbit.utils.tadmaths        import calinski_harabasz
+from pytadbit.utils.extraviews      import plot_3d_model
 from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
 from pytadbit.imp.impmodel          import IMPmodel
@@ -130,16 +131,18 @@ class StructuralModels(object):
             len(self.clusters))
 
 
-    def align_models(self, models=None, cluster=None):
+    def align_models(self, models=None, cluster=None, in_place=False):
         """
-        Three-dimentional aligner for structural models. The result of the
-        alignment will REPLACE the coordinates of each model.
+        Three-dimentional aligner for structural models.
         
         :param None models: if None (default) the average model will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
         :param None cluster: compute the average model only for the models in the
            cluster number 'cluster'
+        :param False in_place: if True, the result of the alignment will REPLACE
+           the coordinates of each model. Default is too yield new coordinates of
+           each model
         """
         if models:
             models = [m if type(m) is int else self[m]['index'] for m in models]
@@ -147,15 +150,27 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
             models = self.__models
-        firstx, firsty, firstz = models[0]['x'], models[0]['y'], models[0]['z']
-        for sec in models:
-            if sec == 0:
-                continue
-            coords = aligner3d_wrapper(firstx, firsty, firstz, models[sec]['x'],
-                                       models[sec]['y'], models[sec]['z'],
+        firstx, firsty, firstz = (self[models[0]]['x'], self[models[0]]['y'],
+                                  self[models[0]]['z'])
+        for sec in models[1:]:
+            coords = aligner3d_wrapper(firstx, firsty, firstz,
+                                       self[sec]['x'],
+                                       self[sec]['y'],
+                                       self[sec]['z'],
                                        self.nloci)
-            models[sec]['x'], models[sec]['y'], models[sec]['z'] = coords
-        mass_center(models[0]['x'], models[0]['y'], models[0]['z'])
+            if in_place:
+                models[sec]['x'], models[sec]['y'], models[sec]['z'] = coords
+            else:
+                yield coords
+
+        if in_place:
+            mass_center(self[models[-1]]['x'], self[models[-1]]['y'],
+                        self[models[-1]]['z'])
+        else:
+            x, y, z = (self[models[-1]]['x'][:], self[models[-1]]['y'][:],
+                       self[models[-1]]['z'][:])
+            mass_center(x, y, z)
+            yield x, y, z
 
 
     def fetch_model_by_rand_init(self, rand_init, all_models=False):
@@ -1135,7 +1150,7 @@ class StructuralModels(object):
 
     def view_models(self, models=None, cluster=None, tool='chimera',
                     show='all', stress='centroid', savefig=None,
-                    cmd=None, color='index', **kwargs):
+                    cmd=None, color='index', align=True, **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
         or through matplotlib).
@@ -1213,6 +1228,7 @@ class StructuralModels(object):
 
            will return the default image (other commands can be passed to
            modified the final image/movie).
+        :param True align: show aligned models
         :param kwargs: see :func:`pytadbit.utils.extraviews.plot_3d_model` or
            :func:`pytadbit.utils.extraviews.chimera_view` for other arguments
            to pass to this function. See also coloring function
@@ -1228,31 +1244,45 @@ class StructuralModels(object):
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
                   else m for m in models]
         if color in ['tad', 'border'] and not 'tads' in kwargs:
-            kwargs.update((('tads', self.experiment.tads), ))
+            start = (float(self[models[0]]['description']['start']) /
+                     self[models[0]]['description']['resolution'] - 1)
+            end   = (float(self[models[0]]['description']['end'  ]) /
+                     self[models[0]]['description']['resolution'])
+            kwargs.update((('tads', self.experiment.tads),
+                           ('mstart', start ), ('mend', end)))
         centroid_model = 0
         if 'centroid' in [show, stress] and len(models) > 1:
             centroid_model = self.centroid_model(models)
+        if stress=='centroid':
+            mdl = centroid_model
+        elif stress=='best':
+            mdl = self[sorted(models, key=lambda x:
+                              self[x]['objfun'])[0]]['index']
+        else:
+            if stress != 'all':
+                warn("WARNING: represent_model value should be one of" +
+                     "'centroid', 'best' or 'all' not %s\n"  % (
+                         stress) + "Stressing no models.")
+            mdl = 'all'
+        ## View with Matplotlib
         if tool == 'plot':
-            if stress=='centroid':
-                mdl = centroid_model
-            elif stress=='best':
-                mdl = self[sorted(models, key=lambda x:
-                                  self[x]['objfun'])[0]]['index']
+            model_coords = []
+            if len(models) > 1 and align:
+                for model in self.align_models(models):
+                    model_coords.append(model)
             else:
-                if stress != 'all':
-                    warn("WARNING: represent_model value should be one of" +
-                         "'centroid', 'best' or 'all' not %s\n"  % (
-                             stress) + "Stressing no models.")
-                mdl = 'all'
+                for model in models:
+                    model_coords.append((
+                        self[model]['x'], self[model]['y'],self[model]['z']))
             if show in ['all', 'stressed']:
                 fig = plt.figure()
                 axe = fig.add_subplot(1,1,1, projection='3d')
                 for i in models:
                     if show=='all' or i==mdl or mdl=='all':
-                        self[i].view_model(
-                            tool='plot', axe=axe, color=color,
-                            thin=False if stress=='all' else (i!=mdl),
-                            **kwargs)
+                        plot_3d_model(*model_coords[models.index(i)],
+                                      axe=axe, color=color,
+                                      thin=False if stress=='all' else (i!=mdl),
+                                      **kwargs)
                 try:
                     axe.set_title('Model %s stressed as %s' % (
                         self[mdl]['rand_init'], stress))
@@ -1267,25 +1297,31 @@ class StructuralModels(object):
                     for j in range(rows):
                         if i * rows + j >= len(models):
                             break
+                        this = self[models[i * rows + j]]['index']
                         axe = fig.add_subplot(rows, cols, i * rows + j+1,
                                               projection='3d')
-                        self[models[i * rows + j]].view_model(
-                            tool='plot', axe=axe, color=color,
-                            thin=False if stress=='all' else i * rows + j!=mdl,
+                        plot_3d_model(
+                            *model_coords[i * rows + j], axe=axe, color=color,
+                            thin=False if stress=='all' else (this!=mdl),
                             **kwargs)
                         axe.set_title(
-                            'Model %s' % self[models[i * rows + j]]['rand_init'])
+                            'Model %s' % self[this]['rand_init'])
             if savefig:
                 tadbit_savefig(savefig)
             else:
                 plt.show()
             return
+        ## View with Chimera
+        cmm_files = []
         for model_num in models:
-            self.write_cmm('/tmp/', model_num=model_num, color=color, **kwargs)
-        chimera_view(['/tmp/model.%s.cmm' % (self[m]['rand_init'])
-                      for m in models],
+            if show in ['all', 'grid'] or model_num==mdl or mdl=='all':
+                self.write_cmm('/tmp/', model_num=model_num, color=color, **kwargs)
+                cmm_files.append('/tmp/model.%s.cmm' % (self[model_num]['rand_init']))
+        chimera_view(cmm_files,
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
-                     centroid=centroid_model)
+                     stress=(0 if (show=='stressed' and mdl!='all')
+                             else models.index(mdl) if mdl!='all' else mdl),
+                     align=align, grid=show=='grid')
 
 
     def angle_between_3_particles(self, parta, partb, partc,

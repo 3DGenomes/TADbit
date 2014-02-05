@@ -205,6 +205,7 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
     """
     beg = int(tad['end']       * resolution)
     end = int((tad['end'] + 1) * resolution)
+    ori_crm = crm
     ## keep trace
     trace.setdefault(crm, {})
     if not tad['end'] in trace[crm]:
@@ -235,7 +236,7 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                     break
             except Exception, e:
                 print str(e)
-                print '\n... reconnecting...'
+                print '\n... reconnecting (mapping)...'
                 print ' ' * ((i%50) + 9 + (i%50)/10),
                 sleep(1)
                 global HTTP
@@ -254,16 +255,16 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                         beg = int((tad['end'] - 1) * resolution)
                         end = coords
                 else:
-                    if not 'syntenic at' in trace[crm][tad['end']]:
+                    if not 'syntenic at' in trace[ori_crm][tad['end']]:
                         if type(coords) is dict:
-                            trace[crm][tad['end']]['syntenic at'] = coords
+                            trace[ori_crm][tad['end']]['syntenic at'] = coords
                         else:
-                            trace[crm][tad['end']]['syntenic at'] = {
+                            trace[ori_crm][tad['end']]['syntenic at'] = {
                                 'chr': None, 'start':None, 'end': None}
                     break
             except Exception, e:
                 print str(e)
-                print '\n... reconnecting...'
+                print '\n... reconnecting (synteny)...'
                 print ' ' * ((i%50) + 9 + (i%50)/10),
                 sleep(1)
                 global HTTP

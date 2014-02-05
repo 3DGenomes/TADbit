@@ -80,7 +80,7 @@ def colorize(string, num, ftype='ansi'):
                        '\033[m' if ftype=='ansi' else '</span>')
 
 
-def color_residues(model):
+def color_residues(x):
     """
     Function to color residues from blue to red.
     
@@ -89,13 +89,13 @@ def color_residues(model):
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
     result = []
-    for n in xrange(len(model['x'])):
-        red = float(n + 1) / len(model['x'])
+    for n in xrange(len(x)):
+        red = float(n + 1) / len(x)
         result.append((red, 0, 1 - red))
     return result
 
 
-def tad_coloring(model, tads=None):
+def tad_coloring(x, mstart=None, mend=None, tads=None):
     """
     Colors TADs from blue to red (first to last TAD). TAD borders are displayed
     in scale of grey, from light to dark grey (again first to last border)
@@ -105,15 +105,13 @@ def tad_coloring(model, tads=None):
     
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
-    start = float(model['description']['start']) / model['description']['resolution'] - 1
-    end   = float(model['description']['end'  ]) / model['description']['resolution']
-    ltads = [t for t in tads if tads[t]['start']>start and tads[t]['end']<end]
+    ltads = [t for t in tads if tads[t]['start']>mstart and tads[t]['end']<mend]
     ntads = len(ltads)
     grey = 0.95
     grey_step = (0.95 - 0.4) / ntads
     result = []
     for t in tads:
-        if tads[t]['start'] < start or tads[t]['end'] > end:
+        if tads[t]['start'] < mstart or tads[t]['end'] > mend:
             continue
         red = float(t + 1 - min(ltads)) / ntads
         for _ in range(int(tads[t]['start']), int(tads[t]['end'])):
@@ -123,7 +121,7 @@ def tad_coloring(model, tads=None):
     return result
 
 
-def tad_border_coloring(model, tads=None):
+def tad_border_coloring(x, mstart=None, mend=None, tads=None):
     """
     Colors TAD borders from blue to red (bad to good score). TAD are displayed
     in scale of grey, from light to dark grey (first to last particle in the
@@ -134,11 +132,9 @@ def tad_border_coloring(model, tads=None):
     
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
-    start = float(model['description']['start']) / model['description']['resolution'] - 1
-    end   = float(model['description']['end'  ]) / model['description']['resolution']
     result = []
     for t in tads:
-        if tads[t]['start'] < start or tads[t]['end'] > end:
+        if tads[t]['start'] < mstart or tads[t]['end'] > mend:
             continue
         grey = 0.95
         grey_step = (0.95 - 0.4) / (tads[t]['end'] - tads[t]['start'] + 1)
@@ -317,7 +313,7 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
         plt.show()
 
 
-def plot_3d_model(model, label=False, axe=None, thin=False, savefig=None,
+def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
                   show_axe=False, azimuth=-90, elevation=0., color='index',
                   **kwargs):
     """
@@ -353,22 +349,22 @@ def plot_3d_model(model, label=False, axe=None, thin=False, savefig=None,
     show=False
     if type(color) is str:
         if color == 'index':
-            color = color_residues(model, **kwargs)
+            color = color_residues(x, **kwargs)
         elif color == 'tad':
             if not 'tads' in kwargs:
                 raise Exception('ERROR: missing TADs\n   ' +
                                 'pass an Experiment.tads disctionary\n')
-            color = tad_coloring(model, **kwargs)
+            color = tad_coloring(x, **kwargs)
         elif color == 'border':
             if not 'tads' in kwargs:
                 raise Exception('ERROR: missing TADs\n   ' +
                                 'pass an Experiment.tads disctionary\n')
-            color = tad_border_coloring(model, **kwargs)
+            color = tad_border_coloring(x, **kwargs)
         else:
             raise NotImplementedError(('%s type of coloring is not yet ' +
                                        'implemeted\n') % color)
     elif hasattr(color, '__call__'): # its a function
-        color = color(model, **kwargs)
+        color = color(x, **kwargs)
     elif type(color) is not list:
         raise TypeError('one of function, list or string is required\n')
     if not axe:
@@ -378,7 +374,6 @@ def plot_3d_model(model, label=False, axe=None, thin=False, savefig=None,
     if not show_axe:
         axe._axis3don = False
     axe.view_init(elev=elevation, azim=azimuth)
-    x, y, z = model['x'], model['y'], model['z']
     if thin:
         axe.plot(x, y, z, color='black', lw=1, alpha=0.2)
     else:
@@ -399,27 +394,47 @@ def plot_3d_model(model, label=False, axe=None, thin=False, savefig=None,
     
 def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
                  chimera_cmd=None, savefig=None, center_of_mass=False,
-                 gyradius=False, centroid=0, **kwargs):
+                 gyradius=False, align=True, grid=False, stress='all',
+                 **kwargs):
     """
+    Open a list of .cmm files with Chimera (http://www.cgl.ucsf.edu/chimera)
+    to view models.
+
+    :param cmm_files: list of .cmm files
+    :param 'chimera' chimera_bin: path to chimera binary
+    :param None chimera_cmd: list of command lines for chimera
+    :param None savefig: path to a file where to save generated image
+    :param False center_of_mass: if True, draws the center of mass
+    :param False gyradius: increment the radius of the center of mass by the
+       value of the radius of girations given.
+    :param False align: align models
+    :param False grid: tile models
+    :param 'all' stress: higlights a given model, or group of models.
+       Can be either 'all', or a model number
     """
     pref_f = '/tmp/tmp.cmd'
     out = open(pref_f, 'w')
     for cmm_file in cmm_files:
         out.write('open %s\n' % (cmm_file))
-    if len(cmm_files) > 1:
-        for i in xrange(len(cmm_files)):
-            if i == centroid:
+    nmodels = len(cmm_files)
+    if nmodels > 1:
+        for i in xrange(nmodels):
+            if i == 0:
                 continue
-            out.write('match #%s #%s\n' % (i, centroid))
-            out.write('color black #%s\n' % (i))
+            if align:
+                out.write('match #%s #%s\n' % (i, 0))
+            if stress != 'all':
+                if stress != i:
+                    out.write('color black #%s\n' % (i))
     if not chimera_cmd:
+        the_shape = '''bonddisplay never #%s
+shape tube #%s radius 5 bandLength 100 segmentSubdivisions 1 followBonds on'''
         out.write(('''
 focus
 set bg_color white
 windowsize 800 600
-bonddisplay never #%s
 represent wire
-shape tube #%s radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+%s
 clip yon -500
 ~label
 set subdivision 1
@@ -427,8 +442,11 @@ set depth_cue
 set dc_color black
 set dc_start 0.5
 set dc_end 1
-scale 0.8\n
-''' % (centroid, centroid)) + ('define centroid radius %s color 1,0,0,0.2\n' % (
+scale 0.8%s\n
+''' % ('\n'.join([the_shape % (mdl, mdl) for mdl in (
+                       [stress] if stress!='all' else range(nmodels))]),
+       '\ntile' if grid else '')) +
+                  ('define centroid radius %s color 1,0,0,0.2\n' % (
                       gyradius if gyradius else 10) if center_of_mass else '')
         + (kwargs.get('extra', '')))
         if savefig:

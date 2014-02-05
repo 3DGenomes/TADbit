@@ -30,7 +30,7 @@ StructuralModels class
     rank according to objective function value), or by their IMP random intial
     number (as string).
 
-      - **align_models**:                    Three-dimentional aligner for structural models. The result of the                                             alignment will REPLACE the coordinates of each model.
+      - **align_models**:                    Three-dimentional aligner for structural models.
 
       - **angle_between_3_particles**:       Calculates the angle between 3 particles.                                                                                                                                       Given three particles A, B and C, the angle g (angle ACB, shown below):
 
@@ -67,6 +67,8 @@ StructuralModels class
       - **particle_coordinates**:            Returns the mean coordinate of a given particle in a group of models.
 
       - **save_models** (2):                 Saves all the models in pickle format (python object written to disk).
+
+      - **view_centroid**:                   shortcut for                                             models.view_models(tool='plot', show='stressed', stress='centroid')
 
       - **view_models** (1):                 Visualize a selected model in the three dimensions (either with Chimera                                             or through matplotlib).
 
@@ -133,7 +135,7 @@ Utils extraviews module
 
    - **augmented_dendrogram** (1):           
 
-   - **chimera_view** (1):                   
+   - **chimera_view** (1):                   Open a list of .cmm files with Chimera (http://www.cgl.ucsf.edu/chimera)                                             to view models.
 
    - **plot_3d_optimization_result**:        Displays a three dimensional scatter plot representing the result of the                                             optimization.
 
