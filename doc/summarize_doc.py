@@ -106,7 +106,7 @@ def main():
     print '=======================================\n'
 
     print ''
-    for module in modules:
+    for module in sorted(modules):
         print print_doc(module, header=1)
         
         submodules = [m for m in all_members
@@ -123,7 +123,7 @@ def main():
             else:
                 nfunctions += 1
                 print print_doc(all_members[member]['son'], header=3, indent=3)
-        for dady in dadies:
+        for dady in sorted(dadies):
             numclasses += 1
             print print_doc(all_members[dady]['son'], offset=9, header=2)
             for member in sorted(submodules):
