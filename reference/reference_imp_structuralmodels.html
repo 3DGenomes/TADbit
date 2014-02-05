@@ -193,9 +193,8 @@ generation of three dimensional models.</li>
 </table>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.align_models">
-<tt class="descname">align_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.align_models" title="Permalink to this definition">¶</a></dt>
-<dd><p>Three-dimentional aligner for structural models. The result of the
-alignment will REPLACE the coordinates of each model.</p>
+<tt class="descname">align_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>in_place=False</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.align_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Three-dimentional aligner for structural models.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -206,6 +205,9 @@ using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
 <li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the average model only for the models in the
 cluster number &#8216;cluster&#8217;</li>
+<li><strong>in_place</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, the result of the alignment will REPLACE
+the coordinates of each model. Default is too yield new coordinates of
+each model</li>
 </ul>
 </td>
 </tr>
@@ -810,7 +812,7 @@ models.view_centroid(azimuth=30, elevation=10, show_axe=True, label=True))</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.view_models">
-<tt class="descname">view_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>show='all'</em>, <em>stress='centroid'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">view_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>show='all'</em>, <em>stress='centroid'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>color='index'</em>, <em>align=True</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize a selected model in the three dimensions (either with Chimera
 or through matplotlib).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -889,6 +891,7 @@ movie encode output SAVEFIG</pre>
 <p>will return the default image (other commands can be passed to
 modified the final image/movie).</p>
 </li>
+<li><strong>align</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; show aligned models</li>
 <li><strong>kwargs</strong> &#8211; see <a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.plot_3d_model" title="pytadbit.utils.extraviews.plot_3d_model"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.plot_3d_model()</span></tt></a> or
 <a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.chimera_view" title="pytadbit.utils.extraviews.chimera_view"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.chimera_view()</span></tt></a> for other arguments
 to pass to this function. See also coloring function</li>
@@ -1177,7 +1180,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 04, 2014.
+      Last updated on Feb 05, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
