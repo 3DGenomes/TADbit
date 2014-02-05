@@ -74,10 +74,10 @@ def print_doc(member, header=1, indent=3, offset=45):
         args = inspect.getargspec(member).args
         extra = []
         if 'savefig' in args or 'axe' in args:
-            extra.append('1')
+            extra.append('[1]_')
         if 'savedata' in args or 'outfile' in args or 'directory' in args:
-            extra.append('2')
-        title += ' (%s): ' % (','.join(extra)) if extra else ': '
+            extra.append('[2]_')
+        title += ' %s: ' % (' '.join(extra))
         out  =  (' ' * indent) + '- ' + title
         out +=  ' ' * (offset - len(title) - 2 - indent)
         reout = ''
@@ -105,9 +105,6 @@ def main():
     print 'Summary of TADbit classes and functions'
     print '=======================================\n'
 
-    print '**Note**:'
-    print '  - *1: for functions generating plots*'
-    print '  - *2: for functions generating out files*'
     print ''
     for module in modules:
         print print_doc(module, header=1)
@@ -135,6 +132,9 @@ def main():
                 nfunctions += 1
                 print print_doc(all_members[member]['son'], header=3,
                                 indent=6)
+    print ''
+    print '.. [1] functions generating plots'
+    print '.. [2] functions writing text files'
     stderr.write('Reporting %s modules, %s classes and %s functions\n' %(
         nummodules, numclasses, nfunctions))
     
