@@ -17,7 +17,11 @@ from os.path                      import isdir
 from optparse                     import OptionParser
 from pytadbit.utils.file_handling import check_pik
 from pytadbit                     import load_chromosome, Chromosome
-from time                         import sleep
+from time                         import sleep, time
+from pytadbit.parsers.tad_parser  import parse_tads
+
+
+GOOD_CRM = re.compile("^[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$")
 
 
 def decode_resolution(res):
@@ -272,18 +276,18 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
     return coords
 
 
-def convert_chromosome(crm, from_species, synteny=True, mapping=True,
-                       trace=None, **kwargs):
+def convert_chromosome(crm, new_genome, from_species, synteny=True,
+                       mapping=True, trace=None, **kwargs):
     new_crm = Chromosome(crm.name, species=crm.species, assembly=crm.assembly)
     mapped_coordinates = {}
     log = []
     crm_name = crm.name.replace('chr', '').replace('crm', '')
     for exp in crm.experiments:
         print '      Experiment %10s (%s TADs)' % (exp.name, len(exp.tads))
-        tads = {'end': [], 'start': [], 'score': []}
         sys.stdout.write('         ')
         connections = 0 # variable to avoid reaching the limit of 6 connection
                         # per second allowed by Ensembl.
+        t0 = time()
         for i, tad in enumerate(exp.tads.values()):
             if not tad['end'] in mapped_coordinates:
                 # MAP
@@ -291,33 +295,48 @@ def convert_chromosome(crm, from_species, synteny=True, mapping=True,
                                  from_species, synteny=synteny, mapping=mapping,
                                  trace=trace, **kwargs)
                 mapped_coordinates[tad['end']] = coords
-                connections += 1
-                if connections == 5:
-                    sleep(.9)
+                connections += synteny + mapping
+                if connections >= 4 :
+                    to_sleep = .8 - min(0.8, time() - t0)
+                    sleep(to_sleep)
                     connections = 0
+                    t0 = time()
             else:
-                connections -= 1
                 coords = mapped_coordinates[tad['end']]
-            if type(coords) is dict:
+            if type(coords) is dict and GOOD_CRM.match(coords['chr']):
+                new_genome.setdefault(
+                    coords['chr'], Chromosome(coords['chr'],
+                                              species=crm.species,
+                                              assembly=crm.assembly))
+                if not exp.name in [e.name for e in
+                                    new_genome[coords['chr']].experiments]:
+                    new_genome[coords['chr']].add_experiment(
+                        exp.name, cell_type=exp.cell_type,
+                        identifier=exp.identifier, enzyme=exp.enzyme,
+                        resolution=exp.resolution, no_warn=True)
+                    new_genome[coords['chr']].experiments[exp.name]._tads = {
+                        'end': [], 'start': [], 'score': []}
+                tads = new_genome[coords['chr']].experiments[exp.name]._tads
                 tads['start'].append(
                     (tads['end'][-1] + 1) if tads['end'] else 0.0)
-                tads['end'  ].append(float(int(coords['end'])/exp.resolution))
+                tads['end'  ].append(float(round(
+                    float(coords['end']) / exp.resolution)))
                 tads['score'].append(tad['score'])
                 sys.stdout.write('.')
             else:
+                if type(coords) is dict:
+                    coords = 'Region %s:%s-%s not nice' % (
+                        coords['chr'], coords['start'], coords['end'])
                 if not coords in log:
                     log.append(coords)
                 sys.stdout.write('E')
             if not (i + 1) % 50:
-                sys.stdout.write ('%3s\n         ' % (i + 1))
+                sys.stdout.write (' %3s\n         ' % (i + 1))
             elif not (i+1) % 10:
                 sys.stdout.write(' ')
                 sys.stdout.flush()
             else:
                 sys.stdout.flush()
-        new_crm.add_experiment(exp.name, tad_def=tads, cell_type=exp.cell_type,
-                               identifier=exp.identifier, enzyme=exp.enzyme,
-                               resolution=exp.resolution)
         print ''
     if log:
         log.sort(key=lambda x: int(x.split(':')[1].split('-')[0]))
@@ -326,7 +345,7 @@ def convert_chromosome(crm, from_species, synteny=True, mapping=True,
     log = []
     return new_crm
 
-    
+
 def main():
     """
     main function
@@ -339,8 +358,8 @@ def main():
         print '\nLoad %s chromosomes from \n%s:' % (
             opts.original_species.capitalize().replace('_', ' ') + "'s",
             ' '*10 + opts.genome)
-    genome = load_genome(opts.genome, res=opts.res, verbose=opts.verbose)
-
+    genome = load_genome(opts.genome, res=opts.res, verbose=opts.verbose
+)
     # remap TADs
     if opts.verbose:
         print '\nCreating new TADbit chromosomes with new coordinates\n'
@@ -358,12 +377,6 @@ def main():
     for crm in genome:
         print '\n   Chromosome:', crm
         new_crm = None
-        crmdir = os.path.join(rootdir, crm)
-        if not os.path.exists(crmdir):
-            os.mkdir(crmdir)
-        if opts.skip:
-            if os.path.exists(os.path.join(crmdir, crm + '.tdb')):
-                continue
         # remap and syntenic region
         if opts.original_assembly:
             print '\n     remapping from %s to %s:' % (
@@ -371,14 +384,11 @@ def main():
             print '        and searching syntenic regions from %s to %s' %(
                 opts.original_species.capitalize().replace('_', ' '),
                 opts.target_species.capitalize().replace('_', ' '))
-            new_crm = convert_chromosome(genome[crm], opts.original_species,
-                                         from_map=opts.original_assembly,
-                                         to_map=opts.target_assembly,
-                                         to_species=opts.target_species,
-                                         synteny=True, mapping=True, trace=trace)
-        new_genome[crm] = new_crm
-        # save new chromosome
-        new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
+            convert_chromosome(genome[crm], new_genome, opts.original_species,
+                               from_map=opts.original_assembly,
+                               to_map=opts.target_assembly,
+                               to_species=opts.target_species,
+                               synteny=True, mapping=True, trace=trace)
 
         for t in sorted(trace[crm]):
             try:
@@ -395,13 +405,34 @@ def main():
                     'None',
                     'None',
                     )
-                
+
+    # save new chromosomes
+    for crm in new_genome:
+        new_crm = new_genome[crm]
+        for exp in new_crm.experiments:
+            tads, norm = parse_tads(exp._tads)
+            last = max(tads.keys())
+            if not exp.size:
+                exp.size = tads[last]['end']
+            exp.tads = tads
+            exp.norm  = norm
+        crmdir = os.path.join(rootdir, crm)
+        if not os.path.exists(crmdir):
+            os.mkdir(crmdir)
+        new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
+        
 
 
 def get_options():
-    '''
+    """
     parse option from call
-    '''
+    
+    sys.argv = ['', '--genome', '/home/fransua/db/hi-c/dixon_hsap-mmus/mmus/100Kb/',
+                '--species', 'mus_musculus', '--to_species', 'homo_sapiens',
+                '--from_map', 'NCBIM37', '--to_map', 'GRCm38', '--res', '100000',
+                '-o', '/home/fransua/Box/tadbit/scripts/hsap2mmus/']
+    
+    """
 
     parser = OptionParser(
         usage=("%prog [options] file [options] file [options] " +
@@ -411,9 +442,9 @@ def get_options():
                       help='''path to a directory with a list of
                       chromosomes saved through tadbit (required if not
                       passing chromosomes)''')
-    parser.add_option('--crm', dest='crm', metavar="PATH", 
-                      help='''path to input file, a chromosome saved through
-                      tadbit (required if not passing genome)''')
+    # parser.add_option('--crm', dest='crm', metavar="PATH", 
+    #                   help='''path to input file, a chromosome saved through
+    #                   tadbit (required if not passing genome)''')
     parser.add_option('--species', dest='original_species', metavar="STRING",
                       help='''Species name (no spaces in name, use underscore)
                       of the input chromosome(s) (i.e.: homo_sapiens''')
@@ -431,6 +462,10 @@ def get_options():
                       help='''NCBI ID of the assembly we want to map to (i.e.:
                       GRCm38 for mouse or GRCh37 for human) -- Needed with
                       "from_map"''')
+    parser.add_option('--check', 
+                      dest='check', default=False, action='store_true',
+                      help='''[%default] do not convert coordinates, just check
+                      if convertion is possible. If not border is removed.''')
     parser.add_option('-o', dest='out_path', metavar="PATH",
                       default='./',
                       help='''[%default] path to out file where converted TADbit
@@ -448,9 +483,8 @@ def get_options():
                       output directory''')
     opts = parser.parse_args()[0]
 
-    if not opts.crm or not opts.ref_crm:
-        if not opts.genome:
-            exit(parser.print_help())
+    if not opts.genome:
+        exit(parser.print_help())
     if not opts.original_species:
         print '   Needs an from_species argument\n\n'
         exit(parser.print_help())

@@ -1016,8 +1016,6 @@ class AlignmentDict(dict):
 
 class ChromosomeSize(int):
     """
-    This is an integer.
-    
     Chromosome size in base pairs
     """
     def __init__(self, thing):
@@ -1026,8 +1024,6 @@ class ChromosomeSize(int):
 
 class RelativeChromosomeSize(int):
     """
-    This is an integer.
-    
     Relative Chromosome size in base pairs. Equal to Chromosome size minus
     forbidden regions (eg: the centromere)
     """

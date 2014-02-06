@@ -164,11 +164,11 @@ class StructuralModels(object):
                 yield coords
 
         if in_place:
-            mass_center(self[models[-1]]['x'], self[models[-1]]['y'],
-                        self[models[-1]]['z'])
+            mass_center(self[models[0]]['x'], self[models[0]]['y'],
+                        self[models[0]]['z'])
         else:
-            x, y, z = (self[models[-1]]['x'][:], self[models[-1]]['y'][:],
-                       self[models[-1]]['z'][:])
+            x, y, z = (self[models[0]]['x'][:], self[models[0]]['y'][:],
+                       self[models[0]]['z'][:])
             mass_center(x, y, z)
             yield x, y, z
 

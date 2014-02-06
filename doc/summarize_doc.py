@@ -15,6 +15,10 @@ from lxml.html import parse
 
 
 def parse_doc_index(url_base='http://3dgenomes.github.io/tadbit/'):
+    """
+    Goes to documentation index page and stores the links to all functions in
+    there.
+    """
     dom =  parse(url_base + 'genindex.html').getroot()
     links = {}
     for elt in dom.cssselect('a'):
@@ -23,11 +27,15 @@ def parse_doc_index(url_base='http://3dgenomes.github.io/tadbit/'):
         links[elt.text.split('()')[0]] = url_base + elt.values()[0]
     return links
 
+
 def condition(member):
     return type(member.__doc__) != type(None)
 
 
 def get_all(module, all_members=None):
+    """
+    get all classes and function in a given module and all sub-modules
+    """
     if not all_members:
         all_members = {}
     members = inspect.getmembers(module, condition)
@@ -51,6 +59,9 @@ def get_all(module, all_members=None):
 
 
 def print_doc(member, header=1, indent=3, offset=45):
+    """
+    print a given function or class in Restructured format
+    """
     doc = member.__doc__
     dochead = doc.split(':param')[0].split(':returns')[0]
     dochead = dochead.split('::')[0].split('..')[0].strip()
@@ -75,14 +86,14 @@ def print_doc(member, header=1, indent=3, offset=45):
         if member.__name__ in LINKS:
             title = '`%s <%s>`_' % (member.__name__, LINKS[member.__name__])
         else:
-            title = '**' + member.__name__ + '**'
+            title = member.__name__
         args = inspect.getargspec(member).args
         extra = []
         if 'savefig' in args or 'axe' in args:
-            extra.append('[1]_')
+            extra.append('[#first]_')
         if 'savedata' in args or 'outfile' in args or 'directory' in args:
-            extra.append('[2]_')
-        title += ' %s: ' % (' '.join(extra))
+            extra.append('[#second]_')
+        title += '%s: ' % ((' ' if extra else '') + ' '.join(extra))
         out  =  (' ' * indent) + '- ' + title
         out +=  ' ' * (offset - len(title) - 2 - indent)
         reout = ''
@@ -107,11 +118,13 @@ def main():
 
     numclasses = nfunctions = 0
     nummodules = len(modules)
-    
+
+    # title
     print '======================================='
     print 'Summary of TADbit classes and functions'
     print '=======================================\n'
 
+    # body
     print ''
     for module in sorted(modules):
         print print_doc(module, header=1)
@@ -139,9 +152,11 @@ def main():
                 nfunctions += 1
                 print print_doc(all_members[member]['son'], header=3,
                                 indent=6)
+
+    # footnotes
     print ''
-    print '.. [1] functions generating plots'
-    print '.. [2] functions writing text files'
+    print '.. [#first] functions generating plots\n'
+    print '.. [#second] functions writing text files\n'
     stderr.write('Reporting %s modules, %s classes and %s functions\n' %(
         nummodules, numclasses, nfunctions))
     

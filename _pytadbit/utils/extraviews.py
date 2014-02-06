@@ -428,7 +428,8 @@ def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
                     out.write('color black #%s\n' % (i))
     if not chimera_cmd:
         the_shape = '''bonddisplay never #%s
-shape tube #%s radius 5 bandLength 100 segmentSubdivisions 1 followBonds on'''
+shape tube #%s radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+~show #%s'''
         out.write(('''
 focus
 set bg_color white
@@ -443,7 +444,7 @@ set dc_color black
 set dc_start 0.5
 set dc_end 1
 scale 0.8%s\n
-''' % ('\n'.join([the_shape % (mdl, mdl) for mdl in (
+''' % ('\n'.join([the_shape % (mdl, mdl, mdl) for mdl in (
                        [stress] if stress!='all' else range(nmodels))]),
        '\ntile' if grid else '')) +
                   ('define centroid radius %s color 1,0,0,0.2\n' % (
