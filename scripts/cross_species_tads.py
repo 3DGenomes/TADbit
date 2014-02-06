@@ -407,20 +407,37 @@ def main():
                     )
 
     # save new chromosomes
-    for crm in new_genome:
-        new_crm = new_genome[crm]
-        for exp in new_crm.experiments:
-            tads, norm = parse_tads(exp._tads)
-            last = max(tads.keys())
-            if not exp.size:
-                exp.size = tads[last]['end']
-            exp.tads = tads
-            exp.norm  = norm
-        crmdir = os.path.join(rootdir, crm)
-        if not os.path.exists(crmdir):
-            os.mkdir(crmdir)
-        new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
-        
+    if opts.check:
+        for crm in genome:
+            new_crm = genome[crm]
+            for exp in new_crm.experiments:
+                tadcnt = 0
+                new_tads = {}
+                for tad in exp.tads:
+                    cond = 'syntenic at' if opts.target_species else 'mapped to'
+                    if trace[crm][exp.tads[tad]['end']][cond]['chr'] is None:
+                        continue
+                    new_tads[tadcnt] = exp.tads[tad]
+                    tadcnt += 1
+                exp.tads = new_tads
+            crmdir = os.path.join(rootdir, crm)
+            if not os.path.exists(crmdir):
+                os.mkdir(crmdir)
+            new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
+    else:
+        for crm in new_genome:
+            new_crm = new_genome[crm]
+            for exp in new_crm.experiments:
+                tads, norm = parse_tads(exp._tads)
+                last = max(tads.keys())
+                if not exp.size:
+                    exp.size = tads[last]['end']
+                exp.tads = tads
+                exp.norm  = norm
+            crmdir = os.path.join(rootdir, crm)
+            if not os.path.exists(crmdir):
+                os.mkdir(crmdir)
+            new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
 
 
 def get_options():
