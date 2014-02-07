@@ -662,7 +662,6 @@ def addHarmonicUpperBoundRestraints(model, p1, p2, dist, kforce):
     dr = IMP.core.DistanceRestraint(IMP.core.HarmonicUpperBound(dist, kforce),
                                     p1, p2)
     model['model'].add_restraint(dr)
-    print 'HOOOOLLLLAAAAA R K', p1.get_value(model['rk'])
     return "addHu\t%s\t%s\t%f\t%f\n" % (p1.get_name(), p2.get_name(),
                                         dist, kforce)
 
