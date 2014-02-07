@@ -279,7 +279,6 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
 def convert_chromosome(crm, new_genome, from_species, synteny=True,
                        mapping=True, trace=None, **kwargs):
     new_crm = Chromosome(crm.name, species=crm.species, assembly=crm.assembly)
-    mapped_coordinates = {}
     log = []
     crm_name = crm.name.replace('chr', '').replace('crm', '')
     for exp in crm.experiments:
@@ -289,12 +288,11 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                         # per second allowed by Ensembl.
         t0 = time()
         for i, tad in enumerate(exp.tads.values()):
-            if not tad['end'] in mapped_coordinates:
+            if not tad['end'] in trace[crm]:
                 # MAP
                 coords = map_tad(i, tad, crm_name, exp.resolution,
                                  from_species, synteny=synteny, mapping=mapping,
                                  trace=trace, **kwargs)
-                mapped_coordinates[tad['end']] = coords
                 connections += synteny + mapping
                 if connections >= 4 :
                     to_sleep = .8 - min(0.8, time() - t0)
@@ -302,7 +300,8 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                     connections = 0
                     t0 = time()
             else:
-                coords = mapped_coordinates[tad['end']]
+                coords = trace[crm][tad['end']][
+                    'syntenic at' if synteny else 'mapped to']
             if type(coords) is dict and GOOD_CRM.match(coords['chr']):
                 new_genome.setdefault(
                     coords['chr'], Chromosome(coords['chr'],
@@ -389,7 +388,8 @@ def main():
                                to_map=opts.target_assembly,
                                to_species=opts.target_species,
                                synteny=True, mapping=True, trace=trace)
-
+        if opts.log:
+            log = open
         for t in sorted(trace[crm]):
             try:
                 print '%4s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s' %(

@@ -253,8 +253,8 @@ class StructuralModels(object):
                                self.nloci, len(models), int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
                              ('rand_init', 'avg'), ('objfun', None),
-                             ('radius',
-                              self.resolution * self._config['scale'])))
+                             ('radius', float(self.resolution *
+                                              self._config['scale']) / 2)))
         return avgmodel
 
 

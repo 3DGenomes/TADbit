@@ -117,7 +117,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     
     # Particles initial radius
     global RADIUS
-    RADIUS = resolution * CONFIG['scale']
+    RADIUS = float(resolution * CONFIG['scale']) / 2 
     CONFIG['lowrdist'] = RADIUS * 2.
     
 
@@ -126,7 +126,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
                         'the safe of our universe...\n' + 
                         'In this case, maxdist must be higher than %s\n' % (
                             CONFIG['lowrdist']) +
-                        '   -> 2 times resolution times scale -- 2*%s*%s)' % (
+                        '   -> resolution times scale -- %s*%s)' % (
                             resolution, CONFIG['scale']))
 
     # get SLOPE and regression for all particles of the z-score data
@@ -442,7 +442,7 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
             and float(PDIST[x][y]) > CONFIG['upfreq']):
             kforce1 = CONFIG['kforce']
             log += addHarmonicNeighborsRestraints(model, p1, p2, kforce1)
-            #print "harmo1\t%s\t%s\t%f\t%f" % ( x, y, dist1, kforce1)
+            #prin t"harmo1\t%s\t%s\t%f\t%f" % ( x, y, dist1, kforce1)
         else:
             kforce1 = CONFIG['kforce']
             dist1 = (p1.get_value(model['rk']) + p2.get_value(model['rk']))
@@ -662,6 +662,7 @@ def addHarmonicUpperBoundRestraints(model, p1, p2, dist, kforce):
     dr = IMP.core.DistanceRestraint(IMP.core.HarmonicUpperBound(dist, kforce),
                                     p1, p2)
     model['model'].add_restraint(dr)
+    print 'HOOOOLLLLAAAAA R K', p1.get_value(model['rk'])
     return "addHu\t%s\t%s\t%f\t%f\n" % (p1.get_name(), p2.get_name(),
                                         dist, kforce)
 

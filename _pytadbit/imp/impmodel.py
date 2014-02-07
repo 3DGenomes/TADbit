@@ -687,8 +687,8 @@ class IMPmodel(dict):
         out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
         form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
                 ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
-                'radius=\"' + str(30) +
-                # str(self['radius']) +
+                'radius=\"' + #str(30) +
+                str(self['radius']) +
                 '\" note=\"%s\"/>\n')
         for i in xrange(len(self['x'])):
             out += form % (i + 1,
