@@ -1006,7 +1006,7 @@ class AlignmentDict(dict):
 
     def __getitem__(self, nam):
         try:
-            return super(AlignmentDict, self).__getitem__(nam)
+            return super(AlignmentDict, self).__getitem__(tuple(sorted(nam)))
         except KeyError:
             for i, key in enumerate(self):
                 if nam == i:
