@@ -269,7 +269,7 @@ class Alignment(object):
 
 
     def draw(self, focus=None, extras=None, ymax=None, ali_colors=('grey',),
-             savefig=None):
+             normalized=True, savefig=None):
         """
         Draw alignments as a plot.
         
@@ -279,6 +279,8 @@ class Alignment(object):
            red cross
         :param None ymax: limit the y axis up to a given value
         :param ('grey', ): successive colors for alignment
+        :param True normalized: normalized Hi-C count are plotted instead of raw
+           data.
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
@@ -309,10 +311,14 @@ class Alignment(object):
             if not xpr.name in self:
                 continue
             zeros = xpr._zeros or {}
-            try:
+            if normalized and xpr.norm:
                 norms = xpr.norm[0]
-            except TypeError:
-                warn("WARNING: weights not available, TAD's height fixed to 1")
+            elif xpr.hic_data:
+                if not normalized:
+                    warn("WARNING: weights not available, using raw data")
+                norms = xpr.hic_data[0]
+            else:
+                warn("WARNING: raw Hi-C data not available, TAD's height fixed to 1")
                 norms = None
             diags = []
             sp1 = siz + 1
