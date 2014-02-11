@@ -5,6 +5,7 @@
 """
 from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
+from pytadbit.utils.three_dim_stats import get_center_of_mass, distance
 from pytadbit.utils.tadmaths        import calinski_harabasz
 from pytadbit.utils.extraviews      import plot_3d_model
 from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
@@ -469,8 +470,8 @@ class StructuralModels(object):
 
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     interval=1, error=False, axe=None, savefig=None,
-                     savedata=None, plot=True):
+                     interval=1, mass_center=False, error=False, axe=None,
+                     savefig=None, savedata=None, plot=True):
         """
         Plots the number of nucleotides per nm of chromatin vs the modeled
         region bins.
@@ -487,6 +488,10 @@ class StructuralModels(object):
            appearance
         :param 1 interval: distance are measure with this given interval
            between two bins.
+        :param False mass_center: if interval is higher than one, calculates the
+           distance between the center of mass of the particles *n* to
+           *n+interval* and the center of mass of the particles *n+interval* and
+           *n+2interval*
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
@@ -502,10 +507,30 @@ class StructuralModels(object):
         colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
                   'darkred'][-len(steps):]
         dists = []
+        if models:
+            models = [m if type(m) is int else self[m]['index'] for m in models]
+        elif cluster > -1:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = self.__models
         for part1, part2 in zip(range(self.nloci - interval),
                                 range(interval, self.nloci)):
-            dists.append(self.median_3d_dist(part1 + 1, part2 + 1, models,
-                                             cluster, plot=False, median=False))
+            if mass_center:
+                subdists = []
+                for m in models:
+                    coord1 = get_center_of_mass(
+                        self[m]['x'][part1:part1+interval],
+                        self[m]['y'][part1:part1+interval],
+                        self[m]['z'][part1:part1+interval])
+                    coord2 = get_center_of_mass(
+                        self[m]['x'][part2:part2+interval],
+                        self[m]['y'][part2:part2+interval],
+                        self[m]['z'][part2:part2+interval])
+                    subdists.append(distance(coord1, coord2))
+                dists.append(subdists)
+            else:
+                dists.append(self.median_3d_dist(part1 + 1, part2 + 1, models,
+                                                 cluster, plot=False, median=False))
         lmodels = len(dists[0])
         distsk = {1: dists}
         for k in (steps[1:] if steps[0]==1 else steps):
@@ -608,6 +633,7 @@ class StructuralModels(object):
             tadbit_savefig(savefig)
         elif not axe:
             plt.show()
+
 
 
     def get_contact_matrix(self, models=None, cluster=None, cutoff=150):
