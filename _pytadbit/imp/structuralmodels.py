@@ -532,9 +532,9 @@ class StructuralModels(object):
                 dists.append(self.median_3d_dist(part1 + 1, part2 + 1, models,
                                                  cluster, plot=False, median=False))
         lmodels = len(dists[0])
-        distsk = {1: dists}
+        distsk = {1: [None for _ in range(interval/2)] + dists}
         for k in (steps[1:] if steps[0]==1 else steps):
-            distsk[k] = [None for _ in range(k/2)]
+            distsk[k] = [None for _ in range(k/2+interval/2)]
             for i in range(self.nloci - k - interval + 1):
                 distsk[k].append(reduce(lambda x, y: x + y,
                                         [dists[i+j] for j in range(k)]))
@@ -557,7 +557,7 @@ class StructuralModels(object):
                     errorp[k].append(None)
                     errorn[k].append(None)
                     continue
-                part = [self.resolution / p for p in part]
+                part = [interval * self.resolution / p for p in part]
                 new_distsk[k].append(np_median(part))
                 try:
                     errorn[k].append(new_distsk[k][-1] - 2 * np_std(part))
