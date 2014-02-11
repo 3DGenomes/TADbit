@@ -8,6 +8,7 @@ from os.path                           import exists
 from pytadbit.boundary_aligner.aligner import align
 from pytadbit                          import tadbit
 from pytadbit.utils.extraviews         import tadbit_savefig
+from pytadbit.utils.extraviews         import _tad_density_plot
 from pytadbit.experiment               import Experiment
 from string                            import ascii_lowercase as letters
 from warnings                          import warn
@@ -529,6 +530,32 @@ class Chromosome(object):
             self.size   = ChromosomeSize(self.size)
         self.r_size = self.size - len(self.forbidden) * xpr.resolution
         self.r_size = RelativeChromosomeSize(self.size)
+
+
+    def tad_density_plot(self, name, axe=None, focus=None, extras=None,
+                         normalized=True, savefig=None):
+        """
+        Draw an summary of the TAD found in a given experiment and their density
+        in terms of relative Hi-C interaction count.
+        
+        :param name: name of the experiment to visualize
+        :param None focus: can pass a tuple (bin_start, bin_stop) to display the
+           alignment between these genomic bins
+        :param None extras: list of coordinates (genomic bin) where to draw a
+           red cross
+        :param None ymax: limit the y axis up to a given value
+        :param ('grey', ): successive colors for alignment
+        :param True normalized: normalized Hi-C count are plotted instead of raw
+           data.
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        """
+        if not self.experiments[name].tads:
+            raise Exception("TAD borders not found\n")
+        _tad_density_plot(self.experiments[name], axe=axe, focus=focus,
+                          extras=extras, normalized=normalized,
+                          savefig=savefig)
 
 
     def visualize(self, name, tad=None, focus=None, paint_tads=False, axe=None,

@@ -5,7 +5,7 @@
 """
 
 from pytadbit.utils.extraviews         import colorize, tadbit_savefig
-from pytadbit.utils.extraviews         import tad_density_plot
+from pytadbit.utils.extraviews         import _tad_density_plot
 from random                            import random, shuffle
 from sys                               import stdout
 from pytadbit.boundary_aligner.aligner import align
@@ -311,8 +311,8 @@ class Alignment(object):
         for iex, xpr in enumerate(experiments):
             if not xpr.name in self:
                 continue
-            tad_density_plot(xpr, maxys=maxys, normalized=normalized,
-                             fact_res=facts[iex], axe=axes[iex], extras=extras)
+            _tad_density_plot(xpr, maxys=maxys, normalized=normalized,
+                              fact_res=facts[iex], axe=axes[iex], extras=extras)
         # draw alignment columns
         end = xpr.tads[max(xpr.tads)]['end']
         maxy = (ymax or max(maxys)) + 0.4
@@ -347,11 +347,6 @@ class Alignment(object):
                     continue
                 axes[iex].axvspan(beg-.2, end+.2, alpha=0.2,
                                   color=ali_colors[i%(len(ali_colors))])
-                axes[iex].plot(((tad['end'] + 1.) / facts[iex], ), (0, ),
-                               color=jet(tad['score'] / 10) if tad['score'] else 'w',
-                               mec='none' if tad['score'] else 'k', 
-                               marker=6, ms=9, alpha=1,
-                               clip_on=False)
         axes[iex].set_xlabel('Genomic bin')
         tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
         tit2 = axes[0].set_title("Alignment column number")

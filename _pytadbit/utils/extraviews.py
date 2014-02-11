@@ -9,6 +9,7 @@ from subprocess import Popen, PIPE
 from itertools import combinations
 
 try:
+    from matplotlib.ticker import MultipleLocator
     from matplotlib import pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
 except ImportError:
@@ -699,12 +700,31 @@ def compare_models(sm1, sm2, cutoff=150,
     plt.show()
 
 
-def tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
-                     extras=None, normalized=True):
+def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
+                     focus=None, extras=None, normalized=True,
+                     savefig=None, shape='ellipse'):
     """
     """
+    from matplotlib.cm import jet
+    siz = xpr.size
+    show=False
+    if focus:
+        figsiz = 4 + (focus[1] - focus[0])/30
+    else:
+        figsiz = 4 + (siz)/30
+
+    if not axe:
+        fig = plt.figure(figsize=(figsiz, 1 + 1 * 1.8))
+        axe = fig.add_subplot(111)
+        fig.subplots_adjust(hspace=0)
+        show=True
+
     zsin = np.sin(np.linspace(0, np.pi))
-    ellipse = lambda h : h * zsin
+    ellipse   = lambda h : h * zsin
+    rectangle = lambda h: [h] * 50
+
+    shape = ellipse if shape == 'ellipse' else rectangle
+    
     maxys = maxys if type(maxys) is list else []
     zeros = xpr._zeros or {}
     if normalized and xpr.norm:
@@ -748,7 +768,7 @@ def tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         maxys.append(height)
         start = float(start) / fact_res # facts[iex]
         end   = float(end) / fact_res #facts[iex]
-        axe.fill(np.linspace(start, end), ellipse(height),
+        axe.fill(np.linspace(start, end), shape(height),
                  alpha=.8 if height > 1 else 0.4,
                  facecolor='grey', edgecolor='grey')
     if extras:
@@ -756,4 +776,36 @@ def tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     axe.grid()
     axe.patch.set_visible(False)
     axe.set_ylabel('Relative\nHi-C count')
-    
+    #
+    for tad in xpr.tads:
+        if not xpr.tads[tad]['end']:
+            continue
+        tad = xpr.tads[tad]
+        axe.plot(((tad['end'] + 1.) / fact_res, ), (0, ),
+                 color=jet(tad['score'] / 10) if tad['score'] else 'w',
+                 mec='none' if tad['score'] else 'k', marker=6, ms=9, alpha=1,
+                 clip_on=False)
+    axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
+    axe.minorticks_on()
+    axe.xaxis.set_minor_locator(MultipleLocator(10))
+    if show:
+        tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
+        tit2 = axe.set_title("Alignment column number")
+        tit2.set_y(1.3)
+        plt.subplots_adjust(top=0.76)
+        fig.set_facecolor('white')
+        plots = []
+        for scr in xrange(1, 11):
+            plots += plt.plot((100,),(100,), marker=6, ms=9,
+                              color=jet(float(scr) / 10), mec='none')
+        axe.legend(plots,
+                   [str(scr) for scr in xrange(1, 11)],
+                   numpoints=1, title='Border scores',
+                   fontsize='small', loc='lower left',
+                   bbox_to_anchor=(1, 0.5))
+        axe.set_ylim((0, max(maxys) + 0.4))
+        if savefig:
+            tadbit_savefig(savefig)
+        else:
+            plt.show()
+        
