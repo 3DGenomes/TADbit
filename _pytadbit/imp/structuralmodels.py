@@ -469,8 +469,8 @@ class StructuralModels(object):
 
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     error=False, axe=None, savefig=None, savedata=None,
-                     plot=True):
+                     interval=1, error=False, axe=None, savefig=None,
+                     savedata=None, plot=True):
         """
         Plots the number of nucleotides per nm of chromatin vs the modeled
         region bins.
@@ -485,6 +485,8 @@ class StructuralModels(object):
         :param False error: represent the error of the estimates
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
+        :param 1 interval: distance are measure with this given interval
+           between two bins.
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
@@ -500,14 +502,15 @@ class StructuralModels(object):
         colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
                   'darkred'][-len(steps):]
         dists = []
-        for part1, part2 in zip(range(self.nloci - 1), range(1, self.nloci)):
+        for part1, part2 in zip(range(self.nloci - interval),
+                                range(interval, self.nloci)):
             dists.append(self.median_3d_dist(part1 + 1, part2 + 1, models,
                                              cluster, plot=False, median=False))
         lmodels = len(dists[0])
         distsk = {1: dists}
         for k in (steps[1:] if steps[0]==1 else steps):
             distsk[k] = [None for _ in range(k/2)]
-            for i in range(self.nloci - k):
+            for i in range(self.nloci - k - interval + 1):
                 distsk[k].append(reduce(lambda x, y: x + y,
                                         [dists[i+j] for j in range(k)]))
                 if k == 1:
