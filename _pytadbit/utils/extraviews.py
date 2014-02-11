@@ -720,11 +720,17 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         show=True
 
     zsin = np.sin(np.linspace(0, np.pi))
-    ellipse   = lambda h : h * zsin
-    rectangle = lambda h: [h] * 50
-
-    shape = ellipse if shape == 'ellipse' else rectangle
     
+    shapes = {'ellipse'   : lambda h : [0] + list(h * zsin) + [0],
+              'rectangle' : lambda h: [0] + [h] * 50 + [0],
+              'triangle'  : lambda h: ([h/25 * i for i in xrange(26)] +
+                                       [h/25 * i for i in xrange(25, -1, -1)])}
+    
+    try:
+        shape = shapes[shape]
+    except KeyError:
+        raise NotImplementedError(
+            '%s not valid, use one of ellipse, rectangle or triangle')
     maxys = maxys if type(maxys) is list else []
     zeros = xpr._zeros or {}
     if normalized and xpr.norm:
@@ -768,7 +774,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         maxys.append(height)
         start = float(start) / fact_res # facts[iex]
         end   = float(end) / fact_res #facts[iex]
-        axe.fill(np.linspace(start, end), shape(height),
+        axe.fill([start] + list(np.linspace(start, end)) + [end], shape(height),
                  alpha=.8 if height > 1 else 0.4,
                  facecolor='grey', edgecolor='grey')
     if extras:

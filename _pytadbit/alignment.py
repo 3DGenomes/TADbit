@@ -270,7 +270,7 @@ class Alignment(object):
 
 
     def draw(self, focus=None, extras=None, ymax=None, ali_colors=('grey',),
-             normalized=True, savefig=None):
+             normalized=True, savefig=None, shape='ellipse'):
         """
         Draw alignments as a plot.
         
@@ -282,6 +282,9 @@ class Alignment(object):
         :param ('grey', ): successive colors for alignment
         :param True normalized: normalized Hi-C count are plotted instead of raw
            data.
+        :param 'ellipse' shape: which kind of shape to use as schematic
+           representation of TADs. Implemented: 'ellipse', 'rectangle',
+           'triangle'
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
@@ -312,7 +315,8 @@ class Alignment(object):
             if not xpr.name in self:
                 continue
             _tad_density_plot(xpr, maxys=maxys, normalized=normalized,
-                              fact_res=facts[iex], axe=axes[iex], extras=extras)
+                              fact_res=facts[iex], axe=axes[iex], extras=extras,
+                              shape=shape)
         # draw alignment columns
         end = xpr.tads[max(xpr.tads)]['end']
         maxy = (ymax or max(maxys)) + 0.4

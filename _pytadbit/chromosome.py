@@ -533,7 +533,7 @@ class Chromosome(object):
 
 
     def tad_density_plot(self, name, axe=None, focus=None, extras=None,
-                         normalized=True, savefig=None):
+                         normalized=True, savefig=None, shape='ellipse'):
         """
         Draw an summary of the TAD found in a given experiment and their density
         in terms of relative Hi-C interaction count.
@@ -547,6 +547,9 @@ class Chromosome(object):
         :param ('grey', ): successive colors for alignment
         :param True normalized: normalized Hi-C count are plotted instead of raw
            data.
+        :param 'ellipse' shape: which kind of shape to use as schematic
+           representation of TADs. Implemented: 'ellipse', 'rectangle',
+           'triangle'
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
@@ -555,7 +558,7 @@ class Chromosome(object):
             raise Exception("TAD borders not found\n")
         _tad_density_plot(self.experiments[name], axe=axe, focus=focus,
                           extras=extras, normalized=normalized,
-                          savefig=savefig)
+                          savefig=savefig, shape=shape)
 
 
     def visualize(self, name, tad=None, focus=None, paint_tads=False, axe=None,
