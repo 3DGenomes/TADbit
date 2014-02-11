@@ -5,6 +5,7 @@
 """
 
 from pytadbit.utils.extraviews         import colorize, tadbit_savefig
+from pytadbit.utils.extraviews         import tad_density_plot
 from random                            import random, shuffle
 from sys                               import stdout
 from pytadbit.boundary_aligner.aligner import align
@@ -310,53 +311,10 @@ class Alignment(object):
         for iex, xpr in enumerate(experiments):
             if not xpr.name in self:
                 continue
-            zeros = xpr._zeros or {}
-            if normalized and xpr.norm:
-                norms = xpr.norm[0]
-            elif xpr.hic_data:
-                if not normalized:
-                    warn("WARNING: weights not available, using raw data")
-                norms = xpr.hic_data[0]
-            else:
-                warn("WARNING: raw Hi-C data not available, TAD's height fixed to 1")
-                norms = None
-            diags = []
-            sp1 = siz + 1
-            if norms:
-                for k in xrange(1, siz):
-                    s_k = siz * k
-                    diags.append(sum([norms[i * sp1 + s_k]
-                                     if not (i in zeros
-                                             or (i + k) in zeros) else 0.
-                                      for i in xrange(siz - k)]) / (siz - k))
-            for tad in xpr.tads:
-                start, end = (int(xpr.tads[tad]['start']) + 1,
-                              int(xpr.tads[tad]['end']) + 1)
-                if norms:
-                    matrix = sum([norms[i + siz * j]
-                                 if not (i in zeros
-                                         or j in zeros) else 0.
-                                  for i in xrange(start - 1, end - 1)
-                                  for j in xrange(i + 1, end - 1)])
-                try:
-                    if norms:
-                        height = float(matrix) / sum(
-                            [diags[i-1] * (end - start - i)
-                             for i in xrange(1, end - start)])
-                    else:
-                        height = 1.
-                except ZeroDivisionError:
-                    height = 0.
-                maxys.append(height)
-                start = float(start) / facts[iex]
-                end   = float(end) / facts[iex]
-                axes[iex].fill(linspace(start, end), ellipse(height),
-                               alpha=.8 if height > 1 else 0.4,
-                               facecolor='grey', edgecolor='grey')
-            if extras:
-                axes[iex].plot(extras, [.5 for _ in xrange(len(extras))], 'rx')
-            axes[iex].grid()
-            axes[iex].patch.set_visible(False)
+            tad_density_plot(xpr, maxys=maxys, normalized=normalized,
+                             fact_res=facts[iex], axe=axes[iex], extras=extras)
+        # draw alignment columns
+        end = xpr.tads[max(xpr.tads)]['end']
         maxy = (ymax or max(maxys)) + 0.4
         maxxs = []
         for iex in range(len(experiments)):
@@ -365,7 +323,6 @@ class Alignment(object):
             axes[iex].hlines(1, 1, end, 'k', lw=1.5)
             axes[iex].set_ylim((0, maxy))
             maxxs.append(ending / facts[iex])
-            axes[iex].set_ylabel('Relative\nHi-C count')
             axes[iex].text(starting + 1, float(maxy) / 20,
                            experiments[iex].name, {'ha':'left', 'va':'bottom'})
             axes[iex].set_yticks([float(i) / 2
@@ -373,6 +330,7 @@ class Alignment(object):
             if ymax:
                 axes[iex].set_ylim((0, ymax))
         axes[iex].set_xlim((starting, max(maxxs)))
+        # 
         pos = {'ha':'center', 'va':'bottom'}
         for i, col in enumerate(self.itercolumns()):
             ends = sorted([(t['end'], j) for j, t in enumerate(col) if t['end']])

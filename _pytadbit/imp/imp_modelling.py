@@ -117,7 +117,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     
     # Particles initial radius
     global RADIUS
-    RADIUS = float(resolution * CONFIG['scale']) / 2 
+    RADIUS = float(resolution * CONFIG['scale']) / 2
     CONFIG['lowrdist'] = RADIUS * 2.
     
 

@@ -34,7 +34,7 @@ def consensusize(ali1, ali2, passed):
 def align(sequences, method='reciprocal', **kwargs):
     """
     Align Topologically Associating Domain borders. Supports multiple alignment
-    by building a consensus TAD and aligning each TAD to it.
+    by building a consensus TAD sequence and aligning each experiment to it.
 
     .. note::
 

@@ -697,3 +697,63 @@ def compare_models(sm1, sm2, cutoff=150,
     cbar = axe.figure.colorbar(im)
     cbar.ax.set_ylabel('Signed log difference between models')
     plt.show()
+
+
+def tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
+                     extras=None, normalized=True):
+    """
+    """
+    zsin = np.sin(np.linspace(0, np.pi))
+    ellipse = lambda h : h * zsin
+    maxys = maxys if type(maxys) is list else []
+    zeros = xpr._zeros or {}
+    if normalized and xpr.norm:
+        norms = xpr.norm[0]
+    elif xpr.hic_data:
+        if normalized:
+            warn("WARNING: weights not available, using raw data")
+        norms = xpr.hic_data[0]
+    else:
+        warn("WARNING: raw Hi-C data not available, " +
+             "TAD's height fixed to 1")
+        norms = None
+    diags = []
+    siz = xpr.size
+    sp1 = siz + 1
+    if norms:
+        for k in xrange(1, siz):
+            s_k = siz * k
+            diags.append(sum([norms[i * sp1 + s_k]
+                             if not (i in zeros
+                                     or (i + k) in zeros) else 0.
+                              for i in xrange(siz - k)]) / (siz - k))
+    for tad in xpr.tads:
+        start, end = (int(xpr.tads[tad]['start']) + 1,
+                      int(xpr.tads[tad]['end']) + 1)
+        if norms:
+            matrix = sum([norms[i + siz * j]
+                         if not (i in zeros
+                                 or j in zeros) else 0.
+                          for i in xrange(start - 1, end - 1)
+                          for j in xrange(i + 1, end - 1)])
+        try:
+            if norms:
+                height = float(matrix) / sum(
+                    [diags[i-1] * (end - start - i)
+                     for i in xrange(1, end - start)])
+            else:
+                height = 1.
+        except ZeroDivisionError:
+            height = 0.
+        maxys.append(height)
+        start = float(start) / fact_res # facts[iex]
+        end   = float(end) / fact_res #facts[iex]
+        axe.fill(np.linspace(start, end), ellipse(height),
+                 alpha=.8 if height > 1 else 0.4,
+                 facecolor='grey', edgecolor='grey')
+    if extras:
+        axe.plot(extras, [.5 for _ in xrange(len(extras))], 'rx')
+    axe.grid()
+    axe.patch.set_visible(False)
+    axe.set_ylabel('Relative\nHi-C count')
+    
