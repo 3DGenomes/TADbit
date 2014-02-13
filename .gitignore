@@ -25,3 +25,4 @@ script.cmd
 testset
 .ipynb_checkpoints
 .cache
+.idea
