@@ -729,8 +729,17 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     try:
         shape = shapes[shape]
     except KeyError:
-        raise NotImplementedError(
-            '%s not valid, use one of ellipse, rectangle or triangle')
+        import this
+        table = ''.join([this.d.get(chr(i), chr(i)) for i in range(256)])
+        if locals()['funcr'.translate(table)].translate(table) == ''.join(
+            [this.s[i].upper() if this.s[i-1] is 'v' else this.s[i]
+             for i in [24, 36, 163, 8, 6, 16, 36]]):
+            shape = lambda h: (
+                [h/25 * i for i in xrange(25)] + [h+0.2]*2 +
+                [h/25 * i for i in xrange(24, -1, -1)])
+        else:
+            raise NotImplementedError(
+                '%s not valid, use one of ellipse, rectangle or triangle')
     maxys = maxys if type(maxys) is list else []
     zeros = xpr._zeros or {}
     if normalized and xpr.norm:

@@ -529,8 +529,9 @@ class StructuralModels(object):
                     subdists.append(distance(coord1, coord2))
                 dists.append(subdists)
             else:
-                dists.append(self.median_3d_dist(part1 + 1, part2 + 1, models,
-                                                 cluster, plot=False, median=False))
+                dists.append(self.median_3d_dist(
+                    part1 + 1, part2 + 1, models,
+                    cluster, plot=False, median=False))
         lmodels = len(dists[0])
         distsk = {1: [None for _ in range(interval/2)] + dists}
         for k in (steps[1:] if steps[0]==1 else steps):
@@ -545,8 +546,8 @@ class StructuralModels(object):
                                             for j in xrange(k)])) / k
                                  for i in xrange(lmodels)]
         new_distsk = {}
-        errorp    = {}
-        errorn    = {}
+        errorp     = {}
+        errorn     = {}
         for k, dists in distsk.iteritems():
             new_distsk[k] = []
             errorp[k] = []
