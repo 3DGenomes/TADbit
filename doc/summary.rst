@@ -47,7 +47,7 @@ Boundary_aligner aligner module
 
    - consensusize:                           Given two alignments returns a consensus alignment. Used for the generation                                             of multiple alignments
 
-   - `align <http://3dgenomes.github.io/tadbit/reference/reference_aligner.html#pytadbit.boundary_aligner.aligner.align>`_: Align Topologically Associating Domain borders. Supports multiple alignment                                             by building a consensus TAD and aligning each TAD to it.
+   - `align <http://3dgenomes.github.io/tadbit/reference/reference_aligner.html#pytadbit.boundary_aligner.aligner.align>`_: Align Topologically Associating Domain borders. Supports multiple alignment                                             by building a consensus TAD sequence and aligning each experiment to it.
 
 Boundary_aligner globally module
 --------------------------------
@@ -68,8 +68,6 @@ Chromosome module
 
 ChromosomeSize class
 ++++++++++++++++++++
-                      This is an integer.
-                      
                       Chromosome size in base pairs
 
 ExperimentList class
@@ -95,8 +93,6 @@ AlignmentDict class
 
 RelativeChromosomeSize class
 ++++++++++++++++++++++++++++
-                      This is an integer.
-                      
                       Relative Chromosome size in base pairs.
 
 Chromosome class
@@ -120,6 +116,8 @@ Chromosome class
       - `save_chromosome <http://3dgenomes.github.io/tadbit/reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.save_chromosome>`_: Save a Chromosome object to a file (it uses load from                                             the cPickle). Once saved, the object can be loaded with                                             load_chromosome.
 
       - `set_max_tad_size <http://3dgenomes.github.io/tadbit/reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.set_max_tad_size>`_: Change the maximum size allowed for TADs. It also applies to the                                             computed experiments.
+
+      - `tad_density_plot <http://3dgenomes.github.io/tadbit/reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.tad_density_plot>`_ [#first]_: Draw an summary of the TAD found in a given experiment and their density                                             in terms of relative Hi-C interaction count.
 
       - `visualize <http://3dgenomes.github.io/tadbit/reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize>`_ [#first]_: Visualize the matrix of Hi-C interactions of a given experiment
 
