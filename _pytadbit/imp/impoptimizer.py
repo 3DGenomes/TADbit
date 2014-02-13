@@ -48,7 +48,7 @@ class IMPoptimizer(object):
 
 
     def run_grid_search(self, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1),
-                    scale_range=[0.005],
+                    scale_range=[0.01],
                     maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True):
         """
         This function calculates the correlation between the models generated 
@@ -66,7 +66,7 @@ class IMPoptimizer(object):
            used to search for the optimal maximum experimental distance. The 
            last value of the input tuple is the incremental step for maxdist 
            values
-        :param [0.005] scale_range: upper and lower bounds used to search for 
+        :param [0.01] scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
         :param True verbose: print the results to the standard output

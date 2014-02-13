@@ -24,8 +24,6 @@ except ImportError:
     warn('matplotlib not found\n')
 
 
-
-
 def load_chromosome(in_f, fast=2):
     """
     Load a Chromosome object from a file. A Chromosome object can be saved with
@@ -57,7 +55,7 @@ def load_chromosome(in_f, fast=2):
         xpr.conditions  = dico['experiments'][name]['cond']
         xpr.size        = dico['experiments'][name]['size']
         xpr._zeros      = dico['experiments'][name].get('zero', {})
-        try: # new in version post-CSDM13
+        try:  # new in version post-CSDM13
             xpr.identifier  = dico['experiments'][name]['iden']
             xpr.cell_type   = dico['experiments'][name]['cell']
             xpr.exp_type    = dico['experiments'][name]['expt']
@@ -78,7 +76,7 @@ def load_chromosome(in_f, fast=2):
     crm.max_tad_size    = dico['max_tad_size']
     crm.forbidden       = dico['forbidden']
     crm._centromere     = dico['_centromere']
-    try: # new in version post-CSDM13
+    try:  # new in version post-CSDM13
         crm.species         = dico['species']
         crm.assembly        = dico['assembly']
         crm.description     = dico['description']
@@ -177,7 +175,7 @@ class Chromosome(object):
         self.description      = kw_descr
         self.species          = species
         self.assembly         = assembly
-        
+
         self._search_centromere = centromere_search
         if experiment_tads:
             for i, handler in enumerate(experiment_tads or []):
@@ -208,7 +206,7 @@ class Chromosome(object):
         outstr += ('   %-2s alignment%s loaded: ' % (
             len(self.alignment), 's' * (len(self.alignment) > 0)) +
                    ', '.join([a.name for a in self.alignment]) + '\n')
-        try: # new in version post-CSDM13
+        try:  # new in version post-CSDM13
             outstr += '   species         : %s\n' % (self.species or 'UNKNOWN')
             outstr += '   assembly version: %s\n' % (self.assembly or 'UNKNOWN')
             for desc in self.description:
