@@ -636,7 +636,6 @@ class StructuralModels(object):
             plt.show()
 
 
-
     def get_contact_matrix(self, models=None, cluster=None, cutoff=150):
         """
         Returns a matrix with the number of interactions observed below a given

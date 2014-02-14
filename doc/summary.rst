@@ -184,6 +184,8 @@ IMPmodel class
 
       - `objective_function <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.objective_function>`_ [#first]_: This function plots the objective function value per each Monte-Carlo                                             step.
 
+      - persistence_length:                  Calculates the persistence length (Lp) of given section of the model.                                             Persistence length is calculated according to [Bystricky2004] :
+
       - `radius_of_gyration <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration>`_: Calculates the radius of gyration or gyradius of the model                                                                                          Defined as:
 
       - `shortest_axe <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.shortest_axe>`_: Minimum distance between two particles in the model
@@ -346,6 +348,8 @@ Utils tadmaths module
 
    - `calinski_harabasz <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.tadmaths.calinski_harabasz>`_: Implementation of the CH score [CalinskiHarabasz1974], that has shown to be                                             one the most accurate way to compare clustering methods                                             [MilliganCooper1985] [Tibshirani2001].                                                                                          The CH score is:
 
+   - newton_raphson:                         Newton-Raphson method as defined in:                                             http://www.maths.tcd.ie/~ryan/TeachingArchive/161/teaching/newton-raphson.c.html                                             used to search for the persistence length of a given model.
+
 Interpolate class
 +++++++++++++++++
                       simple linear interpolation
@@ -359,11 +363,11 @@ Utils three_dim_stats module
 
    - `generate_circle_points <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points>`_: Returns list of 3d coordinates of points on a circle using the                                             Rodrigues rotation formula.                                                                                          see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*                                             for details
 
+   - mass_center:                            Transforms coordinates according to the center of mass
+
    - rotate_among_y_axis:                    Rotate and object with a list of x, y, z coordinates among its center of                                             mass
 
    - `calc_eqv_rmsd <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd>`_: Calculates the RMSD, dRMSD, the number of equivalent positions and a score                                             combining these three measures. The measure are done between a group of                                             models in a one against all manner.
-
-   - mass_center:                            Transforms coordinates according to the center of mass
 
    - get_center_of_mass:                     get the center of mass of a given object with list of x, y, z coordinates
 
