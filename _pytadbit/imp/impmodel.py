@@ -117,7 +117,8 @@ def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
     return model
 
 
-def load_impmodel_from_xyz_OLD(f_name, rand_init=None, radius=None):
+def load_impmodel_from_xyz_OLD(f_name, rand_init=None, radius=None,
+                               chromosome='UNKNOWN', start=0, resolution=1):
     """
     Loads an IMPmodel object using an xyz file of the form:
 
@@ -145,6 +146,9 @@ def load_impmodel_from_xyz_OLD(f_name, rand_init=None, radius=None):
         model['x'].append(float(xxx))
         model['y'].append(float(yyy))
         model['z'].append(float(zzz))
+    model['description'] = {'chromosome':chromosome,
+                            'start': start, 'resolution': resolution}
+
     return model
 
 
