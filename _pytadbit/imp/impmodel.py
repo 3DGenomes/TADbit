@@ -57,7 +57,7 @@ def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
 
     if not rand_init:
         try:
-            rand_init = int(f_name.split('.')[-2])
+            rand_init = str(int(f_name.split('.')[-2]))
         except:
             rand_init = None
     model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
@@ -100,7 +100,7 @@ def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
     """
     if not rand_init:
         try:
-            rand_init = int(f_name.split('.')[-2])
+            rand_init = str(int(f_name.split('.')[-2]))
         except:
             rand_init = None
     model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
@@ -137,7 +137,7 @@ def load_impmodel_from_xyz_OLD(f_name, rand_init=None, radius=None,
     """
     if not rand_init:
         try:
-            rand_init = int(f_name.split('.')[-2])
+            rand_init = str(int(f_name.split('.')[-2]))
         except:
             rand_init = None
     model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),

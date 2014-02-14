@@ -94,7 +94,6 @@ class StructuralModels(object):
 
     def __getitem__(self, nam):
         if type(nam) == str:
-            nam = int(nam)
             for m in self.__models:
                 if self.__models[m]['rand_init'] == nam:
                     return self.__models[m]
@@ -344,7 +343,7 @@ class StructuralModels(object):
                 self.clusters[cluster] = []
                 for model in clusters[cluster]:
                     self[model]['cluster'] = cluster
-                    self.clusters[cluster].append(self[model]['rand_init'])
+                    self.clusters[cluster].append(str(self[model]['rand_init']))
                 self.clusters[cluster].sort(
                     key=lambda x: self[str(x)]['objfun'])
         else:
@@ -375,7 +374,8 @@ class StructuralModels(object):
                         model = int(model.split('_')[1])
                         if not external:
                             self[model]['cluster'] = cluster + 1
-                        clusters[cluster + 1].append(self[model]['rand_init'])
+                        clusters[cluster + 1].append(
+                            str(self[model]['rand_init']))
                     clusters[cluster + 1].sort(
                         key=lambda x: self[str(x)]['objfun'])
             if external:

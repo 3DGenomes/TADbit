@@ -354,7 +354,7 @@ class TestTadbit(unittest.TestCase):
         # get best correlations
         config = result.get_best_parameters_dict()
         wanted = {'maxdist': 500.0, 'upfreq': 0.0, 'kforce': 5,
-                  'reference': '', 'lowfreq': -0.1, 'scale': 0.005}
+                  'reference': '', 'lowfreq': -0.1, 'scale': 0.01}
         self.assertEqual([round(i, 4) for i in config.values()if not type(i) is str],
                          [round(i, 4) for i in wanted.values()if not type(i) is str])
         if CHKTIME:
@@ -382,7 +382,7 @@ class TestTadbit(unittest.TestCase):
         models = exp.model_region(51, 71, n_models=110, n_keep=25,
                                   n_cpus=4,
                                   config={'kforce': 5, 'maxdist': 500,
-                                          'scale': 0.005,
+                                          'scale': 0.01,
                                           'upfreq': 1.0, 'lowfreq': -0.6})
         models.save_models('models.pick')
         

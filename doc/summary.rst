@@ -184,7 +184,7 @@ IMPmodel class
 
       - `objective_function <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.objective_function>`_ [#first]_: This function plots the objective function value per each Monte-Carlo                                             step.
 
-      - persistence_length:                  Calculates the persistence length (Lp) of given section of the model.                                             Persistence length is calculated according to [Bystricky2004] :
+      - `persistence_length <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.persistence_length>`_: Calculates the persistence length (Lp) of given section of the model.                                             Persistence length is calculated according to [Bystricky2004] :
 
       - `radius_of_gyration <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration>`_: Calculates the radius of gyration or gyradius of the model                                                                                          Defined as:
 
