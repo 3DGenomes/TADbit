@@ -87,11 +87,11 @@
 # SPECIES         : None
 # CELL TYPE       : None
 # EXPERIMENT TYPE : Hi-C
-# RESOLUTION      : 20000
+# RESOLUTION      : 10000
 # ASSEMBLY        : None
-# CHROMOSOME      : Test Chromosome
-# START           : 50
-# END             : 70
+# CHROMOSOME      : 19
+# START           : 1
+# END             : 50
 1  19:1-10000        44.847     412.828    -162.673
 2  19:10001-20000   -55.574     396.869    -129.782</pre>
 </div>
@@ -358,6 +358,37 @@ appearance</li>
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 </ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.imp.impmodel.IMPmodel.persistence_length">
+<tt class="descname">persistence_length</tt><big>(</big><em>start=1</em>, <em>end=None</em>, <em>return_guess=False</em><big>)</big><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.persistence_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the persistence length (Lp) of given section of the model.
+Persistence length is calculated according to <a class="reference internal" href="../biblio.html#bystricky2004" id="id1">[Bystricky2004]</a> :</p>
+<div class="math">
+\[\begin{split}&lt;r^2&gt; = 2 \times Lp^2 \times (\frac{Lc}{Lp} - 1 + e^{\frac{-Lc}{Lp}})\end{split}\]</div>
+<p>with the contour length as <span class="math">\(Lc = \frac{d}{c}\)</span> where <span class="math">\(d\)</span> is
+the genomic dstance in bp and <span class="math">\(c\)</span> the linear mass density of the
+chromatin (in bp/nm).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>start</strong> (<em>1</em>) &#8211; start particle from which to calculate the persistence
+length</li>
+<li><strong>end</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; end particle from which to calculate the persistence
+length. Uses the last particle by default</li>
+<li><strong>return_guess</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; Computes persistence length using the
+approximation <span class="math">\(Lp=\frac{Lc}{Lp}\)</span></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">persistence length, or 2 times the Kuhn length</p>
 </td>
 </tr>
 </tbody>
@@ -678,7 +709,7 @@ the file has been written</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 11, 2014.
+      Last updated on Feb 14, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
