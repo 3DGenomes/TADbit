@@ -11,6 +11,7 @@ from pytadbit.utils.three_dim_stats import fast_square_distance
 from pytadbit.utils.three_dim_stats import build_mesh
 from pytadbit.utils.extraviews      import tad_coloring
 from pytadbit.utils.extraviews      import tad_border_coloring
+from pytadbit.utils.tadmaths        import newton_raphson
 from scipy.interpolate              import spline
 from numpy                          import linspace
 from warnings                       import warn
@@ -82,11 +83,11 @@ def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
           # SPECIES         : None
           # CELL TYPE       : None
           # EXPERIMENT TYPE : Hi-C
-          # RESOLUTION      : 20000
+          # RESOLUTION      : 10000
           # ASSEMBLY        : None
-          # CHROMOSOME      : Test Chromosome
-          # START           : 50
-          # END             : 70
+          # CHROMOSOME      : 19
+          # START           : 1
+          # END             : 50
           1  19:1-10000        44.847     412.828    -162.673
           2  19:10001-20000   -55.574     396.869    -129.782
 
@@ -267,6 +268,22 @@ class IMPmodel(dict):
                     (self['z'][part1-1] - self['z'][part2-1])**2)
 
 
+    def _square_distance(self, part1, part2):
+        """
+        Calculates the square istance between one point of the model and an
+        external coordinate
+        
+        :param part1: index of a particle in the model
+        :param part2: index of a particle in the model
+
+        :returns: distance between one point of the model and an external
+           coordinate
+        """
+        return ((self['x'][part1-1] - self['x'][part2-1])**2 +
+                (self['y'][part1-1] - self['y'][part2-1])**2 +
+                (self['z'][part1-1] - self['z'][part2-1])**2)
+
+
     def _square_distance_to(self, part1, part2):
         """
         :param part1: index of a particle in the model
@@ -423,6 +440,27 @@ class IMPmodel(dict):
             if impossibles == 100:
                 inaccessibles.append(i + 1)
         return inaccessibles
+
+
+    def persistence_length(self, start=1, end=None, return_guess=False):
+        """
+        Calculates the persistence length of given section of the model
+
+        :param 1 start:
+        :param None end:
+        :param False return_guess:
+
+        :returns: 2 times the Kuhn length
+        """
+        clength = float(self.contour())
+        end = end or len(self)
+        sq_length = float(self._square_distance(start, end))
+        
+        guess = sq_length / clength
+        if return_guess:
+            return guess # incredible!
+        kuhn = newton_raphson(guess, clength, sq_length)
+        return 2 * kuhn
 
 
     def accessible_surface(self, radius, nump=100, superradius=200,

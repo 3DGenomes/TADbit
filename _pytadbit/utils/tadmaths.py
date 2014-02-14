@@ -6,8 +6,38 @@
 
 from bisect    import bisect_left
 from itertools import combinations
-from math      import log10
+from math      import log10, exp
 import numpy as np
+
+
+def newton_raphson (guess, contour, sq_length, jmax=100, xacc=1e-12):
+    """
+    Newton-Raphson method as defined in:
+    http://www.maths.tcd.ie/~ryan/TeachingArchive/161/teaching/newton-raphson.c.html
+    used to search for the persistence length of a given model.
+    
+    :param guess: starting value
+    :param contour: of the model
+    :param sq_length: square of the distance between first and last particle
+    :param 100 jmax: number of tries
+    :param 1e-12 xacc: precision of the optimization
+
+    :returns: persistence length
+    """
+    for _ in xrange(1, jmax):
+        contour_guess = contour / guess
+        expcx = exp(-contour_guess) - 1
+        # function
+        fx = 2 * pow(guess, 2) * (contour_guess + expcx) - sq_length
+        # derivative
+        df = 2 * contour * expcx + 4 * guess * (expcx + contour_guess)
+
+        dx = -fx / df
+        if abs(dx) < xacc:
+            # print ("found root after %d attempts, at %f\n" % (j, x))
+            return guess
+        guess += dx
+    raise Exception("ERROR: exceeded max tries no root\n")
 
 
 class Interpolate(object):
