@@ -97,6 +97,9 @@ def get_options():
                       default='./',
                       help='''[%default] path to out file where converted TADbit
                       chromosome(s) will be stored''')
+    parser.add_option('--log', dest='log', metavar="PATH",
+                      default='',
+                      help='''[%default] path to log file.''')
     parser.add_option('--res', dest='res',
                       default=None,
                       help='''Wanted resolution for the detection of TADs (i.e.:

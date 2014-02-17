@@ -49,11 +49,11 @@ def load_genome(genome_path, res=None, verbose=False):
     """
     ref_genome = {}
     for crm in listdir(genome_path):
-        crm_path = genome_path + crm + '/'
+        crm_path = os.path.join(genome_path, crm)
         if not isdir(crm_path):
             continue
         for crm_fh in listdir(crm_path):
-            crm_pik = crm_path + crm_fh
+            crm_pik = os.path.join(crm_path, crm_fh)
             if not check_pik(crm_pik):
                 continue
             if crm in ref_genome:
@@ -192,6 +192,7 @@ def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
         return 'Region %s:%s-%s not found' % (crm, beg, end)
     
     if not resp.status == 200:
+        jsonel = ''
         try:
             jsonel = json.loads(content)['error']
             if re.findall('greater than ([0-9]+) for ',
@@ -203,7 +204,7 @@ def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
             print str(e)
             print content
             print "Invalid response: ", resp.status
-        raise Exception
+        raise Exception(jsonel)
     try:
         map_list = json.loads(content)['mappings']
     except KeyError:
@@ -253,7 +254,7 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                                 'chr': None, 'start':None, 'end': None}
                     break
             except Exception, e:
-                print str(e)
+                print e.message
                 print '\n... reconnecting (mapping)...'
                 print ' ' * ((i%50) + 9 + (i%50)/10),
                 sleep(1)
@@ -305,6 +306,7 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                         # per second allowed by Ensembl.
         t0 = time()
         for i, tad in enumerate(exp.tads.values()):
+            trace.setdefault(crm, {})
             if not tad['end'] in trace[crm]:
                 # MAP
                 coords = map_tad(i, tad, crm_name, exp.resolution,
@@ -312,7 +314,7 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                                  trace=trace, **kwargs)
                 connections += synteny + mapping
                 if connections >= 4 :
-                    to_sleep = .8 - min(0.8, time() - t0)
+                    to_sleep = 0.9 - min(0.9, time() - t0)
                     sleep(to_sleep)
                     connections = 0
                     t0 = time()
@@ -390,18 +392,24 @@ def remap_genome(genome, original_assembly, target_assembly,
         print '\n   Chromosome:', crm
         # remap and syntenic region
         if original_assembly:
-            print '\n     remapping from %s to %s:' % (
-                original_assembly, target_assembly)
-            print '        and searching syntenic regions from %s to %s' %(
-                original_species.capitalize().replace('_', ' '),
-                target_species.capitalize().replace('_', ' '))
+            if target_assembly:
+                print '\n     remapping from %s to %s:' % (
+                    original_assembly, target_assembly)
+            if target_species:
+                print '        and searching syntenic regions from %s to %s' %(
+                    original_species.capitalize().replace('_', ' '),
+                    target_species.capitalize().replace('_', ' '))
             convert_chromosome(genome[crm], new_genome, original_species,
                                from_map=original_assembly,
                                to_map=target_assembly,
                                to_species=target_species,
-                               synteny=True, mapping=True, trace=trace)
+                               synteny=True if target_species  else False,
+                               mapping=True if target_assembly else False,
+                               trace=trace)
         if write_log:
             log = open(write_log, 'w')
+        else:
+            log = sys.stdout
         for t in sorted(trace[crm]):
             try:
                 log.write('%4s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s\n' %(
