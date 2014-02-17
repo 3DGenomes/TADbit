@@ -294,41 +294,40 @@ class Alignment(object):
         experiments = self.__experiments
 
         maxres = max([e.resolution for e in experiments])
-        facts = [maxres/e.resolution for e in experiments]
+        facts = [maxres / e.resolution for e in experiments]
         
 
         siz = experiments[0].size
         if focus:
-            figsiz = 4 + (focus[1] - focus[0])/30
+            figsiz = 4 + (focus[1] - focus[0]) / 30
         else:
-            figsiz = 4 + (siz)/30
+            figsiz = 4 + siz / 30
         fig, axes = plt.subplots(nrows=len(experiments),
                                  sharex=True, sharey=True,
                                  figsize=(figsiz, 1 + len(experiments) * 1.8))
         fig.subplots_adjust(hspace=0)
-
-        zsin = sin(linspace(0, pi))
-        ellipse = lambda h : h * zsin
 
         maxys = []
         for iex, xpr in enumerate(experiments):
             if not xpr.name in self:
                 continue
             _tad_density_plot(xpr, maxys=maxys, normalized=normalized,
-                              fact_res=facts[iex], axe=axes[iex], extras=extras,
-                              shape=shape)
+                              fact_res=facts[iex], axe=axes[iex],
+                              extras=extras, shape=shape)
         # draw alignment columns
         end = xpr.tads[max(xpr.tads)]['end']
         maxy = (ymax or max(maxys)) + 0.4
         maxxs = []
         for iex in range(len(experiments)):
             starting = focus[0] if focus else 1
-            ending = focus[1] if focus else experiments[iex].tads.values()[-1]['end']
+            ending = (focus[1] if focus
+                      else experiments[iex].tads.values()[-1]['end'])
             axes[iex].hlines(1, 1, end, 'k', lw=1.5)
             axes[iex].set_ylim((0, maxy))
             maxxs.append(ending / facts[iex])
             axes[iex].text(starting + 1, float(maxy) / 20,
-                           experiments[iex].name, {'ha':'left', 'va':'bottom'})
+                           experiments[iex].name, {'ha': 'left',
+                                                   'va': 'bottom'})
             axes[iex].set_yticks([float(i) / 2
                                   for i in range(1, int(maxy + .5) * 2)])
             if ymax:
