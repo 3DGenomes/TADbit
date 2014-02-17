@@ -25,6 +25,9 @@ GOOD_CRM = re.compile("^[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$")
 
 
 def decode_resolution(res):
+    """
+    Convertion from human to machine readable resolution
+    """
     if 'Kb' in res:
         mult = 1000
     elif 'Mb' in res:
@@ -35,6 +38,16 @@ def decode_resolution(res):
 
 
 def load_genome(genome_path, res=None, verbose=False):
+    """
+    Search, at a given path, for chromosome folders containing TADbit chromosome
+    objects saved as files.
+
+    :param genome_path: Path where to search for TADbit chomosomes
+    :param None res: Resolution at which should be saved chromosomes
+    :param False verbose:
+
+    :returns: a dictionary with all TADbit chromosomes found
+    """
     ref_genome = {}
     for crm in listdir(genome_path):
         crm_path = genome_path + crm + '/'
@@ -101,7 +114,7 @@ def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
                      to_species='mus_musculus', alignment='LASTZ_NET',
                      server="http://beta.rest.ensembl.org", **kwargs):
     """
-    Given a seed genomic segment find the coordinate of its syntenis segment on
+    Given a seed genomic segment find the coordinate of its syntenic segment on
     a given target species.
     
     :param crm: chromosome name
@@ -152,21 +165,20 @@ def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
 def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
                   server="http://beta.rest.ensembl.org", **kwargs):
     """
-    Given a seed genomic segment find the coordinate of its syntenis segment on
-    a given target species.
+    Given a seed genomic segment find its coordinates in a different assembly
+    version.
     
     :param crm: chromosome name
     :param beg: region start position
     :param end: region end position
-    :param seed_spe: name of the seed species (from which com the original
+    :param species: name of the seed species (from which com the original
        coordinates). Scientific name with underscore instead of spaces
-    :param targ_spe: name of the target species
-    :param 'LASTZ_NET' alignment: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
-       for more explanations
+    :param None from_map: name of the original assembly version
+    :param None to_map: name of the target assembly version
     :param 'http://beta.rest.ensembl.org' server: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
        for more explanations
 
-    :returns: a dict with the coordinates of the syntenic segment found (chr,
+    :returns: a dict with the coordinates of the remapped segment found (chr,
        start, end, strand)
        
     """
@@ -205,7 +217,9 @@ def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
 def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
             trace=None, **kwargs):
     """
-    TODO: do synteny search right after mapping, in order to keep the trace
+    Converts coordinates of 1 TAD border in a given chromosome. Convertion in
+    terms of change in assembly version, or in terms of syntenic regions between
+    species (or both).
     """
     beg = int(tad['end']       * resolution)
     end = int((tad['end'] + 1) * resolution)
@@ -278,6 +292,11 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
 
 def convert_chromosome(crm, new_genome, from_species, synteny=True,
                        mapping=True, trace=None, **kwargs):
+    """
+    Converts coordinates of TAD borders in a given chromosome. Convertion in
+    terms of change in assembly version, or in terms of syntenic regions between
+    species (or both).
+    """
     new_crm = Chromosome(crm.name, species=crm.species, assembly=crm.assembly)
     log = []
     crm_name = crm.name.replace('chr', '').replace('crm', '')
@@ -345,6 +364,101 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
     return new_crm
 
 
+def remap_genome(genome, original_assembly, target_assembly,
+                 original_species, target_species, write_log=False):
+    """
+    Given a set of chromosomes from one species with a given assembly version.
+    Remap the coordinates of TAD borders to a new assembly and/or to a new
+    species.
+
+    :para genome: a dict containing all chromosomes computed
+    :param original_assembly: i.e.: 'NCBI36'
+    :param target_assembly:  i.e.: 'GRCh37', if None, no remapping will be done
+    :param original_species: i.e.: 'Homo_sapiens'
+    :param target_species: i.e.: 'mus_musculus', if None, no search for syntenic
+       regions will be done
+    :param False write_log: path where to write a log file
+
+    :returns: new genome dictionary with remapped TAD borders, and a trace
+       dictionnary that allows to reconstruct the process of remapping and finding
+       syntenic regions.
+    """
+    global HTTP
+    HTTP = httplib2.Http(".cache")
+    trace = {}
+
+    new_genome = {}
+    for crm in genome:
+        print '\n   Chromosome:', crm
+        # remap and syntenic region
+        if original_assembly:
+            print '\n     remapping from %s to %s:' % (
+                original_assembly, target_assembly)
+            print '        and searching syntenic regions from %s to %s' %(
+                original_species.capitalize().replace('_', ' '),
+                target_species.capitalize().replace('_', ' '))
+            convert_chromosome(genome[crm], new_genome, original_species,
+                               from_map=original_assembly,
+                               to_map=target_assembly,
+                               to_species=target_species,
+                               synteny=True, mapping=True, trace=trace)
+        if write_log:
+            log = open(write_log, 'w')
+        for t in sorted(trace[crm]):
+            try:
+                log.write('%4s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s\n' %(
+                    int(t),
+                    trace[crm][t]['from']['crm']       , trace[crm][t]['from']['start']       , trace[crm][t]['from']['end'],
+                    trace[crm][t]['mapped to']['chr']  , trace[crm][t]['mapped to']['start']  , trace[crm][t]['mapped to']['end'],
+                    trace[crm][t]['syntenic at']['chr'], trace[crm][t]['syntenic at']['start'], trace[crm][t]['syntenic at']['end'],
+                    ))
+            except KeyError:
+                log.write('%4s : %2s:%9s-%9s -> %22s -> %22s\n' %(
+                    int(t),
+                    trace[crm][t]['from']['crm']       , trace[crm][t]['from']['start']       , trace[crm][t]['from']['end'],
+                    'None',
+                    'None',
+                    ))
+    return new_genome, trace
+
+
+def save_new_genome(genome, trace, check=False, target_species=None, rootdir='./'):
+    """
+    Save new chromosomes with remapped or check TAD borders into a new folder.
+
+    :para genome: a dict containing all chromosomes computed
+    :param trace: dictionary containing a trace of all mapped TAD boundaries
+    :param False check: if no remapping have to be done (only check TAD borders)
+    :param None target_species: name of the target species, if None, it is
+       assumed, that only a remapping has been done.
+    :param './' rootdir: path where to write directories for remapped/checked
+       chromosomes.
+    """
+    for crm in genome:
+        new_crm = genome[crm]
+        for exp in new_crm.experiments:
+            if check:
+                tadcnt = 0
+                new_tads = {}
+                for tad in exp.tads:
+                    cond = 'syntenic at' if target_species else 'mapped to'
+                    if trace[crm][exp.tads[tad]['end']][cond]['chr'] is None:
+                        continue
+                    new_tads[tadcnt] = exp.tads[tad]
+                    tadcnt += 1
+            else:
+                tads, norm = parse_tads(exp._tads)
+                last = max(tads.keys())
+                if not exp.size:
+                    exp.size = tads[last]['end']
+                exp.norm  = norm
+            exp.tads = new_tads
+        crmdir = os.path.join(rootdir, crm)
+        if not os.path.exists(crmdir):
+            os.mkdir(crmdir)
+        new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
+    
+
 def main():
     """
     main function
@@ -356,89 +470,28 @@ def main():
     if opts.verbose:
         print '\nLoad %s chromosomes from \n%s:' % (
             opts.original_species.capitalize().replace('_', ' ') + "'s",
-            ' '*10 + opts.genome)
-    genome = load_genome(opts.genome, res=opts.res, verbose=opts.verbose
-)
+            ' ' * 10 + opts.genome)
+    genome = load_genome(opts.genome, res=opts.res, verbose=opts.verbose)
+
     # remap TADs
     if opts.verbose:
         print '\nCreating new TADbit chromosomes with new coordinates\n'
-    new_genome = {}
-    trace = {}
-    global HTTP
-    HTTP = httplib2.Http(".cache")
 
     # create directory for output
     rootdir = os.path.abspath(opts.out_path)
     if not os.path.exists(rootdir):
         os.mkdir(rootdir)
-    
-    # start iteration over chromosomes
-    for crm in genome:
-        print '\n   Chromosome:', crm
-        new_crm = None
-        # remap and syntenic region
-        if opts.original_assembly:
-            print '\n     remapping from %s to %s:' % (
-                opts.original_assembly, opts.target_assembly)
-            print '        and searching syntenic regions from %s to %s' %(
-                opts.original_species.capitalize().replace('_', ' '),
-                opts.target_species.capitalize().replace('_', ' '))
-            convert_chromosome(genome[crm], new_genome, opts.original_species,
-                               from_map=opts.original_assembly,
-                               to_map=opts.target_assembly,
-                               to_species=opts.target_species,
-                               synteny=True, mapping=True, trace=trace)
-        if opts.log:
-            log = open
-        for t in sorted(trace[crm]):
-            try:
-                print '%4s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s' %(
-                    int(t),
-                    trace[crm][t]['from']['crm']       , trace[crm][t]['from']['start']       , trace[crm][t]['from']['end'],
-                    trace[crm][t]['mapped to']['chr']  , trace[crm][t]['mapped to']['start']  , trace[crm][t]['mapped to']['end'],
-                    trace[crm][t]['syntenic at']['chr'], trace[crm][t]['syntenic at']['start'], trace[crm][t]['syntenic at']['end'],
-                    )
-            except KeyError:
-                print '%4s : %2s:%9s-%9s -> %22s -> %22s' %(
-                    int(t),
-                    trace[crm][t]['from']['crm']       , trace[crm][t]['from']['start']       , trace[crm][t]['from']['end'],
-                    'None',
-                    'None',
-                    )
+
+    # remap TAD coordinates of all chromosomes
+    new_genome, trace = remap_genome(genome, opts.original_assembly,
+                                     opts.target_assembly,
+                                     opts.original_species,
+                                     opts.target_species, opts.log)
 
     # save new chromosomes
-    if opts.check:
-        for crm in genome:
-            new_crm = genome[crm]
-            for exp in new_crm.experiments:
-                tadcnt = 0
-                new_tads = {}
-                for tad in exp.tads:
-                    cond = 'syntenic at' if opts.target_species else 'mapped to'
-                    if trace[crm][exp.tads[tad]['end']][cond]['chr'] is None:
-                        continue
-                    new_tads[tadcnt] = exp.tads[tad]
-                    tadcnt += 1
-                exp.tads = new_tads
-            crmdir = os.path.join(rootdir, crm)
-            if not os.path.exists(crmdir):
-                os.mkdir(crmdir)
-            new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
-    else:
-        for crm in new_genome:
-            new_crm = new_genome[crm]
-            for exp in new_crm.experiments:
-                tads, norm = parse_tads(exp._tads)
-                last = max(tads.keys())
-                if not exp.size:
-                    exp.size = tads[last]['end']
-                exp.tads = tads
-                exp.norm  = norm
-            crmdir = os.path.join(rootdir, crm)
-            if not os.path.exists(crmdir):
-                os.mkdir(crmdir)
-            new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
-
+    save_new_genome(genome if opts.check else new_genome, trace, opts.check,
+                    opts.target_species, rootdir)
+    
 
 def get_options():
     """

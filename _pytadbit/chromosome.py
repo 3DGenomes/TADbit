@@ -19,7 +19,7 @@ from numpy                             import log2
 from random                            import random
 
 try:
-    from matplotlib import pyplot as plt
+    import matplotlib.pyplot as plt
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -84,7 +84,7 @@ def load_chromosome(in_f, fast=2):
         crm.species         = None
         crm.assembly        = None
         crm.description     = {}
-    if type(dico['experiments'][name]['hi-c']) == str or fast!= int(2):
+    if type(dico['experiments'][name]['hi-c']) == str or fast != int(2):
         try:
             dicp = load(open(in_f + '_hic'))
         except IOError:
@@ -192,14 +192,14 @@ class Chromosome(object):
                 except:
                     pass
                 if type(handler) == Experiment:
-                    name = name or handler.name
+                    handler.name = name or handler.name
                     self.experiments.append(handler)
                 else:
                     self.add_experiment(name, experiment_resolutions[i],
                                         hic_data=handler, parser=parser)
 
     def __repr__(self):
-        outstr = 'Chromosome %s:\n' % (self.name)
+        outstr = 'Chromosome %s:\n' % self.name
         outstr += ('   %-2s experiment%s loaded: ' % (
             len(self.experiments), 's' * (len(self.experiments) > 0)) +
                    ', '.join([e.name for e in self.experiments]) + '\n')
@@ -282,9 +282,8 @@ class Chromosome(object):
         """
         while exists(out_f) and not force:
             out_f += '_'
-        dico = {}
-        dico['experiments'] = {}
-        dico['experiment_order'] = [xpr.name for xpr in self.experiments]
+        dico = {'experiments': {},
+                'experiment_order': [xpr.name for xpr in self.experiments]}
         if divide:
             dicp = {}
         for xpr in self.experiments:
