@@ -781,8 +781,8 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         except ZeroDivisionError:
             height = 0.
         maxys.append(height)
-        start = float(start) / fact_res # facts[iex]
-        end   = float(end) / fact_res #facts[iex]
+        start = float(start) / fact_res  # facts[iex]
+        end   = float(end) / fact_res  # facts[iex]
         axe.fill([start] + list(np.linspace(start, end)) + [end], shape(height),
                  alpha=.8 if height > 1 else 0.4,
                  facecolor='grey', edgecolor='grey')
@@ -803,6 +803,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
     axe.minorticks_on()
     axe.xaxis.set_minor_locator(MultipleLocator(10))
+    axe.hlines(1, 1, end, 'k', lw=1.5)
     if show:
         tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
         tit2 = axe.set_title("Alignment column number")

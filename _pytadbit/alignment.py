@@ -332,12 +332,12 @@ class Alignment(object):
                                   for i in range(1, int(maxy + .5) * 2)])
             if ymax:
                 axes[iex].set_ylim((0, ymax))
-        axes[iex].set_xlim((starting, max(maxxs)))
+        # axes[iex].set_xlim((starting, max(maxxs)))
         # 
-        pos = {'ha':'center', 'va':'bottom'}
+        pos = {'ha': 'center', 'va': 'bottom'}
         for i, col in enumerate(self.itercolumns()):
             ends = sorted([(t['end'], j) for j, t in enumerate(col) if t['end']])
-            beg = (ends[0 ][0] + 0.9) / facts[ends[0 ][1]]
+            beg = (ends[0][0] + 0.9) / facts[ends[0][1]]
             end = (ends[-1][0] + 1.1) / facts[ends[-1][1]]
             if focus:
                 if beg < focus[0] or end > focus[1]:

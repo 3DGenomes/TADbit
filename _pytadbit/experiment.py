@@ -318,8 +318,8 @@ class Experiment(object):
 
         .. math::
 
-          weight_{(I,J)} = \\frac{\\sum^N_{i=0}(matrix(i,J)) \\times \\sum^N_{j=0}(matrix(I,j))}
-                                 {\\sum^N_{j=0}\\sum^N_{i=0}(matrix(i,j))}
+          weight_{(I,J)} = \\frac{\\sum^N_{j=0}\\sum^N_{i=0}(matrix(i,j))}
+                                 {\\sum^N_{i=0}(matrix(i,J)) \\times \\sum^N_{j=0}(matrix(I,j))}
  
         with N being the number or rows/columns of the Hi-C matrix in both
         cases.
