@@ -209,7 +209,7 @@ IMPoptimizer class
 
       - `load_from_file <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file>`_: Loads the optimized parameters from a file generated with the function:                                             pytadbit.imp.impoptimizer.IMPoptimizer.write_result.                                             This function does not overwrite the parameters that were already                                             loaded or calculated.
 
-      - `plot_2d <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d>`_: A grid of heatmaps representing the result of the optimization.
+      - `plot_2d <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d>`_ [#first]_: A grid of heatmaps representing the result of the optimization.
 
       - `plot_3d <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d>`_: A grid of heatmaps representing the result of the optimization.
 
@@ -316,7 +316,7 @@ Utils extraviews module
 
    - `color_residues <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.extraviews.color_residues>`_: Function to color residues from blue to red.
 
-   - `plot_2d_optimization_result <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.extraviews.plot_2d_optimization_result>`_: A grid of heatmaps representing the result of the optimization.
+   - `plot_2d_optimization_result <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.extraviews.plot_2d_optimization_result>`_ [#first]_: A grid of heatmaps representing the result of the optimization.
 
    - colorize:                               Colorize with ANSII colors a string for printing in shell. this acording to                                             a given number between 0 and 10
 

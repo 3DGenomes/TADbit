@@ -190,7 +190,7 @@ class IMPoptimizer(object):
 
 
     def plot_2d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                show_best=0, skip=None):
+                show_best=0, skip=None, savefig=None):
         """
         A grid of heatmaps representing the result of the optimization.
 
@@ -201,6 +201,9 @@ class IMPoptimizer(object):
            the plot
         :param None skip: if passed (as a dictionary), fix a given axe,
            e.g.: {'scale': 0.001, 'maxdist': 500}
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
 
         """
         results = self._result_to_array()
@@ -209,8 +212,8 @@ class IMPoptimizer(object):
                                       [float(i) for i in self.maxdist_range],
                                       [float(i) for i in self.upfreq_range],
                                       [float(i) for i in self.lowfreq_range]),
-                                     results), axes=axes,
-                                    show_best=show_best, skip=skip)
+                                     results), axes=axes, show_best=show_best,
+                                    skip=skip, savefig=savefig)
 
 
     def plot_3d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq')):

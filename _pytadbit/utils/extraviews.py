@@ -537,7 +537,7 @@ def my_round(num, val):
 
 
 def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                                show_best=0, skip=None):
+                                show_best=0, skip=None, savefig=None):
     """
     A grid of heatmaps representing the result of the optimization.
 
@@ -548,7 +548,9 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     :param 0 show_best: number of best correlation value to identifie.
     :param None skip: a dict can be passed here in order to fix a given axe,
        e.g.: {'scale': 0.001, 'maxdist': 500}
-
+    :param None savefig: path to a file where to save the image generated;
+       if None, the image will be shown using matplotlib GUI (the extension
+       of the file name will determine the desired format).
     """
 
     from mpl_toolkits.axes_grid1 import AxesGrid
@@ -666,7 +668,10 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                                                      axes[3], axes[2])
     fig.suptitle(tit % tuple([my_round(i, 3) for i in sort_result[0][1:]]),
                  size='large')
-    plt.show()
+    if savefig:
+        tadbit_savefig(savefig)
+    else:
+        plt.show()
 
 
 def compare_models(sm1, sm2, cutoff=150,
