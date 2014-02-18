@@ -117,7 +117,8 @@ class StructuralModels(object):
 
 
     def __repr__(self):
-        return ('StructuralModels with %s models (objective function range: %s - %s)\n' +
+        return ('StructuralModels with %s models ' +
+                '(objective function range: %s - %s)\n' +
                 '   (corresponding to the best models out of %s models).\n' +
                 '  IMP modeling used this parameters:\n' +
                 '%s\n' +
@@ -133,7 +134,7 @@ class StructuralModels(object):
 
     def align_models(self, models=None, cluster=None, in_place=False):
         """
-        Three-dimentional aligner for structural models.
+        Three-dimensional aligner for structural models.
         
         :param None models: if None (default) the average model will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -149,7 +150,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = self.__models.keys()
         firstx, firsty, firstz = (self[models[0]]['x'], self[models[0]]['y'],
                                   self[models[0]]['z'])
         for sec in models[1:]:
@@ -758,15 +759,15 @@ class StructuralModels(object):
             for j in xrange(1, n_best_clusters):
                 if j < i+1:
                     continue
-                axes[i+add,j-1].set_visible(True)
-                axes[i+add,j-1].set(adjustable='box-forced', aspect=1)
+                axes[i+add, j-1].set_visible(True)
+                axes[i+add, j-1].set(adjustable='box-forced', aspect=1)
                 matrix3 = [[cmatrices[i][k][l] - cmatrices[j][k][l]
                             for l in xrange(self.nloci)]
                            for k in xrange(self.nloci)]
-                ims = axes[i+add,j-1].imshow(matrix3, origin='lower', cmap=bwr,
-                                         interpolation="nearest", vmin=-1, vmax=1,
-                                         extent=(0.5, len(matrix3) + 0.5,
-                                                 0.5, len(matrix3) + 0.5))
+                ims = axes[i+add, j-1].imshow(matrix3, origin='lower', cmap=bwr,
+                                          interpolation="nearest", vmin=-1, vmax=1,
+                                          extent=(0.5, len(matrix3) + 0.5,
+                                                  0.5, len(matrix3) + 0.5))
                 axes[i+add, j-1].grid()
                 if not i and not represent_models:
                     axes[i+add,j-1].set_title('Cluster #%s' % (j + 1),
@@ -779,19 +780,19 @@ class StructuralModels(object):
                     for item in axes[i+add,j-1].get_yticklabels():
                         item.set_fontsize(9)
                 if i != j-1:
-                    axes[i+add,j-1].xaxis.set_ticks_position('none')
+                    axes[i+add, j-1].xaxis.set_ticks_position('none')
                 else:
-                    plt.setp(axes[i+add,j-1].get_xticklabels(), visible=True)
+                    plt.setp(axes[i+add, j-1].get_xticklabels(), visible=True)
                     axes[i+add,j-1].xaxis.set_ticks_position('bottom')
-                    for item in axes[i+add,j-1].get_xticklabels():
+                    for item in axes[i+add, j-1].get_xticklabels():
                         item.set_fontsize(9)
                 if j == n_best_clusters - 1 and not represent_models:
-                    axes[i+add,j-1].yaxis.set_label_position('right')
-                    axes[i+add,j-1].set_ylabel('Cluster #%s' % (i + 1),
+                    axes[i+add, j-1].yaxis.set_label_position('right')
+                    axes[i+add, j-1].set_ylabel('Cluster #%s' % (i + 1),
                                                rotation=-90, fontsize='large',
                                                color='red', va='bottom')
-                axes[i+add,j-1].set_xlim((0.5, len(matrix3) + 0.5))
-                axes[i+add,j-1].set_ylim((0.5, len(matrix3) + 0.5))
+                axes[i+add, j-1].set_xlim((0.5, len(matrix3) + 0.5))
+                axes[i+add, j-1].set_ylim((0.5, len(matrix3) + 0.5))
         # new axe for the color bar
         cell = fig.add_axes([0.125, 0.1, 0.01, 0.25])
         cbar = fig.colorbar(ims, cax=cell, cmap=jet)
@@ -818,7 +819,7 @@ class StructuralModels(object):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      i, projection='3d')
                 ax.set_title('Cluster #%s' % (i + 1), color='blue')
-                if represent_models=='centroid':
+                if represent_models == 'centroid':
                     mdl = str(self.centroid_model(
                         models=[m for m in clusters[i+1]]))
                 else:
@@ -1282,9 +1283,9 @@ class StructuralModels(object):
         centroid_model = 0
         if 'centroid' in [show, stress] and len(models) > 1:
             centroid_model = self.centroid_model(models)
-        if stress=='centroid':
+        if stress == 'centroid':
             mdl = centroid_model
-        elif stress=='best':
+        elif stress == 'best':
             mdl = self[sorted(models, key=lambda x:
                               self[x]['objfun'])[0]]['index']
         else:
@@ -1302,16 +1303,17 @@ class StructuralModels(object):
             else:
                 for model in models:
                     model_coords.append((
-                        self[model]['x'], self[model]['y'],self[model]['z']))
+                        self[model]['x'], self[model]['y'], self[model]['z']))
             if show in ['all', 'stressed']:
                 fig = plt.figure()
-                axe = fig.add_subplot(1,1,1, projection='3d')
+                axe = fig.add_subplot(1, 1, 1, projection='3d')
                 for i in models:
-                    if show=='all' or i==mdl or mdl=='all':
-                        plot_3d_model(*model_coords[models.index(i)],
-                                      axe=axe, color=color,
-                                      thin=False if stress=='all' else (i!=mdl),
-                                      **kwargs)
+                    if show == 'all' or i == mdl or mdl == 'all':
+                        plot_3d_model(
+                            *model_coords[models.index(i)],
+                            axe=axe, color=color,
+                            thin=False if stress == 'all' else (i != mdl),
+                            **kwargs)
                 try:
                     axe.set_title('Model %s stressed as %s' % (
                         self[mdl]['rand_init'], stress))
@@ -1320,7 +1322,7 @@ class StructuralModels(object):
             else:
                 sqrmdl = sqrt(len(models))
                 cols = int(round(sqrmdl + (0.0 if int(sqrmdl)==sqrmdl else .5)))
-                rows = int(sqrmdl+.5)
+                rows = int(sqrmdl + .5)
                 fig = plt.figure()
                 for i in range(cols):
                     for j in range(rows):
