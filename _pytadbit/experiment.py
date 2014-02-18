@@ -490,7 +490,7 @@ class Experiment(object):
                                   config=config, experiment=self, coords=coords)
 
 
-    def optimal_imp_parameters(self, start, end, n_models=500, n_keep=100,
+    def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
                                scale_range=[0.01][:],
@@ -500,8 +500,9 @@ class Experiment(object):
         Find the optimal set of parameters to be used for the 3D modeling in
         IMP.
 
-        :param start: first bin to model (bin number)
-        :param end: last bin to model (bin number)
+        :param 1 start: first bin to model (bin number)
+        :param None end: last bin to model (bin number). By default goes to the
+           last bin.
         :param 500 n_models: number of modes to generate
         :param 100 n_keep: number of models used in the final analysis (usually
            the top 20% of the generated models). The models are ranked
@@ -545,7 +546,8 @@ class Experiment(object):
              - the range of lowfreq used
 
         """
-
+        if not end:
+            end = self.size
         optimizer = IMPoptimizer(self, start, end, n_keep=n_keep, cutoff=cutoff,
                                  n_models=n_models, close_bins=close_bins)
         optimizer.run_grid_search(maxdist_range=maxdist_range,

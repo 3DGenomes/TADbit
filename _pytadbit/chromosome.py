@@ -621,9 +621,12 @@ class Chromosome(object):
                                    key=lambda x: int(x['start']))[0 ]['start'])
                 end   = int(sorted(tad,
                                    key=lambda x: int(x['end'  ]))[-1]['end'  ])
-        else:
+        elif xper.tads:
             start = xper.tads[min(xper.tads)]['start'] + 1
             end   = xper.tads[max(xper.tads)]['end'  ] + 1
+        else:
+            start =  1
+            end   = size
         if len(xper.hic_data) > 1:
             hic_data = [sum(i) for i in zip(*xper.hic_data)]
         else:
@@ -641,7 +644,7 @@ class Chromosome(object):
             else:
                 vmin = fun(min(hic_data) or (1 if logarithm else 0))
                 vmax = fun(max(hic_data))
-        if not axe:
+        if axe is None:
             plt.figure(figsize=(8, 6))
             axe = plt.subplot(111)
         if tad or focus:
