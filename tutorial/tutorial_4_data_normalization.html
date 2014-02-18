@@ -117,7 +117,7 @@ This normalization is achieve in two steps, first we generate weight for each pa
 <h3>Calculation of weights<a class="headerlink" href="#calculation-of-weights" title="Permalink to this headline">¶</a></h3>
 <p>Weights are calculated according to this formula (see <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic" title="pytadbit.experiment.Experiment.normalize_hic"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.experiment.Experiment.normalize_hic</span></tt></a>):</p>
 <div class="math">
-\[weight(I, J) = \frac{\sum^N_{i=0}{(matrix(i, J))} \times \sum^N_{j=0}{(matrix(I, j))}}{\sum^N_{i=0}{\sum^N_{j=0}{(matrix(i, j))}}}\]</div>
+\[weight(I, J) = \frac{\sum^N_{i=0}{\sum^N_{j=0}{(matrix(i, j))}}}{\sum^N_{i=0}{(matrix(i, J))} \times \sum^N_{j=0}{(matrix(I, j))}}\]</div>
 <p>&#8220;matrix&#8221;, being our row data (count of interactions), N the number of rows/columns.</p>
 <p>The result is stored in a new matrix, called weight. The values that will be used in the next step are the multiplication of this weights per the raw data.</p>
 <div class="admonition note">
@@ -212,7 +212,7 @@ This normalization is achieve in two steps, first we generate weight for each pa
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 14, 2014.
+      Last updated on Feb 18, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

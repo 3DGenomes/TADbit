@@ -91,7 +91,7 @@ Weights are calculated according to this formula (see :class:`pytadbit.experimen
 
 .. math::
 
-  weight(I, J) = \frac{\sum^N_{i=0}{(matrix(i, J))} \times \sum^N_{j=0}{(matrix(I, j))}}{\sum^N_{i=0}{\sum^N_{j=0}{(matrix(i, j))}}}
+  weight(I, J) = \frac{\sum^N_{i=0}{\sum^N_{j=0}{(matrix(i, j))}}}{\sum^N_{i=0}{(matrix(i, J))} \times \sum^N_{j=0}{(matrix(I, j))}}
 
 
 "matrix", being our row data (count of interactions), N the number of rows/columns.
