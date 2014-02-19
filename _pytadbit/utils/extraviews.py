@@ -352,7 +352,7 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
          * a list of (r, g, b) tuples (as long as the number of particles).
            Each r, g, b between 0 and 1.
     """
-    show=False
+    show = False
     if type(color) is str:
         if color == 'index':
             color = color_residues(x, **kwargs)
@@ -369,14 +369,14 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
         else:
             raise NotImplementedError(('%s type of coloring is not yet ' +
                                        'implemeted\n') % color)
-    elif hasattr(color, '__call__'): # its a function
+    elif hasattr(color, '__call__'):  # its a function
         color = color(x, **kwargs)
     elif type(color) is not list:
         raise TypeError('one of function, list or string is required\n')
     if not axe:
         fig = plt.figure()
-        axe = fig.add_subplot(1,1,1, projection='3d')
-        show=True
+        axe = fig.add_subplot(1, 1, 1, projection='3d')
+        show = True
     if not show_axe:
         axe._axis3don = False
     axe.view_init(elev=elevation, azim=azimuth)

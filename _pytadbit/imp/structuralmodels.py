@@ -117,7 +117,8 @@ class StructuralModels(object):
 
 
     def __repr__(self):
-        return ('StructuralModels with %s models (objective function range: %s - %s)\n' +
+        return ('StructuralModels with %s models ' +
+                '(objective function range: %s - %s)\n' +
                 '   (corresponding to the best models out of %s models).\n' +
                 '  IMP modeling used this parameters:\n' +
                 '%s\n' +
@@ -134,7 +135,7 @@ class StructuralModels(object):
     def align_models(self, models=None, cluster=None, in_place=False,
                      reference_model=None, **kwargs):
         """
-        Three-dimentional aligner for structural models.
+        Three-dimensional aligner for structural models.
         
         :param None models: if None (default) the average model will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -764,15 +765,15 @@ class StructuralModels(object):
             for j in xrange(1, n_best_clusters):
                 if j < i+1:
                     continue
-                axes[i+add,j-1].set_visible(True)
-                axes[i+add,j-1].set(adjustable='box-forced', aspect=1)
+                axes[i+add, j-1].set_visible(True)
+                axes[i+add, j-1].set(adjustable='box-forced', aspect=1)
                 matrix3 = [[cmatrices[i][k][l] - cmatrices[j][k][l]
                             for l in xrange(self.nloci)]
                            for k in xrange(self.nloci)]
-                ims = axes[i+add,j-1].imshow(matrix3, origin='lower', cmap=bwr,
-                                         interpolation="nearest", vmin=-1, vmax=1,
-                                         extent=(0.5, len(matrix3) + 0.5,
-                                                 0.5, len(matrix3) + 0.5))
+                ims = axes[i+add, j-1].imshow(matrix3, origin='lower', cmap=bwr,
+                                          interpolation="nearest", vmin=-1, vmax=1,
+                                          extent=(0.5, len(matrix3) + 0.5,
+                                                  0.5, len(matrix3) + 0.5))
                 axes[i+add, j-1].grid()
                 if not i and not represent_models:
                     axes[i+add,j-1].set_title('Cluster #%s' % (j + 1),
@@ -785,19 +786,19 @@ class StructuralModels(object):
                     for item in axes[i+add,j-1].get_yticklabels():
                         item.set_fontsize(9)
                 if i != j-1:
-                    axes[i+add,j-1].xaxis.set_ticks_position('none')
+                    axes[i+add, j-1].xaxis.set_ticks_position('none')
                 else:
-                    plt.setp(axes[i+add,j-1].get_xticklabels(), visible=True)
+                    plt.setp(axes[i+add, j-1].get_xticklabels(), visible=True)
                     axes[i+add,j-1].xaxis.set_ticks_position('bottom')
-                    for item in axes[i+add,j-1].get_xticklabels():
+                    for item in axes[i+add, j-1].get_xticklabels():
                         item.set_fontsize(9)
                 if j == n_best_clusters - 1 and not represent_models:
-                    axes[i+add,j-1].yaxis.set_label_position('right')
-                    axes[i+add,j-1].set_ylabel('Cluster #%s' % (i + 1),
+                    axes[i+add, j-1].yaxis.set_label_position('right')
+                    axes[i+add, j-1].set_ylabel('Cluster #%s' % (i + 1),
                                                rotation=-90, fontsize='large',
                                                color='red', va='bottom')
-                axes[i+add,j-1].set_xlim((0.5, len(matrix3) + 0.5))
-                axes[i+add,j-1].set_ylim((0.5, len(matrix3) + 0.5))
+                axes[i+add, j-1].set_xlim((0.5, len(matrix3) + 0.5))
+                axes[i+add, j-1].set_ylim((0.5, len(matrix3) + 0.5))
         # new axe for the color bar
         cell = fig.add_axes([0.125, 0.1, 0.01, 0.25])
         cbar = fig.colorbar(ims, cax=cell, cmap=jet)
@@ -824,7 +825,7 @@ class StructuralModels(object):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      i, projection='3d')
                 ax.set_title('Cluster #%s' % (i + 1), color='blue')
-                if represent_models=='centroid':
+                if represent_models == 'centroid':
                     mdl = self[str(self.centroid_model(
                         models=[m for m in clusters[i+1]]))]['index']
                 else:
@@ -1269,6 +1270,7 @@ class StructuralModels(object):
            :func:`pytadbit.utils.extraviews.chimera_view` for other arguments
            to pass to this function. See also coloring function
 
+           
         """
         if models:
             models = [m if type(m) is int else self[m]['index'] for m in models]
@@ -1276,7 +1278,6 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
             models = [m for m in self.__models]
-        print models
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
                   else m for m in models]
         if color in ['tad', 'border'] and not 'tads' in kwargs:
@@ -1289,9 +1290,9 @@ class StructuralModels(object):
         centroid_model = 0
         if 'centroid' in [show, stress] and len(models) > 1:
             centroid_model = self.centroid_model(models)
-        if stress=='centroid':
+        if stress == 'centroid':
             mdl = centroid_model
-        elif stress=='best':
+        elif stress == 'best':
             mdl = self[sorted(models, key=lambda x:
                               self[x]['objfun'])[0]]['index']
         else:
@@ -1739,7 +1740,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = [m for m in self.__models]
+            models = self.__models
         models = [self[mdl] for mdl in models]
         dists = [mdl.distance(part1, part2) for mdl in models]
         if not plot:
