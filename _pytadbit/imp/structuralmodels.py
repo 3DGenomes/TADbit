@@ -955,15 +955,15 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         interactions = [[] for _ in xrange(self.nloci)]
-        cutoff = cutoff**2
+        cutoff2 = cutoff**2
         for i in xrange(self.nloci):
             for m in models:
                 val = 0
                 for j in xrange(self.nloci):
-                    if i==j:
+                    if i == j:
                         continue
                     val += self.__square_3d_dist(i + 1, j + 1,
-                                                 models=[m])[0] < cutoff
+                                                 models=[m])[0] < cutoff2
                 interactions[i].append(val)
         distsk = {1: interactions}
         for k in (steps[1:] if steps[0]==1 else steps):
