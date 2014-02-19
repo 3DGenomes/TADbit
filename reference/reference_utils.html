@@ -109,7 +109,7 @@ w, z, y or x axe.</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.plot_2d_optimization_result">
-<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">plot_2d_optimization_result</tt><big>(</big><em>result</em>, <em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">plot_2d_optimization_result</tt><big>(</big><em>result</em>, <em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>A grid of heatmaps representing the result of the optimization.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -123,6 +123,9 @@ w, z, y or x axe.</li>
 <li><strong>show_best</strong> (<em>0</em>) &#8211; number of best correlation value to identifie.</li>
 <li><strong>skip</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a dict can be passed here in order to fix a given axe,
 e.g.: {&#8216;scale&#8217;: 0.001, &#8216;maxdist&#8217;: 500}</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI (the extension
+of the file name will determine the desired format).</li>
 </ul>
 </td>
 </tr>
@@ -157,7 +160,7 @@ cluster number &#8216;cluster&#8217;</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.color_residues">
-<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">color_residues</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#color_residues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.color_residues" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">color_residues</tt><big>(</big><em>x</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#color_residues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.color_residues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to color residues from blue to red.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -173,7 +176,7 @@ cluster number &#8216;cluster&#8217;</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.tad_coloring">
-<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_coloring</tt><big>(</big><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_coloring</tt><big>(</big><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colors TADs from blue to red (first to last TAD). TAD borders are displayed
 in scale of grey, from light to dark grey (again first to last border)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -195,7 +198,7 @@ in scale of grey, from light to dark grey (again first to last border)</p>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.tad_border_coloring">
-<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_border_coloring</tt><big>(</big><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_border_coloring</tt><big>(</big><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colors TAD borders from blue to red (bad to good score). TAD are displayed
 in scale of grey, from light to dark grey (first to last particle in the
 TAD)</p>
@@ -549,7 +552,7 @@ for details</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 18, 2014.
+      Last updated on Feb 19, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

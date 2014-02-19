@@ -313,7 +313,7 @@ cases.</p>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.optimal_imp_parameters">
-<tt class="descname">optimal_imp_parameters</tt><big>(</big><em>start, end, n_models=500, n_keep=100, n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1, lowfreq_range=(-1, 0, 0.1), scale_range=[0.01], maxdist_range=(400, 1400, 100), cutoff=300, outfile=None, verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.optimal_imp_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.optimal_imp_parameters" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">optimal_imp_parameters</tt><big>(</big><em>start=1, end=None, n_models=500, n_keep=100, n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1, lowfreq_range=(-1, 0, 0.1), scale_range=[0.01], maxdist_range=(400, 1400, 100), cutoff=300, outfile=None, verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.optimal_imp_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.optimal_imp_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the optimal set of parameters to be used for the 3D modeling in
 IMP.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -321,8 +321,9 @@ IMP.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>start</strong> &#8211; first bin to model (bin number)</li>
-<li><strong>end</strong> &#8211; last bin to model (bin number)</li>
+<li><strong>start</strong> (<em>1</em>) &#8211; first bin to model (bin number)</li>
+<li><strong>end</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; last bin to model (bin number). By default goes to the
+last bin.</li>
 <li><strong>n_models</strong> (<em>500</em>) &#8211; number of modes to generate</li>
 <li><strong>n_keep</strong> (<em>100</em>) &#8211; number of models used in the final analysis (usually
 the top 20% of the generated models). The models are ranked
@@ -523,7 +524,7 @@ passed to this parameter.</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 18, 2014.
+      Last updated on Feb 19, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
