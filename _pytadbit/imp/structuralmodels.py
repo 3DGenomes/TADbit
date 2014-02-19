@@ -17,6 +17,7 @@ from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
 from math                           import acos, degrees, pi, sqrt
 from numpy                          import median as np_median
+from numpy                          import mean as np_mean
 from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan
 from numpy.linalg                   import norm
@@ -908,6 +909,157 @@ class StructuralModels(object):
         if savefig:
             tadbit_savefig(savefig)
         elif show:
+            plt.show()
+
+
+    def interactions(self, models=None, cluster=None, cutoff=150,
+                     steps=(1, 2, 3, 4, 5), axe=None, error=False,
+                     savefig=None, savedata=None, average=True, plot=True):
+        """
+        Plots, for each particle, the number of interactions (particles closer
+        than the guiven cut-off). The value given is the average for all models.
+
+        :param None models: if None (default) the contact map will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the contact map only for the models in the
+           cluster number 'cluster'
+        :param 150 cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not
+        :param (1, 2, 3, 4, 5) steps: how many particles to group for the
+           estimation. By default 5 curves are drawn
+        :param False error: represent the error of the estimates
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        :param None savedata: path to a file where to save the contact map data
+           generated, in three columns format (particle1, particle2, percentage
+           of models where these two particles are in contact)
+        :param True average: calculate average interactions along models,
+           otherwise, the median.
+        :param True plot: e.g. only saves data. No plotting done
+
+        """
+        if type(steps) == int:
+            steps = (steps, )
+        if len(steps) > 6:
+            raise Exception('Sorry not enough colors to do this.\n')
+        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
+                  'darkred'][-len(steps):]
+        if models:
+            models = [m if type(m) is int else self[m]['index'] for m in models]
+        elif cluster > -1:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        interactions = [[] for _ in xrange(self.nloci)]
+        cutoff = cutoff**2
+        for i in xrange(self.nloci):
+            for m in models:
+                val = 0
+                for j in xrange(self.nloci):
+                    if i==j:
+                        continue
+                    val += self.__square_3d_dist(i + 1, j + 1,
+                                                 models=[m])[0] < cutoff
+                interactions[i].append(val)
+        distsk = {1: interactions}
+        for k in (steps[1:] if steps[0]==1 else steps):
+            distsk[k] = [None for _ in range(k/2)]
+            for i in range(self.nloci - k + 1):
+                distsk[k].append(reduce(lambda x, y: x + y,
+                                        [interactions[i+j] for j in range(k)]))
+                if k == 1:
+                    continue
+                # calculate the mean for steps larger than 1
+                distsk[k][-1] = [float(sum([distsk[k][-1][i+len(models)*j]
+                                            for j in xrange(k)])) / k
+                                 for i in xrange(len(models))]
+        new_distsk = {}
+        errorp     = {}
+        errorn     = {}
+        for k, dists in distsk.iteritems():
+            new_distsk[k] = []
+            errorp[k] = []
+            errorn[k] = []
+            for part in dists:
+                if not part:
+                    new_distsk[k].append(None)
+                    errorp[k].append(None)
+                    errorn[k].append(None)
+                    continue
+                new_distsk[k].append(np_mean(part) if average
+                                     else np_median(part))
+                try:
+                    errorn[k].append(new_distsk[k][-1] - 2 * np_std(part))
+                    errorn[k][-1] = errorn[k][-1] if errorn[k][-1] > 0 else 0.0
+                    errorp[k].append(new_distsk[k][-1] + 2 * np_std(part))
+                    errorp[k][-1] = errorp[k][-1] if errorp[k][-1] > 0 else 0.0
+                except TypeError:
+                    errorn[-1].append(None)
+                    errorp[-1].append(None)
+        distsk = new_distsk
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#Particle\t%s_interactions\n' % (
+                'Average' if average else 'Median'))
+            for i in xrange(self.nloci):
+                out.write('%s\t%s\n' % (i, np_mean(interactions[i]) if average
+                                        else np_median(interactions[i])))
+            out.close()
+            if not plot:
+                return # stop here, we do not want to display anything
+        # plot
+        if axe:
+            ax = axe
+            fig = ax.get_figure()
+        else:
+            fig = plt.figure(figsize=(11, 5))
+            ax = fig.add_subplot(111)
+            ax.patch.set_facecolor('lightgrey')
+            ax.patch.set_alpha(0.4)
+            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+            ax.set_axisbelow(True)
+            ax.minorticks_on() # always on, not only for log
+            # remove tick marks
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False)
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False, which='minor')
+        plots = []
+        for k in steps:
+            plots += ax.plot(range(1, len(distsk[k]) + 1), distsk[k],
+                             color=colors[steps.index(k)],
+                             lw=steps.index(k) + 1, alpha=0.5)
+        if error:
+            for k in steps:
+                plots += ax.plot(range(1, len(errorp[k]) + 1), errorp[k],
+                                 color=colors[steps.index(k)], ls='--')
+                ax.plot(range(1, len(errorp[k]) + 1), errorn[k],
+                        color=colors[steps.index(k)], ls='--')
+        ax.set_ylabel('Number of particles closer than %s nm' % (cutoff))
+        ax.set_xlabel('Particle number')
+        try:
+            ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
+                              for k in steps] + (
+                          ['+/- 2 standard deviations'
+                           for k in steps] if error else []), fontsize='small',
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        except TypeError:
+            ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
+                              for k in steps] + (
+                          ['+/- 2 standard deviations'
+                           for k in steps] if error else []), 
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        ax.set_xlim((1, self.nloci))
+        ax.set_title('Interactions per particle')
+        plt.subplots_adjust(left=0.1, right=0.78)
+        if savefig:
+            tadbit_savefig(savefig)
+        elif not axe:
             plt.show()
 
 

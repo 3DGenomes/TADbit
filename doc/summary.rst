@@ -229,7 +229,7 @@ StructuralModels class
     rank according to objective function value), or by their IMP random intial
     number (as string).
 
-      - `align_models <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.align_models>`_: Three-dimentional aligner for structural models.
+      - `align_models <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.align_models>`_: Three-dimensional aligner for structural models.
 
       - `angle_between_3_particles <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles>`_: Calculates the angle between 3 particles.                                                                                                                                       Given three particles A, B and C, the angle g (angle ACB, shown below):
 
@@ -245,7 +245,7 @@ StructuralModels class
 
       - `correlate_with_real_data <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data>`_ [#first]_: Plots the result of a correlation between a given group of models and                                             original Hi-C data.
 
-      - `deconvolve <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.deconvolve>`_ [#first]_: This function performs a clustering analysis of the generated models                                             based on structural comparison (dRMSD).                                             Then, performs a differential contact map between each possible pair                                             of cluster.
+      - `deconvolve <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.deconvolve>`_ [#first]_: This function performs a deconvolution analysis of a given froup of models.                                             It first clusters models based on structural comparison (dRMSD), and                                             then, performs a differential contact map between each possible pair                                             of cluster.
 
       - `define_best_models <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.define_best_models>`_: Defines the number of top models (based on the objective function) to                                             keep. If keep_all is set to True in                                             generate_3d_models or in                                             model_region, then the full set                                             of models (n_models parameter) will be used, otherwise only the n_keep                                             models will be available.
 
@@ -256,6 +256,8 @@ StructuralModels class
       - `fetch_model_by_rand_init <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.fetch_model_by_rand_init>`_: Models are stored according to their objective function value (first                                             best), but in order to reproduce a model, we need its initial random                                             number. This method helps to fetch the model corresponding to a given                                             initial random number stored under                                             StructuralModels.models[N]['rand_init'].
 
       - `get_contact_matrix <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix>`_: Returns a matrix with the number of interactions observed below a given                                             cutoff distance.
+
+      - interactions [#first]_ [#second]_:   Plots, for each particle, the number of interactions (particles closer                                             than the guiven cut-off). The value given is the average for all models.
 
       - `median_3d_dist <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.median_3d_dist>`_ [#first]_: Computes the median distance between two particles over a set of models
 
