@@ -81,7 +81,7 @@ def colorize(string, num, ftype='ansi'):
                        '\033[m' if ftype=='ansi' else '</span>')
 
 
-def color_residues(x):
+def color_residues(x, **kwargs):
     """
     Function to color residues from blue to red.
     
@@ -96,7 +96,7 @@ def color_residues(x):
     return result
 
 
-def tad_coloring(x, mstart=None, mend=None, tads=None):
+def tad_coloring(x, mstart=None, mend=None, tads=None, **kwargs):
     """
     Colors TADs from blue to red (first to last TAD). TAD borders are displayed
     in scale of grey, from light to dark grey (again first to last border)
@@ -109,7 +109,10 @@ def tad_coloring(x, mstart=None, mend=None, tads=None):
     ltads = [t for t in tads if tads[t]['start']>mstart and tads[t]['end']<mend]
     ntads = len(ltads)
     grey = 0.95
-    grey_step = (0.95 - 0.4) / ntads
+    try:
+        grey_step = (0.95 - 0.4) / ntads
+    except ZeroDivisionError:
+        raise Exception('ERROR: TAD borders are not predicted yet.')
     result = []
     for t in tads:
         if tads[t]['start'] < mstart or tads[t]['end'] > mend:
@@ -122,7 +125,7 @@ def tad_coloring(x, mstart=None, mend=None, tads=None):
     return result
 
 
-def tad_border_coloring(x, mstart=None, mend=None, tads=None):
+def tad_border_coloring(x, mstart=None, mend=None, tads=None, **kwargs):
     """
     Colors TAD borders from blue to red (bad to good score). TAD are displayed
     in scale of grey, from light to dark grey (first to last particle in the
@@ -134,6 +137,8 @@ def tad_border_coloring(x, mstart=None, mend=None, tads=None):
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
     result = []
+    if not tads:
+        raise Exception('ERROR: TAD borders are not predicted yet.')
     for t in tads:
         if tads[t]['start'] < mstart or tads[t]['end'] > mend:
             continue

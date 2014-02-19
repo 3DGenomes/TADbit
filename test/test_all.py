@@ -395,7 +395,7 @@ class TestTadbit(unittest.TestCase):
                              len(models)+1, int(False), 'score', 1)
         self.assertEqual(25, sorted([(k, sum([a[(i, j)] for i, j in a if i==k or j==k]))
                                      for k in range(26)], key=lambda x: x[1])[-1][0])
-        centroid = models.centroid_model()
+        centroid = models[models.centroid_model()]
         expsc = sum([sum([a[(i, j)] for i, j in a if i==k or j==k])
                      for k in range(25)]) / 25
         # find closest

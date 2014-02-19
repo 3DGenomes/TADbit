@@ -131,7 +131,8 @@ class StructuralModels(object):
             len(self.clusters))
 
 
-    def align_models(self, models=None, cluster=None, in_place=False):
+    def align_models(self, models=None, cluster=None, in_place=False,
+                     reference_model=None, **kwargs):
         """
         Three-dimentional aligner for structural models.
         
@@ -143,34 +144,39 @@ class StructuralModels(object):
         :param False in_place: if True, the result of the alignment will REPLACE
            the coordinates of each model. Default is too yield new coordinates of
            each model
+        :param None reference_model: align given model to reference model
         """
         if models:
             models = [m if type(m) is int else self[m]['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
-        firstx, firsty, firstz = (self[models[0]]['x'], self[models[0]]['y'],
-                                  self[models[0]]['z'])
-        for sec in models[1:]:
+            models = [m for m in self.__models]
+        ref_model = models[0] if reference_model is None else reference_model
+        firstx, firsty, firstz = (self[ref_model]['x'],
+                                  self[ref_model]['y'],
+                                  self[ref_model]['z'])
+        aligned = []
+        for sec in models[1 if reference_model is None else 0:]:
             coords = aligner3d_wrapper(firstx, firsty, firstz,
                                        self[sec]['x'],
                                        self[sec]['y'],
                                        self[sec]['z'],
                                        self.nloci)
             if in_place:
-                models[sec]['x'], models[sec]['y'], models[sec]['z'] = coords
+                self[sec]['x'], self[sec]['y'], self[sec]['z'] = coords
             else:
-                yield coords
+                aligned.append(coords)
 
         if in_place:
-            mass_center(self[models[0]]['x'], self[models[0]]['y'],
-                        self[models[0]]['z'])
+            mass_center(self[ref_model]['x'], self[ref_model]['y'],
+                        self[ref_model]['z'])
         else:
-            x, y, z = (self[models[0]]['x'][:], self[models[0]]['y'][:],
-                       self[models[0]]['z'][:])
+            x, y, z = (self[ref_model]['x'][:], self[ref_model]['y'][:],
+                       self[ref_model]['z'][:])
             mass_center(x, y, z)
-            yield x, y, z
+            aligned.append((x, y, z))
+            return aligned
 
 
     def fetch_model_by_rand_init(self, rand_init, all_models=False):
@@ -217,7 +223,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
         idx = centroid_wrapper([self[x]['x'] for x in models],
                                [self[x]['y'] for x in models],
                                [self[x]['z'] for x in models],
@@ -246,7 +252,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
         idx = centroid_wrapper([self[x]['x'] for x in models],
                                [self[x]['y'] for x in models],
                                [self[x]['z'] for x in models],
@@ -512,7 +518,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
         for part1, part2 in zip(range(self.nloci - interval),
                                 range(interval, self.nloci)):
             if mass_center:
@@ -656,7 +662,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
         matrix = [[float('nan') for _ in xrange(self.nloci)]
                   for _ in xrange(self.nloci)]
         cutoff = cutoff**2
@@ -694,9 +700,9 @@ class StructuralModels(object):
                    savefig=None, represent_models=False, figsize=(11, 11),
                    **kwargs):
         """
-        This function performs a clustering analysis of the generated models
-        based on structural comparison (dRMSD).
-        Then, performs a differential contact map between each possible pair
+        This function performs a deconvolution analysis of a given froup of models.
+        It first clusters models based on structural comparison (dRMSD), and
+        then, performs a differential contact map between each possible pair
         of cluster.
 
         .. note::
@@ -819,22 +825,23 @@ class StructuralModels(object):
                                      i, projection='3d')
                 ax.set_title('Cluster #%s' % (i + 1), color='blue')
                 if represent_models=='centroid':
-                    mdl = str(self.centroid_model(
-                        models=[m for m in clusters[i+1]]))
+                    mdl = self[str(self.centroid_model(
+                        models=[m for m in clusters[i+1]]))]['index']
                 else:
                     if represent_models != 'best':
                         warn("WARNING: represent_model value should be one of" +
                              "'centroid' or 'best' not %s\n"  % (
                                  represent_models) + "Showing best model.")
-                    mdl = str(clusters[i+1][0])
-                self[mdl].view_model(tool='plot', axe=ax, **kwargs)
+                    mdl = self[str(clusters[i+1][0])]['index']
+                self.view_models(models=[mdl], tool='plot', axe=ax, stress='all',
+                                 **kwargs)
                 for item in [ax]:
                     item.patch.set_visible(False)                
             for i in range(n_best_clusters - 1):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      n_best_clusters * (i + 2), projection='3d')
-                self[str(clusters[i+1][0])].view_model(tool='plot', axe=ax,
-                                                     **kwargs)
+                self.view_models(models=[self[str(clusters[i+1][0])]['index']],
+                                 tool='plot', axe=ax, stress='all', **kwargs)
                 ax.yaxis.set_label_position('top')
                 ax.set_title('Cluster #%s' % (i + 1), rotation=-90,
                              fontsize='large', color='red', position=(1,.5),
@@ -1100,7 +1107,7 @@ class StructuralModels(object):
             models = dict([(i, self[str(m)]) for i, m in
                            enumerate(self.clusters[cluster])])
         else:
-            models = self.__models
+            models = self.__models  # Here it's different
         consistencies = {}
         for cut in cutoffs:
             consistencies[cut] = calc_consistency(models, self.nloci, cut)
@@ -1262,14 +1269,14 @@ class StructuralModels(object):
            :func:`pytadbit.utils.extraviews.chimera_view` for other arguments
            to pass to this function. See also coloring function
 
-           
         """
         if models:
             models = [m if type(m) is int else self[m]['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
+        print models
         models = [m['rand_init'] if 'IMPmodel' in str(type(m))
                   else m for m in models]
         if color in ['tad', 'border'] and not 'tads' in kwargs:
@@ -1295,49 +1302,57 @@ class StructuralModels(object):
             mdl = 'all'
         ## View with Matplotlib
         if tool == 'plot':
+            pltshow = 'axe' not in kwargs
             model_coords = []
             if len(models) > 1 and align:
-                for model in self.align_models(models):
+                for model in self.align_models(models, **kwargs):
                     model_coords.append(model)
+            elif kwargs.get('reference_model', None) is not None and align:
+                model_coords.append(self.align_models(models, **kwargs)[0])
             else:
                 for model in models:
                     model_coords.append((
                         self[model]['x'], self[model]['y'],self[model]['z']))
             if show in ['all', 'stressed']:
-                fig = plt.figure()
-                axe = fig.add_subplot(1,1,1, projection='3d')
+                if not 'axe' in kwargs:
+                    fig = plt.figure()
+                    kwargs['axe'] = fig.add_subplot(1,1,1, projection='3d')
                 for i in models:
-                    if show=='all' or i==mdl or mdl=='all':
+                    if show == 'all' or i == mdl or mdl == 'all':
                         plot_3d_model(*model_coords[models.index(i)],
-                                      axe=axe, color=color,
+                                      color=color,
                                       thin=False if stress=='all' else (i!=mdl),
                                       **kwargs)
-                try:
-                    axe.set_title('Model %s stressed as %s' % (
-                        self[mdl]['rand_init'], stress))
-                except ValueError:
-                    axe.set_title('All models stressed')
+                if pltshow:
+                    try:
+                        kwargs['axe'].set_title('Model %s stressed as %s' % (
+                            self[mdl]['rand_init'], stress))
+                    except KeyError:
+                        kwargs['axe'].set_title('All models stressed')
             else:
                 sqrmdl = sqrt(len(models))
                 cols = int(round(sqrmdl + (0.0 if int(sqrmdl)==sqrmdl else .5)))
                 rows = int(sqrmdl+.5)
-                fig = plt.figure()
+                if pltshow:
+                    fig = plt.figure()
                 for i in range(cols):
                     for j in range(rows):
                         if i * rows + j >= len(models):
                             break
                         this = self[models[i * rows + j]]['index']
-                        axe = fig.add_subplot(rows, cols, i * rows + j+1,
-                                              projection='3d')
+                        if pltshow:
+                            kwargs['axe'] = fig.add_subplot(
+                                rows, cols, i * rows + j+1, projection='3d')
                         plot_3d_model(
-                            *model_coords[i * rows + j], axe=axe, color=color,
+                            *model_coords[i * rows + j], color=color,
                             thin=False if stress=='all' else (this!=mdl),
                             **kwargs)
-                        axe.set_title(
-                            'Model %s' % self[this]['rand_init'])
+                        if pltshow:
+                            kwargs['axe'].set_title(
+                                'Model %s' % self[this]['rand_init'])
             if savefig:
                 tadbit_savefig(savefig)
-            else:
+            elif pltshow:
                 plt.show()
             return
         ## View with Chimera
@@ -1443,7 +1458,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
 
         part -= 1
         xis = 0.
@@ -1724,7 +1739,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
         models = [self[mdl] for mdl in models]
         dists = [mdl.distance(part1, part2) for mdl in models]
         if not plot:
@@ -1746,7 +1761,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
         models = [self[mdl] for mdl in models]
         return [(mdl['x'][part1] - mdl['x'][part2])**2 +
                 (mdl['y'][part1] - mdl['y'][part2])**2 +
@@ -1815,7 +1830,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
         for model_num in models:
             try:
                 model = self[model_num]
@@ -1857,7 +1872,7 @@ class StructuralModels(object):
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
-            models = self.__models
+            models = [m for m in self.__models]
         for model_num in models:
             try:
                 model = self[model_num]
