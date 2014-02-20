@@ -387,6 +387,11 @@ def remap_genome(genome, original_assembly, target_assembly,
     HTTP = httplib2.Http(".cache")
     trace = {}
 
+    if write_log:
+        log = open(write_log, 'w')
+    else:
+        log = sys.stdout
+
     new_genome = {}
     for crm in genome:
         print '\n   Chromosome:', crm
@@ -406,10 +411,6 @@ def remap_genome(genome, original_assembly, target_assembly,
                                synteny=True if target_species  else False,
                                mapping=True if target_assembly else False,
                                trace=trace)
-        if write_log:
-            log = open(write_log, 'w')
-        else:
-            log = sys.stdout
         for t in sorted(trace[crm]):
             try:
                 log.write('%4s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s\n' %(
@@ -425,6 +426,10 @@ def remap_genome(genome, original_assembly, target_assembly,
                     'None',
                     'None',
                     ))
+
+    if write_log:
+        log.close()
+        
     return new_genome, trace
 
 
@@ -448,7 +453,12 @@ def save_new_genome(genome, trace, check=False, target_species=None, rootdir='./
                 new_tads = {}
                 for tad in exp.tads:
                     cond = 'syntenic at' if target_species else 'mapped to'
-                    if trace[crm][exp.tads[tad]['end']][cond]['chr'] is None:
+                    try:
+                        if trace[crm][exp.tads[tad]['end']][cond]['chr'] is None:
+                            continue
+                    except KeyError:
+                        print ('Not found:', crm, exp.tads[tad]['end'],
+                               trace[crm][exp.tads[tad]['end']])
                         continue
                     new_tads[tadcnt] = exp.tads[tad]
                     tadcnt += 1

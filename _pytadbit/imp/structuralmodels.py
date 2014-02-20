@@ -1195,12 +1195,16 @@ class StructuralModels(object):
                 oridata.append(self._original_data[i][j])
                 moddata.append(model_matrix[i][j])
         # corr = spearmanr(model_matrix, self._original_data, axis=None)
-        print corr
         if corr == 'spearman':
-            print 'spearman'
             corr = spearmanr(moddata, oridata)
-        else:
+        elif corr == 'pearson':
             corr = pearsonr(moddata, oridata)
+        elif corr == 'frobenius':
+            corr = (float(len(oridata)) / float(sum([
+                (moddata[i] - oridata[i])**2 for i in xrange(len(oridata))])), )
+        else:
+            raise NotImplementedError('ERROR: %s not implemented, must be one ' +
+                                      'of spearman, pearson or frobenius\n')
         # corr = spearmanr(reduce(lambda x, y, : x + y, model_matrix),
         #                  reduce(lambda x, y, : x + y, self._original_data))
         # corr = corrcoef(moddata, oridata)[1]
