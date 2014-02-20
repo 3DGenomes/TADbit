@@ -257,7 +257,7 @@ StructuralModels class
 
       - `get_contact_matrix <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix>`_: Returns a matrix with the number of interactions observed below a given                                             cutoff distance.
 
-      - interactions [#first]_ [#second]_:   Plots, for each particle, the number of interactions (particles closer                                             than the guiven cut-off). The value given is the average for all models.
+      - `interactions <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.interactions>`_ [#first]_ [#second]_: Plots, for each particle, the number of interactions (particles closer                                             than the guiven cut-off). The value given is the average for all models.
 
       - `median_3d_dist <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.median_3d_dist>`_ [#first]_: Computes the median distance between two particles over a set of models
 
