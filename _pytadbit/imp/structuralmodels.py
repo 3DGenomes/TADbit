@@ -22,7 +22,7 @@ from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
-from scipy.stats                    import spearmanr
+from scipy.stats                    import spearmanr, pearsonr
 from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
@@ -973,10 +973,6 @@ class StructuralModels(object):
                                         [interactions[i+j] for j in range(k)]))
                 if k == 1:
                     continue
-                # calculate the mean for steps larger than 1
-                distsk[k][-1] = [float(sum([distsk[k][-1][i+len(models)*j]
-                                            for j in xrange(k)])) / k
-                                 for i in xrange(len(models))]
         new_distsk = {}
         errorp     = {}
         errorn     = {}
@@ -994,20 +990,29 @@ class StructuralModels(object):
                                      else np_median(part))
                 try:
                     errorn[k].append(new_distsk[k][-1] - 2 * np_std(part))
-                    errorn[k][-1] = errorn[k][-1] if errorn[k][-1] > 0 else 0.0
+                    if errorn[k][-1] < 0:
+                        errorn[k][-1] =  0.0
                     errorp[k].append(new_distsk[k][-1] + 2 * np_std(part))
-                    errorp[k][-1] = errorp[k][-1] if errorp[k][-1] > 0 else 0.0
+                    if errorp[k][-1] < 0:
+                        errorp[k][-1] = 0.0
                 except TypeError:
                     errorn[-1].append(None)
                     errorp[-1].append(None)
         distsk = new_distsk
+        print distsk
         if savedata:
             out = open(savedata, 'w')
-            out.write('#Particle\t%s_interactions\n' % (
-                'Average' if average else 'Median'))
+            out.write('#Particle\t%s\n' % (
+                '\t'.join(['%s_interactions(%s)\t2*stddev(%s)' % (
+                    'Average' if average else 'Median', k, k) for k in steps])))
             for i in xrange(self.nloci):
-                out.write('%s\t%s\n' % (i, np_mean(interactions[i]) if average
-                                        else np_median(interactions[i])))
+                out.write('%s\t%s\n' % (i + 1, '\t'.join(
+                    ['%s\t%s' % (str(None if (len(distsk[k]) <= i
+                                              or distsk[k][i] is None)
+                                     else round(distsk[k][i], 2)), (
+                str(None if (len(distsk[k]) <= i
+                             or distsk[k][i] is None)
+                    else round(errorp[k][i] - distsk[k][i], 2)))) for k in steps])))
             out.close()
             if not plot:
                 return # stop here, we do not want to display anything
@@ -1191,7 +1196,8 @@ class StructuralModels(object):
                 oridata.append(self._original_data[i][j])
                 moddata.append(model_matrix[i][j])
         # corr = spearmanr(model_matrix, self._original_data, axis=None)
-        corr = spearmanr(moddata, oridata)
+        # corr = spearmanr(moddata, oridata)
+        corr = pearsonr(moddata, oridata)
         # corr = spearmanr(reduce(lambda x, y, : x + y, model_matrix),
         #                  reduce(lambda x, y, : x + y, self._original_data))
         # corr = corrcoef(moddata, oridata)[1]
