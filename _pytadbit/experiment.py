@@ -495,7 +495,7 @@ class Experiment(object):
                                lowfreq_range=(-1, 0, 0.1),
                                scale_range=[0.01][:],
                                maxdist_range=(400, 1400, 100), cutoff=300,
-                               outfile=None, verbose=True):
+                               outfile=None, verbose=True, corr='spearman'):
         """
         Find the optimal set of parameters to be used for the 3D modeling in
         IMP.
@@ -553,7 +553,7 @@ class Experiment(object):
         optimizer.run_grid_search(maxdist_range=maxdist_range,
                                   upfreq_range=upfreq_range,
                                   lowfreq_range=lowfreq_range,
-                                  scale_range=scale_range,
+                                  scale_range=scale_range, corr=corr,
                                   n_cpus=n_cpus, verbose=verbose)
 
         if outfile:

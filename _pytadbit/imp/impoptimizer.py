@@ -48,7 +48,7 @@ class IMPoptimizer(object):
 
 
     def run_grid_search(self, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1),
-                    scale_range=[0.01],
+                    scale_range=[0.01], corr='spearman',
                     maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True):
         """
         This function calculates the correlation between the models generated 
@@ -152,7 +152,7 @@ class IMPoptimizer(object):
                             print upfreq, lowfreq, maxdist, scale,
                         try:
                             result = tdm.correlate_with_real_data(
-                                cutoff=self.cutoff)[0]
+                                cutoff=self.cutoff, corr=corr)[0]
                             if verbose:
                                 print result
                         except Exception, e:

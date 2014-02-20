@@ -999,7 +999,6 @@ class StructuralModels(object):
                     errorn[-1].append(None)
                     errorp[-1].append(None)
         distsk = new_distsk
-        print distsk
         if savedata:
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % (
@@ -1161,7 +1160,7 @@ class StructuralModels(object):
 
 
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=200,
-                                 plot=False, axe=None, savefig=None):
+                                 plot=False, axe=None, savefig=None, corr='spearman'):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
@@ -1196,8 +1195,12 @@ class StructuralModels(object):
                 oridata.append(self._original_data[i][j])
                 moddata.append(model_matrix[i][j])
         # corr = spearmanr(model_matrix, self._original_data, axis=None)
-        # corr = spearmanr(moddata, oridata)
-        corr = pearsonr(moddata, oridata)
+        print corr
+        if corr == 'spearman':
+            print 'spearman'
+            corr = spearmanr(moddata, oridata)
+        else:
+            corr = pearsonr(moddata, oridata)
         # corr = spearmanr(reduce(lambda x, y, : x + y, model_matrix),
         #                  reduce(lambda x, y, : x + y, self._original_data))
         # corr = corrcoef(moddata, oridata)[1]
