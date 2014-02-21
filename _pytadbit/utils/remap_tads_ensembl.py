@@ -235,7 +235,8 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
     coords = {}
     global HTTP
     if mapping:
-        while True:
+        errors = 0
+        while errors < 100:
             try:
                 coords = remap_segment(crm, beg, end, from_species, **kwargs)
                 if type(coords) is int:
@@ -254,15 +255,18 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                                 'chr': None, 'start':None, 'end': None}
                     break
             except Exception, e:
+                errors += 1
                 print e.message
                 print '\n... reconnecting (mapping)...'
                 print ' ' * ((i%50) + 9 + (i%50)/10),
                 sleep(1)
                 HTTP = httplib2.Http(".cache")
-
+        else:
+            raise Exception('ERROR: not able to remap %s:%s-%s\n' % (crm, beg, end))
     if synteny and type(coords) is dict:
         crm, beg, end = coords['chr'], coords['start'], coords['end']
-        while True:
+        errors = 0
+        while errors < 100:
             try:
                 coords = syntenic_segment(crm, beg, end, from_species, **kwargs)
                 if type(coords) is int:
@@ -281,11 +285,14 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                                 'chr': None, 'start':None, 'end': None}
                     break
             except Exception, e:
+                errors += 1
                 print str(e)
                 print '\n... reconnecting (synteny)...'
                 print ' ' * ((i%50) + 9 + (i%50)/10),
                 sleep(1)
                 HTTP = httplib2.Http(".cache")
+        else:
+            raise Exception('ERROR: not able to find synteny %s:%s-%s\n' % (crm, beg, end))
     return coords
 
 
