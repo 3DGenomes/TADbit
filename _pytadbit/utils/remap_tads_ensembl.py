@@ -256,9 +256,9 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                     break
             except Exception, e:
                 errors += 1
-                print e.message
+                # print e.message
                 print '\n... reconnecting (mapping)...'
-                print ' ' * ((i%50) + 9 + (i%50)/10),
+                # print ' ' * ((i%50) + 9 + (i%50)/10),
                 sleep(1)
                 HTTP = httplib2.Http(".cache")
         else:
@@ -286,9 +286,16 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                     break
             except Exception, e:
                 errors += 1
-                print str(e)
+                # print str(e)
                 print '\n... reconnecting (synteny)...'
-                print ' ' * ((i%50) + 9 + (i%50)/10),
+                if errors == 2 and beg > resolution:
+                    print 'extending region left'
+                    beg -= resolution
+                if errors == 4:
+                    print 'extending region right'
+                    beg += resolution
+                    end += resolution
+                # print ' ' * ((i%50) + 9 + (i%50)/10),
                 sleep(1)
                 HTTP = httplib2.Http(".cache")
         else:
@@ -469,13 +476,14 @@ def save_new_genome(genome, trace, check=False, target_species=None, rootdir='./
                         continue
                     new_tads[tadcnt] = exp.tads[tad]
                     tadcnt += 1
+                exp.tads = new_tads
             else:
                 tads, norm = parse_tads(exp._tads)
                 last = max(tads.keys())
                 if not exp.size:
                     exp.size = tads[last]['end']
                 exp.norm  = norm
-            exp.tads = new_tads
+                exp.tads = tads
         crmdir = os.path.join(rootdir, crm)
         if not os.path.exists(crmdir):
             os.mkdir(crmdir)
