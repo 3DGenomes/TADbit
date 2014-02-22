@@ -1226,10 +1226,9 @@ class StructuralModels(object):
         slope, intercept, r_value, p_value, std_err = linregress(
             [j for i, j in enumerate(modl_dat) if str(j) != 'nan' and str(real_dat[i]) != 'nan'],
             [j for i, j in enumerate(real_dat) if str(j) != 'nan' and str(modl_dat[i]) != 'nan'])
-        lnr = ax.plot(modl_dat, intercept + slope * array (modl_dat), 'k',
-                      ls='--', alpha=.7, label='p-value: %.3f, R: %.3f' % (
-                          p_value, r_value))
-        ax.legend(lnr)
+        lnr = ax.plot(modl_dat, intercept + slope * array (modl_dat), color='k',
+                      ls='--', alpha=.7)
+        ax.legend(lnr, ['p-value: %.3f, R: %.3f' % (p_value, r_value)])
         ax.plot(modl_dat, real_dat, 'ro', alpha=0.5)
         ax.set_title('Linear regression between real and modelled data')
         ax.set_xlabel('Modelled data')
