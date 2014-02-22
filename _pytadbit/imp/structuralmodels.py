@@ -22,7 +22,7 @@ from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
-from scipy.stats                    import spearmanr, pearsonr
+from scipy.stats                    import spearmanr, pearsonr, linregress
 from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
@@ -1211,15 +1211,30 @@ class StructuralModels(object):
         if not plot and not savefig:
             return corr
         if not axe:
-            fig = plt.figure(figsize=(15, 5.5))
+            fig = plt.figure(figsize=(18, 4.5))
         else:
             fig = axe.get_figure()
         fig.suptitle('Correlation between normalized-real and modeled '
                      + 'contact maps (correlation=%.4f)' % (corr[0]),
                      size='x-large')
-        ax = fig.add_subplot(121)
+        ax = fig.add_subplot(131)
         self.contact_map(models, cluster, cutoff, axe=ax)
-        ax = fig.add_subplot(122)
+        ax = fig.add_subplot(132)
+        modl_dat = reduce(lambda x, y: x+y,
+                         self.get_contact_matrix(models, cluster, cutoff))
+        real_dat = log2(self._original_data).flatten()
+        slope, intercept, r_value, p_value, std_err = linregress(
+            [j for i, j in enumerate(modl_dat) if str(j) != 'nan' and str(real_dat[i]) != 'nan'],
+            [j for i, j in enumerate(real_dat) if str(j) != 'nan' and str(modl_dat[i]) != 'nan'])
+        lnr = ax.plot(modl_dat, intercept + slope * array (modl_dat), 'k',
+                      ls='--', alpha=.7, label='p-value: %.3f, R: %.3f' % (
+                          p_value, r_value))
+        ax.legend(lnr)
+        ax.plot(modl_dat, real_dat, 'ro', alpha=0.5)
+        ax.set_title('Linear regression between real and modelled data')
+        ax.set_xlabel('Modelled data')
+        ax.set_ylabel('Real data')
+        ax = fig.add_subplot(133)
         ims = ax.imshow(log2(self._original_data), origin='lower',
                         interpolation="nearest",
                         extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
