@@ -374,7 +374,7 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
     elif type(color) is not list:
         raise TypeError('one of function, list or string is required\n')
     if not axe:
-        fig = plt.figure()
+        fig = plt.figure(figsize=kwargs.get('figsize', (8, 8)))
         axe = fig.add_subplot(1, 1, 1, projection='3d')
         show = True
     if not show_axe:
