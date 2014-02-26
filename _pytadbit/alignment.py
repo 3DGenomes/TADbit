@@ -9,8 +9,7 @@ from pytadbit.utils.extraviews         import _tad_density_plot
 from random                            import random, shuffle
 from sys                               import stdout
 from pytadbit.boundary_aligner.aligner import align
-from numpy                             import linspace, sin, pi
-from warnings                          import warn
+
 
 try:
     from scipy.interpolate import interp1d

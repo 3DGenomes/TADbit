@@ -278,6 +278,10 @@ class Experiment(object):
                         self.hic_data[0] = tuple(list(self.hic_data[0][:i]) +
                                                  [0] +
                                                  list(self.hic_data[0][i + 1:]))
+            # Also remove columns where there is no data in the diagonal
+            self._zeros.update(dict([(i, None) for i in xrange(self.size)
+                                     if not self.hic_data[0][i*self.size+i]]))
+            
         
 
     def load_tad_def(self, tad_def, weights=None):
@@ -329,23 +333,20 @@ class Experiment(object):
             raise Exception('ERROR: No Hi-C data loaded\n')
         if self.norm and not silent:
             warn('WARNING: removing previous weights\n')
-        # removes columns where there is no data in the diagonal
-        size_range = [i for i in xrange(self.size)
-                      if self.hic_data[0][i*self.size+i]]
         rowsums = [0 for _ in xrange(self.size)]
-        for i in size_range:
+        for i in xrange(self.size):
             if i in self._zeros: continue
             isi = i * self.size
-            for j in size_range:
+            for j in xrange(self.size):
                 if j in self._zeros: continue
                 rowsums[i] += self.hic_data[0][isi + j]
         self.norm = [[0. for _ in xrange(self.size * self.size)]]
 
         total = sum(rowsums)
         func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
-        for i in size_range:
+        for i in xrange(self.size):
             if i in self._zeros: continue
-            for j in size_range:
+            for j in xrange(self.size):
                 if j in self._zeros: continue
                 try:
                     self.norm[0][i * self.size + j] = (

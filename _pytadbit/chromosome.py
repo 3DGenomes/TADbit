@@ -168,7 +168,7 @@ class Chromosome(object):
         self.size             = self._given_size = self.r_size = chr_len
         self.size             = ChromosomeSize(self.size)
         self.r_size           = RelativeChromosomeSize(self.size)
-        self.forbidden        = {}
+        self.forbidden        = {}  # only used for TAD alignment randomization
         self.experiments      = ExperimentList([], self)
         self._centromere      = None
         self.alignment        = AlignmentDict()
@@ -1041,7 +1041,7 @@ class AlignmentDict(dict):
             for i, key in enumerate(self):
                 if nam == i:
                     return self[key]
-            raise TypeError('Alignment %s not found\n' % (i))
+            raise TypeError('Alignment %s not found\n' % i)
 
 
 class ChromosomeSize(int):
@@ -1056,6 +1056,8 @@ class RelativeChromosomeSize(int):
     """
     Relative Chromosome size in base pairs. Equal to Chromosome size minus
     forbidden regions (eg: the centromere)
+
+    Only used for TAD alignment randomization.
     """
     def __init__(self, thing):
         super(RelativeChromosomeSize, self).__init__(thing)
