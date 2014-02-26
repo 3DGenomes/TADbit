@@ -26,3 +26,5 @@ testset
 .ipynb_checkpoints
 .cache
 .idea
+*.xyz
+*.models

@@ -1495,7 +1495,7 @@ class StructuralModels(object):
                         self[model]['x'], self[model]['y'],self[model]['z']))
             if show in ['all', 'stressed']:
                 if not 'axe' in kwargs:
-                    fig = plt.figure()
+                    fig = plt.figure(figsize=kwargs.get('figsize', (8, 8)))
                     kwargs['axe'] = fig.add_subplot(1,1,1, projection='3d')
                 for i in models:
                     if show == 'all' or i == mdl or mdl == 'all':
