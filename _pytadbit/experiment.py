@@ -281,8 +281,7 @@ class Experiment(object):
             # Also remove columns where there is no data in the diagonal
             self._zeros.update(dict([(i, None) for i in xrange(self.size)
                                      if not self.hic_data[0][i*self.size+i]]))
-            
-        
+
 
     def load_tad_def(self, tad_def, weights=None):
         """
@@ -562,7 +561,7 @@ class Experiment(object):
 
         return optimizer
 
-    
+
     def _sub_experiment_zscore(self, start, end):
         """
         Get the z-score of a sub-region of an  experiment.

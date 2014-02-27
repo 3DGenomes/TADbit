@@ -644,7 +644,7 @@ class StructuralModels(object):
             plt.show()
 
 
-    def get_contact_matrix(self, models=None, cluster=None, cutoff=150):
+    def get_contact_matrix(self, models=None, cluster=None, cutoff=200):
         """
         Returns a matrix with the number of interactions observed below a given
         cutoff distance.
@@ -654,7 +654,7 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact matrix only for the models in the
            cluster number 'cluster'
-        :param 150 cutoff: distance cutoff (nm) to define whether two particles
+        :param 200 cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not
 
         :returns: matrix frequency of interaction
@@ -673,7 +673,7 @@ class StructuralModels(object):
                 val = len([k for k in self.__square_3d_dist(
                     i + 1, j + 1, models=models)
                            if k < cutoff])
-                matrix[i][j] = matrix[j][i] = float(val) / len(models)# * 100
+                matrix[i][j] = matrix[j][i] = float(val) / len(models)  # * 100
         return matrix
 
 

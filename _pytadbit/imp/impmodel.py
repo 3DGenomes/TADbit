@@ -835,7 +835,7 @@ class IMPmodel(dict):
         out = ''
         if header:
             out += model_header(self)
-        form = "%4s %21s%12.3f%12.3f%12.3f\n"
+        form = "%s\t%s\t%.3f\t%.3f\t%.3f\n"
         # TODO: do not use resolution directly -> specific to Hi-C
         for i in xrange(len(self['x'])):
             out += form % (

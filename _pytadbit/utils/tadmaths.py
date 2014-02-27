@@ -92,7 +92,7 @@ def zscore(values, size):
     # Set the virtual minimum of the matrix to half the non-null real minimum
     minv = min([v for v in values if v]) / 2
     if minv > 1:
-        minv /= 2
+        minv /= 2  # TODO: something better
     # get the log10 of values
     vals = [log10(v) if v > 0 and not v in nop else log10(minv) for v in values]
     mean_v = np.mean(vals)
