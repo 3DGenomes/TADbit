@@ -94,6 +94,8 @@ AlignmentDict class
 RelativeChromosomeSize class
 ++++++++++++++++++++++++++++
                       Relative Chromosome size in base pairs.
+                      
+                      Only used for TAD alignment randomization.
 
 Chromosome class
 ++++++++++++++++
@@ -145,6 +147,8 @@ Experiment class
       - `print_hic_matrix <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.print_hic_matrix>`_: Return the Hi-C matrix as string
 
       - `set_resolution <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.set_resolution>`_: Set a new value for the resolution. Copy the original data into                                             Experiment._ori_hic and replace the Experiment.hic_data                                             with the data corresponding to new data                                             (compare_condition).
+
+      - view [#first]_:                      Visualize the matrix of Hi-C interactions
 
       - `write_interaction_pairs <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.write_interaction_pairs>`_: Creates a tab separated file with all the pairwise interactions.
 
