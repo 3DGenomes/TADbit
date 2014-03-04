@@ -186,7 +186,8 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
                 m['description'][desc] = xpr.description[desc]
             m['index'] = i
     except AttributeError: # case we are doing optimization
-        pass
+        for i, m in enumerate(models.values() + bad_models.values()):
+            m['index'] = i
     if outfile:
         if exists(outfile):
             old_models, old_bad_models = load(open(outfile))

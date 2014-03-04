@@ -7,6 +7,7 @@ from pytadbit.imp.imp_modelling import generate_3d_models
 from pytadbit.utils.extraviews  import plot_2d_optimization_result
 from pytadbit.utils.extraviews  import plot_3d_optimization_result
 from warnings                   import warn
+from sys import stderr
 import numpy as np
 
 
@@ -48,7 +49,7 @@ class IMPoptimizer(object):
 
 
     def run_grid_search(self, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1),
-                    scale_range=[0.01], corr='spearman',
+                    scale_range=[0.01], corr='spearman', off_diag=1,
                     maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True):
         """
         This function calculates the correlation between the models generated 
@@ -148,13 +149,17 @@ class IMPoptimizer(object):
                                                  close_bins=self.close_bins)
                         count += 1
                         if verbose:
-                            print '%5s  ' % (count),
-                            print upfreq, lowfreq, maxdist, scale,
+                            verb = '%5s  %s %s %s %s ' % (
+                                count, upfreq, lowfreq, maxdist, scale)
                         try:
                             result = tdm.correlate_with_real_data(
-                                cutoff=self.cutoff, corr=corr)[0]
+                                cutoff=self.cutoff, corr=corr,
+                                off_diag=off_diag)[0]
                             if verbose:
-                                print result
+                                if verbose == 2:
+                                    stderr.write(verb + str(result) + '\n')
+                                else:
+                                    print verb + str(result)
                         except Exception, e:
                             print 'ERROR %s' % e
                             continue

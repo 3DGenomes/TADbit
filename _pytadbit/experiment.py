@@ -221,6 +221,19 @@ class Experiment(object):
                             break
                         val += self._ori_hic[0][(i + k) * size + j + l]
                 self.hic_data[0].append(val)
+        # we need to recalculate zeros:
+        if self._zeros:
+            self._zeros, has_nans = hic_filtering_for_modelling(
+                self.get_hic_matrix(), silent=True)
+            if has_nans: # to make it simple
+                for i in xrange(len(self.hic_data[0])):
+                    if repr(self.hic_data[0][i]) == 'nan':
+                        self.hic_data[0] = tuple(list(self.hic_data[0][:i]) +
+                                                 [0] +
+                                                 list(self.hic_data[0][i + 1:]))
+            # Also remove columns where there is no data in the diagonal
+            self._zeros.update(dict([(i, None) for i in xrange(self.size)
+                                     if not self.hic_data[0][i*self.size+i]]))
         # hic_data needs always to be stored as tuple
         self.hic_data[0] = tuple(self.hic_data[0])
         if not keep_original:
@@ -258,6 +271,7 @@ class Experiment(object):
            as the :class:`pytadbit.Experiment` created, and no change is made
         :param True filter_columns: filter the columns with unexpectedly high content
            of low values
+        :param False silent: does not warn for removed columns
         
         """
         nums, size = read_matrix(hic_data, parser=parser)
