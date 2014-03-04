@@ -447,7 +447,7 @@ of models where these two particles are in contact)</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data">
-<tt class="descname">correlate_with_real_data</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=200</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">correlate_with_real_data</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=200</em>, <em>off_diag=1</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>corr='spearman'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the result of a correlation between a given group of models and
 original Hi-C data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -639,7 +639,7 @@ StructuralModels.models[N][&#8216;rand_init&#8217;].</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix">
-<tt class="descname">get_contact_matrix</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=150</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_contact_matrix</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=200</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a matrix with the number of interactions observed below a given
 cutoff distance.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -652,7 +652,7 @@ using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
 <li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact matrix only for the models in the
 cluster number &#8216;cluster&#8217;</li>
-<li><strong>cutoff</strong> (<em>150</em>) &#8211; distance cutoff (nm) to define whether two particles
+<li><strong>cutoff</strong> (<em>200</em>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not</li>
 </ul>
 </td>
@@ -1225,7 +1225,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 20, 2014.
+      Last updated on Mar 04, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
