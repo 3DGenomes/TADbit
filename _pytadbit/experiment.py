@@ -6,11 +6,13 @@
 
 from pytadbit.parsers.hic_parser         import read_matrix
 from pytadbit.utils.extraviews           import nicer
+from pytadbit.utils.extraviews           import tadbit_savefig
 from pytadbit.utils.tadmaths             import zscore
 from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser         import parse_tads
 from warnings                            import warn
 from math                                import sqrt
+from numpy                               import log2
 from pytadbit.imp.CONFIG                 import CONFIG
 
 try:
@@ -18,6 +20,12 @@ try:
     from pytadbit.imp.imp_modelling          import generate_3d_models
 except ImportError:
     warn('IMP not found, check PYTHONPATH\n')
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    warn('matplotlib not found\n')
+
 
 class Experiment(object):
     """
@@ -735,6 +743,200 @@ class Experiment(object):
             print out
         else:
             return out + '\n'
+
+
+    def view(self, tad=None, focus=None, paint_tads=False, axe=None,
+             show=True, logarithm=True, normalized=False, relative=True,
+             decorate=True, savefig=None):
+        """
+        Visualize the matrix of Hi-C interactions
+
+        :param None tad: a given TAD in the form:
+           ::
+           
+             {'start': start,
+              'end'  : end,
+              'brk'  : end,
+              'score': score}
+              
+           **Alternatively** a list of the TADs can be passed (all the TADs
+           between the first and last one passed will be showed. Thus, passing
+           more than two TADs might be superfluous)
+        :param None focus: a tuple with the start and end positions of the 
+           region to visualize
+        :param False paint_tads: draw a box around the TADs defined for this
+           experiment
+        :param None axe: an axe object from matplotlib can be passed in order
+           to customize the picture
+        :param True show: either to pop-up matplotlib image or not
+        :param True logarithm: show the logarithm values
+        :param True normalized: show the normalized data (weights might have
+           been calculated previously). *Note: white rows/columns may appear in
+           the matrix displayed; these rows correspond to filtered rows (see*
+           :func:`pytadbit.utils.hic_filtering.hic_filtering_for_modelling` *)*
+        :param True relative: color scale is relative to the whole matrix of
+           data, not only to the region displayed
+        :param True decorate: draws color bar, title and axes labels
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        """
+        if logarithm:
+            fun = log2
+        else:
+            fun = lambda x: x
+        size = self.size
+        if normalized and not self.norm:
+            raise Exception('ERROR: weights not calculated for this ' +
+                            'eselfiment. Run Eselfiment.normalize_hic\n')
+        if tad and focus:
+            raise Exception('ERROR: only one of "tad" or "focus" might be set')
+        start = end = None
+        if focus:
+            start, end = focus
+            if start == 0:
+                warn('Hi-C matrix starts at 1, setting starting point to 1.\n')
+                start = 1
+        elif type(tad) == dict:
+            start = int(tad['start'])
+            end   = int(tad['end'])
+        elif type(tad) == list:
+            if type(tad[0]) == dict:
+                start = int(sorted(tad,
+                                   key=lambda x: int(x['start']))[0 ]['start'])
+                end   = int(sorted(tad,
+                                   key=lambda x: int(x['end'  ]))[-1]['end'  ])
+        elif self.tads:
+            start = self.tads[min(self.tads)]['start'] + 1
+            end   = self.tads[max(self.tads)]['end'  ] + 1
+        else:
+            start =  1
+            end   = size
+        if len(self.hic_data) > 1:
+            hic_data = [sum(i) for i in zip(*self.hic_data)]
+        else:
+            hic_data = self.hic_data[0]
+        if relative:
+            if normalized:
+                # find minimum, if value is non-zero... for logarithm
+                mini = min([i for i in self.norm[0] if i])
+                if mini == int(mini):
+                    vmin = min(self.norm[0])
+                else:
+                    vmin = mini
+                vmin = fun(vmin or (1 if logarithm else 0))
+                vmax = fun(max(self.norm[0]))
+            else:
+                vmin = fun(min(hic_data) or (1 if logarithm else 0))
+                vmax = fun(max(hic_data))
+        if axe is None:
+            plt.figure(figsize=(8, 6))
+            axe = plt.subplot(111)
+        if tad or focus:
+            if start > -1:
+                if normalized:
+                    matrix = [
+                        [self.norm[0][i+size*j]
+                         if (not i in self._zeros
+                             and not j in self._zeros) else vmin
+                         for i in xrange(start - 1, end)]
+                        for j in xrange(start - 1, end)]
+                else:
+                    matrix = [
+                        [hic_data[i+size*j]
+                         for i in xrange(start - 1, end)]
+                        for j in xrange(start - 1, end)]
+            elif type(tad) is list:
+                if normalized:
+                    warn('List passed, not going to be normalized.')
+                matrix = tad
+            else:
+                # TODO: something... matrix not declared...
+                pass
+        else:
+            if normalized:
+                matrix = [[self.norm[0][i+size*j]
+                           if (not i in self._zeros
+                               and not j in self._zeros) else vmin
+                           for i in xrange(size)]
+                          for j in xrange(size)]
+            else:
+                matrix = [[hic_data[i+size*j]\
+                           for i in xrange(size)] \
+                          for j in xrange(size)]
+        if relative:
+            img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
+                             interpolation="nearest",
+                             extent=(int(start or 1) - 0.5,
+                                     int(start or 1) + len(matrix) - 0.5,
+                                     int(start or 1) - 0.5,
+                                     int(start or 1) + len(matrix) - 0.5))
+        else:
+            img = axe.imshow(fun(matrix), origin='lower',
+                             interpolation="nearest",
+                             extent=(int(start or 1) - 0.5,
+                                     int(start or 1) + len(matrix) - 0.5,
+                                     int(start or 1) - 0.5,
+                                     int(start or 1) + len(matrix) - 0.5))
+        if decorate:
+            cbar = axe.figure.colorbar(img)
+            cbar.ax.set_ylabel('%sHi-C %sinteraction count' % (
+                'Log2 ' * logarithm, 'normalized ' * normalized))
+            axe.set_title(('Chromosome %s eselfiment %s' +
+                           ' %s') % (self.crm.name, self.name,
+                                     'focus: %s-%s' % (start, end) if tad else ''))
+            axe.set_xlabel('Genomic bin (resolution: %s)' % (self.resolution))
+            if paint_tads:
+                axe.set_ylabel('TAD number')
+            else:
+                axe.set_ylabel('Genomic bin (resolution: %s)' % (self.resolution))
+        if not paint_tads:            
+            axe.set_ylim(int(start or 1) - 0.5,
+                         int(start or 1) + len(matrix) - 0.5)
+            axe.set_xlim(int(start or 1) - 0.5,
+                         int(start or 1) + len(matrix) - 0.5)
+            if show:
+                plt.show()
+            return img
+        pwidth = 1
+        tads = dict([(t, self.tads[t]) for t in self.tads
+                     if  ((int(self.tads[t]['start']) + 1 >= start
+                           and int(self.tads[t]['end'  ]) + 1 <= end)
+                          or not start)])
+        for i, tad in tads.iteritems():
+            t_start = int(tad['start']) + .5
+            t_end   = int(tad['end'])   + 1.5
+            nwidth = float(tad['score']) / 4
+            axe.hlines(t_start, t_start, t_end, colors='k', lw=pwidth)
+            axe.hlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
+            axe.vlines(t_start, t_start, t_end, colors='k', lw=pwidth)
+            axe.vlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
+            pwidth = nwidth
+            if tad['score'] < 0:
+                for j in xrange(0, int(t_end) - int(t_start), 2):
+                    axe.plot((t_start    , t_start + j),
+                             (t_end   - j, t_end      ), color='k')
+                    axe.plot((t_end      , t_end   - j),
+                             (t_start + j, t_start    ), color='k')
+        axe.set_ylim(int(start or 1) - 0.5,
+                     int(start or 1) + len(matrix) - 0.5)
+        axe.set_xlim(int(start or 1) - 0.5,
+                     int(start or 1) + len(matrix) - 0.5)
+        if paint_tads:
+            ticks = []
+            labels = []
+            for tad, tick in [(t, tads[t]['start'] + (tads[t]['end'] -
+                                                      tads[t]['start'] - 1))
+                              for t in tads.keys()[::(len(tads)/11 + 1)]]:
+                ticks.append(tick)
+                labels.append(tad + 1)
+            axe.set_yticks(ticks)
+            axe.set_yticklabels(labels)
+        if show:
+            plt.show()
+        if savefig:
+            tadbit_savefig(savefig)
+        
 
 
     # def generate_densities(self):
