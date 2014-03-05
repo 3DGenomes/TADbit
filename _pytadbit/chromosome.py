@@ -596,10 +596,6 @@ class Chromosome(object):
            of the file name will determine the desired format).
         """
         xper = self.get_experiment(name)
-        if logarithm:
-            fun = log2
-        else:
-            fun = lambda x: x
         xper.view(tad=tad, focus=focus, paint_tads=paint_tads, axe=axe,
                   show=show, logarithm=logarithm, normalized=normalized,
                   relative=relative, decorate=decorate, savefig=savefig)

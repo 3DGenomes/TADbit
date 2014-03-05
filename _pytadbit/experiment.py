@@ -515,9 +515,10 @@ class Experiment(object):
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
-                               scale_range=[0.01][:],
+                               scale_range=[0.01][:], 
                                maxdist_range=(400, 1400, 100), cutoff=300,
-                               outfile=None, verbose=True, corr='spearman'):
+                               outfile=None, verbose=True, corr='spearman',
+                               off_diag=1):
         """
         Find the optimal set of parameters to be used for the 3D modeling in
         IMP.
@@ -576,7 +577,8 @@ class Experiment(object):
                                   upfreq_range=upfreq_range,
                                   lowfreq_range=lowfreq_range,
                                   scale_range=scale_range, corr=corr,
-                                  n_cpus=n_cpus, verbose=verbose)
+                                  n_cpus=n_cpus, verbose=verbose,
+                                  off_diag=1)
 
         if outfile:
             optimizer.write_result(outfile)
