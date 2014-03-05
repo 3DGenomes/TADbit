@@ -17,6 +17,7 @@ from cPickle                           import load, dump
 from pytadbit.alignment                import Alignment, randomization_test
 from numpy                             import log2
 from random                            import random
+from math import sqrt
 
 try:
     import matplotlib.pyplot as plt
@@ -558,13 +559,14 @@ class Chromosome(object):
                           savefig=savefig, shape=shape)
 
 
-    def visualize(self, name, tad=None, focus=None, paint_tads=False, axe=None,
-                  show=True, logarithm=True, normalized=False, relative=True,
-                  decorate=True, savefig=None):
+    def visualize(self, names=None, tad=None, focus=None, paint_tads=False,
+                  axe=None, show=True, logarithm=True, normalized=False,
+                  relative=True, decorate=True, savefig=None):
         """
         Visualize the matrix of Hi-C interactions of a given experiment
 
-        :param name: name of the experiment to visualize
+        :param None names: name of the experiment to visualize, or list of
+           experiment names. If None, all experiments will be shown
         :param None tad: a given TAD in the form:
            ::
            
@@ -595,10 +597,34 @@ class Chromosome(object):
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
         """
-        xper = self.get_experiment(name)
-        xper.view(tad=tad, focus=focus, paint_tads=paint_tads, axe=axe,
-                  show=show, logarithm=logarithm, normalized=normalized,
-                  relative=relative, decorate=decorate, savefig=savefig)
+        if names == None:
+            names = [xpr.name for xpr in self.experiments]
+        if type(names) != list and type(names) != tuple:
+            names = [names]
+            cols = 1
+            rows = 1
+        else:
+            sqrtxpr = sqrt(len(names))
+            cols = int(round(sqrtxpr + (0.0 if int(sqrtxpr)==sqrtxpr else .5)))
+            rows = int(sqrtxpr+.5)
+        notaxe = axe == None
+        if notaxe and len(names) != 1:
+            fig = plt.figure(figsize=(8 * cols, 6 * rows))
+        for i in xrange(rows):
+            for j in xrange(cols):
+                if i * cols + j >= len(names) + 1:
+                    break
+                if notaxe and len(names) != 1:
+                    axe = fig.add_subplot(
+                        rows, cols, i * cols + j + 1)
+                xper = self.get_experiment(names[i * cols + j])
+                xper.view(tad=tad, focus=focus, paint_tads=paint_tads, axe=axe,
+                          show=False, logarithm=logarithm, normalized=normalized,
+                          relative=relative, decorate=decorate, savefig=False)
+        if savefig:
+            tadbit_savefig(savefig)
+        if show:
+            plt.show()
         
 
     def get_tad_hic(self, tad, x_name, normed=True, matrix_num=0):
