@@ -12,7 +12,7 @@ from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser         import parse_tads
 from warnings                            import warn
 from math                                import sqrt
-from numpy                               import log2
+from numpy                               import log2, array
 from pytadbit.imp.CONFIG                 import CONFIG
 
 try:
@@ -23,6 +23,7 @@ except ImportError:
 
 try:
     import matplotlib.pyplot as plt
+    from matplotlib.cm import jet
 except ImportError:
     warn('matplotlib not found\n')
 
@@ -749,7 +750,7 @@ class Experiment(object):
 
     def view(self, tad=None, focus=None, paint_tads=False, axe=None,
              show=True, logarithm=True, normalized=False, relative=True,
-             decorate=True, savefig=None):
+             decorate=True, savefig=None, where='both', clim=None):
         """
         Visualize the matrix of Hi-C interactions
 
@@ -818,7 +819,7 @@ class Experiment(object):
             hic_data = [sum(i) for i in zip(*self.hic_data)]
         else:
             hic_data = self.hic_data[0]
-        if relative:
+        if relative and not clim:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
                 mini = min([i for i in self.norm[0] if i])
@@ -831,6 +832,8 @@ class Experiment(object):
             else:
                 vmin = fun(min(hic_data) or (1 if logarithm else 0))
                 vmax = fun(max(hic_data))
+        elif clim:
+            vmin, vmax = clim
         if axe is None:
             plt.figure(figsize=(8, 6))
             axe = plt.subplot(111)
@@ -866,6 +869,20 @@ class Experiment(object):
                 matrix = [[hic_data[i+size*j]\
                            for i in xrange(size)] \
                           for j in xrange(size)]
+        if where == 'up':
+            for i in xrange(end - start):
+                for j in xrange(i, end - start):
+                    matrix[i][j] = 1
+            alphas = array([0, 0] + [1] * 256 + [0])
+            jet._init()
+            jet._lut[:,-1] = alphas
+        elif where == 'down':
+            for i in xrange(end - start):
+                for j in xrange(i + 1):
+                    matrix[i][j] = 1
+            alphas = array([0, 0] + [1] * 256 + [0])
+            jet._init()
+            jet._lut[:,-1] = alphas
         if relative:
             img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
                              interpolation="nearest",
@@ -883,7 +900,7 @@ class Experiment(object):
         if decorate:
             cbar = axe.figure.colorbar(img)
             cbar.ax.set_ylabel('%sHi-C %sinteraction count' % (
-                'Log2 ' * logarithm, 'normalized ' * normalized))
+                'Log2 ' * logarithm, 'normalized ' * normalized), rotation=-90)
             axe.set_title(('Chromosome %s experiment %s' +
                            ' %s') % (self.crm.name, self.name,
                                      'focus: %s-%s' % (start, end) if tad else ''))
@@ -909,10 +926,14 @@ class Experiment(object):
             t_start = int(tad['start']) + .5
             t_end   = int(tad['end'])   + 1.5
             nwidth = float(tad['score']) / 4
-            axe.hlines(t_start, t_start, t_end, colors='k', lw=pwidth)
-            axe.hlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
-            axe.vlines(t_start, t_start, t_end, colors='k', lw=pwidth)
-            axe.vlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
+            if where in ['down', 'both']:
+                axe.hlines(t_start, t_start, t_end, colors='k', lw=pwidth)
+            if where in ['up', 'both']:
+                axe.hlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
+            if where in ['up', 'both']:
+                axe.vlines(t_start, t_start, t_end, colors='k', lw=pwidth)
+            if where in ['down', 'both']:
+                axe.vlines(t_end  , t_start, t_end, colors='k', lw=nwidth)
             pwidth = nwidth
             if tad['score'] < 0:
                 for j in xrange(0, int(t_end) - int(t_start), 2):
@@ -938,7 +959,7 @@ class Experiment(object):
             plt.show()
         if savefig:
             tadbit_savefig(savefig)
-        
+        return img
 
 
     # def generate_densities(self):

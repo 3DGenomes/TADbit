@@ -259,8 +259,8 @@ class Chromosome(object):
         for exp in self.experiments:
             if exp.name == name:
                 return exp
-        raise Exception('ERROR: experiment ' +
-                        '%s not found\n' % (name))
+        raise Exception(('ERROR: experiment ' +
+                         '%s not found\n') % (name))
                 
 
     def save_chromosome(self, out_f, fast=True, divide=True, force=False):
@@ -612,15 +612,43 @@ class Chromosome(object):
             fig = plt.figure(figsize=(8 * cols, 6 * rows))
         for i in xrange(rows):
             for j in xrange(cols):
-                if i * cols + j >= len(names) + 1:
+                if i * cols + j >= len(names):
                     break
                 if notaxe and len(names) != 1:
                     axe = fig.add_subplot(
                         rows, cols, i * cols + j + 1)
-                xper = self.get_experiment(names[i * cols + j])
-                xper.view(tad=tad, focus=focus, paint_tads=paint_tads, axe=axe,
-                          show=False, logarithm=logarithm, normalized=normalized,
-                          relative=relative, decorate=decorate, savefig=False)
+                if (type(names[i * cols + j]) is tuple or
+                    type(names[i * cols + j]) is list):
+                    if not axe:
+                        fig = plt.figure(figsize=(8 * cols, 6 * rows))
+                        axe = fig.add_subplot(
+                            rows, cols, i * cols + j + 1)                        
+                    # axe.set_aspect('equal', adjustable='box-forced', anchor='NE')
+                    xpr1 = self.get_experiment(names[i * cols + j][0])
+                    xpr2 = self.get_experiment(names[i * cols + j][1])
+                    img = xpr1.view(tad=tad, focus=focus, paint_tads=paint_tads,
+                                    axe=axe, show=False, logarithm=logarithm,
+                                    normalized=normalized, relative=relative,
+                                    decorate=decorate, savefig=False, where='up')
+                    # axe.set_aspect('equal', adjustable='box-forced', anchor='NE')
+                    img = xpr2.view(tad=tad, focus=focus, paint_tads=paint_tads,
+                                    axe=axe, show=False, logarithm=logarithm,
+                                    normalized=normalized, relative=relative,
+                                    decorate=False, savefig=False, where='down',
+                                    clim=img.get_clim())
+                    # axe = axe.twinx()
+                    # axe.set_aspect('equal', adjustable='box-forced', anchor='NE')
+                    if decorate:
+                        plt.text(1.01, .5, 
+                                 'Chromosome %s experiment %s' % (
+                                     self.name, xpr2.name),
+                                  rotation=-90, va='center', size='large',
+                                  ha='left', transform=axe.transAxes)
+                else:
+                    xper = self.get_experiment(names[i * cols + j])
+                    xper.view(tad=tad, focus=focus, paint_tads=paint_tads, axe=axe,
+                              show=False, logarithm=logarithm, normalized=normalized,
+                              relative=relative, decorate=decorate, savefig=False)
         if savefig:
             tadbit_savefig(savefig)
         if show:
