@@ -197,7 +197,8 @@ class Chromosome(object):
                     self.experiments.append(handler)
                 else:
                     self.add_experiment(name, experiment_resolutions[i],
-                                        hic_data=handler, parser=parser)
+                                        hic_data=handler, parser=parser,
+                                        silent=silent)
 
     def __repr__(self):
         outstr = 'Chromosome %s:\n' % self.name
@@ -493,7 +494,7 @@ class Chromosome(object):
                                      no_heuristic=no_heuristic,
                                      get_weights=True, **kwargs)
             xpr = Experiment(name, resolution, hic_data=matrix,
-                             tad_def=result, weights=weights)
+                             tad_def=result, weights=weights, **kwargs)
             xpr._zeros = xprs[0]._zeros
             for other in xprs[1:]:
                 xpr._zeros = dict([(k, None) for k in

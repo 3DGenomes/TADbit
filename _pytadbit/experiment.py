@@ -115,7 +115,8 @@ class Experiment(object):
         self._zscores        = {}
         if hic_data:
             self.load_hic_data(hic_data, parser,
-                               filter_columns=filter_columns)
+                               filter_columns=filter_columns,
+                               **kw_descr)
         if tad_def:
             self.load_tad_def(tad_def, weights=weights)
         elif not hic_data and not no_warn:

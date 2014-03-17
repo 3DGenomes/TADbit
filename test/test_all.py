@@ -136,9 +136,10 @@ class TestTadbit(unittest.TestCase):
                                   PATH + '/20Kb/chrT/chrT_A.tsv',
                                   PATH + '/20Kb/chrT/chrT_D.tsv',
                                   PATH + '/20Kb/chrT/chrT_C.tsv'],
-                              experiment_names=['exp1', 'exp2', 'exp3'])
+                              experiment_names=['exp1', 'exp2', 'exp3'],
+                              silent=True)
         test_chr.find_tad(['exp1', 'exp2', 'exp3'], batch_mode=True,
-                          verbose=False)
+                          verbose=False, silent=True)
         tads = test_chr.get_experiment('batch_exp1_exp2_exp3').tads
         found = [tads[t]['end'] for t in tads if tads[t]['score'] > 0]
         # Values obtained with square root normalization.
@@ -156,9 +157,10 @@ class TestTadbit(unittest.TestCase):
             t0 = time()
 
         test_chr1 = Chromosome(name='Test Chromosome',
-                              experiment_tads=[exp1, exp2],
-                              experiment_names=['exp1', 'exp2'],
-                              experiment_resolutions=[20000,20000])
+                               experiment_tads=[exp1, exp2],
+                               experiment_names=['exp1', 'exp2'],
+                               experiment_resolutions=[20000,20000],
+                               silent=True)
         test_chr1.save_chromosome('lolo', force=True)
         test_chr2 = load_chromosome('lolo')
         system('rm -f lolo')
@@ -177,7 +179,8 @@ class TestTadbit(unittest.TestCase):
                               experiment_names=['exp1'],
                               experiment_hic_data=[
                                   PATH + '/20Kb/chrT/chrT_D.tsv'],
-                              experiment_resolutions=[20000,20000])
+                              experiment_resolutions=[20000,20000],
+                              silent=True)
         all_tads = []
         for _, tad in test_chr.iter_tads('exp1'):
             all_tads.append(tad)
@@ -201,7 +204,8 @@ class TestTadbit(unittest.TestCase):
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000,
                               centromere_search=True,)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
+                                silent=True)
         # Values with square root normalization.
         #brks = [2.0, 7.0, 12.0, 18.0, 38.0, 43.0, 49.0,
         #        61.0, 66.0, 75.0, 89.0, 94.0, 99.0]
@@ -212,7 +216,8 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(brks, found)
         items1 = test_chr.forbidden.keys(), test_chr.forbidden.values()
         test_chr.add_experiment('exp2', 20000, tad_def=exp3,
-                                hic_data=PATH + '/20Kb/chrT/chrT_C.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_C.tsv',
+                                silent=True)
         items2 = test_chr.forbidden.keys(), test_chr.forbidden.values()
         know1 = ([38, 39], ['Centromere', 'Centromere'])
         #know1 = ([32, 33, 34, 38, 39, 19, 20, 21, 22,
@@ -233,7 +238,8 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
+                                silent=True)
         exp = test_chr.experiments['exp1']
         sum20 = sum(exp.hic_data[0])
         exp.set_resolution(80000)
@@ -272,14 +278,15 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
+                                silent=True)
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
         exp.get_hic_zscores()
         exp.get_hic_zscores(zscored=False)
         sumz = sum([exp._zscores[k1][k2] for k1 in exp._zscores.keys()
                     for k2 in exp._zscores[k1]])
-        self.assertEqual(round(sumz, 4), round(3983.2639, 4))
+        self.assertEqual(round(sumz, 4), round(3993.7842, 4))
         if CHKTIME:
             print '9', time() - t0
 
@@ -292,7 +299,8 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
+                                silent=True)
         exp = test_chr.experiments[0]
         tadbit_weights = exp.norm[:]
         exp.norm = None
@@ -312,15 +320,16 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
+                                silent=True)
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
         exp.get_hic_zscores(zscored=False)
         exp.write_interaction_pairs('lala')
         lines = open('lala').readlines()
-        self.assertEqual(len(lines), 4674)
+        self.assertEqual(len(lines), 4851)
         self.assertEqual(lines[25], '1\t28\t0.933380667098\n')
-        self.assertEqual(lines[2000], '26\t70\t0.115108273108\n')
+        self.assertEqual(lines[2000], '24\t100\t0.233201219512\n')
         system('rm -f lala')
         if CHKTIME:
             print '11', time() - t0
@@ -340,7 +349,8 @@ class TestTadbit(unittest.TestCase):
             return
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
+                                silent=True)
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
         exp.normalize_hic(silent=True)
@@ -375,7 +385,8 @@ class TestTadbit(unittest.TestCase):
             return
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
+                                silent=True)
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
         exp.normalize_hic(silent=True)
