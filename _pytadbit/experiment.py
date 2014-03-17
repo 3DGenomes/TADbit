@@ -391,7 +391,7 @@ class Experiment(object):
            interaction are informative.
 
         """
-        values = []
+        values = {}
         zeros  = {}
         self._zscores = {}
         if normalized:
@@ -406,7 +406,7 @@ class Experiment(object):
                         and remove_zeros):
                         zeros[(i, j)] = None
                         continue
-                    values.append(self.norm[0][i * self.size + j])
+                    values[(i, j)] = self.norm[0][i * self.size + j]
         else:
             for i in xrange(self.size):
                 if i in self._zeros:
@@ -414,11 +414,10 @@ class Experiment(object):
                 for j in xrange(i + 1, self.size):
                     if j in self._zeros:
                         continue
-                    values.append(self.hic_data[0][i * self.size + j])
+                    values[(i, j)] = self.hic_data[0][i * self.size + j]
         # compute Z-score
         if zscored:
             zscore(values)
-        iterval = values.__iter__()
         for i in xrange(self.size):
             if i in self._zeros:
                 continue
@@ -427,11 +426,8 @@ class Experiment(object):
                     continue
                 if (i, j) in zeros and remove_zeros:
                     continue
-                zsc = iterval.next()
                 self._zscores.setdefault(str(i), {})
-                self._zscores[str(i)][str(j)] = zsc
-                # self._zscores.setdefault(j, {})
-                # self._zscores[j][i] = zsc
+                self._zscores[str(i)][str(j)] = values[(i, j)]
 
 
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
