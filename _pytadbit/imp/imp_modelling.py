@@ -85,9 +85,6 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
               # Force applied to the restraints inferred to neighbor particles
               'kforce'    : 5,
 
-              # Minimum distance between two non-bonded particles
-              'lowrdist'  : 100,
-
               # Maximum experimental contact distance
               'maxdist'   : 600, # OPTIMIZATION: 500-1200
 
@@ -121,7 +118,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
     CONFIG['lowrdist'] = RADIUS * 2.
     
 
-    if CONFIG['lowrdist'] >= CONFIG['maxdist']:
+    if CONFIG['lowrdist'] > CONFIG['maxdist']:
         raise Exception('ERROR: we must prevent you from doing this for ' +
                         'the safe of our universe...\n' + 
                         'In this case, maxdist must be higher than %s\n' % (

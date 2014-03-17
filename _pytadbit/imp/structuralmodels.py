@@ -20,6 +20,7 @@ from numpy                          import median as np_median
 from numpy                          import mean as np_mean
 from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan
+from numpy                          import histogram, linspace
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.stats                    import spearmanr, pearsonr, linregress
@@ -1166,7 +1167,8 @@ class StructuralModels(object):
 
 
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=200, off_diag=1,
-                                 plot=False, axe=None, savefig=None, corr='spearman'):
+                                 plot=False, axe=None, savefig=None, corr='spearman',
+                                 midplot='hexbin', log_corr=True):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
@@ -1205,6 +1207,12 @@ class StructuralModels(object):
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
             corr = pearsonr(moddata, oridata)
+        elif corr == 'logpearson':
+            oridata = log2(oridata)
+            moddata = log2([i*100 for i in moddata])
+            oridata, moddata = ([j for i, j in enumerate(oridata) if str(j) != '-inf' and str(moddata[i]) != '-inf'],
+                                [j for i, j in enumerate(moddata) if str(j) != '-inf' and str(oridata[i]) != '-inf'])
+            corr = pearsonr(moddata, oridata)
         elif corr == 'frobenius':
             corr = (float(len(oridata)) / float(sum([
                 (moddata[i] - oridata[i])**2 for i in xrange(len(oridata))])), )
@@ -1217,7 +1225,7 @@ class StructuralModels(object):
         if not plot and not savefig:
             return corr
         if not axe:
-            fig = plt.figure(figsize=(18, 4.5))
+            fig = plt.figure(figsize=(20, 4.5))
         else:
             fig = axe.get_figure()
         fig.suptitle('Correlation between normalized-real and modeled '
@@ -1226,29 +1234,75 @@ class StructuralModels(object):
         ax = fig.add_subplot(131)
         self.contact_map(models, cluster, cutoff, axe=ax)
         ax = fig.add_subplot(132)
-        modl_dat = reduce(lambda x, y: x+y,
-                         self.get_contact_matrix(models, cluster, cutoff))
-        real_dat = log2(self._original_data).flatten()
-        slope, intercept, r_value, p_value, std_err = linregress(
-            [j for i, j in enumerate(modl_dat) if str(j) != 'nan' and str(real_dat[i]) != 'nan'],
-            [j for i, j in enumerate(real_dat) if str(j) != 'nan' and str(modl_dat[i]) != 'nan'])
-        lnr = ax.plot(modl_dat, intercept + slope * array (modl_dat), color='k',
-                      ls='--', alpha=.7)
-        ax.legend(lnr, ['p-value: %.3f, R: %.3f' % (p_value, r_value)])
-        ax.plot(modl_dat, real_dat, 'ro', alpha=0.5)
-        ax.set_title('Linear regression between real and modelled data')
-        ax.set_xlabel('Modelled data')
-        ax.set_ylabel('Real data')
+        # oridata = log2(oridata)
+        # moddata = log2([i*100 for i in moddata])
+        # oridata, moddata = ([j for i, j in enumerate(oridata) if str(j) != '-inf' and str(moddata[i]) != '-inf'],
+        #                     [j for i, j in enumerate(moddata) if str(j) != '-inf' and str(oridata[i]) != '-inf'])
+        if log_corr:
+            moddata, oridata = log2(array(moddata)*100), log2(oridata)
+        slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)
+        if midplot == 'classic':
+            lnr = ax.plot(moddata, intercept + slope * array (moddata), color='k',
+                          ls='--', alpha=.7)
+            ax.legend(lnr, ['p-value: %.3f, R: %.3f' % (p_value, r_value)])
+            ax.plot(moddata, oridata, 'ro', alpha=0.5)
+            ax.set_xlabel('Modelled data')
+            ax.set_ylabel('Real data')
+        elif midplot == 'hexbin':
+            hb = ax.hexbin(moddata, oridata, mincnt=1,
+                           gridsize=50, cmap=plt.cm.Spectral_r)
+            lnr = ax.plot(moddata, intercept + slope * array (moddata), color='k',
+                          ls='--', alpha=.7)
+            ax.set_xlabel(
+                '%sroportion of models with a particle pair closer than cutoff' % (
+                    'Log p' if log_corr else 'P'))
+            ax.set_ylabel('%sormalized Hi-C count for a particle pair' % (
+                    'Log n' if log_corr else 'N'))
+            cbaxes = fig.add_axes([0.41, 0.42, 0.005, 0.45]) 
+            cbar = plt.colorbar(hb, cax=cbaxes)#, orientation='horizontal')
+            cbar.set_label('Number of particle pairs')
+        elif midplot == 'triple':
+            maxval = max([i if str(i)!='-inf' else 0. for i in oridata])
+            minval = min([i if str(i)!='-inf' else 0. for i in oridata])
+            ax.set_visible(False)
+            axleft = fig.add_axes([0.42, 0.18, 0.1, 0.65])
+            axleft.spines['right'].set_color('none')
+            axleft.spines['bottom'].set_color('none')
+            axleft.spines['left'].set_smart_bounds(True)
+            axleft.spines['top'].set_smart_bounds(True)
+            axleft.xaxis.set_ticks_position('top')
+            axleft.yaxis.set_ticks_position('left')
+            axleft.set_ylabel('Normalized Hi-C count for a particle pair')
+            axleft.patch.set_visible(False)
+            axbott = fig.add_axes([0.44, 0.13, 0.17, 0.5]) 
+            axbott.spines['left'].set_color('none')
+            axbott.spines['top'].set_color('none')
+            axbott.spines['left'].set_smart_bounds(True)
+            axbott.spines['bottom'].set_smart_bounds(True)
+            axbott.xaxis.set_ticks_position('bottom')
+            axbott.yaxis.set_ticks_position('right')
+            axbott.patch.set_visible(False)
+            axbott.set_xlabel('Proportion of models with a particle pair closer than cutoff')
+            axmidl = fig.add_axes([0.44, 0.18, 0.17, 0.65])
+            axbott.hist(moddata, bins=20, alpha=.2)
+            x, _  = histogram([i if str(i)!='-inf' else 0. for i in oridata], bins=20)
+            axleft.barh(linspace(minval, maxval, 20), x, height=(maxval-minval)/20, alpha=.2, )
+            axleft.set_ylim((minval - (maxval-minval)/20, maxval + (maxval-minval)/20))
+            axmidl.plot(moddata, oridata, 'k.', alpha=.3)
+            axmidl.set_ylim(axleft.get_ylim())
+            axmidl.set_xlim(axbott.get_xlim())
+            axmidl.axis('off')
+            # axmidl.patch.set_visible(False)
+        ax.set_title('Real versus modelled data')
         ax = fig.add_subplot(133)
         ims = ax.imshow(log2(self._original_data), origin='lower',
                         interpolation="nearest",
-                        extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
+                        extent = (0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
         ax.set_title('Normalized Hi-C count')
         cbar = ax.figure.colorbar(ims)
         cbar.ax.set_ylabel('Log2 (normalized Hi-C data)')
-
         if savefig:
             tadbit_savefig(savefig)
         elif not axe:

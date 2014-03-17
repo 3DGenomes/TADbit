@@ -7,6 +7,7 @@
 from bisect    import bisect_left
 from itertools import combinations
 from math      import log10, exp
+from warnings  import warn
 import numpy as np
 
 
@@ -63,7 +64,7 @@ class Interpolate(object):
         return self.y_list[i] + self.slopes[i] * (x - self.x_list[i])
 
 
-def zscore(values, size):
+def zscore(values):
     """
     Calculates the log10, Z-score of a given list of values.
     
@@ -87,24 +88,19 @@ def zscore(values, size):
               /
   
     """
-    # do not take into account the diagonal
-    nop = dict([(i + size * i,  None) for i in xrange(size)])
     # Set the virtual minimum of the matrix to half the non-null real minimum
     minv = min([v for v in values if v]) / 2
     if minv > 1:
+        warn('WARNING: probable problem with normalization, check.\n')
         minv /= 2  # TODO: something better
     # get the log10 of values
-    vals = [log10(v) if v > 0 and not v in nop else log10(minv) for v in values]
+    # minv=1. # this to reproduce original behavior
+    vals = [log10(v) if v > 0 else log10(minv) for v in values]
     mean_v = np.mean(vals)
     std_v  = np.std(vals)
     # replace values by z-score
     for i in xrange(len(values)):
-        if values[i] > 0:
-            values[i] = (vals[i] - mean_v) / std_v
-        elif values[i] == 0:
-            values[i] = (log10(minv) - mean_v) / std_v
-        else:
-            values[i] = -99
+        values[i] = (vals[i] - mean_v) / std_v
 
 
 def calinski_harabasz(scores, clusters):

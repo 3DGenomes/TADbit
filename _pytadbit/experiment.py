@@ -378,7 +378,7 @@ class Experiment(object):
         self._normalization = 'visibility'
 
 
-    def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):
+    def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=False):
         """
         Normalize the Hi-C raw data. The result will be stored into
         the private Experiment._zscore list.
@@ -386,11 +386,12 @@ class Experiment(object):
         :param True normalized: whether to normalize the result using the
            weights (see :func:`normalize_hic`)
         :param True zscored: calculate the z-score of the data
-        :param True remove_zeros: remove null interactions
+        :param False remove_zeros: remove null interactions. Dangerous, null
+           interaction are informative.
 
         """
         values = []
-        zeros = {}
+        zeros  = {}
         self._zscores = {}
         if normalized:
             for i in xrange(self.size):
@@ -400,9 +401,8 @@ class Experiment(object):
                 for j in xrange(i + 1, self.size):
                     if j in self._zeros:
                         continue
-                    if (not self.hic_data[0][i * self.size + j] 
-                        or not self.hic_data[0][i * self.size + j])\
-                        and remove_zeros:
+                    if (not self.hic_data[0][i * self.size + j]
+                        and remove_zeros):
                         zeros[(i, j)] = None
                         continue
                     values.append(self.norm[0][i * self.size + j])
@@ -416,7 +416,7 @@ class Experiment(object):
                     values.append(self.hic_data[0][i * self.size + j])
         # compute Z-score
         if zscored:
-            zscore(values, self.size)
+            zscore(values)
         iterval = values.__iter__()
         for i in xrange(self.size):
             if i in self._zeros:
@@ -579,7 +579,7 @@ class Experiment(object):
                                   lowfreq_range=lowfreq_range,
                                   scale_range=scale_range, corr=corr,
                                   n_cpus=n_cpus, verbose=verbose,
-                                  off_diag=1)
+                                  off_diag=off_diag)
 
         if outfile:
             optimizer.write_result(outfile)
@@ -622,7 +622,7 @@ class Experiment(object):
         if len(exp._zeros) == (end - start):
             raise Exception('ERROR: no interaction found in selected regions')
         # ... but the z-scores in this particular region
-        exp.get_hic_zscores(remove_zeros=True)
+        exp.get_hic_zscores(remove_zeros=False)
         values = [[float('nan') for _ in xrange(exp.size)]
                   for _ in xrange(exp.size)]
         for i in xrange(exp.size):
@@ -844,13 +844,13 @@ class Experiment(object):
                         [self.norm[0][i+size*j]
                          if (not i in self._zeros
                              and not j in self._zeros) else vmin
-                         for i in xrange(start - 1, end)]
-                        for j in xrange(start - 1, end)]
+                         for i in xrange(int(start) - 1, int(end))]
+                        for j in xrange(int(start) - 1, int(end))]
                 else:
                     matrix = [
                         [hic_data[i+size*j]
-                         for i in xrange(start - 1, end)]
-                        for j in xrange(start - 1, end)]
+                         for i in xrange(int(start) - 1, int(end))]
+                        for j in xrange(int(start) - 1, int(end))]
             elif type(tad) is list:
                 if normalized:
                     warn('List passed, not going to be normalized.')
@@ -870,16 +870,16 @@ class Experiment(object):
                            for i in xrange(size)] \
                           for j in xrange(size)]
         if where == 'up':
-            for i in xrange(end - start):
-                for j in xrange(i, end - start):
-                    matrix[i][j] = 1
+            for i in xrange(int(end - start)):
+                for j in xrange(i, int(end - start)):
+                    matrix[i][j] = vmin
             alphas = array([0, 0] + [1] * 256 + [0])
             jet._init()
             jet._lut[:,-1] = alphas
         elif where == 'down':
-            for i in xrange(end - start):
+            for i in xrange(int(end - start)):
                 for j in xrange(i + 1):
-                    matrix[i][j] = 1
+                    matrix[i][j] = vmin
             alphas = array([0, 0] + [1] * 256 + [0])
             jet._init()
             jet._lut[:,-1] = alphas
