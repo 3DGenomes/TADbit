@@ -909,7 +909,7 @@ class StructuralModels(object):
         axe.set_xlabel('Particle')
         cbar = axe.figure.colorbar(ims)
         cbar.ax.set_yticklabels(['%3s%%' % (p) for p in range(0, 110, 10)])
-        cbar.ax.set_ylabel('Percentage of models with particles closer than ' +
+        cbar.ax.set_ylabel('Percentage of models with particles at <' +
                            '%s nm' % (cutoff))
         axe.set_title('Contact map')
         if savefig:
@@ -1207,21 +1207,12 @@ class StructuralModels(object):
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
             corr = pearsonr(moddata, oridata)
-        elif corr == 'logpearson':
-            oridata = log2(oridata)
-            moddata = log2([i*100 for i in moddata])
-            oridata, moddata = ([j for i, j in enumerate(oridata) if str(j) != '-inf' and str(moddata[i]) != '-inf'],
-                                [j for i, j in enumerate(moddata) if str(j) != '-inf' and str(oridata[i]) != '-inf'])
-            corr = pearsonr(moddata, oridata)
         elif corr == 'frobenius':
             corr = (float(len(oridata)) / float(sum([
                 (moddata[i] - oridata[i])**2 for i in xrange(len(oridata))])), )
         else:
             raise NotImplementedError('ERROR: %s not implemented, must be one ' +
                                       'of spearman, pearson or frobenius\n')
-        # corr = spearmanr(reduce(lambda x, y, : x + y, model_matrix),
-        #                  reduce(lambda x, y, : x + y, self._original_data))
-        # corr = corrcoef(moddata, oridata)[1]
         if not plot and not savefig:
             return corr
         if not axe:
@@ -1234,12 +1225,11 @@ class StructuralModels(object):
         ax = fig.add_subplot(131)
         self.contact_map(models, cluster, cutoff, axe=ax)
         ax = fig.add_subplot(132)
-        # oridata = log2(oridata)
-        # moddata = log2([i*100 for i in moddata])
-        # oridata, moddata = ([j for i, j in enumerate(oridata) if str(j) != '-inf' and str(moddata[i]) != '-inf'],
-        #                     [j for i, j in enumerate(moddata) if str(j) != '-inf' and str(oridata[i]) != '-inf'])
         if log_corr:
-            moddata, oridata = log2(array(moddata)*100), log2(oridata)
+            minmoddata = float(min([m for m in moddata if m]))
+            minoridata = float(min([m for m in oridata if m]))
+            moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
+                                log2([m if m else minoridata / 2 for m in oridata]))
         slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)
         if midplot == 'classic':
             lnr = ax.plot(moddata, intercept + slope * array (moddata), color='k',
@@ -1262,8 +1252,8 @@ class StructuralModels(object):
             cbar = plt.colorbar(hb, cax=cbaxes)#, orientation='horizontal')
             cbar.set_label('Number of particle pairs')
         elif midplot == 'triple':
-            maxval = max([i if str(i)!='-inf' else 0. for i in oridata])
-            minval = min([i if str(i)!='-inf' else 0. for i in oridata])
+            maxval = max(oridata)
+            minval = min(oridata)
             ax.set_visible(False)
             axleft = fig.add_axes([0.42, 0.18, 0.1, 0.65])
             axleft.spines['right'].set_color('none')
@@ -1282,13 +1272,19 @@ class StructuralModels(object):
             axbott.xaxis.set_ticks_position('bottom')
             axbott.yaxis.set_ticks_position('right')
             axbott.patch.set_visible(False)
-            axbott.set_xlabel('Proportion of models with a particle pair closer than cutoff')
+            axbott.set_xlabel('Proportion of models with a particle pair ' +
+                              ' interacting')
             axmidl = fig.add_axes([0.44, 0.18, 0.17, 0.65])
             axbott.hist(moddata, bins=20, alpha=.2)
-            x, _  = histogram([i if str(i)!='-inf' else 0. for i in oridata], bins=20)
-            axleft.barh(linspace(minval, maxval, 20), x, height=(maxval-minval)/20, alpha=.2, )
-            axleft.set_ylim((minval - (maxval-minval)/20, maxval + (maxval-minval)/20))
+            x, _  = histogram([i if str(i)!='-inf' else 0. for i in oridata],
+                              bins=20)
+            axleft.barh(linspace(minval, maxval, 20), x,
+                        height=(maxval-minval)/20, alpha=.2)
+            axleft.set_ylim((minval -
+                             (maxval-minval)/20, maxval + (maxval-minval)/20))
             axmidl.plot(moddata, oridata, 'k.', alpha=.3)
+            axmidl.plot(moddata, intercept + slope * array (moddata), color='k',
+                        ls='--', alpha=.7)
             axmidl.set_ylim(axleft.get_ylim())
             axmidl.set_xlim(axbott.get_xlim())
             axmidl.axis('off')

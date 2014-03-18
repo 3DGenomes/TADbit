@@ -3,15 +3,15 @@
 
 
 """
-from pytadbit.imp.CONFIG import CONFIG, NROUNDS, STEPS, LSTEPS
+from pytadbit.imp.CONFIG           import CONFIG, NROUNDS, STEPS, LSTEPS
 from pytadbit.imp.structuralmodels import StructuralModels
-from pytadbit.imp.impmodel import IMPmodel
-from scipy import polyfit
-from math import fabs, pow as power
-from cPickle import load, dump
+from pytadbit.imp.impmodel         import IMPmodel
+from scipy                         import polyfit
+from math                          import fabs, pow as power
+from cPickle                       import load, dump
+from sys                           import stdout
+from os.path                       import exists
 import multiprocessing as mu
-from sys import stdout
-from os.path import exists
 
 
 import IMP.core
