@@ -402,7 +402,7 @@ class TestTadbit(unittest.TestCase):
         a = rmsdRMSD_wrapper([models[m]['x'] for m in xrange(len(models))] + [avg['x']],
                              [models[m]['y'] for m in xrange(len(models))] + [avg['y']],
                              [models[m]['z'] for m in xrange(len(models))] + [avg['z']],
-                             len(models[0]), 200, range(len(models)+1),
+                             models.nloci, 410, range(len(models)+1),
                              len(models)+1, int(False), 'score', 1)
         self.assertEqual(25, sorted([(k, sum([a[(i, j)] for i, j in a if i==k or j==k]))
                                      for k in range(26)], key=lambda x: x[1])[-1][0])
@@ -410,8 +410,9 @@ class TestTadbit(unittest.TestCase):
         expsc = sum([sum([a[(i, j)] for i, j in a if i==k or j==k])
                      for k in range(25)]) / 25
         # find closest
+            
         model = min([(k, sum([a[(i, j)] for i, j in a if i==k or j==k]))
-                     for k in range(26)], key=lambda x:abs(x[1]-expsc))[0]
+                     for k in range(25)], key=lambda x:abs(x[1]-expsc))[0]
         self.assertEqual(centroid['rand_init'], models[model]['rand_init'])
         if CHKTIME:
             print '13', time() - t0
@@ -425,7 +426,7 @@ class TestTadbit(unittest.TestCase):
 
         models = load_structuralmodels('models.pick')
         if find_executable('mcl'):
-            models.cluster_models(method='mcl', verbose=False)
+            models.cluster_models(method='mcl', fact=0.85, verbose=False)
             self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
         models.cluster_models(method='ward', verbose=False)
         self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
@@ -448,7 +449,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual([round(float(i), 1) for i in lines[1].split('\t')[:3]],
                          [1, 100.0, 100.0])
         self.assertEqual([round(float(i), 1) for i in lines[15].split('\t')[:3]],
-                         [15, 99.9, 100.0])
+                         [15, 100.0, 100.0])
         # contacts
         cmap = models.get_contact_matrix(cutoff=300)
         self.assertEqual(round(
@@ -464,16 +465,16 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(m1, models[9])
         # correlation
         corr, pval = models.correlate_with_real_data(cutoff=300)
-        self.assertEqual(round(corr, 1), 0.6)
+        self.assertEqual(round(corr, 1), 0.7)
         self.assertEqual(round(pval, 4), round(0, 4))
         # consistency
         models.model_consistency(plot=False, savedata='lala')
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i)/10, 0) for i in lines[1].split('\t')],
-                         [0, 2, 3, 4, 5])
+                         [0, 1, 3, 4, 5])
         self.assertEqual([round(float(i)/10, 0) for i in lines[15].split('\t')],
-                         [2, 8, 10, 10, 10])
+                         [2, 9, 10, 10, 10])
         # measure angle
         self.assertEqual(round(models.angle_between_3_particles(2,8,15)/10, 0),
                          13)
@@ -523,21 +524,21 @@ class TestTadbit(unittest.TestCase):
         # stats
         self.assertEqual(200, round(model.distance(2, 3), 0))
         self.assertEqual(11, round(model.distance(8, 20)/100, 0))
-        self.assertEqual(round(623, 0),
+        self.assertEqual(round(614, 0),
                          round(model.radius_of_gyration(), 0))
         self.assertEqual(400, round(model.contour()/10, 0))
-        self.assertEqual(23,
+        self.assertEqual(22,
                          round((model.shortest_axe()+model.longest_axe())/100, 0))
-        self.assertEqual([15, 16], model.inaccessible_particles(1000))
+        self.assertEqual([11, 16], model.inaccessible_particles(1000))
 
         acc, num, acc_area, tot_area, bypt = model.accessible_surface(
             150, superradius=200, nump=150)
         self.assertEqual(229, acc)
-        self.assertEqual(524, num)
+        self.assertEqual(484, num)
         self.assertEqual(0.4, round(acc_area, 1))
         self.assertEqual(4, round(tot_area, 0))
         self.assertEqual(101, len(bypt))
-        self.assertEqual(bypt[100], (21,34,6))
+        self.assertEqual(bypt[100], (21,11,38))
         if CHKTIME:
             print '16', time() - t0
 

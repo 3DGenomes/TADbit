@@ -172,9 +172,10 @@ class IMPoptimizer(object):
         self.upfreq_range.sort( key=float)
 
 
-    def get_best_parameters_dict(self, reference=None):
+    def get_best_parameters_dict(self, reference=None, with_corr=False):
         """
         :param None reference: a description of the dataset optimized
+        :param False with_corr: if True, returns also the correlation value
 
         :returns: a dict that can be used for modelling, see config parameter in
            :func:`pytadbit.experiment.Experiment.model_region`
@@ -187,12 +188,20 @@ class IMPoptimizer(object):
         for (sca, mxd, ufq, lfq), val in self.results.iteritems():
             if val > best[-1]:
                 best = ((sca, mxd, ufq, lfq), val)
-        return dict((('scale'  , float(best[0][0])),
-                     ('maxdist', float(best[0][1])),
-                     ('upfreq' , float(best[0][2])),
-                     ('lowfreq', float(best[0][3])),
-                     ('reference', reference or ''), ('kforce', 5)))
-
+        if with_corr:
+            return (dict((('scale'  , float(best[0][0])),
+                          ('maxdist', float(best[0][1])),
+                          ('upfreq' , float(best[0][2])),
+                          ('lowfreq', float(best[0][3])),
+                          ('reference', reference or ''), ('kforce', 5))),
+                    best[-1])
+        else:
+            return dict((('scale'  , float(best[0][0])),
+                         ('maxdist', float(best[0][1])),
+                         ('upfreq' , float(best[0][2])),
+                         ('lowfreq', float(best[0][3])),
+                         ('reference', reference or ''), ('kforce', 5)))
+    
 
     def plot_2d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
                 show_best=0, skip=None, savefig=None):

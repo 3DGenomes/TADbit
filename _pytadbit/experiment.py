@@ -251,7 +251,8 @@ class Experiment(object):
 
 
     def load_hic_data(self, hic_data, parser=None, wanted_resolution=None,
-                      data_resolution=None, filter_columns=True, silent=False):
+                      data_resolution=None, filter_columns=True, silent=False,
+                      **kwargs):
         """
         Add a Hi-C experiment to the Chromosome object.
         
