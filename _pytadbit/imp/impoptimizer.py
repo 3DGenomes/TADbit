@@ -97,7 +97,7 @@ class IMPoptimizer(object):
                                            upfreq_range[1] + upfreq_step / 2,
                                            upfreq_step)
         else:
-            if type(upfreq_range) in list(float, int):
+            if type(upfreq_range) in (float, int):
                 upfreq_range = list(upfreq_range)
             upfreq_arange = upfreq_range
         if type(scale_range) == tuple:
