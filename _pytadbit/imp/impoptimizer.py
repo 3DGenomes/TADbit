@@ -34,7 +34,8 @@ class IMPoptimizer(object):
 
         self.resolution = experiment.resolution
         (self.zscores,
-         self.values) = experiment._sub_experiment_zscore(start, end)
+         self.values)   = experiment._sub_experiment_zscore(start, end)
+        self.nloci      = end - start
         self.n_models   = n_models
         self.n_keep     = n_keep
         self.close_bins = close_bins
@@ -49,7 +50,7 @@ class IMPoptimizer(object):
 
 
     def run_grid_search(self, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1),
-                    scale_range=[0.01], corr='spearman', off_diag=1,
+                    scale_range=0.01, corr='spearman', off_diag=1,
                     maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True):
         """
         This function calculates the correlation between the models generated 
@@ -67,7 +68,7 @@ class IMPoptimizer(object):
            used to search for the optimal maximum experimental distance. The 
            last value of the input tuple is the incremental step for maxdist 
            values
-        :param [0.01] scale_range: upper and lower bounds used to search for
+        :param 0.01 scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
         :param True verbose: print the results to the standard output
@@ -78,6 +79,8 @@ class IMPoptimizer(object):
                                         maxdist_range[1] + maxdist_step,
                                         maxdist_step)
         else:
+            if type(maxdist_range) in (float, int):
+                maxdist_range = list(maxdist_range)
             maxdist_arange = maxdist_range
         if type(lowfreq_range) == tuple:
             lowfreq_step = lowfreq_range[2]
@@ -85,6 +88,8 @@ class IMPoptimizer(object):
                                             lowfreq_range[1] + lowfreq_step / 2,
                                             lowfreq_step)
         else:
+            if type(lowfreq_range) in (float, int):
+                lowfreq_range = list(lowfreq_range)
             lowfreq_arange = lowfreq_range
         if type(upfreq_range) == tuple:
             upfreq_step = upfreq_range[2]
@@ -92,6 +97,8 @@ class IMPoptimizer(object):
                                            upfreq_range[1] + upfreq_step / 2,
                                            upfreq_step)
         else:
+            if type(upfreq_range) in list(float, int):
+                upfreq_range = list(upfreq_range)
             upfreq_arange = upfreq_range
         if type(scale_range) == tuple:
             scale_step = scale_range[2]
@@ -99,6 +106,8 @@ class IMPoptimizer(object):
                                           scale_range[1] + scale_step / 2,
                                           scale_step)
         else:
+            if type(scale_range) in (float, int):
+                scale_range = list(scale_range)
             scale_arange = scale_range
 
         # round everything
@@ -142,7 +151,7 @@ class IMPoptimizer(object):
                                'lowfreq'  : float(lowfreq),
                                'scale'    : float(scale)}
                         tdm = generate_3d_models(self.zscores, self.resolution,
-                                                 self.n_models,
+                                                 self.nloci, self.n_models,
                                                  self.n_keep, config=tmp,
                                                  n_cpus=n_cpus,
                                                  values=self.values,

@@ -29,10 +29,10 @@ IMP.set_check_level(IMP.NONE)
 IMP.set_log_level(IMP.SILENT)
 
 
-def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
-                       close_bins=1, n_cpus=1, keep_all=False, verbose=0,
-                       outfile=None, config=CONFIG['dmel_01'], values=None,
-                       experiment=None, coords=None):
+def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
+                       n_keep=1000, close_bins=1, n_cpus=1, keep_all=False,
+                       verbose=0, outfile=None, config=CONFIG['dmel_01'],
+                       values=None, experiment=None, coords=None):
     """
     This function generates three-dimensional models starting from Hi-C data. 
     The final analysis will be performed on the n_keep top models.
@@ -41,6 +41,8 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
        Hi-C pairwise interactions
     :param resolution:  number of nucleotides per Hi-C bin. This will be the 
        number of nucleotides in each model's particle
+    :param nloci: number of particles to model (may not all be present in
+       zscores)
     :param None experiment: experiment from which to do the modelling (used only
        for descriptive purpose)
     :param None coords: a dictionary like:
@@ -147,10 +149,7 @@ def generate_3d_models(zscores, resolution, start=1, n_models=5000, n_keep=1000,
 
     
     global LOCI, NLOCI
-    LOCI = range(max([int (k) for k in zscores.keys()] +
-                     reduce(lambda x, y: x + y,
-                            [[int (k) for k in j.keys()]
-                             for j in zscores.values()])) + 1)
+    LOCI  = range(nloci + 1)
     NLOCI = len(LOCI)
     
     # Z-scores
