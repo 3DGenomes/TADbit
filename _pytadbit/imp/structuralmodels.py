@@ -2132,20 +2132,38 @@ class StructuralModels(object):
 
         :param path_f: path where to save the pickle file
         """
+
+        out = open(outfile, 'w')
+        dump(self._reduce_models(), out)
+        out.close()
+
+
+    def _reduce_models(self, minimal=False):
+        """
+        reduce strural models objects to a dictionary to be saved
+
+        :param False minimal: do not save info about log_objfun decay nor
+           zscores
+        
+        :returns: this dictionary
+        """
         to_save = {}
 
-        to_save['models']        = self.__models
+        if minimal:
+            for m in self.__models:
+                self.__models[m]['log_objfun'] = None
+            to_save['models']        = self.__models
+        else:
+            to_save['models']        = self.__models
         to_save['bad_models']    = self._bad_models
         to_save['nloci']         = self.nloci
         to_save['clusters']      = self.clusters
         to_save['resolution']    = self.resolution
         to_save['original_data'] = self._original_data
         to_save['config']        = self._config
-        to_save['zscore']        = self._zscores
+        to_save['zscore']        = {} if minimal else self._zscores
 
-        out = open(outfile, 'w')
-        dump(to_save, out)
-        out.close()
+        return to_save
 
 
 class ClusterOfModels(dict):

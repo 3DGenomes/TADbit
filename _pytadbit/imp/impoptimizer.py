@@ -3,10 +3,12 @@
 
 
 """
-from pytadbit.imp.imp_modelling import generate_3d_models
-from pytadbit.utils.extraviews  import plot_2d_optimization_result
-from pytadbit.utils.extraviews  import plot_3d_optimization_result
-from warnings                   import warn
+from pytadbit.imp.imp_modelling    import generate_3d_models
+from pytadbit.utils.extraviews     import plot_2d_optimization_result
+from pytadbit.utils.extraviews     import plot_3d_optimization_result
+from pytadbit.imp.structuralmodels import StructuralModels
+from warnings                      import warn
+from cPickle                       import dump, load
 from sys import stderr
 import numpy as np
 
@@ -49,9 +51,13 @@ class IMPoptimizer(object):
         self.results = {}
 
 
-    def run_grid_search(self, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1),
-                    scale_range=0.01, corr='spearman', off_diag=1,
-                    maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True):
+    def run_grid_search(self, 
+                        upfreq_range=(0, 1, 0.1),
+                        lowfreq_range=(-1, 0, 0.1),
+                        maxdist_range=(400, 1500, 100),
+                        scale_range=0.01,
+                        corr='spearman', off_diag=1,
+                        savedata=None, n_cpus=1, verbose=True):
         """
         This function calculates the correlation between the models generated 
         by IMP and the input data for the four main IMP parameters (scale, 
@@ -137,6 +143,7 @@ class IMPoptimizer(object):
                                       self.scale_range)
         
         # grid search
+        models = {}
         count = 0
         for scale in [my_round(i) for i in scale_arange]:
             for maxdist in [my_round(i) for i in maxdist_arange]:
@@ -174,7 +181,75 @@ class IMPoptimizer(object):
                             continue
                         # store
                         self.results[(scale, maxdist, upfreq, lowfreq)] = result
+                        if savedata:
+                            models[(scale, maxdist, upfreq, lowfreq)
+                                   ] = tdm._reduce_models(minimal=True)
+        if savedata:
+            out = open(savedata, 'w')
+            dump(models, out)
+            out.close()
+        self.scale_range.sort(  key=float)
+        self.maxdist_range.sort(key=float)
+        self.lowfreq_range.sort(key=float)
+        self.upfreq_range.sort( key=float)
 
+
+    def load_grid_search(self, filenames, corr='spearman', off_diag=1,
+                         verbose=True):
+        """
+        Loads one file or a list of files containing pre-calculated Structural
+        Models (keep_models parameter used). And correlate each set of models
+        with real data. Usefull to run different correlation on the same data
+        avoiding to re-calculate each time the models.
+
+        :param filenames: either a path to a file or a list of paths.
+        :param spearman corr: correlation coefficient to use
+        'param 1 off_diag:
+        :param True verbose: print the results to the standard output
+
+        """
+        if type(filenames) == str:
+            filenames = [filenames]
+        models = {}
+        for filename in filenames:
+            inf = open(filename)
+            models.update(load(inf))
+            inf.close()
+        count = 0
+        for scale, maxdist, upfreq, lowfreq in models:
+            svd = models[(scale, maxdist, upfreq, lowfreq)]
+            tdm = StructuralModels(
+                nloci=svd['nloci'], models=svd['models'],
+                bad_models=svd['bad_models'],
+                resolution=svd['resolution'],
+                original_data=svd['original_data'],
+                clusters=svd['clusters'], config=svd['config'],
+                zscores=svd['zscore'])
+            if not scale in self.scale_range:
+                self.scale_range.append(scale)
+            if not maxdist in self.maxdist_range:
+                self.maxdist_range.append(maxdist)
+            if not lowfreq in self.lowfreq_range:
+                self.lowfreq_range.append(lowfreq)
+            if not upfreq in self.upfreq_range:
+                self.upfreq_range.append(upfreq)
+            count += 1
+            try:
+                result = tdm.correlate_with_real_data(
+                    cutoff=self.cutoff, corr=corr,
+                    off_diag=off_diag)[0]
+                if verbose:
+                    verb = '%5s  %s %s %s %s ' % (
+                        count, upfreq, lowfreq, maxdist, scale)
+                    if verbose == 2:
+                        stderr.write(verb + str(result) + '\n')
+                    else:
+                        print verb + str(result)
+            except Exception, e:
+                print 'ERROR %s' % e
+                continue
+            # store
+            self.results[(scale, maxdist, upfreq, lowfreq)] = result
         self.scale_range.sort(  key=float)
         self.maxdist_range.sort(key=float)
         self.lowfreq_range.sort(key=float)

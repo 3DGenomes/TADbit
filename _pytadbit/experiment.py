@@ -518,7 +518,7 @@ class Experiment(object):
                                scale_range=[0.01][:], 
                                maxdist_range=(400, 1400, 100), cutoff=300,
                                outfile=None, verbose=True, corr='spearman',
-                               off_diag=1):
+                               off_diag=1, savedata=None):
         """
         Find the optimal set of parameters to be used for the 3D modeling in
         IMP.
@@ -578,7 +578,7 @@ class Experiment(object):
                                   lowfreq_range=lowfreq_range,
                                   scale_range=scale_range, corr=corr,
                                   n_cpus=n_cpus, verbose=verbose,
-                                  off_diag=off_diag)
+                                  off_diag=off_diag, savedata=savedata)
 
         if outfile:
             optimizer.write_result(outfile)
