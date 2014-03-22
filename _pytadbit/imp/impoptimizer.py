@@ -86,7 +86,7 @@ class IMPoptimizer(object):
                                         maxdist_step)
         else:
             if type(maxdist_range) in (float, int):
-                maxdist_range = list(maxdist_range)
+                maxdist_range = [maxdist_range]
             maxdist_arange = maxdist_range
         if type(lowfreq_range) == tuple:
             lowfreq_step = lowfreq_range[2]
@@ -95,7 +95,7 @@ class IMPoptimizer(object):
                                             lowfreq_step)
         else:
             if type(lowfreq_range) in (float, int):
-                lowfreq_range = list(lowfreq_range)
+                lowfreq_range = [lowfreq_range]
             lowfreq_arange = lowfreq_range
         if type(upfreq_range) == tuple:
             upfreq_step = upfreq_range[2]
@@ -104,7 +104,7 @@ class IMPoptimizer(object):
                                            upfreq_step)
         else:
             if type(upfreq_range) in (float, int):
-                upfreq_range = list(upfreq_range)
+                upfreq_range = [upfreq_range]
             upfreq_arange = upfreq_range
         if type(scale_range) == tuple:
             scale_step = scale_range[2]
@@ -113,7 +113,7 @@ class IMPoptimizer(object):
                                           scale_step)
         else:
             if type(scale_range) in (float, int):
-                scale_range = list(scale_range)
+                scale_range = [scale_range]
             scale_arange = scale_range
 
         # round everything
