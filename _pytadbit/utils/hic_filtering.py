@@ -193,11 +193,13 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
     bads = {}
     for i, col in enumerate(matrx):
         if sum(col) < root:
-            bads[i] = None
+            bads[i] = sum(col)
     # now stored in Experiment._zeros, used for getting more accurate z-scores
     if bads and not silent:
-        warn('WARNING: removing columns: %s \nhaving less than %s count' %(
-            ', '.join([str(i) for i in bads.keys()]), round(root, 3)))
+        warn('\nWARNING: removing columns having less than %s count: \n %s' %(
+            ' '.join(['%4s'%str(i+1) + (''if (j+1)%15 else '\n')
+                      for j, i in enumerate(sorted(bads.keys()))]),
+            round(root, 3)))
     return bads
 
 
