@@ -6,7 +6,7 @@
 
 from bisect    import bisect_left
 from itertools import combinations
-from math      import log10, exp
+from math      import log, log10, exp
 from warnings  import warn
 import numpy as np
 
@@ -63,6 +63,16 @@ class Interpolate(object):
         i = bisect_left(self.x_list, x) - 1
         return self.y_list[i] + self.slopes[i] * (x - self.x_list[i])
 
+
+def nozero_log(values):
+    minv = float(min(values)) / 2
+    logminv = log(minv)
+    for i in xrange(values):
+        try:
+            values[i] = log(values[i])
+        except ZeroDivisionError:
+            values[i] = logminv
+    
 
 def zscore(values):
     """

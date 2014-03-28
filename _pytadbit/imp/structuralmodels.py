@@ -6,7 +6,7 @@
 from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
 from pytadbit.utils.three_dim_stats import get_center_of_mass, distance
-from pytadbit.utils.tadmaths        import calinski_harabasz
+from pytadbit.utils.tadmaths        import calinski_harabasz, nozero_log
 from pytadbit.utils.extraviews      import plot_3d_model
 from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
@@ -23,7 +23,8 @@ from numpy                          import array, cross, dot, ma, isnan
 from numpy                          import histogram, linspace
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
-from scipy.stats                    import spearmanr, pearsonr, linregress
+from scipy.stats                    import spearmanr, pearsonr, chisquare
+from scipy.stats                    import linregress
 from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
@@ -1172,7 +1173,7 @@ class StructuralModels(object):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
-        
+
         :param None models: if None (default) the correlation will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -1207,9 +1208,10 @@ class StructuralModels(object):
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
             corr = pearsonr(moddata, oridata)
-        elif corr == 'frobenius':
-            corr = (float(len(oridata)) / float(sum([
-                (moddata[i] - oridata[i])**2 for i in xrange(len(oridata))])), )
+        elif corr == 'logpearson':
+            corr = pearsonr(nozero_log(moddata), nozero_log(oridata))
+        elif corr == 'chi2':
+            corr = 1. / chisquare(array(moddata), array(oridata))
         else:
             raise NotImplementedError('ERROR: %s not implemented, must be one ' +
                                       'of spearman, pearson or frobenius\n')

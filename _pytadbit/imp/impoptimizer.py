@@ -10,7 +10,8 @@ from pytadbit.imp.structuralmodels import StructuralModels
 from warnings                      import warn
 from cPickle                       import dump, load
 from sys import stderr
-import numpy as np
+import numpy           as np
+import multiprocessing as mu
 
 
 class IMPoptimizer(object):
@@ -195,7 +196,7 @@ class IMPoptimizer(object):
 
 
     def load_grid_search(self, filenames, corr='spearman', off_diag=1,
-                         verbose=True):
+                         verbose=True, n_cpus=1):
         """
         Loads one file or a list of files containing pre-calculated Structural
         Models (keep_models parameter used). And correlate each set of models
@@ -216,15 +217,20 @@ class IMPoptimizer(object):
             models.update(load(inf))
             inf.close()
         count = 0
+        pool = mu.Pool(n_cpus)
+        jobs = {}
         for scale, maxdist, upfreq, lowfreq in models:
             svd = models[(scale, maxdist, upfreq, lowfreq)]
-            tdm = StructuralModels(
-                nloci=svd['nloci'], models=svd['models'],
-                bad_models=svd['bad_models'],
-                resolution=svd['resolution'],
-                original_data=svd['original_data'],
-                clusters=svd['clusters'], config=svd['config'],
-                zscores=svd['zscore'])
+            jobs[(scale, maxdist, upfreq, lowfreq)] = pool.apply_async(
+                _mu_correlate, args=(svd, self.cutoff, corr, off_diag,
+                                     scale, maxdist, upfreq, lowfreq,
+                                     verbose, count))
+            count += 1
+        pool.close()
+        pool.join()
+        for scale, maxdist, upfreq, lowfreq in models:
+            self.results[(scale, maxdist, upfreq, lowfreq)] = \
+                                 jobs[(scale, maxdist, upfreq, lowfreq)].get()
             if not scale in self.scale_range:
                 self.scale_range.append(scale)
             if not maxdist in self.maxdist_range:
@@ -233,23 +239,6 @@ class IMPoptimizer(object):
                 self.lowfreq_range.append(lowfreq)
             if not upfreq in self.upfreq_range:
                 self.upfreq_range.append(upfreq)
-            count += 1
-            try:
-                result = tdm.correlate_with_real_data(
-                    cutoff=self.cutoff, corr=corr,
-                    off_diag=off_diag)[0]
-                if verbose:
-                    verb = '%5s  %s %s %s %s ' % (
-                        count, upfreq, lowfreq, maxdist, scale)
-                    if verbose == 2:
-                        stderr.write(verb + str(result) + '\n')
-                    else:
-                        print verb + str(result)
-            except Exception, e:
-                print 'ERROR %s' % e
-                continue
-            # store
-            self.results[(scale, maxdist, upfreq, lowfreq)] = result
         self.scale_range.sort(  key=float)
         self.maxdist_range.sort(key=float)
         self.lowfreq_range.sort(key=float)
@@ -424,3 +413,29 @@ class IMPoptimizer(object):
 def my_round(num, val=4):
     num = round(num, val)
     return str(int(num) if num == int(num) else num)
+
+
+def _mu_correlate(svd, cutoff, corr, off_diag, scale, maxdist, upfreq, lowfreq,
+                  verbose, count):
+    tdm = StructuralModels(
+        nloci=svd['nloci'], models=svd['models'],
+        bad_models=svd['bad_models'],
+        resolution=svd['resolution'],
+        original_data=svd['original_data'],
+        clusters=svd['clusters'], config=svd['config'],
+        zscores=svd['zscore'])
+    try:
+        result = tdm.correlate_with_real_data(
+            cutoff=cutoff, corr=corr,
+            off_diag=off_diag)[0]
+        if verbose:
+            verb = '%5s  %s %s %s %s ' % (
+                count, upfreq, lowfreq, maxdist, scale)
+            if verbose == 2:
+                stderr.write(verb + str(result) + '\n')
+            else:
+                print verb + str(result)
+    except Exception, e:
+        print 'ERROR %s' % e
+    return result
+
