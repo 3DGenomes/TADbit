@@ -1211,7 +1211,7 @@ class StructuralModels(object):
         elif corr == 'logpearson':
             corr = pearsonr(nozero_log(moddata), nozero_log(oridata))
         elif corr == 'chi2':
-            corr = 1. / chisquare(array(moddata), array(oridata))
+            corr = 1. / chisquare(array(moddata), array(oridata))[0]
         else:
             raise NotImplementedError('ERROR: %s not implemented, must be one ' +
                                       'of spearman, pearson or frobenius\n')
