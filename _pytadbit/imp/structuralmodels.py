@@ -707,7 +707,7 @@ class StructuralModels(object):
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
                    mclargs=None, what='dRMSD', n_best_clusters=10,
                    savefig=None, represent_models=False, figsize=(11, 11),
-                   **kwargs):
+                   clusters=None, **kwargs):
         """
         This function performs a deconvolution analysis of a given froup of models.
         It first clusters models based on structural comparison (dRMSD), and
@@ -738,6 +738,8 @@ class StructuralModels(object):
         :param mclargs: list with any other command line argument to be passed
            to mcl (i.e,: mclargs=['-pi', '10', '-I', '2.0'])
         :param 10 n_best_clusters: number of clusters to represent
+        :param None clusters: provide clusters as a dictionary with keys=cluster
+           number, or name, and values list of model numbers.
         :param False represent_models: To generate an interactive visualization
            of a representative model for each cluster. Representative model
            depends on the value passed to this option, it can be either
@@ -749,10 +751,12 @@ class StructuralModels(object):
         :param (11,11) figsize: dimension of the plot
         """
         fact /= self.nloci
-        clusters = self.cluster_models(fact=fact, dcutoff=dcutoff, mcl_bin=mcl_bin,
-                                       method=method, tmp_file=tmp_file,
-                                       n_cpus=n_cpus, mclargs=mclargs,
-                                       external=True, what=what)
+        if not clusters:
+            clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
+                                           mcl_bin=mcl_bin,
+                                           method=method, tmp_file=tmp_file,
+                                           n_cpus=n_cpus, mclargs=mclargs,
+                                           external=True, what=what)
         if verbose:
             print clusters
         n_best_clusters = min(len(clusters), n_best_clusters)
@@ -766,47 +770,96 @@ class StructuralModels(object):
                      for i in xrange(n_best_clusters)]
         for i in xrange(n_best_clusters - 1 + add):
             for j in xrange(n_best_clusters - 1 + add):
-                axes[i,j].set(adjustable='box-forced', aspect=1)
-                axes[i,j].set_visible(False)
+                try:
+                    axes[i,j].set(adjustable='box-forced', aspect=1)
+                    axes[i,j].set_visible(False)
+                except TypeError:
+                    axes.set(adjustable='box-forced', aspect=1)
+                    axes.set_visible(False)
         # doing the plot
         for i in xrange(n_best_clusters - 1):
             for j in xrange(1, n_best_clusters):
                 if j < i+1:
                     continue
-                axes[i+add, j-1].set_visible(True)
-                axes[i+add, j-1].set(adjustable='box-forced', aspect=1)
+                try:
+                    axes[i+add, j-1].set_visible(True)
+                    axes[i+add, j-1].set(adjustable='box-forced', aspect=1)
+                except TypeError:
+                    axes.set_visible(True)
+                    axes.set(adjustable='box-forced', aspect=1)
                 matrix3 = [[cmatrices[i][k][l] - cmatrices[j][k][l]
                             for l in xrange(self.nloci)]
                            for k in xrange(self.nloci)]
-                ims = axes[i+add, j-1].imshow(matrix3, origin='lower', cmap=bwr,
-                                          interpolation="nearest", vmin=-1, vmax=1,
-                                          extent=(0.5, len(matrix3) + 0.5,
-                                                  0.5, len(matrix3) + 0.5))
-                axes[i+add, j-1].grid()
+                try:
+                    ims = axes[i+add, j-1].imshow(
+                        matrix3, origin='lower', cmap=bwr,
+                        interpolation="nearest", vmin=-1, vmax=1,
+                        extent=(0.5, len(matrix3) + 0.5,
+                                0.5, len(matrix3) + 0.5))
+                    axes[i+add, j-1].grid()
+                except TypeError:
+                    ims = axes.imshow(
+                        matrix3, origin='lower', cmap=bwr,
+                        interpolation="nearest", vmin=-1, vmax=1,
+                        extent=(0.5, len(matrix3) + 0.5,
+                                0.5, len(matrix3) + 0.5))
+                    axes.grid()
                 if not i and not represent_models:
-                    axes[i+add,j-1].set_title('Cluster #%s' % (j + 1),
-                                              color='blue')
+                    try:
+                        axes[i+add,j-1].set_title('Cluster #%s' % (j + 1),
+                                                  color='blue')
+                    except TypeError:
+                        axes.set_title('Cluster #%s' % (j + 1),
+                                                  color='blue')
                 if j != i+1:
-                    axes[i+add,j-1].yaxis.set_ticks_position('none')
+                    try:
+                        axes[i+add,j-1].yaxis.set_ticks_position('none')
+                    except TypeError:
+                        axes.yaxis.set_ticks_position('none')
                 else:
-                    plt.setp(axes[i+add,j-1].get_yticklabels(), visible=True)
-                    axes[i+add,j-1].yaxis.set_ticks_position('left')
-                    for item in axes[i+add,j-1].get_yticklabels():
-                        item.set_fontsize(9)
+                    try:
+                        plt.setp(axes[i+add,j-1].get_yticklabels(), visible=True)
+                        axes[i+add,j-1].yaxis.set_ticks_position('left')
+                        for item in axes[i+add,j-1].get_yticklabels():
+                            item.set_fontsize(9)
+                    except TypeError:
+                        plt.setp(axes.get_yticklabels(), visible=True)
+                        axes.yaxis.set_ticks_position('left')
+                        for item in axes.get_yticklabels():
+                            item.set_fontsize(9)
                 if i != j-1:
-                    axes[i+add, j-1].xaxis.set_ticks_position('none')
+                    try:
+                        axes[i+add, j-1].xaxis.set_ticks_position('none')
+                    except TypeError:
+                        axes.xaxis.set_ticks_position('none')
                 else:
-                    plt.setp(axes[i+add, j-1].get_xticklabels(), visible=True)
-                    axes[i+add,j-1].xaxis.set_ticks_position('bottom')
-                    for item in axes[i+add, j-1].get_xticklabels():
-                        item.set_fontsize(9)
+                    try:
+                        plt.setp(axes[i+add, j-1].get_xticklabels(), visible=True)
+                        axes[i+add,j-1].xaxis.set_ticks_position('bottom')
+                        for item in axes[i+add, j-1].get_xticklabels():
+                            item.set_fontsize(9)
+                    except TypeError:
+                        plt.setp(axes.get_xticklabels(), visible=True)
+                        axes.xaxis.set_ticks_position('bottom')
+                        for item in axes.get_xticklabels():
+                            item.set_fontsize(9)
                 if j == n_best_clusters - 1 and not represent_models:
-                    axes[i+add, j-1].yaxis.set_label_position('right')
-                    axes[i+add, j-1].set_ylabel('Cluster #%s' % (i + 1),
-                                               rotation=-90, fontsize='large',
-                                               color='red', va='bottom')
-                axes[i+add, j-1].set_xlim((0.5, len(matrix3) + 0.5))
-                axes[i+add, j-1].set_ylim((0.5, len(matrix3) + 0.5))
+                    try:
+                        axes[i+add, j-1].yaxis.set_label_position('right')
+                        axes[i+add, j-1].set_ylabel('Cluster #%s' % (i + 1),
+                                                    rotation=-90, fontsize='large',
+                                                    color='red', va='bottom')
+                    except TypeError:
+                        axes.yaxis.set_label_position('right')
+                        axes.set_ylabel('Cluster #%s' % (i + 1),
+                                        rotation=-90, fontsize='large',
+                                        color='red', va='bottom')
+                try:
+                    axes[i+add, j-1].set_xlim((0.5, len(matrix3) + 0.5))
+                    axes[i+add, j-1].set_ylim((0.5, len(matrix3) + 0.5))
+                except TypeError:
+                    axes.set_xlim((0.5, len(matrix3) + 0.5))
+                    axes.set_ylim((0.5, len(matrix3) + 0.5))
         # new axe for the color bar
         cell = fig.add_axes([0.125, 0.1, 0.01, 0.25])
         cbar = fig.colorbar(ims, cax=cell, cmap=jet)
