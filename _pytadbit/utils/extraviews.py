@@ -391,6 +391,7 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
         if label:
             axe.text(x[i+1], y[i+1], z[i+1],str(i+1), size=7)
         axe.scatter(x, y, z, color=color, s=50)
+    axe.set_aspect(1)
     if show:
         if savefig:
             tadbit_savefig(savefig)
@@ -400,7 +401,7 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
     
 def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
                  chimera_cmd=None, savefig=None, center_of_mass=False,
-                 gyradius=False, align=True, grid=False, stress='all',
+                 gyradius=False, align=True, grid=False, highlight='all',
                  **kwargs):
     """
     Open a list of .cmm files with Chimera (http://www.cgl.ucsf.edu/chimera)
@@ -415,7 +416,7 @@ def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
        value of the radius of girations given.
     :param False align: align models
     :param False grid: tile models
-    :param 'all' stress: higlights a given model, or group of models.
+    :param 'all' higlight: higlights a given model, or group of models.
        Can be either 'all', or a model number
     """
     pref_f = '/tmp/tmp.cmd'
@@ -429,12 +430,12 @@ def chimera_view(cmm_files, chimera_bin='chimera', #shape='tube',
                 continue
             if align:
                 out.write('match #%s #%s\n' % (i, 0))
-            if stress != 'all':
-                if stress != i:
+            if highlight != 'all':
+                if highlight != i:
                     out.write('color black #%s\n' % (i))
     if not chimera_cmd:
         the_shape = '''bonddisplay never #%s
-shape tube #%s radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+shape tube #%s radius 15 bandLength 300 segmentSubdivisions 1 followBonds on
 ~show #%s'''
         out.write(('''
 focus
@@ -451,7 +452,7 @@ set dc_start 0.5
 set dc_end 1
 scale 0.8%s\n
 ''' % ('\n'.join([the_shape % (mdl, mdl, mdl) for mdl in (
-                       [stress] if stress!='all' else range(nmodels))]),
+                       [highlight] if highlight!='all' else range(nmodels))]),
        '\ntile' if grid else '')) +
                   ('define centroid radius %s color 1,0,0,0.2\n' % (
                       gyradius if gyradius else 10) if center_of_mass else '')
@@ -638,7 +639,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
                     grid[cell].text(xax.index(best[3]), yax.index(best[4]), str(j),
                                     {'ha':'center', 'va':'center'})
             if ii == wax_range[0]:
-                rect = patches.Rectangle((-0.5, len(yax)-0.5),len(xax), 1.5,
+                rect = patches.Rectangle((-0.5, len(yax)-0.5), len(xax), 1.5,
                                          facecolor='grey', alpha=0.5)
                 rect.set_clip_on(False)
                 grid[cell].add_patch(rect)

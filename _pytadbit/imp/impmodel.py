@@ -734,7 +734,7 @@ class IMPmodel(dict):
             else:
                 raise NotImplementedError(('%s type of coloring is not yet ' +
                                            'implemeted\n') % color)
-        elif hasattr(color, '__call__'): # its a function
+        elif hasattr(color, '__call__'): # it's a function
             color = color(self, **kwargs)
         elif type(color) is not list:
             raise TypeError('one of function, list or string is required\n')

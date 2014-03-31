@@ -77,11 +77,11 @@ void align(float** xyzA, float** xyzB, int size){
   }
 
   det = u[1][1] * u[2][2] * u[3][3] +
-    u[1][2] * u[2][3] * u[3][1] +
-    u[1][3] * u[2][1] * u[3][2]-
-    u[1][3] * u[2][2] * u[3][1]-
-    u[1][1] * u[2][3] * u[3][2]-
-    u[1][2] * u[2][1] * u[3][3];
+        u[1][2] * u[2][3] * u[3][1] +
+        u[1][3] * u[2][1] * u[3][2] -
+        u[1][3] * u[2][2] * u[3][1] -
+        u[1][1] * u[2][3] * u[3][2] -
+        u[1][2] * u[2][1] * u[3][3];
 
   //cout << "DET= " << det << endl << flush;
   for (i = 1; i <= 6; i++) {
@@ -133,18 +133,18 @@ void align(float** xyzA, float** xyzB, int size){
     }
   }
 
-  op[1] = ha[2][1] * ha[3][2]-ha[3][1] * ha[2][2];
-  op[2] = ha[3][1] * ha[1][2]-ha[1][1] * ha[3][2];
-  op[3] = ha[1][1] * ha[2][2]-ha[2][1] * ha[1][2];
+  op[1] = ha[2][1] * ha[3][2] - ha[3][1] * ha[2][2];
+  op[2] = ha[3][1] * ha[1][2] - ha[1][1] * ha[3][2];
+  op[3] = ha[1][1] * ha[2][2] - ha[2][1] * ha[1][2];
   s = op[1] * ha[1][3] + op[2] * ha[2][3] + op[3] * ha[3][3];
   if(s < 0.) {
     for (k=1; k <= 3; k++) {
       ha[k][3] = -ha[k][3];
     }
   }
-  op[1] = ka[2][1] * ka[3][2]-ka[3][1] * ka[2][2];
-  op[2] = ka[3][1] * ka[1][2]-ka[1][1] * ka[3][2];
-  op[3] = ka[1][1] * ka[2][2]-ka[2][1] * ka[1][2];
+  op[1] = ka[2][1] * ka[3][2] - ka[3][1] * ka[2][2];
+  op[2] = ka[3][1] * ka[1][2] - ka[1][1] * ka[3][2];
+  op[3] = ka[1][1] * ka[2][2] - ka[2][1] * ka[1][2];
   s = op[1] * ka[1][3] + op[2] * ka[2][3] + op[3] * ka[3][3];
 
 
@@ -173,9 +173,9 @@ void align(float** xyzA, float** xyzB, int size){
   }
 
   for (i=0; i < size; i++) {
-    xyzn[i][0]=r[1][1]*xyzA[i][0]+r[1][2]*xyzA[i][1]+r[1][3]*xyzA[i][2];
-    xyzn[i][1]=r[2][1]*xyzA[i][0]+r[2][2]*xyzA[i][1]+r[2][3]*xyzA[i][2];
-    xyzn[i][2]=r[3][1]*xyzA[i][0]+r[3][2]*xyzA[i][1]+r[3][3]*xyzA[i][2];
+    xyzn[i][0] = r[1][1] * xyzA[i][0] + r[1][2] * xyzA[i][1] + r[1][3] * xyzA[i][2];
+    xyzn[i][1] = r[2][1] * xyzA[i][0] + r[2][2] * xyzA[i][1] + r[2][3] * xyzA[i][2];
+    xyzn[i][2] = r[3][1] * xyzA[i][0] + r[3][2] * xyzA[i][1] + r[3][3] * xyzA[i][2];
     xyzA[i][0] = xyzn[i][0];
     xyzA[i][1] = xyzn[i][1];
     xyzA[i][2] = xyzn[i][2];

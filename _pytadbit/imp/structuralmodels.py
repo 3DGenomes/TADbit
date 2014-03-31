@@ -842,7 +842,7 @@ class StructuralModels(object):
                              "'centroid' or 'best' not %s\n"  % (
                                  represent_models) + "Showing best model.")
                     mdl = self[str(clusters[i+1][0])]['index']
-                self.view_models(models=[mdl], tool='plot', axe=ax, stress='all',
+                self.view_models(models=[mdl], tool='plot', axe=ax, highlight='all',
                                  **kwargs)
                 for item in [ax]:
                     item.patch.set_visible(False)                
@@ -850,7 +850,7 @@ class StructuralModels(object):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      n_best_clusters * (i + 2), projection='3d')
                 self.view_models(models=[self[str(clusters[i+1][0])]['index']],
-                                 tool='plot', axe=ax, stress='all', **kwargs)
+                                 tool='plot', axe=ax, highlight='all', **kwargs)
                 ax.yaxis.set_label_position('top')
                 ax.set_title('Cluster #%s' % (i + 1), rotation=-90,
                              fontsize='large', color='red', position=(1,.5),
@@ -1414,17 +1414,17 @@ class StructuralModels(object):
     def view_centroid(self, **kwargs):
         """
         shortcut for
-        models.view_models(tool='plot', show='stressed', stress='centroid')
+        view_models(tool='plot', show='highlighted', highlight='centroid')
 
         :param kwargs: any parameters to be passed to view_models (i.e.:
-           models.view_centroid(azimuth=30, elevation=10, show_axe=True, label=True))
+           view_centroid(azimuth=30, elevation=10, show_axe=True, label=True))
         """
-        self.view_models(tool='plot', show='stressed', stress='centroid',
+        self.view_models(tool='plot', show='highlighted', highlight='centroid',
                          **kwargs)
         
 
     def view_models(self, models=None, cluster=None, tool='chimera',
-                    show='all', stress='centroid', savefig=None,
+                    show='all', highlight='centroid', savefig=None,
                     cmd=None, color='index', align=True, **kwargs):
         """
         Visualize a selected model in the three dimensions (either with Chimera
@@ -1455,11 +1455,11 @@ class StructuralModels(object):
                passed through the kwargs.
              * a list of (r, g, b) tuples (as long as the number of particles).
                Each r, g, b between 0 and 1.
-        :param 'centroid' stress: higlights a given model, or group of models.
+        :param 'centroid' highlight: higlights a given model, or group of models.
            Can be either 'all', 'centroid' or 'best' ('best' being the model
            with the lowest IMP objective function value
         :param 'all' show: models to be displayed. Can be either 'all', 'grid'
-           or 'stressed'.
+           or 'highlighted'.
 
         :param None cmd: list of commands to be passed to the viewer. The chimera list is:
 
@@ -1527,18 +1527,18 @@ class StructuralModels(object):
             kwargs.update((('tads', self.experiment.tads),
                            ('mstart', start ), ('mend', end)))
         centroid_model = 0
-        if 'centroid' in [show, stress] and len(models) > 1:
+        if 'centroid' in [show, highlight] and len(models) > 1:
             centroid_model = self.centroid_model(models)
-        if stress == 'centroid':
+        if highlight == 'centroid':
             mdl = centroid_model
-        elif stress == 'best':
+        elif highlight == 'best':
             mdl = self[sorted(models, key=lambda x:
                               self[x]['objfun'])[0]]['index']
         else:
-            if stress != 'all':
+            if highlight != 'all':
                 warn("WARNING: represent_model value should be one of" +
                      "'centroid', 'best' or 'all' not %s\n"  % (
-                         stress) + "Stressing no models.")
+                         highlight) + "Highlighting no models.")
             mdl = 'all'
         ## View with Matplotlib
         if tool == 'plot':
@@ -1553,7 +1553,7 @@ class StructuralModels(object):
                 for model in models:
                     model_coords.append((
                         self[model]['x'], self[model]['y'],self[model]['z']))
-            if show in ['all', 'stressed']:
+            if show in ['all', 'highlighted']:
                 if not 'axe' in kwargs:
                     fig = plt.figure(figsize=kwargs.get('figsize', (8, 8)))
                     kwargs['axe'] = fig.add_subplot(1,1,1, projection='3d')
@@ -1561,14 +1561,14 @@ class StructuralModels(object):
                     if show == 'all' or i == mdl or mdl == 'all':
                         plot_3d_model(*model_coords[models.index(i)],
                                       color=color,
-                                      thin=False if stress=='all' else (i!=mdl),
+                                      thin=False if highlight=='all' else (i!=mdl),
                                       **kwargs)
                 if pltshow:
                     try:
-                        kwargs['axe'].set_title('Model %s stressed as %s' % (
-                            self[mdl]['rand_init'], stress))
+                        kwargs['axe'].set_title('Model %s highlighted as %s' % (
+                            self[mdl]['rand_init'], highlight))
                     except KeyError:
-                        kwargs['axe'].set_title('All models stressed')
+                        kwargs['axe'].set_title('All models highlighted')
             else:
                 sqrmdl = sqrt(len(models))
                 cols = int(round(sqrmdl + (0.0 if int(sqrmdl)==sqrmdl else .5)))
@@ -1585,7 +1585,7 @@ class StructuralModels(object):
                                 rows, cols, i * rows + j+1, projection='3d')
                         plot_3d_model(
                             *model_coords[i * rows + j], color=color,
-                            thin=False if stress=='all' else (this!=mdl),
+                            thin=False if highlight=='all' else (this!=mdl),
                             **kwargs)
                         if pltshow:
                             kwargs['axe'].set_title(
@@ -1603,7 +1603,7 @@ class StructuralModels(object):
                 cmm_files.append('/tmp/model.%s.cmm' % (self[model_num]['rand_init']))
         chimera_view(cmm_files,
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
-                     stress=(0 if (show=='stressed' and mdl!='all')
+                     highlight=(0 if (show=='highlighted' and mdl!='all')
                              else models.index(mdl) if mdl!='all' else mdl),
                      align=align, grid=show=='grid')
 
