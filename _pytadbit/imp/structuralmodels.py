@@ -1612,7 +1612,7 @@ class StructuralModels(object):
                     kwargs['axe'] = fig.add_subplot(1,1,1, projection='3d')
                 for i in models:
                     if show == 'all' or i == mdl or mdl == 'all':
-                        plot_3d_model(*model_coords[models[i]],
+                        plot_3d_model(*model_coords[models.index(i)],
                                       color=color,
                                       thin=False if highlight=='all' else (i!=mdl),
                                       **kwargs)
