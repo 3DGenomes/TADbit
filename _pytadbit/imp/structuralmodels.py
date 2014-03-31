@@ -894,16 +894,16 @@ class StructuralModels(object):
                         warn("WARNING: represent_model value should be one of" +
                              "'centroid' or 'best' not %s\n"  % (
                                  represent_models) + "Showing best model.")
-                    mdl = self[str(clusters[i+1][0])]['index']
-                self.view_models(models=[mdl], tool='plot', axe=ax, highlight='all',
+                self.view_models(models=[self[m]['index'] for m in clusters[i+1]],
+                                 tool='plot', axe=ax,
                                  **kwargs)
                 for item in [ax]:
                     item.patch.set_visible(False)                
             for i in range(n_best_clusters - 1):
                 ax = fig.add_subplot(n_best_clusters, n_best_clusters,
                                      n_best_clusters * (i + 2), projection='3d')
-                self.view_models(models=[self[str(clusters[i+1][0])]['index']],
-                                 tool='plot', axe=ax, highlight='all', **kwargs)
+                self.view_models(models=[self[m]['index'] for m in clusters[i+1]],
+                                 tool='plot', axe=ax, **kwargs)
                 ax.yaxis.set_label_position('top')
                 ax.set_title('Cluster #%s' % (i + 1), rotation=-90,
                              fontsize='large', color='red', position=(1,.5),
