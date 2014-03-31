@@ -120,6 +120,29 @@ loaded or calculated.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search">
+<tt class="descname">load_grid_search</tt><big>(</big><em>filenames</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>verbose=True</em>, <em>n_cpus=1</em><big>)</big><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads one file or a list of files containing pre-calculated Structural
+Models (keep_models parameter used). And correlate each set of models
+with real data. Usefull to run different correlation on the same data
+avoiding to re-calculate each time the models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filenames</strong> &#8211; either a path to a file or a list of paths.</li>
+<li><strong>corr</strong> (<em>spearman</em>) &#8211; correlation coefficient to use</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&#8216;param 1 off_diag:
+:param True verbose: print the results to the standard output</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d">
 <tt class="descname">plot_2d</tt><big>(</big><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>A grid of heatmaps representing the result of the optimization.</p>
@@ -163,7 +186,7 @@ be placed on the x, y, z or w axe.</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search">
-<tt class="descname">run_grid_search</tt><big>(</big><em>upfreq_range=(0</em>, <em>1</em>, <em>0.1)</em>, <em>lowfreq_range=(-1</em>, <em>0</em>, <em>0.1)</em>, <em>scale_range=0.01</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>maxdist_range=(400</em>, <em>1500</em>, <em>100)</em>, <em>n_cpus=1</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">run_grid_search</tt><big>(</big><em>upfreq_range=(0</em>, <em>1</em>, <em>0.1)</em>, <em>lowfreq_range=(-1</em>, <em>0</em>, <em>0.1)</em>, <em>maxdist_range=(400</em>, <em>1500</em>, <em>100)</em>, <em>scale_range=0.01</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>savedata=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function calculates the correlation between the models generated 
 by IMP and the input data for the four main IMP parameters (scale, 
 maxdist, lowfreq and upfreq) in the given ranges of values.</p>
@@ -286,7 +309,7 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 19, 2014.
+      Last updated on Mar 31, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
