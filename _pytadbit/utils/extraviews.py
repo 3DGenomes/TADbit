@@ -391,7 +391,7 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
         if label:
             axe.text(x[i+1], y[i+1], z[i+1],str(i+1), size=7)
         axe.scatter(x, y, z, color=color, s=50)
-    axe.set_aspect(1)
+    axe.pbaspect = [1,1,1]
     if show:
         if savefig:
             tadbit_savefig(savefig)

@@ -180,7 +180,7 @@ class StructuralModels(object):
             x, y, z = (self[ref_model]['x'][:], self[ref_model]['y'][:],
                        self[ref_model]['z'][:])
             mass_center(x, y, z)
-            aligned.append((x, y, z))
+            aligned.insert(ref_model, (x, y, z))
             return aligned
 
 
@@ -834,8 +834,8 @@ class StructuralModels(object):
                                      i, projection='3d')
                 ax.set_title('Cluster #%s' % (i + 1), color='blue')
                 if represent_models == 'centroid':
-                    mdl = self[str(self.centroid_model(
-                        models=[m for m in clusters[i+1]]))]['index']
+                    mdl = self[self.centroid_model(
+                        models=[m for m in clusters[i+1]])]['index']
                 else:
                     if represent_models != 'best':
                         warn("WARNING: represent_model value should be one of" +
@@ -1559,7 +1559,7 @@ class StructuralModels(object):
                     kwargs['axe'] = fig.add_subplot(1,1,1, projection='3d')
                 for i in models:
                     if show == 'all' or i == mdl or mdl == 'all':
-                        plot_3d_model(*model_coords[models.index(i)],
+                        plot_3d_model(*model_coords[models[i]],
                                       color=color,
                                       thin=False if highlight=='all' else (i!=mdl),
                                       **kwargs)
