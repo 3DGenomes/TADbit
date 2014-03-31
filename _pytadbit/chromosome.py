@@ -562,7 +562,7 @@ class Chromosome(object):
 
     def visualize(self, names=None, tad=None, focus=None, paint_tads=False,
                   axe=None, show=True, logarithm=True, normalized=False,
-                  relative=True, decorate=True, savefig=None):
+                  relative=True, decorate=True, savefig=None, clim=None):
         """
         Visualize the matrix of Hi-C interactions of a given experiment
 
@@ -597,6 +597,8 @@ class Chromosome(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param None clim: tuple with minimum and maximum value range for color
+           scale. I.e. clim=(-4, 10)
         """
         if names == None:
             names = [xpr.name for xpr in self.experiments]
@@ -630,13 +632,14 @@ class Chromosome(object):
                     img = xpr1.view(tad=tad, focus=focus, paint_tads=paint_tads,
                                     axe=axe, show=False, logarithm=logarithm,
                                     normalized=normalized, relative=relative,
-                                    decorate=decorate, savefig=False, where='up')
+                                    decorate=decorate, savefig=False, where='up',
+                                    clim=clim)
                     # axe.set_aspect('equal', adjustable='box-forced', anchor='NE')
                     img = xpr2.view(tad=tad, focus=focus, paint_tads=paint_tads,
                                     axe=axe, show=False, logarithm=logarithm,
                                     normalized=normalized, relative=relative,
                                     decorate=False, savefig=False, where='down',
-                                    clim=img.get_clim())
+                                    clim=clim or img.get_clim())
                     # axe = axe.twinx()
                     # axe.set_aspect('equal', adjustable='box-forced', anchor='NE')
                     if decorate:
@@ -649,7 +652,8 @@ class Chromosome(object):
                     xper = self.get_experiment(names[i * cols + j])
                     xper.view(tad=tad, focus=focus, paint_tads=paint_tads, axe=axe,
                               show=False, logarithm=logarithm, normalized=normalized,
-                              relative=relative, decorate=decorate, savefig=False)
+                              relative=relative, decorate=decorate, savefig=False,
+                              clim=clim)
         if savefig:
             tadbit_savefig(savefig)
         if show:

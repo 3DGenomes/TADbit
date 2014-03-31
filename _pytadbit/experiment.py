@@ -786,6 +786,8 @@ class Experiment(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param None clim: tuple with minimum and maximum value range for color
+           scale. I.e. clim=(-4, 10)
         """
         if logarithm:
             fun = log2
