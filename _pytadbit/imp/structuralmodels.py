@@ -18,7 +18,7 @@ from subprocess                     import Popen, PIPE
 from math                           import acos, degrees, pi, sqrt
 from numpy                          import median as np_median
 from numpy                          import mean as np_mean
-from numpy                          import std as np_std, log2
+from numpy                          import std as np_std, log2, arcsinh
 from numpy                          import array, cross, dot, ma, isnan
 from numpy                          import histogram, linspace
 from numpy.linalg                   import norm
@@ -1261,6 +1261,10 @@ class StructuralModels(object):
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
             corr = pearsonr(moddata, oridata)
+        elif corr == 'arcspearman':
+            corr = spearmanr(arcsinh(moddata), arcsinh(oridata))
+        elif corr == 'arcpearson':
+            corr = pearsonr(arcsinh(moddata), arcsinh(oridata))
         elif corr == 'logpearson':
             corr = pearsonr(nozero_log(moddata), nozero_log(oridata))
         elif corr == 'chi2':
