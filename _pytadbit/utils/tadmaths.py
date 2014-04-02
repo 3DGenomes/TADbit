@@ -66,15 +66,15 @@ class Interpolate(object):
 
 def nozero_log(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
-    minv = float(min(values)) / 2
+    minv = float(min([v for v in values.values() if v])) / 2
     if minv > 1:
         warn('WARNING: probable problem with normalization, check.\n')
         minv /= 2  # TODO: something better
-    logminv = log(minv)
-    for i in xrange(values):
+    logminv = log10(minv)
+    for i in values:
         try:
-            values[i] = log(values[i])
-        except ZeroDivisionError:
+            values[i] = log10(values[i])
+        except ValueError:
             values[i] = logminv
     
 
