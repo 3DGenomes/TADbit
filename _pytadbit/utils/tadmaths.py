@@ -65,7 +65,11 @@ class Interpolate(object):
 
 
 def nozero_log(values):
+    # Set the virtual minimum of the matrix to half the non-null real minimum
     minv = float(min(values)) / 2
+    if minv > 1:
+        warn('WARNING: probable problem with normalization, check.\n')
+        minv /= 2  # TODO: something better
     logminv = log(minv)
     for i in xrange(values):
         try:
@@ -98,15 +102,8 @@ def zscore(values):
               /
   
     """
-    # Set the virtual minimum of the matrix to half the non-null real minimum
-    minv = min([v for v in values.values() if v]) / 2
-    if minv > 1:
-        warn('WARNING: probable problem with normalization, check.\n')
-        minv /= 2  # TODO: something better
-    # get the log10 of values
-    # minv=1. # this to reproduce original behavior
-    for i in values:
-        values[i] = log10(values[i]) if values[i] > 0 else log10(minv)
+    # get the log trasnform values
+    nozero_log(values)
     mean_v = np.mean(values.values())
     std_v  = np.std (values.values())
     # replace values by z-score
