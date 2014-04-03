@@ -10,7 +10,6 @@ from pytadbit                        import tadbit, batch_tadbit
 from pytadbit.tad_clustering.tad_cmo import optimal_cmo
 from pytadbit.imp.structuralmodels   import load_structuralmodels
 from pytadbit.imp.impmodel           import load_impmodel_from_cmm
-from pytadbit.utils.three_dim_stats  import distance
 from pytadbit.eqv_rms_drms           import rmsdRMSD_wrapper
 from os                              import system, path, chdir
 from warnings                        import warn
