@@ -364,7 +364,7 @@ class TestTadbit(unittest.TestCase):
         # get best correlations
         config = result.get_best_parameters_dict()
         wanted = {'maxdist': 500.0, 'upfreq': 0.0, 'kforce': 5,
-                  'reference': '', 'lowfreq': -0.1, 'scale': 0.01}
+                  'reference': '', 'lowfreq': -0.6, 'scale': 0.01}
         self.assertEqual([round(i, 4) for i in config.values()if not type(i) is str],
                          [round(i, 4) for i in wanted.values()if not type(i) is str])
         if CHKTIME:
@@ -404,15 +404,14 @@ class TestTadbit(unittest.TestCase):
                              [models[m]['z'] for m in xrange(len(models))] + [avg['z']],
                              models.nloci, 410, range(len(models)+1),
                              len(models)+1, int(False), 'score', 1)
-        self.assertEqual(25, sorted([(k, sum([a[(i, j)] for i, j in a if i==k or j==k]))
+        self.assertEqual(21, sorted([(k, sum([a[(i, j)] for i, j in a if i==k or j==k]))
                                      for k in range(26)], key=lambda x: x[1])[-1][0])
         centroid = models[models.centroid_model()]
         expsc = sum([sum([a[(i, j)] for i, j in a if i==k or j==k])
-                     for k in range(25)]) / 25
+                     for k in range(26)]) / 26
         # find closest
-            
         model = min([(k, sum([a[(i, j)] for i, j in a if i==k or j==k]))
-                     for k in range(25)], key=lambda x:abs(x[1]-expsc))[0]
+                     for k in range(26)], key=lambda x:abs(x[1]-expsc))[0]
         self.assertEqual(centroid['rand_init'], models[model]['rand_init'])
         if CHKTIME:
             print '13', time() - t0
@@ -426,7 +425,7 @@ class TestTadbit(unittest.TestCase):
 
         models = load_structuralmodels('models.pick')
         if find_executable('mcl'):
-            models.cluster_models(method='mcl', fact=0.85, verbose=False)
+            models.cluster_models(method='mcl', fact=0.9, verbose=False)
             self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
         models.cluster_models(method='ward', verbose=False)
         self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
@@ -449,7 +448,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual([round(float(i), 1) for i in lines[1].split('\t')[:3]],
                          [1, 100.0, 100.0])
         self.assertEqual([round(float(i), 1) for i in lines[15].split('\t')[:3]],
-                         [15, 100.0, 100.0])
+                         [15, 99.9, 100.0])
         # contacts
         cmap = models.get_contact_matrix(cutoff=300)
         self.assertEqual(round(
@@ -474,7 +473,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual([round(float(i)/10, 0) for i in lines[1].split('\t')],
                          [0, 1, 3, 4, 5])
         self.assertEqual([round(float(i)/10, 0) for i in lines[15].split('\t')],
-                         [2, 9, 10, 10, 10])
+                         [2, 8, 10, 10, 10])
         # measure angle
         self.assertEqual(round(models.angle_between_3_particles(2,8,15)/10, 0),
                          13)
@@ -491,11 +490,11 @@ class TestTadbit(unittest.TestCase):
         # self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 3), 8.136)
         # median distance
         self.assertEqual(round(models.median_3d_dist(3, 20, plot=False)/100, 0),
-                         16)
+                         15)
         self.assertEqual(round(models.median_3d_dist(3, 20, cluster=1,
                                                      plot=False)/200, 0), 8)
         self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5),
-                                                     plot=False), 0), 266)
+                                                     plot=False), 0), 250)
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -524,21 +523,21 @@ class TestTadbit(unittest.TestCase):
         # stats
         self.assertEqual(200, round(model.distance(2, 3), 0))
         self.assertEqual(11, round(model.distance(8, 20)/100, 0))
-        self.assertEqual(round(614, 0),
+        self.assertEqual(round(593, 0),
                          round(model.radius_of_gyration(), 0))
         self.assertEqual(400, round(model.contour()/10, 0))
-        self.assertEqual(22,
+        self.assertEqual(21,
                          round((model.shortest_axe()+model.longest_axe())/100, 0))
         self.assertEqual([11, 16], model.inaccessible_particles(1000))
 
         acc, num, acc_area, tot_area, bypt = model.accessible_surface(
             150, superradius=200, nump=150)
-        self.assertEqual(229, acc)
-        self.assertEqual(484, num)
+        self.assertEqual(214, acc)
+        self.assertEqual(502, num)
         self.assertEqual(0.4, round(acc_area, 1))
         self.assertEqual(4, round(tot_area, 0))
         self.assertEqual(101, len(bypt))
-        self.assertEqual(bypt[100], (21,11,38))
+        self.assertEqual(bypt[100], (21, 11, 8))
         if CHKTIME:
             print '16', time() - t0
 

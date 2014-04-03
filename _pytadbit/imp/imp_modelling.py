@@ -130,7 +130,10 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
     # get SLOPE and regression for all particles of the z-score data
     global SLOPE, INTERCEPT
-    zsc_vals = [zscores[i][j] for i in zscores for j in zscores[i]]
+    zsc_vals = [zscores[i][j] for i in zscores for j in zscores[i]
+                if abs(int(i) - int(j)) > 1] # condition is to avoid
+                                             # taking into account selfies
+                                             # and neighbors
     zmin = min(zsc_vals)
     zmax = max(zsc_vals)
     SLOPE, INTERCEPT   = polyfit([zmin, zmax], [CONFIG['maxdist'],
@@ -141,15 +144,13 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
               if abs(int(i) - int(j)) <= (close_bins + 1)]
     yarray = [RADIUS * 2 for _ in xrange(len(xarray))]
     NSLOPE, NINTERCEPT = polyfit(xarray, yarray, 1)
-
-    # zsc = set([int (k) for k in zscores.keys()] +
-    #           reduce(lambda x, y: x + y,
-    #                  [[int (k) for k in j.keys()] for j in zscores.values()]
-    #                  ))
-
     
     global LOCI, NLOCI
-    LOCI  = range(nloci + 1)
+    # if z-scores are generated outside TADbit they may not start at zero
+    first = min([int(j) for i in zscores for j in zscores[i]] +
+                [int(i) for i in zscores])
+    
+    LOCI  = range(first, nloci + 1 + first)
     NLOCI = len(LOCI)
     
     # Z-scores
@@ -402,7 +403,7 @@ def addAllHarmonics(model, verbose=False):
     """
     Add harmonics to all pair of particles.
     """
-    for i in range(0, NLOCI):
+    for i in range(NLOCI):
         p1 = model['ps'].get_particle(i)
         x = p1.get_name()
         num_loci1 = int(x)

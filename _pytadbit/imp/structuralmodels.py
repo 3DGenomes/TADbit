@@ -91,7 +91,7 @@ class StructuralModels(object):
         self.resolution     = float(resolution)
         self._original_data = original_data # only used for correlation
         self._zscores       = zscores       # only used for plotting
-        self._config        = config
+        self._config        = config or {}
         self.experiment     = experiment
 
 

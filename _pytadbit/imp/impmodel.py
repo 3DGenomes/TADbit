@@ -61,7 +61,7 @@ def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
         except:
             rand_init = None
     model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
-                      ('objfun', None), ('radius', radius)))
+                      ('objfun', 0), ('radius', radius)))
     expr = compil(
         ' x="([0-9.-]+)" y="([0-9.-]+)" z="([0-9.-]+)".* radius="([0-9.]+)"')
     for xxx, yyy, zzz, radius in findall(expr, open(f_name).read()):
@@ -104,7 +104,7 @@ def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
         except:
             rand_init = None
     model = IMPmodel((('x', []), ('y', []), ('z', []), ('rand_init', rand_init),
-                      ('objfun', None), ('radius', radius)))
+                      ('objfun', 0), ('radius', radius)))
     expr = compil('[0-9]+\s[A-Za-z0-9_ ]+:[0-9]+-[0-9]+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)')
     model['description'] = {}
     for line in open(f_name):
