@@ -6,7 +6,7 @@
 
 from bisect    import bisect_left
 from itertools import combinations
-from math      import log, log10, exp
+from math      import log10, exp
 from warnings  import warn
 import numpy as np
 
@@ -64,18 +64,30 @@ class Interpolate(object):
         return self.y_list[i] + self.slopes[i] * (x - self.x_list[i])
 
 
+def transform(val):
+    return log10(val)
+
 def nozero_log(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
     minv = float(min([v for v in values.values() if v])) / 2
     if minv > 1:
         warn('WARNING: probable problem with normalization, check.\n')
         minv /= 2  # TODO: something better
-    logminv = log10(minv)
+    logminv = transform(minv)
     for i in values:
         try:
-            values[i] = log10(values[i])
+            values[i] = transform(values[i])
         except ValueError:
             values[i] = logminv
+
+def nozero_log_list(values):
+    # Set the virtual minimum of the matrix to half the non-null real minimum
+    minv = float(min([v for v in values if v])) / 2
+    if minv > 1:
+        warn('WARNING: probable problem with normalization, check.\n')
+        minv /= 2  # TODO: something better
+    logminv = transform(minv)
+    return [transform(v) if v else logminv for v in values]
     
 
 def zscore(values):

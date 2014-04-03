@@ -6,7 +6,7 @@
 from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
 from pytadbit.utils.three_dim_stats import get_center_of_mass, distance
-from pytadbit.utils.tadmaths        import calinski_harabasz, nozero_log
+from pytadbit.utils.tadmaths        import calinski_harabasz, nozero_log_list
 from pytadbit.utils.extraviews      import plot_3d_model
 from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
@@ -18,7 +18,7 @@ from subprocess                     import Popen, PIPE
 from math                           import acos, degrees, pi, sqrt
 from numpy                          import median as np_median
 from numpy                          import mean as np_mean
-from numpy                          import std as np_std, log2, arcsinh
+from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan
 from numpy                          import histogram, linspace
 from numpy.linalg                   import norm
@@ -1261,15 +1261,11 @@ class StructuralModels(object):
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
             corr = pearsonr(moddata, oridata)
-        elif corr == 'arcspearman':
-            corr = spearmanr(arcsinh(moddata), arcsinh(oridata))
-        elif corr == 'arcpearson':
-            corr = pearsonr(arcsinh(moddata), arcsinh(oridata))
         elif corr == 'logpearson':
-            corr = pearsonr(nozero_log(moddata), nozero_log(oridata))
+            corr = pearsonr(nozero_log_list(moddata), nozero_log_list(oridata))
         elif corr == 'chi2':
             corr = chisquare(array(moddata), array(oridata))
-            corr = 1./corr[0], corr[1]
+            corr = 1. / corr[0], corr[1]
         else:
             raise NotImplementedError('ERROR: %s not implemented, must be one ' +
                                       'of spearman, pearson or frobenius\n')
@@ -1285,12 +1281,13 @@ class StructuralModels(object):
         ax = fig.add_subplot(131)
         self.contact_map(models, cluster, cutoff, axe=ax)
         ax = fig.add_subplot(132)
-        if log_corr:
-            minmoddata = float(min([m for m in moddata if m]))
-            minoridata = float(min([m for m in oridata if m]))
-            moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
-                                log2([m if m else minoridata / 2 for m in oridata]))
-        slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)
+        # if log_corr:
+        #     minmoddata = float(min([m for m in moddata if m]))
+        #     minoridata = float(min([m for m in oridata if m]))
+        #     moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
+        #                         log2([m if m else minoridata / 2 for m in oridata]))
+        slope, intercept, r_value, p_value, _ = linregress(moddata, oridata)
+        #slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)
         if midplot == 'classic':
             lnr = ax.plot(moddata, intercept + slope * array (moddata), color='k',
                           ls='--', alpha=.7)
