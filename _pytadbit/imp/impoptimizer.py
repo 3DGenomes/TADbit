@@ -30,7 +30,8 @@ class IMPoptimizer(object):
     :param 1 close_bins: number of particles away (i.e. the bin number 
        difference) a particle pair must be in order to be considered as 
        neighbors (e.g. 1 means consecutive particles)
-    :param 300 cutoff:
+    :param None cutoff: distance cutoff (nm) to define whether two particles
+       are in contact or not, default is 2 times resolution, times scale.
     """
     def __init__(self, experiment, start, end, 
                  n_models=500, cutoff=300, n_keep=100, close_bins=1):
@@ -152,6 +153,10 @@ class IMPoptimizer(object):
                     for lowfreq in [my_round(i) for i in lowfreq_arange]:
                         if (scale, maxdist, upfreq, lowfreq) in self.results:
                             continue
+                        if not self.cutoff:
+                            cutoff = int(2 * self.resolution * float(scale))
+                        else:
+                            cutoff = self.cutoff
                         tmp = {'kforce'   : 5,
                                'lowrdist' : 100,
                                'maxdist'  : int(maxdist),
@@ -170,7 +175,7 @@ class IMPoptimizer(object):
                                 count, upfreq, lowfreq, maxdist, scale)
                         try:
                             result = tdm.correlate_with_real_data(
-                                cutoff=self.cutoff, corr=corr,
+                                cutoff=cutoff, corr=corr,
                                 off_diag=off_diag)[0]
                             if verbose:
                                 if verbose == 2:

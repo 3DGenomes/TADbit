@@ -271,7 +271,7 @@ class StructuralModels(object):
         return avgmodel
 
 
-    def cluster_models(self, fact=0.75, dcutoff=200, method='mcl',
+    def cluster_models(self, fact=0.75, dcutoff=None, method='mcl',
                        mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
                        mclargs=None, external=False, what='score'):
         """
@@ -294,8 +294,8 @@ class StructuralModels(object):
 
         :param 0.75 fact: factor to define the percentage of equivalent
            positions to be considered in the clustering
-        :param 200 dcutoff: distance threshold (nm) to determine if two
-           particles are in contact
+        :param None dcutoff: distance threshold (nm) to determine if two
+           particles are in contact, default is 1.5 times resolution times scale
         :param 'mcl' method: clustering method to use, which can be either
            'mcl' or 'ward'. MCL method is recommended. WARD method uses a scipy
            implementation of this hierarchical clustering, and selects the best
@@ -317,6 +317,8 @@ class StructuralModels(object):
         """
         tmp_file = '/tmp/tadbit_tmp_%s.txt' % (
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
+        if not dcutoff:
+            dcutoff = int(1.5 * self.resolution * self._config['scale'])
         scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, what=what,
                                normed=True)
         from distutils.spawn import find_executable
@@ -374,8 +376,8 @@ class StructuralModels(object):
                   shell=True).communicate()
             clusters = ClusterOfModels()
             if not exists(tmp_file + '.mcl'):
-                raise Exception(
-                    'Problem with clustering, try increasing "dcutoff"\n')
+                raise Exception('Problem with clustering, try increasing ' +
+                                '"dcutoff", now: %s\n' % (dcutoff))
             new_singles = 0
             for cluster, line in enumerate(open(tmp_file + '.mcl')):
                 models = line.split()
@@ -650,7 +652,7 @@ class StructuralModels(object):
             plt.show()
 
 
-    def get_contact_matrix(self, models=None, cluster=None, cutoff=200):
+    def get_contact_matrix(self, models=None, cluster=None, cutoff=None):
         """
         Returns a matrix with the number of interactions observed below a given
         cutoff distance.
@@ -660,8 +662,8 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact matrix only for the models in the
            cluster number 'cluster'
-        :param 200 cutoff: distance cutoff (nm) to define whether two particles
-           are in contact or not
+        :param None cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not, default is 2 times resolution, times scale.
 
         :returns: matrix frequency of interaction
         """
@@ -674,6 +676,8 @@ class StructuralModels(object):
             models = [m for m in self.__models]
         matrix = [[float('nan') for _ in xrange(self.nloci)]
                   for _ in xrange(self.nloci)]
+        if not cutoff:
+            cutoff = int(2 * self.resolution * self._config['scale'])
         cutoff = cutoff**2
         for i in xrange(self.nloci):
             for j in xrange(i + 1, self.nloci):
@@ -703,7 +707,7 @@ class StructuralModels(object):
                                  xrange(nbest, len(tmp_models))])
 
 
-    def deconvolve(self, fact=0.75, dcutoff=200, method='mcl',
+    def deconvolve(self, fact=0.75, dcutoff=None, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
                    mclargs=None, what='dRMSD', n_best_clusters=10,
                    savefig=None, represent_models=False, figsize=(11, 11),
@@ -722,8 +726,8 @@ class StructuralModels(object):
 
         :param 0.75 fact: factor to define the percentage of equivalent
            positions to be considered in the clustering
-        :param 200 dcutoff: distance threshold (nm) to determine if two
-           particles are in contact
+        :param None dcutoff: distance threshold (nm) to determine if two
+           particles are in contact, default is 1.5 times resolution times scale
         :param 'mcl' method: clustering method to use, which can be either
            'mcl' or 'ward'. MCL method is recommended. WARD method uses a scipy
            implementation of this hierarchical clustering, and selects the best
@@ -751,6 +755,8 @@ class StructuralModels(object):
         :param (11,11) figsize: dimension of the plot
         """
         fact /= self.nloci
+        if not dcutoff:
+            dcutoff = int(1.5 * self.resolution * self._config['scale'])
         if not clusters:
             clusters = self.cluster_models(fact=fact, dcutoff=dcutoff,
                                            mcl_bin=mcl_bin,
@@ -917,7 +923,7 @@ class StructuralModels(object):
             plt.show()
 
 
-    def contact_map(self, models=None, cluster=None, cutoff=150, axe=None,
+    def contact_map(self, models=None, cluster=None, cutoff=None, axe=None,
                     savefig=None, savedata=None):
         """
         Plots a contact map representing the frequency of interaction (defined
@@ -928,8 +934,8 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
-        :param 150 cutoff: distance cutoff (nm) to define whether two particles
-           are in contact or not
+        :param None cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not, default is 2 times resolution, times scale.
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
         :param None savefig: path to a file where to save the image generated;
@@ -940,6 +946,8 @@ class StructuralModels(object):
            of models where these two particles are in contact)
 
         """
+        if not cutoff:
+            cutoff = int(2 * self.resolution * self._config['scale'])
         matrix = self.get_contact_matrix(models, cluster, cutoff=cutoff)
         show = False
         if savedata:
@@ -972,7 +980,7 @@ class StructuralModels(object):
             plt.show()
 
 
-    def interactions(self, models=None, cluster=None, cutoff=150,
+    def interactions(self, models=None, cluster=None, cutoff=None,
                      steps=(1, 2, 3, 4, 5), axe=None, error=False,
                      savefig=None, savedata=None, average=True, plot=True):
         """
@@ -984,8 +992,8 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the contact map only for the models in the
            cluster number 'cluster'
-        :param 150 cutoff: distance cutoff (nm) to define whether two particles
-           are in contact or not
+        :param None cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not, default is 2 times resolution, times scale.
         :param (1, 2, 3, 4, 5) steps: how many particles to group for the
            estimation. By default 5 curves are drawn
         :param False error: represent the error of the estimates
@@ -1016,6 +1024,8 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         interactions = [[] for _ in xrange(self.nloci)]
+        if not cutoff:
+            cutoff = int(2 * self.resolution * self._config['scale'])
         cutoff2 = cutoff**2
         for i in xrange(self.nloci):
             for m in models:
@@ -1220,7 +1230,7 @@ class StructuralModels(object):
             plt.show()
 
 
-    def correlate_with_real_data(self, models=None, cluster=None, cutoff=200, off_diag=1,
+    def correlate_with_real_data(self, models=None, cluster=None, cutoff=None, off_diag=1,
                                  plot=False, axe=None, savefig=None, corr='spearman',
                                  midplot='hexbin', log_corr=True):
         """
@@ -1232,8 +1242,8 @@ class StructuralModels(object):
            of models can be passed
         :param None cluster: compute the correlation only for the models in the
            cluster number 'cluster'
-        :param 200 cutoff: distance cutoff (nm) to define whether two particles
-           are in contact or not
+        :param None cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not, default is 2 times resolution, times scale.
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
@@ -1246,6 +1256,8 @@ class StructuralModels(object):
            correlation
 
         """
+        if not cutoff:
+            cutoff = int(2 * self.resolution * self._config['scale'])
         model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
                                                cutoff=cutoff)
         oridata = []
@@ -1363,7 +1375,7 @@ class StructuralModels(object):
         return corr
 
 
-    def model_consistency(self, cutoffs=(50, 100, 150, 200), models=None,
+    def model_consistency(self, cutoffs=None, models=None,
                           cluster=None, axe=None, savefig=None, savedata=None,
                           plot=True):
         """
@@ -1372,9 +1384,10 @@ class StructuralModels(object):
         (or stability) of the modeled region (the higher the consistency value,
         the higher stability).
 
-        :param (50,100,150,200) cutoffs: list of distance cutoffs (nm) used to
-           compute the consistency. Two particle are considered consistent if
-           their distance is less than the given cutoff
+        :param None cutoffs: list of distance cutoffs (nm) used to compute the
+           consistency. Two particle are considered consistent if their distance
+           is less than the given cutoff, default is a tuple of 0.5, 1, 1.5 and
+           2 times resolution, times scale.
         :param None models:  if None (default) the consistency will be computed
            using all the models. A list of numbers corresponding to a given set
            of models can be passed
@@ -1402,6 +1415,11 @@ class StructuralModels(object):
         else:
             models = self.__models  # Here it's different
         consistencies = {}
+        if not cutoffs:
+            cutoffs = (int(0.5 * self.resolution * self._config['scale']),
+                       int(1.0 * self.resolution * self._config['scale']),
+                       int(1.5 * self.resolution * self._config['scale']),
+                       int(2.0 * self.resolution * self._config['scale']))
         for cut in cutoffs:
             consistencies[cut] = calc_consistency(models, self.nloci, cut)
         # write consistencies to file

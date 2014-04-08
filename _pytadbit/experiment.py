@@ -520,7 +520,7 @@ class Experiment(object):
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
                                scale_range=[0.01][:], 
-                               maxdist_range=(400, 1400, 100), cutoff=300,
+                               maxdist_range=(400, 1400, 100), cutoff=None,
                                outfile=None, verbose=True, corr='spearman',
                                off_diag=1, savedata=None):
         """
@@ -552,6 +552,8 @@ class Experiment(object):
         :param [0.01] scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
+        :param None cutoff: distance cutoff (nm) to define whether two particles
+           are in contact or not, default is 2 times resolution, times scale.
         :param True verbose: print the results to the standard output
 
         .. note::
