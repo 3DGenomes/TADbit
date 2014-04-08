@@ -350,7 +350,7 @@ the plot.</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.cluster_models">
-<tt class="descname">cluster_models</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=200</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>external=False</em>, <em>what='score'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">cluster_models</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=None</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>external=False</em>, <em>what='score'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>This function performs a clustering analysis of the generated models
 based on structural comparison. The result will be stored in
@@ -372,9 +372,9 @@ pairwise model comparison.</p>
 <tr class="field-odd field"><td>&nbsp;</td><td class="field-body">factor to define the percentage of equivalent
 positions to be considered in the clustering</td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param 200 dcutoff:</th></tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param None dcutoff:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body">distance threshold (nm) to determine if two
-particles are in contact</td>
+particles are in contact, default is 1.5 times resolution times scale</td>
 </tr>
 <tr class="field-odd field"><th class="field-name" colspan="2">param &#8216;mcl&#8217; method:</th></tr>
 <tr class="field-odd field"><td>&nbsp;</td><td class="field-body">clustering method to use, which can be either
@@ -414,7 +414,7 @@ storing it as StructuralModels.clusters</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.contact_map">
-<tt class="descname">contact_map</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=150</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.contact_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.contact_map" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">contact_map</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.contact_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.contact_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots a contact map representing the frequency of interaction (defined
 by a distance cutoff) between two particles.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -427,8 +427,8 @@ using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
 <li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
 cluster number &#8216;cluster&#8217;</li>
-<li><strong>cutoff</strong> (<em>150</em>) &#8211; distance cutoff (nm) to define whether two particles
-are in contact or not</li>
+<li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
+are in contact or not, default is 2 times resolution, times scale.</li>
 <li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
 appearance</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
@@ -446,7 +446,7 @@ of models where these two particles are in contact)</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data">
-<tt class="descname">correlate_with_real_data</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=200</em>, <em>off_diag=1</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>corr='spearman'</em>, <em>midplot='hexbin'</em>, <em>log_corr=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">correlate_with_real_data</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>off_diag=1</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>corr='spearman'</em>, <em>midplot='hexbin'</em>, <em>log_corr=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the result of a correlation between a given group of models and
 original Hi-C data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -459,8 +459,8 @@ using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
 <li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the correlation only for the models in the
 cluster number &#8216;cluster&#8217;</li>
-<li><strong>cutoff</strong> (<em>200</em>) &#8211; distance cutoff (nm) to define whether two particles
-are in contact or not</li>
+<li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
+are in contact or not, default is 2 times resolution, times scale.</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
@@ -481,7 +481,7 @@ correlation</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.deconvolve">
-<tt class="descname">deconvolve</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=200</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>what='dRMSD'</em>, <em>n_best_clusters=10</em>, <em>savefig=None</em>, <em>represent_models=False</em>, <em>figsize=(11</em>, <em>11)</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.deconvolve" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">deconvolve</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=None</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>what='dRMSD'</em>, <em>n_best_clusters=10</em>, <em>savefig=None</em>, <em>represent_models=False</em>, <em>figsize=(11</em>, <em>11)</em>, <em>clusters=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.deconvolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function performs a deconvolution analysis of a given froup of models.
 It first clusters models based on structural comparison (dRMSD), and
 then, performs a differential contact map between each possible pair
@@ -499,8 +499,8 @@ They are also not stored into StructuralModels.clusters</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fact</strong> (<em>0.75</em>) &#8211; factor to define the percentage of equivalent
 positions to be considered in the clustering</li>
-<li><strong>dcutoff</strong> (<em>200</em>) &#8211; distance threshold (nm) to determine if two
-particles are in contact</li>
+<li><strong>dcutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance threshold (nm) to determine if two
+particles are in contact, default is 1.5 times resolution times scale</li>
 <li><strong>method</strong> (<em>&#8216;mcl&#8217;</em>) &#8211; clustering method to use, which can be either
 &#8216;mcl&#8217; or &#8216;ward&#8217;. MCL method is recommended. WARD method uses a scipy
 implementation of this hierarchical clustering, and selects the best
@@ -515,6 +515,8 @@ the clustering computation. Default will be created in /tmp/ folder</li>
 <li><strong>mclargs</strong> &#8211; list with any other command line argument to be passed
 to mcl (i.e,: mclargs=[&#8216;-pi&#8217;, &#8216;10&#8217;, &#8216;-I&#8217;, &#8216;2.0&#8217;])</li>
 <li><strong>n_best_clusters</strong> (<em>10</em>) &#8211; number of clusters to represent</li>
+<li><strong>clusters</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; provide clusters as a dictionary with keys=cluster
+number, or name, and values list of model numbers.</li>
 <li><strong>represent_models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; To generate an interactive visualization
 of a representative model for each cluster. Representative model
 depends on the value passed to this option, it can be either
@@ -638,7 +640,7 @@ StructuralModels.models[N][&#8216;rand_init&#8217;].</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix">
-<tt class="descname">get_contact_matrix</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=200</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_contact_matrix</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a matrix with the number of interactions observed below a given
 cutoff distance.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -651,8 +653,8 @@ using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
 <li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact matrix only for the models in the
 cluster number &#8216;cluster&#8217;</li>
-<li><strong>cutoff</strong> (<em>200</em>) &#8211; distance cutoff (nm) to define whether two particles
-are in contact or not</li>
+<li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
+are in contact or not, default is 2 times resolution, times scale.</li>
 </ul>
 </td>
 </tr>
@@ -665,7 +667,7 @@ are in contact or not</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.interactions">
-<tt class="descname">interactions</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=150</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>axe=None</em>, <em>error=False</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>average=True</em>, <em>plot=True</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.interactions" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">interactions</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>axe=None</em>, <em>error=False</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>average=True</em>, <em>plot=True</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.interactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots, for each particle, the number of interactions (particles closer
 than the guiven cut-off). The value given is the average for all models.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -678,8 +680,8 @@ using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
 <li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact map only for the models in the
 cluster number &#8216;cluster&#8217;</li>
-<li><strong>cutoff</strong> (<em>150</em>) &#8211; distance cutoff (nm) to define whether two particles
-are in contact or not</li>
+<li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
+are in contact or not, default is 2 times resolution, times scale.</li>
 <li><strong>2, 3, 4, 5) steps</strong> (<em>(1,</em>) &#8211; how many particles to group for the
 estimation. By default 5 curves are drawn</li>
 <li><strong>error</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; represent the error of the estimates</li>
@@ -742,7 +744,7 @@ list of distances.</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.model_consistency">
-<tt class="descname">model_consistency</tt><big>(</big><em>cutoffs=(50</em>, <em>100</em>, <em>150</em>, <em>200)</em>, <em>models=None</em>, <em>cluster=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>plot=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.model_consistency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.model_consistency" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">model_consistency</tt><big>(</big><em>cutoffs=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>plot=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.model_consistency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.model_consistency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the particle consistency, over a given set of models, vs the
 modeled region bins. The consistency is a measure of the variability
 (or stability) of the modeled region (the higher the consistency value,
@@ -752,9 +754,10 @@ the higher stability).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>cutoffs</strong> (<em>(50,100,150,200)</em>) &#8211; list of distance cutoffs (nm) used to
-compute the consistency. Two particle are considered consistent if
-their distance is less than the given cutoff</li>
+<li><strong>cutoffs</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of distance cutoffs (nm) used to compute the
+consistency. Two particle are considered consistent if their distance
+is less than the given cutoff, default is a tuple of 0.5, 1, 1.5 and
+2 times resolution, times scale.</li>
 <li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the consistency will be computed
 using all the models. A list of numbers corresponding to a given set
 of models can be passed</li>
@@ -1224,7 +1227,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 31, 2014.
+      Last updated on Apr 08, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
