@@ -737,7 +737,7 @@ class Experiment(object):
             mtrx = [[hic[i + siz * j] for i in xrange(start, end)]
                     for j in xrange(start, end)]
             for i in xrange(start, end):
-                mtrx[i][i] = 1
+                mtrx[i][i] = 1 if mtrx[i][i] else 0
             return mtrx
             
 
