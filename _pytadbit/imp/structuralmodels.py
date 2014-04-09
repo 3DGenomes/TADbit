@@ -1199,9 +1199,10 @@ class StructuralModels(object):
             thispatch.set_facecolor(color)
             thispatch.set_alpha(0.7)
         ax.set_title('Histogram of Z-scores')
-        ax.vlines(self._config['lowfreq'], 1, ax.get_ylim()[1], color='red',
+        height = ax.get_ylim()[1]
+        ax.vlines(self._config['lowfreq'], 1, height, color='red',
                   linestyle='--')
-        ax.vlines(self._config['upfreq'] , 1, ax.get_ylim()[1], color='red',
+        ax.vlines(self._config['upfreq'] , 1, height, color='red',
                   linestyle='--')
         #
         ax = fig.add_subplot(133)

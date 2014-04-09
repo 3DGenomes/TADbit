@@ -82,7 +82,11 @@ def nozero_log(values):
 
 def nozero_log_list(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
-    minv = float(min([v for v in values if v])) / 2
+    try:
+        transform(0)
+        minv = 0.
+    except:
+        minv = float(min([v for v in values if v])) / 2
     if minv > 1:
         warn('WARNING: probable problem with normalization, check.\n')
         minv /= 2  # TODO: something better

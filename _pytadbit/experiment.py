@@ -173,7 +173,7 @@ class Experiment(object):
         # filter columns with low counts
         # -> can not be done using intersection of summed experiments
         xpr._zeros, _ = hic_filtering_for_modelling(
-            xpr.get_hic_matrix(), silent=True)
+            xpr.get_hic_matrix(diagonal=False), silent=True)
         # also remove columns with zeros in the diagonal
         xpr._zeros.update(dict([(i, None) for i in xrange(xpr.size)
                                 if not xpr.hic_data[0][i*xpr.size+i]]))
@@ -238,7 +238,7 @@ class Experiment(object):
         # we need to recalculate zeros:
         if self._zeros:
             self._zeros, has_nans = hic_filtering_for_modelling(
-                self.get_hic_matrix(), silent=True)
+                self.get_hic_matrix(diagonal=False), silent=True)
             if has_nans: # to make it simple
                 for i in xrange(len(self.hic_data[0])):
                     if repr(self.hic_data[0][i]) == 'nan':
@@ -300,7 +300,7 @@ class Experiment(object):
         #                  if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
         if filter_columns:
             self._zeros, has_nans = hic_filtering_for_modelling(
-                self.get_hic_matrix(), silent=silent)
+                self.get_hic_matrix(diagonal=False), silent=silent)
             if has_nans: # to make it simple
                 for i in xrange(len(self.hic_data[0])):
                     if repr(self.hic_data[0][i]) == 'nan':
@@ -643,7 +643,7 @@ class Experiment(object):
                 values[i][j] = exp.norm[0][i * exp.size + j]
                 values[j][i] = exp.norm[0][i * exp.size + j]
         return exp._zscores, values
-        
+
 
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,
                                 diagonal=False, cutoff=None, header=False,
@@ -665,11 +665,8 @@ class Experiment(object):
            
         """
         if not self._zscores and zscored:
-            for i in xrange(self.size):
-                for j in xrange(self.size):
-                    self._zscores.setdefault(str(i), {})
-                    self._zscores[str(i)][str(j)] = self.hic_data[0][i * self.size + j]
-        if not self.norm:
+            self.get_hic_zscores()
+        if not self.norm and normalized:
             raise Exception('Experiment not normalized.')
         # write to file
         out = open(fname, 'w')
@@ -713,12 +710,14 @@ class Experiment(object):
         out.close()
 
 
-    def get_hic_matrix(self, focus=None):
+    def get_hic_matrix(self, focus=None, diagonal=True):
         """
         Return the Hi-C matrix.
 
         :param None focus: if a tuple is passed (start, end), wil return a Hi-C
            matrix starting at start, and ending at end (all inclusive).
+        :param True diagonal: replace the values in the diagonal by one. Used
+           for the filtering in order to smooth the distribution of mean values
 
         :returns: list of lists representing the Hi-C data matrix of the
            current experiment
@@ -731,9 +730,16 @@ class Experiment(object):
         else:
             start = 0
             end   = siz
-        return [[hic[i + siz * j] for i in xrange(start, end)]
-                for j in xrange(start, end)]
-
+        if diagonal:
+            return [[hic[i + siz * j] for i in xrange(start, end)]
+                    for j in xrange(start, end)]
+        else:
+            mtrx = [[hic[i + siz * j] for i in xrange(start, end)]
+                    for j in xrange(start, end)]
+            for i in xrange(start, end):
+                mtrx[i][i] = 1
+            return mtrx
+            
 
     def print_hic_matrix(self, print_it=True):
         """
