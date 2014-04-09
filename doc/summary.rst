@@ -148,7 +148,7 @@ Experiment class
 
       - `set_resolution <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.set_resolution>`_: Set a new value for the resolution. Copy the original data into                                             Experiment._ori_hic and replace the Experiment.hic_data                                             with the data corresponding to new data                                             (compare_condition).
 
-      - view [#first]_:                      Visualize the matrix of Hi-C interactions
+      - `view <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.view>`_ [#first]_: Visualize the matrix of Hi-C interactions
 
       - `write_interaction_pairs <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.write_interaction_pairs>`_: Creates a tab separated file with all the pairwise interactions.
 
@@ -213,11 +213,13 @@ IMPoptimizer class
 
       - `load_from_file <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file>`_: Loads the optimized parameters from a file generated with the function:                                             pytadbit.imp.impoptimizer.IMPoptimizer.write_result.                                             This function does not overwrite the parameters that were already                                             loaded or calculated.
 
+      - `load_grid_search <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search>`_: Loads one file or a list of files containing pre-calculated Structural                                             Models (keep_models parameter used). And correlate each set of models                                             with real data. Usefull to run different correlation on the same data                                             avoiding to re-calculate each time the models.
+
       - `plot_2d <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d>`_ [#first]_: A grid of heatmaps representing the result of the optimization.
 
       - `plot_3d <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d>`_: A grid of heatmaps representing the result of the optimization.
 
-      - `run_grid_search <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search>`_: This function calculates the correlation between the models generated                                             by IMP and the input data for the four main IMP parameters (scale,                                             maxdist, lowfreq and upfreq) in the given ranges of values.
+      - `run_grid_search <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search>`_ [#second]_: This function calculates the correlation between the models generated                                             by IMP and the input data for the four main IMP parameters (scale,                                             maxdist, lowfreq and upfreq) in the given ranges of values.
 
       - `write_result <http://3dgenomes.github.io/tadbit/reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.write_result>`_: This function writes a log file of all the values tested for each                                             parameter, and the resulting correlation value.                                                                                          This file can be used to load or merge data a posteriori using                                             the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file
 
@@ -273,7 +275,7 @@ StructuralModels class
 
       - `save_models <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.save_models>`_ [#second]_: Saves all the models in pickle format (python object written to disk).
 
-      - `view_centroid <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.view_centroid>`_: shortcut for                                             models.view_models(tool='plot', show='stressed', stress='centroid')
+      - `view_centroid <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.view_centroid>`_: shortcut for                                             view_models(tool='plot', show='highlighted', highlight='centroid')
 
       - `view_models <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.view_models>`_ [#first]_: Visualize a selected model in the three dimensions (either with Chimera                                             or through matplotlib).
 

@@ -424,9 +424,10 @@ class TestTadbit(unittest.TestCase):
 
         models = load_structuralmodels('models.pick')
         if find_executable('mcl'):
-            models.cluster_models(method='mcl', fact=0.9, verbose=False)
+            models.cluster_models(method='mcl', fact=0.9, verbose=False,
+                                  dcutoff=200)
             self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
-        models.cluster_models(method='ward', verbose=False)
+        models.cluster_models(method='ward', verbose=False, dcutoff=200)
         self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
         if CHKTIME:
             print '14', time() - t0
@@ -466,7 +467,8 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(corr, 1), 0.7)
         self.assertEqual(round(pval, 4), round(0, 4))
         # consistency
-        models.model_consistency(plot=False, savedata='lala')
+        models.model_consistency(cutoffs=(50, 100, 150, 200), plot=False,
+                                 savedata='lala')
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i)/10, 0) for i in lines[1].split('\t')],
