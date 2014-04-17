@@ -11,7 +11,7 @@ from warnings  import warn
 import numpy as np
 
 
-def newton_raphson (guess, contour, sq_length, jmax=100, xacc=1e-12):
+def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
     """
     Newton-Raphson method as defined in:
     http://www.maths.tcd.ie/~ryan/TeachingArchive/161/teaching/newton-raphson.c.html

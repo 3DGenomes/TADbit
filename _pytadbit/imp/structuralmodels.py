@@ -1210,6 +1210,7 @@ class StructuralModels(object):
             histtype='stepfilled', normed=True)
         red = cmap(int(255 * (.8 + 1.2)/2.4))
         blue = cmap(int(255 * (-.5 + 1.2)/2.4))
+        height1 = height2 = 0
         for thispatch in patches:
             beg = thispatch.get_x()
             end = thispatch.get_x() + thispatch.get_width()

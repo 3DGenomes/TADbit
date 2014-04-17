@@ -1,7 +1,7 @@
 """
 03 Apr 2014
 
-
+All in one script from Hi-C raw data matrix to 3D models.
 """
 
 # MatPlotLib not asking for X11
@@ -24,6 +24,9 @@ def main():
     res = int(opts.res)
     ini = int(float(opts.beg) / res)
     end = int(float(opts.end) / res)
+    if end - ini <= 2:
+        raise Exception('"beg" and "end" parameter should be given in ' +
+                        'genomic coordinates, not bin')
     datasets = opts.data
     xtra = ('_' + opts.extra) if opts.extra else ''
     nmodels_opt, nkeep_opt, ncpus = (int(opts.nmodels_opt),
@@ -330,7 +333,11 @@ def main():
     f = open(pltfile,'w')
     f.write('#Model_Number\tpL\n')
     for model in models:
-        f.write('%s\t%.2f\n' % (model["rand_init"], model.persistence_length()))
+        try:
+            f.write('%s\t%.2f\n' % (model["rand_init"], model.persistence_length()))
+        except:
+            warn('WARNING: failed to compute persistence length for model %s' %
+                 model["rand_init"])
 
     # Get accessibility of all models
     radius = 75   # Radius of an object to caluculate accessibility
