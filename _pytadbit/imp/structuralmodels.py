@@ -24,7 +24,7 @@ from numpy                          import histogram, linspace
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.stats                    import spearmanr, pearsonr, chisquare
-from scipy.stats                    import linregress, normaltest, sc_norm
+from scipy.stats                    import linregress, normaltest, norm as sc_norm
 from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
