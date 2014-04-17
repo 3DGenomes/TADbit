@@ -669,7 +669,12 @@ class Experiment(object):
         if not self.norm and normalized:
             raise Exception('Experiment not normalized.')
         # write to file
-        out = open(fname, 'w')
+        if type(fname) == str:
+            out = open(fname, 'w')
+        elif type(fname) == file:
+            out = fname
+        else:
+            raise Exception('Not recognize file type\n')
         if header:
             out.write('elt1\telt2\t%s\n' % ('zscore' if zscored else 
                                             'normalized hi-c' if normalized 
@@ -741,15 +746,19 @@ class Experiment(object):
             return mtrx
             
 
-    def print_hic_matrix(self, print_it=True):
+    def print_hic_matrix(self, print_it=True, normalized=False):
         """
         Return the Hi-C matrix as string
 
+        :param False normalized: returns normalized data, instead of raw Hi-C
         :returns: list of lists representing the Hi-C data matrix of the
            current experiment
         """
         siz = self.size
-        hic = self.hic_data[0]
+        if normalized:
+            hic = self.norm[0]
+        else:
+            hic = self.hic_data[0]
         out = '\n'.join(['\t'.join([str(hic[i+siz * j]) \
                                     for i in xrange(siz)]) \
                          for j in xrange(siz)])
