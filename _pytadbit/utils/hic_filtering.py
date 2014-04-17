@@ -166,7 +166,12 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
         R2 = get_r2(p, x, y)
         if best[0] < R2:
             best = (R2, order, p, z, root)
-    p, z, root = best[2:]
+    try:
+        p, z, root = best[2:]
+    except:
+        if not silent:
+            warn('WARNING: Too many zeroes to filter columns. SKIPPING...')
+        return {}
     if draw_hist:
         a = plt.plot(xp, p(xp), "--", color='k')
         b = plt.vlines(root, 0, plt.ylim()[1], colors='r', linestyles='dashed')

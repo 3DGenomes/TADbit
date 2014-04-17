@@ -1139,21 +1139,21 @@ class StructuralModels(object):
 
 
 
-    def zscore_plot(self, axe=None, savefig=None):
+    def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
         """
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
         and in blue Z-scores lower than lower cut-off. Last plot is an histogram
         of the distribution of Z-scores, showing selected regions. Histogram
-        also shows the fit to normal distribution and the result of a test of
-        normality (D'Agostino and Pearson's test, that combines skew and
-        kurtosis).
+        also shows the fit to normal distribution.
 
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param False do_normaltest: to display the result of a test of normality
+           (D'Agostino and Pearson's test, that combines skew and kurtosis).
 
         """
 
@@ -1236,10 +1236,11 @@ class StructuralModels(object):
         labels.append('> %.2f (force particles together)' % (
         self._config['upfreq']))
         ax.legend([p1, p2, p3, normplot[0]], labels + [
-            "Fitted normal distribution \nD'Agostino Pearson's" +
-            " normality test $K^2$=%.2f pv=%.3f" % (k2, pv)],
+            "Fitted normal distribution" +
+            (("\n D'Agostino Pearson's normality test $K^2$=%.2f pv=%.3f"
+              % (k2, pv)) if do_normaltest else '')],
                   fontsize='small', frameon=False,
-                  bbox_to_anchor=(1.013, 1.33))
+                  bbox_to_anchor=(1.013, 1.3 + (.03 if do_normaltest else 0)))
         ax.set_xlabel('Z-scores')
         ax.set_ylabel('Number of particles')
         ax.vlines(self._config['lowfreq'], 0, height1, color=(.1,.1,.1),

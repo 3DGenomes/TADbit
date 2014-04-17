@@ -273,17 +273,17 @@ def plot_hist_box(data, part1, part2, axe=None, savefig=None):
     plt.setp(bp['fliers'], color='darkred', marker='+')
     bpAx.plot(sum(data)/len(data), 1, 
               color='w', marker='*', markeredgecolor='k')
-    bpAx.annotate('%.4f' % (bp['boxes'][0].get_xdata()[0]),
+    bpAx.annotate('%.1f' % (bp['boxes'][0].get_xdata()[0]),
                   (bp['boxes'][0].get_xdata()[0], bp['boxes'][0].get_ydata()[1]),
                   va='bottom', ha='center', xytext=(0, 2),
                   textcoords='offset points',
                   size='small')
-    bpAx.annotate('%.4f' % (bp['boxes'][0].get_xdata()[2]),
+    bpAx.annotate('%.1f' % (bp['boxes'][0].get_xdata()[2]),
                   (bp['boxes'][0].get_xdata()[2], bp['boxes'][0].get_ydata()[1]),
                   va='bottom', ha='center', xytext=(0, 2),
                   textcoords='offset points',
                   size='small')
-    bpAx.annotate('%.4f' % (bp['medians'][0].get_xdata()[0]),
+    bpAx.annotate('%.1f' % (bp['medians'][0].get_xdata()[0]),
                   (bp['medians'][0].get_xdata()[0], bp['boxes'][0].get_ydata()[0]),
                   va='top', ha='center', xytext=(0, -2),
                   textcoords='offset points', color='darkred',
