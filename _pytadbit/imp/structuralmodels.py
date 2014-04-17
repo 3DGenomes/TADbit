@@ -24,7 +24,7 @@ from numpy                          import histogram, linspace
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.stats                    import spearmanr, pearsonr, chisquare
-from scipy.stats                    import linregress, normaltest, norm
+from scipy.stats                    import linregress, normaltest, sc_norm
 from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
@@ -1201,7 +1201,7 @@ class StructuralModels(object):
         _, _, patches = ax.hist(zdata, bins=25, linewidth=1,
                                 facecolor='none', edgecolor='k', normed=True)
         k2, pv = normaltest(zdata)
-        normfit = norm.pdf(zdata, np_mean(zdata), np_std(zdata))
+        normfit = sc_norm.pdf(zdata, np_mean(zdata), np_std(zdata))
         normplot = ax.plot(zdata, normfit, ':o', color='grey', ms=3, alpha=.4)
         ax.hist(
             reduce(lambda x, y: x+y, [self._zscores[v].values()
