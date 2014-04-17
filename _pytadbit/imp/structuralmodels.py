@@ -1144,7 +1144,10 @@ class StructuralModels(object):
         Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
         of which is binary showing in red Z-scores higher than upper cut-off;
         and in blue Z-scores lower than lower cut-off. Last plot is an histogram
-        of the distribution of Z-scores, showing selected regions.
+        of the distribution of Z-scores, showing selected regions. Histogram
+        also shows the fit to normal distribution and the result of a test of
+        normality (D'Agostino and Pearson's test, that combines skew and
+        kurtosis).
 
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
