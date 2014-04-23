@@ -460,6 +460,9 @@ def get_options():
     parser.add_argument('--optimize_only', dest='optimize_only', default=False,
                         action='store_true',
                         help='do the optimization of the region and exit.')
+    parser.add_argument('--tad_only', dest='tad_only', action="store_true",
+                        default=False,
+                        help='[%(default)s] exit after searching for TADs')
     parser.add_argument('--ncpus', dest='ncpus', metavar="INT", default=1,
                         type=int, help='[%(default)s] Number of CPUs to use')
 
@@ -496,21 +499,18 @@ def get_options():
     # TADs
     taddet.add_argument('--tad', dest='tad', action="store_true", default=False,
                         help='[%(default)s] search for TADs in experiments')
-    taddet.add_argument('--tad_only', dest='tad_only', action="store_true",
-                        default=False,
-                        help='[%(default)s] exit after searching for TADs')
     taddet.add_argument('--centromere', dest='centromere', action="store_true",
                         default=False,
                         help='[%(default)s] search for centromeric region.')
     taddet.add_argument('--group', dest='group', nargs='+', type=int,
                         default=0, metavar='INT',
-                        help='''How to group Hi-C experiments for the detection
-                        of TAD borders, by default all together.
-                        I.e.: "--exp_group 2 2 1" means that first 2
-                        experiments will be used together, next 2 too also, and
-                        last alone. TADs will be detected and aligned
-                        idenpendently for these 3 groups. Note that modeling
-                        will still be done on the sum of all 5 experiments.''')
+                        help='''[all together] How to group Hi-C experiments for
+                        the detection of TAD borders.
+                        I.e.: "--exp_group 2 2 1" first 2
+                        experiments used together, next 2 also, and
+                        last alone. TADs detected and aligned
+                        independently for each group. Modeling
+                        still done on the sum of all.''')
 
     #########################################
     # MODELING
@@ -664,16 +664,6 @@ def get_options():
     for i, j in enumerate(opts.analyze):
         opts.analyze[i] = actions[int(j)]
 
-    # groups for TAD detection
-    if not opts.group:
-        opts.group = [len(opts.data)]
-    else:
-        opts.group = [int(i) for i in opts.group]
-
-    if sum(opts.group) > len(opts.data):
-        logging.info('ERROR: Number of experiments in groups larger than ' +
-                     'the number of Hi-C data files given.')
-        exit()
     if not opts.data:
         logging.info('MISSING data')
         exit(parser.print_help())
@@ -702,6 +692,17 @@ def get_options():
         if not opts.upfreq:
             logging.info('MISSING upfreq')
             exit(parser.print_help())
+
+    # groups for TAD detection
+    if not opts.group:
+        opts.group = [len(opts.data)]
+    else:
+        opts.group = [int(i) for i in opts.group]
+
+    if sum(opts.group) > len(opts.data):
+        logging.info('ERROR: Number of experiments in groups larger than ' +
+                     'the number of Hi-C data files given.')
+        exit()
 
     # this options should stay as this now
     opts.scale = '0.01'
