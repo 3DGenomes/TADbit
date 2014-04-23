@@ -1130,14 +1130,12 @@ the file has been written</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.zscore_plot">
-<tt class="descname">zscore_plot</tt><big>(</big><em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.zscore_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.zscore_plot" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">zscore_plot</tt><big>(</big><em>axe=None</em>, <em>savefig=None</em>, <em>do_normaltest=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.zscore_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.zscore_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
 of which is binary showing in red Z-scores higher than upper cut-off;
 and in blue Z-scores lower than lower cut-off. Last plot is an histogram
 of the distribution of Z-scores, showing selected regions. Histogram
-also shows the fit to normal distribution and the result of a test of
-normality (D&#8217;Agostino and Pearson&#8217;s test, that combines skew and
-kurtosis).</p>
+also shows the fit to normal distribution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1148,6 +1146,8 @@ appearance</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
+<li><strong>do_normaltest</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; to display the result of a test of normality
+(D&#8217;Agostino and Pearson&#8217;s test, that combines skew and kurtosis).</li>
 </ul>
 </td>
 </tr>
@@ -1230,7 +1230,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Apr 16, 2014.
+      Last updated on Apr 23, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
