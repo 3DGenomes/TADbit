@@ -1,13 +1,38 @@
 """
-03 Apr 2014
-
 This script contains the main analysis that can be done using TADbit:
   * visualization of Hi-C data
   * detection of TADs
   * alignment of TADs
   * optimization of IMP parameters
   * building of models of chromatin structure
-  
+
+Arguments can be passed either through command line or through a configuration
+file. Note: options passed through command line override the ones from the
+configuration file, that can be considered as new default values.
+
+Computation can be divided into steps in order to be parallelized:
+  - detection of tads (using --tad_only)
+  - optimization of IMP parameters (using --optimize_only)
+     - optimization itself can be divided setting smaller ranged of maxdist,
+       lowfreq or upfreq (or even just one value).
+  - modeling (using the same command as before without --optimize_only,
+    optimization will be skipped if already done).
+  - analyze (using --analyze_only), if all previous steps have finished.
+
+Example of usage parallelizing computation:
+$ python model_and_analyze.py --cfg model_and_analyze.cfg --tad --tad_only
+$ python model_and_analyze.py --cfg model_and_analyze.cfg --optimize_only --maxdist 2000
+$ python model_and_analyze.py --cfg model_and_analyze.cfg --optimize_only --maxdist 2500
+$ python model_and_analyze.py --cfg model_and_analyze.cfg --optimize_only --maxdist 3000
+$ python model_and_analyze.py --cfg model_and_analyze.cfg --analyze 0
+$ python model_and_analyze.py --cfg model_and_analyze.cfg --analyze_only
+
+The same can be run all together with this single line:
+$ python model_and_analyze.py --cfg model_and_analyze.cfg
+
+A log file will be generated, repeating the message appearing on console, with
+line-specific flags allowing to identify from which step of the computation
+belongs the message.
 """
 
 # MatPlotLib not asking for X11
@@ -438,14 +463,10 @@ def main():
 def get_options():
     """
     parse option from call
-   
+
     """
     parser = ArgumentParser(
         usage="%(prog)s [options] [--cfg CONFIG_PATH]",
-        description=('Options can be passed through command line or' +
-                     ' a configuration file (--cfg CONG_PATH). ' +
-                     'Note: options passed through command line override the ' +
-                     'ones from the configuration file.'),
         formatter_class=lambda prog: HelpFormatter(prog, width=95,
                                                    max_help_position=25))
     glopts = parser.add_argument_group('General arguments')
@@ -455,6 +476,9 @@ def get_options():
     descro = parser.add_argument_group('Descriptive, optional arguments')
     analyz = parser.add_argument_group('Output arguments')
 
+    parser.add_argument('--help_usage', dest='help_usage', action="store_true",
+                        default=False,
+                        help='display detailed usage.')
     parser.add_argument('--cfg', dest='cfg', metavar="PATH", action='store',
                       default=None, type=str,
                       help='path to a configuration file with predefined ' +
@@ -588,10 +612,11 @@ def get_options():
     #########################################
     # OUTPUT
     analyz.add_argument('--analyze', dest='analyze', nargs='*',
-                        choices=range(1, 12), type=int,
-                        default=range(1, 12),
+                        choices=range(12), type=int,
+                        default=range(12),
                         help=('''[%s] list of numbers representing the
                         analysis to be done. Choose between:
+                        0) do nothing
                         1) TAD alignment
                         2) optimization plot
                         3) correlation real/models
@@ -604,7 +629,7 @@ def get_options():
                         10) persistence length
                         11) accessibility
                         12) interaction
-                        ''' % (' '.join([str(i) for i in range(1, 12)]))))
+                        ''' % (' '.join([str(i) for i in range(12)]))))
     analyz.add_argument('--not_write_cmm', dest='not_write_cmm',
                         default=False, action='store_true',
                         help=('do not generate cmm files for each model'))
@@ -617,7 +642,11 @@ def get_options():
     parser.add_argument_group(descro)
     parser.add_argument_group(analyz)
     opts = parser.parse_args()
-        
+
+    if opts.help_usage:
+        print __doc__
+        exit()
+
     log = '\tSummary of arguments:\n'
     # merger opts with CFG file and write summary
     args = [i.strip('-') for i in sys.argv]
@@ -655,7 +684,8 @@ def get_options():
                     key, opts.__dict__[key])
 
     # rename analysis options
-    actions = {1  : "TAD alignment",
+    actions = {0  : "Do nothing",
+               1  : "TAD alignment",
                2  : "optimization plot",
                3  : "correlation real/models",
                4  : "z-score plot",
@@ -720,7 +750,7 @@ def get_options():
     opts.nkeep_opt   = int(opts.nkeep_opt  )
     opts.ncpus       = int(opts.ncpus      )
     opts.res         = int(opts.res        )
-    
+
     # do the divisinon to bins
     opts.beg = int(float(opts.beg) / opts.res)
     opts.end = int(float(opts.end) / opts.res)
