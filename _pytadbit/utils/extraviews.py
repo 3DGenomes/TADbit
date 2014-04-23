@@ -816,9 +816,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     axe.xaxis.set_minor_locator(MultipleLocator(10))
     axe.hlines(1, 1, end, 'k', lw=1.5)
     if show:
-        tit1 = fig.suptitle("TAD borders' alignment", size='x-large')
-        tit2 = axe.set_title("Alignment column number")
-        tit2.set_y(1.3)
+        tit1 = fig.suptitle("TAD borders", size='x-large')
         plt.subplots_adjust(top=0.76)
         fig.set_facecolor('white')
         plots = []
@@ -829,7 +827,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
                    [str(scr) for scr in xrange(1, 11)],
                    numpoints=1, title='Border scores',
                    fontsize='small', loc='lower left',
-                   bbox_to_anchor=(1, 0.5))
+                   bbox_to_anchor=(1, 0.1))
         axe.set_ylim((0, max(maxys) + 0.4))
         if savefig:
             tadbit_savefig(savefig)
