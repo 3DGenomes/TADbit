@@ -186,7 +186,7 @@ def main():
     # Save the chromosome
     # Chromosomes can later on be loaded to avoid re-reading the original
     # matrices. See function "load_chromosome".
-    if not opts.tad_only:
+    if not opts.tad_only and not opts.analyze_only:
         # Sum all experiments into a new one
         logging.info("\tSumming experiments...")
         if len(xnames) > 1:
