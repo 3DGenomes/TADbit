@@ -1,7 +1,13 @@
 """
 03 Apr 2014
 
-All in one script from Hi-C raw data matrix to 3D models.
+This script contains the main analysis that can be done using TADbit:
+  * visualization of Hi-C data
+  * detection of TADs
+  * alignment of TADs
+  * optimization of IMP parameters
+  * building of models of chromatin structure
+  
 """
 
 # MatPlotLib not asking for X11
