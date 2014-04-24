@@ -28,7 +28,7 @@ $ python model_and_analyze.py --cfg model_and_analyze.cfg --analyze 0
 $ python model_and_analyze.py --cfg model_and_analyze.cfg --analyze_only
 
 The same can be run all together with this single line:
-$ python model_and_analyze.py --cfg model_and_analyze.cfg
+$ python model_and_analyze.py --cfg model_and_analyze.cfg --tad
 
 A log file will be generated, repeating the message appearing on console, with
 line-specific flags allowing to identify from which step of the computation
@@ -46,7 +46,7 @@ from warnings import warn
 import os, sys
 import logging
 
-def search_tads(opts, crm, name, xtra):
+def search_tads(opts, crm, name):
     """
     search for TAD borders in group of experiments
     """
@@ -70,12 +70,12 @@ def search_tads(opts, crm, name, xtra):
         if len(opts.group) > 1:
             ali = crm.align_experiments(aligned)
             ali.draw(savefig=os.path.join(opts.outdir, name,
-                                          name + xtra + '_tad_alignment.pdf'))
+                                          name + '_tad_alignment.pdf'))
         else:
             crm.tad_density_plot(crm.experiments[-1].name, savefig=os.path.join(
-                opts.outdir, name, name + xtra + '_tad_alignment.pdf'))
+                opts.outdir, name, name + '_tad_alignment.pdf'))
         crm.visualize(aligned, paint_tads=True, savefig=os.path.join(
-            opts.outdir, name, name + xtra + '_tad_matrices.pdf'),
+            opts.outdir, name, name + '_tad_matrices.pdf'),
                       normalized=True)
 
 
@@ -107,15 +107,15 @@ def load_hic_data(opts, xnames):
     return my_chrom
 
 
-def load_optimal_imp_parameters(opts, name, xtra, exp, dcutoff):
+def load_optimal_imp_parameters(opts, name, exp, dcutoff):
     """
     Load optimal IMP parameters
     """
     # If some optimizations have finished, we load log files into a single
     # IMPoptimizer object
     logging.info(("\tReading optimal parameters also saved in " +
-                  "{0}_optimal_params{1}.log").format(
-                     os.path.join(opts.outdir, name), xtra))
+                  "%s_optimal_params.tsv") % (
+                     os.path.join(opts.outdir, name)))
 
     from pytadbit import IMPoptimizer
     results = IMPoptimizer(exp, opts.beg, opts.end, n_models=opts.nmodels_opt,
@@ -123,12 +123,12 @@ def load_optimal_imp_parameters(opts, name, xtra, exp, dcutoff):
     # load from log files
     if not opts.optimize_only:
         for fnam in os.listdir(os.path.join(opts.outdir, name)):
-            if fnam.endswith(xtra + '.log') and '_optimal_params' in fnam:
+            if fnam.endswith('.tsv') and '_optimal_params' in fnam:
                 results.load_from_file(os.path.join(opts.outdir, name, fnam))
     return results
 
 
-def optimize(results, opts, name, xtra):
+def optimize(results, opts, name):
     """
     Optimize IMP parameters
     """
@@ -147,7 +147,7 @@ def optimize(results, opts, name, xtra):
                                  opts.upfreq ,
                                  opts.lowfreq)
     logpath = os.path.join(
-        opts.outdir, name, '{}_optimal_params{}{}.log'.format(name, optname, xtra))
+        opts.outdir, name, '%s_optimal_params%s.tsv' % (name, optname))
     results.run_grid_search(n_cpus=opts.ncpus, off_diag=2, verbose=True,
                             lowfreq_range=lowfreq, upfreq_range=upfreq,
                             maxdist_range=maxdist, scale_range=scale)
@@ -159,7 +159,7 @@ def optimize(results, opts, name, xtra):
     ## get best parameters
 
     optpar, cc = results.get_best_parameters_dict(
-        reference='Optimized for {0}'.format(name), with_corr=True)
+        reference='Optimized for %s' % (name), with_corr=True)
 
     sc = optpar['scale']
     md = optpar['maxdist']
@@ -169,11 +169,11 @@ def optimize(results, opts, name, xtra):
     logging.info(("\t\tOptimal values: scale:{0} maxdist:{1} upper:{2} lower:{3}" +
                   " with cc: {4}").format(sc, md, uf, lf, cc))
     results.write_result(os.path.join(
-        opts.outdir, name, '{}_optimal_params{}.log'.format(name, xtra)))
+        opts.outdir, name, '%s_optimal_params.tsv' % (name)))
     if "optimization plot" in opts.analyze:
         results.plot_2d(show_best=20,
-                        savefig="{0}/{1}{2}_optimal_params.pdf".format(
-                            os.path.join(opts.outdir, name), name, xtra))
+                        savefig="%s/%s_optimal_params.pdf" % (
+                            os.path.join(opts.outdir, name), name))
     # Optimal parameters
     kf = 5 # IMP penalty for connectivity between two consecutive particles.
            # This needs to be large enough to ensure connectivity.
@@ -188,7 +188,6 @@ def main():
     main function
     """
     opts = get_options()
-    xtra = ('_' + opts.extra) if opts.extra else ''
     nmodels_opt, nkeep_opt, ncpus = (int(opts.nmodels_opt),
                                      int(opts.nkeep_opt), int(opts.ncpus))
     nmodels_mod, nkeep_mod = int(opts.nmodels_mod), int(opts.nkeep_mod)
@@ -212,7 +211,7 @@ def main():
     ##########################  SEARCH TADs PARAMETERS #########################
     ############################################################################
     if opts.tad and not opts.analyze_only:
-        search_tads(opts, crm, name, xtra)
+        search_tads(opts, crm, name)
         
     # Save the chromosome
     # Chromosomes can later on be loaded to avoid re-reading the original
@@ -242,14 +241,14 @@ def main():
     ############################################################################
 
     if not opts.analyze_only:
-        results = load_optimal_imp_parameters(opts, name, xtra, exp, dcutoff)
+        results = load_optimal_imp_parameters(opts, name, exp, dcutoff)
         
     ############################################################################
     #########################  OPTIMIZE IMP PARAMETERS #########################
     ############################################################################
 
     if not opts.analyze_only:
-        optpar = optimize(results, opts, name, xtra)
+        optpar = optimize(results, opts, name)
 
     ############################################################################
     ##############################  MODEL REGION ###############################
@@ -262,7 +261,7 @@ def main():
         # function for loading models
         from pytadbit.imp.structuralmodels import load_structuralmodels
         models = load_structuralmodels(
-            os.path.join(opts.outdir, name, name + xtra + '.models'))
+            os.path.join(opts.outdir, name, name + '.models'))
         ########################################################################
     else:
         # Build 3D models based on the HiC data.
@@ -278,7 +277,7 @@ def main():
         # See function "load_structuralmodels".
         logging.info("\tSaving the models...")
         models.save_models(
-            os.path.join(opts.outdir, name, name + xtra + '.models'))
+            os.path.join(opts.outdir, name, name + '.models'))
 
     ############################################################################
     ##############################  ANALYZE MODELS #############################
@@ -291,21 +290,21 @@ def main():
         rho, pval = models.correlate_with_real_data(
             cutoff=dcutoff,
             savefig=os.path.join(opts.outdir, name,
-                                 name + xtra + '_corre_real.pdf'),
+                                 name + '_corre_real.pdf'),
             plot=True)
         rho, pval = models.correlate_with_real_data(
             cutoff=dcutoff,
             savefig=os.path.join(opts.outdir, name,
-                                 name + xtra + '_corre_real_bis.pdf'),
+                                 name + '_corre_real_bis.pdf'),
             plot=True, midplot='triple')
-        logging.info("\t Correlation coefficient: {0} [p-value: {1}]".format(
+        logging.info("\t Correlation coefficient: %s [p-value: %s]" % (
             rho, pval))
 
     if "z-score plot" in opts.analyze:
         # zscore plots
         logging.info("\tZ-score plot...")
         models.zscore_plot(
-            savefig=os.path.join(opts.outdir, name, name + xtra + '_zscores.pdf'))
+            savefig=os.path.join(opts.outdir, name, name + '_zscores.pdf'))
 
     # Cluster models based on structural similarity
     logging.info("\tClustering all models into sets of structurally similar" +
@@ -320,12 +319,12 @@ def main():
         except:
             continue
     logging.info("\tSaving again the models this time with clusters...")
-    models.save_models(os.path.join(opts.outdir, name, name + xtra + '.models'))
+    models.save_models(os.path.join(opts.outdir, name, name + '.models'))
     # Plot the clustering
     try:
         models.cluster_analysis_dendrogram(
             color=True, savefig=os.path.join(
-                opts.outdir, name, name + xtra + '_clusters.pdf'))
+                opts.outdir, name, name + '_clusters.pdf'))
     except:
         logging.info("\t\tWARNING: plot for clusters could not be made...")
 
@@ -340,21 +339,21 @@ def main():
                 cluster, len(models.clusters[cluster]),
                 models.clusters[cluster]))
             if not os.path.exists(os.path.join(
-                opts.outdir, name, 'models' + xtra, 'cl_' + str(cluster))):
+                opts.outdir, name, 'models', 'cl_' + str(cluster))):
                 os.makedirs(os.path.join(
-                    opts.outdir, name, 'models' + xtra, 'cl_' + str(cluster)))
+                    opts.outdir, name, 'models', 'cl_' + str(cluster)))
             if not opts.not_write_cmm:
                 models.write_xyz(directory=os.path.join(
-                    opts.outdir, name, 'models' + xtra, 'cl_' + str(cluster)),
+                    opts.outdir, name, 'models', 'cl_' + str(cluster)),
                                  cluster=cluster)
             if not opts.not_write_xyz:
                 models.write_cmm(directory=os.path.join(
-                    opts.outdir, name, 'models' + xtra, 'cl_' + str(cluster)),
+                    opts.outdir, name, 'models', 'cl_' + str(cluster)),
                                  cluster=cluster)
             # Write list file
             clslstfile = os.path.join(
                 opts.outdir, name,
-                'models' + xtra, 'cl_{}.lst'.format(str(cluster)))
+                'models', 'cl_{}.lst'.format(str(cluster)))
             out = open(clslstfile,'w')
             for model_n in models.clusters[cluster]:
                 out.write("model.{0}\n".format(model_n))
@@ -362,7 +361,7 @@ def main():
             if not opts.not_write_cmm:
                 # Write chimera file
                 clschmfile = os.path.join(
-                    opts.outdir, name, 'models' + xtra,
+                    opts.outdir, name, 'models',
                     'cl_{}_superimpose.cmd'.format(str(cluster)))
                 out = open(clschmfile, 'w')
                 out.write("open " + " ".join(["cl_{0}/model.{1}.cmm".format(
@@ -385,37 +384,37 @@ def main():
         models.model_consistency(
             cluster=1, cutoffs=range(50, dcutoff + 50, 50),
             savefig =os.path.join(opts.outdir, name,
-                                  name + xtra + '_consistency.pdf'),
+                                  name + '_consistency.pdf'),
             savedata=os.path.join(opts.outdir, name,
-                                  name + xtra + '_consistency.dat'))
+                                  name + '_consistency.dat'))
 
     if "density" in opts.analyze:
         # Calculate a DNA density plot
         logging.info("\tGetting density data...")
         models.density_plot(
             error=True, steps=(1,3,5,7),
-            savefig =os.path.join(opts.outdir, name, name + xtra + '_density.pdf'),
-            savedata=os.path.join(opts.outdir, name, name + xtra + '_density.dat'))
+            savefig =os.path.join(opts.outdir, name, name + '_density.pdf'),
+            savedata=os.path.join(opts.outdir, name, name + '_density.dat'))
 
     if "contact map" in opts.analyze:
         # Get a contact map at cut-off of 150nm for cluster #1
         logging.info("\tGetting a contact map...")
         models.contact_map(
             cluster=1, cutoff=dcutoff,
-            savedata=os.path.join(opts.outdir, name, name + xtra + '_contact.dat'))
+            savedata=os.path.join(opts.outdir, name, name + '_contact.dat'))
 
     if "walking angle" in opts.analyze:
         # Get Dihedral angle plot for cluster #1
         logging.info("\tGetting angle data...")
         models.walking_angle(
             cluster=1, steps=(1,5),
-            savefig =os.path.join(opts.outdir, name, name + xtra + '_wang.pdf'),
-            savedata=os.path.join(opts.outdir, name, name + xtra + '_wang.dat'))
+            savefig =os.path.join(opts.outdir, name, name + '_wang.pdf'),
+            savedata=os.path.join(opts.outdir, name, name + '_wang.dat'))
 
     if "persistence length" in opts.analyze:
         # Get persistence length of all models
         logging.info("\tGetting persistence length data...")
-        pltfile = os.path.join(opts.outdir, name, name + xtra + '_pL.dat')
+        pltfile = os.path.join(opts.outdir, name, name + '_pL.dat')
         f = open(pltfile,'w')
         f.write('#Model_Number\tpL\n')
         for model in models:
@@ -432,12 +431,12 @@ def main():
         nump   = 30   # number of particles (resolution)
         logging.info("\tGetting accessibility data (this can take long)...")
         if not os.path.exists(
-            os.path.join(opts.outdir, name, 'models' + xtra, 'asa')):
-            os.makedirs(os.path.join(opts.outdir, name, 'models' + xtra, 'asa'))
+            os.path.join(opts.outdir, name, 'models', 'asa')):
+            os.makedirs(os.path.join(opts.outdir, name, 'models', 'asa'))
         for model in models:
             by_part = model.accessible_surface(radius, nump=nump,
                                                include_edges=False)[4]
-            asafile = os.path.join(opts.outdir, name, 'models' + xtra,
+            asafile = os.path.join(opts.outdir, name, 'models',
                                    'asa', 'model_{}.asa'.format(model['rand_init']))
             out = open(asafile, 'w')
             for part, acc, ina in by_part:
@@ -454,9 +453,9 @@ def main():
         models.interactions(
             cutoff=dcutoff, steps=(1,3,5),
             savefig =os.path.join(opts.outdir, name,
-                                  name + xtra + '_interactions.pdf'),
+                                  name + '_interactions.pdf'),
             savedata=os.path.join(opts.outdir, name,
-                                  name + xtra + '_interactions.dat'),
+                                  name + '_interactions.dat'),
             error=True)
 
 
@@ -468,7 +467,7 @@ def get_options():
     parser = ArgumentParser(
         usage="%(prog)s [options] [--cfg CONFIG_PATH]",
         formatter_class=lambda prog: HelpFormatter(prog, width=95,
-                                                   max_help_position=25))
+                                                   max_help_position=27))
     glopts = parser.add_argument_group('General arguments')
     taddet = parser.add_argument_group('TAD detection arguments')
     optimo = parser.add_argument_group('Optimization of IMP arguments')
@@ -478,7 +477,8 @@ def get_options():
 
     parser.add_argument('--help_usage', dest='help_usage', action="store_true",
                         default=False,
-                        help='display detailed usage.')
+                        help='''show detailed usage documentation, with examples
+                        and exit''')
     parser.add_argument('--cfg', dest='cfg', metavar="PATH", action='store',
                       default=None, type=str,
                       help='path to a configuration file with predefined ' +
@@ -486,10 +486,10 @@ def get_options():
     parser.add_argument('--analyze_only', dest='analyze_only',
                         action='store_true', default=False,
                         help=('load precomputed models in outdir, ' +
-                              'skip optimization, modeling.'))
+                              'skip optimization, modeling'))
     parser.add_argument('--optimize_only', dest='optimize_only', default=False,
                         action='store_true',
-                        help='do the optimization of the region and exit.')
+                        help='do the optimization of the region and exit')
     parser.add_argument('--tad_only', dest='tad_only', action="store_true",
                         default=False,
                         help='[%(default)s] exit after searching for TADs')
@@ -499,20 +499,19 @@ def get_options():
     #########################################
     # GENERAL
     glopts.add_argument(
-        '--data_path', dest='data_path', metavar="PATH", action='append',
+        '--root_path', dest='root_path', metavar="PATH", action='append',
         default='', type=str,
         help=('path to search for data files (just pass file name' +
               'in "data")'))
-    glopts.add_argument(
-        '-d','--data', dest='data', metavar="PATH", nargs='+',
-        type=str,help=('path to file(s) with Hi-C data matrix. If' +
-                       ' many, experiments will be summed up. I' +
-                       '.e.: --data replicate_1.txt replicate_2.txt'))
-    glopts.add_argument('-n', '--xname', dest='xname', metavar="STR", nargs='+',
+    glopts.add_argument('--data', dest='data', metavar="PATH", nargs='+',
+                        type=str,
+                        help='''path to file(s) with Hi-C data matrix. If many,
+                        experiments will be summed up. I.e.: --data
+                        replicate_1.txt replicate_2.txt''')
+    glopts.add_argument('--xname', dest='xname', metavar="STR", nargs='+',
                         default=[], type=str,
-                        help=('experiment name(s). To be used in ' +
-                              'the same order as data. By default experiment' +
-                              'name is file name.'))
+                        help='''[file name] experiment name(s). Use same order
+                        as data.''')
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
@@ -520,7 +519,7 @@ def get_options():
     glopts.add_argument('--end', dest='end', metavar="INT", type=float,
                         help='genomic coordinate where to end modeling')
     glopts.add_argument('--res', dest='res', metavar="INT", type=int,
-                        help='resolution of the Hi-C experiment.')
+                        help='resolution of the Hi-C experiment')
     glopts.add_argument('--outdir', dest='outdir', metavar="PATH",
                         default=None,
                         help='out directory for results')
@@ -531,16 +530,13 @@ def get_options():
                         help='[%(default)s] search for TADs in experiments')
     taddet.add_argument('--centromere', dest='centromere', action="store_true",
                         default=False,
-                        help='[%(default)s] search for centromeric region.')
+                        help='[%(default)s] search for centromeric region')
     taddet.add_argument('--group', dest='group', nargs='+', type=int,
                         default=0, metavar='INT',
                         help='''[all together] How to group Hi-C experiments for
-                        the detection of TAD borders.
-                        I.e.: "--exp_group 2 2 1" first 2
-                        experiments used together, next 2 also, and
-                        last alone. TADs detected and aligned
-                        independently for each group. Modeling
-                        still done on the sum of all.''')
+                        the detection of TAD borders. I.e.: "--exp_group 2 2 1"
+                        first 2 experiments used together, next 2 also, and last
+                        alone (batch_mode option used)''')
 
     #########################################
     # MODELING
@@ -556,7 +552,7 @@ def get_options():
     #                   default="0.01",
     #               help='''[%(default)s] range of numbers to be test as optimal
     #               scale value, i.e. 0.005:0.01:0.001 -- Can also pass only one
-    #                   number.''')
+    #                   number''')
 
     #########################################
     # OPTIMIZATION
@@ -571,7 +567,7 @@ def get_options():
     optimo.add_argument('--lowfreq', dest='lowfreq', metavar="LIST",
                         default='0',
                         help='range of numbers for lowfreq' +
-                        ', i.e. -1.2:0:0.3 -- or just a number.')
+                        ', i.e. -1.2:0:0.3 -- or just a number')
     optimo.add_argument('--nmodels_opt', dest='nmodels_opt', metavar="INT",
                         default='500', type=int,
                         help='[%(default)s] number of models to generate for ' +
@@ -599,21 +595,17 @@ def get_options():
                         chromatin (i.e. HindIII)''')
     descro.add_argument('--identifier', dest='identifier', metavar="STRING",
                         default=None,
-                        help='''NCBI identifier of the experiment.''')
+                        help='''NCBI identifier of the experiment''')
     descro.add_argument('--project', dest='project', metavar="STRING",
                         default=None,
-                        help='''project name.''')
-    descro.add_argument('--extra', dest='extra', metavar="STR",
-                        default='',
-                        help='extra specification to appear in the ' +
-                        'name of out files.')
+                        help='''project name''')
 
 
     #########################################
     # OUTPUT
-    analyz.add_argument('--analyze', dest='analyze', nargs='*',
+    analyz.add_argument('--analyze', dest='analyze', nargs='+',
                         choices=range(12), type=int,
-                        default=range(12),
+                        default=range(1, 12), metavar='INT',
                         help=('''[%s] list of numbers representing the
                         analysis to be done. Choose between:
                         0) do nothing
@@ -629,13 +621,15 @@ def get_options():
                         10) persistence length
                         11) accessibility
                         12) interaction
-                        ''' % (' '.join([str(i) for i in range(12)]))))
+                        ''' % (' '.join([str(i) for i in range(1, 12)]))))
     analyz.add_argument('--not_write_cmm', dest='not_write_cmm',
                         default=False, action='store_true',
-                        help=('do not generate cmm files for each model'))
+                        help='''[%(default)s] do not generate cmm files for each
+                        model''')
     analyz.add_argument('--not_write_xyz', dest='not_write_xyz',
                         default=False, action='store_true',
-                        help=('do not generate xyz files for each model'))
+                        help='''[%(default)s] do not generate xyz files for each
+                        model''')
 
     parser.add_argument_group(optimo)
     parser.add_argument_group(modelo)
@@ -649,7 +643,8 @@ def get_options():
 
     log = '\tSummary of arguments:\n'
     # merger opts with CFG file and write summary
-    args = [i.strip('-') for i in sys.argv]
+    args = reduce(lambda x, y: x + y, [i.strip('-').split('=')
+                                       for i in sys.argv])
     new_opts = {}
     if opts.cfg:
         for line in open(opts.cfg):
@@ -772,25 +767,20 @@ def get_options():
     elif opts.tad_only:
         log_format = '[TAD]   %(message)s'
     else:
-        log_format = '[ALL]   %(message)s'
-    logging.basicConfig(filename=os.path.join(
-        opts.outdir, name,
-        name + (('_' + opts.extra) if opts.extra else '') + '_LOG.log'),
-                        level=logging.INFO,
-                        format=log_format)
+        log_format = '[DEFAULT]   %(message)s'
+    logging.basicConfig(filename=os.path.join(opts.outdir, name, name + '.log'),
+                        level=logging.INFO, format=log_format)
     logging.getLogger().addHandler(logging.StreamHandler())
     logging.info(('\n' + log_format.replace('   %(message)s', '')
                   ).join(log.split('\n')))
 
-
     # update path to Hi-C data adding root directory
-    if opts.data_path:
+    if opts.root_path:
         for i in xrange(len(opts.data)):
-            logging.info(os.path.join(opts.data_path, opts.data[i]))
-            opts.data[i] = os.path.join(opts.data_path, opts.data[i])
+            logging.info(os.path.join(opts.root_path, opts.data[i]))
+            opts.data[i] = os.path.join(opts.root_path, opts.data[i])
 
     return opts
-
 
 
 if __name__ == "__main__":
