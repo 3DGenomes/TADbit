@@ -468,10 +468,10 @@ class TestTadbit(unittest.TestCase):
                                  savedata='lala')
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
-        self.assertEqual([round(float(i)/10, 0) for i in lines[1].split('\t')],
-                         [0, 4, 5, 6, 7])
-        self.assertEqual([round(float(i)/10, 0) for i in lines[15].split('\t')],
-                         [2, 8, 10, 10, 10])
+        self.assertEqual([round(float(i)/15, 0) for i in lines[1].split('\t')],
+                         [0, 3, 3, 4, 4])
+        self.assertEqual([round(float(i)/15, 0) for i in lines[15].split('\t')],
+                         [1, 6, 7, 7, 7])
         # measure angle
         self.assertTrue(13 <= round(models.angle_between_3_particles(2,8,15)/10,
                                     0) <= 14)
@@ -537,8 +537,8 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(4, round(tot_area, 0))
         self.assertEqual(101, len(bypt))
         self.assertTrue(19 <= bypt[100][0] <= 22 and
-                         8 <= bypt[100][1] <= 11 and
-                         8 <= bypt[100][2] <= 11)
+                         8 <= bypt[100][1] <= 38 and
+                         8 <= bypt[100][2] <= 23)
         if CHKTIME:
             print '16', time() - t0
 
