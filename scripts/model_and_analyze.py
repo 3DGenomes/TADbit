@@ -475,7 +475,7 @@ def get_options():
     descro = parser.add_argument_group('Descriptive, optional arguments')
     analyz = parser.add_argument_group('Output arguments')
 
-    parser.add_argument('--help_usage', dest='help_usage', action="store_true",
+    parser.add_argument('--usage', dest='usage', action="store_true",
                         default=False,
                         help='''show detailed usage documentation, with examples
                         and exit''')
@@ -625,11 +625,11 @@ def get_options():
     analyz.add_argument('--not_write_cmm', dest='not_write_cmm',
                         default=False, action='store_true',
                         help='''[%(default)s] do not generate cmm files for each
-                        model''')
+                        model (Chimera input)''')
     analyz.add_argument('--not_write_xyz', dest='not_write_xyz',
                         default=False, action='store_true',
                         help='''[%(default)s] do not generate xyz files for each
-                        model''')
+                        model (3D coordinates)''')
 
     parser.add_argument_group(optimo)
     parser.add_argument_group(modelo)
@@ -637,7 +637,7 @@ def get_options():
     parser.add_argument_group(analyz)
     opts = parser.parse_args()
 
-    if opts.help_usage:
+    if opts.usage:
         print __doc__
         exit()
 
