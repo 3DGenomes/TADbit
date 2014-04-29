@@ -1,7 +1,6 @@
 """
 26 Nov 2012
 
-
 """
 
 from os.path                           import exists
@@ -28,14 +27,14 @@ except ImportError:
 def load_chromosome(in_f, fast=2):
     """
     Load a Chromosome object from a file. A Chromosome object can be saved with
-    the :func:`Chromosome.save_chromosome` function. 
-    
+    the :func:`Chromosome.save_chromosome` function.
+
     :param in_f: path to a saved Chromosome object file
-    :param 2 fast: if fast=2 do not load the Hi-C data (in the case that they 
+    :param 2 fast: if fast=2 do not load the Hi-C data (in the case that they
        were saved in a separate file see :func:`Chromosome.save_chromosome`).
-       If fast is equal to 1, the weights will be skipped from load to save 
+       If fast is equal to 1, the weights will be skipped from load to save
        memory. Finally if fast=0, both the weights and Hi-C data will be loaded
-    
+
     :returns: a Chromosome object
 
     TODO: remove first try/except type error... this is loading old experiments
@@ -216,8 +215,7 @@ class Chromosome(object):
         except AttributeError:
             pass
         return outstr
-        
-       
+
 
     def _get_forbidden_region(self, xpr):
         """
@@ -253,7 +251,7 @@ class Chromosome(object):
         """
         Fetch an Experiment according to its name.
         This can also be done directly with Chromosome.experiments[name].
-        
+
         :param name: name of the experiment to select
         :returns: :class:`pytadbit.Experiment`
         """
@@ -262,7 +260,7 @@ class Chromosome(object):
                 return exp
         raise Exception(('ERROR: experiment ' +
                          '%s not found\n') % (name))
-                
+
 
     def save_chromosome(self, out_f, fast=True, divide=True, force=False):
         """
@@ -688,10 +686,10 @@ class Chromosome(object):
     def iter_tads(self, x_name, normed=True):
         """
         Iterate over the TADs corresponding to a given experiment.
-        
+
         :param x_name: name of the experiment
         :param True normed: normalize Hi-C data returned
-        
+
         :yields: Hi-C data corresponding to each TAD
         """
         if not self.get_experiment(x_name).hic_data:
@@ -711,10 +709,10 @@ class Chromosome(object):
         for xpr in self.experiments:
             for tad in xpr.tads:
                 xpr.tads[tad]['brk'] = xpr.tads[tad]['end']
-                if ((xpr.tads[tad]['end'] - xpr.tads[tad]['start']) 
+                if ((xpr.tads[tad]['end'] - xpr.tads[tad]['start'])
                     * xpr.resolution) > self.max_tad_size:
                     xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
-            
+
 
     def _find_centromere(self, xpr):
         """
@@ -861,9 +859,9 @@ class ExperimentList(list):
     """
     Inherited from python built in :py:func:`list`, modified for tadbit
     :class:`pytadbit.Experiment`.
-    
+
     Mainly, `getitem`, `setitem`, and `append` were modified in order to
-    be able to search for experiments by index or by name, and to add 
+    be able to search for experiments by index or by name, and to add
     experiments simply using Chromosome.experiments.append(Experiment).
 
     The whole ExperimentList object is linked to a Chromosome instance
@@ -873,7 +871,7 @@ class ExperimentList(list):
     def __init__(self, thing, crm):
         super(ExperimentList, self).__init__(thing)
         self.crm = crm
-        
+
 
     def __getitem__(self, i):
         try:
