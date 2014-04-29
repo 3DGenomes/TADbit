@@ -947,7 +947,7 @@ class Experiment(object):
         for i, tad in tads.iteritems():
             t_start = int(tad['start']) + .5
             t_end   = int(tad['end'])   + 1.5
-            nwidth = float(tad['score']) / 4
+            nwidth = float(abs(tad['score'])) / 4
             if where in ['down', 'both']:
                 axe.hlines(t_start, t_start, t_end, colors='k', lw=pwidth)
             if where in ['up', 'both']:

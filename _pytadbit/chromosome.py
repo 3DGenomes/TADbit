@@ -117,7 +117,7 @@ class Chromosome(object):
        containing the definition of TADs corresponding to different experiments
     :param None experiment_names: :py:func:`list` of the names of each 
         experiment
-    :param 5000000 max_tad_size: maximum TAD size allowed. TADs longer than
+    :param infinite max_tad_size: maximum TAD size allowed. TADs longer than
         this value will not be considered, and size of the corresponding
         chromosome size will be reduced accordingly
     :param 0 chr_len: size of the DNA chromosome in bp. By default it will be
@@ -162,12 +162,12 @@ class Chromosome(object):
     def __init__(self, name, species=None, assembly=None,
                  experiment_resolutions=None, experiment_tads=None,
                  experiment_hic_data=None, experiment_names=None,
-                 max_tad_size=5000000, chr_len=0, parser=None,
+                 max_tad_size=float('inf'), chr_len=0, parser=None,
                  centromere_search=False, silent=False, **kw_descr):
         self.name             = name
-        self.max_tad_size     = max_tad_size
         self.size             = self._given_size = self.r_size = chr_len
         self.size             = ChromosomeSize(self.size)
+        self.max_tad_size     = max_tad_size
         self.r_size           = RelativeChromosomeSize(self.size)
         self.forbidden        = {}  # only used for TAD alignment randomization
         self.experiments      = ExperimentList([], self)
@@ -219,7 +219,7 @@ class Chromosome(object):
         
        
 
-    def _get_forbidden_region(self, xpr):
+    def _get_forbidden_region(self, xpr, resized=False):
         """
         Find the regions for which there is no information in any of the
         experiments. This is used to infer the relative chromosome size.
@@ -234,19 +234,23 @@ class Chromosome(object):
             if diff * xpr.resolution > self.max_tad_size:
                 forbidden += range(int(start), int(end+1))
                 xpr.tads[pos]['score'] = -abs(xpr.tads[pos]['score'])
+            else:
+                xpr.tads[pos]['score'] = abs(xpr.tads[pos]['score'])
         if not self.forbidden:
             self.forbidden = dict([(f, None) for f in forbidden])
         else:
             self.forbidden = dict([(f, None) for f in 
                                    set(forbidden).intersection(self.forbidden)])
         # search for centromere:
-        self._find_centromere(xpr)
+        if self._search_centromere:
+            self._find_centromere(xpr)
         # add centromere as forbidden region:
         if self._centromere:
             for pos in xrange(int(self._centromere[0]),
                               int(self._centromere[1])):
                 self.forbidden[pos] = 'Centromere'
-        self.__update_size(xpr)
+        if not resized:
+            self.__update_size(xpr)
 
 
     def get_experiment(self, name):
@@ -447,7 +451,7 @@ class Chromosome(object):
 
 
     def find_tad(self, experiments, name=None, n_cpus=1, verbose=True,
-                 max_tad_size="auto", no_heuristic=False, batch_mode=False,
+                 max_tad_size="auto", heuristic=True, batch_mode=False,
                  **kwargs):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
@@ -461,7 +465,7 @@ class Chromosome(object):
            n_cpus='max' the total number of CPUs will be used
         :param auto max_tad_size: an integer defining the maximum size of a 
            TAD. Default (auto) defines it as the number of rows/columns
-        :param False no_heuristic: whether to use or not some heuristics
+        :param True heuristic: whether to use or not some heuristics
         :param False batch_mode: if True, all the experiments will be 
            concatenated into one for the search of TADs. The resulting TADs 
            found are stored under the name 'batch' plus a concatenation of the
@@ -491,7 +495,7 @@ class Chromosome(object):
             result, weights = tadbit(matrix,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
-                                     no_heuristic=no_heuristic,
+                                     no_heuristic=not heuristic,
                                      get_weights=True, **kwargs)
             xpr = Experiment(name, resolution, hic_data=matrix,
                              tad_def=result, weights=weights, **kwargs)
@@ -510,11 +514,10 @@ class Chromosome(object):
             result, weights = tadbit(experiment.hic_data,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
-                                     no_heuristic=no_heuristic,
+                                     no_heuristic=not heuristic,
                                      get_weights=True, **kwargs)
             experiment.load_tad_def(result, weights=weights)
-            if self._search_centromere:
-                self._get_forbidden_region(experiment)
+            self._get_forbidden_region(experiment)
 
 
     def __update_size(self, xpr):
@@ -527,6 +530,8 @@ class Chromosome(object):
             self.size = max(xpr.tads[max(xpr.tads)]['end'] * xpr.resolution,
                             self.size)
             self.size   = ChromosomeSize(self.size)
+        self._get_forbidden_region(xpr, resized=True)
+            
         self.r_size = self.size - len(self.forbidden) * xpr.resolution
         self.r_size = RelativeChromosomeSize(self.size)
 
@@ -800,10 +805,9 @@ class Chromosome(object):
         elif [True for t in tads.values() \
               if t['start'] == beg and end < t['end']]:
             tad  = len(tads) + 1
-            plus = 0
-            while tad + plus > 1:
-                start = tads[tad - 1 + plus]['start']
-                final = tads[tad - 1 + plus]['end']
+            while tad > 1:
+                start = tads[tad - 1]['start']
+                final = tads[tad - 1]['end']
                 # centromere found?
                 if start == beg:
                     tads[tad] = copy(tads[tad - 1])
@@ -812,18 +816,8 @@ class Chromosome(object):
                     if (tads[tad]['end'] - tads[tad]['start']) \
                            * xpr.resolution > self.max_tad_size:
                         xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
-                    tads[tad]['brk'] = tads[tad]['end']
-                    tad -= 1
-                    tads[tad] = copy(tads[tad])
-                    tads[tad]['score'] = abs(tads[tad]['score'])
-                    tads[tad]['end'] = end - 1
-                    if (tads[tad]['end'] - tads[tad]['start']) \
-                           * xpr.resolution > self.max_tad_size:
-                        xpr.tads[tad]['score'] = -abs(xpr.tads[tad]['score'])
-                    tads[tad]['brk'] = tads[tad]['end']
-                    plus = 1
                 else:
-                    tads[tad] = copy(tads[tad - 1 + plus])
+                    tads[tad] = copy(tads[tad - 1])
                 tad -= 1
         # if tad includes centromere but ends in the same point
         elif [True for t in tads.values() \
@@ -889,21 +883,18 @@ class ExperimentList(list):
         try:
             super(ExperimentList, self).__setitem__(i, exp)
             exp.crm = self.crm
-            if self.crm._search_centromere:
-                self.crm._get_forbidden_region(exp)
+            self.crm._get_forbidden_region(exp)
         except TypeError:
             for j, nam in enumerate(self):
                 if nam.name == i:
                     exp.crm = self.crm
                     self[j] = exp
-                    if self.crm._search_centromere:
-                        self.crm._get_forbidden_region(exp)
+                    self.crm._get_forbidden_region(exp)
                     break
             else:
                 exp.crm = self.crm
                 self.append(exp)
-                if self.crm._search_centromere:
-                    self.crm._get_forbidden_region(exp)
+                self.crm._get_forbidden_region(exp)
 
 
     def __delitem__(self, i):
@@ -922,12 +913,10 @@ class ExperimentList(list):
     def append(self, exp):
         if exp.name in [e.name for e in self]:
             self[exp.name] = exp
-            if self.crm._search_centromere:
-                self.crm._get_forbidden_region(exp)
+            self.crm._get_forbidden_region(exp)
         else:
             super(ExperimentList, self).append(exp)
-            if self.crm._search_centromere:
-                self.crm._get_forbidden_region(exp)
+            self.crm._get_forbidden_region(exp)
             exp.crm = self.crm
 
 
