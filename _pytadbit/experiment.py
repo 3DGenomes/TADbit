@@ -163,6 +163,18 @@ class Experiment(object):
                          resolution=resolution,
                          hic_data=tuple([i + j for i, j in zip(
                              self.hic_data[0], other.hic_data[0])]))
+        # check if both experiments are normalized with the same method
+        # and sum both normalized data
+        if self._normalization == other._normalization != None:
+            xpr.norm = [tuple([i + j for i, j in zip(
+                self.norm[0], other.norm[0])])]
+            xpr._normalization = self._normalization
+        elif self.norm or other.norm:
+            raise Exception('ERROR: normalization differs between each ' +
+                            'experiment\n')
+        else:
+            warn('WARNING: experiments should be normalized before being ' +
+                 'summed\n')
         self.set_resolution(reso1)
         other.set_resolution(reso2)
         xpr.crm = self.crm
@@ -582,6 +594,9 @@ class Experiment(object):
              - the range of lowfreq used
 
         """
+        if self._normalization != 'visibility':
+            warn('WARNING: normalizing according to visibility method')
+            self.normalize_hic()
         if not end:
             end = self.size
         optimizer = IMPoptimizer(self, start, end, n_keep=n_keep, cutoff=cutoff,
