@@ -20,6 +20,7 @@ def main():
     for i, data in enumerate(opts.data):
         crm.add_experiment('exp' + str(i), resolution=int(opts.resolution),
                            hic_data=data)
+        crm.experiments['exp' + str(i)].normalize_hic()
 
     if len(opts.data) > 1:
         exp = crm.experiments[0] + crm.experiments[1]
@@ -27,8 +28,6 @@ def main():
             exp += crm.experiments[i]
     else:
         exp = crm.experiments[0]
-
-    exp.normalize_hic()
 
     if opts.abc:
         exp.write_interaction_pairs(opts.output, normalized=opts.norm,

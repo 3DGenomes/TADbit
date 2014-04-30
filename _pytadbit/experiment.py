@@ -348,10 +348,11 @@ class Experiment(object):
         if not self.size:
             self.size = tads[last]['end']
         self.tads = tads
-        self.norm  = weights or norm
-        if self.norm:
-            self._normalization = 'visibility'
-        
+        if not self.norm:
+            self.norm  = weights or norm
+            if self.norm:
+                self._normalization = 'visibility'
+
 
     def normalize_hic(self, silent=False):
         """

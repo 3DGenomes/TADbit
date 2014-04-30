@@ -84,7 +84,7 @@ def load_hic_data(opts, xnames):
     Load Hi-C data
     """
     # Start reading the data
-    my_chrom = Chromosome(opts.crm, species=(
+    crm = Chromosome(opts.crm, species=(
         opts.species.split('_')[0].capitalize() + opts.species.split('_')[1]
                           if '_' in opts.species else opts.species),
                           centromere_search=opts.centromere,
@@ -95,7 +95,7 @@ def load_hic_data(opts, xnames):
     # doi:10.1016/j.molcel.2012.08.031
     logging.info("\tReading input data...")
     for xnam, xpath in zip(xnames, opts.data):
-        my_chrom.add_experiment(
+        crm.add_experiment(
             xnam, exp_type='Hi-C', enzyme=opts.enzyme,
             cell_type=opts.cell,
             identifier=opts.identifier, # general descriptive fields
@@ -103,8 +103,11 @@ def load_hic_data(opts, xnames):
             resolution=opts.res,
             hic_data=xpath,
             silent=True)
+        # Normalize experiment
+        logging.info("\tNormalizing HiC data of %s..." % xnam)
+        crm.experiments[xnam].normalize_hic()
 
-    return my_chrom
+    return crm
 
 
 def load_optimal_imp_parameters(opts, name, exp, dcutoff):
@@ -223,10 +226,6 @@ def main():
             exp = crm.experiments[0] + crm.experiments[1]
             for i in range(2, len(xnames)):
                 exp += crm.experiments[i]
-
-        # Normalize the sum of the three experiments
-        logging.info("\tNormalizing HiC data...")
-        exp.normalize_hic()
 
     if not opts.analyze_only:
         logging.info("\tSaving the chromosome...")
