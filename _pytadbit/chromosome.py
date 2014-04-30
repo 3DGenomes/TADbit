@@ -84,7 +84,7 @@ def load_chromosome(in_f, fast=2):
         crm.species         = None
         crm.assembly        = None
         crm.description     = {}
-    if type(dico['experiments'][name]['hi-c']) == str or fast != int(2):
+    if isinstance(dico['experiments'][name]['hi-c'], str) or fast != int(2):
         try:
             dicp = load(open(in_f + '_hic'))
         except IOError:
@@ -191,7 +191,7 @@ class Chromosome(object):
                     continue
                 except:
                     pass
-                if type(handler) == Experiment:
+                if isinstance(handler, Experiment):
                     handler.name = name or handler.name
                     self.experiments.append(handler)
                 else:
@@ -438,7 +438,7 @@ class Chromosome(object):
                 This experiment will be kept under %s.\n''' % (name,
                                                                name + '_'))
                 name += '_'
-        if type(name) == Experiment:
+        if isinstance(name, Experiment):
             self.experiments.append(name)
         elif resolution:
             self.experiments.append(Experiment(name, resolution, hic_data,
@@ -478,7 +478,7 @@ class Chromosome(object):
             experiments = experiments or self.experiments
             xprs = []
             for xpr in experiments:
-                if not type(xpr) == Experiment:
+                if not isinstance(xpr, Experiment):
                     xprs.append(self.get_experiment(xpr))
                 else:
                     xprs.append(xpr)
@@ -504,10 +504,10 @@ class Chromosome(object):
                                        other._zeros.keys())])
             self.add_experiment(xpr)
             return
-        if type(experiments) is not list:
+        if not isinstance(experiments, list):
             experiments = [experiments]
         for experiment in experiments:
-            if not type(experiment) == Experiment:
+            if not isinstance(experiment, Experiment):
                 experiment = self.get_experiment(experiment)
             result, weights = tadbit(experiment.hic_data,
                                      n_cpus=n_cpus, verbose=verbose,
@@ -605,7 +605,7 @@ class Chromosome(object):
         """
         if names == None:
             names = [xpr.name for xpr in self.experiments]
-        if type(names) != list and type(names) != tuple:
+        if not isinstance(names, list) and not isinstance(names, tuple):
             names = [names]
             cols = 1
             rows = 1
@@ -623,21 +623,19 @@ class Chromosome(object):
                 if notaxe and len(names) != 1:
                     axe = fig.add_subplot(
                         rows, cols, i * cols + j + 1)
-                if (type(names[i * cols + j]) is tuple or
-                    type(names[i * cols + j]) is list):
+                if (isinstance(names[i * cols + j], tuple) or
+                    isinstance(names[i * cols + j], list)):
                     if not axe:
                         fig = plt.figure(figsize=(8 * cols, 6 * rows))
                         axe = fig.add_subplot(
                             rows, cols, i * cols + j + 1)                        
-                    # axe.set_aspect('equal', adjustable='box-forced', anchor='NE')
                     xpr1 = self.get_experiment(names[i * cols + j][0])
                     xpr2 = self.get_experiment(names[i * cols + j][1])
                     img = xpr1.view(tad=tad, focus=focus, paint_tads=paint_tads,
                                     axe=axe, show=False, logarithm=logarithm,
                                     normalized=normalized, relative=relative,
-                                    decorate=decorate, savefig=False, where='up',
-                                    clim=clim)
-                    # axe.set_aspect('equal', adjustable='box-forced', anchor='NE')
+                                    decorate=decorate, savefig=False,
+                                    where='up', clim=clim)
                     img = xpr2.view(tad=tad, focus=focus, paint_tads=paint_tads,
                                     axe=axe, show=False, logarithm=logarithm,
                                     normalized=normalized, relative=relative,

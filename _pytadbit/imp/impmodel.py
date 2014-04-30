@@ -718,7 +718,7 @@ class IMPmodel(dict):
         :param kwargs: any extra argument will be passed to the coloring
            function
         """
-        if type(color) is str:
+        if isinstance(color, str):
             if color == 'index':
                 color = color_residues(self, **kwargs)
             elif color == 'tad':
@@ -736,7 +736,7 @@ class IMPmodel(dict):
                                            'implemeted\n') % color)
         elif hasattr(color, '__call__'): # it's a function
             color = color(self, **kwargs)
-        elif type(color) is not list:
+        elif not isinstance(color, list):
             raise TypeError('one of function, list or string is required\n')
         out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
         form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +

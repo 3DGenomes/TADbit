@@ -135,10 +135,11 @@ class Experiment(object):
         outstr += '   TADs              : %s\n' % (len(self.tads) or None)
         outstr += '   Hi-C rows         : %s\n' % (self.size)
         outstr += '   normalized        : %s\n' % (self._normalization or None)
+        ukw = 'UNKNOWN'
         try: # new in version post-CSDM13
-            outstr += '   identifier        : %s\n' % (self.identifier or 'UNKNOWN')
-            outstr += '   cell type         : %s\n' % (self.cell_type or 'UNKNOWN')
-            outstr += '   restriction enzyme: %s\n' % (self.enzyme or 'UNKNOWN')
+            outstr += '   identifier        : %s\n' % (self.identifier or ukw)
+            outstr += '   cell type         : %s\n' % (self.cell_type  or ukw)
+            outstr += '   restriction enzyme: %s\n' % (self.enzyme     or ukw)
             for desc in self.description:
                 outstr += '   %-18s: %s\n' % (desc, self.description[desc])
         except AttributeError:
@@ -165,11 +166,19 @@ class Experiment(object):
         self.set_resolution(reso1)
         other.set_resolution(reso2)
         xpr.crm = self.crm
-        xpr.identifier  = self.identifier  if self.identifier  == other.identifier  else '%s+%s' % (self.identifier , other.identifier )
-        xpr.cell_type   = self.cell_type   if self.cell_type   == other.cell_type   else '%s+%s' % (self.cell_type  , other.cell_type  )
-        xpr.enzyme      = self.enzyme      if self.enzyme      == other.enzyme      else '%s+%s' % (self.enzyme     , other.enzyme     )
-        xpr.description = self.description if self.description == other.description else '%s+%s' % (self.description, other.description)
-        xpr.exp_type    = self.exp_type    if self.exp_type    == other.exp_type    else '%s+%s' % (self.exp_type   , other.exp_type   )
+        
+        def __merge(own, fgn):
+            "internal function to merge descriptions"
+            if own == fgn:
+                return own
+            return '%s+%s' % (own , fgn)
+        
+        xpr.identifier  = __merge(self.identifier , other.identifier )
+        xpr.cell_type   = __merge(self.cell_type  , other.cell_type  )
+        xpr.enzyme      = __merge(self.enzyme     , other.enzyme     )
+        xpr.description = __merge(self.description, other.description)
+        xpr.exp_type    = __merge(self.exp_type   , other.exp_type   )
+        
         # filter columns with low counts
         # -> can not be done using intersection of summed experiments
         xpr._zeros, _ = hic_filtering_for_modelling(
@@ -180,10 +189,8 @@ class Experiment(object):
         for des in self.description:
             if not des in other.description:
                 continue
-            if self.description[des] == other.description[des]:
-                xpr.description[des] = self.description[des]
-            else:
-                xpr.description[des] = '%s+%s' % (self.description[des], other.description[des])
+            xpr.description[des] = __merge(self.description[des],
+                                           other.description[des])
         return xpr
 
 
@@ -669,9 +676,9 @@ class Experiment(object):
         if not self.norm and normalized:
             raise Exception('Experiment not normalized.')
         # write to file
-        if type(fname) == str:
+        if isinstance(fname, str):
             out = open(fname, 'w')
-        elif type(fname) == file:
+        elif isinstance(fname, file):
             out = fname
         else:
             raise Exception('Not recognize file type\n')
@@ -822,11 +829,11 @@ class Experiment(object):
             if start == 0:
                 warn('Hi-C matrix starts at 1, setting starting point to 1.\n')
                 start = 1
-        elif type(tad) == dict:
+        elif isinstance(tad, dict):
             start = int(tad['start'])
             end   = int(tad['end'])
-        elif type(tad) == list:
-            if type(tad[0]) == dict:
+        elif isinstance(tad, list):
+            if isinstance(tad[0], dict):
                 start = int(sorted(tad,
                                    key=lambda x: int(x['start']))[0 ]['start'])
                 end   = int(sorted(tad,
@@ -873,7 +880,7 @@ class Experiment(object):
                         [hic_data[i+size*j]
                          for i in xrange(int(start) - 1, int(end))]
                         for j in xrange(int(start) - 1, int(end))]
-            elif type(tad) is list:
+            elif isinstance(tad, list):
                 if normalized:
                     warn('List passed, not going to be normalized.')
                 matrix = tad

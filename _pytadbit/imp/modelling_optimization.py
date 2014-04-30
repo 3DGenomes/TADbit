@@ -37,28 +37,28 @@ class IMPOptimizer(object):
     def run_grid_search(self, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.1),
                     scale_range=(0.005, 0.005, 0.001),
                     maxdist_range=(400, 1500, 100), n_cpus=1, verbose=True):
-        if type(maxdist_range) == tuple:
+        if isinstance(maxdist_range, tuple):
             maxdist_step = maxdist_range[2]
             maxdist_arange = range(maxdist_range[0],
                                         maxdist_range[1] + maxdist_step,
                                         maxdist_step)
         else:
             maxdist_arange = maxdist_range
-        if type(lowfreq_range) == tuple:
+        if isinstance(lowfreq_range, tuple):
             lowfreq_step = lowfreq_range[2]
             lowfreq_arange = np.arange(lowfreq_range[0],
                                             lowfreq_range[1] + lowfreq_step / 2,
                                             lowfreq_step)
         else:
             lowfreq_arange = lowfreq_range
-        if type(upfreq_range) == tuple:
+        if isinstance(upfreq_range, tuple):
             upfreq_step = upfreq_range[2]
             upfreq_arange = np.arange(upfreq_range[0],
                                            upfreq_range[1] + upfreq_step / 2,
                                            upfreq_step)
         else:
             upfreq_arange = upfreq_range
-        if type(scale_range) == tuple:
+        if isinstance(scale_range, tuple):
             scale_step = scale_range[2]
             scale_arange = np.arange(scale_range[0],
                                           scale_range[1] + scale_step / 2,
@@ -223,27 +223,27 @@ def grid_search(zscores=None, upfreq_range=(0, 1, 0.1), lowfreq_range=(-1, 0, 0.
                 resolution=None, values=None, n_models=500,
                 cutoff=300, n_keep=100, n_cpus=1, close_bins=1, verbose=True):
     count = 0
-    if type(maxdist_range) == tuple:
+    if isinstance(maxdist_range, tuple):
         maxdist_step = maxdist_range[2]
         maxdist_arange = range(maxdist_range[0], maxdist_range[1] + maxdist_step,
                                maxdist_step)
     else:
         maxdist_arange = maxdist_range
-    if type(lowfreq_range) == tuple:
+    if isinstance(lowfreq_range, tuple):
         lowfreq_step = lowfreq_range[2]
         lowfreq_arange = np.arange(lowfreq_range[0],
                                    lowfreq_range[1] + lowfreq_step / 2,
                                    lowfreq_step)
     else:
         lowfreq_arange = lowfreq_range
-    if type(upfreq_range) == tuple:
+    if isinstance(upfreq_range, tuple):
         upfreq_step = upfreq_range[2]
         upfreq_arange = np.arange(upfreq_range[0],
                                   upfreq_range[1] + upfreq_step / 2,
                                   upfreq_step)
     else:
         upfreq_arange = upfreq_range
-    if type(scale_range) == tuple:
+    if isinstance(scale_range, tuple):
         scale_step = scale_range[2]
         scale_arange = np.arange(scale_range[0],
                                   scale_range[1] + scale_step / 2,

@@ -136,17 +136,17 @@ def read_matrix(things, parser=None):
 
     """
     parser = parser or autoreader
-    if type(things) is not list:
+    if not isinstance(things, list):
         things = [things]
     matrices = []
     sizes    = []
     for thing in things:
-        if type(thing) is file:
+        if isinstance(thing, file):
             matrix, size = parser(thing)
             thing.close()
             matrices.append(matrix)
             sizes.append(size)
-        elif type(thing) is str:
+        elif isinstance(thing, str):
             try:
                 matrix, size = parser(gzopen(thing))
             except IOError:
@@ -156,13 +156,13 @@ def read_matrix(things, parser=None):
                     raise Exception('\n   ERROR: file %s not found\n' % thing)
             matrices.append(matrix)
             sizes.append(size)
-        elif type(thing) is list:
+        elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
                 matrices.append(reduce(lambda x, y: x+y, thing))
                 sizes.append(len(thing))
             else:
                 raise Exception('must be list of lists, all with same length.')
-        elif type(thing) is tuple:
+        elif isinstance(thing, tuple):
             # case we know what we are doing and passing directly list of tuples
             matrices.append(thing)
             siz = sqrt(len(thing))
@@ -180,7 +180,7 @@ def read_matrix(things, parser=None):
                 print 'Error found:', exc
         else:
             raise Exception('Unable to read this file or whatever it is :)')
-    if all([s==sizes[0] for s in sizes]):
+    if all([s == sizes[0] for s in sizes]):
         return matrices, sizes[0]
     raise Exception('All matrices must have the same size ' +
                     '(same chromosome and same bins).')

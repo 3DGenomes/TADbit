@@ -81,40 +81,40 @@ class IMPoptimizer(object):
            the input tuple is the incremental step for scale parameter values
         :param True verbose: print the results to the standard output
         """
-        if type(maxdist_range) == tuple:
+        if isinstance(maxdist_range, tuple):
             maxdist_step = maxdist_range[2]
             maxdist_arange = range(maxdist_range[0],
                                         maxdist_range[1] + maxdist_step,
                                         maxdist_step)
         else:
-            if type(maxdist_range) in (float, int):
+            if isinstance(maxdist_range, (float, int)):
                 maxdist_range = [maxdist_range]
             maxdist_arange = maxdist_range
-        if type(lowfreq_range) == tuple:
+        if isinstance(lowfreq_range, tuple):
             lowfreq_step = lowfreq_range[2]
             lowfreq_arange = np.arange(lowfreq_range[0],
                                             lowfreq_range[1] + lowfreq_step / 2,
                                             lowfreq_step)
         else:
-            if type(lowfreq_range) in (float, int):
+            if isinstance(lowfreq_range, (float, int)):
                 lowfreq_range = [lowfreq_range]
             lowfreq_arange = lowfreq_range
-        if type(upfreq_range) == tuple:
+        if isinstance(upfreq_range, tuple):
             upfreq_step = upfreq_range[2]
             upfreq_arange = np.arange(upfreq_range[0],
                                            upfreq_range[1] + upfreq_step / 2,
                                            upfreq_step)
         else:
-            if type(upfreq_range) in (float, int):
+            if isinstance(upfreq_range, (float, int)):
                 upfreq_range = [upfreq_range]
             upfreq_arange = upfreq_range
-        if type(scale_range) == tuple:
+        if isinstance(scale_range, tuple):
             scale_step = scale_range[2]
             scale_arange = np.arange(scale_range[0],
                                           scale_range[1] + scale_step / 2,
                                           scale_step)
         else:
-            if type(scale_range) in (float, int):
+            if isinstance(scale_range, (float, int)):
                 scale_range = [scale_range]
             scale_arange = scale_range
 
@@ -214,7 +214,7 @@ class IMPoptimizer(object):
         :param True verbose: print the results to the standard output
 
         """
-        if type(filenames) == str:
+        if isinstance(filenames, str):
             filenames = [filenames]
         models = {}
         for filename in filenames:

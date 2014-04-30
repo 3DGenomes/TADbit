@@ -27,9 +27,9 @@ def parse_tads(handler):
     """
     tads = {}
     weights = None
-    if type(handler) is tuple:
+    if isinstance(handler, tuple):
         handler, weights = handler
-    if type(handler) is dict:
+    if isinstance(handler, dict):
         for pos in xrange(len(handler['end'])):
             start = float(handler['start'][pos])
             end   = float(handler['end'][pos])

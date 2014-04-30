@@ -353,7 +353,7 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
            Each r, g, b between 0 and 1.
     """
     show = False
-    if type(color) is str:
+    if isinstance(color, str):
         if color == 'index':
             color = color_residues(x, **kwargs)
         elif color == 'tad':
@@ -371,7 +371,7 @@ def plot_3d_model(x, y, z, label=False, axe=None, thin=False, savefig=None,
                                        'implemeted\n') % color)
     elif hasattr(color, '__call__'):  # its a function
         color = color(x, **kwargs)
-    elif type(color) is not list:
+    elif not isinstance(color, list):
         raise TypeError('one of function, list or string is required\n')
     if not axe:
         fig = plt.figure(figsize=kwargs.get('figsize', (8, 8)))
@@ -751,7 +751,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         else:
             raise NotImplementedError(
                 '%s not valid, use one of ellipse, rectangle or triangle')
-    maxys = maxys if type(maxys) is list else []
+    maxys = maxys if isinstance(maxys, list) else []
     zeros = xpr._zeros or {}
     if normalized and xpr.norm:
         norms = xpr.norm[0]

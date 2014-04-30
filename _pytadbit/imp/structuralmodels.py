@@ -96,7 +96,7 @@ class StructuralModels(object):
 
 
     def __getitem__(self, nam):
-        if type(nam) == str:
+        if isinstance(nam, str):
             for m in self.__models:
                 if self.__models[m]['rand_init'] == nam:
                     return self.__models[m]
@@ -151,8 +151,8 @@ class StructuralModels(object):
         :param None reference_model: align given model to reference model
         """
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -224,8 +224,8 @@ class StructuralModels(object):
            representative)
         """
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -254,8 +254,8 @@ class StructuralModels(object):
 
         """
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -515,7 +515,7 @@ class StructuralModels(object):
         :param True plot: e.g. only saves data. No plotting done
 
         """
-        if type(steps) == int:
+        if isinstance(steps, int):
             steps = (steps, )
         if len(steps) > 6:
             raise Exception('Sorry not enough colors to do this.\n')
@@ -523,8 +523,8 @@ class StructuralModels(object):
                   'darkred'][-len(steps):]
         dists = []
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -668,8 +668,8 @@ class StructuralModels(object):
         :returns: matrix frequency of interaction
         """
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -1010,15 +1010,15 @@ class StructuralModels(object):
         :param True plot: e.g. only saves data. No plotting done
 
         """
-        if type(steps) == int:
+        if isinstance(steps, int):
             steps = (steps, )
         if len(steps) > 6:
             raise Exception('Sorry not enough colors to do this.\n')
         colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
                   'darkred'][-len(steps):]
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -1631,8 +1631,8 @@ class StructuralModels(object):
            
         """
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -1814,8 +1814,8 @@ class StructuralModels(object):
            cluster number 'cluster'
         """
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2002,7 +2002,7 @@ class StructuralModels(object):
         colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
                   'darkred'][-len(steps):]
         #
-        if not type(steps) == tuple:
+        if not isinstance(steps, tuple):
             steps = (steps,)
         rads = {}
         rads[1] = []
@@ -2096,8 +2096,8 @@ class StructuralModels(object):
            list of distances.
         """
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2119,8 +2119,8 @@ class StructuralModels(object):
         part1 -= 1
         part2 -= 1
         if models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2189,8 +2189,8 @@ class StructuralModels(object):
         if model_num > -1:
             models = [model_num]
         elif models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
@@ -2232,8 +2232,8 @@ class StructuralModels(object):
         if model_num > -1:
             models = [model_num]
         elif models:
-            models = [m if type(m) is int else self[m]['index']
-                      if type(m) is str else m['index'] for m in models]
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
         elif cluster > -1:
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:

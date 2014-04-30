@@ -239,7 +239,7 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
         while errors < 100:
             try:
                 coords = remap_segment(crm, beg, end, from_species, **kwargs)
-                if type(coords) is int:
+                if isinstance(coords, int):
                     if coords > beg:
                         beg = int(tad['end']       * resolution)
                         end = coords
@@ -248,7 +248,7 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                         end = coords
                 else:
                     if not 'mapped to' in trace[crm][tad['end']]:
-                        if type(coords) is dict:
+                        if isinstance(coords, dict):
                             trace[crm][tad['end']]['mapped to'] = coords
                         else:
                             trace[crm][tad['end']]['syntenic at'] = {
@@ -263,13 +263,13 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                 HTTP = httplib2.Http(".cache")
         else:
             raise Exception('ERROR: not able to remap %s:%s-%s\n' % (crm, beg, end))
-    if synteny and type(coords) is dict:
+    if synteny and isinstance(coords, dict):
         crm, beg, end = coords['chr'], coords['start'], coords['end']
         errors = 0
         while errors < 100:
             try:
                 coords = syntenic_segment(crm, beg, end, from_species, **kwargs)
-                if type(coords) is int:
+                if isinstance(coords, int):
                     if coords > beg:
                         beg = int(tad['end']       * resolution)
                         end = coords
@@ -278,7 +278,7 @@ def map_tad(i, tad, crm, resolution, from_species, synteny=True, mapping=True,
                         end = coords
                 else:
                     if not 'syntenic at' in trace[ori_crm][tad['end']]:
-                        if type(coords) is dict:
+                        if isinstance(coords, dict):
                             trace[ori_crm][tad['end']]['syntenic at'] = coords
                         else:
                             trace[ori_crm][tad['end']]['syntenic at'] = {
@@ -335,7 +335,7 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
             else:
                 coords = trace[crm][tad['end']][
                     'syntenic at' if synteny else 'mapped to']
-            if type(coords) is dict and GOOD_CRM.match(coords['chr']):
+            if isinstance(coords, dict) and GOOD_CRM.match(coords['chr']):
                 new_genome.setdefault(
                     coords['chr'], Chromosome(coords['chr'],
                                               species=crm.species,
@@ -356,7 +356,7 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                 tads['score'].append(tad['score'])
                 sys.stdout.write('.')
             else:
-                if type(coords) is dict:
+                if isinstance(coords, dict):
                     coords = 'Region %s:%s-%s not nice' % (
                         coords['chr'], coords['start'], coords['end'])
                 if not coords in log:
