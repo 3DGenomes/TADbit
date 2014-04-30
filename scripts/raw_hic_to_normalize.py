@@ -6,12 +6,14 @@
 from pytadbit import Chromosome
 from optparse import OptionParser
 from sys import stdout
+from warnings import warn
+
 
 def main():
     """
     main function
     """
-    
+
     opts = get_options()
     crm = Chromosome(':P')
 
@@ -23,6 +25,8 @@ def main():
         exp = crm.experiments[0] + crm.experiments[1]
         for i in range(2, len(opts.data)):
             exp += crm.experiments[i]
+    else:
+        exp = crm.experiments[0]
 
     exp.normalize_hic()
 
@@ -36,7 +40,7 @@ def main():
             out = open(opts.output, 'w')
         out.write(exp.print_hic_matrix(print_it=False,
                                        normalized=opts.norm))
-    
+
 def get_options():
     '''
     parse option from call

@@ -521,8 +521,8 @@ class TestTadbit(unittest.TestCase):
         # stats
         self.assertEqual(200, round(model.distance(2, 3), 0))
         self.assertTrue(10 <= round(model.distance(8, 20)/100, 0) <= 11)
-        self.assertEqual(round(600, 0),
-                         round(model.radius_of_gyration(), 0))
+        self.assertEqual(round(30, 0),
+                         round(model.radius_of_gyration() / 20, 0))
         self.assertEqual(400, round(model.contour()/10, 0))
         self.assertTrue(21 <= round((model.shortest_axe() +
                                      model.longest_axe()) / 100,

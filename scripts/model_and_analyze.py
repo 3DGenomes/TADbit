@@ -57,7 +57,10 @@ def search_tads(opts, crm, name):
         logging.info('\tSearching TAD borders in:')
         for i in exps:
             logging.info('\t   * ' + i.name)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4c864c5d11d9fe0e7dc4bdeebc6b4adee2fa58e6
         crm.find_tad(exps, verbose=True, n_cpus=opts.ncpus,
                      batch_mode=True if len(exps) > 1 else False)
         if len(exps) > 1:
