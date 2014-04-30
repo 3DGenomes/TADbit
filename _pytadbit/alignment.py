@@ -215,10 +215,10 @@ class Alignment(object):
           
           
         """
-        if type(cond1) is int:
+        if isinstance(cond1, int):
             val = cond1 - 1
             cond1 = lambda x: x['pos'] == val
-        elif type(cond1) is list:
+        elif isinstance(cond1, list):
             val = [v - 1 for v in cond1]
             cond1 = lambda x: x['pos'] in val
         if not cond2:
