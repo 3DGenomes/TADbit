@@ -1007,6 +1007,30 @@ class Experiment(object):
         return img
 
 
+    def write_tad_borders(self, savedata=None):
+        """
+        Print a table summarizing the TADs found by tadbit. This function outputs
+        something similar to the R function.
+
+        :param None savedata: path to a file where to save the density data
+           generated (1 column per step + 1 for particle number). If None, print
+           a table.
+        """
+        table = ''
+        table += '%-6s%6s%6s%6s\n' % ('#', 'start', 'end', 'score')
+        for i in self.tads:
+            table += '%-6s%6s%6s%6s\n' % (i+1, self.tads[i]['start'] + 1,
+                                          self.tads[i]['end'] + 1,
+                                          abs(self.tads[i]['score']))
+        if not savedata:
+            print table
+            return
+        if isinstance(savedata, file):
+            out = savedata
+        else:
+            out = open(savedata, 'w')
+        out.write(table)
+
     # def generate_densities(self):
     #     """
     #     Related to the generation of 3D models.

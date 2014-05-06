@@ -74,9 +74,13 @@ def search_tads(opts, crm, name):
         else:
             crm.tad_density_plot(crm.experiments[-1].name, savefig=os.path.join(
                 opts.outdir, name, name + '_tad_alignment.pdf'))
+    if "TAD borders" in  opts.analyze:
         crm.visualize(aligned, paint_tads=True, savefig=os.path.join(
             opts.outdir, name, name + '_tad_matrices.pdf'),
                       normalized=True)
+        for exp in aligned:
+            crm.experiments[exp].write_tad_borders(os.path.join(
+                opts.outdir, name, name + '_tad_matrices.txt'))
 
 
 def load_hic_data(opts, xnames):
@@ -679,18 +683,20 @@ def get_options():
 
     # rename analysis options
     actions = {0  : "Do nothing",
-               1  : "TAD alignment",
-               2  : "optimization plot",
-               3  : "correlation real/models",
-               4  : "z-score plot",
-               5  : "centroid",
-               6  : "consistency",
-               7  : "density",
-               8  : "contact map",
-               9  : "walking angle",
-               10 : "persistence length",
-               11 : "accessibility",
-               12 : "interaction"}
+               1  : "TAD borders",
+               2  : "TAD alignment",
+               3  : "optimization plot",
+               4  : "correlation real/models",
+               5  : "z-score plot",
+               6  : "centroid",
+               7  : "consistency",
+               8  : "density",
+               9  : "contact map",
+               10 : "walking angle",
+               11 : "persistence length",
+               12 : "accessibility",
+               13 : "interaction"}
+    
     for i, j in enumerate(opts.analyze):
         opts.analyze[i] = actions[int(j)]
 
