@@ -4,7 +4,7 @@
 
 """
 from pytadbit import Chromosome
-from optparse import OptionParser
+from argparse import ArgumentParser
 from sys import stdout
 from warnings import warn
 
@@ -18,7 +18,7 @@ def main():
     crm = Chromosome(':P')
 
     for i, data in enumerate(opts.data):
-        crm.add_experiment('exp' + str(i), resolution=int(opts.resolution),
+        crm.add_experiment('exp' + str(i), resolution=int(opts.resolution[i]),
                            hic_data=data)
         crm.experiments['exp' + str(i)].normalize_hic()
 
@@ -44,33 +44,35 @@ def get_options():
     '''
     parse option from call
     '''
-    parser = OptionParser(
-        usage=("%prog [options] file [options] file [options] " +
+    parser = ArgumentParser(
+        usage=("%(prog)s [options] file [options] file [options] " +
                "file [options [file ...]]"))
-    parser.add_option('-d', '--data', dest='data', metavar="PATH",
-                      action='append', default=None,
+    parser.add_argument('-d', '--data', dest='data', metavar="PATH",
+                      action='append', default=None, nargs='+',
                       help='''path to a file containing Hi-C data in matrix
                       format. If used several times, experiments will be
                       summed up. I.e.: --data hic_replicate_1.txt
-                      --data hic_replicate_2.txt''')
-    parser.add_option('-r', '--resolution', dest='resolution', metavar="int",
-                      action='store', default=None,
+                      hic_replicate_2.txt''')
+    parser.add_argument('-r', '--resolution', dest='resolution', metavar="int",
+                      action='store', default=None, nargs='+',
                       help='''resolution of Hi-C experiments passed using the
-                      hic_files option. Should be the same for all experiments.''')
-    parser.add_option('--output', dest='output', action="store", metavar="PATH", 
+                      hic_files option. Use same order as "data" argument.''')
+    parser.add_argument('--output', dest='output', action="store", metavar="PATH", 
                       default=stdout, help=
                       '''[stdout] path to out-file where to store result''')
-    parser.add_option('--abc', dest='abc', action='store_true',
+    parser.add_argument('--abc', dest='abc', action='store_true',
                       help='Result writen in column format')
-    parser.add_option('--raw', dest='raw', action='store_true',
-                      help='[%default] result output will be normalized.')
-    opts = parser.parse_args()[0]
+    parser.add_argument('--raw', dest='raw', action='store_true', default=False,
+                      help='[%(default)s] do not normalize the data.')
+    opts = parser.parse_args()
     if not opts.data:
         exit(parser.print_help())
     if not opts.resolution:
         warn('ERROR: should provide resolution')
         exit(parser.print_help())
     opts.norm = not opts.raw
+    if len(opts.resolution) == 1 and len(opts.data) > 1:
+        opts.resolution *= len(opts.data)
     return opts
 
 

@@ -6,6 +6,7 @@
 
 import numpy as np
 from warnings import warn
+from sys import stderr
 from re       import sub
 
 
@@ -84,7 +85,7 @@ def filter_by_zero_count(matrx, draw_hist=False):
     if draw_hist:
         a = plt.plot(xp, p(xp), "--", color='k')
         b = plt.vlines(root, 0, plt.ylim()[1], colors='r', linestyles='dashed')
-        plt.legend(a+[b], ['polyfit \n%s' % (
+        plt.legend(a + [b], ['polyfit \n%s' % (
             ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
                          '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
                                            '{' + str(i) + '}'))
@@ -143,7 +144,8 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
             xp = range(0, int(cols[-1]))
     except ValueError:
         if not silent:
-            warn('WARNING: Too few data to filter columns. SKIPPING...')
+            stderr.write('WARNING: Too few data to filter columns. ' +
+                         'SKIPPING...\n')
         return {}
     # find best polynomial fit in a given range
     for order in range(4, 14):
@@ -170,7 +172,8 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
         p, z, root = best[2:]
     except:
         if not silent:
-            warn('WARNING: Too many zeroes to filter columns. SKIPPING...')
+            stderr.write('WARNING: Too many zeroes to filter columns.' +
+                         ' SKIPPING...\n')
         return {}
     if draw_hist:
         a = plt.plot(xp, p(xp), "--", color='k')
@@ -201,11 +204,11 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
             bads[i] = sum(col)
     # now stored in Experiment._zeros, used for getting more accurate z-scores
     if bads and not silent:
-        warn(('\nWARNING: removing columns having less than %s counts:' +
-              '(detected threshold)\n %s') % (
-            round(root, 3),
-            ' '.join(['%4s'%str(i+1) + (''if (j+1)%15 else '\n')
-                      for j, i in enumerate(sorted(bads.keys()))])))
+        stderr.write(('\nWARNING: removing columns having less than %s ' +
+                      'counts: (detected threshold)\n %s\n') % (
+                         round(root, 3), ' '.join(
+                             ['%4s'%str(i+1) + (''if (j+1)%15 else '\n')
+                              for j, i in enumerate(sorted(bads.keys()))])))
     return bads
 
 
