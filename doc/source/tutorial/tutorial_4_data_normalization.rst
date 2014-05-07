@@ -34,7 +34,7 @@ human's 19th chromosome:
     zeroes = filter_by_mean(exp.get_hic_matrix(), draw_hist=True)
 
 
-.. parsed-literal::
+.. ansi-block::
 
     /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
       warn('WARNING: non integer values')
@@ -55,10 +55,10 @@ experimental data.
 *This step is done automatically within tadbit each time an experiment
 is loaded. In order to ensure that we do remove outlier columns, tadbit
 checks if this root corresponds to a* **concave down** *region and if it
-stands* **between zero and the median** *of the overall distribution.
+stands* **between zero and the median** \*of the overall distribution.
 The result of these "bad" columns is stored in the variable
 Experiment.\_zeros, that represents the columns to be skipped in the
-consecutive steps.*
+consecutive steps.\*
 
 Remove row/columns where diagonal is null
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

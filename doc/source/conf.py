@@ -28,7 +28,8 @@ sys.path.insert(0, os.path.abspath('../../pytadbit/'))
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
               'sphinx.ext.intersphinx', 'sphinx.ext.todo',
               'sphinx.ext.coverage', 'sphinx.ext.mathjax',
-              'sphinx.ext.ifconfig', 'sphinx.ext.viewcode']
+              'sphinx.ext.ifconfig', 'sphinx.ext.viewcode',
+              'sphinxcontrib.ansi']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -132,7 +133,14 @@ html_favicon = 'pictures/TADbit_icon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+
+# INSTALL ANSI color support:
+# easy_install sphinxcontrib-ansi
+html_static_path = ['_static',
+                    '/usr/local/lib/python2.7/dist-packages/sphinxcontrib_ansi-0.6-py2.7.egg/sphinxcontrib/']
+
+def setup(app):
+    app.add_stylesheet('black-on-white.css')
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

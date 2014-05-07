@@ -37,7 +37,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
         print exp
 
 
-.. parsed-literal::
+.. ansi-block::
 
     Experiment k562 (resolution: 100Kb, TADs: 43, Hi-C rows: 639, normalized: None)
     Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None)
@@ -58,7 +58,7 @@ The log indicates that experiment "k562+gm06690" had no file. Such experiment wa
     print my_chrom.experiments
 
 
-.. parsed-literal::
+.. ansi-block::
 
     [Experiment k562 (resolution: 100Kb, TADs: 43, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: None)]
 
@@ -75,13 +75,13 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
     optimizer = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=1000)
 
-.. parsed-literal::
+.. ansi-block::
 
     Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None)
     100 200
 
 
-.. parsed-literal::
+.. ansi-block::
 
     /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:521: UserWarning: WARNING: normalizing according to visibility method
       warn('WARNING: normalizing according to visibility method')
@@ -94,7 +94,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
                               scale_range=[0.005], maxdist_range=(300, 700, 200), verbose=True)
 
 
-.. parsed-literal::
+.. ansi-block::
 
         1   0.2 -1 300 0.005 0.742589665946
         2   0.2 -0.8 300 0.005 0.743731102622
@@ -187,7 +187,7 @@ The exact same as above can be done from Experiment objects directly:
                                            scale_range=[0.005], maxdist_range=(300, 700, 200), verbose=False)
 
 
-.. parsed-literal::
+.. ansi-block::
 
     Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: visibility)
     100 200
@@ -246,7 +246,7 @@ We can also ask to mark on the plot the best N combination of parameters with th
                                  reverse=True)[0]
     print sort_result
 
-.. parsed-literal::
+.. ansi-block::
 
     [[0.005], [300.0, 500.0, 700.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
     (0.77138038673540765, 0.005, 300.0, -0.4, 0.4)
@@ -298,7 +298,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
-.. parsed-literal::
+.. ansi-block::
 
     ['200', '250', '300', '350', '500', '700']
 
@@ -319,7 +319,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
     optimizer2 = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=1000)
 
-.. parsed-literal::
+.. ansi-block::
 
     Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: visibility)
     100 200
@@ -334,7 +334,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
-.. parsed-literal::
+.. ansi-block::
 
     ('0.005', '300', '0.2', '-0.4')
 
@@ -361,7 +361,7 @@ Once done, best results can be returned as a dictionary to be used for modeling 
     print config
 
 
-.. parsed-literal::
+.. ansi-block::
 
     {'maxdist': 250.0, 'upfreq': 0.4, 'kforce': 5, 'reference': 'gm cell from Job Dekker 2009', 'lowfreq': -0.1, 'scale': 0.005}
 

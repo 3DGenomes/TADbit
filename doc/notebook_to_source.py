@@ -33,6 +33,9 @@ def main():
             if passing:
                 continue
             line = re.sub('In\[[0-9 ]+\]:\n', '', line)
+            # these two next are just to display alignment in colors
+            line = re.sub('\[m', '[0m', line)
+            line = re.sub('parsed-literal', 'ansi-block', line)
             if extra:
                 line = re.sub(fname[:-6] + '_files/', '../nbpictures/', line)
             else:

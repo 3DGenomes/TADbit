@@ -8,8 +8,8 @@ Installing TADbit on GNU/Linux
 *Note: at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
 
 
-TADbit requires python >= 2.6 as well as several dependencies that are listed below.
-
+**TADbit requires python >= 2.6 as well as several dependencies that are
+listed below.**
 
 Dependencies
 ------------
@@ -20,26 +20,34 @@ Python libraries
 
 
 **Required:**
+
 ::
 
-  apt-get install python-scipy
-  apt-get install python-numpy
+    apt-get install python-scipy
+    apt-get install python-numpy
 
 Optional packages (but **highly** recommended):
 
 ::
 
-  apt-get install python-matplotlib
+    apt-get install python-matplotlib
 
-.. note:: **Alternative install**, you can install *python-setuptools* and use easy_install to get these packages (e.g. "``easy_install scipy``"). 
-
-
+.. note:: **Alternative install**, you can install *python-setuptools*
+and use easy\_install to get these packages (e.g.
+"``easy_install scipy``\ ").
 
 IMP - 3D modeling
 ~~~~~~~~~~~~~~~~~
 
 
-The three-dimensional (3D) structure of a given genomic region is done via the IMP package. TADbit has been tested with **IMP version 2.0.1** (recommended IMP version to be installed). The installation procedure reported in this manual describes how to install IMP on Ubuntu machines (installation tested on Ubuntu versions 12.04 and 13.04). However, we do not provide support for installing IMP; installation instructions for IMP can be found on the IMP website (http://salilab.org/imp/nightly/doc/html/).
+The three-dimensional (3D) structure of a given genomic region is done
+via the IMP package. TADbit has been tested with **IMP version 2.0.1**
+and **IMP version 2.1.1** (recommended IMP versions to be installed).
+The installation procedure reported in this manual describes how to
+install IMP on Ubuntu machines (installation tested on Ubuntu versions
+12.04, 13.04 and 14.04). However, we do not provide support for
+installing IMP; installation instructions for IMP can be found on the
+IMP website (http://salilab.org/imp/nightly/doc/html/).
 
 Install the required libraries:
 
@@ -52,74 +60,84 @@ Install the required libraries:
     sudo apt-get install libcgal-dev
     sudo apt-get install python-dev
 
-
 .. note::
-  
-  For Ubuntu 13.10 *libboost1.53-all-dev* should be installed instead.
 
+For Ubuntu 13.10 *libboost1.53-all-dev* should be installed instead. For
+Ubuntu 14.04 *libboost1.54-all-dev* should be installed instead.
 
-Download the IMP tarball file from http://salilab.org/imp/ and uncompress it:
-
-::
-
-   wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
-   tar xzvf imp-2.0.1.tar.gz
-
-Move into the IMP directory and compile the code (*Note:* the `-j` option stands for the number of CPUs you want to assign to the compiler; the higher the faster).
+Download the IMP tarball file from http://salilab.org/imp/ and
+uncompress it:
 
 ::
 
-   cd imp-2.0.1
-   cmake . -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
-   make -j4 
+    wget http://salilab.org/imp/get.php?pkg=2.0.1/download/imp-2.0.1.tar.gz -O imp-2.0.1.tar.gz
+    tar xzvf imp-2.0.1.tar.gz
 
-Once the compilation has finished, open the file setup_environment.sh in your IMP directory and copy the first lines into your `~/.bashrc` file (if this file in not present in your home directory, create it). These lines should look like:
+Move into the IMP directory and compile the code (*Note:* the ``-j``
+option stands for the number of CPUs you want to assign to the compiler;
+the higher the faster).
 
 ::
 
-  LD_LIBRARY_PATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$LD_LIBRARY_PATH"
-  export LD_LIBRARY_PATH
+    cd imp-2.0.1
+    cmake . -DCMAKE_BUILD_TYPE=Release -DIMP_MAX_CHECKS=NONE -DIMP_MAX_LOG=SILENT
+    make -j4 
 
-  PYTHONPATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
-  export PYTHONPATH
+Once the compilation has finished, open the file setup\_environment.sh
+in your IMP directory and copy the first lines into your ``~/.bashrc``
+file (if this file in not present in your home directory, create it).
+These lines should look like:
+
+::
+
+    LD_LIBRARY_PATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH
+
+    PYTHONPATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
+    export PYTHONPATH
 
 
-.. note:: Important note
-          Do not copy the lines above, copy them from setup_environment.sh, where ``SOMETHING`` is replaced by your real path to IMP.
-
-
-
+.. note:: Important note:
+          Do not copy the lines above, copy them 
+          from ``setup_environment.sh``, where *SOMETHING* 
+          is replaced by your real path to IMP.
 
 MCL - clustering
 ~~~~~~~~~~~~~~~~
 
 
-MCL is the program used for clustering the 3D models generated by IMP. It can be downloaded from http://micans.org/mcl/; on Debian/Ubuntu machines it can be automatically installed with:
+MCL is the program used for clustering the 3D models generated by IMP.
+It can be downloaded from http://micans.org/mcl/; on Debian/Ubuntu
+machines it can be automatically installed with:
 
 ::
 
-  sudo apt-get install mcl
+    sudo apt-get install mcl
 
-
-*Note: if the MCL executable is not found by TADbit, an alternative clustering method will be used. Nevertheless we strongly recommend to use MCL.*
-
-
+*Note: if the MCL executable is not found by TADbit, an alternative
+clustering method will be used. Nevertheless we strongly recommend to
+use MCL.*
 
 Chimera - visualization
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Chimera is a program used for visualization and analysis of molecular structures. It is used in TADbit to visualize the generated 3D models. Chimera is available at: http://www.cgl.ucsf.edu/chimera/
+Chimera is a program used for visualization and analysis of molecular
+structures. It is used in TADbit to visualize the generated 3D models.
+Chimera is available at: http://www.cgl.ucsf.edu/chimera/
 
-*This software is only needed for the visualization of 3D models from inside TADbit.*
+*This software is only needed for the visualization of 3D models from
+inside TADbit.*
 
 LiftOver
 ~~~~~~~~
 
 
-TADbit provides a wrapper for the LiftOver tool [Fujita2011]_ (download it from: http://hgdownload.cse.ucsc.edu/admin/exe/ ).
+TADbit provides a wrapper for the LiftOver tool [Fujita2011]\_ (download
+it from: http://hgdownload.cse.ucsc.edu/admin/exe/ ).
 
-This can be used to ease the conversion of genomic TAD coordinates (e.g.: to align human TADs with mouse TADs).
+This can be used to ease the conversion of genomic TAD coordinates
+(e.g.: to align human TADs with mouse TADs).
 
 .. note::
    A 'chain' file may also be downloaded. For example, to convert coordinates to hg19, the chain file needed may be found at: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/
@@ -128,14 +146,16 @@ TADbit
 ------
 
 
-Once all the needed library/software have been installed, TADbit can be downloaded, unpacked and installed as:
+Once all the needed library/software have been installed, TADbit can be
+downloaded, unpacked and installed as:
 
 ::
 
-  wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
-  unzip tadbit.zip
-  cd tadbit-master
-  sudo python setup.py install
+    wget https://github.com/3DGenomes/tadbit/archive/master.zip -O tadbit.zip
+    unzip tadbit.zip
+    cd tadbit-master
+    sudo python setup.py install
+
 
 .. note:: IMP not found problem
 	  If you are under **debian/Ubuntu machines**, and you have
@@ -145,17 +165,17 @@ Once all the needed library/software have been installed, TADbit can be download
 	  PYTHONPATH declared in your bashrc file. You can perfectly
 	  ignore the warning, or just proceed like this:
 
-  ::
+::
 
     sudo PYTHONPATH=$PYTHONPATH python setup.py install
-  
 
-Finally, run the test script to check that the installation completed successfully.
+Finally, run the test script to check that the installation completed
+successfully.
 
 To do so, move to the test directory and run:
 
 ::
 
-  cd test
-  python test_all.py
+    cd test
+    python test_all.py
 
