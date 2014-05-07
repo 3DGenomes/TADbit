@@ -56,7 +56,7 @@
 <h1>Chromosome class<a class="headerlink" href="#chromosome-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.chromosome.Chromosome">
-<em class="property">class </em><tt class="descclassname">pytadbit.chromosome.</tt><tt class="descname">Chromosome</tt><big>(</big><em>name</em>, <em>species=None</em>, <em>assembly=None</em>, <em>experiment_resolutions=None</em>, <em>experiment_tads=None</em>, <em>experiment_hic_data=None</em>, <em>experiment_names=None</em>, <em>max_tad_size=5000000</em>, <em>chr_len=0</em>, <em>parser=None</em>, <em>centromere_search=False</em>, <em>silent=False</em>, <em>**kw_descr</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.chromosome.</tt><tt class="descname">Chromosome</tt><big>(</big><em>name</em>, <em>species=None</em>, <em>assembly=None</em>, <em>experiment_resolutions=None</em>, <em>experiment_tads=None</em>, <em>experiment_hic_data=None</em>, <em>experiment_names=None</em>, <em>max_tad_size=inf</em>, <em>chr_len=0</em>, <em>parser=None</em>, <em>centromere_search=False</em>, <em>silent=False</em>, <em>**kw_descr</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Chromosome object designed to deal with Topologically Associating Domains
 predictions from different experiments, in different cell types for a given
 chromosome of DNA, and to compare them.</p>
@@ -76,7 +76,7 @@ containing the Hi-C count matrices corresponding to different experiments</li>
 containing the definition of TADs corresponding to different experiments</li>
 <li><strong>experiment_names</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of the names of each 
 experiment</li>
-<li><strong>max_tad_size</strong> (<em>5000000</em>) &#8211; maximum TAD size allowed. TADs longer than
+<li><strong>max_tad_size</strong> (<em>infinite</em>) &#8211; maximum TAD size allowed. TADs longer than
 this value will not be considered, and size of the corresponding
 chromosome size will be reduced accordingly</li>
 <li><strong>chr_len</strong> (<em>0</em>) &#8211; size of the DNA chromosome in bp. By default it will be
@@ -201,7 +201,7 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.find_tad">
-<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>no_heuristic=False</em>, <em>batch_mode=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>heuristic=True</em>, <em>batch_mode=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function to calculate the
 position of Topologically Associated Domain boundaries</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -217,7 +217,7 @@ can be either a list of lists, a path to a file or a file handler</li>
 n_cpus=&#8217;max&#8217; the total number of CPUs will be used</li>
 <li><strong>max_tad_size</strong> (<em>auto</em>) &#8211; an integer defining the maximum size of a 
 TAD. Default (auto) defines it as the number of rows/columns</li>
-<li><strong>no_heuristic</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to use or not some heuristics</li>
+<li><strong>heuristic</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; whether to use or not some heuristics</li>
 <li><strong>batch_mode</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, all the experiments will be 
 concatenated into one for the search of TADs. The resulting TADs 
 found are stored under the name &#8216;batch&#8217; plus a concatenation of the
@@ -429,9 +429,9 @@ the <a class="reference internal" href="#pytadbit.chromosome.Chromosome.save_chr
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>in_f</strong> &#8211; path to a saved Chromosome object file</li>
-<li><strong>fast</strong> (<em>2</em>) &#8211; if fast=2 do not load the Hi-C data (in the case that they 
+<li><strong>fast</strong> (<em>2</em>) &#8211; if fast=2 do not load the Hi-C data (in the case that they
 were saved in a separate file see <a class="reference internal" href="#pytadbit.chromosome.Chromosome.save_chromosome" title="pytadbit.chromosome.Chromosome.save_chromosome"><tt class="xref py py-func docutils literal"><span class="pre">Chromosome.save_chromosome()</span></tt></a>).
-If fast is equal to 1, the weights will be skipped from load to save 
+If fast is equal to 1, the weights will be skipped from load to save
 memory. Finally if fast=0, both the weights and Hi-C data will be loaded</li>
 </ul>
 </td>
@@ -453,7 +453,7 @@ memory. Finally if fast=0, both the weights and Hi-C data will be loaded</li>
 <dd><p>Inherited from python built in <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a>, modified for tadbit
 <tt class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></tt>.</p>
 <p>Mainly, <cite>getitem</cite>, <cite>setitem</cite>, and <cite>append</cite> were modified in order to
-be able to search for experiments by index or by name, and to add 
+be able to search for experiments by index or by name, and to add
 experiments simply using Chromosome.experiments.append(Experiment).</p>
 <p>The whole ExperimentList object is linked to a Chromosome instance
 (<tt class="xref py py-class docutils literal"><span class="pre">pytadbit.Chromosome</span></tt>).</p>
@@ -537,7 +537,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Apr 25, 2014.
+      Last updated on May 07, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

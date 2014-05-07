@@ -9,6 +9,7 @@
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -77,11 +78,12 @@ human&#8217;s 19th chromosome:</p>
 <span class="n">zeroes</span> <span class="o">=</span> <span class="n">filter_by_mean</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">get_hic_matrix</span><span class="p">(),</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><pre>/usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
+<pre class="ansi-block literal-block">
+/usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
   warn('WARNING: non integer values')
 /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:320: ComplexWarning: Casting complex values to real discards the imaginary part
-  return array(a, dtype, copy=False, order=order)</pre>
-</div>
+  return array(a, dtype, copy=False, order=order)
+</pre>
 <img alt="../_images/tutorial_4_data_normalization_4_1.png" src="../_images/tutorial_4_data_normalization_4_1.png" />
 <p>Than, according to the fit represented above, we would discard all
 columns in the Hi-C raw data having cumulative count of interaction
@@ -91,10 +93,10 @@ experimental data.</p>
 <p><em>This step is done automatically within tadbit each time an experiment
 is loaded. In order to ensure that we do remove outlier columns, tadbit
 checks if this root corresponds to a</em> <strong>concave down</strong> <em>region and if it
-stands</em> <strong>between zero and the median</strong> <em>of the overall distribution.
+stands</em> <strong>between zero and the median</strong> *of the overall distribution.
 The result of these &#8220;bad&#8221; columns is stored in the variable
 Experiment._zeros, that represents the columns to be skipped in the
-consecutive steps.</em></p>
+consecutive steps.*</p>
 </div>
 <div class="section" id="remove-row-columns-where-diagonal-is-null">
 <h3>Remove row/columns where diagonal is null<a class="headerlink" href="#remove-row-columns-where-diagonal-is-null" title="Permalink to this headline">¶</a></h3>
@@ -212,7 +214,7 @@ This normalization is achieve in two steps, first we generate weight for each pa
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Apr 25, 2014.
+      Last updated on May 07, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
