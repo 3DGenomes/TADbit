@@ -738,7 +738,7 @@ class Experiment(object):
         out.close()
 
 
-    def get_hic_matrix(self, focus=None, diagonal=True):
+    def get_hic_matrix(self, focus=None, diagonal=True, normalized=False):
         """
         Return the Hi-C matrix.
 
@@ -746,12 +746,19 @@ class Experiment(object):
            matrix starting at start, and ending at end (all inclusive).
         :param True diagonal: replace the values in the diagonal by one. Used
            for the filtering in order to smooth the distribution of mean values
+        :para False normalized: returns normalized data instead of raw Hi-C
 
         :returns: list of lists representing the Hi-C data matrix of the
            current experiment
         """
         siz = self.size
-        hic = self.hic_data[0]
+        if normalized:
+            try:
+                hic = self.norm[0]
+            except TypeError:
+                raise Exception('ERROR: experiment not normalized yet')
+        else:
+            hic = self.hic_data[0]
         if focus:
             start, end = focus
             start -= 1
