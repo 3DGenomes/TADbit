@@ -335,7 +335,7 @@ class Chromosome(object):
 
 
     def align_experiments(self, names=None, verbose=False, randomize=False,
-                          rnd_method='interpolate', rnd_num=1000, sc_cutoff = 0,
+                          rnd_method='interpolate', rnd_num=1000,
                           **kwargs):
         """
         Align the predicted boundaries of two different experiments. The 
@@ -375,7 +375,7 @@ class Chromosome(object):
             if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([xpr.tads[x]['brk'] * xpr.resolution for x in xpr.tads
-                         if xpr.tads[x]['score'] > sc_cutoff])
+                         if xpr.tads[x]['score']])
         # new
         aligneds, score = align(tads, verbose=verbose, **kwargs)
         name = tuple(sorted([x.name for x in xpers]))
