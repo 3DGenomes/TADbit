@@ -79,6 +79,8 @@ class IMPoptimizer(object):
         :param 0.01 scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
+        :param None savedata: concatenate all generated models into a dictionary
+           and save it into a file named by this argument
         :param True verbose: print the results to the standard output
         """
         if isinstance(maxdist_range, tuple):

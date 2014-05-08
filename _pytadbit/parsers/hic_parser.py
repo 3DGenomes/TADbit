@@ -153,7 +153,7 @@ def read_matrix(things, parser=None):
                 if len(thing.split('\n')) > 1:
                     matrix, size = parser(thing.split('\n'))
                 else:
-                    raise Exception('\n   ERROR: file %s not found\n' % thing)
+                    raise IOError('\n   ERROR: file %s not found\n' % thing)
             matrices.append(matrix)
             sizes.append(size)
         elif isinstance(thing, list):

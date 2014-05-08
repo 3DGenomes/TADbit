@@ -14,6 +14,7 @@ from warnings                            import warn
 from math                                import sqrt
 from numpy                               import log2, array
 from pytadbit.imp.CONFIG                 import CONFIG
+from copy                                import deepcopy as copy
 
 try:
     from pytadbit.imp.impoptimizer           import IMPoptimizer
@@ -111,12 +112,11 @@ class Experiment(object):
         self.tads            = {}
         self.norm            = None
         self._normalization  = None
+        self._filter_columns = filter_columns
         self._zeros          = None
         self._zscores        = {}
         if hic_data:
-            self.load_hic_data(hic_data, parser,
-                               filter_columns=filter_columns,
-                               **kw_descr)
+            self.load_hic_data(hic_data, parser, **kw_descr)
         if tad_def:
             self.load_tad_def(tad_def, weights=weights)
         elif not hic_data and not no_warn:
@@ -154,15 +154,34 @@ class Experiment(object):
         reso1, reso2 = self.resolution, other.resolution
         if self.resolution == other.resolution:
             resolution = self.resolution
+            changed_reso = False
         else:
             resolution = max(reso1, reso2)
             self.set_resolution(resolution)
             other.set_resolution(resolution)
-            
+            warn('WARNING: experiments of different resolution, seting both ' +
+                 'resolution of %s, and normalizing at this resolution' % (
+                     resolution))
+            norm1 = copy(self.norm)
+            norm2 = copy(other.norm)
+            if self._normalization:
+                self.normalize_hic()
+            if other._normalization:
+                other.normalize_hic()
+            changed_reso = True
+        if self._filter_columns and other._filter_columns:
+            filter_col = True
+        elif self._filter_columns or other._filter_columns:
+            warn('WARNING: only one of these experiment has filtered columns,' +
+                 ' choosing to filter columns in summed experiment')
+            filter_col = True
+        else:
+            filter_col = False
         xpr = Experiment(name='%s+%s' % (self.name, other.name),
                          resolution=resolution,
                          hic_data=tuple([i + j for i, j in zip(
-                             self.hic_data[0], other.hic_data[0])]))
+                             self.hic_data[0], other.hic_data[0])]),
+                         filter_columns=filter_col)
         # check if both experiments are normalized with the same method
         # and sum both normalized data
         if self._normalization == other._normalization != None:
@@ -175,8 +194,11 @@ class Experiment(object):
         else:
             warn('WARNING: experiments should be normalized before being ' +
                  'summed\n')
-        self.set_resolution(reso1)
-        other.set_resolution(reso2)
+        if changed_reso:
+            self.set_resolution(reso1)
+            self.norm = norm1
+            other.set_resolution(reso2)
+            other.norm = norm2
         xpr.crm = self.crm
         
         def __merge(own, fgn):
@@ -191,13 +213,6 @@ class Experiment(object):
         xpr.description = __merge(self.description, other.description)
         xpr.exp_type    = __merge(self.exp_type   , other.exp_type   )
         
-        # filter columns with low counts
-        # -> can not be done using intersection of summed experiments
-        xpr._zeros, _ = hic_filtering_for_modelling(
-            xpr.get_hic_matrix(diagonal=False), silent=True)
-        # also remove columns with zeros in the diagonal
-        xpr._zeros.update(dict([(i, None) for i in xrange(xpr.size)
-                                if not xpr.hic_data[0][i*xpr.size+i]]))
         for des in self.description:
             if not des in other.description:
                 continue
@@ -255,7 +270,7 @@ class Experiment(object):
                         val += self._ori_hic[0][(i + k) * size + j + l]
                 self.hic_data[0].append(val)
         # we need to recalculate zeros:
-        if self._zeros:
+        if self._filter_columns:
             self._zeros, has_nans = hic_filtering_for_modelling(
                 self.get_hic_matrix(diagonal=False), silent=True)
             if has_nans: # to make it simple
@@ -274,8 +289,7 @@ class Experiment(object):
 
 
     def load_hic_data(self, hic_data, parser=None, wanted_resolution=None,
-                      data_resolution=None, filter_columns=True, silent=False,
-                      **kwargs):
+                      data_resolution=None, silent=False, **kwargs):
         """
         Add a Hi-C experiment to the Chromosome object.
         
@@ -303,8 +317,8 @@ class Experiment(object):
            will be adjusted to the resolution of the experiment. By default the
            file is expected to contain a Hi-C experiment with the same resolution
            as the :class:`pytadbit.Experiment` created, and no change is made
-        :param True filter_columns: filter the columns with unexpectedly high content
-           of low values
+        :param True filter_columns: filter the columns with unexpectedly high 
+           content of low values
         :param False silent: does not warn for removed columns
         
         """
@@ -317,7 +331,9 @@ class Experiment(object):
         # self._zeros   = [int(pos) for pos, raw in enumerate(
         #     xrange(0, self.size**2, self.size))
         #                  if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
-        if filter_columns:
+        if self._filter_columns != False:
+            self._filter_columns = kwargs.get('filter_columns', True)
+        if self._filter_columns:
             self._zeros, has_nans = hic_filtering_for_modelling(
                 self.get_hic_matrix(diagonal=False), silent=silent)
             if has_nans: # to make it simple
@@ -329,7 +345,8 @@ class Experiment(object):
             # Also remove columns where there is no data in the diagonal
             self._zeros.update(dict([(i, None) for i in xrange(self.size)
                                      if not self.hic_data[0][i*self.size+i]]))
-
+        else:
+            self._zeros = {}
 
     def load_tad_def(self, tad_def, weights=None):
         """
