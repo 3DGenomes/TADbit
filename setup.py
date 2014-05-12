@@ -161,7 +161,7 @@ def main():
     for line in open(path.join(PATH, 'README.rst')):
         if line.startswith('* Current version: '):
             line = '* Current version: ' + version_full
-        lines.append(line.strip())
+        lines.append(line.rstrip())
     out = open(path.join(PATH, 'README.rst'), 'w')
     out.write('\n'.join(lines))
     out.close()
