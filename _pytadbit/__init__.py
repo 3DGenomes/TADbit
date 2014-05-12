@@ -1,5 +1,6 @@
 
 
+from pytadbit._version import __version__
 from pytadbit.tadbit import tadbit, batch_tadbit
 from pytadbit.chromosome import Chromosome
 from pytadbit.experiment import Experiment

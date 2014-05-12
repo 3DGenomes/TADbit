@@ -38,12 +38,12 @@ class IMPoptimizer(object):
 
         self.resolution = experiment.resolution
         (self.zscores,
-         self.values)   = experiment._sub_experiment_zscore(start, end)
-        self.nloci      = end - start + 1
-        self.n_models   = n_models
-        self.n_keep     = n_keep
-        self.close_bins = close_bins
-        self.cutoff     = cutoff
+         self.values, _) = experiment._sub_experiment_zscore(start, end)
+        self.nloci       = end - start + 1
+        self.n_models    = n_models
+        self.n_keep      = n_keep
+        self.close_bins  = close_bins
+        self.cutoff      = cutoff
 
         self.scale_range   = []
         self.maxdist_range = []

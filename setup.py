@@ -2,9 +2,11 @@
 
 from distutils.core import setup, Extension
 from os import path
+from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
 
 
+PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
 TAGS = [
     "Development Status :: 2 - Pre-Alpha",
@@ -125,10 +127,45 @@ def main():
                                          'src/3d-lib/align.cpp'],
                                 extra_compile_args=["-ffast-math"])
 
+    # UPDATE version number
+    version_full = open(path.join(PATH, '_pytadbit', '_version.py')
+                        ).readlines()[0].split('=')[1]
+    version_full.strip().replace('"', '')
+    version      = '.'.join(version_full.split('.')[:-1])
+    revision     = version_full.split('.')[-1]
+    # try to use git to check if version number matches
+    git_revision = git_version = None
+    try:
+        git_revision, err = Popen(['git', 'describe'], stdout=PIPE,
+                                  stderr=PIPE).communicate()
+        git_version = git_revision.split('-')[0]
+        git_revision = git_revision.split('-')[1]
+    except OSError:
+        git_revision = revision
+        git_version  = version
+    else:
+        if err:
+            git_revision = revision
+            git_version  = version
+    # update version number and write it to _version.py and README files
+    revision = git_revision
+    version  = git_version
+    version_full = '.'.join([version, revision])
+    out = open(path.join(PATH, '_pytadbit', '_version.py'), 'w')
+    out.write('__version__ = "%s"' % version_full)
+    out.close()
+    lines = []
+    for line in open(path.join(PATH, 'README.rst')):
+        if line.startswith('* Current version: '):
+            line = '* Current version: ' + version_full
+        lines.append(line.strip())
+    out = open(path.join(PATH, 'README.rst'), 'w')
+    out.write('\n'.join(lines))
+    out.close()
 
     setup(
         name         = 'TADbit',
-        version      = '0.1',
+        version      = version_full,
         author       = 'Davide Bau, Francois Serra, Guillaume Filion and Marc Marti-Renom',
         author_email = 'serra.francois@gmail.com',
         ext_modules  = [pytadbit_module, eqv_rmsd_module, centroid_module,

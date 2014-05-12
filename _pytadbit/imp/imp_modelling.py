@@ -32,7 +32,7 @@ IMP.set_log_level(IMP.SILENT)
 def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, keep_all=False,
                        verbose=0, outfile=None, config=CONFIG['dmel_01'],
-                       values=None, experiment=None, coords=None):
+                       values=None, experiment=None, coords=None, zeros=None):
     """
     This function generates three-dimensional models starting from Hi-C data. 
     The final analysis will be performed on the n_keep top models.
@@ -196,9 +196,9 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         dump((models, bad_models), out)
         out.close()
     else:
-        return StructuralModels(NLOCI, models, bad_models, resolution,
-                                original_data=values, zscores=zscores,
-				config=CONFIG, experiment=experiment)
+        return StructuralModels(
+            NLOCI, models, bad_models, resolution, original_data=values,
+            zscores=zscores, config=CONFIG, experiment=experiment, zeros=zeros)
 
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):

@@ -442,8 +442,8 @@ class TestTadbit(unittest.TestCase):
         models.density_plot(savedata='lala', plot=False)
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
-        self.assertEqual([round(float(i), 1) for i in lines[1].split('\t')[:3]],
-                         [1, 100.0, 100.0])
+        self.assertEqual([round(float(i), 1) if i != 'nan' else i for i in lines[1].split('\t')[:3]],
+                         [1.0, 'nan', 0.0])
         self.assertEqual([round(float(i), 1) for i in lines[15].split('\t')[:3]],
                          [15, 99.9, 100.0])
         # contacts

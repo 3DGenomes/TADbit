@@ -7,6 +7,7 @@ from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
 from pytadbit.utils.three_dim_stats import get_center_of_mass, distance
 from pytadbit.utils.tadmaths        import calinski_harabasz, nozero_log_list
+from pytadbit.utils.tadmaths        import mean_none
 from pytadbit.utils.extraviews      import plot_3d_model
 from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
@@ -48,11 +49,17 @@ def load_structuralmodels(path_f):
     :returns: a :class:`pytadbit.imp.imp_model.StructuralModels`.
     """
     svd = load(open(path_f))
-    return StructuralModels(
-        nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
-        resolution=svd['resolution'], original_data=svd['original_data'],
-        clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'])
-
+    try:
+        return StructuralModels(
+            nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
+            resolution=svd['resolution'], original_data=svd['original_data'],
+            clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
+            zeros=svd['zeros'])
+    except KeyError: # old version
+        return StructuralModels(
+            nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
+            resolution=svd['resolution'], original_data=svd['original_data'],
+            clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'])
 
 class StructuralModels(object):
     """
@@ -82,7 +89,7 @@ class StructuralModels(object):
 
     def __init__(self, nloci, models, bad_models, resolution,
                  original_data=None, zscores=None, clusters=None,
-                 config=None, experiment=None):
+                 config=None, experiment=None, zeros=None):
 
         self.__models       = models
         self._bad_models    = bad_models
@@ -91,6 +98,7 @@ class StructuralModels(object):
         self.resolution     = float(resolution)
         self._original_data = original_data # only used for correlation
         self._zscores       = zscores       # only used for plotting
+        self._zeros         = zeros or {}   # filtered out columns
         self._config        = config or {}
         self.experiment     = experiment
 
@@ -115,18 +123,20 @@ class StructuralModels(object):
         for m in self.__models:
             yield self.__models[m]
 
+
     def __len__(self):
         return len(self.__models)
 
 
     def __repr__(self):
-        return ('StructuralModels with %s models ' +
-                '(objective function range: %s - %s)\n' +
+        return ('StructuralModels with %s models of %s particles\n' +
+                '   (objective function range: %s - %s)\n' +
                 '   (corresponding to the best models out of %s models).\n' +
                 '  IMP modeling used this parameters:\n' +
                 '%s\n' +
                 '  Models where clustered into %s clusters') % (
             len(self.__models),
+            self.nloci,
             int(self.__models[0]['objfun']),
             int(self.__models[len(self.__models) - 1]['objfun']),
             len(self.__models) + len(self._bad_models),
@@ -289,7 +299,6 @@ class StructuralModels(object):
 
        where :math:`eqvs_i` is the number of equivalent position for the ith
        pairwise model comparison.
-
 
 
         :param 0.75 fact: factor to define the percentage of equivalent
@@ -518,7 +527,7 @@ class StructuralModels(object):
         if isinstance(steps, int):
             steps = (steps, )
         if len(steps) > 6:
-            raise Exception('Sorry not enough colors to do this.\n')
+            raise Exception('Sorry not enough colors to do this :)')
         colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
                   'darkred'][-len(steps):]
         dists = []
@@ -531,6 +540,9 @@ class StructuralModels(object):
             models = [m for m in self.__models]
         for part1, part2 in zip(range(self.nloci - interval),
                                 range(interval, self.nloci)):
+            if part1 in self._zeros or part2 in self._zeros:
+                dists.append([None] * len(models))
+                continue
             if mass_center:
                 subdists = []
                 for m in models:
@@ -558,8 +570,8 @@ class StructuralModels(object):
                 if k == 1:
                     continue
                 # calculate the mean for steps larger than 1
-                distsk[k][-1] = [float(sum([distsk[k][-1][i+lmodels*j]
-                                            for j in xrange(k)])) / k
+                distsk[k][-1] = [mean_none([distsk[k][-1][i+lmodels*j]
+                                                  for j in xrange(k)])
                                  for i in xrange(lmodels)]
         new_distsk = {}
         errorp     = {}
@@ -574,7 +586,8 @@ class StructuralModels(object):
                     errorp[k].append(None)
                     errorn[k].append(None)
                     continue
-                part = [interval * self.resolution / p for p in part]
+                part = [interval * self.resolution / p  if p != None
+                        else float('nan') for p in part]
                 new_distsk[k].append(np_median(part))
                 try:
                     errorn[k].append(new_distsk[k][-1] - 2 * np_std(part))
@@ -592,10 +605,10 @@ class StructuralModels(object):
             '2*stddev(%d)' % c for c in steps])))
             for part in xrange(self.nloci):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
-                    ['None\tNone' if part >= len(distsk[c]) else
+                    ['nan\tnan' if part >= len(distsk[c]) else
                     (str(round(distsk[c][part], 3)) + '\t' +
                      str(round(errorp[c][part], 3)))
-                     if distsk[c][part] else 'None\tNone'
+                     if distsk[c][part] else 'nan\tnan'
                      for c in steps])))
             out.close()
         if not plot:
@@ -1028,6 +1041,9 @@ class StructuralModels(object):
             cutoff = int(2 * self.resolution * self._config['scale'])
         cutoff2 = cutoff**2
         for i in xrange(self.nloci):
+            if i in self._zeros:
+                interactions[i].extend([None] * len(models))
+                continue
             for m in models:
                 val = 0
                 for j in xrange(self.nloci):
@@ -1057,13 +1073,16 @@ class StructuralModels(object):
                     errorp[k].append(None)
                     errorn[k].append(None)
                     continue
-                new_distsk[k].append(np_mean(part) if average
-                                     else np_median(part))
+                mean_part = (np_mean([p for p in part if p != None]) if average
+                             else np_median([p for p in part if p != None]))
+                new_distsk[k].append(mean_part)
                 try:
-                    errorn[k].append(new_distsk[k][-1] - 2 * np_std(part))
+                    errorn[k].append(new_distsk[k][-1] - 2 *
+                    np_std([p for p in part if p != None]))
                     if errorn[k][-1] < 0:
                         errorn[k][-1] =  0.0
-                    errorp[k].append(new_distsk[k][-1] + 2 * np_std(part))
+                    errorp[k].append(new_distsk[k][-1] + 2 *
+                    np_std([p for p in part if p != None]))
                     if errorp[k][-1] < 0:
                         errorp[k][-1] = 0.0
                 except TypeError:
@@ -1077,11 +1096,11 @@ class StructuralModels(object):
                     'Average' if average else 'Median', k, k) for k in steps])))
             for i in xrange(self.nloci):
                 out.write('%s\t%s\n' % (i + 1, '\t'.join(
-                    ['%s\t%s' % (str(None if (len(distsk[k]) <= i
+                    ['%s\t%s' % (str('nan' if (len(distsk[k]) <= i
                                               or distsk[k][i] is None)
                                      else round(distsk[k][i], 2)), (
-                str(None if (len(distsk[k]) <= i
-                             or distsk[k][i] is None)
+                str('nan' if (len(distsk[k]) <= i
+                              or distsk[k][i] is None)
                     else round(errorp[k][i] - distsk[k][i], 2)))) for k in steps])))
             out.close()
             if not plot:
@@ -2285,6 +2304,7 @@ class StructuralModels(object):
         to_save['original_data'] = self._original_data
         to_save['config']        = self._config
         to_save['zscore']        = {} if minimal else self._zscores
+        to_save['zeros']         = self._zeros
 
         return to_save
 

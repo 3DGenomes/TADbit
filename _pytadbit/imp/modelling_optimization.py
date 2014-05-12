@@ -20,8 +20,8 @@ class IMPOptimizer(object):
         self.resolution = experiment.resolution
         print experiment
         print start, end
-        self.zscores, self.values = experiment._sub_experiment_zscore(start,
-                                                                      end)
+        self.zscores, self.values, _ = experiment._sub_experiment_zscore(start,
+                                                                         end)
         self.n_models   = n_models
         self.n_keep     = n_keep
         self.close_bins = close_bins

@@ -541,16 +541,17 @@ class Experiment(object):
             self.normalize_hic()
         if not end:
             end = self.size
-        zscores, values = self._sub_experiment_zscore(start, end)
+        zscores, values, zeros = self._sub_experiment_zscore(start, end)
         coords = {'crm'  : self.crm.name,
                   'start': start,
                   'end'  : end}
+        zeros = tuple([i not in zeros for i in xrange(end - start)])
         return generate_3d_models(zscores, self.resolution, end - start,
                                   values=values, n_models=n_models,
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                   verbose=verbose, keep_all=keep_all,
                                   close_bins=close_bins, config=config,
-                                  experiment=self, coords=coords)
+                                  experiment=self, coords=coords, zeros=zeros)
 
 
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
@@ -682,7 +683,7 @@ class Experiment(object):
                     continue
                 values[i][j] = exp.norm[0][i * exp.size + j]
                 values[j][i] = exp.norm[0][i * exp.size + j]
-        return exp._zscores, values
+        return exp._zscores, values, exp._zeros
 
 
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,

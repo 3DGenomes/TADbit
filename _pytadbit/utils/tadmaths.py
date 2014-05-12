@@ -172,3 +172,20 @@ def calinski_harabasz(scores, clusters):
             /
             (within_cluster / (nmodels - len(cluster_list))))
 
+
+
+def mean_none(values):
+    """
+    Calculates the mean of a list of values without taking into account the None
+    
+    :param values: list of values
+
+    :returns: the mean value
+    """
+    values = [i for i in values if i !=None]
+    if values:
+        return float(sum(values)) / len(values)
+    else:
+        return None
+    
+    
