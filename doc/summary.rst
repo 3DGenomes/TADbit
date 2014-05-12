@@ -152,6 +152,8 @@ Experiment class
 
       - `write_interaction_pairs <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.write_interaction_pairs>`_: Creates a tab separated file with all the pairwise interactions.
 
+      - `write_tad_borders <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.write_tad_borders>`_ [#second]_: Print a table summarizing the TADs found by tadbit. This function outputs                                             something similar to the R function.
+
 Imp imp_modelling module
 ------------------------
 
@@ -351,6 +353,8 @@ Utils hic_filtering module
 
 Utils tadmaths module
 ---------------------
+
+   - mean_none:                              Calculates the mean of a list of values without taking into account the None
 
    - zscore:                                 Calculates the log10, Z-score of a given list of values.
 

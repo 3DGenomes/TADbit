@@ -138,8 +138,11 @@ def main():
     try:
         git_revision, err = Popen(['git', 'describe'], stdout=PIPE,
                                   stderr=PIPE).communicate()
-        git_version = git_revision.split('-')[0]
-        git_revision = git_revision.split('-')[1]
+        git_status, err2 = Popen(['git', 'status'], stdout=PIPE,
+                                stderr=PIPE).communicate()
+        plus = 'nothing to commit' not in git_status
+        git_version  = git_revision.split('-')[0]
+        git_revision = str(int(git_revision.split('-')[1]) + plus)
     except OSError:
         git_revision = revision
         git_version  = version
