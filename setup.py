@@ -130,7 +130,7 @@ def main():
     # UPDATE version number
     version_full = open(path.join(PATH, '_pytadbit', '_version.py')
                         ).readlines()[0].split('=')[1]
-    version_full.strip().replace('"', '')
+    version_full = version_full.strip().replace('"', '')
     version      = '.'.join(version_full.split('.')[:-1])
     revision     = version_full.split('.')[-1]
     # try to use git to check if version number matches
@@ -140,13 +140,12 @@ def main():
                                   stderr=PIPE).communicate()
         git_status, err2 = Popen(['git', 'status'], stdout=PIPE,
                                 stderr=PIPE).communicate()
+        if err or err2:
+            raise OSError('git not found')
         plus = 'nothing to commit' not in git_status
         git_version  = git_revision.split('-')[0]
         git_revision = str(int(git_revision.split('-')[1]) + plus)
     except OSError:
-        git_revision = revision
-        git_version  = version
-    except IndexError:
         git_revision = revision
         git_version  = version
     else:
