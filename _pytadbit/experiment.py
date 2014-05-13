@@ -371,7 +371,7 @@ class Experiment(object):
                 self._normalization = 'visibility'
 
 
-    def normalize_hic(self, silent=False):
+    def normalize_hic(self, silent=False, rowsums=None):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -398,7 +398,7 @@ class Experiment(object):
             raise Exception('ERROR: No Hi-C data loaded\n')
         if self.norm and not silent:
             warn('WARNING: removing previous weights\n')
-        rowsums = [0 for _ in xrange(self.size)]
+        rowsums = rowsums or [0 for _ in xrange(self.size)]
         for i in xrange(self.size):
             if i in self._zeros: continue
             isi = i * self.size
