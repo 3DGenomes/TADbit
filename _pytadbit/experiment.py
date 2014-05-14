@@ -206,6 +206,8 @@ class Experiment(object):
             other.set_resolution(reso2)
             other.norm = norm2
         xpr.crm = self.crm
+        if not xpr.size:
+            xpr.size = sqrt(len(xpr.norm[0]))
         
         def __merge(own, fgn):
             "internal function to merge descriptions"
