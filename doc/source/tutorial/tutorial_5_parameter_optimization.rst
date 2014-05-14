@@ -114,7 +114,7 @@ The log indicates that experiment "k562+gm06690" had no file. Such experiment wa
       291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
       306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
       321  322  323  324  639
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:176: UserWarning: WARNING: experiments should be normalized before being summed
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:196: UserWarning: WARNING: experiments should be normalized before being summed
     
       'summed\n')
     
@@ -146,7 +146,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:630: UserWarning: WARNING: normalizing according to visibility method
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:648: UserWarning: WARNING: normalizing according to visibility method
       warn('WARNING: normalizing according to visibility method')
 
 
@@ -163,19 +163,126 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
 .. ansi-block::
 
-        1  0.2 -1 500 0.005 nan
-
-
-.. ansi-block::
-
-    /usr/lib/python2.7/dist-packages/numpy/lib/function_base.py:1824: RuntimeWarning: invalid value encountered in true_divide
-      return c/sqrt(multiply.outer(d, d))
-    /usr/local/lib/python2.7/dist-packages/scipy-0.11.0-py2.7-linux-x86_64.egg/scipy/stats/distributions.py:1457: RuntimeWarning: invalid value encountered in greater
-      cond1 = (scale > 0) & (x > self.a) & (x < self.b)
-    /usr/local/lib/python2.7/dist-packages/scipy-0.11.0-py2.7-linux-x86_64.egg/scipy/stats/distributions.py:1457: RuntimeWarning: invalid value encountered in less
-      cond1 = (scale > 0) & (x > self.a) & (x < self.b)
-    /usr/local/lib/python2.7/dist-packages/scipy-0.11.0-py2.7-linux-x86_64.egg/scipy/stats/distributions.py:1458: RuntimeWarning: invalid value encountered in less_equal
-      cond2 = cond0 & (x <= self.a)
+        1  0.2 -1 2000 0.01 0.7685079084
+        2  0.2 -0.8 2000 0.01 0.7685079084
+        3  0.2 -0.6 2000 0.01 0.769312534002
+        4  0.2 -0.4 2000 0.01 0.774552988272
+        5  0.2 -0.2 2000 0.01 0.774799693632
+        6  0.2 0 2000 0.01 0.779079372102
+        7  0.4 -1 2000 0.01 0.77968485295
+        8  0.4 -0.8 2000 0.01 0.77968485295
+        9  0.4 -0.6 2000 0.01 0.777330669016
+       10  0.4 -0.4 2000 0.01 0.781161643149
+       11  0.4 -0.2 2000 0.01 0.784325067495
+       12  0.4 0 2000 0.01 0.786674923707
+       13  0.6 -1 2000 0.01 0.784429455755
+       14  0.6 -0.8 2000 0.01 0.784429455755
+       15  0.6 -0.6 2000 0.01 0.785634447252
+       16  0.6 -0.4 2000 0.01 0.786321444973
+       17  0.6 -0.2 2000 0.01 0.786910943468
+       18  0.6 0 2000 0.01 0.786984401856
+       19  0.8 -1 2000 0.01 0.790513719434
+       20  0.8 -0.8 2000 0.01 0.790513719434
+       21  0.8 -0.6 2000 0.01 0.790296856543
+       22  0.8 -0.4 2000 0.01 0.793885340581
+       23  0.8 -0.2 2000 0.01 0.789759250026
+       24  0.8 0 2000 0.01 0.789797737342
+       25  0.2 -1 2500 0.01 0.750962048643
+       26  0.2 -0.8 2500 0.01 0.750962048643
+       27  0.2 -0.6 2500 0.01 0.757205157705
+       28  0.2 -0.4 2500 0.01 0.761306112068
+       29  0.2 -0.2 2500 0.01 0.774749585795
+       30  0.2 0 2500 0.01 0.77526716922
+       31  0.4 -1 2500 0.01 0.768413156879
+       32  0.4 -0.8 2500 0.01 0.768413156879
+       33  0.4 -0.6 2500 0.01 0.769621944212
+       34  0.4 -0.4 2500 0.01 0.774313586043
+       35  0.4 -0.2 2500 0.01 0.784154703349
+       36  0.4 0 2500 0.01 0.780215999106
+       37  0.6 -1 2500 0.01 0.7769226588
+       38  0.6 -0.8 2500 0.01 0.7769226588
+       39  0.6 -0.6 2500 0.01 0.7771795099
+       40  0.6 -0.4 2500 0.01 0.781692802602
+       41  0.6 -0.2 2500 0.01 0.791132811629
+       42  0.6 0 2500 0.01 0.791622500864
+       43  0.8 -1 2500 0.01 0.794414661228
+       44  0.8 -0.8 2500 0.01 0.794414661228
+       45  0.8 -0.6 2500 0.01 0.791675414244
+       46  0.8 -0.4 2500 0.01 0.797601045479
+       47  0.8 -0.2 2500 0.01 0.797521713992
+       48  0.8 0 2500 0.01 0.797093368434
+       49  0.2 -1 3000 0.01 0.747088558176
+       50  0.2 -0.8 3000 0.01 0.747088558176
+       51  0.2 -0.6 3000 0.01 0.745301762181
+       52  0.2 -0.4 3000 0.01 0.75657287698
+       53  0.2 -0.2 3000 0.01 0.768255433103
+       54  0.2 0 3000 0.01 0.771134956344
+       55  0.4 -1 3000 0.01 0.760224850725
+       56  0.4 -0.8 3000 0.01 0.760224850725
+       57  0.4 -0.6 3000 0.01 0.758212146329
+       58  0.4 -0.4 3000 0.01 0.76576862456
+       59  0.4 -0.2 3000 0.01 0.778685124478
+       60  0.4 0 3000 0.01 0.779102317515
+       61  0.6 -1 3000 0.01 0.77089869622
+       62  0.6 -0.8 3000 0.01 0.77089869622
+       63  0.6 -0.6 3000 0.01 0.771149348295
+       64  0.6 -0.4 3000 0.01 0.778054314513
+       65  0.6 -0.2 3000 0.01 0.788888301661
+       66  0.6 0 3000 0.01 0.792927420622
+       67  0.8 -1 3000 0.01 0.787058090092
+       68  0.8 -0.8 3000 0.01 0.787058090092
+       69  0.8 -0.6 3000 0.01 0.787064682158
+       70  0.8 -0.4 3000 0.01 0.789444985636
+       71  0.8 -0.2 3000 0.01 0.795363982681
+       72  0.8 0 3000 0.01 0.798344059632
+       73  0.2 -1 3500 0.01 0.742503135603
+       74  0.2 -0.8 3500 0.01 0.742503135603
+       75  0.2 -0.6 3500 0.01 0.745313876975
+       76  0.2 -0.4 3500 0.01 0.757818572633
+       77  0.2 -0.2 3500 0.01 0.768088409932
+       78  0.2 0 3500 0.01 0.772953014174
+       79  0.4 -1 3500 0.01 0.758090294693
+       80  0.4 -0.8 3500 0.01 0.758090294693
+       81  0.4 -0.6 3500 0.01 0.756077064231
+       82  0.4 -0.4 3500 0.01 0.760791799894
+       83  0.4 -0.2 3500 0.01 0.770118662441
+       84  0.4 0 3500 0.01 0.771190886989
+       85  0.6 -1 3500 0.01 0.755069982191
+       86  0.6 -0.8 3500 0.01 0.755069982191
+       87  0.6 -0.6 3500 0.01 0.753952944201
+       88  0.6 -0.4 3500 0.01 0.760897343161
+       89  0.6 -0.2 3500 0.01 0.771145005701
+       90  0.6 0 3500 0.01 0.773442327166
+       91  0.8 -1 3500 0.01 0.772281982099
+       92  0.8 -0.8 3500 0.01 0.772281982099
+       93  0.8 -0.6 3500 0.01 0.774513250696
+       94  0.8 -0.4 3500 0.01 0.776897099364
+       95  0.8 -0.2 3500 0.01 0.780965488029
+       96  0.8 0 3500 0.01 0.778109941084
+       97  0.2 -1 4000 0.01 0.74469288042
+       98  0.2 -0.8 4000 0.01 0.74469288042
+       99  0.2 -0.6 4000 0.01 0.744839537795
+      100  0.2 -0.4 4000 0.01 0.749552494453
+      101  0.2 -0.2 4000 0.01 0.756184508999
+      102  0.2 0 4000 0.01 0.759171645369
+      103  0.4 -1 4000 0.01 0.737113094756
+      104  0.4 -0.8 4000 0.01 0.737113094756
+      105  0.4 -0.6 4000 0.01 0.737373689722
+      106  0.4 -0.4 4000 0.01 0.739865712079
+      107  0.4 -0.2 4000 0.01 0.74968044876
+      108  0.4 0 4000 0.01 0.753525984586
+      109  0.6 -1 4000 0.01 0.740316370858
+      110  0.6 -0.8 4000 0.01 0.740316370858
+      111  0.6 -0.6 4000 0.01 0.739165113831
+      112  0.6 -0.4 4000 0.01 0.743513322704
+      113  0.6 -0.2 4000 0.01 0.7493620759
+      114  0.6 0 4000 0.01 0.751928906505
+      115  0.8 -1 4000 0.01 0.745707450814
+      116  0.8 -0.8 4000 0.01 0.745707450814
+      117  0.8 -0.6 4000 0.01 0.743929246866
+      118  0.8 -0.4 4000 0.01 0.746609953329
+      119  0.8 -0.2 4000 0.01 0.748258868417
+      120  0.8 0 4000 0.01 0.745006154143
 
 
 .. note::
@@ -195,49 +302,8 @@ The exact same as above can be done from Experiment objects directly:
 
     optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
                                            lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
-                                           scale_range=[0.005], maxdist_range=(500, 900, 200), verbose=False)
-
-
-::
-
-
-    ---------------------------------------------------------------------------
-    Exception                                 Traceback (most recent call last)
-
-    <ipython-input-7-531db7bca5d2> in <module>()
-          1 optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
-          2                                        lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2),
-    ----> 3                                        scale_range=[0.005], maxdist_range=(300, 700, 200), verbose=False)
-    
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.pyc in optimal_imp_parameters(self, start, end, n_models, n_keep, n_cpus, upfreq_range, close_bins, lowfreq_range, scale_range, maxdist_range, cutoff, outfile, verbose, corr, off_diag, savedata)
-        608                                   scale_range=scale_range, corr=corr,
-        609                                   n_cpus=n_cpus, verbose=verbose,
-    --> 610                                   off_diag=off_diag, savedata=savedata)
-        611 
-        612         if outfile:
-
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/imp/impoptimizer.pyc in run_grid_search(self, upfreq_range, lowfreq_range, maxdist_range, scale_range, corr, off_diag, savedata, n_cpus, verbose)
-        169                                                  n_cpus=n_cpus,
-        170                                                  values=self.values,
-    --> 171                                                  close_bins=self.close_bins)
-        172                         count += 1
-        173                         if verbose:
-
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/imp/imp_modelling.pyc in generate_3d_models(zscores, resolution, nloci, start, n_models, n_keep, close_bins, n_cpus, keep_all, verbose, outfile, config, values, experiment, coords)
-        127                             CONFIG['lowrdist']) +
-        128                         '   -> resolution times scale -- %s*%s)' % (
-    --> 129                             resolution, CONFIG['scale']))
-        130 
-        131     # get SLOPE and regression for all particles of the z-score data
-
-
-    Exception: ERROR: we must prevent you from doing this for the safe of our universe...
-    In this case, maxdist must be higher than 500.0
-       -> resolution times scale -- 100000*0.005)
-
+                                           scale_range=[0.005], maxdist_range=(2000, 4000, 500), 
+                                           verbose=False)
 
 Visualize the results
 ---------------------
@@ -252,46 +318,8 @@ Visualize the results
     optimizer.plot_2d()
 
 
-::
 
-
-    ---------------------------------------------------------------------------
-    IndexError                                Traceback (most recent call last)
-
-    <ipython-input-9-13a57a482708> in <module>()
-          1 # Visualize the results of the optimization.
-    ----> 2 optimizer.plot_2d()
-    
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/imp/impoptimizer.pyc in plot_2d(self, axes, show_best, skip, savefig)
-        306                                       [float(i) for i in self.lowfreq_range]),
-        307                                      results), axes=axes, show_best=show_best,
-    --> 308                                     skip=skip, savefig=savefig)
-        309 
-        310 
-
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/extraviews.pyc in plot_2d_optimization_result(result, axes, show_best, skip, savefig)
-        673     tit += 'Best: %s=%%s, %s=%%s, %s=%%s, %s=%%s' % (axes[0], axes[1],
-        674                                                      axes[3], axes[2])
-    --> 675     fig.suptitle(tit % tuple([0my_round(i, 3) for i in sort_result[0][1:]]),
-        676                  size='large')
-        677     if savefig:
-
-
-    IndexError: list index out of range
-
-
-.. ansi-block::
-
-    /usr/lib/python2.7/dist-packages/numpy/ma/core.py:3847: UserWarning: Warning: converting a masked element to nan.
-      warnings.warn("Warning: converting a masked element to nan.")
-    /usr/lib/pymodules/python2.7/matplotlib/colors.py:576: RuntimeWarning: invalid value encountered in less
-      cbook._putmask(xa, xa < 0.0, -1)
-
-
-
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_21_2.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_21_0.png
 
 
 We can also ask to mark on the plot the best N combination of parameters with the "show_best" parameter.
@@ -300,6 +328,11 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
     # Visualize the results of the optimization and mark the best 10 parameter sets
     optimizer.plot_2d(show_best=20)
+
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_23_0.png
+
 
 .. code:: python
 
@@ -324,6 +357,13 @@ We can also ask to mark on the plot the best N combination of parameters with th
                                   ], key=lambda x: x[0],
                                  reverse=True)[0]
     print sort_result
+
+.. ansi-block::
+
+    [[0.005], [2000.0, 2500.0, 3000.0, 3500.0, 4000.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
+    (0.75936709524864121, 0.005, 2000.0, -0.2, 0.2)
+
+
 One can also visualize the parameter optimization according to ne of the three optimization parameters.
 
 .. code:: python
@@ -331,9 +371,44 @@ One can also visualize the parameter optimization according to ne of the three o
     # Visualize the results of the optimization based on the lowfreq parameter.
     optimizer.plot_2d(axes=('upfreq', 'lowfreq', 'maxdist', 'scale'),show_best=10)
 
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_26_0.png
+
+
 .. code:: python
 
-    optimizer.plot_2d(skip={"scale":0.005}, show_best=10)
+    optimizer.plot_2d(skip={"scale":0.01}, show_best=10)
+
+
+::
+
+
+    ---------------------------------------------------------------------------
+    ValueError                                Traceback (most recent call last)
+
+    <ipython-input-13-4c8c4f4e635a> in <module>()
+    ----> 1 optimizer.plot_2d(skip={"scale":0.01}, show_best=10)
+    
+
+    /usr/local/lib/python2.7/dist-packages/pytadbit/imp/impoptimizer.pyc in plot_2d(self, axes, show_best, skip, savefig)
+        308                                       [float(i) for i in self.lowfreq_range]),
+        309                                      results), axes=axes, show_best=show_best,
+    --> 310                                     skip=skip, savefig=savefig)
+        311 
+        312 
+
+
+    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/extraviews.pyc in plot_2d_optimization_result(result, axes, show_best, skip, savefig)
+        602             continue
+        603         if i == 0:
+    --> 604             wax_range = [wax.index(skip[k])]
+        605         elif i==1:
+        606             zax_range = [zax.index(skip[k])]
+
+
+    ValueError: 0.01 is not in list
+
 
 TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
 
@@ -345,50 +420,14 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 .. code:: python
 
     optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1., -0.0, 0.1), upfreq_range=(0.3, 0.6, 0.05), 
-                              scale_range=[0.005], maxdist_range=[200,250,300,350], verbose=False)
+                              scale_range=[0.01], maxdist_range=[2250,2500,2750,3000], verbose=False)
 
 .. code:: python
 
-    optimizer.scale_range
-    optimizer.maxdist_range
-
+    optimizer.plot_2d()
 .. code:: python
 
     optimizer.plot_2d(show_best=100)
-
-::
-
-
-    ---------------------------------------------------------------------------
-    IndexError                                Traceback (most recent call last)
-
-    <ipython-input-15-9667fef4f0da> in <module>()
-    ----> 1 optimizer.plot_2d(show_best=100)
-    
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/imp/impoptimizer.pyc in plot_2d(self, axes, show_best, skip, savefig)
-        306                                       [float(i) for i in self.lowfreq_range]),
-        307                                      results), axes=axes, show_best=show_best,
-    --> 308                                     skip=skip, savefig=savefig)
-        309 
-        310 
-
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/extraviews.pyc in plot_2d_optimization_result(result, axes, show_best, skip, savefig)
-        673     tit += 'Best: %s=%%s, %s=%%s, %s=%%s, %s=%%s' % (axes[0], axes[1],
-        674                                                      axes[3], axes[2])
-    --> 675     fig.suptitle(tit % tuple([0my_round(i, 3) for i in sort_result[0][1:]]),
-        676                  size='large')
-        677     if savefig:
-
-
-    IndexError: list index out of range
-
-
-
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_32_1.png
-
-
 .. code:: python
 
     optimizer.write_result('results.log')
@@ -401,20 +440,6 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 .. code:: python
 
     optimizer2.results.keys()[105]
-
-::
-
-
-    ---------------------------------------------------------------------------
-    IndexError                                Traceback (most recent call last)
-
-    <ipython-input-13-fd8fa669d7d1> in <module>()
-    ----> 1 optimizer2.results.keys()[105]
-    
-
-    IndexError: list index out of range
-
-
 .. code:: python
 
     optimizer2.plot_2d(show_best=20)
@@ -429,18 +454,6 @@ Once done, best results can be returned as a dictionary to be used for modeling 
     config = optimizer.get_best_parameters_dict(reference='gm cell from Job Dekker 2009')
     
     print config
-
-
-.. ansi-block::
-
-    None
-
-
-.. ansi-block::
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/imp/impoptimizer.py:263: UserWarning: WARNING: no optimization done yet
-      warn('WARNING: no optimization done yet')
-
 
 .. code:: python
 

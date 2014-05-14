@@ -1,6 +1,10 @@
 Utilities
 =========
 
+.. currentmodule:: pytadbit
+.. autofunction:: get_dependencies_version
+
+
 .. currentmodule:: pytadbit.utils.tadmaths
 
 .. autofunction:: calinski_harabasz

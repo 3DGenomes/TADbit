@@ -19,9 +19,10 @@ except ImportError:
 
 def get_dependencies_version():
     """
+    Check versions of TADbit and all dependencies, as well and retieves system
+    info. May be used to ensure reproductibility.
     
-    
-    :returns: string with description of versions used
+    :returns: string with description of versions installed
     """
     versions = {'  TADbit': __version__ + '\n\n'}
     try:

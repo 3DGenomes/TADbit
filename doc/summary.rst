@@ -3,6 +3,11 @@ Summary of TADbit classes and functions
 =======================================
 
 
+ module
+-------
+
+   - get_dependencies_version:               Check versions of TADbit and all dependencies, as well and retieves system                                             info. May be used to ensure reproductibility.
+
 Alignment module
 ----------------
 
@@ -135,6 +140,8 @@ Experiment class
       - `get_hic_zscores <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_zscores>`_: Normalize the Hi-C raw data. The result will be stored into                                             the private Experiment._zscore list.
 
       - `load_hic_data <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.load_hic_data>`_: Add a Hi-C experiment to the Chromosome object.
+
+      - load_norm_data:                      Add a normalized Hi-C experiment to the Chromosome object.
 
       - `load_tad_def <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.load_tad_def>`_: Add the Topologically Associated Domains definition detection to Slice
 
