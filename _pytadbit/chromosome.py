@@ -399,8 +399,8 @@ class Chromosome(object):
 
 
     def add_experiment(self, name, resolution=None, tad_def=None,
-                       hic_data=None, replace=False, parser=None,
-                       conditions=None, **kwargs):
+                       hic_data=None, norm_data=None, replace=False,
+                       parser=None, conditions=None, **kwargs):
         """
         Add a Hi-C experiment to Chromosome
         
@@ -444,7 +444,8 @@ class Chromosome(object):
             self.experiments.append(name)
         elif resolution:
             self.experiments.append(Experiment(name, resolution, hic_data,
-                                               tad_def, parser=parser,
+                                               norm_data, tad_def,
+                                               parser=parser,
                                                conditions=conditions, **kwargs))
         else:
             raise Exception('resolution param is needed\n')

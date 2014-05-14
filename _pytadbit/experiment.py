@@ -91,8 +91,8 @@ class Experiment(object):
     """
 
 
-    def __init__(self, name, resolution, hic_data=None, tad_def=None,
-                 parser=None, no_warn=False, weights=None,
+    def __init__(self, name, resolution, hic_data=None, norm_data=None,
+                 tad_def=None, parser=None, no_warn=False, weights=None,
                  conditions=None, filter_columns=True, identifier=None,
                  cell_type=None, enzyme=None, exp_type='Hi-C', **kw_descr):
         self.name            = name
@@ -117,6 +117,8 @@ class Experiment(object):
         self._zscores        = {}
         if hic_data:
             self.load_hic_data(hic_data, parser, **kw_descr)
+        if norm_data:
+            self.load_norm_data(norm_data, parser, **kw_descr)
         if tad_def:
             self.load_tad_def(tad_def, weights=weights)
         elif not hic_data and not no_warn:
@@ -348,6 +350,50 @@ class Experiment(object):
         else:
             self._zeros = {}
 
+
+    def load_norm_data(self, norm_data, parser=None, resolution=None,
+                       normalization='visibility', **kwargs):
+        """
+        Add a normalized Hi-C experiment to the Chromosome object.
+        
+        :param None norm_data: whether a file or a list of lists corresponding to
+           the normalized Hi-C data
+        :param name: name of the experiment
+        :param False force: overwrite the experiments loaded under the same 
+           name
+        :param None parser: a parser function that returns a tuple of lists
+           representing the data matrix and the length of a row/column. 
+           With the file example.tsv:
+
+           ::
+           
+             chrT_001	chrT_002	chrT_003	chrT_004
+             chrT_001	12.5	164	8.8	0.5
+             chrT_002	8.6	61.2	1.5	1.1
+             chrT_003	15.9	21.6	3.7	0.5
+             chrT_004	0.0	1.1	1.6	2.8
+           
+        :param None resolution: resolution of the experiment in the file; it
+           will be adjusted to the resolution of the experiment. By default the
+           file is expected to contain a Hi-C experiment with the same resolution
+           as the :class:`pytadbit.Experiment` created, and no change is made
+        :param True filter_columns: filter the columns with unexpectedly high 
+           content of low values
+        :param False silent: does not warn for removed columns
+        
+        """
+        nums, size = read_matrix(norm_data, parser=parser, hic=False)
+        self.norm = nums
+        self._ori_size       = self.size       = size
+        self._ori_resolution = self.resolution = resolution or self._ori_resolution
+        self._zeros = {}
+        for i in xrange(self.size):
+            if all([str(j) == 'nan' for j in
+                    self.norm[0][i * self.size:i * self.size + self.size]]):
+                self._zeros[i] = None
+        self._normalization = normalization
+
+
     def load_tad_def(self, tad_def, weights=None):
         """
          Add the Topologically Associated Domains definition detection to Slice
@@ -444,7 +490,7 @@ class Experiment(object):
                 for j in xrange(i + 1, self.size):
                     if j in self._zeros:
                         continue
-                    if (not self.hic_data[0][i * self.size + j]
+                    if (not self.norm[0][i * self.size + j]
                         and remove_zeros):
                         zeros[(i, j)] = None
                         continue
@@ -648,21 +694,30 @@ class Experiment(object):
             warn('WARNING: normalizing according to visibility method')
             self.normalize_hic()
         from pytadbit import Chromosome
-        matrix = self.get_hic_matrix()
         if start < 1:
-            raise ValueError('start should be higher than 1\n')
+            raise ValueError('ERROR: start should be higher than 0\n')
         start -= 1 # things starts at 0 for python. we keep the end coordinate
                    # at its original value because it is inclusive
-        new_matrix = [[matrix[i][j] for i in xrange(start, end)]
-                      for j in xrange(start, end)]
-        tmp = Chromosome('tmp')
-        tmp.add_experiment('exp1', hic_data=[new_matrix],
-                           resolution=self.resolution, filter_columns=False)
-        exp = tmp.experiments[0]
-        # We want the weights and zeros calculated in the full chromosome
         siz = self.size
-        exp.norm = [[self.norm[0][i + siz * j] for i in xrange(start, end)
-                     for j in xrange(start, end)]]
+        try:
+            matrix = self.get_hic_matrix()
+            new_matrix = [[matrix[i][j] for i in xrange(start, end)]
+                          for j in xrange(start, end)]
+            tmp = Chromosome('tmp')
+            tmp.add_experiment('exp1', hic_data=[new_matrix],
+                               resolution=self.resolution, filter_columns=False)
+            exp = tmp.experiments[0]
+            # We want the weights and zeros calculated in the full chromosome
+            exp.norm = [[self.norm[0][i + siz * j] for i in xrange(start, end)
+                         for j in xrange(start, end)]]
+        except TypeError: # no Hi-C data provided
+            matrix = self.get_hic_matrix(normalized=True)
+            new_matrix = [[matrix[i][j] for i in xrange(start, end)]
+                           for j in xrange(start, end)]
+            tmp = Chromosome('tmp')
+            tmp.add_experiment('exp1', norm_data=[new_matrix],
+                               resolution=self.resolution, filter_columns=False)
+            exp = tmp.experiments[0]
         exp._zeros = dict([(z - start, None) for z in self._zeros
                            if start <= z <= end - 1])
         if len(exp._zeros) == (end - start):
@@ -678,8 +733,8 @@ class Experiment(object):
             for j in xrange(i + 1, exp.size):
                 if j in exp._zeros:
                     continue
-                if (not exp.hic_data[0][i * exp.size + j] 
-                    or not exp.hic_data[0][i * exp.size + j]):
+                if (not exp.norm[0][i * exp.size + j] 
+                    or not exp.norm[0][i * exp.size + j]):
                     continue
                 values[i][j] = exp.norm[0][i * exp.size + j]
                 values[j][i] = exp.norm[0][i * exp.size + j]
@@ -794,11 +849,13 @@ class Experiment(object):
             return mtrx
             
 
-    def print_hic_matrix(self, print_it=True, normalized=False):
+    def print_hic_matrix(self, print_it=True, normalized=False, zeros=False):
         """
         Return the Hi-C matrix as string
 
+        :param True print_it: Otherwise, returns the string
         :param False normalized: returns normalized data, instead of raw Hi-C
+        :param False zeros: take into account filtered columns
         :returns: list of lists representing the Hi-C data matrix of the
            current experiment
         """
@@ -807,9 +864,15 @@ class Experiment(object):
             hic = self.norm[0]
         else:
             hic = self.hic_data[0]
-        out = '\n'.join(['\t'.join([str(hic[i+siz * j]) \
-                                    for i in xrange(siz)]) \
-                         for j in xrange(siz)])
+        if zeros:
+            out = '\n'.join(['\t'.join(
+                ['nan' if (i in self._zeros or j in self._zeros) else
+                 str(hic[i+siz * j]) for i in xrange(siz)])
+                             for j in xrange(siz)])
+        else:
+            out = '\n'.join(['\t'.join([str(hic[i+siz * j]) 
+                                        for i in xrange(siz)])
+                             for j in xrange(siz)])
         if print_it:
             print out
         else:

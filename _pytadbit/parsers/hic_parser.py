@@ -4,9 +4,10 @@ November 7, 2013.
 """
 
 from warnings import warn
-from math import sqrt
+from math import sqrt, isnan
 from pytadbit.parsers.gzopen import gzopen
 
+HIC_DATA = True
 
 # Exception to handle failed autoread.
 class AutoReadFail(Exception):
@@ -18,7 +19,10 @@ def is_asymmetric(matrix):
     for i in range(maxn):
         maxi = matrix[i] # slightly more efficient
         for j in range(i+1, maxn):
-            if maxi[j] != matrix[j][i]: return True
+            if maxi[j] != matrix[j][i]:
+                if isnan(maxi[j]) and isnan(matrix[j][i]):
+                    continue
+                return True
     return False
 
 def symmetrize(matrix):
@@ -56,7 +60,7 @@ def autoreader(f):
     nrow = len(items)
     # Auto-detect the format, there are only 4 cases.
     if ncol == nrow:
-        if all([item.isdigit() for item in items[0]]):
+        if all([item.isdigit() or item == 'nan' for item in items[0]]):
             # Case 1: pure integer matrix.
             header = False
             trim = 0
@@ -73,15 +77,15 @@ def autoreader(f):
             # Case 4: matrix with header and row information.
             header = True
             trim = ncol - nrow + 1
-
     # Remove header line if needed.
     if header:
         del(items[0])
         nrow -= 1
 
     # Get the numeric values and remove extra columns
+    what = int if HIC_DATA else float
     try:
-        items = [[int(a) for a in line[trim:]] for line in items]
+        items = [[what(a) for a in line[trim:]] for line in items]
     except ValueError:
         try:
             # Dekker data 2009, uses integer but puts a comma... 
@@ -109,7 +113,7 @@ def autoreader(f):
     return tuple([a for line in items for a in line]), ncol
 
 
-def read_matrix(things, parser=None):
+def read_matrix(things, parser=None, hic=True):
     """
     Read and checks a matrix from a file (using
     :func:`pytadbit.parser.hic_parser.autoreader`) or a list.
@@ -131,10 +135,14 @@ def read_matrix(things, parser=None):
         105, 278])``
 
 
+    :param True hic: if False, TADbit assumes that files contains normalized
+       data
     :returns: the corresponding matrix concatenated into a huge list, also
         returns number or rows
 
     """
+    global HIC_DATA
+    HIC_DATA = hic
     parser = parser or autoreader
     if not isinstance(things, list):
         things = [things]

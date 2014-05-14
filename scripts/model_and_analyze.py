@@ -99,18 +99,27 @@ def load_hic_data(opts, xnames):
     # doi:10.1016/j.molcel.2012.08.031
     logging.info("\tReading input data...")
     for xnam, xpath in zip(xnames, opts.data):
-        crm.add_experiment(
-            xnam, exp_type='Hi-C', enzyme=opts.enzyme,
-            cell_type=opts.cell,
-            identifier=opts.identifier, # general descriptive fields
-            project=opts.project, # user descriptions
-            resolution=opts.res,
-            hic_data=xpath,
-            silent=True)
-        # Normalize experiment
-        logging.info("\tNormalizing HiC data of %s..." % xnam)
-        crm.experiments[xnam].normalize_hic()
-
+        if opts.norm:
+            crm.add_experiment(
+                xnam, exp_type='Hi-C', enzyme=opts.enzyme,
+                cell_type=opts.cell,
+                identifier=opts.identifier, # general descriptive fields
+                project=opts.project, # user descriptions
+                resolution=opts.res,
+                norm_data=xpath,
+                silent=True)
+        else:
+            crm.add_experiment(
+                xnam, exp_type='Hi-C', enzyme=opts.enzyme,
+                cell_type=opts.cell,
+                identifier=opts.identifier, # general descriptive fields
+                project=opts.project, # user descriptions
+                resolution=opts.res,
+                hic_data=xpath,
+                silent=True)
+            # Normalize experiment
+            logging.info("\tNormalizing HiC data of %s..." % xnam)
+            crm.experiments[xnam].normalize_hic()
     return crm
 
 
@@ -230,6 +239,8 @@ def main():
             exp = crm.experiments[0] + crm.experiments[1]
             for i in range(2, len(xnames)):
                 exp += crm.experiments[i]
+        else:
+            exp = crm.experiments[0]
 
     if not opts.analyze_only:
         logging.info("\tSaving the chromosome...")
@@ -502,7 +513,7 @@ def get_options():
     #########################################
     # GENERAL
     glopts.add_argument(
-        '--root_path', dest='root_path', metavar="PATH", action='append',
+        '--root_path', dest='root_path', metavar="PATH",
         default='', type=str,
         help=('path to search for data files (just pass file name' +
               'in "data")'))
@@ -516,6 +527,7 @@ def get_options():
                         help='''[file name] experiment name(s). Use same order
                         as data.''')
     glopts.add_argument('--norm', dest='norm', default=False,
+                        action='store_true',
                         help='[%(default)s] if true, skips the Hi-C data ' +
                         'normalization')
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
@@ -586,6 +598,7 @@ def get_options():
     #########################################
     # DESCRIPTION
     descro.add_argument('--species', dest='species', metavar="STRING",
+                        default='UNKNOWN',
                         help='species name, with no spaces, i.e.: homo_sapiens')
     descro.add_argument('--cell', dest='cell', metavar="STRING",
                         help='cell type name')
@@ -643,6 +656,7 @@ def get_options():
     parser.add_argument_group(analyz)
     opts = parser.parse_args()
 
+
     if opts.usage:
         print __doc__
         exit()
@@ -669,20 +683,20 @@ def get_options():
                 new_opts.setdefault(key, []).extend(value.split())
                 continue
             new_opts[key] = value
-        # bad key in configuration file
-        for bad_k in set(new_opts.keys()) - set(opts.__dict__.keys()):
-            warn('WARNING: parameter "%s" not recognized' % (bad_k))
-        for key in sorted(opts.__dict__.keys()):
-            if key in args:
-                log += '  * Command setting   %13s to %s\n' % (
-                    key, opts.__dict__[key])
-            elif key in new_opts:
-                opts.__dict__[key] = new_opts[key]
-                log += '  - Config. setting   %13s to %s\n' % (
-                    key, new_opts[key])
-            else:
-                log += '  o Default setting   %13s to %s\n' % (
-                    key, opts.__dict__[key])
+    # bad key in configuration file
+    for bad_k in set(new_opts.keys()) - set(opts.__dict__.keys()):
+        warn('WARNING: parameter "%s" not recognized' % (bad_k))
+    for key in sorted(opts.__dict__.keys()):
+        if key in args:
+            log += '  * Command setting   %13s to %s\n' % (
+                key, opts.__dict__[key])
+        elif key in new_opts:
+            opts.__dict__[key] = new_opts[key]
+            log += '  - Config. setting   %13s to %s\n' % (
+                key, new_opts[key])
+        else:
+            log += '  o Default setting   %13s to %s\n' % (
+                key, opts.__dict__[key])
 
     # rename analysis options
     actions = {0  : "Do nothing",
@@ -704,32 +718,32 @@ def get_options():
         opts.analyze[i] = actions[int(j)]
 
     if not opts.data:
-        logging.info('MISSING data')
+        warn('MISSING data')
         exit(parser.print_help())
     if not opts.outdir:
-        logging.info('MISSING outdir')
+        warn('MISSING outdir')
         exit(parser.print_help())
     if not opts.crm:
-        logging.info('MISSING crm NAME')
+        warn('MISSING crm NAME')
         exit(parser.print_help())
     if not opts.beg:
-        logging.info('MISSING beg COORDINATE')
+        warn('MISSING beg COORDINATE')
         exit(parser.print_help())
     if not opts.end:
-        logging.info('MISSING end COORDINATE')
+        warn('MISSING end COORDINATE')
         exit(parser.print_help())
     if not opts.res:
-        logging.info('MISSING resolution')
+        warn('MISSING resolution')
         exit(parser.print_help())
     if not opts.analyze_only:
         if not opts.maxdist:
-            logging.info('MISSING maxdist')
+            warn('MISSING maxdist')
             exit(parser.print_help())
         if not opts.lowfreq:
-            logging.info('MISSING lowfreq')
+            warn('MISSING lowfreq')
             exit(parser.print_help())
         if not opts.upfreq:
-            logging.info('MISSING upfreq')
+            warn('MISSING upfreq')
             exit(parser.print_help())
 
     # groups for TAD detection
@@ -755,7 +769,7 @@ def get_options():
     opts.res         = int(opts.res        )
 
     # do the divisinon to bins
-    opts.beg = int(float(opts.beg) / opts.res)
+    opts.beg = int(float(opts.beg) / opts.res) + 1
     opts.end = int(float(opts.end) / opts.res)
     if opts.end - opts.beg <= 2:
         raise Exception('"beg" and "end" parameter should be given in ' +
