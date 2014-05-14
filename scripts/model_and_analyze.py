@@ -515,6 +515,9 @@ def get_options():
                         default=[], type=str,
                         help='''[file name] experiment name(s). Use same order
                         as data.''')
+    glopts.add_argument('--norm', dest='norm', default=False,
+                        help='[%(default)s] if true, skips the Hi-C data ' +
+                        'normalization')
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
