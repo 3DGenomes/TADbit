@@ -23,13 +23,18 @@ def get_dependencies_version():
     
     :returns: string with description of versions used
     """
-    versions = {'TADbit': __version__}
+    versions = {'  TADbit': __version__ + '\n\n'}
     try:
         import IMP
-        versions['IMP'] = IMP.kernel.get_module_version()
-        IMP.kernel.random_number_generator.seed(1)
-        versions['IMP'] += ' (random seed indexed 1 = %s)' % (
-            IMP.kernel.random_number_generator())
+        try:
+            versions['IMP'] = IMP.kernel.get_module_version()
+            IMP.kernel.random_number_generator.seed(1)
+            seed = IMP.kernel.random_number_generator()
+        except AttributeError:
+            versions['IMP'] = IMP.get_module_version()
+            IMP.random_number_generator.seed(1)
+            seed = IMP.random_number_generator()
+        versions['IMP'] += ' (random seed indexed at 1 = %s)' % (seed)
     except ImportError:
         versions['IMP'] = 'Not found'
     try:
