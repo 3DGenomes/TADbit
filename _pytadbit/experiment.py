@@ -179,10 +179,14 @@ class Experiment(object):
             filter_col = True
         else:
             filter_col = False
+        if self.hic_data:
+            new_hicdata = tuple([i + j for i, j in zip(
+                self.hic_data[0], other.hic_data[0])])
+        else:
+            new_hicdata = None
         xpr = Experiment(name='%s+%s' % (self.name, other.name),
                          resolution=resolution,
-                         hic_data=tuple([i + j for i, j in zip(
-                             self.hic_data[0], other.hic_data[0])]),
+                         hic_data=new_hicdata,
                          filter_columns=filter_col)
         # check if both experiments are normalized with the same method
         # and sum both normalized data
