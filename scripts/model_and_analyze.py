@@ -98,17 +98,19 @@ def load_hic_data(opts, xnames):
     # Data obtained from Hou et al (2012) Molecular Cell.
     # doi:10.1016/j.molcel.2012.08.031
     logging.info("\tReading input data...")
-    for xnam, xpath in zip(xnames, opts.data):
-        if opts.norm:
+    if opts.norm:
+        for xnam, xpath, xnorm in zip(xnames, opts.data, opts.norm):
             crm.add_experiment(
                 xnam, exp_type='Hi-C', enzyme=opts.enzyme,
                 cell_type=opts.cell,
                 identifier=opts.identifier, # general descriptive fields
                 project=opts.project, # user descriptions
                 resolution=opts.res,
-                norm_data=xpath,
+                hic_data=xpath,
+                norm_data=xnorm,
                 silent=True)
-        else:
+    else:
+        for xnam, xpath in zip(xnames, opts.data):
             crm.add_experiment(
                 xnam, exp_type='Hi-C', enzyme=opts.enzyme,
                 cell_type=opts.cell,
@@ -526,10 +528,9 @@ def get_options():
                         default=[], type=str,
                         help='''[file name] experiment name(s). Use same order
                         as data.''')
-    glopts.add_argument('--norm', dest='norm', default=False,
-                        action='store_true',
-                        help='[%(default)s] if true, skips the Hi-C data ' +
-                        'normalization')
+    glopts.add_argument('--norm', dest='norm', metavar="PATH", nargs='+',
+                        type=str,
+                        help='path to file(s) with normalizedHi-C data matrix.')
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
