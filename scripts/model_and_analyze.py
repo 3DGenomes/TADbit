@@ -533,6 +533,7 @@ def get_options():
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
+                        default=None,
                         help='genomic coordinate from which to start modeling')
     glopts.add_argument('--end', dest='end', metavar="INT", type=float,
                         help='genomic coordinate where to end modeling')
@@ -726,7 +727,7 @@ def get_options():
     if not opts.crm:
         warn('MISSING crm NAME')
         exit(parser.print_help())
-    if not opts.beg:
+    if opts.beg == None:
         warn('MISSING beg COORDINATE')
         exit(parser.print_help())
     if not opts.end:
