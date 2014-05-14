@@ -41,7 +41,7 @@ mpl.use('Agg')
 
 import pytadbit
 from argparse import ArgumentParser, HelpFormatter
-from pytadbit import Chromosome
+from pytadbit import Chromosome, get_dependencies_version
 from warnings import warn
 import os, sys
 import logging
@@ -781,6 +781,14 @@ def get_options():
     name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
     if not os.path.exists(os.path.join(opts.outdir, name)):
         os.makedirs(os.path.join(opts.outdir, name))
+
+    # write version log
+    if not os.path.exists(os.path.join(opts.outdir,
+                                       'TADbit_and_dependencies_versions.log')):
+        vlog = os.path.join(opts.outdir, 'TADbit_and_dependencies_versions.log')
+        vlog = open(vlog, 'w')
+        vlog.write(get_dependencies_version())
+        vlog.close()
 
     # write log
     if opts.optimize_only:

@@ -17,12 +17,19 @@ except ImportError:
     warn('IMP not found, check PYTHONPATH\n')
 
 
-def get_dependencies_verison():
-    versions = {}
+def get_dependencies_version():
+    """
+    
+    
+    :returns: string with description of versions used
+    """
+    versions = {'TADbit': __version__}
     try:
         import IMP
         versions['IMP'] = IMP.kernel.get_module_version()
-        # versions['IMP'] += '(random seed indexed 1 = %s)' % ()
+        IMP.kernel.random_number_generator.seed(1)
+        versions['IMP'] += ' (random seed indexed 1 = %s)' % (
+            IMP.kernel.random_number_generator())
     except ImportError:
         versions['IMP'] = 'Not found'
     try:
@@ -53,6 +60,18 @@ def get_dependencies_verison():
         versions['Chimera'] = chi.strip()
     except:
         versions['Chimera'] = 'Not found'
+    try:
+        chi, err = Popen(['chimera', '--version'], stdout=PIPE,
+                         stderr=PIPE).communicate()
+        versions['Chimera'] = chi.strip()
+    except:
+        versions['Chimera'] = 'Not found'
+    try:
+        uname, err = Popen(['uname', '-rom'], stdout=PIPE,
+                           stderr=PIPE).communicate()
+        versions[' Machine'] = uname
+    except:
+        versions[' Machine'] = 'Not found'
 
     return '\n'.join(['%15s : %s' % (k, versions[k]) for k in
                       sorted(versions.keys())])
