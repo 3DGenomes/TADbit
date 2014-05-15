@@ -207,7 +207,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
         stderr.write(('\nWARNING: removing columns having less than %s ' +
                       'counts: (detected threshold)\n %s\n') % (
                          round(root, 3), ' '.join(
-                             ['%4s'%str(i+1) + (''if (j+1)%15 else '\n')
+                             ['%5s'%str(i+1) + (''if (j+1)%10 else '\n')
                               for j, i in enumerate(sorted(bads.keys()))])))
     return bads
 

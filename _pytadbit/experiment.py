@@ -11,7 +11,7 @@ from pytadbit.utils.tadmaths             import zscore
 from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser         import parse_tads
 from warnings                            import warn
-from math                                import sqrt
+from math                                import sqrt, isnan
 from numpy                               import log2, array
 from pytadbit.imp.CONFIG                 import CONFIG
 from copy                                import deepcopy as copy
@@ -194,6 +194,19 @@ class Experiment(object):
             xpr.norm = [tuple([i + j for i, j in zip(
                 self.norm[0], other.norm[0])])]
             xpr._normalization = self._normalization
+            # TODO: findout what to do when summing bad columns
+            # norm = []
+            # for i in xrange(self.size):
+            #     if i in self._zeros and i not in other._zeros:
+            #         norm.extend(other.norm[0][i:i*self.size])
+            #     elif i in other._zeros and i not in self._zeros:
+            #         norm.extend(self.norm[0][i:i*self.size])
+            #     elif i in other._zeros and i in self._zeros:
+            #         norm.extend([0.0]*self.size)
+            #     else:
+            #         norm.extend([i + j for i, j in zip(
+            #             self.norm[0][i:i*self.size],
+            #             other.norm[0][i:i*self.size])])
         elif self.norm or other.norm:
             raise Exception('ERROR: normalization differs between each ' +
                             'experiment\n')
@@ -392,11 +405,14 @@ class Experiment(object):
         self.norm = nums
         self._ori_size       = self.size       = size
         self._ori_resolution = self.resolution = resolution or self._ori_resolution
-        self._zeros = {}
-        for i in xrange(self.size):
-            if all([str(j) == 'nan' for j in
-                    self.norm[0][i * self.size:i * self.size + self.size]]):
-                self._zeros[i] = None
+        if not self._zeros: # in case we do not have original Hi-C data
+            self._zeros = {}
+            for i in xrange(self.size):
+                if all([isnan(j) for j in
+                        self.norm[0][i * self.size:i * self.size + self.size]]):
+                    self._zeros[i] = None
+        # remove NaNs, we do not need them as we have zeroes
+        self.norm[0] = [0.0 if isnan(i) else i for i in self.norm[0]]
         self._normalization = normalization
 
 

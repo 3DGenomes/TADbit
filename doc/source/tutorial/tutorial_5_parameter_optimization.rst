@@ -39,7 +39,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
+    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
       warn('WARNING: non integer values')
     
     WARNING: removing columns having less than 24.165 counts: (detected threshold)
@@ -114,7 +114,7 @@ The log indicates that experiment "k562+gm06690" had no file. Such experiment wa
       291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
       306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
       321  322  323  324  639
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:196: UserWarning: WARNING: experiments should be normalized before being summed
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:202: UserWarning: WARNING: experiments should be normalized before being summed
     
       'summed\n')
     
@@ -146,7 +146,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:648: UserWarning: WARNING: normalizing according to visibility method
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:700: UserWarning: WARNING: normalizing according to visibility method
       warn('WARNING: normalizing according to visibility method')
 
 
@@ -302,7 +302,7 @@ The exact same as above can be done from Experiment objects directly:
 
     optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
                                            lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
-                                           scale_range=[0.005], maxdist_range=(2000, 4000, 500), 
+                                           maxdist_range=(2000, 4000, 500), 
                                            verbose=False)
 
 Visualize the results
@@ -360,8 +360,8 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
 .. ansi-block::
 
-    [[0.005], [2000.0, 2500.0, 3000.0, 3500.0, 4000.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
-    (0.75936709524864121, 0.005, 2000.0, -0.2, 0.2)
+    [[0.01], [2000.0, 2500.0, 3000.0, 3500.0, 4000.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
+    (0.72369757668075985, 0.01, 2000.0, -0.2, 0.8)
 
 
 One can also visualize the parameter optimization according to ne of the three optimization parameters.
@@ -381,33 +381,8 @@ One can also visualize the parameter optimization according to ne of the three o
     optimizer.plot_2d(skip={"scale":0.01}, show_best=10)
 
 
-::
 
-
-    ---------------------------------------------------------------------------
-    ValueError                                Traceback (most recent call last)
-
-    <ipython-input-13-4c8c4f4e635a> in <module>()
-    ----> 1 optimizer.plot_2d(skip={"scale":0.01}, show_best=10)
-    
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/imp/impoptimizer.pyc in plot_2d(self, axes, show_best, skip, savefig)
-        308                                       [float(i) for i in self.lowfreq_range]),
-        309                                      results), axes=axes, show_best=show_best,
-    --> 310                                     skip=skip, savefig=savefig)
-        311 
-        312 
-
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/extraviews.pyc in plot_2d_optimization_result(result, axes, show_best, skip, savefig)
-        602             continue
-        603         if i == 0:
-    --> 604             wax_range = [wax.index(skip[k])]
-        605         elif i==1:
-        606             zax_range = [zax.index(skip[k])]
-
-
-    ValueError: 0.01 is not in list
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_27_0.png
 
 
 TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
@@ -417,17 +392,32 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     # Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.
     optimizer.plot_3d(axes=('scale', 'maxdist', 'upfreq', 'lowfreq'))
 
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_29_0.png
+
+
 .. code:: python
 
     optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1., -0.0, 0.1), upfreq_range=(0.3, 0.6, 0.05), 
-                              scale_range=[0.01], maxdist_range=[2250,2500,2750,3000], verbose=False)
+                              scale_range=[0.01], maxdist_range=[2000,2250,2500,2750,3000], verbose=False)
 
 .. code:: python
 
     optimizer.plot_2d()
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_31_0.png
+
+
 .. code:: python
 
     optimizer.plot_2d(show_best=100)
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_32_0.png
+
+
 .. code:: python
 
     optimizer.write_result('results.log')
@@ -440,9 +430,23 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 .. code:: python
 
     optimizer2.results.keys()[105]
+
+
+
+.. ansi-block::
+
+    ('0.01', '2250', '0.4', '-0.8')
+
+
+
 .. code:: python
 
     optimizer2.plot_2d(show_best=20)
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_37_0.png
+
+
 Retrieve best parameters
 ------------------------
 
@@ -455,6 +459,8 @@ Once done, best results can be returned as a dictionary to be used for modeling 
     
     print config
 
-.. code:: python
 
-    
+.. ansi-block::
+
+    {'maxdist': 2000.0, 'upfreq': 0.8, 'kforce': 5, 'reference': 'gm cell from Job Dekker 2009', 'lowfreq': -0.2, 'scale': 0.01}
+

@@ -122,6 +122,11 @@ def load_hic_data(opts, xnames):
             # Normalize experiment
             logging.info("\tNormalizing HiC data of %s..." % xnam)
             crm.experiments[xnam].normalize_hic()
+    print crm.experiments
+    print len(crm.experiments[0].norm[0])
+    print len(crm.experiments[1].norm[0])
+    print len(crm.experiments[0]._zeros)
+    print len(crm.experiments[1]._zeros)
     return crm
 
 
@@ -771,7 +776,7 @@ def get_options():
     opts.res         = int(opts.res        )
 
     # do the divisinon to bins
-    opts.beg = int(float(opts.beg) / opts.res) + 1
+    opts.beg = int(float(opts.beg) / opts.res)
     opts.end = int(float(opts.end) / opts.res)
     if opts.end - opts.beg <= 2:
         raise Exception('"beg" and "end" parameter should be given in ' +
