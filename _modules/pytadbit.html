@@ -1,0 +1,184 @@
+<!doctype html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytadbit &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pytadbit</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">pytadbit._version</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span> <span class="kn">import</span> <span class="n">tadbit</span><span class="p">,</span> <span class="n">batch_tadbit</span>
+<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span> <span class="kn">import</span> <span class="n">Chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">StructuralModels</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">load_structuralmodels</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">load_impmodel_from_cmm</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">load_impmodel_from_xyz</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">IMPmodel</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span> <span class="kn">import</span> <span class="n">IMPoptimizer</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_dependencies_version</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="get_dependencies_version"><a class="viewcode-back" href="../reference/reference_utils.html#pytadbit.get_dependencies_version">[docs]</a><span class="sd">    Check versions of TADbit and all dependencies, as well and retieves system</span>
+<span class="sd">    info. May be used to ensure reproductibility.</span>
+<span class="sd">    </span>
+<span class="sd">    :returns: string with description of versions installed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">versions</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;  TADbit&#39;</span><span class="p">:</span> <span class="n">__version__</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">IMP</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">versions</span><span class="p">[</span><span class="s">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">get_module_version</span><span class="p">()</span>
+            <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">random_number_generator</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">random_number_generator</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">versions</span><span class="p">[</span><span class="s">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">get_module_version</span><span class="p">()</span>
+            <span class="n">IMP</span><span class="o">.</span><span class="n">random_number_generator</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">random_number_generator</span><span class="p">()</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s">&#39; (random seed indexed at 1 = </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">scipy</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;scipy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">__version__</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;scipy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">numpy</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;numpy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">__version__</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;numpy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">matplotlib</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;matplotlib&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">__version__</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;matplotlib&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+    <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mcl</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;mcl&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mcl</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">chi</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;chimera&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;Chimera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;Chimera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">chi</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;chimera&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;Chimera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;Chimera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">uname</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;uname&#39;</span><span class="p">,</span> <span class="s">&#39;-rom&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+                           <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uname</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+
+    <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%15s</span><span class="s"> : </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">versions</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
+                      <span class="nb">sorted</span><span class="p">(</span><span class="n">versions</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on May 15, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>
