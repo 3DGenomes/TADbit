@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -51,11 +52,16 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.imp_modelling</span> <span class="kn">import</span> <span class="n">generate_3d_models</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>  <span class="kn">import</span> <span class="n">plot_2d_optimization_result</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>  <span class="kn">import</span> <span class="n">plot_3d_optimization_result</span>
-<span class="kn">from</span> <span class="nn">warnings</span>                   <span class="kn">import</span> <span class="n">warn</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.imp_modelling</span>    <span class="kn">import</span> <span class="n">generate_3d_models</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>     <span class="kn">import</span> <span class="n">plot_2d_optimization_result</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>     <span class="kn">import</span> <span class="n">plot_3d_optimization_result</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">StructuralModels</span>
+<span class="kn">from</span> <span class="nn">warnings</span>                      <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">cPickle</span>                       <span class="kn">import</span> <span class="n">dump</span><span class="p">,</span> <span class="n">load</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">stderr</span>
+<span class="kn">import</span> <span class="nn">numpy</span>           <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="kn">as</span> <span class="nn">mu</span>
+
 
 <div class="viewcode-block" id="IMPoptimizer"><a class="viewcode-back" href="../../../reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer">[docs]</a><span class="k">class</span> <span class="nc">IMPoptimizer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -73,28 +79,36 @@
 <span class="sd">    :param 1 close_bins: number of particles away (i.e. the bin number </span>
 <span class="sd">       difference) a particle pair must be in order to be considered as </span>
 <span class="sd">       neighbors (e.g. 1 means consecutive particles)</span>
+<span class="sd">    :param None cutoff: distance cutoff (nm) to define whether two particles</span>
+<span class="sd">       are in contact or not, default is 2 times resolution, times scale.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> 
                  <span class="n">n_models</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">resolution</span>
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zscores</span><span class="p">,</span>
-         <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">_sub_experiment_zscore</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+         <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>   <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">_sub_experiment_zscore</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span>      <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_models</span>   <span class="o">=</span> <span class="n">n_models</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_keep</span>     <span class="o">=</span> <span class="n">n_keep</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close_bins</span> <span class="o">=</span> <span class="n">close_bins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span>     <span class="o">=</span> <span class="n">cutoff</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span>   <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span>  <span class="o">=</span> <span class="p">[]</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
 
 
-<div class="viewcode-block" id="IMPoptimizer.run_grid_search"><a class="viewcode-back" href="../../../reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search">[docs]</a>    <span class="k">def</span> <span class="nf">run_grid_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
-                    <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.005</span><span class="p">],</span>
-                    <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPoptimizer.run_grid_search"><a class="viewcode-back" href="../../../reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search">[docs]</a>    <span class="k">def</span> <span class="nf">run_grid_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                        <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+                        <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+                        <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+                        <span class="n">scale_range</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                        <span class="n">corr</span><span class="o">=</span><span class="s">&#39;spearman&#39;</span><span class="p">,</span> <span class="n">off_diag</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function calculates the correlation between the models generated </span>
 <span class="sd">        by IMP and the input data for the four main IMP parameters (scale, </span>
@@ -111,38 +125,46 @@
 <span class="sd">           used to search for the optimal maximum experimental distance. The </span>
 <span class="sd">           last value of the input tuple is the incremental step for maxdist </span>
 <span class="sd">           values</span>
-<span class="sd">        :param [0.005] scale_range: upper and lower bounds used to search for </span>
+<span class="sd">        :param 0.01 scale_range: upper and lower bounds used to search for</span>
 <span class="sd">           the optimal scale parameter (nm per nucleotide). The last value of</span>
 <span class="sd">           the input tuple is the incremental step for scale parameter values</span>
 <span class="sd">        :param True verbose: print the results to the standard output</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">maxdist_range</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maxdist_range</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="n">maxdist_step</span> <span class="o">=</span> <span class="n">maxdist_range</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">maxdist_arange</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxdist_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                         <span class="n">maxdist_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">maxdist_step</span><span class="p">,</span>
                                         <span class="n">maxdist_step</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maxdist_range</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                <span class="n">maxdist_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">maxdist_range</span><span class="p">]</span>
             <span class="n">maxdist_arange</span> <span class="o">=</span> <span class="n">maxdist_range</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">lowfreq_range</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lowfreq_range</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="n">lowfreq_step</span> <span class="o">=</span> <span class="n">lowfreq_range</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">lowfreq_arange</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lowfreq_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                             <span class="n">lowfreq_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">lowfreq_step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
                                             <span class="n">lowfreq_step</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lowfreq_range</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                <span class="n">lowfreq_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">lowfreq_range</span><span class="p">]</span>
             <span class="n">lowfreq_arange</span> <span class="o">=</span> <span class="n">lowfreq_range</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">upfreq_range</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">upfreq_range</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="n">upfreq_step</span> <span class="o">=</span> <span class="n">upfreq_range</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">upfreq_arange</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">upfreq_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                            <span class="n">upfreq_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">upfreq_step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
                                            <span class="n">upfreq_step</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">upfreq_range</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                <span class="n">upfreq_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">upfreq_range</span><span class="p">]</span>
             <span class="n">upfreq_arange</span> <span class="o">=</span> <span class="n">upfreq_range</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">scale_range</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale_range</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="n">scale_step</span> <span class="o">=</span> <span class="n">scale_range</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">scale_arange</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">scale_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                           <span class="n">scale_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">scale_step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
                                           <span class="n">scale_step</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale_range</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                <span class="n">scale_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">scale_range</span><span class="p">]</span>
             <span class="n">scale_arange</span> <span class="o">=</span> <span class="n">scale_range</span>
 
         <span class="c"># round everything</span>
@@ -172,6 +194,7 @@
                                       <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">)</span>
         
         <span class="c"># grid search</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">scale_arange</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">maxdist</span> <span class="ow">in</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">maxdist_arange</span><span class="p">]:</span>
@@ -179,6 +202,10 @@
                     <span class="k">for</span> <span class="n">lowfreq</span> <span class="ow">in</span> <span class="p">[</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lowfreq_arange</span><span class="p">]:</span>
                         <span class="k">if</span> <span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
                             <span class="k">continue</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">:</span>
+                            <span class="n">cutoff</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span>
                         <span class="n">tmp</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;kforce&#39;</span>   <span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
                                <span class="s">&#39;lowrdist&#39;</span> <span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
                                <span class="s">&#39;maxdist&#39;</span>  <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">maxdist</span><span class="p">),</span>
@@ -186,35 +213,96 @@
                                <span class="s">&#39;lowfreq&#39;</span>  <span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">lowfreq</span><span class="p">),</span>
                                <span class="s">&#39;scale&#39;</span>    <span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">scale</span><span class="p">)}</span>
                         <span class="n">tdm</span> <span class="o">=</span> <span class="n">generate_3d_models</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zscores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
-                                                 <span class="bp">self</span><span class="o">.</span><span class="n">n_models</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_models</span><span class="p">,</span>
                                                  <span class="bp">self</span><span class="o">.</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">tmp</span><span class="p">,</span>
                                                  <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span>
                                                  <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
                                                  <span class="n">close_bins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">close_bins</span><span class="p">)</span>
                         <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
                         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                            <span class="k">print</span> <span class="s">&#39;</span><span class="si">%5s</span><span class="s">  &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">count</span><span class="p">),</span>
-                            <span class="k">print</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span>
+                            <span class="n">verb</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%5s</span><span class="s">  </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="p">(</span>
+                                <span class="n">count</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="n">result</span> <span class="o">=</span> <span class="n">tdm</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span>
-                                <span class="n">cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span>
+                                <span class="n">off_diag</span><span class="o">=</span><span class="n">off_diag</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                                <span class="k">print</span> <span class="n">result</span>
+                                <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                                    <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">verb</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="k">print</span> <span class="n">verb</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
                         <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
                             <span class="k">print</span> <span class="s">&#39;ERROR </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">e</span>
                             <span class="k">continue</span>
                         <span class="c"># store</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[(</span><span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">)]</span> <span class="o">=</span> <span class="n">result</span>
-
+                        <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
+                            <span class="n">models</span><span class="p">[(</span><span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">)</span>
+                                   <span class="p">]</span> <span class="o">=</span> <span class="n">tdm</span><span class="o">.</span><span class="n">_reduce_models</span><span class="p">(</span><span class="n">minimal</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">dump</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>  <span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span> <span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="IMPoptimizer.get_best_parameters_dict"><a class="viewcode-back" href="../../../reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_parameters_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="IMPoptimizer.load_grid_search"><a class="viewcode-back" href="../../../reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search">[docs]</a>    <span class="k">def</span> <span class="nf">load_grid_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="s">&#39;spearman&#39;</span><span class="p">,</span> <span class="n">off_diag</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                         <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads one file or a list of files containing pre-calculated Structural</span>
+<span class="sd">        Models (keep_models parameter used). And correlate each set of models</span>
+<span class="sd">        with real data. Usefull to run different correlation on the same data</span>
+<span class="sd">        avoiding to re-calculate each time the models.</span>
+
+<span class="sd">        :param filenames: either a path to a file or a list of paths.</span>
+<span class="sd">        :param spearman corr: correlation coefficient to use</span>
+<span class="sd">        &#39;param 1 off_diag:</span>
+<span class="sd">        :param True verbose: print the results to the standard output</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">filenames</span><span class="p">]</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="n">inf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">models</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">load</span><span class="p">(</span><span class="n">inf</span><span class="p">))</span>
+            <span class="n">inf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">n_cpus</span><span class="p">)</span>
+        <span class="n">jobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+            <span class="n">svd</span> <span class="o">=</span> <span class="n">models</span><span class="p">[(</span><span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">)]</span>
+            <span class="n">jobs</span><span class="p">[(</span><span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">)]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span>
+                <span class="n">_mu_correlate</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">svd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">corr</span><span class="p">,</span> <span class="n">off_diag</span><span class="p">,</span>
+                                     <span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span>
+                                     <span class="n">verbose</span><span class="p">,</span> <span class="n">count</span><span class="p">))</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[(</span><span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">)]</span> <span class="o">=</span> \
+                                 <span class="n">jobs</span><span class="p">[(</span><span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">)]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">scale</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">maxdist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">maxdist</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lowfreq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lowfreq</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">upfreq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">upfreq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>  <span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span> <span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="IMPoptimizer.get_best_parameters_dict"><a class="viewcode-back" href="../../../reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_parameters_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">with_corr</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param None reference: a description of the dataset optimized</span>
+<span class="sd">        :param False with_corr: if True, returns also the correlation value</span>
 
 <span class="sd">        :returns: a dict that can be used for modelling, see config parameter in</span>
 <span class="sd">           :func:`pytadbit.experiment.Experiment.model_region`</span>
@@ -227,15 +315,23 @@
         <span class="k">for</span> <span class="p">(</span><span class="n">sca</span><span class="p">,</span> <span class="n">mxd</span><span class="p">,</span> <span class="n">ufq</span><span class="p">,</span> <span class="n">lfq</span><span class="p">),</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="n">best</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="n">best</span> <span class="o">=</span> <span class="p">((</span><span class="n">sca</span><span class="p">,</span> <span class="n">mxd</span><span class="p">,</span> <span class="n">ufq</span><span class="p">,</span> <span class="n">lfq</span><span class="p">),</span> <span class="n">val</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(((</span><span class="s">&#39;scale&#39;</span>  <span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span>
-                     <span class="p">(</span><span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])),</span>
-                     <span class="p">(</span><span class="s">&#39;upfreq&#39;</span> <span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])),</span>
-                     <span class="p">(</span><span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])),</span>
-                     <span class="p">(</span><span class="s">&#39;reference&#39;</span><span class="p">,</span> <span class="n">reference</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;kforce&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)))</span>
-
+        <span class="k">if</span> <span class="n">with_corr</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">dict</span><span class="p">(((</span><span class="s">&#39;scale&#39;</span>  <span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span>
+                          <span class="p">(</span><span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])),</span>
+                          <span class="p">(</span><span class="s">&#39;upfreq&#39;</span> <span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])),</span>
+                          <span class="p">(</span><span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])),</span>
+                          <span class="p">(</span><span class="s">&#39;reference&#39;</span><span class="p">,</span> <span class="n">reference</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;kforce&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">))),</span>
+                    <span class="n">best</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">(((</span><span class="s">&#39;scale&#39;</span>  <span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span>
+                         <span class="p">(</span><span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])),</span>
+                         <span class="p">(</span><span class="s">&#39;upfreq&#39;</span> <span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])),</span>
+                         <span class="p">(</span><span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])),</span>
+                         <span class="p">(</span><span class="s">&#39;reference&#39;</span><span class="p">,</span> <span class="n">reference</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;kforce&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)))</span>
+    
 </div>
 <div class="viewcode-block" id="IMPoptimizer.plot_2d"><a class="viewcode-back" href="../../../reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d">[docs]</a>    <span class="k">def</span> <span class="nf">plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">),</span>
-                <span class="n">show_best</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                <span class="n">show_best</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A grid of heatmaps representing the result of the optimization.</span>
 
@@ -246,6 +342,9 @@
 <span class="sd">           the plot</span>
 <span class="sd">        :param None skip: if passed (as a dictionary), fix a given axe,</span>
 <span class="sd">           e.g.: {&#39;scale&#39;: 0.001, &#39;maxdist&#39;: 500}</span>
+<span class="sd">        :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">           if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">           of the file name will determine the desired format).</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result_to_array</span><span class="p">()</span>
@@ -254,8 +353,8 @@
                                       <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">],</span>
                                       <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">],</span>
                                       <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span><span class="p">]),</span>
-                                     <span class="n">results</span><span class="p">),</span> <span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span>
-                                    <span class="n">show_best</span><span class="o">=</span><span class="n">show_best</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">)</span>
+                                     <span class="n">results</span><span class="p">),</span> <span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">show_best</span><span class="o">=</span><span class="n">show_best</span><span class="p">,</span>
+                                    <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="IMPoptimizer.plot_3d"><a class="viewcode-back" href="../../../reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d">[docs]</a>    <span class="k">def</span> <span class="nf">plot_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">)):</span>
@@ -368,6 +467,31 @@
 <span class="k">def</span> <span class="nf">my_round</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
     <span class="n">num</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="k">if</span> <span class="n">num</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="k">else</span> <span class="n">num</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_mu_correlate</span><span class="p">(</span><span class="n">svd</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">corr</span><span class="p">,</span> <span class="n">off_diag</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span>
+                  <span class="n">verbose</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+    <span class="n">tdm</span> <span class="o">=</span> <span class="n">StructuralModels</span><span class="p">(</span>
+        <span class="n">nloci</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;nloci&#39;</span><span class="p">],</span> <span class="n">models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">],</span>
+        <span class="n">bad_models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;bad_models&#39;</span><span class="p">],</span>
+        <span class="n">resolution</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;resolution&#39;</span><span class="p">],</span>
+        <span class="n">original_data</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;original_data&#39;</span><span class="p">],</span>
+        <span class="n">clusters</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;clusters&#39;</span><span class="p">],</span> <span class="n">config</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">],</span>
+        <span class="n">zscores</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zscore&#39;</span><span class="p">])</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">tdm</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span>
+            <span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span>
+            <span class="n">off_diag</span><span class="o">=</span><span class="n">off_diag</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">verb</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%5s</span><span class="s">  </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">count</span><span class="p">,</span> <span class="n">upfreq</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span> <span class="n">maxdist</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">verb</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span> <span class="n">verb</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;ERROR </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">e</span>
+    <span class="k">return</span> <span class="n">result</span>
 </pre></div>
 
           </div>
@@ -410,12 +534,13 @@
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

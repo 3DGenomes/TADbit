@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,9 +58,19 @@
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
 
 <span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">MultipleLocator</span>
     <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+    <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">warn</span><span class="p">(</span><span class="s">&#39;matplotlib not found</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">):</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">savefig</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">form</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;png&#39;</span><span class="p">,</span> <span class="s">&#39;pdf&#39;</span><span class="p">,</span> <span class="s">&#39;ps&#39;</span><span class="p">,</span> <span class="s">&#39;eps&#39;</span><span class="p">,</span> <span class="s">&#39;svg&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;File extension must be one of </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span>
+            <span class="p">[</span><span class="s">&#39;png&#39;</span><span class="p">,</span> <span class="s">&#39;pdf&#39;</span><span class="p">,</span> <span class="s">&#39;ps&#39;</span><span class="p">,</span> <span class="s">&#39;eps&#39;</span><span class="p">,</span> <span class="s">&#39;svg&#39;</span><span class="p">]))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">nicer</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
@@ -104,7 +115,7 @@
              <span class="p">}</span>
 
 
-<div class="viewcode-block" id="colorize"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.colorize">[docs]</a><span class="k">def</span> <span class="nf">colorize</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s">&#39;ansi&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">colorize</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s">&#39;ansi&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Colorize with ANSII colors a string for printing in shell. this acording to</span>
 <span class="sd">    a given number between 0 and 10</span>
@@ -118,32 +129,91 @@
     <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">color</span><span class="p">[</span><span class="n">num</span><span class="p">],</span> <span class="n">string</span><span class="p">,</span>
                        <span class="s">&#39;</span><span class="se">\033</span><span class="s">[m&#39;</span> <span class="k">if</span> <span class="n">ftype</span><span class="o">==</span><span class="s">&#39;ansi&#39;</span> <span class="k">else</span> <span class="s">&#39;&lt;/span&gt;&#39;</span><span class="p">)</span>
 
-</div>
-<div class="viewcode-block" id="color_residues"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.color_residues">[docs]</a><span class="k">def</span> <span class="nf">color_residues</span><span class="p">(</span><span class="n">n_part</span><span class="p">):</span>
+
+<div class="viewcode-block" id="color_residues"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.color_residues">[docs]</a><span class="k">def</span> <span class="nf">color_residues</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param n_part: number of particles</span>
+<span class="sd">    Function to color residues from blue to red.</span>
 <span class="sd">    </span>
-<span class="sd">    :returns: a list of rgb tuples (red, green, blue)</span>
+<span class="sd">    :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`</span>
+<span class="sd">    </span>
+<span class="sd">    :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_part</span><span class="p">):</span>
-        <span class="n">red</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">n_part</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="n">red</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">red</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">red</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="tad_coloring"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.tad_coloring">[docs]</a><span class="k">def</span> <span class="nf">tad_coloring</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mstart</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mend</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Colors TADs from blue to red (first to last TAD). TAD borders are displayed</span>
+<span class="sd">    in scale of grey, from light to dark grey (again first to last border)</span>
+<span class="sd">    </span>
+<span class="sd">    :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`</span>
+<span class="sd">    :param tads: a dictionary of TADs, Experiments.tads can be directly passed</span>
+<span class="sd">    </span>
+<span class="sd">    :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ltads</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tads</span> <span class="k">if</span> <span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="n">mstart</span> <span class="ow">and</span> <span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span><span class="o">&lt;</span><span class="n">mend</span><span class="p">]</span>
+    <span class="n">ntads</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ltads</span><span class="p">)</span>
+    <span class="n">grey</span> <span class="o">=</span> <span class="mf">0.95</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">grey_step</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.95</span> <span class="o">-</span> <span class="mf">0.4</span><span class="p">)</span> <span class="o">/</span> <span class="n">ntads</span>
+    <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: TAD borders are not predicted yet.&#39;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tads</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">mstart</span> <span class="ow">or</span> <span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">mend</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">red</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">ltads</span><span class="p">))</span> <span class="o">/</span> <span class="n">ntads</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">])):</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">red</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">red</span><span class="p">))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">grey</span><span class="p">,</span> <span class="n">grey</span><span class="p">,</span> <span class="n">grey</span><span class="p">))</span>
+        <span class="n">grey</span> <span class="o">-=</span> <span class="n">grey_step</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="tad_border_coloring"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring">[docs]</a><span class="k">def</span> <span class="nf">tad_border_coloring</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mstart</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mend</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Colors TAD borders from blue to red (bad to good score). TAD are displayed</span>
+<span class="sd">    in scale of grey, from light to dark grey (first to last particle in the</span>
+<span class="sd">    TAD)</span>
+<span class="sd">    </span>
+<span class="sd">    :param model: a given :class:`pytadbit.imp.impmodel.IMPmodel`</span>
+<span class="sd">    :param tads: a dictionary of TADs, Experiments.tads can be directly passed</span>
+<span class="sd">    </span>
+<span class="sd">    :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tads</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: TAD borders are not predicted yet.&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tads</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">mstart</span> <span class="ow">or</span> <span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">mend</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">grey</span> <span class="o">=</span> <span class="mf">0.95</span>
+        <span class="n">grey_step</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.95</span> <span class="o">-</span> <span class="mf">0.4</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">red</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">10</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">])):</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">grey</span><span class="p">,</span> <span class="n">grey</span><span class="p">,</span> <span class="n">grey</span><span class="p">))</span>
+            <span class="n">grey</span> <span class="o">-=</span> <span class="n">grey_step</span>
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">red</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">red</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">result</span>
 
 </div>
 <span class="k">def</span> <span class="nf">augmented_dendrogram</span><span class="p">(</span><span class="n">clust_count</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">objfun</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                          <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">scipy.cluster.hierarchy</span> <span class="kn">import</span> <span class="n">dendrogram</span>
-    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;figsize&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">)))</span>
     <span class="k">if</span> <span class="n">axe</span><span class="p">:</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">axe</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
-        <span class="n">ddata</span> <span class="o">=</span> <span class="n">dendrogram</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ddata</span> <span class="o">=</span> <span class="n">dendrogram</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">ddata</span> <span class="o">=</span> <span class="n">dendrogram</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ddata</span> <span class="o">=</span> <span class="n">dendrogram</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s">&#39;lightgrey&#39;</span><span class="p">)</span>
@@ -159,6 +229,7 @@
     
     <span class="c"># set dict to store data of each cluster (count and energy), depending on</span>
     <span class="c"># x position in graph.</span>
+    <span class="n">debug</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="n">leaves</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">ddata</span><span class="p">[</span><span class="s">&#39;icoord&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">ddata</span><span class="p">[</span><span class="s">&#39;icoord&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ddata</span><span class="p">[</span><span class="s">&#39;leaves&#39;</span><span class="p">]):</span>
@@ -166,30 +237,32 @@
     <span class="n">minnrj</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">objfun</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="n">maxnrj</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">objfun</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="n">difnrj</span> <span class="o">=</span> <span class="n">maxnrj</span> <span class="o">-</span> <span class="n">minnrj</span>
-    <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">clust_count</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">clust_count</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;no_plot&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ddata</span><span class="p">[</span><span class="s">&#39;icoord&#39;</span><span class="p">],</span> <span class="n">ddata</span><span class="p">[</span><span class="s">&#39;dcoord&#39;</span><span class="p">],</span>
                            <span class="n">ddata</span><span class="p">[</span><span class="s">&#39;color_list&#39;</span><span class="p">]):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="c"># plt.plot(x, y, &#39;ro&#39;)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;grey&#39;</span><span class="p">)</span>
-            <span class="c"># for eaxch branch</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="n">c</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="s">&#39;grey&#39;</span><span class="p">))</span>
+            <span class="c"># for each branch</span>
             <span class="k">for</span> <span class="n">i1</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="mi">3</span><span class="p">]],</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">]]):</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">lw</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">clust_count</span><span class="p">[</span><span class="n">leaves</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">total</span><span class="o">*</span><span class="mi">10</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">leaves</span><span class="p">)</span>
+                    <span class="n">lw</span> <span class="o">=</span> <span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">get_figwidth</span><span class="p">()</span> <span class="o">*</span>
+                          <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;width_factor&#39;</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">*</span>
+                          <span class="nb">float</span><span class="p">(</span><span class="n">clust_count</span><span class="p">[</span><span class="n">leaves</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                     <span class="n">lw</span> <span class="o">=</span> <span class="mf">1.0</span>
                 <span class="n">nrj</span> <span class="o">=</span> <span class="n">objfun</span><span class="p">[</span><span class="n">leaves</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="n">leaves</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">objfun</span> <span class="k">else</span> <span class="n">maxnrj</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">d1</span><span class="o">-</span><span class="p">(</span><span class="n">difnrj</span><span class="o">-</span><span class="p">(</span><span class="n">nrj</span><span class="o">-</span><span class="n">minnrj</span><span class="p">)),</span> <span class="n">d2</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span>
-                          <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="n">c</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="s">&#39;grey&#39;</span><span class="p">))</span>
-                <span class="k">if</span> <span class="n">leaves</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">objfun</span><span class="p">:</span>
+                <span class="n">d1</span> <span class="o">=</span> <span class="n">d1</span> <span class="o">-</span> <span class="p">(</span><span class="n">difnrj</span> <span class="o">-</span> <span class="p">(</span><span class="n">nrj</span> <span class="o">-</span> <span class="n">minnrj</span><span class="p">))</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="n">c</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="s">&#39;grey&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">leaves</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">objfun</span> <span class="ow">or</span> <span class="n">debug</span><span class="p">:</span>
                     <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%.3g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">leaves</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                                <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">d1</span><span class="o">-</span><span class="p">(</span><span class="n">difnrj</span><span class="o">-</span><span class="p">(</span><span class="n">nrj</span><span class="o">-</span><span class="n">minnrj</span><span class="p">))),</span>
+                                <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">d1</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;fontsize&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
                                 <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">8</span><span class="p">),</span>
                                 <span class="n">textcoords</span><span class="o">=</span><span class="s">&#39;offset points&#39;</span><span class="p">,</span>
                                 <span class="n">va</span><span class="o">=</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">)</span>
-            <span class="n">leaves</span><span class="p">[(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">dads</span><span class="p">[</span><span class="n">leaves</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">leaves</span><span class="p">[(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">dads</span><span class="p">[</span><span class="n">leaves</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">cutter</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">difnrj</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">:</span> <span class="c"># case that the two are exactly the same</span>
@@ -200,19 +273,23 @@
     <span class="n">form</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([(</span><span class="n">s</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="o">%</span><span class="mi">3</span> <span class="ow">and</span> <span class="n">i</span> <span class="k">else</span> <span class="n">s</span>
                               <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])][::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">([</span><span class="n">bot</span><span class="o">+</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">bot</span><span class="o">-</span><span class="n">bot</span><span class="o">/</span><span class="n">cut</span><span class="p">,</span> <span class="o">-</span><span class="n">bot</span><span class="o">/</span><span class="n">cut</span><span class="p">)],</span>
-               <span class="c"># [&quot;{:,}&quot;.format (int(minnrj)/cutter * cutter  + i)</span>
+               <span class="c"># &quot;{:,}&quot;.format (int(minnrj)/cutter * cutter  + i)</span>
                <span class="p">[</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">form</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">minnrj</span><span class="p">)</span><span class="o">/</span><span class="n">cutter</span> <span class="o">*</span> <span class="n">cutter</span>  <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">bot</span><span class="o">-</span><span class="n">bot</span><span class="o">/</span><span class="n">cut</span><span class="p">,</span> <span class="o">-</span><span class="n">bot</span><span class="o">/</span><span class="n">cut</span><span class="p">)],</span> <span class="n">size</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Minimum IMP objective function&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">bot</span><span class="o">-</span><span class="n">bot</span><span class="o">/</span><span class="n">cut</span><span class="p">,</span> <span class="o">-</span><span class="n">bot</span><span class="o">/</span><span class="n">cut</span><span class="p">)],</span>
+               <span class="n">size</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;fontsize&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Minimum IMP objective function&#39;</span><span class="p">,</span>
+                  <span class="n">size</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;fontsize&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&quot;Dendogram of clusters of 3D models&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&quot;Dendogram of clusters of 3D models&quot;</span><span class="p">,</span>
+                       <span class="n">size</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;fontsize&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">&quot;Branch length proportional to model&#39;s objective function &quot;</span> <span class="o">+</span>
                  <span class="s">&quot;final value</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span>
-                 <span class="s">&quot;Branch width to the number of models in the cluster&quot;</span><span class="p">,</span>
-                 <span class="n">size</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">)</span>
+                 <span class="s">&quot;Branch width to the number of models in the cluster &quot;</span> <span class="o">+</span>
+                 <span class="s">&quot;(relative to </span><span class="si">%s</span><span class="s"> models)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">total</span><span class="p">),</span>
+                 <span class="n">size</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;fontsize&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">ddata</span>
@@ -245,17 +322,17 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;fliers&#39;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;darkred&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">)</span>
     <span class="n">bpAx</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> 
               <span class="n">color</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">markeredgecolor</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-    <span class="n">bpAx</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%.4f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="n">bpAx</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%.1f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">0</span><span class="p">]),</span>
                   <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_ydata</span><span class="p">()[</span><span class="mi">1</span><span class="p">]),</span>
                   <span class="n">va</span><span class="o">=</span><span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
                   <span class="n">textcoords</span><span class="o">=</span><span class="s">&#39;offset points&#39;</span><span class="p">,</span>
                   <span class="n">size</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">)</span>
-    <span class="n">bpAx</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%.4f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">2</span><span class="p">]),</span>
+    <span class="n">bpAx</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%.1f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">2</span><span class="p">]),</span>
                   <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span> <span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_ydata</span><span class="p">()[</span><span class="mi">1</span><span class="p">]),</span>
                   <span class="n">va</span><span class="o">=</span><span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
                   <span class="n">textcoords</span><span class="o">=</span><span class="s">&#39;offset points&#39;</span><span class="p">,</span>
                   <span class="n">size</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">)</span>
-    <span class="n">bpAx</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%.4f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;medians&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="n">bpAx</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%.1f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;medians&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">0</span><span class="p">]),</span>
                   <span class="p">(</span><span class="n">bp</span><span class="p">[</span><span class="s">&#39;medians&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bp</span><span class="p">[</span><span class="s">&#39;boxes&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_ydata</span><span class="p">()[</span><span class="mi">0</span><span class="p">]),</span>
                   <span class="n">va</span><span class="o">=</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span>
                   <span class="n">textcoords</span><span class="o">=</span><span class="s">&#39;offset points&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;darkred&#39;</span><span class="p">,</span>
@@ -286,32 +363,135 @@
     <span class="n">bpAx</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">&#39;Histogram and boxplot of distances between particles &#39;</span> <span class="o">+</span>
                    <span class="s">&#39;</span><span class="si">%s</span><span class="s"> and </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 
-
-<div class="viewcode-block" id="chimera_view"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.chimera_view">[docs]</a><span class="k">def</span> <span class="nf">chimera_view</span><span class="p">(</span><span class="n">cmm_files</span><span class="p">,</span> <span class="n">chimera_bin</span><span class="o">=</span><span class="s">&#39;chimera&#39;</span><span class="p">,</span> <span class="c">#shape=&#39;tube&#39;,</span>
-                 <span class="n">chimera_cmd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">centroid</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">gyradius</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_3d_model"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.plot_3d_model">[docs]</a><span class="k">def</span> <span class="nf">plot_3d_model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">show_axe</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=-</span><span class="mi">90</span><span class="p">,</span> <span class="n">elevation</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;index&#39;</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model</span>
+<span class="sd">    using matplotlib</span>
+
+<span class="sd">    :param model: a :class:`pytadbit.imp.impmodel.IMPmodel`</span>
+<span class="sd">    :param False label: show labels</span>
+<span class="sd">    :param None axe: a matplotlib.axes.Axes object to define the plot</span>
+<span class="sd">       appearance</span>
+<span class="sd">    :param False thin: draw a thin black line instead of representing particles</span>
+<span class="sd">       and edges</span>
+<span class="sd">    :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">       if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">       of the file name will determine the desired format).</span>
+<span class="sd">    :param -90 azimuth: angle to rotate camera along the y axis</span>
+<span class="sd">    :param 0 elevation: angle to rotate camera along the x axis</span>
+<span class="sd">    :param &#39;index&#39; color: can be:</span>
+
+<span class="sd">         * a string as:</span>
+<span class="sd">             * &#39;**index**&#39; to color particles according to their position in the</span>
+<span class="sd">               model (:func:`pytadbit.utils.extraviews.color_residues`)</span>
+<span class="sd">             * &#39;**tad**&#39; to color particles according to the TAD they belong to</span>
+<span class="sd">               (:func:`pytadbit.utils.extraviews.tad_coloring`)</span>
+<span class="sd">             * &#39;**border**&#39; to color particles marking borders. Color according to</span>
+<span class="sd">               their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)</span>
+<span class="sd">               coloring function like.</span>
+<span class="sd">         * a function, that takes as argument a model and any other parameter</span>
+<span class="sd">           passed through the kwargs.</span>
+<span class="sd">         * a list of (r, g, b) tuples (as long as the number of particles).</span>
+<span class="sd">           Each r, g, b between 0 and 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">show</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">color</span> <span class="o">==</span> <span class="s">&#39;index&#39;</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">color_residues</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">color</span> <span class="o">==</span> <span class="s">&#39;tad&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;tads&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: missing TADs</span><span class="se">\n</span><span class="s">   &#39;</span> <span class="o">+</span>
+                                <span class="s">&#39;pass an Experiment.tads disctionary</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">tad_coloring</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">color</span> <span class="o">==</span> <span class="s">&#39;border&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;tads&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: missing TADs</span><span class="se">\n</span><span class="s">   &#39;</span> <span class="o">+</span>
+                                <span class="s">&#39;pass an Experiment.tads disctionary</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">tad_border_coloring</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> type of coloring is not yet &#39;</span> <span class="o">+</span>
+                                       <span class="s">&#39;implemeted</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">color</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="s">&#39;__call__&#39;</span><span class="p">):</span>  <span class="c"># its a function</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;one of function, list or string is required</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;figsize&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">)))</span>
+        <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s">&#39;3d&#39;</span><span class="p">)</span>
+        <span class="n">show</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">show_axe</span><span class="p">:</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">_axis3don</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">view_init</span><span class="p">(</span><span class="n">elev</span><span class="o">=</span><span class="n">elevation</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="n">azimuth</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">thin</span><span class="p">:</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span>
+                     <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">label</span><span class="p">:</span>
+                <span class="n">axe</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label</span><span class="p">:</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">pbaspect</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+    </div>
+<div class="viewcode-block" id="chimera_view"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.chimera_view">[docs]</a><span class="k">def</span> <span class="nf">chimera_view</span><span class="p">(</span><span class="n">cmm_files</span><span class="p">,</span> <span class="n">chimera_bin</span><span class="o">=</span><span class="s">&#39;chimera&#39;</span><span class="p">,</span> <span class="c">#shape=&#39;tube&#39;,</span>
+                 <span class="n">chimera_cmd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">gyradius</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="s">&#39;all&#39;</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Open a list of .cmm files with Chimera (http://www.cgl.ucsf.edu/chimera)</span>
+<span class="sd">    to view models.</span>
+
+<span class="sd">    :param cmm_files: list of .cmm files</span>
+<span class="sd">    :param &#39;chimera&#39; chimera_bin: path to chimera binary</span>
+<span class="sd">    :param None chimera_cmd: list of command lines for chimera</span>
+<span class="sd">    :param None savefig: path to a file where to save generated image</span>
+<span class="sd">    :param False center_of_mass: if True, draws the center of mass</span>
+<span class="sd">    :param False gyradius: increment the radius of the center of mass by the</span>
+<span class="sd">       value of the radius of girations given.</span>
+<span class="sd">    :param False align: align models</span>
+<span class="sd">    :param False grid: tile models</span>
+<span class="sd">    :param &#39;all&#39; higlight: higlights a given model, or group of models.</span>
+<span class="sd">       Can be either &#39;all&#39;, or a model number</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pref_f</span> <span class="o">=</span> <span class="s">&#39;/tmp/tmp.cmd&#39;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">pref_f</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">cmm_file</span> <span class="ow">in</span> <span class="n">cmm_files</span><span class="p">:</span>
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;open </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmm_file</span><span class="p">))</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmm_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cmm_files</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;match #</span><span class="si">%s</span><span class="s"> #0</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="n">nmodels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmm_files</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nmodels</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nmodels</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">align</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;match #</span><span class="si">%s</span><span class="s"> #</span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">highlight</span> <span class="o">!=</span> <span class="s">&#39;all&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">highlight</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;color black #</span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">chimera_cmd</span><span class="p">:</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+        <span class="n">the_shape</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;bonddisplay never #</span><span class="si">%s</span><span class="s"></span>
+<span class="s">shape tube #</span><span class="si">%s</span><span class="s"> radius 15 bandLength 300 segmentSubdivisions 1 followBonds on</span>
+<span class="s">~show #</span><span class="si">%s</span><span class="s">&#39;&#39;&#39;</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">((</span><span class="s">&#39;&#39;&#39;</span>
 <span class="s">focus</span>
 <span class="s">set bg_color white</span>
 <span class="s">windowsize 800 600</span>
-<span class="s">bonddisplay never #0</span>
 <span class="s">represent wire</span>
-<span class="s">shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on</span>
+<span class="si">%s</span><span class="s"></span>
 <span class="s">clip yon -500</span>
 <span class="s">~label</span>
 <span class="s">set subdivision 1</span>
@@ -319,9 +499,13 @@
 <span class="s">set dc_color black</span>
 <span class="s">set dc_start 0.5</span>
 <span class="s">set dc_end 1</span>
-<span class="s">scale 0.8</span><span class="se">\n</span><span class="s"></span>
-<span class="s">&#39;&#39;&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39;define centroid radius </span><span class="si">%s</span><span class="s"> color 1,0,0,0.2</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                      <span class="n">gyradius</span> <span class="k">if</span> <span class="n">gyradius</span> <span class="k">else</span> <span class="mi">10</span><span class="p">)</span> <span class="k">if</span> <span class="n">centroid</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
+<span class="s">scale 0.8</span><span class="si">%s</span><span class="se">\n</span><span class="s"></span>
+<span class="s">&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">the_shape</span> <span class="o">%</span> <span class="p">(</span><span class="n">mdl</span><span class="p">,</span> <span class="n">mdl</span><span class="p">,</span> <span class="n">mdl</span><span class="p">)</span> <span class="k">for</span> <span class="n">mdl</span> <span class="ow">in</span> <span class="p">(</span>
+                       <span class="p">[</span><span class="n">highlight</span><span class="p">]</span> <span class="k">if</span> <span class="n">highlight</span><span class="o">!=</span><span class="s">&#39;all&#39;</span> <span class="k">else</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmodels</span><span class="p">))]),</span>
+       <span class="s">&#39;</span><span class="se">\n</span><span class="s">tile&#39;</span> <span class="k">if</span> <span class="n">grid</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">))</span> <span class="o">+</span>
+                  <span class="p">(</span><span class="s">&#39;define centroid radius </span><span class="si">%s</span><span class="s"> color 1,0,0,0.2</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                      <span class="n">gyradius</span> <span class="k">if</span> <span class="n">gyradius</span> <span class="k">else</span> <span class="mi">10</span><span class="p">)</span> <span class="k">if</span> <span class="n">center_of_mass</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;extra&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)))</span>
         <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">savefig</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.png&#39;</span><span class="p">):</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;copy file </span><span class="si">%s</span><span class="s"> png&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">savefig</span><span class="p">))</span>
@@ -339,7 +523,7 @@
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chimera_cmd</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     
-    <span class="n">Popen</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">chimera_bin</span><span class="p">,</span> <span class="n">pref_f</span><span class="p">),</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="n">Popen</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">chimera_bin</span><span class="p">,</span> <span class="n">pref_f</span><span class="p">),</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="plot_3d_optimization_result"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.plot_3d_optimization_result">[docs]</a><span class="k">def</span> <span class="nf">plot_3d_optimization_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span>
@@ -408,7 +592,7 @@
 
 
 <div class="viewcode-block" id="plot_2d_optimization_result"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.plot_2d_optimization_result">[docs]</a><span class="k">def</span> <span class="nf">plot_2d_optimization_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">),</span>
-                                <span class="n">show_best</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                                <span class="n">show_best</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A grid of heatmaps representing the result of the optimization.</span>
 
@@ -419,7 +603,9 @@
 <span class="sd">    :param 0 show_best: number of best correlation value to identifie.</span>
 <span class="sd">    :param None skip: a dict can be passed here in order to fix a given axe,</span>
 <span class="sd">       e.g.: {&#39;scale&#39;: 0.001, &#39;maxdist&#39;: 500}</span>
-
+<span class="sd">    :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">       if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">       of the file name will determine the desired format).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="kn">import</span> <span class="n">AxesGrid</span>
@@ -502,7 +688,7 @@
                     <span class="n">grid</span><span class="p">[</span><span class="n">cell</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">xax</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">yax</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">),</span>
                                     <span class="p">{</span><span class="s">&#39;ha&#39;</span><span class="p">:</span><span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="s">&#39;va&#39;</span><span class="p">:</span><span class="s">&#39;center&#39;</span><span class="p">})</span>
             <span class="k">if</span> <span class="n">ii</span> <span class="o">==</span> <span class="n">wax_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="n">rect</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">yax</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">xax</span><span class="p">),</span> <span class="mf">1.5</span><span class="p">,</span>
+                <span class="n">rect</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">yax</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">xax</span><span class="p">),</span> <span class="mf">1.5</span><span class="p">,</span>
                                          <span class="n">facecolor</span><span class="o">=</span><span class="s">&#39;grey&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
                 <span class="n">rect</span><span class="o">.</span><span class="n">set_clip_on</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
                 <span class="n">grid</span><span class="p">[</span><span class="n">cell</span><span class="p">]</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span>
@@ -537,7 +723,10 @@
                                                      <span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">tit</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">my_round</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sort_result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]]),</span>
                  <span class="n">size</span><span class="o">=</span><span class="s">&#39;large&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+        <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 </div>
 <div class="viewcode-block" id="compare_models"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.extraviews.compare_models">[docs]</a><span class="k">def</span> <span class="nf">compare_models</span><span class="p">(</span><span class="n">sm1</span><span class="p">,</span> <span class="n">sm2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
@@ -568,7 +757,132 @@
     <span class="n">axe</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;Particle&#39;</span><span class="p">)</span>
     <span class="n">cbar</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
     <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Signed log difference between models&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_tad_density_plot</span><span class="p">(</span><span class="n">xpr</span><span class="p">,</span> <span class="n">maxys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fact_res</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                     <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="s">&#39;ellipse&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.cm</span> <span class="kn">import</span> <span class="n">jet</span>
+    <span class="n">siz</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">show</span><span class="o">=</span><span class="bp">False</span>
+    <span class="k">if</span> <span class="n">focus</span><span class="p">:</span>
+        <span class="n">figsiz</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="p">(</span><span class="n">focus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">focus</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">30</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">figsiz</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="p">(</span><span class="n">siz</span><span class="p">)</span><span class="o">/</span><span class="mi">30</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">figsiz</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="mf">1.8</span><span class="p">))</span>
+        <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">show</span><span class="o">=</span><span class="bp">True</span>
+
+    <span class="n">zsin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+    
+    <span class="n">shapes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;ellipse&#39;</span>   <span class="p">:</span> <span class="k">lambda</span> <span class="n">h</span> <span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">zsin</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+              <span class="s">&#39;rectangle&#39;</span> <span class="p">:</span> <span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">*</span> <span class="mi">50</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+              <span class="s">&#39;triangle&#39;</span>  <span class="p">:</span> <span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="p">([</span><span class="n">h</span><span class="o">/</span><span class="mi">25</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">26</span><span class="p">)]</span> <span class="o">+</span>
+                                       <span class="p">[</span><span class="n">h</span><span class="o">/</span><span class="mi">25</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)])}</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">shapes</span><span class="p">[</span><span class="n">shape</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">this</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">this</span><span class="o">.</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">256</span><span class="p">)])</span>
+        <span class="k">if</span> <span class="nb">locals</span><span class="p">()[</span><span class="s">&#39;funcr&#39;</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">table</span><span class="p">)]</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">table</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">this</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">if</span> <span class="n">this</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="s">&#39;v&#39;</span> <span class="k">else</span> <span class="n">this</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">24</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">163</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">36</span><span class="p">]]):</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="p">(</span>
+                <span class="p">[</span><span class="n">h</span><span class="o">/</span><span class="mi">25</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">25</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="n">h</span><span class="o">+</span><span class="mf">0.2</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span>
+                <span class="p">[</span><span class="n">h</span><span class="o">/</span><span class="mi">25</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s">&#39;</span><span class="si">%s</span><span class="s"> not valid, use one of ellipse, rectangle or triangle&#39;</span><span class="p">)</span>
+    <span class="n">maxys</span> <span class="o">=</span> <span class="n">maxys</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maxys</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">zeros</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">normalized</span> <span class="ow">and</span> <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span><span class="p">:</span>
+        <span class="n">norms</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&quot;WARNING: weights not available, using raw data&quot;</span><span class="p">)</span>
+        <span class="n">norms</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&quot;WARNING: raw Hi-C data not available, &quot;</span> <span class="o">+</span>
+             <span class="s">&quot;TAD&#39;s height fixed to 1&quot;</span><span class="p">)</span>
+        <span class="n">norms</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">diags</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">siz</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">sp1</span> <span class="o">=</span> <span class="n">siz</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">norms</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">siz</span><span class="p">):</span>
+            <span class="n">s_k</span> <span class="o">=</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">k</span>
+            <span class="n">diags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="n">norms</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">sp1</span> <span class="o">+</span> <span class="n">s_k</span><span class="p">]</span>
+                             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">zeros</span>
+                                     <span class="ow">or</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span> <span class="ow">in</span> <span class="n">zeros</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.</span>
+                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">siz</span> <span class="o">-</span> <span class="n">k</span><span class="p">)])</span> <span class="o">/</span> <span class="p">(</span><span class="n">siz</span> <span class="o">-</span> <span class="n">k</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">tad</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">:</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                      <span class="nb">int</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">norms</span><span class="p">:</span>
+            <span class="n">matrix</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">norms</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">siz</span> <span class="o">*</span> <span class="n">j</span><span class="p">]</span>
+                         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">zeros</span>
+                                 <span class="ow">or</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">zeros</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.</span>
+                          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">norms</span><span class="p">:</span>
+                <span class="n">height</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">diags</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">height</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">maxys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="n">fact_res</span>  <span class="c"># facts[iex]</span>
+        <span class="n">end</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">/</span> <span class="n">fact_res</span>  <span class="c"># facts[iex]</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">fill</span><span class="p">([</span><span class="n">start</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="n">end</span><span class="p">],</span> <span class="n">shape</span><span class="p">(</span><span class="n">height</span><span class="p">),</span>
+                 <span class="n">alpha</span><span class="o">=.</span><span class="mi">8</span> <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">0.4</span><span class="p">,</span>
+                 <span class="n">facecolor</span><span class="o">=</span><span class="s">&#39;grey&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s">&#39;grey&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">extras</span><span class="p">:</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">extras</span><span class="p">,</span> <span class="p">[</span><span class="o">.</span><span class="mi">5</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">extras</span><span class="p">))],</span> <span class="s">&#39;rx&#39;</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Relative</span><span class="se">\n</span><span class="s">Hi-C count&#39;</span><span class="p">)</span>
+    <span class="c">#</span>
+    <span class="k">for</span> <span class="n">tad</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]:</span>
+            <span class="k">continue</span>
+        <span class="n">tad</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">]</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(((</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="n">fact_res</span><span class="p">,</span> <span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">),</span>
+                 <span class="n">color</span><span class="o">=</span><span class="n">jet</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="k">if</span> <span class="n">tad</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s">&#39;w&#39;</span><span class="p">,</span>
+                 <span class="n">mec</span><span class="o">=</span><span class="s">&#39;none&#39;</span> <span class="k">if</span> <span class="n">tad</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">clip_on</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">50</span><span class="p">))</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">minorticks_on</span><span class="p">()</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">tit1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&quot;TAD borders&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">&#39;x-large&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mf">0.76</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s">&#39;white&#39;</span><span class="p">)</span>
+        <span class="n">plots</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">scr</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+            <span class="n">plots</span> <span class="o">+=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">100</span><span class="p">,),(</span><span class="mi">100</span><span class="p">,),</span> <span class="n">marker</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+                              <span class="n">color</span><span class="o">=</span><span class="n">jet</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">scr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">),</span> <span class="n">mec</span><span class="o">=</span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">plots</span><span class="p">,</span>
+                   <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">scr</span><span class="p">)</span> <span class="k">for</span> <span class="n">scr</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)],</span>
+                   <span class="n">numpoints</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Border scores&#39;</span><span class="p">,</span>
+                   <span class="n">fontsize</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s">&#39;lower left&#39;</span><span class="p">,</span>
+                   <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">maxys</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.4</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        
 </pre></div>
 
           </div>
@@ -611,12 +925,13 @@
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

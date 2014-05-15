@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="up" title="pytadbit" href="../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -58,13 +59,13 @@
 
 
 <div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;max&quot;</span><span class="p">,</span>
-           <span class="n">no_heuristic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+           <span class="n">no_heuristic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The TADBit algorithm works on raw chromosome interaction count data.</span>
+<span class="sd">    The TADbit algorithm works on raw chromosome interaction count data.</span>
 <span class="sd">    The normalization is neither necessary nor recommended,</span>
 <span class="sd">    since the data is assumed to be discrete counts.</span>
 <span class="sd">    </span>
-<span class="sd">    TADBit is a breakpoint detection algorithm that returns the optimal</span>
+<span class="sd">    TADbit is a breakpoint detection algorithm that returns the optimal</span>
 <span class="sd">    segmentation of the chromosome under BIC-penalized likelihood. The</span>
 <span class="sd">    model assumes that counts have a Poisson distribution and that the</span>
 <span class="sd">    expected value of the counts decreases like a power-law with the</span>
@@ -78,7 +79,7 @@
 <span class="sd">       of such matrices for replicated experiments. The counts must be evenly</span>
 <span class="sd">       sampled and not normalized. x might be either a list of list, a path to</span>
 <span class="sd">       a file or a file handler</span>
-<span class="sd">    :param 1 n_cpus: The number of CPUs to allocate to TADBit. If</span>
+<span class="sd">    :param 1 n_cpus: The number of CPUs to allocate to TADbit. If</span>
 <span class="sd">       n_cpus=&#39;max&#39; the total number of CPUs will be used</span>
 <span class="sd">    :param auto max_tad_size: an integer defining maximum size of TAD. Default</span>
 <span class="sd">       (auto) defines it as the number of rows/columns</span>
@@ -99,10 +100,11 @@
        <span class="n">_tadbit_wrapper</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span>             <span class="c"># list of lists representing matrices</span>
                        <span class="n">size</span><span class="p">,</span>             <span class="c"># size of one row/column</span>
                        <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">),</span>        <span class="c"># number of matrices</span>
-                       <span class="n">n_cpus</span><span class="p">,</span>      <span class="c"># number of threads</span>
+                       <span class="n">n_cpus</span><span class="p">,</span>           <span class="c"># number of threads</span>
                        <span class="nb">int</span><span class="p">(</span><span class="n">verbose</span><span class="p">),</span>     <span class="c"># verbose 0/1</span>
                        <span class="n">max_tad_size</span><span class="p">,</span>     <span class="c"># max_tad_size</span>
-                       <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span> <span class="c"># heuristic 0/1</span>
+                       <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;ntads&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                       <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span><span class="c"># heuristic 0/1</span>
                        <span class="p">)</span>
 
     <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">bkpts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">nbks</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
@@ -236,12 +238,13 @@
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

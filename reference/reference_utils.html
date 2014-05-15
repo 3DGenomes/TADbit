@@ -9,6 +9,7 @@
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -54,6 +55,21 @@
             
   <div class="section" id="utilities">
 <h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pytadbit.get_dependencies_version">
+<tt class="descclassname">pytadbit.</tt><tt class="descname">get_dependencies_version</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit.html#get_dependencies_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.get_dependencies_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check versions of TADbit and all dependencies, as well and retieves system
+info. May be used to ensure reproductibility.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">string with description of versions installed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="function">
 <dt id="pytadbit.utils.tadmaths.calinski_harabasz">
 <tt class="descclassname">pytadbit.utils.tadmaths.</tt><tt class="descname">calinski_harabasz</tt><big>(</big><em>scores</em>, <em>clusters</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/tadmaths.html#calinski_harabasz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.tadmaths.calinski_harabasz" title="Permalink to this definition">¶</a></dt>
@@ -176,7 +192,7 @@ cluster number &#8216;cluster&#8217;</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.tad_coloring">
-<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_coloring</tt><big>(</big><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_coloring</tt><big>(</big><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colors TADs from blue to red (first to last TAD). TAD borders are displayed
 in scale of grey, from light to dark grey (again first to last border)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -198,7 +214,7 @@ in scale of grey, from light to dark grey (again first to last border)</p>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.tad_border_coloring">
-<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_border_coloring</tt><big>(</big><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">tad_border_coloring</tt><big>(</big><em>x</em>, <em>mstart=None</em>, <em>mend=None</em>, <em>tads=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#tad_border_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.tad_border_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colors TAD borders from blue to red (bad to good score). TAD are displayed
 in scale of grey, from light to dark grey (first to last particle in the
 TAD)</p>
@@ -221,7 +237,7 @@ TAD)</p>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.plot_3d_model">
-<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">plot_3d_model</tt><big>(</big><em>x</em>, <em>y</em>, <em>z</em>, <em>label=False</em>, <em>axe=None</em>, <em>thin=False</em>, <em>savefig=None</em>, <em>show_axe=False</em>, <em>azimuth=-90</em>, <em>elevation=0.0</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_model" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">plot_3d_model</tt><big>(</big><em>x</em>, <em>y</em>, <em>z</em>, <em>label=False</em>, <em>axe=None</em>, <em>thin=False</em>, <em>savefig=None</em>, <em>show_axe=False</em>, <em>azimuth=-90</em>, <em>elevation=0.0</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_3d_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_3d_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a 3 lists of coordinates (x, y, z) plots a three-dimentional model
 using matplotlib</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -552,7 +568,7 @@ for details</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 14, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

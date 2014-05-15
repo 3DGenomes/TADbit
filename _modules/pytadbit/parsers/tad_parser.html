@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -75,14 +76,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tads</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">weights</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="n">handler</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">handler</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])):</span>
             <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
             <span class="n">end</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="c"># missing</span>
+                <span class="n">score</span> <span class="o">=</span> <span class="mf">10.0</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span> <span class="c"># last one</span>
                 <span class="n">score</span> <span class="o">=</span> <span class="mf">10.0</span>
             <span class="n">tads</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
@@ -149,12 +152,13 @@
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

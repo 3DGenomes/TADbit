@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -77,14 +78,14 @@
 
 
 <span class="k">def</span> <span class="nf">autoreader</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Auto-detect matrix format of HiC data file.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Auto-detect matrix format of HiC data file.</span>
 <span class="sd">    </span>
-<span class="sd">    ARGUMENTS:</span>
-<span class="sd">       f: an iterable (typically an open file).</span>
+<span class="sd">    :param f: an iterable (typically an open file).</span>
 <span class="sd">    </span>
-<span class="sd">    RETURN:</span>
-<span class="sd">       A tuple with integer values and the dimension of</span>
-<span class="sd">       the matrix.&quot;&quot;&quot;</span>
+<span class="sd">    :returns: A tuple with integer values and the dimension of</span>
+<span class="sd">       the matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c"># Skip initial comment lines and read in the whole file</span>
     <span class="c"># as a list of lists.</span>
@@ -133,10 +134,18 @@
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c"># Dekker data 2009, uses integer but puts a comma... </span>
-            <span class="n">items</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="n">trim</span><span class="p">:]]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">+.</span><span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="n">trim</span><span class="p">:]]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
             <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: non integer values&#39;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">AutoReadFail</span><span class="p">(</span><span class="s">&#39;ERROR: non numeric values&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c"># Some data may contain &#39;NaN&#39; or &#39;NA&#39;</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;na&#39;</span><span class="p">,</span> <span class="s">&#39;nan&#39;</span><span class="p">]</span>
+                     <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">+.</span><span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="n">trim</span><span class="p">:]]</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: NA or NaN founds, set to zero&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AutoReadFail</span><span class="p">(</span><span class="s">&#39;ERROR: non numeric values&#39;</span><span class="p">)</span>
 
     <span class="c"># Check that the matrix is square.</span>
     <span class="n">ncol</span> <span class="o">-=</span> <span class="n">trim</span>
@@ -151,7 +160,8 @@
 
 <div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../../../reference/reference_parser.html#pytadbit.parsers.hic_parser.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">things</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Read and checks a matrix from a file or a list.</span>
+<span class="sd">    Read and checks a matrix from a file (using</span>
+<span class="sd">    :func:`pytadbit.parser.hic_parser.autoreader`) or a list.</span>
 
 <span class="sd">    :param things: might be either a file name, a file handler, a list of them</span>
 <span class="sd">        or a list of list (all with same length)</span>
@@ -175,33 +185,33 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">parser</span> <span class="ow">or</span> <span class="n">autoreader</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">things</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">things</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">things</span> <span class="o">=</span> <span class="p">[</span><span class="n">things</span><span class="p">]</span>
     <span class="n">matrices</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">sizes</span>    <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">thing</span> <span class="ow">in</span> <span class="n">things</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">file</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">file</span><span class="p">):</span>
             <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
             <span class="n">thing</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
             <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">gzopen</span><span class="p">(</span><span class="n">thing</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">thing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">   ERROR: file </span><span class="si">%s</span><span class="s"> not found</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">thing</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">   ERROR: file </span><span class="si">%s</span><span class="s"> not found</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">thing</span><span class="p">)</span>
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
             <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">thing</span><span class="p">]):</span>
                 <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span><span class="p">,</span> <span class="n">thing</span><span class="p">))</span>
                 <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">thing</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;must be list of lists, all with same length.&#39;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="c"># case we know what we are doing and passing directly list of tuples</span>
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
             <span class="n">siz</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">thing</span><span class="p">))</span>
@@ -219,7 +229,7 @@
                 <span class="k">print</span> <span class="s">&#39;Error found:&#39;</span><span class="p">,</span> <span class="n">exc</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Unable to read this file or whatever it is :)&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">s</span><span class="o">==</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">s</span> <span class="o">==</span> <span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">]):</span>
         <span class="k">return</span> <span class="n">matrices</span><span class="p">,</span> <span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;All matrices must have the same size &#39;</span> <span class="o">+</span>
                     <span class="s">&#39;(same chromosome and same bins).&#39;</span><span class="p">)</span>
@@ -265,12 +275,13 @@
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

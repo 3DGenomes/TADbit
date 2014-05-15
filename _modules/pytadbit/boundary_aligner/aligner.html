@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,6 +58,9 @@
 
 <span class="k">def</span> <span class="nf">consensusize</span><span class="p">(</span><span class="n">ali1</span><span class="p">,</span> <span class="n">ali2</span><span class="p">,</span> <span class="n">passed</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given two alignments returns a consensus alignment. Used for the generation</span>
+<span class="sd">    of multiple alignments</span>
+<span class="sd">    </span>
 <span class="sd">    :param ali1: first aligned sequence</span>
 <span class="sd">    :param ali1: second aligned sequence</span>
 <span class="sd">    :param passed: in case first aligned sequence is already a consensus, it</span>
@@ -69,7 +73,8 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">bound</span> <span class="o">=</span> <span class="p">(</span><span class="n">ali1</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">*</span> <span class="n">passed</span> <span class="o">+</span> <span class="n">ali2</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">passed</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                <span class="n">bound</span> <span class="o">=</span> <span class="n">ali1</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ali1</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span> <span class="k">else</span> <span class="n">ali2</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+                <span class="n">bound</span> <span class="o">=</span> <span class="n">ali1</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ali1</span><span class="p">[</span><span class="n">pos</span><span class="p">],</span>
+                                                    <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">ali2</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">bound</span> <span class="o">=</span> <span class="n">ali1</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
         <span class="n">consensus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
@@ -78,14 +83,18 @@
 
 <div class="viewcode-block" id="align"><a class="viewcode-back" href="../../../reference/reference_aligner.html#pytadbit.boundary_aligner.aligner.align">[docs]</a><span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;reciprocal&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Align Topologically Associating Domains. Supports multiple alignment by</span>
-<span class="sd">    building a consensus TAD and aligning each TAD to it.</span>
-<span class="sd">    Note: as long as we are using multiple alignments in an iterative way,</span>
-<span class="sd">    the order of sequences we be relevant. Here experiments are sorted according</span>
-<span class="sd">    to the value of the first boundary found in order to try to reduce this</span>
-<span class="sd">    problem.</span>
+<span class="sd">    Align Topologically Associating Domain borders. Supports multiple alignment</span>
+<span class="sd">    by building a consensus TAD sequence and aligning each experiment to it.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">      as long as we are using multiple alignments in an iterative way,</span>
+<span class="sd">      the order of sequences will be relevant. Here experiments are sorted</span>
+<span class="sd">      according to the value of the first boundary found in order to try to</span>
+<span class="sd">      reduce this problem.</span>
 
 <span class="sd">    :param reciprocal method: method used to align</span>
+<span class="sd">    :returns: the result of the aligner used</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s">&#39;global&#39;</span><span class="p">:</span>
         <span class="n">aligner</span> <span class="o">=</span> <span class="n">needleman_wunsch</span>
@@ -170,12 +179,13 @@
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -33,13 +33,28 @@ in :ref:`getting_start` (following the example up to :ref:`run_tadbit`), these r
     my_chrom.find_tad('First Hi-C experiment')
     
 
+
+.. ansi-block::
+
+    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
+      warn('WARNING: non integer values')
+    
+    WARNING: removing columns having less than 24.165 counts: (detected threshold)
+        8    9   10   12  245  246  247  248  249  250  251  252  253  254  255
+      256  257  258  259  260  261  262  263  264  265  266  267  268  269  270
+      271  272  273  274  275  276  277  278  279  280  281  282  283  284  285
+      286  287  288  289  290  291  292  293  294  295  296  297  298  299  300
+      301  302  303  304  305  306  307  308  309  310  311  312  313  314  315
+      316  317  318  319  320  321  322  323  324  639
+
+
 Once done, all the TADs for this chromosome will be defined. To select two TADs:
 
 
 .. code:: python
 
-    tad1 = list(my_chrom.iter_tads('First Hi-C experiment'))[41]
-    tad2 = list(my_chrom.iter_tads('First Hi-C experiment'))[39]
+    tad1 = list(my_chrom.iter_tads('First Hi-C experiment'))[31]
+    tad2 = list(my_chrom.iter_tads('First Hi-C experiment'))[35]
 
 
 And to align them:

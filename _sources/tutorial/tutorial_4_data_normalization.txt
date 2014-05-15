@@ -31,20 +31,27 @@ human's 19th chromosome:
     
     exp = my_chrom.experiments[0]
     
-    zeroes = filter_by_mean(exp.get_hic_matrix(), draw_hist=True)
+    zeroes = filter_by_mean(exp.get_hic_matrix(), draw_hist=True, silent=True)
 
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
-      warn('WARNING: non integer values')
-    /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:320: ComplexWarning: Casting complex values to real discards the imaginary part
-      return array(a, dtype, copy=False, order=order)
+    
+    WARNING: removing columns having less than 67.485 counts: (detected threshold)
+      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
+      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
+      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
+      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
+      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
+      321  322  323  324  639
 
 
 
 .. image:: ../nbpictures/tutorial_4_data_normalization_4_1.png
 
+
+*Note that the columns cited in the warning correspond to the columns on
+the left of the dot vertical red line*
 
 Than, according to the fit represented above, we would discard all
 columns in the Hi-C raw data having cumulative count of interaction
@@ -59,6 +66,10 @@ stands* **between zero and the median** \*of the overall distribution.
 The result of these "bad" columns is stored in the variable
 Experiment.\_zeros, that represents the columns to be skipped in the
 consecutive steps.\*
+
+\*Also it is not recommended to do it, the column filtering can be
+skipped, using the ``filter_columns=False`` parameter when loading or
+creating a :class:``pytadbit.experiment.Experiment``
 
 Remove row/columns where diagonal is null
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

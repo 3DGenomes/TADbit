@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="up" title="pytadbit" href="../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -49,12 +50,13 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">26 Nov 2012</span>
 
-
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">os.path</span>                           <span class="kn">import</span> <span class="n">exists</span>
 <span class="kn">from</span> <span class="nn">pytadbit.boundary_aligner.aligner</span> <span class="kn">import</span> <span class="n">align</span>
 <span class="kn">from</span> <span class="nn">pytadbit</span>                          <span class="kn">import</span> <span class="n">tadbit</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="kn">import</span> <span class="n">tadbit_savefig</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="kn">import</span> <span class="n">_tad_density_plot</span>
 <span class="kn">from</span> <span class="nn">pytadbit.experiment</span>               <span class="kn">import</span> <span class="n">Experiment</span>
 <span class="kn">from</span> <span class="nn">string</span>                            <span class="kn">import</span> <span class="n">ascii_lowercase</span> <span class="k">as</span> <span class="n">letters</span>
 <span class="kn">from</span> <span class="nn">warnings</span>                          <span class="kn">import</span> <span class="n">warn</span>
@@ -63,26 +65,25 @@
 <span class="kn">from</span> <span class="nn">pytadbit.alignment</span>                <span class="kn">import</span> <span class="n">Alignment</span><span class="p">,</span> <span class="n">randomization_test</span>
 <span class="kn">from</span> <span class="nn">numpy</span>                             <span class="kn">import</span> <span class="n">log2</span>
 <span class="kn">from</span> <span class="nn">random</span>                            <span class="kn">import</span> <span class="n">random</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">warn</span><span class="p">(</span><span class="s">&#39;matplotlib not found</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-
-
 
 
 <div class="viewcode-block" id="load_chromosome"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.load_chromosome">[docs]</a><span class="k">def</span> <span class="nf">load_chromosome</span><span class="p">(</span><span class="n">in_f</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load a Chromosome object from a file. A Chromosome object can be saved with</span>
-<span class="sd">    the :func:`Chromosome.save_chromosome` function. </span>
-<span class="sd">    </span>
+<span class="sd">    the :func:`Chromosome.save_chromosome` function.</span>
+
 <span class="sd">    :param in_f: path to a saved Chromosome object file</span>
-<span class="sd">    :param 2 fast: if fast=2 do not load the Hi-C data (in the case that they </span>
+<span class="sd">    :param 2 fast: if fast=2 do not load the Hi-C data (in the case that they</span>
 <span class="sd">       were saved in a separate file see :func:`Chromosome.save_chromosome`).</span>
-<span class="sd">       If fast is equal to 1, the weights will be skipped from load to save </span>
+<span class="sd">       If fast is equal to 1, the weights will be skipped from load to save</span>
 <span class="sd">       memory. Finally if fast=0, both the weights and Hi-C data will be loaded</span>
-<span class="sd">    </span>
+
 <span class="sd">    :returns: a Chromosome object</span>
 
 <span class="sd">    TODO: remove first try/except type error... this is loading old experiments</span>
@@ -92,16 +93,29 @@
     <span class="n">crm</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">dico</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">exp_order</span> <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiment_order&#39;</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="n">exp_order</span> <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">exp_order</span><span class="p">:</span>
         <span class="n">xpr</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;resolution&#39;</span><span class="p">],</span> 
                          <span class="n">no_warn</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span>       <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;tads&#39;</span><span class="p">]</span>
-        <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span>       <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;wght&#39;</span><span class="p">]</span>
-        <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span>   <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;hi-c&#39;</span><span class="p">]</span>
-        <span class="n">xpr</span><span class="o">.</span><span class="n">conditions</span> <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;cond&#39;</span><span class="p">]</span>
-        <span class="n">xpr</span><span class="o">.</span><span class="n">size</span>       <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">]</span>
+        <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span>        <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;tads&#39;</span><span class="p">]</span>
+        <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span>        <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;wght&#39;</span><span class="p">]</span>
+        <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span>    <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;hi-c&#39;</span><span class="p">]</span>
+        <span class="n">xpr</span><span class="o">.</span><span class="n">conditions</span>  <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;cond&#39;</span><span class="p">]</span>
+        <span class="n">xpr</span><span class="o">.</span><span class="n">size</span>        <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">]</span>
+        <span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span>      <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;zero&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">try</span><span class="p">:</span>  <span class="c"># new in version post-CSDM13</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">identifier</span>  <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;iden&#39;</span><span class="p">]</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">cell_type</span>   <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;cell&#39;</span><span class="p">]</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">exp_type</span>    <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;expt&#39;</span><span class="p">]</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">enzyme</span>      <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;enzy&#39;</span><span class="p">]</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;desc&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">identifier</span>  <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">cell_type</span>   <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">exp_type</span>    <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">enzyme</span>      <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">crm</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
@@ -111,7 +125,15 @@
     <span class="n">crm</span><span class="o">.</span><span class="n">max_tad_size</span>    <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;max_tad_size&#39;</span><span class="p">]</span>
     <span class="n">crm</span><span class="o">.</span><span class="n">forbidden</span>       <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;forbidden&#39;</span><span class="p">]</span>
     <span class="n">crm</span><span class="o">.</span><span class="n">_centromere</span>     <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;_centromere&#39;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;hi-c&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span> <span class="ow">or</span> <span class="n">fast</span><span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>  <span class="c"># new in version post-CSDM13</span>
+        <span class="n">crm</span><span class="o">.</span><span class="n">species</span>         <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;species&#39;</span><span class="p">]</span>
+        <span class="n">crm</span><span class="o">.</span><span class="n">assembly</span>        <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;assembly&#39;</span><span class="p">]</span>
+        <span class="n">crm</span><span class="o">.</span><span class="n">description</span>     <span class="o">=</span> <span class="n">dico</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">crm</span><span class="o">.</span><span class="n">species</span>         <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">crm</span><span class="o">.</span><span class="n">assembly</span>        <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">crm</span><span class="o">.</span><span class="n">description</span>     <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;hi-c&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">fast</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">dicp</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">in_f</span> <span class="o">+</span> <span class="s">&#39;_hic&#39;</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
@@ -133,6 +155,8 @@
 <span class="sd">    chromosome of DNA, and to compare them.</span>
 
 <span class="sd">    :param name: name of the chromosome (might be a chromosome name for example)</span>
+<span class="sd">    :param None species: species name</span>
+<span class="sd">    :param None assembly: version number of the genomic assembly used</span>
 <span class="sd">    :param None resolutions: list of resolutions corresponding to a list of</span>
 <span class="sd">       experiments passed.</span>
 <span class="sd">    :param None experiment_hic_data: :py:func:`list` of paths to files</span>
@@ -141,7 +165,7 @@
 <span class="sd">       containing the definition of TADs corresponding to different experiments</span>
 <span class="sd">    :param None experiment_names: :py:func:`list` of the names of each </span>
 <span class="sd">        experiment</span>
-<span class="sd">    :param 5000000 max_tad_size: maximum TAD size allowed. TADs longer than</span>
+<span class="sd">    :param infinite max_tad_size: maximum TAD size allowed. TADs longer than</span>
 <span class="sd">        this value will not be considered, and size of the corresponding</span>
 <span class="sd">        chromosome size will be reduced accordingly</span>
 <span class="sd">    :param 0 chr_len: size of the DNA chromosome in bp. By default it will be</span>
@@ -161,25 +185,46 @@
 <span class="sd">       the output of parser(&#39;example.tsv&#39;) would be be:</span>
 <span class="sd">       ``[([629, 164, 88, 105, 164, 612, 175, 110, 88, 175, 437, 100, 105,</span>
 <span class="sd">       110, 100, 278]), 4]``</span>
+<span class="sd">    :param None kw_descr: any other argument passed would be stored as</span>
+<span class="sd">       complementary descriptive field. For example::</span>
+<span class="sd">       </span>
+<span class="sd">           crm  = Chromosome(&#39;19&#39;, species=&#39;mus musculus&#39;,</span>
+<span class="sd">                             subspecies=&#39;musculus musculus&#39;,</span>
+<span class="sd">                             skin_color=&#39;black&#39;)</span>
+<span class="sd">           print crm</span>
+
+<span class="sd">           # Chromosome 19:</span>
+<span class="sd">           #    0  experiment loaded: </span>
+<span class="sd">           #    0  alignment loaded: </span>
+<span class="sd">           #    species         : mus musculus</span>
+<span class="sd">           #    assembly version: UNKNOWN</span>
+<span class="sd">           #    subspecies      : musculus musculus</span>
+<span class="sd">           #    skin_color      : black</span>
+
+<span class="sd">       *note that these fields may appear in the header of generated out files*</span>
 
 <span class="sd">    :return: Chromosome object</span>
 
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">experiment_resolutions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment_tads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">assembly</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experiment_resolutions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment_tads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">experiment_hic_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">max_tad_size</span><span class="o">=</span><span class="mi">5000000</span><span class="p">,</span> <span class="n">chr_len</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">centromere_search</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+                 <span class="n">max_tad_size</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">),</span> <span class="n">chr_len</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">centromere_search</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_descr</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span>             <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_tad_size</span>     <span class="o">=</span> <span class="n">max_tad_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span>             <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_given_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span> <span class="o">=</span> <span class="n">chr_len</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span>             <span class="o">=</span> <span class="n">ChromosomeSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_tad_size</span>     <span class="o">=</span> <span class="n">max_tad_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span>           <span class="o">=</span> <span class="n">RelativeChromosomeSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span>        <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span>        <span class="o">=</span> <span class="p">{}</span>  <span class="c"># only used for TAD alignment randomization</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span>      <span class="o">=</span> <span class="n">ExperimentList</span><span class="p">([],</span> <span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_centromere</span>      <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span>        <span class="o">=</span> <span class="n">AlignmentDict</span><span class="p">()</span>
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span>      <span class="o">=</span> <span class="n">kw_descr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">species</span>          <span class="o">=</span> <span class="n">species</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assembly</span>         <span class="o">=</span> <span class="n">assembly</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_search_centromere</span> <span class="o">=</span> <span class="n">centromere_search</span>
         <span class="k">if</span> <span class="n">experiment_tads</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">handler</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">experiment_tads</span> <span class="ow">or</span> <span class="p">[]):</span>
@@ -195,15 +240,33 @@
                     <span class="k">continue</span>
                 <span class="k">except</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span> <span class="o">==</span> <span class="n">Experiment</span><span class="p">:</span>
-                    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">handler</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
+                    <span class="n">handler</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">handler</span><span class="o">.</span><span class="n">name</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">experiment_resolutions</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                                        <span class="n">hic_data</span><span class="o">=</span><span class="n">handler</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">)</span>
+                                        <span class="n">hic_data</span><span class="o">=</span><span class="n">handler</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span>
+                                        <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">outstr</span> <span class="o">=</span> <span class="s">&#39;Chromosome </span><span class="si">%s</span><span class="s">:</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">outstr</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;   </span><span class="si">%-2s</span><span class="s"> experiment</span><span class="si">%s</span><span class="s"> loaded: &#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">),</span> <span class="s">&#39;s&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span>
+                   <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">outstr</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;   </span><span class="si">%-2s</span><span class="s"> alignment</span><span class="si">%s</span><span class="s"> loaded: &#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="p">),</span> <span class="s">&#39;s&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span>
+                   <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">a</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>  <span class="c"># new in version post-CSDM13</span>
+            <span class="n">outstr</span> <span class="o">+=</span> <span class="s">&#39;   species         : </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="ow">or</span> <span class="s">&#39;UNKNOWN&#39;</span><span class="p">)</span>
+            <span class="n">outstr</span> <span class="o">+=</span> <span class="s">&#39;   assembly version: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assembly</span> <span class="ow">or</span> <span class="s">&#39;UNKNOWN&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+                <span class="n">outstr</span> <span class="o">+=</span> <span class="s">&#39;   </span><span class="si">%-16s</span><span class="s">: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">outstr</span>
 
 
-    <span class="k">def</span> <span class="nf">_get_forbidden_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xpr</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_forbidden_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xpr</span><span class="p">,</span> <span class="n">resized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the regions for which there is no information in any of the</span>
 <span class="sd">        experiments. This is used to infer the relative chromosome size.</span>
@@ -218,34 +281,39 @@
             <span class="k">if</span> <span class="n">diff</span> <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_tad_size</span><span class="p">:</span>
                 <span class="n">forbidden</span> <span class="o">+=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
                 <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">f</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">forbidden</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">f</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> 
                                    <span class="nb">set</span><span class="p">(</span><span class="n">forbidden</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span><span class="p">)])</span>
         <span class="c"># search for centromere:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_find_centromere</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_centromere</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_find_centromere</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
         <span class="c"># add centromere as forbidden region:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centromere</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_centromere</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
                               <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_centromere</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Centromere&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__update_size</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resized</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__update_size</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Chromosome.get_experiment"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.get_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">get_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetch an Experiment according to its name.</span>
 <span class="sd">        This can also be done directly with Chromosome.experiments[name].</span>
-<span class="sd">        </span>
+
 <span class="sd">        :param name: name of the experiment to select</span>
 <span class="sd">        :returns: :class:`pytadbit.Experiment`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">exp</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: experiment &#39;</span> <span class="o">+</span>
-                        <span class="s">&#39;</span><span class="si">%s</span><span class="s"> not found</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">))</span>
-                
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">((</span><span class="s">&#39;ERROR: experiment &#39;</span> <span class="o">+</span>
+                         <span class="s">&#39;</span><span class="si">%s</span><span class="s"> not found</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
 </div>
 <div class="viewcode-block" id="Chromosome.save_chromosome"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.save_chromosome">[docs]</a>    <span class="k">def</span> <span class="nf">save_chromosome</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_f</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -267,9 +335,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">while</span> <span class="n">exists</span><span class="p">(</span><span class="n">out_f</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
             <span class="n">out_f</span> <span class="o">+=</span> <span class="s">&#39;_&#39;</span>
-        <span class="n">dico</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiment_order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">xpr</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">]</span>
+        <span class="n">dico</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;experiments&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="s">&#39;experiment_order&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">xpr</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">]}</span>
         <span class="k">if</span> <span class="n">divide</span><span class="p">:</span>
             <span class="n">dicp</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
@@ -279,7 +346,14 @@
                 <span class="s">&#39;tads&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">,</span>
                 <span class="s">&#39;resolution&#39;</span><span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
                 <span class="s">&#39;hi-c&#39;</span>      <span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
-                <span class="s">&#39;wght&#39;</span>      <span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+                <span class="s">&#39;wght&#39;</span>      <span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+                <span class="s">&#39;iden&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
+                <span class="s">&#39;cell&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">cell_type</span><span class="p">,</span>
+                <span class="s">&#39;expt&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">exp_type</span><span class="p">,</span>
+                <span class="s">&#39;enzy&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">enzyme</span><span class="p">,</span>
+                <span class="s">&#39;desc&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                <span class="s">&#39;zero&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span>
+                <span class="p">}</span>
             <span class="k">if</span> <span class="n">fast</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="n">divide</span><span class="p">:</span>
@@ -291,12 +365,15 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">xpr</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;wght&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span>
                 <span class="n">dico</span><span class="p">[</span><span class="s">&#39;experiments&#39;</span><span class="p">][</span><span class="n">xpr</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;hi-c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span>
-        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;size&#39;</span><span class="p">]</span>            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
-        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;r_size&#39;</span><span class="p">]</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span>
-        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;max_tad_size&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_tad_size</span>
-        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;forbidden&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span>
-        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;_centromere&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centromere</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;size&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;r_size&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;max_tad_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_tad_size</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;forbidden&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;_centromere&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centromere</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;species&#39;</span><span class="p">]</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;assembly&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assembly</span>
+        <span class="n">dico</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span>
         <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_f</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
         <span class="n">dump</span><span class="p">(</span><span class="n">dico</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -307,7 +384,8 @@
 
 </div>
 <div class="viewcode-block" id="Chromosome.align_experiments"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.align_experiments">[docs]</a>    <span class="k">def</span> <span class="nf">align_experiments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">randomize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                          <span class="n">rnd_method</span><span class="o">=</span><span class="s">&#39;interpolate&#39;</span><span class="p">,</span> <span class="n">rnd_num</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                          <span class="n">rnd_method</span><span class="o">=</span><span class="s">&#39;interpolate&#39;</span><span class="p">,</span> <span class="n">rnd_num</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                          <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Align the predicted boundaries of two different experiments. The </span>
 <span class="sd">        resulting alignment will be stored in the self.experiment list.</span>
@@ -345,7 +423,8 @@
         <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="n">xpers</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;No TADs defined, use find_tad function.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-            <span class="n">tads</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="s">&#39;brk&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">])</span>
+            <span class="n">tads</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="s">&#39;brk&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span>
+                         <span class="k">if</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">]])</span>
         <span class="c"># new</span>
         <span class="n">aligneds</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">align</span><span class="p">(</span><span class="n">tads</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xpers</span><span class="p">]))</span>
@@ -410,7 +489,7 @@
 <span class="s">                This experiment will be kept under </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="s">&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span>
                                                                <span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="p">))</span>
                 <span class="n">name</span> <span class="o">+=</span> <span class="s">&#39;_&#39;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="n">Experiment</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">resolution</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">hic_data</span><span class="p">,</span>
@@ -421,20 +500,21 @@
 
 </div>
 <div class="viewcode-block" id="Chromosome.find_tad"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.find_tad">[docs]</a>    <span class="k">def</span> <span class="nf">find_tad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiments</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;auto&quot;</span><span class="p">,</span> <span class="n">no_heuristic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">batch_mode</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+                 <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;auto&quot;</span><span class="p">,</span> <span class="n">heuristic</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">batch_mode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call the :func:`pytadbit.tadbit.tadbit` function to calculate the</span>
-<span class="sd">        position of Topologically Associated Domains</span>
+<span class="sd">        position of Topologically Associated Domain boundaries</span>
 <span class="sd">        </span>
 <span class="sd">        :param experiment: A square matrix of interaction counts of Hi-C</span>
 <span class="sd">           data or a list of such matrices for replicated experiments. The</span>
 <span class="sd">           counts must be evenly sampled and not normalized. &#39;experiment&#39;</span>
 <span class="sd">           can be either a list of lists, a path to a file or a file handler</span>
-<span class="sd">        :param 1 n_cpus: The number of CPUs to allocate to TADBit. If</span>
+<span class="sd">        :param 1 n_cpus: The number of CPUs to allocate to TADbit. If</span>
 <span class="sd">           n_cpus=&#39;max&#39; the total number of CPUs will be used</span>
 <span class="sd">        :param auto max_tad_size: an integer defining the maximum size of a </span>
 <span class="sd">           TAD. Default (auto) defines it as the number of rows/columns</span>
-<span class="sd">        :param False no_heuristic: whether to use or not some heuristics</span>
+<span class="sd">        :param True heuristic: whether to use or not some heuristics</span>
 <span class="sd">        :param False batch_mode: if True, all the experiments will be </span>
 <span class="sd">           concatenated into one for the search of TADs. The resulting TADs </span>
 <span class="sd">           found are stored under the name &#39;batch&#39; plus a concatenation of the</span>
@@ -449,7 +529,7 @@
             <span class="n">experiments</span> <span class="o">=</span> <span class="n">experiments</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span>
             <span class="n">xprs</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span> <span class="o">==</span> <span class="n">Experiment</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xpr</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
                     <span class="n">xprs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">xpr</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">xprs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
@@ -464,26 +544,29 @@
             <span class="n">result</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span>
                                      <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
                                      <span class="n">max_tad_size</span><span class="o">=</span><span class="n">max_tad_size</span><span class="p">,</span>
-                                     <span class="n">no_heuristic</span><span class="o">=</span><span class="n">no_heuristic</span><span class="p">,</span>
-                                     <span class="n">get_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-            <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="n">matrix</span><span class="p">,</span>
-                                    <span class="n">tad_def</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
+                                     <span class="n">no_heuristic</span><span class="o">=</span><span class="ow">not</span> <span class="n">heuristic</span><span class="p">,</span>
+                                     <span class="n">get_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">xpr</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="n">matrix</span><span class="p">,</span>
+                             <span class="n">tad_def</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span> <span class="o">=</span> <span class="n">xprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_zeros</span>
+            <span class="k">for</span> <span class="n">other</span> <span class="ow">in</span> <span class="n">xprs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
+                                   <span class="nb">set</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+                                       <span class="n">other</span><span class="o">.</span><span class="n">_zeros</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
             <span class="k">return</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">experiments</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">experiments</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">experiments</span> <span class="o">=</span> <span class="p">[</span><span class="n">experiments</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">experiment</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span> <span class="o">==</span> <span class="n">Experiment</span><span class="p">:</span>
-                <span class="n">xpr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
-            <span class="n">result</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span><span class="p">,</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
+                <span class="n">experiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">hic_data</span><span class="p">,</span>
                                      <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
                                      <span class="n">max_tad_size</span><span class="o">=</span><span class="n">max_tad_size</span><span class="p">,</span>
-                                     <span class="n">no_heuristic</span><span class="o">=</span><span class="n">no_heuristic</span><span class="p">,</span>
-                                     <span class="n">get_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                                     <span class="n">use_visibility</span><span class="o">=</span><span class="n">use_visibility</span><span class="p">)</span>
-            <span class="n">xpr</span><span class="o">.</span><span class="n">load_tad_def</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_centromere</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
+                                     <span class="n">no_heuristic</span><span class="o">=</span><span class="ow">not</span> <span class="n">heuristic</span><span class="p">,</span>
+                                     <span class="n">get_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">experiment</span><span class="o">.</span><span class="n">load_tad_def</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
 
 </div>
     <span class="k">def</span> <span class="nf">__update_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xpr</span><span class="p">):</span>
@@ -496,17 +579,49 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">)][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">size</span>   <span class="o">=</span> <span class="n">ChromosomeSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">xpr</span><span class="p">,</span> <span class="n">resized</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            
         <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forbidden</span><span class="p">)</span> <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span> <span class="o">=</span> <span class="n">RelativeChromosomeSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Chromosome.visualize"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">tad</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                  <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                  <span class="n">decorate</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Chromosome.tad_density_plot"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.tad_density_plot">[docs]</a>    <span class="k">def</span> <span class="nf">tad_density_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                         <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="s">&#39;ellipse&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Visualize the matrix of Hi-C interactions.</span>
-
+<span class="sd">        Draw an summary of the TAD found in a given experiment and their density</span>
+<span class="sd">        in terms of relative Hi-C interaction count.</span>
+<span class="sd">        </span>
 <span class="sd">        :param name: name of the experiment to visualize</span>
+<span class="sd">        :param None focus: can pass a tuple (bin_start, bin_stop) to display the</span>
+<span class="sd">           alignment between these genomic bins</span>
+<span class="sd">        :param None extras: list of coordinates (genomic bin) where to draw a</span>
+<span class="sd">           red cross</span>
+<span class="sd">        :param None ymax: limit the y axis up to a given value</span>
+<span class="sd">        :param (&#39;grey&#39;, ): successive colors for alignment</span>
+<span class="sd">        :param True normalized: normalized Hi-C count are plotted instead of raw</span>
+<span class="sd">           data.</span>
+<span class="sd">        :param &#39;ellipse&#39; shape: which kind of shape to use as schematic</span>
+<span class="sd">           representation of TADs. Implemented: &#39;ellipse&#39;, &#39;rectangle&#39;,</span>
+<span class="sd">           &#39;triangle&#39;</span>
+<span class="sd">        :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">           if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">           of the file name will determine the desired format).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">tads</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;TAD borders not found</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">_tad_density_plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span>
+                          <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span>
+                          <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Chromosome.visualize"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tad</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                  <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                  <span class="n">relative</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Visualize the matrix of Hi-C interactions of a given experiment</span>
+
+<span class="sd">        :param None names: name of the experiment to visualize, or list of</span>
+<span class="sd">           experiment names. If None, all experiments will be shown</span>
 <span class="sd">        :param None tad: a given TAD in the form:</span>
 <span class="sd">           ::</span>
 <span class="sd">           </span>
@@ -533,148 +648,69 @@
 <span class="sd">        :param True relative: color scale is relative to the whole matrix of</span>
 <span class="sd">           data, not only to the region displayed</span>
 <span class="sd">        :param True decorate: draws color bar, title and axes labels</span>
+<span class="sd">        :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">           if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">           of the file name will determine the desired format).</span>
+<span class="sd">        :param None clim: tuple with minimum and maximum value range for color</span>
+<span class="sd">           scale. I.e. clim=(-4, 10)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">xper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">logarithm</span><span class="p">:</span>
-            <span class="n">fun</span> <span class="o">=</span> <span class="n">log2</span>
+        <span class="k">if</span> <span class="n">names</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">xpr</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">]</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="n">xper</span><span class="o">.</span><span class="n">size</span>
-        <span class="k">if</span> <span class="n">normalized</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">xper</span><span class="o">.</span><span class="n">norm</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: weights not calculated for this &#39;</span> <span class="o">+</span>
-                            <span class="s">&#39;experiment. Run Experiment.normalize_hic</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">tad</span> <span class="ow">and</span> <span class="n">focus</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: only one of &quot;tad&quot; or &quot;focus&quot; might be set&#39;</span><span class="p">)</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="k">if</span> <span class="n">focus</span><span class="p">:</span>
-            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">focus</span>
-            <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s">&#39;Hi-C matrix starts at 1, setting starting point to 1.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">tad</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">])</span>
-            <span class="n">end</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">tad</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">tad</span><span class="p">,</span>
-                                   <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">]))[</span><span class="mi">0</span> <span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">])</span>
-                <span class="n">end</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">tad</span><span class="p">,</span>
-                                   <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;end&#39;</span>  <span class="p">]))[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s">&#39;end&#39;</span>  <span class="p">])</span>
-        <span class="k">if</span> <span class="n">relative</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
-                <span class="c"># find minimum, if value is non-zero... for logarithm</span>
-                <span class="n">mini</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xper</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">mini</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">mini</span><span class="p">):</span>
-                    <span class="n">vmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">xper</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">sqrtxpr</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sqrtxpr</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.0</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrtxpr</span><span class="p">)</span><span class="o">==</span><span class="n">sqrtxpr</span> <span class="k">else</span> <span class="o">.</span><span class="mi">5</span><span class="p">)))</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrtxpr</span><span class="o">+.</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">notaxe</span> <span class="o">=</span> <span class="n">axe</span> <span class="o">==</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">notaxe</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">rows</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">):</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="n">notaxe</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span>
+                        <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">],</span> <span class="nb">list</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+                        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">rows</span><span class="p">))</span>
+                        <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span>
+                            <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>                        
+                    <span class="n">xpr1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">xpr2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">img</span> <span class="o">=</span> <span class="n">xpr1</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">tad</span><span class="o">=</span><span class="n">tad</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="n">paint_tads</span><span class="p">,</span>
+                                    <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="n">logarithm</span><span class="p">,</span>
+                                    <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="n">relative</span><span class="p">,</span>
+                                    <span class="n">decorate</span><span class="o">=</span><span class="n">decorate</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                    <span class="n">where</span><span class="o">=</span><span class="s">&#39;up&#39;</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="n">clim</span><span class="p">)</span>
+                    <span class="n">img</span> <span class="o">=</span> <span class="n">xpr2</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">tad</span><span class="o">=</span><span class="n">tad</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="n">paint_tads</span><span class="p">,</span>
+                                    <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="n">logarithm</span><span class="p">,</span>
+                                    <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="n">relative</span><span class="p">,</span>
+                                    <span class="n">decorate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s">&#39;down&#39;</span><span class="p">,</span>
+                                    <span class="n">clim</span><span class="o">=</span><span class="n">clim</span> <span class="ow">or</span> <span class="n">img</span><span class="o">.</span><span class="n">get_clim</span><span class="p">())</span>
+                    <span class="c"># axe = axe.twinx()</span>
+                    <span class="c"># axe.set_aspect(&#39;equal&#39;, adjustable=&#39;box-forced&#39;, anchor=&#39;NE&#39;)</span>
+                    <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
+                        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">1.01</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> 
+                                 <span class="s">&#39;Chromosome </span><span class="si">%s</span><span class="s"> experiment </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">xpr2</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                                  <span class="n">rotation</span><span class="o">=-</span><span class="mi">90</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">&#39;large&#39;</span><span class="p">,</span>
+                                  <span class="n">ha</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axe</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">vmin</span> <span class="o">=</span> <span class="n">mini</span>
-                <span class="n">vmin</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="n">vmin</span> <span class="ow">or</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">logarithm</span> <span class="k">else</span> <span class="mi">0</span><span class="p">))</span>
-                <span class="n">vmax</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">xper</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">vmin</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">xper</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">logarithm</span> <span class="k">else</span> <span class="mi">0</span><span class="p">))</span>
-                <span class="n">vmax</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">xper</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-            <span class="n">axe</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">tad</span> <span class="ow">or</span> <span class="n">focus</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
-                    <span class="n">matrix</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="p">[</span><span class="n">xper</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>
-                         <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xper</span><span class="o">.</span><span class="n">_zeros</span>
-                             <span class="ow">and</span> <span class="ow">not</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xper</span><span class="o">.</span><span class="n">_zeros</span><span class="p">)</span> <span class="k">else</span> <span class="n">vmin</span>
-                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">matrix</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="p">[</span><span class="n">xper</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>
-                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
-            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">tad</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;List passed, not going to be normalized.&#39;</span><span class="p">)</span>
-                <span class="n">matrix</span> <span class="o">=</span> <span class="n">tad</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c"># TODO: something... matrix not declared...</span>
-                <span class="k">pass</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
-                <span class="n">matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">xper</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>
-                           <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xper</span><span class="o">.</span><span class="n">_zeros</span>
-                               <span class="ow">and</span> <span class="ow">not</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xper</span><span class="o">.</span><span class="n">_zeros</span><span class="p">)</span> <span class="k">else</span> <span class="n">vmin</span>
-                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
-                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="n">xper</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">*</span><span class="n">j</span><span class="p">]</span>\
-                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span> \
-                          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
-        <span class="k">if</span> <span class="n">relative</span><span class="p">:</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fun</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
-                             <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
-                             <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                                     <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                                     <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                                     <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fun</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span>
-                             <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
-                             <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                                     <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                                     <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                                     <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
-            <span class="n">cbar</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-            <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Log2 Hi-C interactions count&#39;</span><span class="p">)</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">set_title</span><span class="p">((</span><span class="s">&#39;Chromosome </span><span class="si">%s</span><span class="s"> experiment </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">+</span>
-                           <span class="s">&#39; </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">xper</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                     <span class="s">&#39;focus: </span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="k">if</span> <span class="n">tad</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;Genomic bin (resolution: </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xper</span><span class="o">.</span><span class="n">resolution</span><span class="p">))</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Genomic bin (resolution: </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xper</span><span class="o">.</span><span class="n">resolution</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">paint_tads</span><span class="p">:</span>            
-            <span class="n">axe</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                         <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                         <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">img</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tad</span> <span class="ow">in</span> <span class="n">xper</span><span class="o">.</span><span class="n">tads</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">start</span><span class="p">:</span>
-                <span class="k">print</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">start</span>
-                <span class="k">print</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span>
-                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">start</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="n">t_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.5</span>
-                <span class="n">t_end</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])</span>   <span class="o">+</span> <span class="mf">2.5</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">t_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="o">.</span><span class="mi">5</span>
-                <span class="n">t_end</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tad</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.5</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">t_start</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">t_end</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">t_start</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-            <span class="n">axe</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">t_end</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xper</span><span class="o">.</span><span class="n">tads</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="n">axe</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">t_start</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t_start</span><span class="o">-</span><span class="n">t_end</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-                             <span class="n">t_end</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">va</span><span class="o">=</span><span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">axe</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">t_start</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t_start</span><span class="o">-</span><span class="n">t_end</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-                             <span class="n">t_start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">va</span><span class="o">=</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">&#39;center&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">tad</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_end</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_start</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
-                    <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">t_start</span>    <span class="p">,</span> <span class="n">t_start</span> <span class="o">+</span> <span class="n">j</span><span class="p">),</span>
-                             <span class="p">(</span><span class="n">t_end</span>   <span class="o">-</span> <span class="n">j</span><span class="p">,</span> <span class="n">t_end</span>      <span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-                    <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">t_end</span>      <span class="p">,</span> <span class="n">t_end</span>   <span class="o">-</span> <span class="n">j</span><span class="p">),</span>
-                             <span class="p">(</span><span class="n">t_start</span> <span class="o">+</span> <span class="n">j</span><span class="p">,</span> <span class="n">t_start</span>    <span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-        <span class="n">axe</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                     <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
-        <span class="n">axe</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
-                     <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+                    <span class="n">xper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">])</span>
+                    <span class="n">xper</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">tad</span><span class="o">=</span><span class="n">tad</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="n">paint_tads</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span>
+                              <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="n">logarithm</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span>
+                              <span class="n">relative</span><span class="o">=</span><span class="n">relative</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="n">decorate</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                              <span class="n">clim</span><span class="o">=</span><span class="n">clim</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
+        
 </div>
 <div class="viewcode-block" id="Chromosome.get_tad_hic"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.get_tad_hic">[docs]</a>    <span class="k">def</span> <span class="nf">get_tad_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tad</span><span class="p">,</span> <span class="n">x_name</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">matrix_num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -703,11 +739,11 @@
 </div>
 <div class="viewcode-block" id="Chromosome.iter_tads"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.iter_tads">[docs]</a>    <span class="k">def</span> <span class="nf">iter_tads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_name</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Iterate over the TADs corresponding to the given experiment.</span>
-<span class="sd">        </span>
+<span class="sd">        Iterate over the TADs corresponding to a given experiment.</span>
+
 <span class="sd">        :param x_name: name of the experiment</span>
 <span class="sd">        :param True normed: normalize Hi-C data returned</span>
-<span class="sd">        </span>
+
 <span class="sd">        :yields: Hi-C data corresponding to each TAD</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">x_name</span><span class="p">)</span><span class="o">.</span><span class="n">hic_data</span><span class="p">:</span>
@@ -727,10 +763,10 @@
         <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">tad</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">:</span>
                 <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;brk&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="p">((</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">])</span> 
+                <span class="k">if</span> <span class="p">((</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">])</span>
                     <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_tad_size</span><span class="p">:</span>
                     <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">])</span>
-            
+
 </div>
     <span class="k">def</span> <span class="nf">_find_centromere</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xpr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -816,10 +852,9 @@
         <span class="k">elif</span> <span class="p">[</span><span class="bp">True</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tads</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> \
               <span class="k">if</span> <span class="n">t</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">beg</span> <span class="ow">and</span> <span class="n">end</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">]]:</span>
             <span class="n">tad</span>  <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tads</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="n">plus</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">while</span> <span class="n">tad</span> <span class="o">+</span> <span class="n">plus</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">plus</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]</span>
-                <span class="n">final</span> <span class="o">=</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">plus</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span>
+            <span class="k">while</span> <span class="n">tad</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]</span>
+                <span class="n">final</span> <span class="o">=</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span>
                 <span class="c"># centromere found?</span>
                 <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="n">beg</span><span class="p">:</span>
                     <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
@@ -828,18 +863,8 @@
                     <span class="k">if</span> <span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">])</span> \
                            <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_tad_size</span><span class="p">:</span>
                         <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">])</span>
-                    <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;brk&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span>
-                    <span class="n">tad</span> <span class="o">-=</span> <span class="mi">1</span>
-                    <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">])</span>
-                    <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">])</span>
-                    <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">])</span> \
-                           <span class="o">*</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_tad_size</span><span class="p">:</span>
-                        <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;score&#39;</span><span class="p">])</span>
-                    <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;brk&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">][</span><span class="s">&#39;end&#39;</span><span class="p">]</span>
-                    <span class="n">plus</span> <span class="o">=</span> <span class="mi">1</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">plus</span><span class="p">])</span>
+                    <span class="n">tads</span><span class="p">[</span><span class="n">tad</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">tads</span><span class="p">[</span><span class="n">tad</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
                 <span class="n">tad</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="c"># if tad includes centromere but ends in the same point</span>
         <span class="k">elif</span> <span class="p">[</span><span class="bp">True</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tads</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> \
@@ -877,9 +902,9 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Inherited from python built in :py:func:`list`, modified for tadbit</span>
 <span class="sd">    :class:`pytadbit.Experiment`.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Mainly, `getitem`, `setitem`, and `append` were modified in order to</span>
-<span class="sd">    be able to search for experiments by index or by name, and to add </span>
+<span class="sd">    be able to search for experiments by index or by name, and to add</span>
 <span class="sd">    experiments simply using Chromosome.experiments.append(Experiment).</span>
 
 <span class="sd">    The whole ExperimentList object is linked to a Chromosome instance</span>
@@ -889,7 +914,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">,</span> <span class="n">crm</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="n">crm</span>
-        
+
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -905,21 +930,18 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">exp</span><span class="p">)</span>
             <span class="n">exp</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_search_centromere</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">nam</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">nam</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
                     <span class="n">exp</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span>
                     <span class="bp">self</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_search_centromere</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">exp</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_search_centromere</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
 
 
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
@@ -938,12 +960,10 @@
     <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">]:</span>
             <span class="bp">self</span><span class="p">[</span><span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_search_centromere</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentList</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_search_centromere</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">crm</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
             <span class="n">exp</span><span class="o">.</span><span class="n">crm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crm</span>
 
 </div>
@@ -959,18 +979,16 @@
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nam</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">AlignmentDict</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">nam</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">AlignmentDict</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">nam</span><span class="p">)))</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">nam</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
                     <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;Alignment </span><span class="si">%s</span><span class="s"> not found</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;Alignment </span><span class="si">%s</span><span class="s"> not found</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">ChromosomeSize</span><span class="p">(</span><span class="nb">int</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This is an integer.</span>
-<span class="sd">    </span>
 <span class="sd">    Chromosome size in base pairs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">):</span>
@@ -979,10 +997,10 @@
 
 <span class="k">class</span> <span class="nc">RelativeChromosomeSize</span><span class="p">(</span><span class="nb">int</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This is an integer.</span>
-<span class="sd">    </span>
 <span class="sd">    Relative Chromosome size in base pairs. Equal to Chromosome size minus</span>
 <span class="sd">    forbidden regions (eg: the centromere)</span>
+
+<span class="sd">    Only used for TAD alignment randomization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">RelativeChromosomeSize</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
@@ -1028,12 +1046,13 @@
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

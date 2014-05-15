@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -54,8 +55,39 @@
 
 <span class="kn">from</span> <span class="nn">bisect</span>    <span class="kn">import</span> <span class="n">bisect_left</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
-<span class="kn">from</span> <span class="nn">math</span>      <span class="kn">import</span> <span class="n">log10</span>
+<span class="kn">from</span> <span class="nn">math</span>      <span class="kn">import</span> <span class="n">log10</span><span class="p">,</span> <span class="n">exp</span>
+<span class="kn">from</span> <span class="nn">warnings</span>  <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+
+<span class="k">def</span> <span class="nf">newton_raphson</span> <span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">contour</span><span class="p">,</span> <span class="n">sq_length</span><span class="p">,</span> <span class="n">jmax</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xacc</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Newton-Raphson method as defined in:</span>
+<span class="sd">    http://www.maths.tcd.ie/~ryan/TeachingArchive/161/teaching/newton-raphson.c.html</span>
+<span class="sd">    used to search for the persistence length of a given model.</span>
+<span class="sd">    </span>
+<span class="sd">    :param guess: starting value</span>
+<span class="sd">    :param contour: of the model</span>
+<span class="sd">    :param sq_length: square of the distance between first and last particle</span>
+<span class="sd">    :param 100 jmax: number of tries</span>
+<span class="sd">    :param 1e-12 xacc: precision of the optimization</span>
+
+<span class="sd">    :returns: persistence length</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">jmax</span><span class="p">):</span>
+        <span class="n">contour_guess</span> <span class="o">=</span> <span class="n">contour</span> <span class="o">/</span> <span class="n">guess</span>
+        <span class="n">expcx</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">contour_guess</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="c"># function</span>
+        <span class="n">fx</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">contour_guess</span> <span class="o">+</span> <span class="n">expcx</span><span class="p">)</span> <span class="o">-</span> <span class="n">sq_length</span>
+        <span class="c"># derivative</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">contour</span> <span class="o">*</span> <span class="n">expcx</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">guess</span> <span class="o">*</span> <span class="p">(</span><span class="n">expcx</span> <span class="o">+</span> <span class="n">contour_guess</span><span class="p">)</span>
+
+        <span class="n">dx</span> <span class="o">=</span> <span class="o">-</span><span class="n">fx</span> <span class="o">/</span> <span class="n">df</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">xacc</span><span class="p">:</span>
+            <span class="c"># print (&quot;found root after %d attempts, at %f\n&quot; % (j, x))</span>
+            <span class="k">return</span> <span class="n">guess</span>
+        <span class="n">guess</span> <span class="o">+=</span> <span class="n">dx</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;ERROR: exceeded max tries no root</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">Interpolate</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -81,9 +113,45 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">slopes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_list</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
 
-<span class="k">def</span> <span class="nf">zscore</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">log10</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">nozero_log</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+    <span class="c"># Set the virtual minimum of the matrix to half the non-null real minimum</span>
+    <span class="n">minv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">minv</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: probable problem with normalization, check.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">minv</span> <span class="o">/=</span> <span class="mi">2</span>  <span class="c"># TODO: something better</span>
+    <span class="n">logminv</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">minv</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">logminv</span>
+
+<span class="k">def</span> <span class="nf">nozero_log_list</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+    <span class="c"># Set the virtual minimum of the matrix to half the non-null real minimum</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">transform</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">minv</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">minv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">minv</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: probable problem with normalization, check.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">minv</span> <span class="o">/=</span> <span class="mi">2</span>  <span class="c"># TODO: something better</span>
+    <span class="n">logminv</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">minv</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">transform</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="k">else</span> <span class="n">logminv</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+    
+
+<span class="k">def</span> <span class="nf">zscore</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    _______________________/___</span>
+<span class="sd">    Calculates the log10, Z-score of a given list of values.</span>
+<span class="sd">    </span>
+<span class="sd">    .. note::</span>
+<span class="sd">    </span>
+<span class="sd">      _______________________/___</span>
+<span class="sd">                            /</span>
+<span class="sd">                           /</span>
 <span class="sd">                          /</span>
 <span class="sd">                         /</span>
 <span class="sd">                        /</span>
@@ -94,28 +162,18 @@
 <span class="sd">                   /</span>
 <span class="sd">                  /</span>
 <span class="sd">                 /</span>
-<span class="sd">                /</span>
-<span class="sd">               /</span>
-<span class="sd">              /                     score</span>
-<span class="sd">          ___/_________________________________</span>
-<span class="sd">            /</span>
-
+<span class="sd">                /                     score</span>
+<span class="sd">            ___/_________________________________</span>
+<span class="sd">              /</span>
+<span class="sd">  </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># do not take into account the diagonal</span>
-    <span class="n">nop</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">i</span> <span class="o">+</span> <span class="n">size</span> <span class="o">*</span> <span class="n">i</span><span class="p">,</span>  <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)])</span>
-    <span class="n">minv</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
-    <span class="c"># get the log10 of values</span>
-    <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">log10</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">nop</span> <span class="k">else</span> <span class="n">log10</span><span class="p">(</span><span class="n">minv</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
-    <span class="n">mean_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
-    <span class="n">std_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+    <span class="c"># get the log trasnform values</span>
+    <span class="n">nozero_log</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="n">mean_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">std_v</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span> <span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="c"># replace values by z-score</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean_v</span><span class="p">)</span> <span class="o">/</span> <span class="n">std_v</span>
-        <span class="k">elif</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">minv</span><span class="p">)</span> <span class="o">-</span> <span class="n">mean_v</span><span class="p">)</span> <span class="o">/</span> <span class="n">std_v</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">99</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean_v</span><span class="p">)</span> <span class="o">/</span> <span class="n">std_v</span>
 
 
 <div class="viewcode-block" id="calinski_harabasz"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.tadmaths.calinski_harabasz">[docs]</a><span class="k">def</span> <span class="nf">calinski_harabasz</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">clusters</span><span class="p">):</span>
@@ -130,9 +188,9 @@
 
 <span class="sd">        CH(k) = \\frac{B(k) / (k-1)}{W(k)/(n - k)}</span>
 
-<span class="sd">    Where :math:`B(k)` and :math:`W(k)` are between and within cluster sums of</span>
-<span class="sd">    squares, with :math:`k` clusters, and :math:`n` the total number of</span>
-<span class="sd">    points (models in this case).</span>
+<span class="sd">    Where :math:`B(k)` and :math:`W(k)` are the between and within cluster sums</span>
+<span class="sd">    of squares, with :math:`k` clusters, and :math:`n` the total number of</span>
+<span class="sd">    elements (models in this case).</span>
 <span class="sd">   </span>
 <span class="sd">    :param scores: a dict with, as keys, a tuple with a pair of models; and, as</span>
 <span class="sd">       value, the distance between these models.</span>
@@ -204,12 +262,13 @@
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

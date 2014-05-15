@@ -31,7 +31,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
         try:
             exp.load_hic_data('../../scripts/sample_data/HIC_{0}_{1}_{1}_{2}_obs.txt'.format(
                               exp.name, my_chrom.name, res))
-        except AttributeError:
+        except IOError:
             print 'file not found for experiment: ' + exp.name
             continue
         print exp
@@ -39,10 +39,56 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
 
 .. ansi-block::
 
-    Experiment k562 (resolution: 100Kb, TADs: 43, Hi-C rows: 639, normalized: None)
-    Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None)
+    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
+      warn('WARNING: non integer values')
+    
+    WARNING: removing columns having less than 24.165 counts: (detected threshold)
+        8    9   10   12  245  246  247  248  249  250  251  252  253  254  255
+      256  257  258  259  260  261  262  263  264  265  266  267  268  269  270
+      271  272  273  274  275  276  277  278  279  280  281  282  283  284  285
+      286  287  288  289  290  291  292  293  294  295  296  297  298  299  300
+      301  302  303  304  305  306  307  308  309  310  311  312  313  314  315
+      316  317  318  319  320  321  322  323  324  639
+
+
+.. ansi-block::
+
+    Experiment k562:
+       resolution        : 100Kb
+       TADs              : 37
+       Hi-C rows         : 639
+       normalized        : None
+       identifier        : k562
+       cell type         : wild type
+       restriction enzyme: UNKNOWN
+       project           : TADbit tutorial
+    
+    Experiment gm06690:
+       resolution        : 100Kb
+       TADs              : 34
+       Hi-C rows         : 639
+       normalized        : None
+       identifier        : gm06690
+       cell type         : cancer
+       restriction enzyme: UNKNOWN
+       project           : TADbit tutorial
+    
     file not found for experiment: k562+gm06690
     file not found for experiment: batch_gm06690_k562
+
+
+.. ansi-block::
+
+    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:209: ComplexWarning: Casting complex values to real discards the imaginary part
+      round(root, 3), ' '.join(
+    
+    WARNING: removing columns having less than 67.485 counts: (detected threshold)
+      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
+      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
+      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
+      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
+      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
+      321  322  323  324  639
 
 
 The log indicates that experiment "k562+gm06690" had no file. Such experiment was built ad-hoc in our previous tutorial and needs to be created again by summing the Hi-C matrices from the individual experiments.
@@ -60,7 +106,30 @@ The log indicates that experiment "k562+gm06690" had no file. Such experiment wa
 
 .. ansi-block::
 
-    [Experiment k562 (resolution: 100Kb, TADs: 43, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: None)]
+    
+    WARNING: removing columns having less than 73.545 counts: (detected threshold)
+      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
+      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
+      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
+      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
+      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
+      321  322  323  324  639
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:202: UserWarning: WARNING: experiments should be normalized before being summed
+    
+      'summed\n')
+    
+    WARNING: removing columns having less than 73.545 counts: (detected threshold)
+      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
+      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
+      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
+      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
+      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
+      321  322  323  324  639
+
+
+.. ansi-block::
+
+    [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: None)]
 
 
 Optimization of IMP 3D modeling parameters
@@ -69,109 +138,158 @@ Optimization of IMP 3D modeling parameters
 
 In the previous tutorial we found a specific TAD (region 406 to 448) that seemed quite conserved accross different cell types.
 
-Next, we will optimize the three IMP parameters for this TAD. The IMP parameters to optimize are maximal distance between two non-interacting particles (maxdist), Upper-bound Z-score (upfreq) and Lower-bound Z-score (lowfreq). For details see Bau & Marti-Renom. METHODS, 2012, 58:300-306.
+Next, we will optimize the three IMP parameters for this TAD. The IMP parameters to optimize are maximal distance between two non-interacting particles (maxdist), Upper-bound Z-score (upfreq) and Lower-bound Z-score (lowfreq). For details see Bau & Marti-Renom. METHODS [Baù2012]_.
 
 .. code:: python
 
-    optimizer = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=1000)
+    optimizer = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=2000)
 
 .. ansi-block::
 
-    Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: None)
-    100 200
-
-
-.. ansi-block::
-
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:521: UserWarning: WARNING: normalizing according to visibility method
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:700: UserWarning: WARNING: normalizing according to visibility method
       warn('WARNING: normalizing according to visibility method')
 
+
+``cutoff`` value corresponds to the distance limit, in nanometers, to consider if two particles of a model are interacting or not. A wise choice corresponds to two time the resolution times the scale factor (0.01), which in this case is :math:`cutoff = 100Kb \times 2 \times scale = 100000 \times 2 \times 0.01 = 2000`
+
+*Note: Usually the number of models to generate and to keep, should be respectively 500 and 100.*
 
 .. code:: python
 
     # Optimize parameters. Be aware that this step is CPU intensive. If you want to se the progress, set verbose=True.
     optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
-                              scale_range=[0.005], maxdist_range=(300, 700, 200), verbose=True)
+                              maxdist_range=(2000, 4000, 500), verbose=True)
 
 
 .. ansi-block::
 
-        1   0.2 -1 300 0.005 0.742589665946
-        2   0.2 -0.8 300 0.005 0.743731102622
-        3   0.2 -0.6 300 0.005 0.743129144311
-        4   0.2 -0.4 300 0.005 0.745745969261
-        5   0.2 -0.2 300 0.005 0.747609817096
-        6   0.2 0 300 0.005 0.745233469167
-        7   0.4 -1 300 0.005 0.770054963037
-        8   0.4 -0.8 300 0.005 0.76942242474
-        9   0.4 -0.6 300 0.005 0.770251379695
-       10   0.4 -0.4 300 0.005 0.771380386735
-       11   0.4 -0.2 300 0.005 0.770437793549
-       12   0.4 0 300 0.005 0.770763164744
-       13   0.6 -1 300 0.005 0.76005248793
-       14   0.6 -0.8 300 0.005 0.760415040959
-       15   0.6 -0.6 300 0.005 0.761461637946
-       16   0.6 -0.4 300 0.005 0.762443522726
-       17   0.6 -0.2 300 0.005 0.762557747165
-       18   0.6 0 300 0.005 0.764553556895
-       19   0.8 -1 300 0.005 0.724943456545
-       20   0.8 -0.8 300 0.005 0.729637474149
-       21   0.8 -0.6 300 0.005 0.729382490436
-       22   0.8 -0.4 300 0.005 0.727957455579
-       23   0.8 -0.2 300 0.005 0.727951762476
-       24   0.8 0 300 0.005 0.722713060451
-       25   0.2 -1 500 0.005 0.745980082303
-       26   0.2 -0.8 500 0.005 0.747126241596
-       27   0.2 -0.6 500 0.005 0.746372473251
-       28   0.2 -0.4 500 0.005 0.745176160556
-       29   0.2 -0.2 500 0.005 0.743964799592
-       30   0.2 0 500 0.005 0.743067944566
-       31   0.4 -1 500 0.005 0.765954987658
-       32   0.4 -0.8 500 0.005 0.765244183252
-       33   0.4 -0.6 500 0.005 0.764158662204
-       34   0.4 -0.4 500 0.005 0.766008963176
-       35   0.4 -0.2 500 0.005 0.766867625799
-       36   0.4 0 500 0.005 0.763996590231
-       37   0.6 -1 500 0.005 0.758411236105
-       38   0.6 -0.8 500 0.005 0.757062187495
-       39   0.6 -0.6 500 0.005 0.755222961808
-       40   0.6 -0.4 500 0.005 0.756663183488
-       41   0.6 -0.2 500 0.005 0.754922984664
-       42   0.6 0 500 0.005 0.757588493623
-       43   0.8 -1 500 0.005 0.727671000083
-       44   0.8 -0.8 500 0.005 0.729532867757
-       45   0.8 -0.6 500 0.005 0.727060609187
-       46   0.8 -0.4 500 0.005 0.724870624667
-       47   0.8 -0.2 500 0.005 0.725864379595
-       48   0.8 0 500 0.005 0.725582367188
-       49   0.2 -1 700 0.005 0.734145482851
-       50   0.2 -0.8 700 0.005 0.740273068246
-       51   0.2 -0.6 700 0.005 0.738971131719
-       52   0.2 -0.4 700 0.005 0.737529831999
-       53   0.2 -0.2 700 0.005 0.740222403839
-       54   0.2 0 700 0.005 0.734277725033
-       55   0.4 -1 700 0.005 0.760666138241
-       56   0.4 -0.8 700 0.005 0.767745409564
-       57   0.4 -0.6 700 0.005 0.76672114195
-       58   0.4 -0.4 700 0.005 0.766339698097
-       59   0.4 -0.2 700 0.005 0.766485574888
-       60   0.4 0 700 0.005 0.765149451534
-       61   0.6 -1 700 0.005 0.748673149088
-       62   0.6 -0.8 700 0.005 0.751237098688
-       63   0.6 -0.6 700 0.005 0.752105091377
-       64   0.6 -0.4 700 0.005 0.755911312093
-       65   0.6 -0.2 700 0.005 0.75376621202
-       66   0.6 0 700 0.005 0.752738662488
-       67   0.8 -1 700 0.005 0.719467207186
-       68   0.8 -0.8 700 0.005 0.718419703596
-       69   0.8 -0.6 700 0.005 0.719658609213
-       70   0.8 -0.4 700 0.005 0.72112707188
-       71   0.8 -0.2 700 0.005 0.717889000058
-       72   0.8 0 700 0.005 0.722267543013
+        1  0.2 -1 2000 0.01 0.7685079084
+        2  0.2 -0.8 2000 0.01 0.7685079084
+        3  0.2 -0.6 2000 0.01 0.769312534002
+        4  0.2 -0.4 2000 0.01 0.774552988272
+        5  0.2 -0.2 2000 0.01 0.774799693632
+        6  0.2 0 2000 0.01 0.779079372102
+        7  0.4 -1 2000 0.01 0.77968485295
+        8  0.4 -0.8 2000 0.01 0.77968485295
+        9  0.4 -0.6 2000 0.01 0.777330669016
+       10  0.4 -0.4 2000 0.01 0.781161643149
+       11  0.4 -0.2 2000 0.01 0.784325067495
+       12  0.4 0 2000 0.01 0.786674923707
+       13  0.6 -1 2000 0.01 0.784429455755
+       14  0.6 -0.8 2000 0.01 0.784429455755
+       15  0.6 -0.6 2000 0.01 0.785634447252
+       16  0.6 -0.4 2000 0.01 0.786321444973
+       17  0.6 -0.2 2000 0.01 0.786910943468
+       18  0.6 0 2000 0.01 0.786984401856
+       19  0.8 -1 2000 0.01 0.790513719434
+       20  0.8 -0.8 2000 0.01 0.790513719434
+       21  0.8 -0.6 2000 0.01 0.790296856543
+       22  0.8 -0.4 2000 0.01 0.793885340581
+       23  0.8 -0.2 2000 0.01 0.789759250026
+       24  0.8 0 2000 0.01 0.789797737342
+       25  0.2 -1 2500 0.01 0.750962048643
+       26  0.2 -0.8 2500 0.01 0.750962048643
+       27  0.2 -0.6 2500 0.01 0.757205157705
+       28  0.2 -0.4 2500 0.01 0.761306112068
+       29  0.2 -0.2 2500 0.01 0.774749585795
+       30  0.2 0 2500 0.01 0.77526716922
+       31  0.4 -1 2500 0.01 0.768413156879
+       32  0.4 -0.8 2500 0.01 0.768413156879
+       33  0.4 -0.6 2500 0.01 0.769621944212
+       34  0.4 -0.4 2500 0.01 0.774313586043
+       35  0.4 -0.2 2500 0.01 0.784154703349
+       36  0.4 0 2500 0.01 0.780215999106
+       37  0.6 -1 2500 0.01 0.7769226588
+       38  0.6 -0.8 2500 0.01 0.7769226588
+       39  0.6 -0.6 2500 0.01 0.7771795099
+       40  0.6 -0.4 2500 0.01 0.781692802602
+       41  0.6 -0.2 2500 0.01 0.791132811629
+       42  0.6 0 2500 0.01 0.791622500864
+       43  0.8 -1 2500 0.01 0.794414661228
+       44  0.8 -0.8 2500 0.01 0.794414661228
+       45  0.8 -0.6 2500 0.01 0.791675414244
+       46  0.8 -0.4 2500 0.01 0.797601045479
+       47  0.8 -0.2 2500 0.01 0.797521713992
+       48  0.8 0 2500 0.01 0.797093368434
+       49  0.2 -1 3000 0.01 0.747088558176
+       50  0.2 -0.8 3000 0.01 0.747088558176
+       51  0.2 -0.6 3000 0.01 0.745301762181
+       52  0.2 -0.4 3000 0.01 0.75657287698
+       53  0.2 -0.2 3000 0.01 0.768255433103
+       54  0.2 0 3000 0.01 0.771134956344
+       55  0.4 -1 3000 0.01 0.760224850725
+       56  0.4 -0.8 3000 0.01 0.760224850725
+       57  0.4 -0.6 3000 0.01 0.758212146329
+       58  0.4 -0.4 3000 0.01 0.76576862456
+       59  0.4 -0.2 3000 0.01 0.778685124478
+       60  0.4 0 3000 0.01 0.779102317515
+       61  0.6 -1 3000 0.01 0.77089869622
+       62  0.6 -0.8 3000 0.01 0.77089869622
+       63  0.6 -0.6 3000 0.01 0.771149348295
+       64  0.6 -0.4 3000 0.01 0.778054314513
+       65  0.6 -0.2 3000 0.01 0.788888301661
+       66  0.6 0 3000 0.01 0.792927420622
+       67  0.8 -1 3000 0.01 0.787058090092
+       68  0.8 -0.8 3000 0.01 0.787058090092
+       69  0.8 -0.6 3000 0.01 0.787064682158
+       70  0.8 -0.4 3000 0.01 0.789444985636
+       71  0.8 -0.2 3000 0.01 0.795363982681
+       72  0.8 0 3000 0.01 0.798344059632
+       73  0.2 -1 3500 0.01 0.742503135603
+       74  0.2 -0.8 3500 0.01 0.742503135603
+       75  0.2 -0.6 3500 0.01 0.745313876975
+       76  0.2 -0.4 3500 0.01 0.757818572633
+       77  0.2 -0.2 3500 0.01 0.768088409932
+       78  0.2 0 3500 0.01 0.772953014174
+       79  0.4 -1 3500 0.01 0.758090294693
+       80  0.4 -0.8 3500 0.01 0.758090294693
+       81  0.4 -0.6 3500 0.01 0.756077064231
+       82  0.4 -0.4 3500 0.01 0.760791799894
+       83  0.4 -0.2 3500 0.01 0.770118662441
+       84  0.4 0 3500 0.01 0.771190886989
+       85  0.6 -1 3500 0.01 0.755069982191
+       86  0.6 -0.8 3500 0.01 0.755069982191
+       87  0.6 -0.6 3500 0.01 0.753952944201
+       88  0.6 -0.4 3500 0.01 0.760897343161
+       89  0.6 -0.2 3500 0.01 0.771145005701
+       90  0.6 0 3500 0.01 0.773442327166
+       91  0.8 -1 3500 0.01 0.772281982099
+       92  0.8 -0.8 3500 0.01 0.772281982099
+       93  0.8 -0.6 3500 0.01 0.774513250696
+       94  0.8 -0.4 3500 0.01 0.776897099364
+       95  0.8 -0.2 3500 0.01 0.780965488029
+       96  0.8 0 3500 0.01 0.778109941084
+       97  0.2 -1 4000 0.01 0.74469288042
+       98  0.2 -0.8 4000 0.01 0.74469288042
+       99  0.2 -0.6 4000 0.01 0.744839537795
+      100  0.2 -0.4 4000 0.01 0.749552494453
+      101  0.2 -0.2 4000 0.01 0.756184508999
+      102  0.2 0 4000 0.01 0.759171645369
+      103  0.4 -1 4000 0.01 0.737113094756
+      104  0.4 -0.8 4000 0.01 0.737113094756
+      105  0.4 -0.6 4000 0.01 0.737373689722
+      106  0.4 -0.4 4000 0.01 0.739865712079
+      107  0.4 -0.2 4000 0.01 0.74968044876
+      108  0.4 0 4000 0.01 0.753525984586
+      109  0.6 -1 4000 0.01 0.740316370858
+      110  0.6 -0.8 4000 0.01 0.740316370858
+      111  0.6 -0.6 4000 0.01 0.739165113831
+      112  0.6 -0.4 4000 0.01 0.743513322704
+      113  0.6 -0.2 4000 0.01 0.7493620759
+      114  0.6 0 4000 0.01 0.751928906505
+      115  0.8 -1 4000 0.01 0.745707450814
+      116  0.8 -0.8 4000 0.01 0.745707450814
+      117  0.8 -0.6 4000 0.01 0.743929246866
+      118  0.8 -0.4 4000 0.01 0.746609953329
+      119  0.8 -0.2 4000 0.01 0.748258868417
+      120  0.8 0 4000 0.01 0.745006154143
 
 
 .. note::
    The above warning is given when a small matrix is loaded. TADbit has a filtering function that is applied to all Hi-C matrices with the aim of removing entire rows with very low counts. Those rows/colums are treated then for modeling as "missing-data" points. This flitering function can only be applied for relatively large matrices.
+
+.. note::
+   By default TADbit does not store the models generated during the optimization, however, in case they are needed, the option savedata may allow to store them.
 
 
 Optimizing from Experiment
@@ -184,14 +302,8 @@ The exact same as above can be done from Experiment objects directly:
 
     optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
                                            lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
-                                           scale_range=[0.005], maxdist_range=(300, 700, 200), verbose=False)
-
-
-.. ansi-block::
-
-    Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: visibility)
-    100 200
-
+                                           maxdist_range=(2000, 4000, 500), 
+                                           verbose=False)
 
 Visualize the results
 ---------------------
@@ -207,7 +319,7 @@ Visualize the results
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_20_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_21_0.png
 
 
 We can also ask to mark on the plot the best N combination of parameters with the "show_best" parameter.
@@ -219,7 +331,7 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_22_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_23_0.png
 
 
 .. code:: python
@@ -248,8 +360,8 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
 .. ansi-block::
 
-    [[0.005], [300.0, 500.0, 700.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
-    (0.77138038673540765, 0.005, 300.0, -0.4, 0.4)
+    [[0.01], [2000.0, 2500.0, 3000.0, 3500.0, 4000.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
+    (0.72369757668075985, 0.01, 2000.0, -0.2, 0.8)
 
 
 One can also visualize the parameter optimization according to ne of the three optimization parameters.
@@ -261,16 +373,16 @@ One can also visualize the parameter optimization according to ne of the three o
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_25_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_26_0.png
 
 
 .. code:: python
 
-    optimizer.plot_2d(skip={"scale":0.005}, show_best=10)
+    optimizer.plot_2d(skip={"scale":0.01}, show_best=10)
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_26_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_27_0.png
 
 
 TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
@@ -282,26 +394,20 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_28_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_29_0.png
 
 
 .. code:: python
 
     optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1., -0.0, 0.1), upfreq_range=(0.3, 0.6, 0.05), 
-                              scale_range=[0.005], maxdist_range=[200,250,300,350], verbose=False)
+                              scale_range=[0.01], maxdist_range=[2000,2250,2500,2750,3000], verbose=False)
 
 .. code:: python
 
-    optimizer.scale_range
-    optimizer.maxdist_range
+    optimizer.plot_2d()
 
 
-
-
-.. ansi-block::
-
-    ['200', '250', '300', '350', '500', '700']
-
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_31_0.png
 
 
 .. code:: python
@@ -309,7 +415,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     optimizer.plot_2d(show_best=100)
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_31_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_32_0.png
 
 
 .. code:: python
@@ -318,13 +424,6 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 .. code:: python
 
     optimizer2 = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=1000)
-
-.. ansi-block::
-
-    Experiment gm06690 (resolution: 100Kb, TADs: 31, Hi-C rows: 639, normalized: visibility)
-    100 200
-
-
 .. code:: python
 
     optimizer2.load_from_file('results.log')
@@ -336,7 +435,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 .. ansi-block::
 
-    ('0.005', '300', '0.2', '-0.4')
+    ('0.01', '2250', '0.4', '-0.8')
 
 
 
@@ -345,7 +444,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     optimizer2.plot_2d(show_best=20)
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_36_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_37_0.png
 
 
 Retrieve best parameters
@@ -363,5 +462,5 @@ Once done, best results can be returned as a dictionary to be used for modeling 
 
 .. ansi-block::
 
-    {'maxdist': 250.0, 'upfreq': 0.4, 'kforce': 5, 'reference': 'gm cell from Job Dekker 2009', 'lowfreq': -0.1, 'scale': 0.005}
+    {'maxdist': 2000.0, 'upfreq': 0.8, 'kforce': 5, 'reference': 'gm cell from Job Dekker 2009', 'lowfreq': -0.2, 'scale': 0.01}
 

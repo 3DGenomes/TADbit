@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -81,7 +82,7 @@
 
 <span class="k">def</span> <span class="nf">core_nw_long</span><span class="p">(</span><span class="n">p_scores</span><span class="p">,</span> <span class="n">penalty</span><span class="p">,</span> <span class="n">l_p1</span><span class="p">,</span> <span class="n">l_p2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Core of the Needleman-Wunsch algorithm </span>
+<span class="sd">    Core of the long Needleman-Wunsch algorithm that aligns matrices</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">scores</span> <span class="o">=</span> <span class="n">virgin_score</span><span class="p">(</span><span class="n">penalty</span><span class="p">,</span> <span class="n">l_p1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l_p2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">ins</span> <span class="o">=</span> <span class="n">rmv</span> <span class="o">=</span> <span class="mi">0</span>
@@ -115,59 +116,59 @@
     <span class="k">while</span> <span class="n">i</span> <span class="ow">and</span> <span class="n">j</span><span class="p">:</span>
         <span class="n">score</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">p_scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
             <span class="n">ins</span> <span class="o">=</span> <span class="n">rmv</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
             <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
             <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
             <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
             <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">3</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">3</span><span class="p">]):</span>
             <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">3</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">3</span><span class="p">]):</span>
             <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">4</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">4</span><span class="p">]):</span>
             <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">4</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pens</span><span class="p">[</span><span class="mi">4</span><span class="p">]):</span>
             <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
@@ -185,7 +186,7 @@
 
 <span class="k">def</span> <span class="nf">core_nw</span><span class="p">(</span><span class="n">p_scores</span><span class="p">,</span> <span class="n">penalty</span><span class="p">,</span> <span class="n">l_p1</span><span class="p">,</span> <span class="n">l_p2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Core of the Needleman-Wunsch algorithm </span>
+<span class="sd">    Core of the fast Needleman-Wunsch algorithm that aligns matrices</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">scores</span> <span class="o">=</span> <span class="n">virgin_score</span><span class="p">(</span><span class="n">penalty</span><span class="p">,</span> <span class="n">l_p1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l_p2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">l_p1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
@@ -201,16 +202,16 @@
     <span class="k">while</span> <span class="n">i</span> <span class="ow">and</span> <span class="n">j</span><span class="p">:</span>
         <span class="n">score</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">p_scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">penalty</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">penalty</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">penalty</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">_equal</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">penalty</span><span class="p">):</span>
             <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">align1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
             <span class="n">align2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
@@ -221,7 +222,7 @@
     <span class="k">return</span> <span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
 
 
-<span class="k">def</span> <span class="nf">equal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">cut_off</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_equal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">cut_off</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Equality for floats</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -231,8 +232,11 @@
 <div class="viewcode-block" id="optimal_cmo"><a class="viewcode-back" href="../../../reference/reference_clustering.html#pytadbit.tad_clustering.tad_cmo.optimal_cmo">[docs]</a><span class="k">def</span> <span class="nf">optimal_cmo</span><span class="p">(</span><span class="n">hic1</span><span class="p">,</span> <span class="n">hic2</span><span class="p">,</span> <span class="n">num_v</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_num_v</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                 <span class="n">method</span><span class="o">=</span><span class="s">&#39;frobenius&#39;</span><span class="p">,</span> <span class="n">long_nw</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">long_dist</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the optimal contact map overlap between 2 matrices </span>
 
-<span class="sd">    Note: penalty is defined as the minimum value of the pre-scoring matrix.</span>
+<span class="sd">    .. note::</span>
+
+<span class="sd">      penalty is defined as the minimum value of the pre-scoring matrix.</span>
 <span class="sd">    </span>
 <span class="sd">    :param hic1: first matrix to align</span>
 <span class="sd">    :param hic2: second matrix to align</span>
@@ -278,13 +282,13 @@
     <span class="n">vec2</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">val2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">vec2</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">num_v</span><span class="p">)])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
     <span class="n">nearest</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
     <span class="n">nw</span> <span class="o">=</span> <span class="n">core_nw_long</span> <span class="k">if</span> <span class="n">long_nw</span> <span class="k">else</span> <span class="n">core_nw</span>
-    <span class="n">dister</span> <span class="o">=</span> <span class="n">get_dist_long</span> <span class="k">if</span> <span class="n">long_dist</span> <span class="k">else</span> <span class="n">get_dist</span>
+    <span class="n">dister</span> <span class="o">=</span> <span class="n">_get_dist_long</span> <span class="k">if</span> <span class="n">long_dist</span> <span class="k">else</span> <span class="n">_get_dist</span>
     <span class="n">best_alis</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">factors</span> <span class="ow">in</span> <span class="n">product</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">repeat</span><span class="o">=</span><span class="n">num</span><span class="p">):</span>
             <span class="n">vec1p</span> <span class="o">=</span> <span class="n">factors</span> <span class="o">*</span> <span class="n">vec1</span><span class="p">[:,</span> <span class="p">:</span><span class="n">num</span><span class="p">]</span>
             <span class="n">vec2p</span> <span class="o">=</span> <span class="n">vec2</span><span class="p">[:,</span> <span class="p">:</span><span class="n">num</span><span class="p">]</span>
-            <span class="n">p_scores</span> <span class="o">=</span> <span class="n">prescoring</span><span class="p">(</span><span class="n">vec1p</span><span class="p">,</span> <span class="n">vec2p</span><span class="p">,</span> <span class="n">l_p1</span><span class="p">,</span> <span class="n">l_p2</span><span class="p">)</span>
+            <span class="n">p_scores</span> <span class="o">=</span> <span class="n">_prescoring</span><span class="p">(</span><span class="n">vec1p</span><span class="p">,</span> <span class="n">vec2p</span><span class="p">,</span> <span class="n">l_p1</span><span class="p">,</span> <span class="n">l_p2</span><span class="p">)</span>
             <span class="n">penalty</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">npmin</span><span class="p">(</span><span class="n">p_scores</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="o">-</span><span class="n">npmax</span><span class="p">(</span><span class="n">p_scores</span><span class="p">)])</span>
             <span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="n">nw</span><span class="p">(</span><span class="n">p_scores</span><span class="p">,</span> <span class="n">penalty</span><span class="p">,</span> <span class="n">l_p1</span><span class="p">,</span> <span class="n">l_p2</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
@@ -312,7 +316,7 @@
                                             <span class="k">if</span> <span class="n">x</span><span class="o">!=</span><span class="s">&#39;-&#39;</span> <span class="k">else</span> <span class="s">&#39;-&#39;</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">align1</span><span class="p">])</span>
         <span class="k">print</span> <span class="s">&#39;TADS 2: &#39;</span><span class="o">+</span><span class="s">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%4s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> \
                                             <span class="k">if</span> <span class="n">x</span><span class="o">!=</span><span class="s">&#39;-&#39;</span> <span class="k">else</span> <span class="s">&#39;-&#39;</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">align2</span><span class="p">])</span>
-    <span class="n">rho</span><span class="p">,</span> <span class="n">pval</span> <span class="o">=</span> <span class="n">get_score</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">hic1</span><span class="p">,</span> <span class="n">hic2</span><span class="p">)</span>
+    <span class="n">rho</span><span class="p">,</span> <span class="n">pval</span> <span class="o">=</span> <span class="n">_get_score</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">hic1</span><span class="p">,</span> <span class="n">hic2</span><span class="p">)</span>
     <span class="c"># print best_pen</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">best_pen</span><span class="p">:</span>
         <span class="k">print</span> <span class="s">&#39;WARNING: penalty NULL!!!</span><span class="se">\n\n</span><span class="s">&#39;</span>
@@ -329,7 +333,7 @@
            <span class="p">[[</span><span class="n">penalty</span> <span class="o">*</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">zeros</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">l_p1</span><span class="p">)]</span>
 
 
-<span class="k">def</span> <span class="nf">prescoring</span><span class="p">(</span><span class="n">vc1</span><span class="p">,</span> <span class="n">vc2</span><span class="p">,</span> <span class="n">l_p1</span><span class="p">,</span> <span class="n">l_p2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_prescoring</span><span class="p">(</span><span class="n">vc1</span><span class="p">,</span> <span class="n">vc2</span><span class="p">,</span> <span class="n">l_p1</span><span class="p">,</span> <span class="n">l_p2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    yes... this is the bottle neck, almost 2/3 of the time spent here</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -341,7 +345,7 @@
     <span class="c">#return [[sum(vc1[i] * vc2[j]) for j in xrange(l_p2)] for i in xrange(l_p1)]</span>
 
 
-<span class="k">def</span> <span class="nf">get_dist</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">tad1</span><span class="p">,</span> <span class="n">tad2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_dist</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">tad1</span><span class="p">,</span> <span class="n">tad2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Frobenius norm</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -357,7 +361,7 @@
            <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pp1</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">get_dist_long</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">tad1</span><span class="p">,</span> <span class="n">tad2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_dist_long</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">tad1</span><span class="p">,</span> <span class="n">tad2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Frobenius norm</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -385,7 +389,7 @@
            <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pp1</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">xpen</span>
 
 
-<span class="k">def</span> <span class="nf">get_score</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">tad1</span><span class="p">,</span> <span class="n">tad2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_score</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">tad1</span><span class="p">,</span> <span class="n">tad2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Using Spearman Rho correation value, between matrices.</span>
 <span class="sd">    Computed only in half of the matrix, and without the diagonal</span>
@@ -402,7 +406,7 @@
     <span class="k">return</span> <span class="n">spearmanr</span><span class="p">(</span><span class="n">pp1</span><span class="p">,</span> <span class="n">pp2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">get_OLD_score</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_OLD_score</span><span class="p">(</span><span class="n">align1</span><span class="p">,</span> <span class="n">align2</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Original scoring function, based on contact map overlap.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -442,14 +446,14 @@
     <span class="k">return</span> <span class="n">contacts1</span><span class="p">,</span> <span class="n">contacts2</span>
 
 
-<span class="k">def</span> <span class="nf">run_aleigen</span><span class="p">(</span><span class="n">contacts1</span><span class="p">,</span> <span class="n">contacts2</span><span class="p">,</span> <span class="n">num_v</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_run_aleigen</span><span class="p">(</span><span class="n">contacts1</span><span class="p">,</span> <span class="n">contacts2</span><span class="p">,</span> <span class="n">num_v</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="sd">    * c1, c2 = number of contacts of the first and seconf contact map</span>
-<span class="sd">               (after removing non-matching columns/rows)</span>
-<span class="sd">    * cmo = total number of matching contacts (above the first diagonal)</span>
-<span class="sd">      of the computed overlap</span>
-<span class="sd">    * score = 2*CMO/(C1+C2)</span>
+<span class="sd">        - c1, c2 = number of contacts of the first and seconf contact map</span>
+<span class="sd">                   (after removing non-matching columns/rows)</span>
+<span class="sd">        - cmo = total number of matching contacts (above the first diagonal)</span>
+<span class="sd">          of the computed overlap</span>
+<span class="sd">        - score = 2*CMO/(C1+C2)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">f_string</span> <span class="o">=</span> <span class="s">&#39;/tmp/lala</span><span class="si">%s</span><span class="s">.txt&#39;</span>
@@ -568,12 +572,13 @@
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

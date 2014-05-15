@@ -9,6 +9,7 @@
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -54,7 +55,7 @@
             
   <dl class="function">
 <dt id="pytadbit.imp.imp_modelling.generate_3d_models">
-<tt class="descclassname">pytadbit.imp.imp_modelling.</tt><tt class="descname">generate_3d_models</tt><big>(</big><em>zscores</em>, <em>resolution</em>, <em>nloci</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.01}</em>, <em>values=None</em>, <em>experiment=None</em>, <em>coords=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.imp.imp_modelling.</tt><tt class="descname">generate_3d_models</tt><big>(</big><em>zscores</em>, <em>resolution</em>, <em>nloci</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.01}</em>, <em>values=None</em>, <em>experiment=None</em>, <em>coords=None</em>, <em>zeros=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates three-dimensional models starting from Hi-C data. 
 The final analysis will be performed on the n_keep top models.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -159,7 +160,7 @@ where CONFIG is a dictionary of dictionaries to be passed to this function:</pre
 
 <dl class="class">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels">
-<em class="property">class </em><tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">StructuralModels</tt><big>(</big><em>nloci</em>, <em>models</em>, <em>bad_models</em>, <em>resolution</em>, <em>original_data=None</em>, <em>zscores=None</em>, <em>clusters=None</em>, <em>config=None</em>, <em>experiment=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">StructuralModels</tt><big>(</big><em>nloci</em>, <em>models</em>, <em>bad_models</em>, <em>resolution</em>, <em>original_data=None</em>, <em>zscores=None</em>, <em>clusters=None</em>, <em>config=None</em>, <em>experiment=None</em>, <em>zeros=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class contains three-dimensional models generated from a single Hi-C
 data. They can be reached either by their index (integer representing their
 rank according to objective function value), or by their IMP random intial
@@ -192,7 +193,7 @@ generation of three dimensional models.</li>
 </table>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.align_models">
-<tt class="descname">align_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>in_place=False</em>, <em>reference_model=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.align_models" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">align_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>in_place=False</em>, <em>reference_model=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.align_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.align_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Three-dimensional aligner for structural models.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -481,7 +482,7 @@ correlation</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.deconvolve">
-<tt class="descname">deconvolve</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=None</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>what='dRMSD'</em>, <em>n_best_clusters=10</em>, <em>savefig=None</em>, <em>represent_models=False</em>, <em>figsize=(11</em>, <em>11)</em>, <em>clusters=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.deconvolve" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">deconvolve</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=None</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>what='dRMSD'</em>, <em>n_best_clusters=10</em>, <em>savefig=None</em>, <em>represent_models=False</em>, <em>figsize=(11</em>, <em>11)</em>, <em>clusters=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.deconvolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.deconvolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function performs a deconvolution analysis of a given froup of models.
 It first clusters models based on structural comparison (dRMSD), and
 then, performs a differential contact map between each possible pair
@@ -667,7 +668,7 @@ are in contact or not, default is 2 times resolution, times scale.</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.interactions">
-<tt class="descname">interactions</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>axe=None</em>, <em>error=False</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>average=True</em>, <em>plot=True</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.interactions" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">interactions</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>axe=None</em>, <em>error=False</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>average=True</em>, <em>plot=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.interactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots, for each particle, the number of interactions (particles closer
 than the guiven cut-off). The value given is the average for all models.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -843,7 +844,7 @@ cluster number &#8216;cluster&#8217;</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.view_centroid">
-<tt class="descname">view_centroid</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_centroid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">view_centroid</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_centroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_centroid" title="Permalink to this definition">¶</a></dt>
 <dd><p>shortcut for
 view_models(tool=&#8217;plot&#8217;, show=&#8217;highlighted&#8217;, highlight=&#8217;centroid&#8217;)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1230,7 +1231,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

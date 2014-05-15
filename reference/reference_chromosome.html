@@ -9,6 +9,7 @@
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -122,7 +123,7 @@ complementary descriptive field. For example:</p>
 </table>
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.add_experiment">
-<tt class="descname">add_experiment</tt><big>(</big><em>name</em>, <em>resolution=None</em>, <em>tad_def=None</em>, <em>hic_data=None</em>, <em>replace=False</em>, <em>parser=None</em>, <em>conditions=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.add_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.add_experiment" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add_experiment</tt><big>(</big><em>name</em>, <em>resolution=None</em>, <em>tad_def=None</em>, <em>hic_data=None</em>, <em>norm_data=None</em>, <em>replace=False</em>, <em>parser=None</em>, <em>conditions=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.add_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.add_experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a Hi-C experiment to Chromosome</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -335,7 +336,7 @@ computed experiments.</p>
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.tad_density_plot">
-<tt class="descname">tad_density_plot</tt><big>(</big><em>name</em>, <em>axe=None</em>, <em>focus=None</em>, <em>extras=None</em>, <em>normalized=True</em>, <em>savefig=None</em>, <em>shape='ellipse'</em><big>)</big><a class="headerlink" href="#pytadbit.chromosome.Chromosome.tad_density_plot" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">tad_density_plot</tt><big>(</big><em>name</em>, <em>axe=None</em>, <em>focus=None</em>, <em>extras=None</em>, <em>normalized=True</em>, <em>savefig=None</em>, <em>shape='ellipse'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.tad_density_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.tad_density_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw an summary of the TAD found in a given experiment and their density
 in terms of relative Hi-C interaction count.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -537,7 +538,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 14, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

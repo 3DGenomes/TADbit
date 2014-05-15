@@ -9,6 +9,7 @@
     
     <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -122,7 +123,7 @@ loaded or calculated.</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search">
-<tt class="descname">load_grid_search</tt><big>(</big><em>filenames</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>verbose=True</em>, <em>n_cpus=1</em><big>)</big><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load_grid_search</tt><big>(</big><em>filenames</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>verbose=True</em>, <em>n_cpus=1</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.load_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads one file or a list of files containing pre-calculated Structural
 Models (keep_models parameter used). And correlate each set of models
 with real data. Usefull to run different correlation on the same data
@@ -210,6 +211,8 @@ values</li>
 <li><strong>scale_range</strong> (<em>0.01</em>) &#8211; upper and lower bounds used to search for
 the optimal scale parameter (nm per nucleotide). The last value of
 the input tuple is the incremental step for scale parameter values</li>
+<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; concatenate all generated models into a dictionary
+and save it into a file named by this argument</li>
 <li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; print the results to the standard output</li>
 </ul>
 </td>
@@ -310,7 +313,7 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 14, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

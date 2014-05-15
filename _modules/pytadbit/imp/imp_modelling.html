@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +36,8 @@
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -51,15 +52,15 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span> <span class="kn">import</span> <span class="n">CONFIG</span><span class="p">,</span> <span class="n">NROUNDS</span><span class="p">,</span> <span class="n">STEPS</span><span class="p">,</span> <span class="n">LSTEPS</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span>           <span class="kn">import</span> <span class="n">CONFIG</span><span class="p">,</span> <span class="n">NROUNDS</span><span class="p">,</span> <span class="n">STEPS</span><span class="p">,</span> <span class="n">LSTEPS</span>
 <span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">StructuralModels</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">IMPmodel</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">polyfit</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">fabs</span><span class="p">,</span> <span class="nb">pow</span> <span class="k">as</span> <span class="n">power</span>
-<span class="kn">from</span> <span class="nn">cPickle</span> <span class="kn">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span>         <span class="kn">import</span> <span class="n">IMPmodel</span>
+<span class="kn">from</span> <span class="nn">scipy</span>                         <span class="kn">import</span> <span class="n">polyfit</span>
+<span class="kn">from</span> <span class="nn">math</span>                          <span class="kn">import</span> <span class="n">fabs</span><span class="p">,</span> <span class="nb">pow</span> <span class="k">as</span> <span class="n">power</span>
+<span class="kn">from</span> <span class="nn">cPickle</span>                       <span class="kn">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">sys</span>                           <span class="kn">import</span> <span class="n">stdout</span>
+<span class="kn">from</span> <span class="nn">os.path</span>                       <span class="kn">import</span> <span class="n">exists</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="kn">as</span> <span class="nn">mu</span>
-<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">stdout</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">exists</span>
 
 
 <span class="kn">import</span> <span class="nn">IMP.core</span>
@@ -77,9 +78,10 @@
 <span class="n">IMP</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">SILENT</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="generate_3d_models"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.imp_modelling.generate_3d_models">[docs]</a><span class="k">def</span> <span class="nf">generate_3d_models</span><span class="p">(</span><span class="n">zscores</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                       <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keep_all</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                       <span class="n">outfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;dmel_01&#39;</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_3d_models"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.imp_modelling.generate_3d_models">[docs]</a><span class="k">def</span> <span class="nf">generate_3d_models</span><span class="p">(</span><span class="n">zscores</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
+                       <span class="n">n_keep</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keep_all</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                       <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;dmel_01&#39;</span><span class="p">],</span>
+                       <span class="n">values</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function generates three-dimensional models starting from Hi-C data. </span>
 <span class="sd">    The final analysis will be performed on the n_keep top models.</span>
@@ -88,6 +90,17 @@
 <span class="sd">       Hi-C pairwise interactions</span>
 <span class="sd">    :param resolution:  number of nucleotides per Hi-C bin. This will be the </span>
 <span class="sd">       number of nucleotides in each model&#39;s particle</span>
+<span class="sd">    :param nloci: number of particles to model (may not all be present in</span>
+<span class="sd">       zscores)</span>
+<span class="sd">    :param None experiment: experiment from which to do the modelling (used only</span>
+<span class="sd">       for descriptive purpose)</span>
+<span class="sd">    :param None coords: a dictionary like:</span>
+<span class="sd">       ::</span>
+
+<span class="sd">         {&#39;crm&#39;  : &#39;19&#39;,</span>
+<span class="sd">          &#39;start&#39;: 14637,</span>
+<span class="sd">          &#39;end&#39;  : 15689}</span>
+
 <span class="sd">    :param 5000 n_models: number of models to generate</span>
 <span class="sd">    :param 1000 n_keep: number of models used in the final analysis (usually </span>
 <span class="sd">       the top 20% of the generated models). The models are ranked according to</span>
@@ -123,9 +136,6 @@
 <span class="sd">              # Force applied to the restraints inferred to neighbor particles</span>
 <span class="sd">              &#39;kforce&#39;    : 5,</span>
 
-<span class="sd">              # Minimum distance between two non-bonded particles</span>
-<span class="sd">              &#39;lowrdist&#39;  : 100,</span>
-
 <span class="sd">              # Maximum experimental contact distance</span>
 <span class="sd">              &#39;maxdist&#39;   : 600, # OPTIMIZATION: 500-1200</span>
 
@@ -155,13 +165,24 @@
     
     <span class="c"># Particles initial radius</span>
     <span class="k">global</span> <span class="n">RADIUS</span>
-    <span class="n">RADIUS</span> <span class="o">=</span> <span class="n">resolution</span> <span class="o">*</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;scale&#39;</span><span class="p">]</span>
+    <span class="n">RADIUS</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">resolution</span> <span class="o">*</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;scale&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
     <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowrdist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RADIUS</span> <span class="o">*</span> <span class="mf">2.</span>
     
 
+    <span class="k">if</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowrdist&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;maxdist&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: we must prevent you from doing this for &#39;</span> <span class="o">+</span>
+                        <span class="s">&#39;the safe of our universe...</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span> 
+                        <span class="s">&#39;In this case, maxdist must be higher than </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                            <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowrdist&#39;</span><span class="p">])</span> <span class="o">+</span>
+                        <span class="s">&#39;   -&gt; resolution times scale -- </span><span class="si">%s</span><span class="s">*</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                            <span class="n">resolution</span><span class="p">,</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;scale&#39;</span><span class="p">]))</span>
+
     <span class="c"># get SLOPE and regression for all particles of the z-score data</span>
     <span class="k">global</span> <span class="n">SLOPE</span><span class="p">,</span> <span class="n">INTERCEPT</span>
-    <span class="n">zsc_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">zscores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">zscores</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">zscores</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+    <span class="n">zsc_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">zscores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">zscores</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">zscores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="c"># condition is to avoid</span>
+                                             <span class="c"># taking into account selfies</span>
+                                             <span class="c"># and neighbors</span>
     <span class="n">zmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">zsc_vals</span><span class="p">)</span>
     <span class="n">zmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">zsc_vals</span><span class="p">)</span>
     <span class="n">SLOPE</span><span class="p">,</span> <span class="n">INTERCEPT</span>   <span class="o">=</span> <span class="n">polyfit</span><span class="p">([</span><span class="n">zmin</span><span class="p">,</span> <span class="n">zmax</span><span class="p">],</span> <span class="p">[</span><span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;maxdist&#39;</span><span class="p">],</span>
@@ -172,18 +193,13 @@
               <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">close_bins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
     <span class="n">yarray</span> <span class="o">=</span> <span class="p">[</span><span class="n">RADIUS</span> <span class="o">*</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xarray</span><span class="p">))]</span>
     <span class="n">NSLOPE</span><span class="p">,</span> <span class="n">NINTERCEPT</span> <span class="o">=</span> <span class="n">polyfit</span><span class="p">(</span><span class="n">xarray</span><span class="p">,</span> <span class="n">yarray</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="c"># zsc = set([int (k) for k in zscores.keys()] +</span>
-    <span class="c">#           reduce(lambda x, y: x + y,</span>
-    <span class="c">#                  [[int (k) for k in j.keys()] for j in zscores.values()]</span>
-    <span class="c">#                  ))</span>
-
     
     <span class="k">global</span> <span class="n">LOCI</span><span class="p">,</span> <span class="n">NLOCI</span>
-    <span class="n">LOCI</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">([</span><span class="nb">int</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">zscores</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span> <span class="o">+</span>
-                     <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span>
-                            <span class="p">[[</span><span class="nb">int</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">j</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
-                             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">zscores</span><span class="o">.</span><span class="n">values</span><span class="p">()]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c"># if z-scores are generated outside TADbit they may not start at zero</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">zscores</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">zscores</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">+</span>
+                <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">zscores</span><span class="p">])</span>
+    
+    <span class="n">LOCI</span>  <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">nloci</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">first</span><span class="p">)</span>
     <span class="n">NLOCI</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)</span>
     
     <span class="c"># Z-scores</span>
@@ -196,7 +212,28 @@
 
     <span class="n">models</span><span class="p">,</span> <span class="n">bad_models</span> <span class="o">=</span> <span class="n">multi_process_model_generation</span><span class="p">(</span>
         <span class="n">n_cpus</span><span class="p">,</span> <span class="n">n_models</span><span class="p">,</span> <span class="n">n_keep</span><span class="p">,</span> <span class="n">keep_all</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-    
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">xpr</span> <span class="o">=</span> <span class="n">experiment</span>
+        <span class="n">crm</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">crm</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="o">+</span> <span class="n">bad_models</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">m</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;identifier&#39;</span>     <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
+                                <span class="s">&#39;chromosome&#39;</span>     <span class="p">:</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;crm&#39;</span><span class="p">],</span>
+                                <span class="s">&#39;start&#39;</span>          <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">],</span>
+                                <span class="s">&#39;end&#39;</span>            <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">],</span>
+                                <span class="s">&#39;species&#39;</span>        <span class="p">:</span> <span class="n">crm</span><span class="o">.</span><span class="n">species</span><span class="p">,</span>
+                                <span class="s">&#39;cell type&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">cell_type</span><span class="p">,</span>
+                                <span class="s">&#39;experiment type&#39;</span><span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">exp_type</span><span class="p">,</span>
+                                <span class="s">&#39;resolution&#39;</span>     <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
+                                <span class="s">&#39;assembly&#39;</span>       <span class="p">:</span> <span class="n">crm</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+                <span class="n">m</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">][</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">crm</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+                <span class="n">m</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">][</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span>
+            <span class="n">m</span><span class="p">[</span><span class="s">&#39;index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span> <span class="c"># case we are doing optimization</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="o">+</span> <span class="n">bad_models</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">m</span><span class="p">[</span><span class="s">&#39;index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
     <span class="k">if</span> <span class="n">outfile</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">outfile</span><span class="p">):</span>
             <span class="n">old_models</span><span class="p">,</span> <span class="n">old_bad_models</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">))</span>
@@ -210,7 +247,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">StructuralModels</span><span class="p">(</span><span class="n">NLOCI</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">bad_models</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span>
                                 <span class="n">original_data</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">zscores</span><span class="o">=</span><span class="n">zscores</span><span class="p">,</span>
-				<span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">)</span>
+				<span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="n">experiment</span><span class="p">)</span>
 
 </div>
 <span class="k">def</span> <span class="nf">multi_process_model_generation</span><span class="p">(</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">n_models</span><span class="p">,</span> <span class="n">n_keep</span><span class="p">,</span> <span class="n">keep_all</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
@@ -254,6 +291,8 @@
 
 <span class="k">def</span> <span class="nf">generate_IMPmodel</span><span class="p">(</span><span class="n">rand_init</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates one IMP model</span>
+<span class="sd">    </span>
 <span class="sd">    :param rand_init: random number kept as model key, for reproducibility.</span>
 
 <span class="sd">    :returns: a model, that is a dictionary with the log of the objective</span>
@@ -396,7 +435,7 @@
                        <span class="s">&#39;z&#39;</span>          <span class="p">:</span> <span class="p">[],</span>
                        <span class="s">&#39;radius&#39;</span>     <span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
                        <span class="s">&#39;cluster&#39;</span>    <span class="p">:</span> <span class="s">&#39;Singleton&#39;</span><span class="p">,</span>
-                       <span class="s">&#39;rand_init&#39;</span>  <span class="p">:</span> <span class="n">rand_init</span><span class="p">})</span>
+                       <span class="s">&#39;rand_init&#39;</span>  <span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">rand_init</span><span class="p">)})</span>
     <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particles</span><span class="p">():</span>
         <span class="n">result</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">result</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
@@ -413,7 +452,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Add harmonics to all pair of particles.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">NLOCI</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">NLOCI</span><span class="p">):</span>
         <span class="n">p1</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
         <span class="n">num_loci1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -450,7 +489,7 @@
             <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
             <span class="n">kforce1</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;kforce&#39;</span><span class="p">]</span>
             <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicNeighborsRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">kforce1</span><span class="p">)</span>
-            <span class="c">#print &quot;harmo1\t%s\t%s\t%f\t%f&quot; % ( x, y, dist1, kforce1)</span>
+            <span class="c">#prin t&quot;harmo1\t%s\t%s\t%f\t%f&quot; % ( x, y, dist1, kforce1)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">kforce1</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;kforce&#39;</span><span class="p">]</span>
             <span class="n">dist1</span> <span class="o">=</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">]))</span>
@@ -742,12 +781,13 @@
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 07, 2014.
+      Last updated on May 15, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
