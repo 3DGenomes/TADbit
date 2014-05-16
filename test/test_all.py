@@ -298,11 +298,11 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
-                                silent=True)
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         tadbit_weights = exp.norm[:]
         exp.norm = None
+        exp.filter_columns(silent=True)
         exp.normalize_hic()
         self.assertEqual([round(i, 3) for i in tadbit_weights[0][:100]],
                          [round(i, 3) for i in exp.norm[0][:100]])
@@ -319,10 +319,10 @@ class TestTadbit(unittest.TestCase):
 
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
-                                silent=True)
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
+        exp.filter_columns(silent=True)
         exp.get_hic_zscores(zscored=False)
         exp.write_interaction_pairs('lala')
         lines = open('lala').readlines()
@@ -348,16 +348,16 @@ class TestTadbit(unittest.TestCase):
             return
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
         test_chr.add_experiment('exp1', 20000, tad_def=exp4,
-                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
-                                silent=True)
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv')
         exp = test_chr.experiments[0]
-        exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
+        exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv')
+        exp.filter_columns(silent=True)
         exp.normalize_hic(silent=True)
-        result = exp.optimal_imp_parameters(50,70, n_cpus=2,
-                                            n_models=10, n_keep=2,
-                                            lowfreq_range=(-0.6, 0, 0.5),
-                                            upfreq_range=(0, 1.1, 1),
-                                            maxdist_range=(500, 1000, 500),
+        result = exp.optimal_imp_parameters(50, 70, n_cpus=4,
+                                            n_models=8, n_keep=2,
+                                            lowfreq_range=[-0.6],
+                                            upfreq_range=(0, 1.1, 1.1),
+                                            maxdist_range=[500, 600],
                                             verbose=False)
 
         # get best correlations
@@ -388,6 +388,7 @@ class TestTadbit(unittest.TestCase):
                                 silent=True)
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
+        exp.filter_columns(silent=True)
         exp.normalize_hic(silent=True)
         models = exp.model_region(51, 71, n_models=40, n_keep=25,
                                   n_cpus=4,

@@ -1209,7 +1209,7 @@ class StructuralModels(object):
                         interpolation="nearest", cmap=cmap)
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
-        ax.set_title('Z-scores of the observed Hi-C count')
+        ax.set_title('Z-scores of the normalized Hi-C count')
         cbar = ax.figure.colorbar(ims, cmap=cmap)
         cbar.ax.set_ylabel('Z-score value')
         #

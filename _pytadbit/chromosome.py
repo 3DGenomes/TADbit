@@ -160,9 +160,10 @@ class Chromosome(object):
     """
     def __init__(self, name, species=None, assembly=None,
                  experiment_resolutions=None, experiment_tads=None,
-                 experiment_hic_data=None, experiment_names=None,
-                 max_tad_size=float('inf'), chr_len=0, parser=None,
-                 centromere_search=False, silent=False, **kw_descr):
+                 experiment_hic_data=None, experiment_norm_data=None,
+                 experiment_names=None, max_tad_size=float('inf'),
+                 chr_len=0, parser=None, centromere_search=False,
+                 silent=False, **kw_descr):
         self.name             = name
         self.size             = self._given_size = self.r_size = chr_len
         self.size             = ChromosomeSize(self.size)
@@ -197,6 +198,22 @@ class Chromosome(object):
                 else:
                     self.add_experiment(name, experiment_resolutions[i],
                                         hic_data=handler, parser=parser,
+                                        silent=silent)
+        if experiment_norm_data:
+            for i, handler in enumerate(experiment_norm_data or []):
+                name = experiment_names[i] if experiment_names else None
+                try:
+                    xpr = self.get_experiment(name)
+                    xpr.load_norm_data(handler, silent=silent)
+                    continue
+                except:
+                    pass
+                if isinstance(handler, Experiment):
+                    handler.name = name or handler.name
+                    self.experiments.append(handler)
+                else:
+                    self.add_experiment(name, experiment_resolutions[i],
+                                        norm_data=handler, parser=parser,
                                         silent=silent)
 
     def __repr__(self):
@@ -443,10 +460,10 @@ class Chromosome(object):
         if isinstance(name, Experiment):
             self.experiments.append(name)
         elif resolution:
-            self.experiments.append(Experiment(name, resolution, hic_data,
-                                               norm_data, tad_def,
-                                               parser=parser,
-                                               conditions=conditions, **kwargs))
+            self.experiments.append(Experiment(
+                name, resolution, hic_data=hic_data, norm_data=norm_data,
+                tad_def=tad_def, parser=parser, conditions=conditions,
+                **kwargs))
         else:
             raise Exception('resolution param is needed\n')
 

@@ -6,7 +6,7 @@ Summary of TADbit classes and functions
  module
 -------
 
-   - get_dependencies_version:               Check versions of TADbit and all dependencies, as well and retieves system                                             info. May be used to ensure reproductibility.
+   - `get_dependencies_version <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.get_dependencies_version>`_: Check versions of TADbit and all dependencies, as well and retieves system                                             info. May be used to ensure reproductibility.
 
 Alignment module
 ----------------
@@ -135,13 +135,15 @@ Experiment class
 ++++++++++++++++
     Hi-C experiment.
 
+      - filter_columns [#first]_:            Call filtering function, to remove artefactual columns in a given Hi-C                                             matrix. This function will detect columns with very low interaction                                             counts; columns passing through a cell with no interaction in the                                             diagonal; and columns with NaN values (in this case NaN will be replaced                                             by zero in the original Hi-C data matrix). Filtered out columns will be                                             stored in the dictionary Experiment._zeros.
+
       - `get_hic_matrix <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_matrix>`_: Return the Hi-C matrix.
 
       - `get_hic_zscores <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_zscores>`_: Normalize the Hi-C raw data. The result will be stored into                                             the private Experiment._zscore list.
 
       - `load_hic_data <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.load_hic_data>`_: Add a Hi-C experiment to the Chromosome object.
 
-      - load_norm_data:                      Add a normalized Hi-C experiment to the Chromosome object.
+      - `load_norm_data <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.load_norm_data>`_: Add a normalized Hi-C experiment to the Chromosome object.
 
       - `load_tad_def <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.load_tad_def>`_: Add the Topologically Associated Domains definition detection to Slice
 
@@ -352,11 +354,11 @@ Utils extraviews module
 Utils hic_filtering module
 --------------------------
 
-   - filter_by_mean:                         fits the distribution of Hi-C interaction count by column in the matrix to                                             a polynomial. Then searches for the first possible
+   - filter_by_mean [#first]_:               fits the distribution of Hi-C interaction count by column in the matrix to                                             a polynomial. Then searches for the first possible
 
-   - `hic_filtering_for_modelling <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.hic_filtering.hic_filtering_for_modelling>`_: Main filtering function, to remove artefactual columns in a given Hi-C                                             matrix
+   - `hic_filtering_for_modelling <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.hic_filtering.hic_filtering_for_modelling>`_ [#first]_: Call filtering function, to remove artefactual columns in a given Hi-C                                             matrix. This function will detect columns with very low interaction                                             counts; and columns with NaN values (in this case NaN will be replaced                                             by zero in the original Hi-C data matrix). Filtered out columns will be                                             stored in the dictionary Experiment._zeros.
 
-   - filter_by_zero_count:                   fits the distribution of Hi-C interaction count by column in the matrix to                                             a polynomial. Then searches for the first possible
+   - filter_by_zero_count [#first]_:         fits the distribution of Hi-C interaction count by column in the matrix to                                             a polynomial. Then searches for the first possible
 
 Utils tadmaths module
 ---------------------

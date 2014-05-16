@@ -10,23 +10,23 @@ from pytadbit.utils.extraviews           import tadbit_savefig
 from pytadbit.utils.tadmaths             import zscore
 from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser         import parse_tads
-from warnings                            import warn
 from math                                import sqrt, isnan
 from numpy                               import log2, array
 from pytadbit.imp.CONFIG                 import CONFIG
 from copy                                import deepcopy as copy
+from sys                                 import stderr
 
 try:
     from pytadbit.imp.impoptimizer           import IMPoptimizer
     from pytadbit.imp.imp_modelling          import generate_3d_models
 except ImportError:
-    warn('IMP not found, check PYTHONPATH\n')
+    stderr.write('IMP not found, check PYTHONPATH\n')
 
 try:
     import matplotlib.pyplot as plt
     from matplotlib.cm import jet
 except ImportError:
-    warn('matplotlib not found\n')
+    stderr.write('matplotlib not found\n')
 
 
 class Experiment(object):
@@ -93,7 +93,7 @@ class Experiment(object):
 
     def __init__(self, name, resolution, hic_data=None, norm_data=None,
                  tad_def=None, parser=None, no_warn=False, weights=None,
-                 conditions=None, filter_columns=True, identifier=None,
+                 conditions=None, identifier=None,
                  cell_type=None, enzyme=None, exp_type='Hi-C', **kw_descr):
         self.name            = name
         self.resolution      = resolution
@@ -112,8 +112,8 @@ class Experiment(object):
         self.tads            = {}
         self.norm            = None
         self._normalization  = None
-        self._filter_columns = filter_columns
-        self._zeros          = None
+        self._filtered_cols  = False
+        self._zeros          = {}
         self._zscores        = {}
         if hic_data:
             self.load_hic_data(hic_data, parser, **kw_descr)
@@ -121,8 +121,8 @@ class Experiment(object):
             self.load_norm_data(norm_data, parser, **kw_descr)
         if tad_def:
             self.load_tad_def(tad_def, weights=weights)
-        elif not hic_data and not no_warn:
-            warn('WARNING: this is an empty shell, no data here.\n')
+        elif not hic_data and not no_warn and not norm_data:
+            stderr.write('WARNING: this is an empty shell, no data here.\n')
 
 
     def __repr__(self):
@@ -161,9 +161,9 @@ class Experiment(object):
             resolution = max(reso1, reso2)
             self.set_resolution(resolution)
             other.set_resolution(resolution)
-            warn('WARNING: experiments of different resolution, seting both ' +
-                 'resolution of %s, and normalizing at this resolution' % (
-                     resolution))
+            stderr.write('WARNING: experiments of different resolution, ' +
+                         'setting both resolution of %s, and normalizing at ' +
+                         'this resolution\n' % (resolution))
             norm1 = copy(self.norm)
             norm2 = copy(other.norm)
             if self._normalization:
@@ -171,14 +171,6 @@ class Experiment(object):
             if other._normalization:
                 other.normalize_hic()
             changed_reso = True
-        if self._filter_columns and other._filter_columns:
-            filter_col = True
-        elif self._filter_columns or other._filter_columns:
-            warn('WARNING: only one of these experiment has filtered columns,' +
-                 ' choosing to filter columns in summed experiment')
-            filter_col = True
-        else:
-            filter_col = False
         if self.hic_data:
             new_hicdata = tuple([i + j for i, j in zip(
                 self.hic_data[0], other.hic_data[0])])
@@ -186,33 +178,19 @@ class Experiment(object):
             new_hicdata = None
         xpr = Experiment(name='%s+%s' % (self.name, other.name),
                          resolution=resolution,
-                         hic_data=new_hicdata,
-                         filter_columns=filter_col)
+                         hic_data=new_hicdata, no_warn=True)
         # check if both experiments are normalized with the same method
         # and sum both normalized data
         if self._normalization == other._normalization != None:
             xpr.norm = [tuple([i + j for i, j in zip(
                 self.norm[0], other.norm[0])])]
             xpr._normalization = self._normalization
-            # TODO: findout what to do when summing bad columns
-            # norm = []
-            # for i in xrange(self.size):
-            #     if i in self._zeros and i not in other._zeros:
-            #         norm.extend(other.norm[0][i:i*self.size])
-            #     elif i in other._zeros and i not in self._zeros:
-            #         norm.extend(self.norm[0][i:i*self.size])
-            #     elif i in other._zeros and i in self._zeros:
-            #         norm.extend([0.0]*self.size)
-            #     else:
-            #         norm.extend([i + j for i, j in zip(
-            #             self.norm[0][i:i*self.size],
-            #             other.norm[0][i:i*self.size])])
         elif self.norm or other.norm:
             raise Exception('ERROR: normalization differs between each ' +
                             'experiment\n')
         else:
-            warn('WARNING: experiments should be normalized before being ' +
-                 'summed\n')
+            stderr.write('WARNING: experiments should be normalized before ' +
+                         'being summed\n')
         if changed_reso:
             self.set_resolution(reso1)
             self.norm = norm1
@@ -291,22 +269,53 @@ class Experiment(object):
                         val += self._ori_hic[0][(i + k) * size + j + l]
                 self.hic_data[0].append(val)
         # we need to recalculate zeros:
-        if self._filter_columns:
-            self._zeros, has_nans = hic_filtering_for_modelling(
-                self.get_hic_matrix(diagonal=False), silent=True)
-            if has_nans: # to make it simple
-                for i in xrange(len(self.hic_data[0])):
-                    if repr(self.hic_data[0][i]) == 'nan':
-                        self.hic_data[0] = tuple(list(self.hic_data[0][:i]) +
-                                                 [0] +
-                                                 list(self.hic_data[0][i + 1:]))
-            # Also remove columns where there is no data in the diagonal
-            self._zeros.update(dict([(i, None) for i in xrange(self.size)
-                                     if not self.hic_data[0][i*self.size+i]]))
+        if self._filtered_cols:
+            stderr.write('WARNING: definition of filtered columns lost at ' +
+                         'this resolution\n')
+            self._filtered_cols = False
         # hic_data needs always to be stored as tuple
         self.hic_data[0] = tuple(self.hic_data[0])
         if not keep_original:
             del(self._ori_hic)
+
+
+    def filter_columns(self, silent=False, draw_hist=False, savefig=None):
+        """
+        Call filtering function, to remove artefactual columns in a given Hi-C
+        matrix. This function will detect columns with very low interaction
+        counts; columns passing through a cell with no interaction in the
+        diagonal; and columns with NaN values (in this case NaN will be replaced
+        by zero in the original Hi-C data matrix). Filtered out columns will be
+        stored in the dictionary Experiment._zeros.
+
+        :param matrx: Hi-C matrix of a given experiment
+        :param False silent: does not warn for removed columns
+        :param False draw_hist: shows the distribution of mean values by column
+           the polynomial fit, and the cut applied.
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        
+        """
+        self._zeros, has_nans = hic_filtering_for_modelling(
+            self.get_hic_matrix(normalized=self.hic_data==None,
+                                diagonal=False), silent=silent,
+            draw_hist=draw_hist, savefig=savefig)
+        if has_nans: # to make it simple
+            for i in xrange(len(self.hic_data[0])):
+                if repr(self.hic_data[0][i]) == 'nan':
+                    self.hic_data[0] = tuple(list(self.hic_data[0][:i]) +
+                                             [0] +
+                                             list(self.hic_data[0][i + 1:]))
+        # Also remove columns where there is no data in the diagonal
+        size = self.size
+        if self.hic_data:
+            self._zeros.update(dict([(i, None) for i in xrange(size)
+                                     if not self.hic_data[0][i * size + i]]))
+        else:
+            self._zeros.update(dict([(i, None) for i in xrange(size)
+                                     if not self.norm[0][i * size + i]]))
+        self._filtered_cols = True
 
 
     def load_hic_data(self, hic_data, parser=None, wanted_resolution=None,
@@ -349,25 +358,6 @@ class Experiment(object):
         self._ori_resolution = self.resolution = data_resolution or self._ori_resolution
         wanted_resolution = wanted_resolution or self.resolution
         self.set_resolution(wanted_resolution, keep_original=False)
-        # self._zeros   = [int(pos) for pos, raw in enumerate(
-        #     xrange(0, self.size**2, self.size))
-        #                  if sum(self.hic_data[0][raw:raw + self.size]) <= 100]
-        if self._filter_columns != False:
-            self._filter_columns = kwargs.get('filter_columns', True)
-        if self._filter_columns:
-            self._zeros, has_nans = hic_filtering_for_modelling(
-                self.get_hic_matrix(diagonal=False), silent=silent)
-            if has_nans: # to make it simple
-                for i in xrange(len(self.hic_data[0])):
-                    if repr(self.hic_data[0][i]) == 'nan':
-                        self.hic_data[0] = tuple(list(self.hic_data[0][:i]) +
-                                                 [0] +
-                                                 list(self.hic_data[0][i + 1:]))
-            # Also remove columns where there is no data in the diagonal
-            self._zeros.update(dict([(i, None) for i in xrange(self.size)
-                                     if not self.hic_data[0][i*self.size+i]]))
-        else:
-            self._zeros = {}
 
 
     def load_norm_data(self, norm_data, parser=None, resolution=None,
@@ -406,7 +396,6 @@ class Experiment(object):
         self._ori_size       = self.size       = size
         self._ori_resolution = self.resolution = resolution or self._ori_resolution
         if not self._zeros: # in case we do not have original Hi-C data
-            self._zeros = {}
             for i in xrange(self.size):
                 if all([isnan(j) for j in
                         self.norm[0][i * self.size:i * self.size + self.size]]):
@@ -460,32 +449,38 @@ class Experiment(object):
  
         with N being the number or rows/columns of the Hi-C matrix in both
         cases.
+        :param False silent: does not warn when overwriting weights
+        :param None rowsums: input a list of rowsums calculated elsewhere
         """
 
         if not self.hic_data:
             raise Exception('ERROR: No Hi-C data loaded\n')
         if self.norm and not silent:
-            warn('WARNING: removing previous weights\n')
-        rowsums = rowsums or [0 for _ in xrange(self.size)]
-        for i in xrange(self.size):
+            stderr.write('WARNING: removing previous weights\n')
+        size = self.size
+        rowsums = rowsums or [0 for _ in xrange(size)]
+        for i in xrange(size):
             if i in self._zeros: continue
-            isi = i * self.size
-            for j in xrange(self.size):
+            isi = i * size
+            for j in xrange(size):
                 if j in self._zeros: continue
                 rowsums[i] += self.hic_data[0][isi + j]
-        self.norm = [[0. for _ in xrange(self.size * self.size)]]
+        self.norm = [[0. for _ in xrange(size * size)]]
 
         total = sum(rowsums)
         func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
-        for i in xrange(self.size):
+        for i in xrange(size):
             if i in self._zeros: continue
-            for j in xrange(self.size):
+            isi = i * size
+            for j in xrange(size):
                 if j in self._zeros: continue
                 try:
-                    self.norm[0][i * self.size + j] = (
-                        self.hic_data[0][i * self.size + j] / func(i, j))
+                    self.norm[0][isi + j] = (
+                        self.hic_data[0][isi + j] / func(i, j))
                 except ZeroDivisionError:
                     continue
+        # no need to use lists, more memory efficient
+        self.norm[0] = tuple(self.norm[0])
         self._normalization = 'visibility'
 
 
@@ -604,9 +599,9 @@ class Experiment(object):
         :returns: a :class:`pytadbit.imp.structuralmodels.StructuralModels` object.
 
         """
-        if self._normalization != 'visibility':
-            warn('WARNING: normalizing according to visibility method')
-            self.normalize_hic()
+        if not self._normalization:
+            stderr.write('WARNING: not normalized data, should run ' +
+                         'Experiment.normalize_hic()\n')
         if not end:
             end = self.size
         zscores, values, zeros = self._sub_experiment_zscore(start, end)
@@ -681,9 +676,9 @@ class Experiment(object):
              - the range of lowfreq used
 
         """
-        if self._normalization != 'visibility':
-            warn('WARNING: normalizing according to visibility method')
-            self.normalize_hic()
+        if not self._normalization:
+            stderr.write('WARNING: not normalized data, should run ' +
+                         'Experiment.normalize_hic()\n')
         if not end:
             end = self.size
         optimizer = IMPoptimizer(self, start, end, n_keep=n_keep, cutoff=cutoff,
@@ -713,7 +708,7 @@ class Experiment(object):
         :returns: z-score and raw values of the experiment
         """
         if self._normalization != 'visibility':
-            warn('WARNING: normalizing according to visibility method')
+            stderr.write('WARNING: normalizing according to visibility method\n')
             self.normalize_hic()
         from pytadbit import Chromosome
         if start < 1:
@@ -946,14 +941,15 @@ class Experiment(object):
         size = self.size
         if normalized and not self.norm:
             raise Exception('ERROR: weights not calculated for this ' +
-                            'eselfiment. Run Eselfiment.normalize_hic\n')
+                            'experiment. Run Experiment.normalize_hic\n')
         if tad and focus:
             raise Exception('ERROR: only one of "tad" or "focus" might be set')
         start = end = None
         if focus:
             start, end = focus
             if start == 0:
-                warn('Hi-C matrix starts at 1, setting starting point to 1.\n')
+                stderr.write('WARNING: Hi-C matrix starts at 1, setting ' +
+                             'starting point to 1.\n')
                 start = 1
         elif isinstance(tad, dict):
             start = int(tad['start'])
@@ -1008,7 +1004,8 @@ class Experiment(object):
                         for j in xrange(int(start) - 1, int(end))]
             elif isinstance(tad, list):
                 if normalized:
-                    warn('List passed, not going to be normalized.')
+                    stderr.write('WARNING: List passed, not going to be ' +
+                                 'normalized.\n')
                 matrix = tad
             else:
                 # TODO: something... matrix not declared...
@@ -1140,6 +1137,7 @@ class Experiment(object):
         else:
             out = open(savedata, 'w')
         out.write(table)
+
 
     # def generate_densities(self):
     #     """

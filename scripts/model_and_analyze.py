@@ -98,35 +98,18 @@ def load_hic_data(opts, xnames):
     # Data obtained from Hou et al (2012) Molecular Cell.
     # doi:10.1016/j.molcel.2012.08.031
     logging.info("\tReading input data...")
-    if opts.norm:
-        for xnam, xpath, xnorm in zip(xnames, opts.data, opts.norm):
-            crm.add_experiment(
-                xnam, exp_type='Hi-C', enzyme=opts.enzyme,
-                cell_type=opts.cell,
-                identifier=opts.identifier, # general descriptive fields
-                project=opts.project, # user descriptions
-                resolution=opts.res,
-                hic_data=xpath,
-                norm_data=xnorm,
-                silent=True)
-    else:
-        for xnam, xpath in zip(xnames, opts.data):
-            crm.add_experiment(
-                xnam, exp_type='Hi-C', enzyme=opts.enzyme,
-                cell_type=opts.cell,
-                identifier=opts.identifier, # general descriptive fields
-                project=opts.project, # user descriptions
-                resolution=opts.res,
-                hic_data=xpath,
-                silent=True)
-            # Normalize experiment
+    for xnam, xpath, xnorm in zip(xnames, opts.data, opts.norm):
+        crm.add_experiment(
+            xnam, exp_type='Hi-C', enzyme=opts.enzyme,
+            cell_type=opts.cell,
+            identifier=opts.identifier, # general descriptive fields
+            project=opts.project, # user descriptions
+            resolution=opts.res,
+            hic_data=xpath,
+            norm_data=xnorm)
+        if not xnorm:
             logging.info("\tNormalizing HiC data of %s..." % xnam)
             crm.experiments[xnam].normalize_hic()
-    print crm.experiments
-    print len(crm.experiments[0].norm[0])
-    print len(crm.experiments[1].norm[0])
-    print len(crm.experiments[0]._zeros)
-    print len(crm.experiments[1]._zeros)
     return crm
 
 
@@ -216,8 +199,10 @@ def main():
     nmodels_mod, nkeep_mod = int(opts.nmodels_mod), int(opts.nkeep_mod)
     if opts.xname:
         xnames = opts.xname
-    else:
+    elif opts.data[0]:
         xnames = [os.path.split(d)[-1] for d in opts.data]
+    else:
+        xnames = [os.path.split(d)[-1] for d in opts.norm]
 
     dcutoff = int(opts.res * float(opts.scale) * 2) # distance cutoff equals 2 bins
     name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
@@ -248,6 +233,15 @@ def main():
                 exp += crm.experiments[i]
         else:
             exp = crm.experiments[0]
+
+    exp.filter_columns(draw_hist="column filtering" in opts.analyze,
+                       savefig=os.path.join(
+                           opts.outdir, name , name + '_column_filtering.pdf'))
+    if "column filtering" in opts.analyze:
+        out = open(os.path.join(opts.outdir, name ,
+                                name + '_column_filtering.dat'), 'w')
+        out.write('# particles not considered in the analysis\n' +
+                  '\n'.join(map(str, exp._zeros.keys())))
 
     if not opts.analyze_only:
         logging.info("\tSaving the chromosome...")
@@ -429,8 +423,8 @@ def main():
         logging.info("\tGetting angle data...")
         models.walking_angle(
             cluster=1, steps=(1,5),
-            savefig =os.path.join(opts.outdir, name, name + '_wang.pdf'),
-            savedata=os.path.join(opts.outdir, name, name + '_wang.dat'))
+            savefig = os.path.join(opts.outdir, name, name + '_wang.pdf'),
+            savedata= os.path.join(opts.outdir, name, name + '_wang.dat'))
 
     if "persistence length" in opts.analyze:
         # Get persistence length of all models
@@ -495,6 +489,23 @@ def get_options():
     modelo = parser.add_argument_group('Modeling with optimal IMP arguments')
     descro = parser.add_argument_group('Descriptive, optional arguments')
     analyz = parser.add_argument_group('Output arguments')
+
+    ## Define analysis actions:
+    actions = {0  : "do nothing",
+               1  : "column filtering",
+               2  : "TAD borders",
+               3  : "TAD alignment",
+               4  : "optimization plot",
+               5  : "correlation real/models",
+               6  : "z-score plot",
+               7  : "centroid",
+               8  : "consistency",
+               9  : "density",
+               10 : "contact map",
+               11 : "walking angle",
+               12 : "persistence length",
+               13 : "accessibility",
+               14 : "interaction"}
 
     parser.add_argument('--usage', dest='usage', action="store_true",
                         default=False,
@@ -630,24 +641,14 @@ def get_options():
     #########################################
     # OUTPUT
     analyz.add_argument('--analyze', dest='analyze', nargs='+',
-                        choices=range(12), type=int,
-                        default=range(1, 12), metavar='INT',
+                        choices=range(len(actions) + 1), type=int,
+                        default=range(2, len(actions) + 1), metavar='INT',
                         help=('''[%s] list of numbers representing the
                         analysis to be done. Choose between:
-                        0) do nothing
-                        1) TAD alignment
-                        2) optimization plot
-                        3) correlation real/models
-                        4) z-score plot
-                        5) centroid
-                        6) consistency
-                        7) density
-                        8) contact map
-                        9) walking angle
-                        10) persistence length
-                        11) accessibility
-                        12) interaction
-                        ''' % (' '.join([str(i) for i in range(1, 12)]))))
+                        %s''' % (' '.join([str(i) for i in range(
+                                  2, len(actions) + 1)]),
+                                 '\n'.join(['%s) %s' % (k, actions[k])
+                                            for k in actions]))))
     analyz.add_argument('--not_write_cmm', dest='not_write_cmm',
                         default=False, action='store_true',
                         help='''[%(default)s] do not generate cmm files for each
@@ -705,26 +706,11 @@ def get_options():
             log += '  o Default setting   %13s to %s\n' % (
                 key, opts.__dict__[key])
 
-    # rename analysis options
-    actions = {0  : "Do nothing",
-               1  : "TAD borders",
-               2  : "TAD alignment",
-               3  : "optimization plot",
-               4  : "correlation real/models",
-               5  : "z-score plot",
-               6  : "centroid",
-               7  : "consistency",
-               8  : "density",
-               9  : "contact map",
-               10 : "walking angle",
-               11 : "persistence length",
-               12 : "accessibility",
-               13 : "interaction"}
-    
+    # rename analysis actions
     for i, j in enumerate(opts.analyze):
         opts.analyze[i] = actions[int(j)]
 
-    if not opts.data:
+    if not opts.data and not opts.norm:
         warn('MISSING data')
         exit(parser.print_help())
     if not opts.outdir:
@@ -754,6 +740,10 @@ def get_options():
             exit(parser.print_help())
 
     # groups for TAD detection
+    if not opts.data:
+        opts.data = [None] * len(opts.norm)
+    else:
+        opts.norm = [None] * len(opts.data)
     if not opts.group:
         opts.group = [len(opts.data)]
     else:

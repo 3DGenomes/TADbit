@@ -165,12 +165,13 @@ class IMPoptimizer(object):
                                'upfreq'   : float(upfreq),
                                'lowfreq'  : float(lowfreq),
                                'scale'    : float(scale)}
-                        tdm = generate_3d_models(self.zscores, self.resolution,
-                                                 self.nloci, self.n_models,
-                                                 self.n_keep, config=tmp,
-                                                 n_cpus=n_cpus,
-                                                 values=self.values,
-                                                 close_bins=self.close_bins)
+                        tdm = generate_3d_models(
+                            self.zscores, self.resolution,
+                            self.nloci, n_models=self.n_models,
+                            n_keep=self.n_keep, config=tmp,
+                            n_cpus=n_cpus,
+                            values=self.values,
+                            close_bins=self.close_bins)
                         count += 1
                         if verbose:
                             verb = '%5s  %s %s %s %s ' % (

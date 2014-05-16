@@ -4,11 +4,12 @@
 
 """
 
-import numpy as np
-from warnings import warn
-from sys import stderr
-from re       import sub
+from warnings                  import warn
+from sys                       import stderr
+from re                        import sub
+from pytadbit.utils.extraviews import tadbit_savefig
 
+import numpy as np
 
 try:
     from matplotlib import pyplot as plt
@@ -22,7 +23,7 @@ def get_r2 (fun, X, Y, *args):
     return 1 - sserr/sstot
 
 
-def filter_by_zero_count(matrx, draw_hist=False):
+def filter_by_zero_count(matrx, draw_hist=False, savefig=None):
     """
     fits the distribution of Hi-C interaction count by column in the matrix to
     a polynomial. Then searches for the first possible 
@@ -93,7 +94,10 @@ def filter_by_zero_count(matrx, draw_hist=False):
                                'first solution of polynomial derivation'],
                    fontsize='x-small')
         plt.ylim(0, plt.ylim()[1])
-        plt.show()
+        if savefig:
+            tadbit_savefig(savefig)
+        else:
+            plt.show()
     # label as bad the columns with sums lower than the root
     bads = {}
     for i, col in enumerate(matrx):
@@ -103,7 +107,7 @@ def filter_by_zero_count(matrx, draw_hist=False):
     return bads
 
 
-def filter_by_mean(matrx, draw_hist=False, silent=False):
+def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
     """
     fits the distribution of Hi-C interaction count by column in the matrix to
     a polynomial. Then searches for the first possible 
@@ -196,7 +200,10 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
         #                        'median - (1.5 * median absolute deviation)'],
         #            fontsize='x-small')
         plt.ylim(0, plt.ylim()[1])
-        plt.show()
+        if savefig:
+            tadbit_savefig(savefig)
+        else:
+            plt.show()
     # label as bad the columns with sums lower than the root
     bads = {}
     for i, col in enumerate(matrx):
@@ -205,9 +212,9 @@ def filter_by_mean(matrx, draw_hist=False, silent=False):
     # now stored in Experiment._zeros, used for getting more accurate z-scores
     if bads and not silent:
         stderr.write(('\nWARNING: removing columns having less than %s ' +
-                      'counts: (detected threshold)\n %s\n') % (
+                      'counts:\n %s\n') % (
                          round(root, 3), ' '.join(
-                             ['%5s'%str(i+1) + (''if (j+1)%10 else '\n')
+                             ['%5s'%str(i + 1) + (''if (j + 1) % 20 else '\n')
                               for j, i in enumerate(sorted(bads.keys()))])))
     return bads
 
@@ -244,20 +251,29 @@ def filter_by_mad(matrx):
     return bads
 
 
-def hic_filtering_for_modelling(matrx, method='mean', silent=False):
+def hic_filtering_for_modelling(matrx, method='mean', silent=False,
+                                draw_hist=False, savefig=None):
     """
-    Main filtering function, to remove artefactual columns in a given Hi-C
-    matrix
+    Call filtering function, to remove artefactual columns in a given Hi-C
+    matrix. This function will detect columns with very low interaction
+    counts; and columns with NaN values (in this case NaN will be replaced
+    by zero in the original Hi-C data matrix). Filtered out columns will be
+    stored in the dictionary Experiment._zeros.
     
     :param matrx: Hi-C matrix of a given experiment
+    :param False silent: does not warn for removed columns
     :param mean method: method to use for filtering Hi-C columns. Aims to
        remove columns with abnormally low count of interactions
+    :param None savefig: path to a file where to save the image generated;
+       if None, the image will be shown using matplotlib GUI (the extension
+       of the file name will determine the desired format).
 
     :returns: the indexes of the columns not to be considered for the
        calculation of the z-score
     """
     if method == 'mean':
-        bads = filter_by_mean(matrx, draw_hist=False, silent=silent)
+        bads = filter_by_mean(matrx, draw_hist=draw_hist, silent=silent,
+                              savefig=savefig)
     elif method == 'zeros':
         bads = filter_by_zero_count(matrx)
     elif method == 'mad':
@@ -266,7 +282,6 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False):
         bads = filter_by_stdev(matrx)
     else:
         raise Exception
-    # remove row and columns that have a zero in the diagonal
     # also removes rows or columns containing a NaN
     has_nans = False
     for i in xrange(len(matrx)):
