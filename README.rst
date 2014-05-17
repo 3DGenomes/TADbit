@@ -21,8 +21,8 @@ Documentation
 Build status
 ------------
 
-.. image::  https://travis-ci.org/3DGenomes/tadbit.png?branch=master
-   :target: https://travis-ci.org/3DGenomes/tadbit
-
-
-* Current version: 0.1_alpha.2
++-------------------------------------+---------------------------------------------------------------------------+
+|                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       |
+| Current version: 0.1_alpha.3        |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
+|                                     |                                                                           |
++-------------------------------------+---------------------------------------------------------------------------+

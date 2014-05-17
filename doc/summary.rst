@@ -3,8 +3,8 @@ Summary of TADbit classes and functions
 =======================================
 
 
- module
--------
+Root module
+-----------
 
    - `get_dependencies_version <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.get_dependencies_version>`_: Check versions of TADbit and all dependencies, as well and retieves system                                             info. May be used to ensure reproductibility.
 

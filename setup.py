@@ -2,6 +2,7 @@
 
 from distutils.core import setup, Extension
 from os import path
+from re import sub
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
 
@@ -161,8 +162,13 @@ def main():
     out.close()
     lines = []
     for line in open(path.join(PATH, 'README.rst')):
-        if line.startswith('* Current version: '):
-            line = '* Current version: ' + version_full
+        if line.startswith('| Current version: '):
+            old_v = sub('.*Current version: ([^ ]+ +).*', '\\1', line).strip('\n')
+            print old_v + '|'
+            print len(old_v), len(version_full)
+            line = sub('Current version: [^ ]+ +',
+                       ('Current version: ' + version_full +
+                        ' ' * (len(old_v) - len(version_full))), line)
         lines.append(line.rstrip())
     out = open(path.join(PATH, 'README.rst'), 'w')
     out.write('\n'.join(lines))

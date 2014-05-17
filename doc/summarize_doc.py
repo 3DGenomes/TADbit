@@ -69,7 +69,7 @@ def print_doc(member, header=1, indent=3, offset=45):
     dochead = dochead.replace(']_', ']')
     dochead = re.sub('\. [^\.]+:.*', '.', dochead)
     if header == 1:
-        title = ' '.join(member.split('.')[1:]).capitalize()
+        title = ' '.join(member.split('.')[1:]).capitalize() or 'Root'
         out = title + ' module\n'
         out += '-' * (7 + len(title)) + '\n'
         return out
