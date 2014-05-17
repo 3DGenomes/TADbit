@@ -315,17 +315,24 @@ Can be either &#8216;all&#8217;, or a model number</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.hic_filtering.hic_filtering_for_modelling">
-<tt class="descclassname">pytadbit.utils.hic_filtering.</tt><tt class="descname">hic_filtering_for_modelling</tt><big>(</big><em>matrx</em>, <em>method='mean'</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
-<dd><p>Main filtering function, to remove artefactual columns in a given Hi-C
-matrix</p>
+<tt class="descclassname">pytadbit.utils.hic_filtering.</tt><tt class="descname">hic_filtering_for_modelling</tt><big>(</big><em>matrx</em>, <em>method='mean'</em>, <em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call filtering function, to remove artefactual columns in a given Hi-C
+matrix. This function will detect columns with very low interaction
+counts; and columns with NaN values (in this case NaN will be replaced
+by zero in the original Hi-C data matrix). Filtered out columns will be
+stored in the dictionary Experiment._zeros.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>matrx</strong> &#8211; Hi-C matrix of a given experiment</li>
+<li><strong>silent</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
 <li><strong>method</strong> (<em>mean</em>) &#8211; method to use for filtering Hi-C columns. Aims to
 remove columns with abnormally low count of interactions</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI (the extension
+of the file name will determine the desired format).</li>
 </ul>
 </td>
 </tr>
@@ -339,7 +346,7 @@ calculation of the z-score</p>
 
 <dl class="function">
 <dt id="pytadbit.utils.three_dim_stats.calc_eqv_rmsd">
-<tt class="descclassname">pytadbit.utils.three_dim_stats.</tt><tt class="descname">calc_eqv_rmsd</tt><big>(</big><em>models</em>, <em>nloci</em>, <em>dcutoff=200</em>, <em>one=False</em>, <em>what='score'</em>, <em>normed=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.three_dim_stats.</tt><tt class="descname">calc_eqv_rmsd</tt><big>(</big><em>models</em>, <em>nloci</em>, <em>zeros</em>, <em>dcutoff=200</em>, <em>one=False</em>, <em>what='score'</em>, <em>normed=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#calc_eqv_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.calc_eqv_rmsd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the RMSD, dRMSD, the number of equivalent positions and a score
 combining these three measures. The measure are done between a group of
 models in a one against all manner.</p>
@@ -349,6 +356,7 @@ models in a one against all manner.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>nloci</strong> &#8211; number of particles per model</li>
+<li><strong>zeros</strong> &#8211; list of True/False representing particles to skip</li>
 <li><strong>dcutoff</strong> (<em>200</em>) &#8211; distance in nanometer from which it is considered
 that two particles are separated.</li>
 <li><strong>fact</strong> (<em>0.75</em>) &#8211; Factor for equivalent positions</li>
@@ -568,7 +576,7 @@ for details</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 14, 2014.
+      Last updated on May 18, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

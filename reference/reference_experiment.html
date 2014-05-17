@@ -57,7 +57,7 @@
 <h1>Experiment class<a class="headerlink" href="#experiment-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.experiment.Experiment">
-<em class="property">class </em><tt class="descclassname">pytadbit.experiment.</tt><tt class="descname">Experiment</tt><big>(</big><em>name</em>, <em>resolution</em>, <em>hic_data=None</em>, <em>norm_data=None</em>, <em>tad_def=None</em>, <em>parser=None</em>, <em>no_warn=False</em>, <em>weights=None</em>, <em>conditions=None</em>, <em>filter_columns=True</em>, <em>identifier=None</em>, <em>cell_type=None</em>, <em>enzyme=None</em>, <em>exp_type='Hi-C'</em>, <em>**kw_descr</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.experiment.</tt><tt class="descname">Experiment</tt><big>(</big><em>name</em>, <em>resolution</em>, <em>hic_data=None</em>, <em>norm_data=None</em>, <em>tad_def=None</em>, <em>parser=None</em>, <em>no_warn=False</em>, <em>weights=None</em>, <em>conditions=None</em>, <em>identifier=None</em>, <em>cell_type=None</em>, <em>enzyme=None</em>, <em>exp_type='Hi-C'</em>, <em>**kw_descr</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hi-C experiment.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -122,6 +122,34 @@ complementary descriptive field. For example:</p>
 </table>
 <p>TODO: doc conditions
 TODO: normalization</p>
+<dl class="method">
+<dt id="pytadbit.experiment.Experiment.filter_columns">
+<tt class="descname">filter_columns</tt><big>(</big><em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em><big>)</big><a class="headerlink" href="#pytadbit.experiment.Experiment.filter_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call filtering function, to remove artefactual columns in a given Hi-C
+matrix. This function will detect columns with very low interaction
+counts; columns passing through a cell with no interaction in the
+diagonal; and columns with NaN values (in this case NaN will be replaced
+by zero in the original Hi-C data matrix). Filtered out columns will be
+stored in the dictionary Experiment._zeros.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>matrx</strong> &#8211; Hi-C matrix of a given experiment</li>
+<li><strong>silent</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn for removed columns</li>
+<li><strong>draw_hist</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; shows the distribution of mean values by column
+the polynomial fit, and the cut applied.</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI (the extension
+of the file name will determine the desired format).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.get_hic_matrix">
 <tt class="descname">get_hic_matrix</tt><big>(</big><em>focus=None</em>, <em>diagonal=True</em>, <em>normalized=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.get_hic_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.get_hic_matrix" title="Permalink to this definition">¶</a></dt>
@@ -359,7 +387,9 @@ j.</p>
 \[weight_{(I,J)} = \frac{\sum^N_{j=0}\sum^N_{i=0}(matrix(i,j))}
                        {\sum^N_{i=0}(matrix(i,J)) \times \sum^N_{j=0}(matrix(I,j))}\]</div>
 <p>with N being the number or rows/columns of the Hi-C matrix in both
-cases.</p>
+cases.
+:param False silent: does not warn when overwriting weights
+:param None rowsums: input a list of rowsums calculated elsewhere</p>
 </dd></dl>
 
 <dl class="method">
@@ -649,7 +679,7 @@ a table.</td>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 15, 2014.
+      Last updated on May 18, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
