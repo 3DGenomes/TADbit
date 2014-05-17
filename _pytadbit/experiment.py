@@ -629,8 +629,9 @@ class Experiment(object):
         coords = {'crm'  : self.crm.name,
                   'start': start,
                   'end'  : end}
-        zeros = tuple([i not in zeros for i in xrange(end - start)])
-        return generate_3d_models(zscores, self.resolution, end - start,
+        zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
+        nloci = end - start + 1
+        return generate_3d_models(zscores, self.resolution, nloci,
                                   values=values, n_models=n_models,
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                   verbose=verbose, keep_all=keep_all,
@@ -641,7 +642,7 @@ class Experiment(object):
     def optimal_imp_parameters(self, start=1, end=None, n_models=500, n_keep=100,
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
-                               scale_range=[0.01][:], 
+                               scale_range=[0.01][:],
                                maxdist_range=(400, 1400, 100), cutoff=None,
                                outfile=None, verbose=True, corr='spearman',
                                off_diag=1, savedata=None):

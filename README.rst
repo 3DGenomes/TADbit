@@ -25,4 +25,4 @@ Build status
    :target: https://travis-ci.org/3DGenomes/tadbit
 
 
-* Current version: CSDM13.234
+* Current version: 0.1_alpha.2

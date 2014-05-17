@@ -234,10 +234,12 @@ def main():
         else:
             exp = crm.experiments[0]
 
-    exp.filter_columns(draw_hist="column filtering" in opts.analyze,
-                       savefig=os.path.join(
-                           opts.outdir, name , name + '_column_filtering.pdf'))
-    if "column filtering" in opts.analyze:
+    if not opts.analyze_only:
+        exp.filter_columns(draw_hist="column filtering" in opts.analyze,
+                           savefig=os.path.join(
+                               opts.outdir, name ,
+                               name + '_column_filtering.pdf'))
+    if "column filtering" in opts.analyze and not opts.analyze_only:
         out = open(os.path.join(opts.outdir, name ,
                                 name + '_column_filtering.dat'), 'w')
         out.write('# particles not considered in the analysis\n' +

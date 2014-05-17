@@ -16,7 +16,7 @@ from pytadbit.centroid              import centroid_wrapper
 from pytadbit.aligner3d             import aligner3d_wrapper
 from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
-from math                           import acos, degrees, pi, sqrt
+from math                           import acos, degrees, pi, sqrt, isnan
 from numpy                          import median as np_median
 from numpy                          import mean as np_mean
 from numpy                          import std as np_std, log2
@@ -328,8 +328,8 @@ class StructuralModels(object):
             ''.join([(uc + lc)[int(random() * 52)] for _ in xrange(4)]))
         if not dcutoff:
             dcutoff = int(1.5 * self.resolution * self._config['scale'])
-        scores = calc_eqv_rmsd(self.__models, self.nloci, dcutoff, what=what,
-                               normed=True)
+        scores = calc_eqv_rmsd(self.__models, self.nloci, self._zeros, dcutoff,
+                               what=what, normed=True)
         from distutils.spawn import find_executable
         if not find_executable(mcl_bin):
             print('\nWARNING: MCL not found in path using WARD clustering\n')
@@ -436,7 +436,7 @@ class StructuralModels(object):
                         # the first on found is the best :)
                         break
                 matrix[i][j+i+1] = calc_eqv_rmsd({0: md1, 1: md2}, self.nloci,
-                                                 one=True)
+                                                 self._zeros, one=True)
         return clust_count, objfun, matrix
 
 
@@ -538,9 +538,9 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
             models = [m for m in self.__models]
-        for part1, part2 in zip(range(self.nloci - interval),
-                                range(interval, self.nloci)):
-            if part1 in self._zeros or part2 in self._zeros:
+        for i, (part1, part2) in enumerate(zip(range(self.nloci - interval),
+                                          range(interval, self.nloci))):
+            if not self._zeros[i] or not self._zeros[i + interval]:
                 dists.append([None] * len(models))
                 continue
             if mass_center:
@@ -562,7 +562,7 @@ class StructuralModels(object):
                     cluster, plot=False, median=False))
         lmodels = len(dists[0])
         distsk = {1: [None for _ in range(interval/2)] + dists}
-        for k in (steps[1:] if steps[0]==1 else steps):
+        for k in (steps[1:] if steps[0] == 1 else steps):
             distsk[k] = [None for _ in range(k/2+interval/2)]
             for i in range(self.nloci - k - interval + 1):
                 distsk[k].append(reduce(lambda x, y: x + y,
@@ -580,7 +580,7 @@ class StructuralModels(object):
             new_distsk[k] = []
             errorp[k] = []
             errorn[k] = []
-            for part in dists:
+            for i, part in enumerate(dists):
                 if not part:
                     new_distsk[k].append(None)
                     errorp[k].append(None)
@@ -591,15 +591,15 @@ class StructuralModels(object):
                 new_distsk[k].append(np_median(part))
                 try:
                     errorn[k].append(new_distsk[k][-1] - 2 * np_std(part))
-                    errorn[k][-1] = errorn[k][-1] if errorn[k][-1] > 0 else 0.0
+                    errorn[k][-1] = errorn[k][-1] if isnan(errorn[k][-1]) or errorn[k][-1] > 0 else 0.0
                     errorp[k].append(new_distsk[k][-1] + 2 * np_std(part))
-                    errorp[k][-1] = errorp[k][-1] if errorp[k][-1] > 0 else 0.0
+                    errorp[k][-1] = errorp[k][-1] if isnan(errorp[k][-1]) or errorp[k][-1] > 0 else 0.0
                 except TypeError:
-                    errorn[-1].append(None)
-                    errorp[-1].append(None)
+                    errorn[k].append(None)
+                    errorp[k].append(None)
         distsk = new_distsk
         # write consistencies to file
-        if savedata:
+        if savedata:      
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
             '2*stddev(%d)' % c for c in steps])))
@@ -693,7 +693,11 @@ class StructuralModels(object):
             cutoff = int(2 * self.resolution * self._config['scale'])
         cutoff = cutoff**2
         for i in xrange(self.nloci):
+            if not self._zeros[i]:
+                continue
             for j in xrange(i + 1, self.nloci):
+                if not self._zeros[i]:
+                    continue
                 val = len([k for k in self.__square_3d_dist(
                     i + 1, j + 1, models=models)
                            if k < cutoff])
@@ -1041,8 +1045,8 @@ class StructuralModels(object):
             cutoff = int(2 * self.resolution * self._config['scale'])
         cutoff2 = cutoff**2
         for i in xrange(self.nloci):
-            if i in self._zeros:
-                interactions[i].extend([None] * len(models))
+            if not self._zeros[i]:
+                interactions[i].extend([float('nan')] * len(models))
                 continue
             for m in models:
                 val = 0

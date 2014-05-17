@@ -292,7 +292,7 @@ def calc_consistency(models, nloci, dcutoff=200):
     return [float(p)/len(combines) * 100 for p in parts]
 
 
-def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score',
+def calc_eqv_rmsd(models, nloci, zeros, dcutoff=200, one=False, what='score',
                   normed=True):
     """
     Calculates the RMSD, dRMSD, the number of equivalent positions and a score
@@ -300,6 +300,7 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score',
     models in a one against all manner.
     
     :param nloci: number of particles per model
+    :param zeros: list of True/False representing particles to skip
     :param 200 dcutoff: distance in nanometer from which it is considered
        that two particles are separated.
     :param 0.75 fact: Factor for equivalent positions
@@ -325,12 +326,16 @@ def calc_eqv_rmsd(models, nloci, dcutoff=200, one=False, what='score',
     if not what in ['score', 'rmsd', 'drmsd', 'eqv']:
         raise NotImplementedError("Only 'score', 'rmsd', 'drmsd' or 'eqv' " +
                                   "features are available\n")
-            
-    scores = rmsdRMSD_wrapper([models[m]['x'] for m in xrange(len(models))],
-                              [models[m]['y'] for m in xrange(len(models))],
-                              [models[m]['z'] for m in xrange(len(models))],
-                              nloci, dcutoff, range(len(models)),
-                              len(models), int(one), what, int(normed))
+    x = []
+    y = []
+    z = []
+    for m in xrange(len(models)):
+        x.append([models[m]['x'][i] for i in xrange(nloci) if zeros[i]])
+        y.append([models[m]['y'][i] for i in xrange(nloci) if zeros[i]])
+        z.append([models[m]['z'][i] for i in xrange(nloci) if zeros[i]])
+    scores = rmsdRMSD_wrapper(x, y, z, nloci - zeros.count(False), dcutoff,
+                              range(len(models)), len(models), int(one),
+                              what, int(normed))
     return scores
 
 

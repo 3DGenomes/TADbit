@@ -362,7 +362,7 @@ class TestTadbit(unittest.TestCase):
 
         # get best correlations
         config = result.get_best_parameters_dict()
-        wanted = {'maxdist': 500.0, 'upfreq': 0.0, 'kforce': 5,
+        wanted = {'maxdist': 600.0, 'upfreq': 0.0, 'kforce': 5,
                   'reference': '', 'lowfreq': -0.6, 'scale': 0.01}
         self.assertEqual([round(i, 4) for i in config.values()if not type(i) is str],
                          [round(i, 4) for i in wanted.values()if not type(i) is str])
@@ -444,7 +444,7 @@ class TestTadbit(unittest.TestCase):
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i), 1) if i != 'nan' else i for i in lines[1].split('\t')[:3]],
-                         [1.0, 'nan', 0.0])
+                         [1.0, 100.0, 100.0])
         self.assertEqual([round(float(i), 1) for i in lines[15].split('\t')[:3]],
                          [15, 99.9, 100.0])
         # contacts

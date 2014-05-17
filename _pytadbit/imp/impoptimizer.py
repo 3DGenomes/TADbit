@@ -33,12 +33,13 @@ class IMPoptimizer(object):
     :param None cutoff: distance cutoff (nm) to define whether two particles
        are in contact or not, default is 2 times resolution, times scale.
     """
-    def __init__(self, experiment, start, end, 
-                 n_models=500, cutoff=300, n_keep=100, close_bins=1):
+    def __init__(self, experiment, start, end, n_models=500, cutoff=300,
+                 n_keep=100, close_bins=1):
 
         self.resolution = experiment.resolution
         (self.zscores,
-         self.values, _) = experiment._sub_experiment_zscore(start, end)
+         self.values, zeros) = experiment._sub_experiment_zscore(start, end)
+        self.zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
         self.nloci       = end - start + 1
         self.n_models    = n_models
         self.n_keep      = n_keep
@@ -171,7 +172,7 @@ class IMPoptimizer(object):
                             n_keep=self.n_keep, config=tmp,
                             n_cpus=n_cpus,
                             values=self.values,
-                            close_bins=self.close_bins)
+                            close_bins=self.close_bins, zeros=self.zeros)
                         count += 1
                         if verbose:
                             verb = '%5s  %s %s %s %s ' % (

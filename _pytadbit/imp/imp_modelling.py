@@ -150,7 +150,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     first = min([int(j) for i in zscores for j in zscores[i]] +
                 [int(i) for i in zscores])
     
-    LOCI  = range(first, nloci + 1 + first)
+    LOCI  = range(first, nloci + first)
     NLOCI = len(LOCI)
     
     # Z-scores
