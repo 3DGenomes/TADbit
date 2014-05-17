@@ -106,6 +106,7 @@ class Experiment(object):
         self._ori_resolution = resolution
         self.hic_data        = None
         self._ori_hic        = None
+        self._ori_norm       = None
         self._ori_size       = None
         self.conditions      = sorted(conditions) if conditions else []
         self.size            = None
@@ -242,32 +243,50 @@ class Experiment(object):
         # if we want to go back to original resolution
         if resolution == self._ori_resolution:
             self.hic_data   = self._ori_hic
+            self.norm       = self._ori_norm
             self.size       = self._ori_size
             self.resolution = self._ori_resolution
             return
         # if current resolution is the original one
         if self.resolution == self._ori_resolution:
-            self._ori_hic = self.hic_data[:]
+            if self.hic_data:
+                self._ori_hic  = self.hic_data[:]
+            if self.norm:
+                self._ori_norm = self.norm[:]
         self.resolution = resolution
         fact = self.resolution / self._ori_resolution
         # super for!
-        size = int(sqrt(len(self._ori_hic[0])))
+        try:
+            size = int(sqrt(len(self._ori_hic[0])))
+        except TypeError:
+            size = int(sqrt(len(self._ori_norm[0])))
         self.hic_data = [[]]
+        self.norm     = [[]]
         self.size     = size / fact
         rest = size % fact
         if rest:
             self.size += 1
-        for i in xrange(0, size, fact):
-            for j in xrange(0, size, fact):
-                val = 0
-                for k in xrange(fact):
-                    if i + k >= size:
-                        break
-                    for l in  xrange(fact):
-                        if j + l >= size:
+        def resize(mtrx, copee):
+            "resize both hic_data and normalized data"
+            for i in xrange(0, size, fact):
+                for j in xrange(0, size, fact):
+                    val = 0
+                    for k in xrange(fact):
+                        if i + k >= size:
                             break
-                        val += self._ori_hic[0][(i + k) * size + j + l]
-                self.hic_data[0].append(val)
+                        for l in  xrange(fact):
+                            if j + l >= size:
+                                break
+                            val += copee[(i + k) * size + j + l]
+                    mtrx.append(val)
+        try:
+            resize(self.hic_data[0], self._ori_hic[0])
+        except TypeError:
+            pass
+        try:
+            resize(self.norm[0], self._ori_norm[0])
+        except TypeError:
+            pass
         # we need to recalculate zeros:
         if self._filtered_cols:
             stderr.write('WARNING: definition of filtered columns lost at ' +
@@ -275,8 +294,10 @@ class Experiment(object):
             self._filtered_cols = False
         # hic_data needs always to be stored as tuple
         self.hic_data[0] = tuple(self.hic_data[0])
+        self.norm[0] = tuple(self.norm[0])
         if not keep_original:
             del(self._ori_hic)
+            del(self._ori_norm)
 
 
     def filter_columns(self, silent=False, draw_hist=False, savefig=None):
