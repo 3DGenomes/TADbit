@@ -135,7 +135,7 @@ Experiment class
 ++++++++++++++++
     Hi-C experiment.
 
-      - filter_columns [#first]_:            Call filtering function, to remove artefactual columns in a given Hi-C                                             matrix. This function will detect columns with very low interaction                                             counts; columns passing through a cell with no interaction in the                                             diagonal; and columns with NaN values (in this case NaN will be replaced                                             by zero in the original Hi-C data matrix). Filtered out columns will be                                             stored in the dictionary Experiment._zeros.
+      - `filter_columns <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.filter_columns>`_ [#first]_: Call filtering function, to remove artefactual columns in a given Hi-C                                             matrix. This function will detect columns with very low interaction                                             counts; columns passing through a cell with no interaction in the                                             diagonal; and columns with NaN values (in this case NaN will be replaced                                             by zero in the original Hi-C data matrix). Filtered out columns will be                                             stored in the dictionary Experiment._zeros.
 
       - `get_hic_matrix <http://3dgenomes.github.io/tadbit/reference/reference_experiment.html#pytadbit.experiment.Experiment.get_hic_matrix>`_: Return the Hi-C matrix.
 
