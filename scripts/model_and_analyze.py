@@ -643,12 +643,12 @@ def get_options():
     #########################################
     # OUTPUT
     analyz.add_argument('--analyze', dest='analyze', nargs='+',
-                        choices=range(len(actions) + 1), type=int,
-                        default=range(2, len(actions) + 1), metavar='INT',
+                        choices=range(len(actions)), type=int,
+                        default=range(2, len(actions)), metavar='INT',
                         help=('''[%s] list of numbers representing the
                         analysis to be done. Choose between:
                         %s''' % (' '.join([str(i) for i in range(
-                                  2, len(actions) + 1)]),
+                                  2, len(actions))]),
                                  '\n'.join(['%s) %s' % (k, actions[k])
                                             for k in actions]))))
     analyz.add_argument('--not_write_cmm', dest='not_write_cmm',

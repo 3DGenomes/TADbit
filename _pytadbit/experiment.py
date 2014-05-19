@@ -631,6 +631,7 @@ class Experiment(object):
                   'end'  : end}
         zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
         nloci = end - start + 1
+        stderr.write('Preparing to model %s particles\n' % nloci)
         return generate_3d_models(zscores, self.resolution, nloci,
                                   values=values, n_models=n_models,
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,

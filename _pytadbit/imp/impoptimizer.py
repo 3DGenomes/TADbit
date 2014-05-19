@@ -7,9 +7,8 @@ from pytadbit.imp.imp_modelling    import generate_3d_models
 from pytadbit.utils.extraviews     import plot_2d_optimization_result
 from pytadbit.utils.extraviews     import plot_3d_optimization_result
 from pytadbit.imp.structuralmodels import StructuralModels
-from warnings                      import warn
 from cPickle                       import dump, load
-from sys import stderr
+from sys                           import stderr
 import numpy           as np
 import multiprocessing as mu
 
@@ -41,6 +40,9 @@ class IMPoptimizer(object):
          self.values, zeros) = experiment._sub_experiment_zscore(start, end)
         self.zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
         self.nloci       = end - start + 1
+        if not self.nloci == len(self.zeros):
+            raise Exception('ERROR: in optimization, bad number of particles\n')
+        stderr.write('Preparing to optimize %s particles\n' % self.nloci)
         self.n_models    = n_models
         self.n_keep      = n_keep
         self.close_bins  = close_bins
@@ -264,7 +266,7 @@ class IMPoptimizer(object):
            
         """
         if not self.results:
-            warn('WARNING: no optimization done yet')
+            stderr.write('WARNING: no optimization done yet\n')
             return
         best = ((None, None, None, None), 0.0)
         for (sca, mxd, ufq, lfq), val in self.results.iteritems():
