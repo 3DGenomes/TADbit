@@ -109,7 +109,7 @@ def load_hic_data(opts, xnames):
             norm_data=xnorm)
         if not xnorm:
             logging.info("\tNormalizing HiC data of %s..." % xnam)
-            crm.experiments[xnam].normalize_hic()
+            crm.experiments[xnam].normalize_hic(factor=1)
     return crm
 
 
@@ -204,7 +204,8 @@ def main():
     else:
         xnames = [os.path.split(d)[-1] for d in opts.norm]
 
-    dcutoff = int(opts.res * float(opts.scale) * 2) # distance cutoff equals 2 bins
+    # distance cutoff equals 2 bins
+    dcutoff = int(opts.res * float(opts.scale) * 2)
     name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
     opts.outdir
 
@@ -226,13 +227,14 @@ def main():
     # matrices. See function "load_chromosome".
     if not opts.tad_only and not opts.analyze_only:
         # Sum all experiments into a new one
-        logging.info("\tSumming experiments...")
+        logging.info("\tSumming experiments %s..." % (' + '.join(xnames)))
         if len(xnames) > 1:
             exp = crm.experiments[0] + crm.experiments[1]
             for i in range(2, len(xnames)):
                 exp += crm.experiments[i]
         else:
             exp = crm.experiments[0]
+    crm.add_experiment(exp)
 
     if not opts.analyze_only:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
@@ -804,7 +806,7 @@ def get_options():
                   ).join(log.split('\n')))
 
     # update path to Hi-C data adding root directory
-    if opts.root_path:
+    if opts.root_path and opts.data[0]:
         for i in xrange(len(opts.data)):
             logging.info(os.path.join(opts.root_path, opts.data[i]))
             opts.data[i] = os.path.join(opts.root_path, opts.data[i])

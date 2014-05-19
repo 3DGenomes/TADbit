@@ -173,7 +173,7 @@ class Experiment(object):
                 other.normalize_hic()
             changed_reso = True
         if self.hic_data:
-            new_hicdata = tuple([i + j for i, j in zip(
+            new_hicdata = tuple([(i + j) for i, j in zip(
                 self.hic_data[0], other.hic_data[0])])
         else:
             new_hicdata = None
@@ -183,7 +183,7 @@ class Experiment(object):
         # check if both experiments are normalized with the same method
         # and sum both normalized data
         if self._normalization == other._normalization != None:
-            xpr.norm = [tuple([i + j for i, j in zip(
+            xpr.norm = [tuple([(i + j) / 2 for i, j in zip(
                 self.norm[0], other.norm[0])])]
             xpr._normalization = self._normalization
         elif self.norm or other.norm:
@@ -449,7 +449,7 @@ class Experiment(object):
                 self._normalization = 'visibility'
 
 
-    def normalize_hic(self, silent=False, rowsums=None):
+    def normalize_hic(self, factor=None, silent=False, rowsums=None):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -470,6 +470,9 @@ class Experiment(object):
  
         with N being the number or rows/columns of the Hi-C matrix in both
         cases.
+        
+        :param None factor: final mean number of normalized interactions wanted
+           per cell
         :param False silent: does not warn when overwriting weights
         :param None rowsums: input a list of rowsums calculated elsewhere
         """
@@ -479,15 +482,16 @@ class Experiment(object):
         if self.norm and not silent:
             stderr.write('WARNING: removing previous weights\n')
         size = self.size
-        rowsums = rowsums or [0 for _ in xrange(size)]
-        for i in xrange(size):
-            if i in self._zeros: continue
-            isi = i * size
-            for j in xrange(size):
-                if j in self._zeros: continue
-                rowsums[i] += self.hic_data[0][isi + j]
-        self.norm = [[0. for _ in xrange(size * size)]]
+        if not rowsums:
+            rowsums = [0 for _ in xrange(size)]
+            for i in xrange(size):
+                if i in self._zeros: continue
+                isi = i * size
+                for j in xrange(size):
+                    if j in self._zeros: continue
+                    rowsums[i] += self.hic_data[0][isi + j]
 
+        self.norm = [[0. for _ in xrange(size * size)]]
         total = sum(rowsums)
         func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
         for i in xrange(size):
@@ -500,9 +504,14 @@ class Experiment(object):
                         self.hic_data[0][isi + j] / func(i, j))
                 except ZeroDivisionError:
                     continue
-        # no need to use lists, more memory efficient
-        self.norm[0] = tuple(self.norm[0])
-        self._normalization = 'visibility'
+        # no need to use lists, tuples use less memory
+        if factor:
+            factor = sum(self.norm[0]) / (self.size * self.size * factor)
+            self.norm[0] = tuple([n / factor for n in self.norm[0]])
+            self._normalization = 'visibility_factor:' + str(factor)
+        else:
+            self.norm[0] = tuple(self.norm[0])
+            self._normalization = 'visibility'
 
 
     def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=False):
@@ -728,9 +737,9 @@ class Experiment(object):
         :param start: first bin to model (bin number)
         :param end: first bin to model (bin number)
 
-        :returns: z-score and raw values of the experiment
+        :returns: z-score, raw values and zzeros of the experiment
         """
-        if self._normalization != 'visibility':
+        if not self._normalization.startswith('visibility'):
             stderr.write('WARNING: normalizing according to visibility method\n')
             self.normalize_hic()
         from pytadbit import Chromosome
