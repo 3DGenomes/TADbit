@@ -70,9 +70,9 @@ def transform(val):
 def nozero_log(values):
     # Set the virtual minimum of the matrix to half the non-null real minimum
     minv = float(min([v for v in values.values() if v])) / 2
-    if minv > 1:
-        warn('WARNING: probable problem with normalization, check.\n')
-        minv /= 2  # TODO: something better
+    # if minv > 1:
+    #     warn('WARNING: probable problem with normalization, check.\n')
+    #     minv /= 2  # TODO: something better
     logminv = transform(minv)
     for i in values:
         try:
@@ -87,9 +87,9 @@ def nozero_log_list(values):
         minv = 0.
     except:
         minv = float(min([v for v in values if v])) / 2
-    if minv > 1:
-        warn('WARNING: probable problem with normalization, check.\n')
-        minv /= 2  # TODO: something better
+    # if minv > 1:
+    #     warn('WARNING: probable problem with normalization, check.\n')
+    #     minv /= 2  # TODO: something better
     logminv = transform(minv)
     return [transform(v) if v else logminv for v in values]
     

@@ -998,20 +998,26 @@ class Experiment(object):
         else:
             start =  1
             end   = size
-        if len(self.hic_data) > 1:
-            hic_data = [sum(i) for i in zip(*self.hic_data)]
+        if normalized:
+            if len(self.norm) > 1:
+                norm_data = [sum(i) for i in zip(*self.norm)]
+            else:
+                norm_data = self.norm[0]
         else:
-            hic_data = self.hic_data[0]
+            if len(self.hic_data) > 1:
+                hic_data = [sum(i) for i in zip(*self.hic_data)]
+            else:
+                hic_data = self.hic_data[0]
         if relative and not clim:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
-                mini = min([i for i in self.norm[0] if i])
+                mini = min([i for i in norm_data if i])
                 if mini == int(mini):
-                    vmin = min(self.norm[0])
+                    vmin = min(norm_data)
                 else:
                     vmin = mini
                 vmin = fun(vmin or (1 if logarithm else 0))
-                vmax = fun(max(self.norm[0]))
+                vmax = fun(max(norm_data))
             else:
                 vmin = fun(min(hic_data) or (1 if logarithm else 0))
                 vmax = fun(max(hic_data))
@@ -1024,9 +1030,9 @@ class Experiment(object):
             if start > -1:
                 if normalized:
                     matrix = [
-                        [self.norm[0][i+size*j]
+                        [norm_data[i+size*j]
                          if (not i in self._zeros
-                             and not j in self._zeros) else vmin
+                             and not j in self._zeros) else float('nan')
                          for i in xrange(int(start) - 1, int(end))]
                         for j in xrange(int(start) - 1, int(end))]
                 else:
@@ -1044,9 +1050,9 @@ class Experiment(object):
                 pass
         else:
             if normalized:
-                matrix = [[self.norm[0][i+size*j]
+                matrix = [[norm_data[i+size*j]
                            if (not i in self._zeros
-                               and not j in self._zeros) else vmin
+                               and not j in self._zeros) else float('nan')
                            for i in xrange(size)]
                           for j in xrange(size)]
             else:
@@ -1059,7 +1065,7 @@ class Experiment(object):
                     matrix[i][j] = vmin
             alphas = array([0, 0] + [1] * 256 + [0])
             jet._init()
-            jet._lut[:,-1] = alphas
+            jet._lut[:, -1] = alphas
         elif where == 'down':
             for i in xrange(int(end - start)):
                 for j in xrange(i + 1):
@@ -1085,14 +1091,15 @@ class Experiment(object):
             cbar = axe.figure.colorbar(img)
             cbar.ax.set_ylabel('%sHi-C %sinteraction count' % (
                 'Log2 ' * logarithm, 'normalized ' * normalized), rotation=-90)
-            axe.set_title(('Chromosome %s experiment %s' +
-                           ' %s') % (self.crm.name, self.name,
-                                     'focus: %s-%s' % (start, end) if tad else ''))
+            axe.set_title(('Chromosome %s experiment %s %s') % (
+                self.crm.name, self.name,
+                'focus: %s-%s' % (start, end) if tad else ''))
             axe.set_xlabel('Genomic bin (resolution: %s)' % (self.resolution))
             if paint_tads:
                 axe.set_ylabel('TAD number')
             else:
-                axe.set_ylabel('Genomic bin (resolution: %s)' % (self.resolution))
+                axe.set_ylabel('Genomic bin (resolution: %s)' % (
+                    self.resolution))
         if not paint_tads:            
             axe.set_ylim(int(start or 1) - 0.5,
                          int(start or 1) + len(matrix) - 0.5)

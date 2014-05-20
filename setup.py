@@ -164,8 +164,6 @@ def main():
     for line in open(path.join(PATH, 'README.rst')):
         if line.startswith('| Current version: '):
             old_v = sub('.*Current version: ([^ ]+ +).*', '\\1', line).strip('\n')
-            print old_v + '|'
-            print len(old_v), len(version_full)
             line = sub('Current version: [^ ]+ +',
                        ('Current version: ' + version_full +
                         ' ' * (len(old_v) - len(version_full))), line)

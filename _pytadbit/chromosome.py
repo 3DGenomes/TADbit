@@ -10,18 +10,18 @@ from pytadbit.utils.extraviews         import tadbit_savefig
 from pytadbit.utils.extraviews         import _tad_density_plot
 from pytadbit.experiment               import Experiment
 from string                            import ascii_lowercase as letters
-from warnings                          import warn
 from copy                              import deepcopy as copy
 from cPickle                           import load, dump
 from pytadbit.alignment                import Alignment, randomization_test
 from numpy                             import log2
 from random                            import random
-from math import sqrt
+from math                              import sqrt
+from sys                               import stderr
 
 try:
     import matplotlib.pyplot as plt
 except ImportError:
-    warn('matplotlib not found\n')
+    stderr.write('matplotlib not found\n')
 
 
 def load_chromosome(in_f, fast=2):
@@ -95,7 +95,7 @@ def load_chromosome(in_f, fast=2):
             if fast != 1:
                 crm.get_experiment(name).norm = dicp[name]['wght']
     elif not fast:
-        warn('WARNING: data not saved correctly for fast loading.\n')
+        stderr.write('WARNING: data not saved correctly for fast loading.\n')
     return crm
 
 
@@ -450,12 +450,14 @@ class Chromosome(object):
         if not name:
             name = ''.join([letters[int(random() * len(letters))] \
                             for _ in xrange(5)])
-            warn('No name provided, random name generated: %s\n' % (name))
+            stderr.write('WARNING: No name provided, random name ' +
+                         'generated: %s\n' % (name))
         if name in self.experiments:
             if 'hi-c' in self.get_experiment(name) and not replace:
-                warn('''Hi-C data already loaded under the name: %s.
-                This experiment will be kept under %s.\n''' % (name,
-                                                               name + '_'))
+                stderr.write(
+                    '''WARNING: Hi-C data already loaded under the name: %s.
+                    This experiment will be kept under %s.\n''' % (name,
+                                                                   name + '_'))
                 name += '_'
         if isinstance(name, Experiment):
             self.experiments.append(name)
