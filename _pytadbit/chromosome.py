@@ -663,8 +663,8 @@ class Chromosome(object):
                                     normalized=normalized, relative=relative,
                                     decorate=False, savefig=False, where='down',
                                     clim=clim or img.get_clim())
-                    # axe = axe.twinx()
-                    # axe.set_aspect('equal', adjustable='box-forced', anchor='NE')
+                    #axe = axe.twinx()
+                    #axe.set_aspect('equal',adjustable='box-forced',anchor='NE')
                     if decorate:
                         plt.text(1.01, .5, 
                                  'Chromosome %s experiment %s' % (
@@ -673,10 +673,10 @@ class Chromosome(object):
                                   ha='left', transform=axe.transAxes)
                 else:
                     xper = self.get_experiment(names[i * cols + j])
-                    xper.view(tad=tad, focus=focus, paint_tads=paint_tads, axe=axe,
-                              show=False, logarithm=logarithm, normalized=normalized,
-                              relative=relative, decorate=decorate, savefig=False,
-                              clim=clim)
+                    xper.view(tad=tad, focus=focus, paint_tads=paint_tads,
+                              axe=axe, show=False, logarithm=logarithm,
+                              normalized=normalized, relative=relative,
+                              decorate=decorate, savefig=False, clim=clim)
         if savefig:
             tadbit_savefig(savefig)
         if show:
