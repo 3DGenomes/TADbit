@@ -326,6 +326,7 @@ def calc_eqv_rmsd(models, nloci, zeros, dcutoff=200, one=False, what='score',
     if not what in ['score', 'rmsd', 'drmsd', 'eqv']:
         raise NotImplementedError("Only 'score', 'rmsd', 'drmsd' or 'eqv' " +
                                   "features are available\n")
+    # remove particles with zeros from calculation
     x = []
     y = []
     z = []

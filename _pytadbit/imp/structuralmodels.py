@@ -240,10 +240,19 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
             models = [m for m in self.__models]
-        idx = centroid_wrapper([self[x]['x'] for x in models],
-                               [self[x]['y'] for x in models],
-                               [self[x]['z'] for x in models],
-                               self.nloci, len(models), int(verbose), 0)
+        # remove particles with zeros from calculation
+        x = []
+        y = []
+        z = []
+        for model in xrange(len(models)):
+            x.append([self[model]['x'][i] for i in xrange(self.nloci)
+                      if self._zeros[i]])
+            y.append([self[model]['y'][i] for i in xrange(self.nloci)
+                      if self._zeros[i]])
+            z.append([self[model]['z'][i] for i in xrange(self.nloci)
+                      if self._zeros[i]])
+        idx = centroid_wrapper(x, y, z, self.nloci, len(models),
+                               int(verbose), 0)
         return models[idx]
 
 
@@ -270,10 +279,19 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
             models = [m for m in self.__models]
-        idx = centroid_wrapper([self[x]['x'] for x in models],
-                               [self[x]['y'] for x in models],
-                               [self[x]['z'] for x in models],
-                               self.nloci, len(models), int(verbose), 1)
+        # remove particles with zeros from calculation
+        x = []
+        y = []
+        z = []
+        for model in xrange(len(models)):
+            x.append([self[model]['x'][i] for i in xrange(self.nloci)
+                      if self._zeros[i]])
+            y.append([self[model]['y'][i] for i in xrange(self.nloci)
+                      if self._zeros[i]])
+            z.append([self[model]['z'][i] for i in xrange(self.nloci)
+                      if self._zeros[i]])
+        idx = centroid_wrapper(x, y, z, self.nloci, len(models),
+                               int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
                              ('rand_init', 'avg'), ('objfun', None),
                              ('radius', float(self.resolution *
@@ -427,13 +445,13 @@ class StructuralModels(object):
             # find model with lowest energy for each cluster
             for md1 in self:
                 if md1['cluster'] == cl1:
-                    # the first on found is the best :)
+                    # the first one found is the best :)
                     break
             for j, cl2 in enumerate(clusters[i+1:]):
                 # find model with lowest energy for each cluster
                 for md2 in self:
                     if md2['cluster'] == cl2:
-                        # the first on found is the best :)
+                        # the first one found is the best :)
                         break
                 matrix[i][j+i+1] = calc_eqv_rmsd({0: md1, 1: md2}, self.nloci,
                                                  self._zeros, one=True)

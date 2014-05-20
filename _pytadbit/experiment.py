@@ -183,7 +183,7 @@ class Experiment(object):
         # check if both experiments are normalized with the same method
         # and sum both normalized data
         if self._normalization == other._normalization != None:
-            xpr.norm = [tuple([(i + j) / 2 for i, j in zip(
+            xpr.norm = [tuple([i + j for i, j in zip(
                 self.norm[0], other.norm[0])])]
             xpr._normalization = self._normalization
         elif self.norm or other.norm:
