@@ -506,9 +506,9 @@ class Experiment(object):
                     continue
         # no need to use lists, tuples use less memory
         if factor:
+            self._normalization = 'visibility_factor:' + str(factor)
             factor = sum(self.norm[0]) / (self.size * self.size * factor)
             self.norm[0] = tuple([n / factor for n in self.norm[0]])
-            self._normalization = 'visibility_factor:' + str(factor)
         else:
             self.norm[0] = tuple(self.norm[0])
             self._normalization = 'visibility'
