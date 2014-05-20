@@ -182,10 +182,17 @@ class Experiment(object):
                          hic_data=new_hicdata, no_warn=True)
         # check if both experiments are normalized with the same method
         # and sum both normalized data
-        if self._normalization == other._normalization != None:
-            xpr.norm = [tuple([i + j for i, j in zip(
-                self.norm[0], other.norm[0])])]
-            xpr._normalization = self._normalization
+        if self._normalization.split != None and other._normalization != None:
+            if (self._normalization.split('_factor:')[0] ==
+                other._normalization.split('_factor:')[0]):
+                xpr.norm = [tuple([i + j for i, j in zip(
+                    self.norm[0], other.norm[0])])]
+                # The final value of the factor should be the sum of each
+                xpr._normalization = (
+                    self._normalization.split('_factor:')[0] +
+                    '_factor:' +
+                    str(int(self._normalization.split('_factor:')[1]) +
+                        int(other._normalization.split('_factor:')[1])))
         elif self.norm or other.norm:
             raise Exception('ERROR: normalization differs between each ' +
                             'experiment\n')
@@ -253,6 +260,12 @@ class Experiment(object):
                 self._ori_hic  = self.hic_data[:]
             if self.norm:
                 self._ori_norm = self.norm[:]
+                # change the factor value in normalization description
+                self._normalization = (
+                    self._normalization.split('_factor:')[0] +
+                    '_factor:'+
+                    str(int(self._normalization.split('factor:')[1])
+                        * (resolution / self.resolution)))
         self.resolution = resolution
         fact = self.resolution / self._ori_resolution
         # super for!
