@@ -51,7 +51,9 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
     # check if the binning is correct
     # we want at list half of the bins with some data
     try:
+        cnt = 0
         while list(x).count(0) > len(x)/2:
+            cnt += 1
             cols = cols[:-1]
             xmin = min(cols)
             xmax = max(cols)
@@ -62,6 +64,8 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
                 plt.clf()
                 hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
             xp = range(0, int(cols[-1]))
+            if cnt > 10000:
+                raise ValueError
     except ValueError:
         if not silent:
             stderr.write('WARNING: Too few data to filter columns. ' +

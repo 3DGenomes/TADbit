@@ -255,6 +255,20 @@ def main():
     if opts.tad_only:
         exit()
 
+    # free memory
+    for exp in crm.experiments[:-1]:
+        try:
+            del(exp.hic_data[0])
+            print 'free hic_data', exp.name
+        except:
+            pass
+        try:
+            del(exp.norm[0])
+            print 'free norm_data', exp.name
+        except:
+            pass
+        del(exp)
+
     ############################################################################
     #######################  LOAD OPTIMAL IMP PARAMETERS #######################
     ############################################################################

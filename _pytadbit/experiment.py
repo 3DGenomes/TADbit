@@ -264,11 +264,14 @@ class Experiment(object):
             if self.norm:
                 self._ori_norm = self.norm[:]
                 # change the factor value in normalization description
-                self._normalization = (
-                    self._normalization.split('_factor:')[0] +
-                    '_factor:'+
-                    str(int(self._normalization.split('factor:')[1])
-                        * (resolution / self.resolution)))
+                try:
+                    self._normalization = (
+                        self._normalization.split('_factor:')[0] +
+                        '_factor:'+
+                        str(int(self._normalization.split('factor:')[1])
+                            * (resolution / self.resolution)))
+                except IndexError: # no factor there
+                    pass
         self.resolution = resolution
         fact = self.resolution / self._ori_resolution
         # super for!
