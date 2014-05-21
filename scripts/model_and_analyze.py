@@ -256,18 +256,18 @@ def main():
         exit()
 
     # free memory
-    for exp in crm.experiments[:-1]:
+    for xpr in crm.experiments[:-1]:
         try:
-            del(exp.hic_data[0])
-            print 'free hic_data', exp.name
+            del(xpr.hic_data[0])
+            print 'free hic_data', xpr.name
         except:
             pass
         try:
-            del(exp.norm[0])
-            print 'free norm_data', exp.name
+            del(xpr.norm[0])
+            print 'free norm_data', xpr.name
         except:
             pass
-        del(exp)
+        del(xpr)
 
     ############################################################################
     #######################  LOAD OPTIMAL IMP PARAMETERS #######################
