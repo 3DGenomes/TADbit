@@ -832,7 +832,7 @@ class StructuralModels(object):
                             for l in xrange(self.nloci)]
                            for k in xrange(self.nloci)]
                 try:
-                    ims = axes[i+add, j-1].imshow(
+                    ims = axes[i + add, j - 1].imshow(
                         matrix3, origin='lower', cmap=bwr,
                         interpolation="nearest", vmin=-1, vmax=1,
                         extent=(0.5, len(matrix3) + 0.5,
