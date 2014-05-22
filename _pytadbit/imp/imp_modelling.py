@@ -209,7 +209,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
     :param n_cpus: number of CPUs to use
     :param n_models: number of models to generate
     """
-    pool = mu.Pool(n_cpus)
+    pool = mu.Pool(n_cpus, maxtasksperchild=1)
     jobs = {}
     for rand_init in xrange(START, n_models + START):
         jobs[rand_init] = pool.apply_async(_do_it, args=(rand_init, verbose))
@@ -230,6 +230,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
         for i, (_, m) in enumerate(
         sorted(results, key=lambda x: x[1]['objfun'])[n_keep:]):
             bad_models[i+n_keep] = m
+    del(pool)
     return models, bad_models
 
 
@@ -378,7 +379,6 @@ def generate_IMPmodel(rand_init, verbose=0):
                 rand_init, log_energies[-1])
     x, y, z, radius = (FloatKey("x"), FloatKey("y"),
                        FloatKey("z"), FloatKey("radius"))
-
     result = IMPmodel({'log_objfun' : log_energies,
                        'objfun'     : log_energies[-1],
                        'x'          : [],
