@@ -42,7 +42,6 @@ mpl.use('Agg')
 import pytadbit
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
-from warnings import warn
 import os, sys
 import logging
 
@@ -110,6 +109,13 @@ def load_hic_data(opts, xnames):
         if not xnorm:
             logging.info("\tNormalizing HiC data of %s..." % xnam)
             crm.experiments[xnam].normalize_hic(factor=1)
+    if opts.beg > crm.experiments[-1].size:
+        raise Exception('ERROR: beg parameter is larger than chromosome size.')
+    if opts.end > crm.experiments[-1].size:
+        logging.info('WARNING: end parameter is larger than chromosome ' +
+                     'size. Setting end to %s.\n' % (crm.experiments[-1].size *
+                                                     opts.res))
+        opts.end = crm.experiments[-1].size
     return crm
 
 
@@ -455,8 +461,8 @@ def main():
                 f.write('%s\t%.2f\n' % (model["rand_init"],
                                         model.persistence_length()))
             except:
-                warn('WARNING: failed to compute persistence length for model' +
-                     ' %s' % model["rand_init"])
+                sys.stderr.write('WARNING: failed to compute persistence ' +
+                     'length for model %s' % model["rand_init"])
 
     if "accessibility" in opts.analyze:
         # Get accessibility of all models
@@ -711,7 +717,7 @@ def get_options():
             new_opts[key] = value
     # bad key in configuration file
     for bad_k in set(new_opts.keys()) - set(opts.__dict__.keys()):
-        warn('WARNING: parameter "%s" not recognized' % (bad_k))
+        sys.stderr.write('WARNING: parameter "%s" not recognized' % (bad_k))
     for key in sorted(opts.__dict__.keys()):
         if key in args:
             log += '  * Command setting   %13s to %s\n' % (
@@ -729,32 +735,32 @@ def get_options():
         opts.analyze[i] = actions[int(j)]
 
     if not opts.data and not opts.norm:
-        warn('MISSING data')
+        sys.stderr.write('MISSING data')
         exit(parser.print_help())
     if not opts.outdir:
-        warn('MISSING outdir')
+        sys.stderr.write('MISSING outdir')
         exit(parser.print_help())
     if not opts.crm:
-        warn('MISSING crm NAME')
+        sys.stderr.write('MISSING crm NAME')
         exit(parser.print_help())
     if opts.beg == None:
-        warn('MISSING beg COORDINATE')
+        sys.stderr.write('MISSING beg COORDINATE')
         exit(parser.print_help())
     if not opts.end:
-        warn('MISSING end COORDINATE')
+        sys.stderr.write('MISSING end COORDINATE')
         exit(parser.print_help())
     if not opts.res:
-        warn('MISSING resolution')
+        sys.stderr.write('MISSING resolution')
         exit(parser.print_help())
     if not opts.analyze_only:
         if not opts.maxdist:
-            warn('MISSING maxdist')
+            sys.stderr.write('MISSING maxdist')
             exit(parser.print_help())
         if not opts.lowfreq:
-            warn('MISSING lowfreq')
+            sys.stderr.write('MISSING lowfreq')
             exit(parser.print_help())
         if not opts.upfreq:
-            warn('MISSING upfreq')
+            sys.stderr.write('MISSING upfreq')
             exit(parser.print_help())
 
     # groups for TAD detection
