@@ -161,8 +161,12 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     global START
     START = start
 
+    # verbose
+    global VERBOSE
+    VERBOSE = verbose
+
     models, bad_models = multi_process_model_generation(
-        n_cpus, n_models, n_keep, keep_all, verbose)
+        n_cpus, n_models, n_keep, keep_all)
 
     try:
         xpr = experiment
@@ -201,7 +205,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
             zscores=zscores, config=CONFIG, experiment=experiment, zeros=zeros)
 
 
-def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
+def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     """
     Parallelize the
     :func:`pytadbit.imp.imp_model.StructuralModels.generate_IMPmodel`.
@@ -209,17 +213,19 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
     :param n_cpus: number of CPUs to use
     :param n_models: number of models to generate
     """
-    pool = mu.Pool(n_cpus, maxtasksperchild=1)
+    pool = mu.Pool(n_cpus)
     jobs = {}
-    for rand_init in xrange(START, n_models + START):
-        jobs[rand_init] = pool.apply_async(_do_it, args=(rand_init, verbose))
+    jobs = pool.map_async(_do_it, xrange(START, n_models + START))
 
     pool.close()
     pool.join()
 
-    results = []
-    for rand_init in xrange(START, n_models + START):
-        results.append((rand_init, jobs[rand_init].get()))
+    results = [None] * (n_models + START)
+    for rand_init, val in jobs.get():
+        print rand_init, val, '***********'*10
+        results[rand_init] = val
+
+    del(jobs)
 
     models = {}
     bad_models = {}
@@ -234,14 +240,14 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all, verbose):
     return models, bad_models
 
 
-def _do_it(num, verbose):
+def _do_it(num):
     """
     Workaround in order pass to the multiprocessing queue a pickable object.
     """
-    return generate_IMPmodel(num, verbose)
+    return num, generate_IMPmodel(num)
 
 
-def generate_IMPmodel(rand_init, verbose=0):
+def generate_IMPmodel(rand_init):
     """
     Generates one IMP model
     
@@ -251,6 +257,7 @@ def generate_IMPmodel(rand_init, verbose=0):
        function value optimization, and the coordinates of each particles.
 
     """
+    verbose = VERBOSE
     IMP.random_number_generator.seed(rand_init)
 
     log_energies = []
