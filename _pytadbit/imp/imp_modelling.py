@@ -213,19 +213,8 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     :param n_cpus: number of CPUs to use
     :param n_models: number of models to generate
     """
-    pool = mu.Pool(n_cpus)
-    jobs = {}
-    jobs = pool.map_async(_do_it, xrange(START, n_models + START))
-
-    pool.close()
-    pool.join()
-
-    results = [None] * (n_models + START)
-    for rand_init, val in jobs.get():
-        print rand_init, val, '***********'*10
-        results[rand_init] = val
-
-    del(jobs)
+    pool = mu.Pool(processes=n_cpus, maxtasksperchild=1)
+    results = pool.imap(generate_IMPmodel, xrange(START, n_models + START))
 
     models = {}
     bad_models = {}
@@ -236,15 +225,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
         for i, (_, m) in enumerate(
         sorted(results, key=lambda x: x[1]['objfun'])[n_keep:]):
             bad_models[i+n_keep] = m
-    del(pool)
     return models, bad_models
-
-
-def _do_it(num):
-    """
-    Workaround in order pass to the multiprocessing queue a pickable object.
-    """
-    return num, generate_IMPmodel(num)
 
 
 def generate_IMPmodel(rand_init):
@@ -403,7 +384,7 @@ def generate_IMPmodel(rand_init):
                    part.get_value(z), part.get_value(radius))
     # gets radius from last particle, assuming that all are the same
     result['radius'] = part.get_value(radius)
-    return result
+    return rand_init, result
 
 
 def addAllHarmonics(model, verbose=False):
