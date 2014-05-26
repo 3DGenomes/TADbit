@@ -240,14 +240,15 @@ def main():
                 exp += crm.experiments[i]
         else:
             exp = crm.experiments[0]
-    crm.add_experiment(exp)
+        crm.add_experiment(exp)
 
-    if not opts.analyze_only:
+    if  not opts.tad_only and not opts.analyze_only:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            savefig=os.path.join(
                                opts.outdir, name ,
                                name + '_column_filtering.pdf'))
-    if "column filtering" in opts.analyze and not opts.analyze_only:
+    if (not opts.tad_only and "column filtering" in opts.analyze
+        and not opts.analyze_only):
         out = open(os.path.join(opts.outdir, name ,
                                 name + '_column_filtering.dat'), 'w')
         out.write('# particles not considered in the analysis\n' +
@@ -260,20 +261,6 @@ def main():
                             force=True)
     if opts.tad_only:
         exit()
-
-    # free memory
-    for xpr in crm.experiments[:-1]:
-        try:
-            del(xpr.hic_data[0])
-            print 'free hic_data', xpr.name
-        except:
-            pass
-        try:
-            del(xpr.norm[0])
-            print 'free norm_data', xpr.name
-        except:
-            pass
-        del(xpr)
 
     ############################################################################
     #######################  LOAD OPTIMAL IMP PARAMETERS #######################
@@ -743,10 +730,10 @@ def get_options():
     if not opts.crm:
         sys.stderr.write('MISSING crm NAME')
         exit(parser.print_help())
-    if opts.beg == None:
+    if not opts.beg and not opts.tad_only:
         sys.stderr.write('MISSING beg COORDINATE')
         exit(parser.print_help())
-    if not opts.end:
+    if not opts.end and not opts.tad_only:
         sys.stderr.write('MISSING end COORDINATE')
         exit(parser.print_help())
     if not opts.res:
@@ -790,11 +777,12 @@ def get_options():
     opts.res         = int(opts.res        )
 
     # do the divisinon to bins
-    opts.beg = int(float(opts.beg) / opts.res)
-    opts.end = int(float(opts.end) / opts.res)
-    if opts.end - opts.beg <= 2:
-        raise Exception('"beg" and "end" parameter should be given in ' +
-                        'genomic coordinates, not bin')
+    if not opts.tad_only:
+        opts.beg = int(float(opts.beg) / opts.res)
+        opts.end = int(float(opts.end) / opts.res)
+        if opts.end - opts.beg <= 2:
+            raise Exception('"beg" and "end" parameter should be given in ' +
+                            'genomic coordinates, not bin')
 
     # Create out-directory
     name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
