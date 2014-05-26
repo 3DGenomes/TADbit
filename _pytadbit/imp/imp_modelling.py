@@ -213,9 +213,19 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     :param n_cpus: number of CPUs to use
     :param n_models: number of models to generate
     """
-    pool = mu.Pool(processes=n_cpus, maxtasksperchild=1)
-    results = pool.imap(generate_IMPmodel, xrange(START, n_models + START))
-
+    results = []
+    n_forks = 4
+    for i in xrange(START, START + n_models, n_cpus * n_forks):
+        print i, range(i, min(START + n_models, i + n_cpus * n_forks))
+        pool = mu.Pool(processes=n_cpus, maxtasksperchild=1)
+        # need to use imap, otherwise memory collapses.
+        # unorder, becasue it may be more efficient
+        # chunksize default is 1, and again, the higher, the more efficient
+        results.extend(pool.imap_unordered(generate_IMPmodel,
+                                           xrange(i, min(START + n_models,
+                                                         i + n_cpus * n_forks)),
+                                           chunksize=1))
+        pool.close()
     models = {}
     bad_models = {}
     for i, (_, m) in enumerate(

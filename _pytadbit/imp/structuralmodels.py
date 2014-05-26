@@ -1687,7 +1687,7 @@ class StructuralModels(object):
                      self[models[0]]['description']['resolution'])
             kwargs.update((('tads', self.experiment.tads),
                            ('mstart', start ), ('mend', end)))
-        centroid_model = 0
+        centroid_model = models[0]
         if 'centroid' in [show, highlight] and len(models) > 1:
             centroid_model = self.centroid_model(models)
         if highlight == 'centroid':
@@ -1765,7 +1765,7 @@ class StructuralModels(object):
         chimera_view(cmm_files,
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
                      highlight=(0 if (show=='highlighted' and mdl!='all')
-                             else models.index(mdl) if mdl!='all' else mdl),
+                                else models.index(mdl) if mdl!='all' else mdl),
                      align=align, grid=show=='grid')
 
 

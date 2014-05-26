@@ -105,7 +105,7 @@ class TestTadbit(unittest.TestCase):
                               experiment_resolutions=[40000,20000,20000,20000],
                               silent=True)
         for exp in test_chr.experiments:
-            exp.normalize_hic(silent=True)
+            exp.normalize_hic(silent=True, factor=None)
 
         test_chr.align_experiments(verbose=False, randomize=False,
                                    method='global')
@@ -303,7 +303,7 @@ class TestTadbit(unittest.TestCase):
         tadbit_weights = exp.norm[:]
         exp.norm = None
         exp.filter_columns(silent=True)
-        exp.normalize_hic()
+        exp.normalize_hic(factor=None)
         self.assertEqual([round(i, 3) for i in tadbit_weights[0][:100]],
                          [round(i, 3) for i in exp.norm[0][:100]])
         if CHKTIME:
@@ -352,7 +352,7 @@ class TestTadbit(unittest.TestCase):
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv')
         exp.filter_columns(silent=True)
-        exp.normalize_hic(silent=True)
+        exp.normalize_hic(silent=True, factor=None)
         result = exp.optimal_imp_parameters(50, 70, n_cpus=4,
                                             n_models=8, n_keep=2,
                                             lowfreq_range=[-0.6],
@@ -389,7 +389,7 @@ class TestTadbit(unittest.TestCase):
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
         exp.filter_columns(silent=True)
-        exp.normalize_hic(silent=True)
+        exp.normalize_hic(silent=True, factor=None)
         models = exp.model_region(51, 71, n_models=40, n_keep=25,
                                   n_cpus=4,
                                   config={'kforce': 5, 'maxdist': 500,
