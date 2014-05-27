@@ -25,6 +25,8 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
 /* The wrapper to the underlying C function */
 static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject **obs;
+  PyObject **py_weights;
+  PyObject *py_remove;
   int n;
   int m;
   int n_threads;
