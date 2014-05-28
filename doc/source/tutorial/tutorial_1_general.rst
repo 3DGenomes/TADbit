@@ -46,26 +46,8 @@ loaded as this *(note: this example loads human chromosome 19 from*
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
+    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
       warn('WARNING: non integer values')
-    
-    WARNING: removing columns having less than 24.165 counts: (detected threshold)
-        8    9   10   12  245  246  247  248  249  250  251  252  253  254  255
-      256  257  258  259  260  261  262  263  264  265  266  267  268  269  270
-      271  272  273  274  275  276  277  278  279  280  281  282  283  284  285
-      286  287  288  289  290  291  292  293  294  295  296  297  298  299  300
-      301  302  303  304  305  306  307  308  309  310  311  312  313  314  315
-      316  317  318  319  320  321  322  323  324  639
-    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:209: ComplexWarning: Casting complex values to real discards the imaginary part
-      round(root, 3), ' '.join(
-    
-    WARNING: removing columns having less than 67.485 counts: (detected threshold)
-      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
-      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
-      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
-      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
-      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
-      321  322  323  324  639
 
 
 .. warning::
@@ -112,9 +94,7 @@ And call it as follow:
 
     other_chrom = Chromosome(name='An other chromosome')
     other_chrom.add_experiment('First Hi-C experiment', hic_data='../../src/test/data/hESC_chr19-rep1.txt',
-                               parser=read_strange_file, resolution=20000, silent=True)
-
-*Note that the silent flag used here avoids warnings to be displayed*
+                               parser=read_strange_file, resolution=20000)
 
 Experiment objects
 ------------------
@@ -186,17 +166,7 @@ experiments:
 
 .. ansi-block::
 
-    
-    WARNING: removing columns having less than 73.545 counts: (detected threshold)
-      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
-      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
-      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
-      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
-      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
-      321  322  323  324  639
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:177: UserWarning: WARNING: experiments should be normalized before being summed
-    
-      'summed\n')
+    WARNING: experiments should be normalized before being summed
 
 
 *Note the last warning asking to normalize experiments before summing
@@ -231,19 +201,19 @@ To quickly view how does the interaction matrix look like, experiment objects ha
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:939: RuntimeWarning: divide by zero encountered in log2
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:1090: RuntimeWarning: divide by zero encountered in log2
       img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_28_1.png
+.. image:: ../nbpictures/tutorial_1_general_27_1.png
 
 
 
 
 .. ansi-block::
 
-    <matplotlib.image.AxesImage at 0x7f21cbb0d7d0>
+    <matplotlib.image.AxesImage at 0x7f6fa312e7d0>
 
 
 
@@ -256,7 +226,7 @@ the chromosome object.
     my_chrom.visualize([('k562', 'gm06690'), 'k562+gm06690'])
 
 
-.. image:: ../nbpictures/tutorial_1_general_30_0.png
+.. image:: ../nbpictures/tutorial_1_general_29_0.png
 
 
 Note how we pass the list of experiments to show to the :func:`pytadbit.chromosome.Chromosome.visualize` we ask to view 3 experiments, the first two being grouped in a single matrix. This view is useful to compare experiments, and do not suppose a lose of information as Hi-C matrices are symetric.
@@ -401,7 +371,7 @@ TADs in interaction matrices
     my_chrom.visualize(exp.name, paint_tads=True)
 
 
-.. image:: ../nbpictures/tutorial_1_general_44_0.png
+.. image:: ../nbpictures/tutorial_1_general_43_0.png
 
 
 In this case we can also put them side by side, view a given region, and
@@ -413,12 +383,12 @@ use nrmalized data instead of the log2 of raw data:
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:939: RuntimeWarning: invalid value encountered in log2
+    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:1090: RuntimeWarning: invalid value encountered in log2
       img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
 
 
 
-.. image:: ../nbpictures/tutorial_1_general_46_1.png
+.. image:: ../nbpictures/tutorial_1_general_45_1.png
 
 
 *Note that the width of the line is proportional to the score of the TAD
@@ -439,7 +409,7 @@ Finally TAD bourders can be seen using the density plot summary:
     my_chrom.tad_density_plot('k562')
 
 
-.. image:: ../nbpictures/tutorial_1_general_51_0.png
+.. image:: ../nbpictures/tutorial_1_general_50_0.png
 
 
 In this plot, each grey-filled-arc represents a TAD. The eight of the
@@ -470,18 +440,6 @@ TADbit also allows to search for TADs in a chromosome using the information of s
     [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: visibility), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: visibility)]
 
 
-.. ansi-block::
-
-    
-    WARNING: removing columns having less than 67.485 counts: (detected threshold)
-      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
-      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
-      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
-      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
-      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
-      321  322  323  324  639
-
-
 .. note::
    In this case a new experiment is also created (e.g. "batch_gm06690_k562"), it contains the TADs detected when taking into account the two experiments "gm06690" and "k562".
 
@@ -505,7 +463,7 @@ Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, TADb
     my_chrom.visualize('k562', paint_tads=True)
 
 
-.. image:: ../nbpictures/tutorial_1_general_62_0.png
+.. image:: ../nbpictures/tutorial_1_general_61_0.png
 
 
 Another optional inspection performed by TADbit is the presence of
@@ -555,19 +513,3 @@ And to load it:
     expr = my_chrom.experiments["k562"]
     
     expr.load_hic_data("../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt")
-
-.. ansi-block::
-
-    
-    WARNING: removing columns having less than 24.165 counts: (detected threshold)
-        8    9   10   12  245  246  247  248  249  250  251  252  253  254  255
-      256  257  258  259  260  261  262  263  264  265  266  267  268  269  270
-      271  272  273  274  275  276  277  278  279  280  281  282  283  284  285
-      286  287  288  289  290  291  292  293  294  295  296  297  298  299  300
-      301  302  303  304  305  306  307  308  309  310  311  312  313  314  315
-      316  317  318  319  320  321  322  323  324  639
-
-
-.. code:: python
-
-    

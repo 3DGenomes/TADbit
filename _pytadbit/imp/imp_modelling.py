@@ -216,7 +216,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     results = []
     n_forks = 4
     for i in xrange(START, START + n_models, n_cpus * n_forks):
-        print i, range(i, min(START + n_models, i + n_cpus * n_forks))
+        # print i, range(i, min(START + n_models, i + n_cpus * n_forks))
         pool = mu.Pool(processes=n_cpus, maxtasksperchild=1)
         # need to use imap, otherwise memory collapses.
         # unorder, becasue it may be more efficient

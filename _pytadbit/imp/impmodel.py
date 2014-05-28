@@ -663,7 +663,11 @@ class IMPmodel(dict):
                 out_f.close()
         if view_mesh:
             chimera_cmd = [
-                'focus', 'set bg_color white', 'windowsize 800 600',
+                'focus',
+                'bonddisplay never #1',
+                'shape tube #1 radius 15 bandLength 300 segmentSubdivisions 1 followBonds on',
+                '~show #1',
+                'set bg_color white', 'windowsize 800 600',
                 'clip yon -500', 'set subdivision 1', 'set depth_cue',
                 'set dc_color black', 'set dc_start 0.5', 'set dc_end 1',
                 'scale 0.8']
@@ -678,7 +682,7 @@ class IMPmodel(dict):
             self.write_cmm('/tmp/')
             chimera_view(['/tmp/tmp_mesh.cmm',
                           '/tmp/model.%s.cmm' % (self['rand_init'])],
-                         chimera_bin=chimera_bin,
+                         chimera_bin=chimera_bin, align=False,
                          savefig=savefig, chimera_cmd=chimera_cmd)
 
         return (possibles, outdot.count(False), area, total, acc_parts)

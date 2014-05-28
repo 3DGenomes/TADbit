@@ -23,7 +23,6 @@ human's 19th chromosome:
 .. code:: python
 
     from pytadbit import Chromosome
-    from pytadbit.utils.hic_filtering import filter_by_mean
     
     my_chrom = Chromosome('19')
     my_chrom.add_experiment('gm', resolution=10000, 
@@ -31,23 +30,33 @@ human's 19th chromosome:
     
     exp = my_chrom.experiments[0]
     
-    zeroes = filter_by_mean(exp.get_hic_matrix(), draw_hist=True, silent=True)
+    zeroes = exp.filter_columns(draw_hist=True)
+    
 
 
 .. ansi-block::
 
-    
-    WARNING: removing columns having less than 67.485 counts: (detected threshold)
-      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
-      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
-      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
-      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
-      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
-      321  322  323  324  639
+    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
+      warn('WARNING: non integer values')
+    /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
+      return array(a, dtype, copy=False, order=order)
 
 
 
 .. image:: ../nbpictures/tutorial_4_data_normalization_4_1.png
+
+
+.. ansi-block::
+
+    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:132: ComplexWarning: Casting complex values to real discards the imaginary part
+      round(root, 3), ' '.join(
+    
+    WARNING: removing columns having less than 67.485 counts:
+       246   247   248   249   250   251   252   253   254   255   256   257   258   259   260   261   262   263   264   265
+       266   267   268   269   270   271   272   273   274   275   276   277   278   279   280   281   282   283   284   285
+       286   287   288   289   290   291   292   293   294   295   296   297   298   299   300   301   302   303   304   305
+       306   307   308   309   310   311   312   313   314   315   316   317   318   319   320   321   322   323   324   639
+    
 
 
 *Note that the columns cited in the warning correspond to the columns on
@@ -55,7 +64,7 @@ the left of the dot vertical red line*
 
 Than, according to the fit represented above, we would discard all
 columns in the Hi-C raw data having cumulative count of interaction
-below the dashed red line in the graph above (~46). This columns will be
+below the dashed red line in the graph above (~67). This columns will be
 removed from the modeling, and their associated particles will have no
 experimental data.
 
@@ -98,7 +107,7 @@ Calculation of weights
 ~~~~~~~~~~~~~~~~~~~~~~
 
 
-Weights are calculated according to this formula (see :class:`pytadbit.experiment.Experiment.normalize_hic`):
+Weights are calculated according to this formula (see :func:`pytadbit.experiment.Experiment.normalize_hic`):
 
 .. math::
 
@@ -108,6 +117,8 @@ Weights are calculated according to this formula (see :class:`pytadbit.experimen
 "matrix", being our row data (count of interactions), N the number of rows/columns.
 
 The result is stored in a new matrix, called weight. The values that will be used in the next step are the multiplication of this weights per the raw data.
+
+There is one extra step of the normalization that consists in making the normalized values comparable between experiments. This step is control by the parameter `factor` and consists in asking to the function to normalize in order that the overall mean value of a cell would be equal to the value of `factor`. By default factor is set to 1, thus the mean value of a cell in a normalized matrix would be 1, and the summ of the normalized Hi-C count of a matrix of 100x100 would be equal to 10000. When 2 experiments are summed the resulting experiment would have a factor equal to the sum of the factors of the summed experiments, and in the same way, when changes in the resoltuion of an experiment (through :func:`pytadbit.experiment.Experiment.set_resolution`) will also change the factor according to the change of the resolution.
 
 .. note::
 
