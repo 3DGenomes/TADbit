@@ -106,7 +106,8 @@ def tad_coloring(x, mstart=None, mend=None, tads=None, **kwargs):
     
     :returns: a list of rgb tuples (red, green, blue), each between 0 and 1.
     """
-    ltads = [t for t in tads if tads[t]['start']>mstart and tads[t]['end']<mend]
+    ltads = [t for t in tads if tads[t]['end'] > mstart
+             and tads[t]['start'] < mend]
     ntads = len(ltads)
     grey = 0.95
     try:
@@ -115,12 +116,14 @@ def tad_coloring(x, mstart=None, mend=None, tads=None, **kwargs):
         raise Exception('ERROR: TAD borders are not predicted yet.')
     result = []
     for t in tads:
-        if tads[t]['start'] < mstart or tads[t]['end'] > mend:
+        if tads[t]['end'] < mstart or tads[t]['start'] > mend:
             continue
         red = float(t + 1 - min(ltads)) / ntads
-        for _ in range(int(tads[t]['start']), int(tads[t]['end'])):
+        for _ in range(int(max(tads[t]['start'], mstart)),
+                       int(min(tads[t]['end'], mend))):
             result.append((red, 0, 1 - red))
-        result.append((grey, grey, grey))
+        if tads[t]['end'] <= mend:
+               result.append((grey, grey, grey))
         grey -= grey_step
     return result
 
@@ -140,15 +143,17 @@ def tad_border_coloring(x, mstart=None, mend=None, tads=None, **kwargs):
     if not tads:
         raise Exception('ERROR: TAD borders are not predicted yet.')
     for t in tads:
-        if tads[t]['start'] < mstart or tads[t]['end'] > mend:
+        if tads[t]['end'] < mstart or tads[t]['start'] > mend:
             continue
         grey = 0.95
         grey_step = (0.95 - 0.4) / (tads[t]['end'] - tads[t]['start'] + 1)
         red = float(tads[t]['score']) / 10
-        for _ in range(int(tads[t]['start']), int(tads[t]['end'])):
+        for _ in range(int(max(tads[t]['start'], mstart)),
+                       int(min(tads[t]['end'], mend))):
             result.append((grey, grey, grey))
             grey -= grey_step
-        result.append((red, 0, 1 - red))
+        if tads[t]['end'] <= mend:
+            result.append((red, 0, 1 - red))
     return result
 
 
