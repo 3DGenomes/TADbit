@@ -33,35 +33,13 @@ Following with the example in the previous section (:ref:`getting_start`), we wi
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:89: UserWarning: WARNING: non integer values
-      warn('WARNING: non integer values')
-    
-    WARNING: removing columns having less than 24.165 counts: (detected threshold)
-        8    9   10   12  245  246  247  248  249  250  251  252  253  254  255
-      256  257  258  259  260  261  262  263  264  265  266  267  268  269  270
-      271  272  273  274  275  276  277  278  279  280  281  282  283  284  285
-      286  287  288  289  290  291  292  293  294  295  296  297  298  299  300
-      301  302  303  304  305  306  307  308  309  310  311  312  313  314  315
-      316  317  318  319  320  321  322  323  324  639
-
-
-.. ansi-block::
-
     [Experiment First Hi-C experiment (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: visibility), Experiment Second Hi-C experiment (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility)]
 
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:209: ComplexWarning: Casting complex values to real discards the imaginary part
-      round(root, 3), ' '.join(
-    
-    WARNING: removing columns having less than 67.485 counts: (detected threshold)
-      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
-      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
-      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
-      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
-      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
-      321  322  323  324  639
+    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
+      warn('WARNING: non integer values')
 
 
 We now have loaded two Hi-C experiments, both at 100 Kb resolution, and have predicted the location of TADs in each of them (42 TADs detected in the first experiment and 31 in the second).
@@ -234,7 +212,3 @@ Finally, to be more flexible, this conditions can be applied to only a given num
     [(53, [>60800<, >60800<]), (55, [>63800<, >63800<])]
 
 
-
-.. code:: python
-
-    

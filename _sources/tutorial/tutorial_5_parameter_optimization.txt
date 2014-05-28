@@ -31,6 +31,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
         try:
             exp.load_hic_data('../../scripts/sample_data/HIC_{0}_{1}_{1}_{2}_obs.txt'.format(
                               exp.name, my_chrom.name, res))
+            exp.normalize_hic(factor=1)
         except IOError:
             print 'file not found for experiment: ' + exp.name
             continue
@@ -39,25 +40,11 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
-      warn('WARNING: non integer values')
-    
-    WARNING: removing columns having less than 24.165 counts: (detected threshold)
-        8    9   10   12  245  246  247  248  249  250  251  252  253  254  255
-      256  257  258  259  260  261  262  263  264  265  266  267  268  269  270
-      271  272  273  274  275  276  277  278  279  280  281  282  283  284  285
-      286  287  288  289  290  291  292  293  294  295  296  297  298  299  300
-      301  302  303  304  305  306  307  308  309  310  311  312  313  314  315
-      316  317  318  319  320  321  322  323  324  639
-
-
-.. ansi-block::
-
     Experiment k562:
        resolution        : 100Kb
        TADs              : 37
        Hi-C rows         : 639
-       normalized        : None
+       normalized        : visibility_factor:1
        identifier        : k562
        cell type         : wild type
        restriction enzyme: UNKNOWN
@@ -67,7 +54,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
        resolution        : 100Kb
        TADs              : 34
        Hi-C rows         : 639
-       normalized        : None
+       normalized        : visibility_factor:1
        identifier        : gm06690
        cell type         : cancer
        restriction enzyme: UNKNOWN
@@ -79,57 +66,51 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:209: ComplexWarning: Casting complex values to real discards the imaginary part
-      round(root, 3), ' '.join(
-    
-    WARNING: removing columns having less than 67.485 counts: (detected threshold)
-      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
-      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
-      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
-      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
-      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
-      321  322  323  324  639
+    /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
+      warn('WARNING: non integer values')
 
 
 The log indicates that experiment "k562+gm06690" had no file. Such experiment was built ad-hoc in our previous tutorial and needs to be created again by summing the Hi-C matrices from the individual experiments.
 
 .. code:: python
 
-    # Load Hi-C of the individual experiments and put it into the sum experiment BR+TR1+TR2
-    my_chrom.experiments['k562+gm06690'].load_hic_data(
-                  (my_chrom.experiments['k562'] + my_chrom.experiments['gm06690']).hic_data, 
-                  'k562+gm06690')
+    my_chrom.experiments['k562+gm06690'] = my_chrom.experiments['k562'] + my_chrom.experiments['gm06690']
+We are now going to use the experiment "gm06690" for the modelling. The
+first thing we need to do is to filter columns with low counts:
+
+.. code:: python
+
     exp = my_chrom.experiments['gm06690']
+    exp.filter_columns(draw_hist=True)
     
     print my_chrom.experiments
 
-
 .. ansi-block::
 
-    
-    WARNING: removing columns having less than 73.545 counts: (detected threshold)
-      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
-      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
-      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
-      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
-      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
-      321  322  323  324  639
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:202: UserWarning: WARNING: experiments should be normalized before being summed
-    
-      'summed\n')
-    
-    WARNING: removing columns having less than 73.545 counts: (detected threshold)
-      246  247  248  249  250  251  252  253  254  255  256  257  258  259  260
-      261  262  263  264  265  266  267  268  269  270  271  272  273  274  275
-      276  277  278  279  280  281  282  283  284  285  286  287  288  289  290
-      291  292  293  294  295  296  297  298  299  300  301  302  303  304  305
-      306  307  308  309  310  311  312  313  314  315  316  317  318  319  320
-      321  322  323  324  639
+    /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
+      return array(a, dtype, copy=False, order=order)
+
+
+
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_11_1.png
 
 
 .. ansi-block::
 
-    [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: None)]
+    [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: visibility_factor:1), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility_factor:1), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: visibility_factor:2), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: None)]
+
+
+.. ansi-block::
+
+    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:136: ComplexWarning: Casting complex values to real discards the imaginary part
+      round(root, 3), ' '.join(
+    
+    WARNING: removing columns having less than 67.485 counts:
+       246   247   248   249   250   251   252   253   254   255   256   257   258   259   260   261   262   263   264   265
+       266   267   268   269   270   271   272   273   274   275   276   277   278   279   280   281   282   283   284   285
+       286   287   288   289   290   291   292   293   294   295   296   297   298   299   300   301   302   303   304   305
+       306   307   308   309   310   311   312   313   314   315   316   317   318   319   320   321   322   323   324   639
+    
 
 
 Optimization of IMP 3D modeling parameters
@@ -146,8 +127,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:700: UserWarning: WARNING: normalizing according to visibility method
-      warn('WARNING: normalizing according to visibility method')
+    Preparing to optimize 101 particles
 
 
 ``cutoff`` value corresponds to the distance limit, in nanometers, to consider if two particles of a model are interacting or not. A wise choice corresponds to two time the resolution times the scale factor (0.01), which in this case is :math:`cutoff = 100Kb \times 2 \times scale = 100000 \times 2 \times 0.01 = 2000`
@@ -158,131 +138,107 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
     # Optimize parameters. Be aware that this step is CPU intensive. If you want to se the progress, set verbose=True.
     optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
-                              maxdist_range=(2000, 4000, 500), verbose=True)
+                              maxdist_range=(2000, 3500, 500), verbose=True)
 
 
 .. ansi-block::
 
-        1  0.2 -1 2000 0.01 0.7685079084
-        2  0.2 -0.8 2000 0.01 0.7685079084
-        3  0.2 -0.6 2000 0.01 0.769312534002
-        4  0.2 -0.4 2000 0.01 0.774552988272
-        5  0.2 -0.2 2000 0.01 0.774799693632
-        6  0.2 0 2000 0.01 0.779079372102
-        7  0.4 -1 2000 0.01 0.77968485295
-        8  0.4 -0.8 2000 0.01 0.77968485295
-        9  0.4 -0.6 2000 0.01 0.777330669016
-       10  0.4 -0.4 2000 0.01 0.781161643149
-       11  0.4 -0.2 2000 0.01 0.784325067495
-       12  0.4 0 2000 0.01 0.786674923707
-       13  0.6 -1 2000 0.01 0.784429455755
-       14  0.6 -0.8 2000 0.01 0.784429455755
-       15  0.6 -0.6 2000 0.01 0.785634447252
-       16  0.6 -0.4 2000 0.01 0.786321444973
-       17  0.6 -0.2 2000 0.01 0.786910943468
-       18  0.6 0 2000 0.01 0.786984401856
-       19  0.8 -1 2000 0.01 0.790513719434
-       20  0.8 -0.8 2000 0.01 0.790513719434
-       21  0.8 -0.6 2000 0.01 0.790296856543
-       22  0.8 -0.4 2000 0.01 0.793885340581
-       23  0.8 -0.2 2000 0.01 0.789759250026
-       24  0.8 0 2000 0.01 0.789797737342
-       25  0.2 -1 2500 0.01 0.750962048643
-       26  0.2 -0.8 2500 0.01 0.750962048643
-       27  0.2 -0.6 2500 0.01 0.757205157705
-       28  0.2 -0.4 2500 0.01 0.761306112068
-       29  0.2 -0.2 2500 0.01 0.774749585795
-       30  0.2 0 2500 0.01 0.77526716922
-       31  0.4 -1 2500 0.01 0.768413156879
-       32  0.4 -0.8 2500 0.01 0.768413156879
-       33  0.4 -0.6 2500 0.01 0.769621944212
-       34  0.4 -0.4 2500 0.01 0.774313586043
-       35  0.4 -0.2 2500 0.01 0.784154703349
-       36  0.4 0 2500 0.01 0.780215999106
-       37  0.6 -1 2500 0.01 0.7769226588
-       38  0.6 -0.8 2500 0.01 0.7769226588
-       39  0.6 -0.6 2500 0.01 0.7771795099
-       40  0.6 -0.4 2500 0.01 0.781692802602
-       41  0.6 -0.2 2500 0.01 0.791132811629
-       42  0.6 0 2500 0.01 0.791622500864
-       43  0.8 -1 2500 0.01 0.794414661228
-       44  0.8 -0.8 2500 0.01 0.794414661228
-       45  0.8 -0.6 2500 0.01 0.791675414244
-       46  0.8 -0.4 2500 0.01 0.797601045479
-       47  0.8 -0.2 2500 0.01 0.797521713992
-       48  0.8 0 2500 0.01 0.797093368434
-       49  0.2 -1 3000 0.01 0.747088558176
-       50  0.2 -0.8 3000 0.01 0.747088558176
-       51  0.2 -0.6 3000 0.01 0.745301762181
-       52  0.2 -0.4 3000 0.01 0.75657287698
-       53  0.2 -0.2 3000 0.01 0.768255433103
-       54  0.2 0 3000 0.01 0.771134956344
-       55  0.4 -1 3000 0.01 0.760224850725
-       56  0.4 -0.8 3000 0.01 0.760224850725
-       57  0.4 -0.6 3000 0.01 0.758212146329
-       58  0.4 -0.4 3000 0.01 0.76576862456
-       59  0.4 -0.2 3000 0.01 0.778685124478
-       60  0.4 0 3000 0.01 0.779102317515
-       61  0.6 -1 3000 0.01 0.77089869622
-       62  0.6 -0.8 3000 0.01 0.77089869622
-       63  0.6 -0.6 3000 0.01 0.771149348295
-       64  0.6 -0.4 3000 0.01 0.778054314513
-       65  0.6 -0.2 3000 0.01 0.788888301661
-       66  0.6 0 3000 0.01 0.792927420622
-       67  0.8 -1 3000 0.01 0.787058090092
-       68  0.8 -0.8 3000 0.01 0.787058090092
-       69  0.8 -0.6 3000 0.01 0.787064682158
-       70  0.8 -0.4 3000 0.01 0.789444985636
-       71  0.8 -0.2 3000 0.01 0.795363982681
-       72  0.8 0 3000 0.01 0.798344059632
-       73  0.2 -1 3500 0.01 0.742503135603
-       74  0.2 -0.8 3500 0.01 0.742503135603
-       75  0.2 -0.6 3500 0.01 0.745313876975
-       76  0.2 -0.4 3500 0.01 0.757818572633
-       77  0.2 -0.2 3500 0.01 0.768088409932
-       78  0.2 0 3500 0.01 0.772953014174
-       79  0.4 -1 3500 0.01 0.758090294693
-       80  0.4 -0.8 3500 0.01 0.758090294693
-       81  0.4 -0.6 3500 0.01 0.756077064231
-       82  0.4 -0.4 3500 0.01 0.760791799894
-       83  0.4 -0.2 3500 0.01 0.770118662441
-       84  0.4 0 3500 0.01 0.771190886989
-       85  0.6 -1 3500 0.01 0.755069982191
-       86  0.6 -0.8 3500 0.01 0.755069982191
-       87  0.6 -0.6 3500 0.01 0.753952944201
-       88  0.6 -0.4 3500 0.01 0.760897343161
-       89  0.6 -0.2 3500 0.01 0.771145005701
-       90  0.6 0 3500 0.01 0.773442327166
-       91  0.8 -1 3500 0.01 0.772281982099
-       92  0.8 -0.8 3500 0.01 0.772281982099
-       93  0.8 -0.6 3500 0.01 0.774513250696
-       94  0.8 -0.4 3500 0.01 0.776897099364
-       95  0.8 -0.2 3500 0.01 0.780965488029
-       96  0.8 0 3500 0.01 0.778109941084
-       97  0.2 -1 4000 0.01 0.74469288042
-       98  0.2 -0.8 4000 0.01 0.74469288042
-       99  0.2 -0.6 4000 0.01 0.744839537795
-      100  0.2 -0.4 4000 0.01 0.749552494453
-      101  0.2 -0.2 4000 0.01 0.756184508999
-      102  0.2 0 4000 0.01 0.759171645369
-      103  0.4 -1 4000 0.01 0.737113094756
-      104  0.4 -0.8 4000 0.01 0.737113094756
-      105  0.4 -0.6 4000 0.01 0.737373689722
-      106  0.4 -0.4 4000 0.01 0.739865712079
-      107  0.4 -0.2 4000 0.01 0.74968044876
-      108  0.4 0 4000 0.01 0.753525984586
-      109  0.6 -1 4000 0.01 0.740316370858
-      110  0.6 -0.8 4000 0.01 0.740316370858
-      111  0.6 -0.6 4000 0.01 0.739165113831
-      112  0.6 -0.4 4000 0.01 0.743513322704
-      113  0.6 -0.2 4000 0.01 0.7493620759
-      114  0.6 0 4000 0.01 0.751928906505
-      115  0.8 -1 4000 0.01 0.745707450814
-      116  0.8 -0.8 4000 0.01 0.745707450814
-      117  0.8 -0.6 4000 0.01 0.743929246866
-      118  0.8 -0.4 4000 0.01 0.746609953329
-      119  0.8 -0.2 4000 0.01 0.748258868417
-      120  0.8 0 4000 0.01 0.745006154143
+        1  0.2 -1 2000 0.01 0.767098689596
+        2  0.2 -0.8 2000 0.01 0.767098689596
+        3  0.2 -0.6 2000 0.01 0.764430378531
+        4  0.2 -0.4 2000 0.01 0.769877194832
+        5  0.2 -0.2 2000 0.01 0.780250808861
+        6  0.2 0 2000 0.01 0.777301796587
+        7  0.4 -1 2000 0.01 0.772393224867
+        8  0.4 -0.8 2000 0.01 0.772393224867
+        9  0.4 -0.6 2000 0.01 0.772958040825
+       10  0.4 -0.4 2000 0.01 0.772804035198
+       11  0.4 -0.2 2000 0.01 0.778396325547
+       12  0.4 0 2000 0.01 0.778557679165
+       13  0.6 -1 2000 0.01 0.780712289443
+       14  0.6 -0.8 2000 0.01 0.780712289443
+       15  0.6 -0.6 2000 0.01 0.782092378436
+       16  0.6 -0.4 2000 0.01 0.783871795733
+       17  0.6 -0.2 2000 0.01 0.784238133139
+       18  0.6 0 2000 0.01 0.78502636527
+       19  0.8 -1 2000 0.01 0.787091209619
+       20  0.8 -0.8 2000 0.01 0.787091209619
+       21  0.8 -0.6 2000 0.01 0.786614740119
+       22  0.8 -0.4 2000 0.01 0.792475503423
+       23  0.8 -0.2 2000 0.01 0.790170250267
+       24  0.8 0 2000 0.01 0.788238926824
+       25  0.2 -1 2500 0.01 0.750871626725
+       26  0.2 -0.8 2500 0.01 0.750871626725
+       27  0.2 -0.6 2500 0.01 0.751733987004
+       28  0.2 -0.4 2500 0.01 0.7582618866
+       29  0.2 -0.2 2500 0.01 0.771518216885
+       30  0.2 0 2500 0.01 0.773504325552
+       31  0.4 -1 2500 0.01 0.756774760421
+       32  0.4 -0.8 2500 0.01 0.756774760421
+       33  0.4 -0.6 2500 0.01 0.759833450921
+       34  0.4 -0.4 2500 0.01 0.765192308125
+       35  0.4 -0.2 2500 0.01 0.772765218419
+       36  0.4 0 2500 0.01 0.774522497614
+       37  0.6 -1 2500 0.01 0.780682090473
+       38  0.6 -0.8 2500 0.01 0.780682090473
+       39  0.6 -0.6 2500 0.01 0.781857090923
+       40  0.6 -0.4 2500 0.01 0.783029516904
+       41  0.6 -0.2 2500 0.01 0.790986026532
+       42  0.6 0 2500 0.01 0.789542526866
+       43  0.8 -1 2500 0.01 0.786372973446
+       44  0.8 -0.8 2500 0.01 0.786372973446
+       45  0.8 -0.6 2500 0.01 0.787207607051
+       46  0.8 -0.4 2500 0.01 0.788810781589
+       47  0.8 -0.2 2500 0.01 0.795164267021
+       48  0.8 0 2500 0.01 0.795552255769
+       49  0.2 -1 3000 0.01 0.736950317918
+       50  0.2 -0.8 3000 0.01 0.736950317918
+       51  0.2 -0.6 3000 0.01 0.740476733274
+       52  0.2 -0.4 3000 0.01 0.753609629213
+       53  0.2 -0.2 3000 0.01 0.764380672057
+       54  0.2 0 3000 0.01 0.771119903648
+       55  0.4 -1 3000 0.01 0.758070700552
+       56  0.4 -0.8 3000 0.01 0.758070700552
+       57  0.4 -0.6 3000 0.01 0.752965160316
+       58  0.4 -0.4 3000 0.01 0.761098324731
+       59  0.4 -0.2 3000 0.01 0.774111941221
+       60  0.4 0 3000 0.01 0.775126798787
+       61  0.6 -1 3000 0.01 0.772880007549
+       62  0.6 -0.8 3000 0.01 0.772880007549
+       63  0.6 -0.6 3000 0.01 0.771506004428
+       64  0.6 -0.4 3000 0.01 0.775450414
+       65  0.6 -0.2 3000 0.01 0.786066844799
+       66  0.6 0 3000 0.01 0.791412592662
+       67  0.8 -1 3000 0.01 0.786054130073
+       68  0.8 -0.8 3000 0.01 0.786054130073
+       69  0.8 -0.6 3000 0.01 0.78560321088
+       70  0.8 -0.4 3000 0.01 0.784784920366
+       71  0.8 -0.2 3000 0.01 0.793887281274
+       72  0.8 0 3000 0.01 0.796732555769
+       73  0.2 -1 3500 0.01 0.739942301447
+       74  0.2 -0.8 3500 0.01 0.739942301447
+       75  0.2 -0.6 3500 0.01 0.74297913941
+       76  0.2 -0.4 3500 0.01 0.751257211108
+       77  0.2 -0.2 3500 0.01 0.772119574201
+       78  0.2 0 3500 0.01 0.772849566162
+       79  0.4 -1 3500 0.01 0.745002332126
+       80  0.4 -0.8 3500 0.01 0.745002332126
+       81  0.4 -0.6 3500 0.01 0.746930311926
+       82  0.4 -0.4 3500 0.01 0.751131192823
+       83  0.4 -0.2 3500 0.01 0.768242207472
+       84  0.4 0 3500 0.01 0.765639010622
+       85  0.6 -1 3500 0.01 0.757275221091
+       86  0.6 -0.8 3500 0.01 0.757275221091
+       87  0.6 -0.6 3500 0.01 0.759466814558
+       88  0.6 -0.4 3500 0.01 0.757620114436
+       89  0.6 -0.2 3500 0.01 0.77102095279
+       90  0.6 0 3500 0.01 0.773079965496
+       91  0.8 -1 3500 0.01 0.766944515046
+       92  0.8 -0.8 3500 0.01 0.766944515046
+       93  0.8 -0.6 3500 0.01 0.769696862072
+       94  0.8 -0.4 3500 0.01 0.777119886412
+       95  0.8 -0.2 3500 0.01 0.778091343506
+       96  0.8 0 3500 0.01 0.778697968972
 
 
 .. note::
@@ -300,10 +256,10 @@ The exact same as above can be done from Experiment objects directly:
 
 .. code:: python
 
-    optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
-                                           lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
-                                           maxdist_range=(2000, 4000, 500), 
-                                           verbose=False)
+    #optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
+    #                                       lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
+    #                                       maxdist_range=(2000, 3500, 500), 
+    #                                       verbose=False)
 
 Visualize the results
 ---------------------
@@ -319,7 +275,7 @@ Visualize the results
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_21_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_23_0.png
 
 
 We can also ask to mark on the plot the best N combination of parameters with the "show_best" parameter.
@@ -331,7 +287,7 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_23_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_25_0.png
 
 
 .. code:: python
@@ -360,8 +316,8 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
 .. ansi-block::
 
-    [[0.01], [2000.0, 2500.0, 3000.0, 3500.0, 4000.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
-    (0.72369757668075985, 0.01, 2000.0, -0.2, 0.8)
+    [[0.01], [2000.0, 2500.0, 3000.0, 3500.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
+    (0.79673255576921265, 0.01, 3000.0, 0.0, 0.8)
 
 
 One can also visualize the parameter optimization according to ne of the three optimization parameters.
@@ -373,7 +329,7 @@ One can also visualize the parameter optimization according to ne of the three o
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_26_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_28_0.png
 
 
 .. code:: python
@@ -382,7 +338,7 @@ One can also visualize the parameter optimization according to ne of the three o
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_27_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_29_0.png
 
 
 TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
@@ -394,12 +350,12 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_29_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_31_0.png
 
 
 .. code:: python
 
-    optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1., -0.0, 0.1), upfreq_range=(0.3, 0.6, 0.05), 
+    optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1., -0.0, 0.2), upfreq_range=(0.6, 1, 0.1), 
                               scale_range=[0.01], maxdist_range=[2000,2250,2500,2750,3000], verbose=False)
 
 .. code:: python
@@ -407,7 +363,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     optimizer.plot_2d()
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_31_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_33_0.png
 
 
 .. code:: python
@@ -415,7 +371,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     optimizer.plot_2d(show_best=100)
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_32_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_34_0.png
 
 
 .. code:: python
@@ -423,7 +379,13 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     optimizer.write_result('results.log')
 .. code:: python
 
-    optimizer2 = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=1000)
+    optimizer2 = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=2000)
+
+.. ansi-block::
+
+    Preparing to optimize 101 particles
+
+
 .. code:: python
 
     optimizer2.load_from_file('results.log')
@@ -435,7 +397,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 .. ansi-block::
 
-    ('0.01', '2250', '0.4', '-0.8')
+    ('0.01', '3500', '0.8', '-0.2')
 
 
 
@@ -444,7 +406,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     optimizer2.plot_2d(show_best=20)
 
 
-.. image:: ../nbpictures/tutorial_5_parameter_optimization_37_0.png
+.. image:: ../nbpictures/tutorial_5_parameter_optimization_39_0.png
 
 
 Retrieve best parameters
@@ -462,5 +424,5 @@ Once done, best results can be returned as a dictionary to be used for modeling 
 
 .. ansi-block::
 
-    {'maxdist': 2000.0, 'upfreq': 0.8, 'kforce': 5, 'reference': 'gm cell from Job Dekker 2009', 'lowfreq': -0.2, 'scale': 0.01}
+    {'maxdist': 2750.0, 'upfreq': 0.8, 'kforce': 5, 'reference': 'gm cell from Job Dekker 2009', 'lowfreq': 0.0, 'scale': 0.01}
 
