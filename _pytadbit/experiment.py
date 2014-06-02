@@ -1016,15 +1016,9 @@ class Experiment(object):
             start =  1
             end   = size
         if normalized:
-            if len(self.norm) > 1:
-                norm_data = [sum(i) for i in zip(*self.norm)]
-            else:
-                norm_data = self.norm[0]
+            norm_data = self.norm
         else:
-            if len(self.hic_data) > 1:
-                hic_data = [sum(i) for i in zip(*self.hic_data)]
-            else:
-                hic_data = self.hic_data[0]
+            hic_data = self.hic_data
         if relative and not clim:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
@@ -1036,8 +1030,12 @@ class Experiment(object):
                 vmin = fun(vmin or (1 if logarithm else 0))
                 vmax = fun(max(norm_data))
             else:
-                vmin = fun(min(hic_data) or (1 if logarithm else 0))
-                vmax = fun(max(hic_data))
+                if len(hic_data.values()) == len(hic_data.values()):
+                    vmin = fun(min(hic_data.values()) or
+                               (1 if logarithm else 0))
+                else:
+                    vmin = 1 if logarithm else 0
+                vmax = fun(max(hic_data.values()))
         elif clim:
             vmin, vmax = clim
         if axe is None:
