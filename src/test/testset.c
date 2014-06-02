@@ -181,7 +181,7 @@ test_tadbit
 
    // Check the computed weights.
    for (int j = 0 ; j < 20 ; j++) {
-   for (int i = j ; i < 20 ; i++) {
+     for (int i = j ; i < 20 ; i++) {
       g_assert_cmpfloat(
          seg->weights[0][i+j*20], ==,  expected_weights[i+j*20]
       );

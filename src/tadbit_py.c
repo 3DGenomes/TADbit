@@ -24,8 +24,8 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
 
 /* The wrapper to the underlying C function */
 static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
-  PyObject **obs;
-  PyObject **py_weights;
+  PyObject **py_obs;
+  /* PyObject **py_weights; */
   PyObject *py_remove;
   int n;
   int m;
@@ -37,31 +37,39 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "Oiiiiiii:tadbit", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &nbks, &do_not_use_heuristic))
+  if (!PyArg_ParseTuple(args, "OOiiiiiii:tadbit", &py_obs, &py_remove, &n, &m, &n_threads, &verbose, &max_tad_size, &nbks, &do_not_use_heuristic))
     return NULL;
-
   // convert list of lists to pointer o pointers
   // if something goes wrong, it is probably from there :S
   int i, j;
-  int ** list;
-  list = malloc(m * sizeof(int*));
+  double **obs;
+  obs = malloc(m * sizeof(double*));
   for (i = 0 ; i < m ; i++ )
-    list[i] = malloc(n*n * sizeof(int));
+    obs[i] = malloc(n*n * sizeof(double));
   for (i = 0 ; i < m ; i++)
     for (j = 0 ; j < n*n ; j++)
-      list[i][j] = PyInt_AS_LONG(PyTuple_GET_ITEM(PyList_GET_ITEM(obs, i), j));
+      obs[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_obs, i), j));
+
+  char *remove = (char *) malloc (n * sizeof(char));
+  for (j = 0 ; j < n ; j++){
+    remove[j] = PyInt_AS_LONG(PyTuple_GET_ITEM(py_remove, j)); // automatic casting into char
+  }
 
   // run tadbit
-  tadbit(list, n, m, n_threads, verbose, max_tad_size, nbks, do_not_use_heuristic, seg);
+  tadbit(obs, remove, n, m, n_threads, verbose, max_tad_size, nbks, do_not_use_heuristic, seg);
 
   // store each tadbit output
-  int       mbreaks     = seg->maxbreaks;
-  int       nbreaks_opt = seg->nbreaks_opt;
-  int    *  passages    = seg->passages;
-  double *  llikmat     = seg->llikmat;
-  double ** weights     = seg->weights;
-  double *  mllik       = seg->mllik;
-  int    *  bkpts       = seg->bkpts;
+
+  /* for (i = 0 ; i < m ; i++){ */
+  /*   PyObject *item1; */
+  /*   item1 = PyList_GET_ITEM(py_obs, i); */
+  /*   for (j = 0 ; j < n*n ; j++){ */
+  /*     Py_DECREF(PyTuple_GET_ITEM(item1, j)); */
+  /*   } */
+  /*   Py_DECREF(item1); */
+  /* } */
+  /* Py_DECREF(py_obs); */
+  /* Py_DECREF(py_remove); */
 
   // declare python objects to store lists
   PyObject * py_bkpts;
@@ -69,87 +77,47 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject * py_mllik;
   PyObject * py_result;
   PyObject * py_passages;
-  PyObject * py_weights;
-  PyObject * temp;
 
   // get bkpts
-  /* int dim = nbreaks_opt*n; */
   const int MAXBREAKS = nbks ? nbks : n/5;
   int dim = MAXBREAKS * n;
   py_bkpts = PyList_New(dim);
   for(i = 0 ; i < dim; i++)
-    PyList_SetItem(py_bkpts, i, PyInt_FromLong(bkpts[i]));
-
-  /* This is to return directly the list of breaks found
-  j = 0;
-  py_bkpts = PyList_New(nbreaks_opt);
-  for(i = 0 ; i < n; i++){
-    if (bkpts[i+dim]==1){
-      PyList_SetItem(py_bkpts, j, PyInt_FromLong(i));
-      j++;
-    }
-  }
-  */
+    PyList_SetItem(py_bkpts, i, PyInt_FromLong(seg->bkpts[i]));
 
   // get passages
   py_passages = PyList_New(n);
   for(i = 0 ; i < n; i++)
-    PyList_SetItem(py_passages, i, PyFloat_FromDouble(passages[i]));
+    PyList_SetItem(py_passages, i, PyFloat_FromDouble(seg->passages[i]));
 
   // get llikmat
   py_llikmat = PyList_New(n*n);
   for(i = 0 ; i < n*n; i++)
-    PyList_SetItem(py_llikmat, i, PyFloat_FromDouble(llikmat[i]));
-
-  // get weights
-  py_weights = PyList_New(m);
-  for(i = 0 ; i < m; i++){
-    temp = PyList_New(n*n);
-    PyList_SetItem(py_weights, i, temp);
-    for(j = 0 ; j < n*n; j++){
-      PyList_SetItem(temp, j, PyFloat_FromDouble(weights[i][j]));
-    }
-  }
+    PyList_SetItem(py_llikmat, i, PyFloat_FromDouble(seg->llikmat[i]));
 
   // get mllik
-  py_mllik = PyList_New(mbreaks);
-  for(i = 0 ; i < mbreaks ; i++)
-    PyList_SetItem(py_mllik, i, PyFloat_FromDouble(mllik[i]));
+  py_mllik = PyList_New(seg->maxbreaks);
+  for(i = 0 ; i < seg->maxbreaks ; i++)
+    PyList_SetItem(py_mllik, i, PyFloat_FromDouble(seg->mllik[i]));
 
   // group results into a python list
-  py_result = PyList_New(7);
+  py_result = PyList_New(6);
 
-  PyList_SetItem(py_result, 0, PyInt_FromLong(mbreaks));
-  PyList_SetItem(py_result, 1, PyInt_FromLong(nbreaks_opt));
+  PyList_SetItem(py_result, 0, PyInt_FromLong(seg->maxbreaks));
+  PyList_SetItem(py_result, 1, PyInt_FromLong(seg->nbreaks_opt));
   PyList_SetItem(py_result, 2, py_passages);
   PyList_SetItem(py_result, 3, py_llikmat);
   PyList_SetItem(py_result, 4, py_mllik);
   PyList_SetItem(py_result, 5, py_bkpts);
-  PyList_SetItem(py_result, 6, py_weights);
 
   // free many things... no leaks here!!
-  // TODO: use 'destroy_tadbit_output'
-  free(seg);
-  free(passages);
-  free(llikmat);
-  int k;
-  for (k = 0 ; k < m ; k++){
-    //free(obs[k]);
-    free(weights[k]);
-    free(list[k]);
-  }
-  //free(obs);
-  free(weights);
-  free(list);
-  free(mllik);
-  free(bkpts);
-  //free(py_bkpts);
-  //free(py_llikmat);
-  //free(py_mllik);
-  //free(py_result);
-  //free(py_passages);
-  //free(py_weights);
+  /* free(remove); */
 
+  /* for (i = 0 ; i < m ; i++) */
+  /*   free(obs[i]); */
+  /* free(obs); */
+
+  destroy_tadbit_output(seg);
   return py_result;
 }
 

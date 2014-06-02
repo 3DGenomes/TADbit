@@ -6,12 +6,12 @@
 #include "tadbit_alone.c"
 
 /* The module doc string */
-PyDoc_STRVAR(tadbit_alone_py__doc__,
+PyDoc_STRVAR(tadbitalone_py__doc__,
 "here is a wrapper to tadbit function");
 
 /* The function doc string */
-PyDoc_STRVAR(_tadbit_alone_wrapper__doc__,
-"Run tadbit function in tadbit_alone.c.\n\
+PyDoc_STRVAR(_tadbitalone_wrapper__doc__,
+"Run tadbit function in tadbitalone.c.\n\
     :argument obs: a python list of lists of floats, representing a list of linearized matrices.\n\
     :argument 0 n: number of rows or columns in the matrix\n\
     :argument 0 m: number of matrices\n\
@@ -23,7 +23,7 @@ PyDoc_STRVAR(_tadbit_alone_wrapper__doc__,
 
 
 /* The wrapper to the underlying C function */
-static PyObject *_tadbit_alone_wrapper (PyObject *self, PyObject *args){
+static PyObject *_tadbitalone_wrapper (PyObject *self, PyObject *args){
   PyObject **obs;
   int n;
   int m;
@@ -35,7 +35,7 @@ static PyObject *_tadbit_alone_wrapper (PyObject *self, PyObject *args){
   /* output */
   tadbit_alone_output *seg = (tadbit_alone_output *) malloc(sizeof(tadbit_alone_output));
 
-  if (!PyArg_ParseTuple(args, "Oiiiiiii:tadbit_alone", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &nbks, &do_not_use_heuristic))
+  if (!PyArg_ParseTuple(args, "Oiiiiiii:tadbitalone", &obs, &n, &m, &n_threads, &verbose, &max_tad_size, &nbks, &do_not_use_heuristic))
     return NULL;
 
   // convert list of lists to pointer o pointers
@@ -153,8 +153,8 @@ static PyObject *_tadbit_alone_wrapper (PyObject *self, PyObject *args){
 
 /* A list of all the methods defined by this module. */
 /* The {NULL, NULL} entry indicates the end of the method definitions */
-static PyMethodDef tadbit_alone_py_methods[] = {
-	{"_tadbit_alone_wrapper",  _tadbit_alone_wrapper, METH_VARARGS, _tadbit_alone_wrapper__doc__},
+static PyMethodDef tadbitalone_py_methods[] = {
+	{"_tadbitalone_wrapper",  _tadbitalone_wrapper, METH_VARARGS, _tadbitalone_wrapper__doc__},
 	{NULL, NULL}      /* sentinel */
 };
 
@@ -163,9 +163,9 @@ static PyMethodDef tadbit_alone_py_methods[] = {
 /* for the module "mandelbrot" the initialization function is */
 /* across operating systems and between C and C++ compilers */
 PyMODINIT_FUNC
-inittadbit_alone_py(void)
+inittadbitalone_py(void)
 {
 	/* There have been several InitModule functions over time */
-	Py_InitModule3("tadbit_alone_py", tadbit_alone_py_methods,
-                   tadbit_alone_py__doc__);
+	Py_InitModule3("tadbitalone_py", tadbitalone_py_methods,
+                   tadbitalone_py__doc__);
 }
