@@ -47,7 +47,6 @@ typedef struct {
    double *llikmat;
    double *mllik;
    int *bkpts;
-   /* double **weights; */
 } tadbit_output;
 
 
@@ -55,8 +54,9 @@ typedef struct {
 void
 tadbit(
   /* input */
-  double **obs,
-  char *remve,
+  int **obs,
+  double **weights,
+  char *remove,
   int n,
   const int m,
   int n_threads,

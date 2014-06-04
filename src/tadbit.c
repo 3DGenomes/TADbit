@@ -20,10 +20,6 @@ destroy_tadbit_output(
    free(seg->llikmat);
    free(seg->mllik);
    free(seg->bkpts);
-   /* for (int i = 0 ; i < seg->m ; i++) { */
-   /*    free(seg->weights[i]); */
-   /* }    */
-   /* free(seg->weights); */
    free(seg);
 
    return;
@@ -41,7 +37,7 @@ fg(
   const int    diag,
   const int    *k,
   const double *d,
-  /* const double *w, */
+  const double *w,
   const double a,
   const double b,
   const double da,
@@ -99,7 +95,7 @@ fg(
          if (c[index] != c[index]) {
             c[index] = exp(a+da+(b+db)*d[i+j*n]);
          }
-         tmp  =  /* w[i+j*n] *  */c[index] - k[i+j*n];
+         tmp  =  w[i+j*n] * c[index] - k[i+j*n];
          *f  +=  tmp;
          *g  +=  tmp * d[i+j*n];
       }
@@ -119,7 +115,7 @@ ll(
   const int    diag,
   const int    *k,
   const double *d,
-  /* const double *w, */
+  const double *w,
   const double *lg,
         double *c
 ){
@@ -179,7 +175,7 @@ ll(
    // See the comment about 'tmp' in 'fg'.
    long double tmp; 
 
-   fg(n, i_, _i, j_, _j, diag, k, d, /* w,  */a, b, da, db, c, &f, &g);
+   fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
 
    // Newton-Raphson until gradient function is less than TOLERANCE.
    // The gradient function is the square norm 'f*f + g*g'.
@@ -197,7 +193,7 @@ ll(
             if (c[index] != c[index]) { // ERROR.
                c[index] = exp(a+b*d[i+j*n]);
             }
-            tmp   =   /* w[i+j*n] *  */c[index];
+            tmp   =   w[i+j*n] * c[index];
             dfda +=   tmp;
             tmp  *=   d[i+j*n];
             dgda +=   tmp;
@@ -211,7 +207,7 @@ ll(
       da = (f*dgdb - g*dfdb) / denom;
       db = (g*dfda - f*dgda) / denom;
 
-      fg(n, i_, _i, j_, _j, diag, k, d, /* w,  */a, b, da, db, c, &f, &g);
+      fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
 
       // Traceback if we are not going down the gradient. Cut the
       // length of the steps in half until this step goes down
@@ -219,7 +215,7 @@ ll(
       for (i = 0 ; (i < 20) && (f*f + g*g > oldgrad) ; i++) {
          da /= 2;
          db /= 2;
-         fg(n, i_, _i, j_, _j, diag, k, d, /* w,  */a, b, da, db, c, &f, &g);
+         fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
       }
 
       // Update 'a' and 'b'.
@@ -471,7 +467,7 @@ fill_llikmat(
    const int m = myargs->m;
    const int **k = (const int **) myargs->k;
    const double *d = (const double*) myargs->d;
-   /* const double **w = (const double **) myargs->w; */
+   const double **w = (const double **) myargs->w;
    const double **lg= (const double **) myargs->lg;
    const char *skip = (const char *) myargs->skip;
    double *llikmat = myargs->llikmat;
@@ -519,9 +515,9 @@ fill_llikmat(
       for (l = 0 ; l < m ; l++) {
          // LABEL: slice ll summation.
          llikmat[i+j*n] += 
-            ll(n,   0, i-1, i, j, 0, k[l], d, /*w[l],*/ lg[l], c) / 2 +
-            ll(n,   i,   j, i, j, 1, k[l], d, /*w[l],*/ lg[l], c) +
-            ll(n, j+1, n-1, i, j, 0, k[l], d, /*w[l],*/ lg[l], c) / 2;
+            ll(n,   0, i-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2 +
+            ll(n,   i,   j, i, j, 1, k[l], d, w[l], lg[l], c) +
+            ll(n, j+1, n-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2;
       }
 
       n_processed++;
@@ -638,7 +634,7 @@ allocate_new_jobs(
 int
 enforce_symmetry
 (
-  double **obs,
+  int **obs,
   const int n,
   const int m
 )
@@ -665,15 +661,15 @@ enforce_symmetry
 
    int symmetric = 1;
    for (k = 0 ; k < m && symmetric ; k++) {
-     for (i = 0 ; i < n && symmetric ; i++) {
-       for (j = i+1 ; j < n && symmetric ; j++) {
-	 // Set 'symmetric' to false if one asymmetry is found.
-	 // This will force break out of the loop.
-	 if (obs[k][i+j*n] != obs[k][j+i*n]) {
-	   symmetric = 0;
-	 }
-       }
-     }
+   for (i = 0 ; i < n && symmetric ; i++) {
+   for (j = i+1 ; j < n && symmetric ; j++) {
+      // Set 'symmetric' to false if one asymmetry is found.
+      // This will force break out of the loop.
+      if (obs[k][i+j*n] != obs[k][j+i*n]) {
+         symmetric = 0;
+      }
+   }
+   }
    }
 
    // Exit if the data is symmetric.
@@ -698,7 +694,8 @@ void
 tadbit
 (
   // input //
-  double **obs,
+  int **obs,
+  double **weights,
   char *remove,
   int n,
   const int m,
@@ -745,7 +742,7 @@ tadbit
    }
    }
 
-   // Simplify input. Remove line and column if 0 on the diagonal.
+   /* // Simplify input. Remove line and column if 0 on the diagonal. */
    /* char *remove = (char *) malloc (N * sizeof(char)); */
    /* for (i = 0 ; i < N ; i++) { */
    /*    remove[i] = 0; */
@@ -775,31 +772,36 @@ tadbit
    }
 
    const int MAXBREAKS = nbrks ? nbrks : n/5;
-   
+
    _cache_index = (int *) malloc(n*n * sizeof(int));
    _max_cache_index = N+1;
    // Allocate and copy.
-   double **log_gamma = (double **) malloc(m * sizeof(double *));
-   double **new_obs = (double **) malloc(m * sizeof(double *));
+   double **log_gamma  = (double **) malloc(m * sizeof(double *));
+   double **new_weight = (double **) malloc(m * sizeof(double *));
+   int    **new_obs    = (int **) malloc(m * sizeof(int *));
    double *dist = (double *) malloc(n*n * sizeof(double));
    for (k = 0 ; k < m ; k++) {
       l = 0;
       log_gamma[k] = (double *) malloc(n*n * sizeof(double));
-      new_obs[k] = (double *) malloc(n*n * sizeof(double));
+      new_weight[k] = (double *) malloc(n*n * sizeof(double));
+      new_obs[k] = (int *) malloc(n*n * sizeof(int));
       for (j = 0 ; j < N ; j++) {
       for (i = 0 ; i < N ; i++) {
          if (remove[i] || remove[j]) continue;
          _cache_index[l] = i > j ? i-j : j-i;
-         log_gamma[k][l] = lgamma(obs[k][i+j*N]+1);
-         new_obs[k][l] = obs[k][i+j*N];
+         log_gamma [k][l] = lgamma(obs[k][i+j*N]+1);
+         new_weight[k][l] = weights[k][i+j*N];
+         new_obs[k][l]    = obs[k][i+j*N];
          dist[l] = init_dist[i+j*N];
          l++;
       }
       }
    }
+
    // We will not need the initial observations any more.
    free(init_dist);
    obs = new_obs;
+   weights = new_weight;
 
    // Make sure the data is symmetric.
    enforce_symmetry(obs, n, m);
@@ -817,7 +819,7 @@ tadbit
    /* for (j = 0 ; j < n ; j++) */
    /*    rowsums[k][i] += obs[k][i+j*n]; */
 
-   /* // Compute the weights. */
+   // compute the weights.
    /* double **weights = (double **) malloc(m * sizeof(double *)); */
    /* for (k = 0 ; k < m ; k++) { */
    /*    weights[k] = (double *) malloc(n*n * sizeof(double)); */
@@ -830,7 +832,7 @@ tadbit
    /*    } */
    /* } */
 
-   /* // We don't need the row/column sums any more. */
+   // We don't need the row/column sums any more.
    /* for (l = 0 ; l < m ; l++) free(rowsums[l]); */
    /* free(rowsums); */
 
@@ -868,7 +870,7 @@ tadbit
       for (i = 0 ; i < n-j ; i++) {
          double weighted_value = 0.0;
          for (l = 0 ; l < m ; l++)
-            weighted_value += obs[l][i+(i+j)*n]/* /weights[l][i+(i+j)*n] */;
+            weighted_value += obs[l][i+(i+j)*n]/weights[l][i+(i+j)*n];
          S[i+(i+j)*n] = S[i+(i+j-1)*n] + S[i+1+(i+j)*n] -
             S[i+1+(i+j-1)*n] + weighted_value;
       }
@@ -938,7 +940,7 @@ tadbit
       .m = m,
       .k = (const int **) obs,
       .d = dist,
-      /* .w = (const double **) weights, */
+      .w = (const double **) weights,
       .lg = (const double **) log_gamma,
       .skip = skip,
       .llikmat = llikmat,
@@ -1056,23 +1058,23 @@ tadbit
 
    
    // Resize output to match original.
-   /* int p; */
-   /* double **resized_weights = (double **) malloc(m * sizeof(double *)); */
-   /* for (l = 0 ; l < m ; l++) { */
-   /*    resized_weights[l] = (double *) malloc(N*N * sizeof(double)); */
-   /*    for (i = 0 ; i < N*N ; i++) resized_weights[l][i] = 0.0; */
-   /* } */
-   /* for (k = 0 ; k < m ; k++) { */
-   /*    for (l = 0, i = 0 ; i < N ; i++) { */
-   /*       if (remove[i]) continue; */
-   /*       for (p = 0, j = 0 ; j < N ; j++) { */
-   /*          if (remove[j]) continue; */
-   /*          resized_weights[k][i+j*N] = weights[k][l+p*n]; */
-   /* 	    p++; */
-   /* 	 } */
-   /* 	 l++; */
-   /*    } */
-   /* } */
+   int p;
+   double **resized_weights = (double **) malloc(m * sizeof(double *));
+   for (l = 0 ; l < m ; l++) {
+      resized_weights[l] = (double *) malloc(N*N * sizeof(double));
+      for (i = 0 ; i < N*N ; i++) resized_weights[l][i] = 0.0;
+   }
+   for (k = 0 ; k < m ; k++) {
+      for (l = 0, i = 0 ; i < N ; i++) {
+         if (remove[i]) continue;
+         for (p = 0, j = 0 ; j < N ; j++) {
+            if (remove[j]) continue;
+            resized_weights[k][i+j*N] = weights[k][l+p*n];
+	    p++;
+	 }
+	 l++;
+      }
+   }
 
    int *resized_bkpts = (int *) malloc(N*MAXBREAKS * sizeof(int));
    int *resized_passages = (int *) malloc(N * sizeof(int));
@@ -1104,16 +1106,15 @@ tadbit
       }
       l++;
    }
-
    free(llikmat);
 
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
+      free(new_weight[k]);
       free(log_gamma[k]);
-      /* free(weights[k]); */
    }
-   /* free(weights); */
    free(new_obs);
+   free(new_weight);
    free(log_gamma);
    free(dist);
    free(remove);
@@ -1122,7 +1123,6 @@ tadbit
    seg->m = m;
    seg->maxbreaks = MAXBREAKS;
    seg->nbreaks_opt = nbreaks_opt;
-   /* seg->weights = resized_weights; */
    seg->passages = resized_passages;
    seg->llikmat = resized_llikmat;
    seg->mllik = mllik;
