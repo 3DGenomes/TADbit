@@ -14,6 +14,7 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
 "Run tadbit function in tadbit.c.\n\
     :argument obs: a python list of lists of int, representing a list of linearized matrices.\n\
     :argument weights: a python list of lists of floats, representing a list of linearized matrices.\n\
+    :argument remove: a python list of lists of booleans mapping positively columns to remove.\n\
     :argument 0 n: number of rows or columns in the matrix\n\
     :argument 0 m: number of matrices\n\
     :argument 0 n_threads: number of threads to use\n\
@@ -69,17 +70,6 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
 
   // store each tadbit output
 
-  /* for (i = 0 ; i < m ; i++){ */
-  /*   PyObject *item1; */
-  /*   item1 = PyList_GET_ITEM(py_obs, i); */
-  /*   for (j = 0 ; j < n*n ; j++){ */
-  /*     Py_DECREF(PyTuple_GET_ITEM(item1, j)); */
-  /*   } */
-  /*   Py_DECREF(item1); */
-  /* } */
-  /* Py_DECREF(py_obs); */
-  /* Py_DECREF(py_remove); */
-
   // declare python objects to store lists
   PyObject * py_bkpts;
   PyObject * py_llikmat;
@@ -122,9 +112,12 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   // free many things... no leaks here!!
   /* free(remove); */
 
-  /* for (i = 0 ; i < m ; i++) */
-  /*   free(obs[i]); */
-  /* free(obs); */
+  for (i = 0 ; i < m ; i++){
+    free(obs[i]);
+    free(weights[i]);
+  }
+  free(obs);
+  free(weights);
 
   destroy_tadbit_output(seg);
   return py_result;
