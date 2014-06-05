@@ -110,8 +110,6 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyList_SetItem(py_result, 5, py_bkpts);
 
   // free many things... no leaks here!!
-  /* free(remove); */
-
   for (i = 0 ; i < m ; i++){
     free(obs[i]);
     free(weights[i]);
@@ -120,6 +118,7 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   free(weights);
 
   destroy_tadbit_output(seg);
+
   return py_result;
 }
 

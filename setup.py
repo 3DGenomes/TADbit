@@ -95,6 +95,11 @@ def main():
                                 language = "c",
                                 sources=['src/tadbit_py.c'],
                                 extra_compile_args=['-std=c99'])
+    # OLD c module to find TADs
+    pytadbit_module = Extension('pytadbit.tadbitalone_py',
+                                language = "c",
+                                sources=['src/tadbit_alone_py.c'],
+                                extra_compile_args=['-std=c99'])
     # c++ module to align and calculate all distances between group of 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
                                 language = "c++",

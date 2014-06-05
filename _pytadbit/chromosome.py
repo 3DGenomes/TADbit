@@ -9,6 +9,7 @@ from pytadbit                          import tadbit
 from pytadbit.utils.extraviews         import tadbit_savefig
 from pytadbit.utils.extraviews         import _tad_density_plot
 from pytadbit.experiment               import Experiment
+from pytadbit.utils.hic_filtering      import hic_filtering_for_modelling
 from string                            import ascii_lowercase as letters
 from copy                              import deepcopy as copy
 from cPickle                           import load, dump
@@ -470,9 +471,9 @@ class Chromosome(object):
             raise Exception('resolution param is needed\n')
 
 
-    def find_tad(self, experiments, name=None, n_cpus=1, verbose=True,
-                 max_tad_size="auto", heuristic=True, batch_mode=False,
-                 **kwargs):
+    def find_tad(self, experiments, normalized=True, name=None, n_cpus=1,
+                 verbose=True, max_tad_size="auto", heuristic=True,
+                 batch_mode=False, **kwargs):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
         position of Topologically Associated Domain boundaries
@@ -481,6 +482,9 @@ class Chromosome(object):
            data or a list of such matrices for replicated experiments. The
            counts must be evenly sampled and not normalized. 'experiment'
            can be either a list of lists, a path to a file or a file handler
+        :param True normalized: if False simple normalization will be computed,
+           as well as a simple column filtering will be applied (remove columns
+           where value at the diagonal is null)
         :param 1 n_cpus: The number of CPUs to allocate to TADbit. If
            n_cpus='max' the total number of CPUs will be used
         :param auto max_tad_size: an integer defining the maximum size of a 
@@ -493,17 +497,21 @@ class Chromosome(object):
            name would be: 'batch_exp1_exp2').
 
         """
+        experiments = experiments or self.experiments
+        if not isinstance(experiments, list):
+            experiments = [experiments]
+        xprs = []
+        for xpr in experiments:
+            if not isinstance(xpr, Experiment):
+                xpr = self.get_experiment(xpr)
+            xprs.append(xpr)
+            if normalized and (not xpr._zeros or not xpr._normalization):
+                raise Exception('ERROR: Experiments should be normalized, and' +
+                                ' filtered first')
         if batch_mode:
             matrix = []
             if not name:
                 name = 'batch'
-            experiments = experiments or self.experiments
-            xprs = []
-            for xpr in experiments:
-                if not isinstance(xpr, Experiment):
-                    xprs.append(self.get_experiment(xpr))
-                else:
-                    xprs.append(xpr)
             resolution = xprs[0].resolution
             for xpr in sorted(xprs, key=lambda x: x.name):
                 if xpr.resolution != resolution:
@@ -512,11 +520,26 @@ class Chromosome(object):
                 matrix.append(xpr.hic_data[0])
                 if name.startswith('batch'):
                     name += '_' + xpr.name
+            w_matrix = [e.norm for e in xprs] if normalized else None
+            if normalized:
+                matrices = [e.get_hic_matrix(normalized=True, diagonal=False)
+                            for e in xprs]
+                siz = xprs[0].size
+                normed = [[0 for _ in xrange(siz)] for _ in xrange(siz)]
+                for i in xrange(siz):
+                    for j in xrange(siz):
+                        normed[i][j] = sum([matrices[k][i][j]
+                                            for k in xrange(len(matrices))])
+                zeros, _ = hic_filtering_for_modelling(normed, silent=True)
+                remove = tuple([1 if i in zeros else 0
+                                for i in xrange(siz)]) if normalized else None
             result, weights = tadbit(matrix,
+                                     weights=w_matrix,
+                                     remove=remove,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
                                      no_heuristic=not heuristic,
-                                     get_weights=True, **kwargs)
+                                     **kwargs)
             xpr = Experiment(name, resolution, hic_data=matrix,
                              tad_def=result, weights=weights, **kwargs)
             xpr._zeros = xprs[0]._zeros
@@ -526,18 +549,17 @@ class Chromosome(object):
                                        other._zeros.keys())])
             self.add_experiment(xpr)
             return
-        if not isinstance(experiments, list):
-            experiments = [experiments]
-        for experiment in experiments:
-            if not isinstance(experiment, Experiment):
-                experiment = self.get_experiment(experiment)
-            result, weights = tadbit(experiment.hic_data,
-                                     n_cpus=n_cpus, verbose=verbose,
-                                     max_tad_size=max_tad_size,
-                                     no_heuristic=not heuristic,
-                                     get_weights=True, **kwargs)
-            experiment.load_tad_def(result, weights=weights)
-            self._get_forbidden_region(experiment)
+        for xpr in xprs:
+            result, weights = tadbit(
+                xpr.hic_data,
+                weights=xpr.norm if normalized else None,
+                remove=tuple([1 if i in xpr._zeros else 0 for i in
+                              xrange(xpr.size)]) if normalized else None,
+                n_cpus=n_cpus, verbose=verbose,
+                max_tad_size=max_tad_size,
+                no_heuristic=not heuristic, **kwargs)
+            xpr.load_tad_def(result, weights=weights)
+            self._get_forbidden_region(xpr)
 
 
     def __update_size(self, xpr):
