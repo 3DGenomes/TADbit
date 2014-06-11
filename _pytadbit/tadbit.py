@@ -44,7 +44,7 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
        Depending on the value of the get_weights parameter, may also return
        weights.
     """
-    nums, size = read_matrix(x)
+    nums = read_matrix(x)
     n_cpus = n_cpus if n_cpus != 'max' else 0
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
     _, nbks, passages, _, _, bkpts, weights = \

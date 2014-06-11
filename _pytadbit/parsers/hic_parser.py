@@ -216,5 +216,8 @@ class HiC_data(dict):
                     'ERROR: position larger than %s^2' % self.__size)
             return self.get(row_col, 0)
 
-
-
+    def get_matrix():
+        """
+        get the matrix
+        """
+        matrix = [[]for _ in xrange()]
