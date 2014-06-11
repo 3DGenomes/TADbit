@@ -798,6 +798,11 @@ tadbit
       }
    }
 
+   /* fprintf(stderr, "WEIGHTS FROM INSIDE ME "); */
+   /* for (i = 0; i < 50; i++) */
+   /*   fprintf(stderr, "%f ", weights[0][i]); */
+   /* fprintf(stderr, "\n"); */
+
    // We will not need the initial observations any more.
    free(init_dist);
    obs = new_obs;

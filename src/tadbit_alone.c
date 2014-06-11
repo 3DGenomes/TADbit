@@ -929,6 +929,10 @@ tadbit_alone
 
    } // End of pre-heuristic.
 
+   /* fprintf(stderr, "WEIGHTS FROM INSIDE GU "); */
+   /* for (i = 0; i < 50; i++) */
+   /*   fprintf(stderr, "%f ", weights[0][i]); */
+   /* fprintf(stderr, "\n"); */
 
    // Allocate 'tid'.
    pthread_t *tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));

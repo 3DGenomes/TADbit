@@ -10,7 +10,7 @@ from pytadbit.tadbit_py          import _tadbit_wrapper
 from pytadbit.tadbitalone_py     import _tadbitalone_wrapper
 from sys                         import stderr
 
-def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
+def tadbit(x, norm='visibility', remove=None, n_cpus=1, verbose=True,
            max_tad_size="max", no_heuristic=False, **kwargs):
     """
     The TADbit algorithm works on raw chromosome interaction count data.
@@ -31,9 +31,8 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
        of such matrices for replicated experiments. The counts must be evenly
        sampled and not normalized. x might be either a list of list, a path to
        a file or a file handler
-    :argument None weights: a python list of lists of floats, representing a
-       list of linearized matrices (if None, calculated according to visibility
-       formula)
+    :argument 'visibility' norm: kind of normalization to use. Choose between
+       'visibility' of 'Imakaev'
     :argument None remove: a python list of lists of booleans mapping positively
        columns to remove (if None only columns with a 0 in the diagonal will be
        removed)
@@ -53,11 +52,18 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
     nums, size = read_matrix(x)
     n_cpus = n_cpus if n_cpus != 'max' else 0
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
-    if weights and remove:
+    norm_kinds = {'visibility': 1,
+                  'Imakaev'   : 2,
+                  'old'       : None}
+    try:
+        normalization = norm_kinds[norm]
+    except KeyError:
+        raise NotImplementedError('ERROR: norm %s does not exists\n' % norm)
+    if remove:
         _, nbks, passages, _, _, bkpts = \
            _tadbit_wrapper(nums,             # list of lists of Hi-C data
-                           weights,          # list of lists od Hi-C weights
                            remove,           # list of columns marking filtered
+                           normalization,    # int for kind of normalization
                            size,             # size of one row/column
                            len(nums),        # number of matrices
                            n_cpus,           # number of threads
@@ -66,7 +72,7 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
                            kwargs.get('ntads', 0),
                            int(no_heuristic),# heuristic 0/1
                            )
-    elif not weights and not remove:
+    else: # should disapear!!!!!
         _, nbks, passages, _, _, bkpts, tdb_weights = \
            _tadbitalone_wrapper(nums,             # list of lists of Hi-C data
                                 size,             # size of one row/column
@@ -77,9 +83,6 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
                                 kwargs.get('ntads', 0),
                                 int(no_heuristic),# heuristic 0/1
                                 )
-    else:
-        raise Exception('ERROR: weights and removed should be passed both ' +
-                        'or none')
     breaks = [i for i in xrange(size) if bkpts[i + nbks * size] == 1]
     scores = [p for p in passages if p > 0]
 
@@ -89,7 +92,7 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
         result['end'  ].append(breaks[brk] if brk < len(breaks) else size - 1)
         result['score'].append(scores[brk] if brk < len(breaks) else None)
 
-    if not weights:
+    if not remove: # should disapear!!!!!
         # in tadbit we are not using directly weights, but the
         # multiplication by the real value
         oks = [i for i in xrange(size) if nums[0][i*size+i]]

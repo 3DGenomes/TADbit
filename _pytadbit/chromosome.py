@@ -473,7 +473,7 @@ class Chromosome(object):
 
     def find_tad(self, experiments, normalized=True, name=None, n_cpus=1,
                  verbose=True, max_tad_size="auto", heuristic=True,
-                 batch_mode=False, **kwargs):
+                 norm='visibility', batch_mode=False, **kwargs):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
         position of Topologically Associated Domain boundaries
@@ -505,9 +505,12 @@ class Chromosome(object):
             if not isinstance(xpr, Experiment):
                 xpr = self.get_experiment(xpr)
             xprs.append(xpr)
-            if normalized and (not xpr._zeros or not xpr._normalization):
-                raise Exception('ERROR: Experiments should be normalized, and' +
-                                ' filtered first')
+            # if normalized and (not xpr._zeros or not xpr._normalization):
+            #     raise Exception('ERROR: Experiments should be normalized, and' +
+            #                     ' filtered first')
+        if len(xprs) <= 1 and batch_mode:
+            raise Exception('ERROR: batch_mode implies that more than one ' +
+                            'experiment is passed')
         if batch_mode:
             matrix = []
             if not name:
@@ -520,26 +523,18 @@ class Chromosome(object):
                 matrix.append(xpr.hic_data[0])
                 if name.startswith('batch'):
                     name += '_' + xpr.name
-            w_matrix = [e.norm for e in xprs] if normalized else None
             if normalized:
-                matrices = [e.get_hic_matrix(normalized=True, diagonal=False)
-                            for e in xprs]
                 siz = xprs[0].size
-                normed = [[0 for _ in xrange(siz)] for _ in xrange(siz)]
-                for i in xrange(siz):
-                    for j in xrange(siz):
-                        normed[i][j] = sum([matrices[k][i][j]
-                                            for k in xrange(len(matrices))])
-                zeros, _ = hic_filtering_for_modelling(normed, silent=True)
-                remove = tuple([1 if i in zeros else 0
-                                for i in xrange(siz)]) if normalized else None
+                tmp = reduce(lambda x, y: x+ y, xprs)
+                tmp.filter_columns()
+            remove = tuple([1 if i in tmp._zeros else 0
+                            for i in xrange(siz)]) if normalized else None
             result, weights = tadbit(matrix,
-                                     weights=w_matrix,
+                                     norm=norm,
                                      remove=remove,
                                      n_cpus=n_cpus, verbose=verbose,
                                      max_tad_size=max_tad_size,
-                                     no_heuristic=not heuristic,
-                                     **kwargs)
+                                     no_heuristic=not heuristic, **kwargs)
             xpr = Experiment(name, resolution, hic_data=matrix,
                              tad_def=result, weights=weights, **kwargs)
             xpr._zeros = xprs[0]._zeros
@@ -552,7 +547,7 @@ class Chromosome(object):
         for xpr in xprs:
             result, weights = tadbit(
                 xpr.hic_data,
-                weights=xpr.norm if normalized else None,
+                norm=norm,
                 remove=tuple([1 if i in xpr._zeros else 0 for i in
                               xrange(xpr.size)]) if normalized else None,
                 n_cpus=n_cpus, verbose=verbose,

@@ -93,13 +93,14 @@ def main():
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
                                 language = "c",
-                                sources=['src/tadbit_py.c'],
+                                sources=['src/tadbit_py.c',
+                                         'src/norm-lib/visibility.cpp'],
                                 extra_compile_args=['-std=c99'])
     # OLD c module to find TADs
-    pytadbit_module = Extension('pytadbit.tadbitalone_py',
-                                language = "c",
-                                sources=['src/tadbit_alone_py.c'],
-                                extra_compile_args=['-std=c99'])
+    pytadbit_module_old = Extension('pytadbit.tadbitalone_py',
+                                    language = "c",
+                                    sources=['src/tadbit_alone_py.c'],
+                                    extra_compile_args=['-std=c99'])
     # c++ module to align and calculate all distances between group of 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
                                 language = "c++",
@@ -182,7 +183,8 @@ def main():
         version      = version_full,
         author       = 'Davide Bau, Francois Serra, Guillaume Filion and Marc Marti-Renom',
         author_email = 'serra.francois@gmail.com',
-        ext_modules  = [pytadbit_module, eqv_rmsd_module, centroid_module,
+        ext_modules  = [pytadbit_module, pytadbit_module_old,
+                        eqv_rmsd_module, centroid_module,
                         consistency_module, aligner3d_module],
         package_dir  = {'pytadbit': PATH + '/_pytadbit'},
         packages     = ['pytadbit', 'pytadbit.parsers',

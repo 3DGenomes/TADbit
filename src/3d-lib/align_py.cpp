@@ -34,7 +34,6 @@ static PyObject* aligner3d_wrapper(PyObject* self, PyObject* args)
   float **xyz1;
   float **xyz2;
   int i;
-  int j;
 
  
   xyz1 = new float*[size];
