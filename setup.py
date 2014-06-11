@@ -90,12 +90,20 @@ def main():
         if follow.upper() != 'Y' :
             exit('\n    Wise choice :)\n')
     
+    norm_module = Extension('pytadbit.norm',
+                            language = "c++",
+                            sources=[#'src/tadbit_py.c',
+                                     #'src/norm-lib/visibility.cpp',
+                                     'src/norm-lib/iterative.cpp'],
+                            extra_compile_args=['-I/usr/include/pstreams/'])
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
                                 language = "c",
                                 sources=['src/tadbit_py.c',
                                          'src/norm-lib/visibility.cpp'],
-                                extra_compile_args=['-std=c99'])
+                                         #'src/norm-lib/iterative.cpp'],
+                                extra_compile_args=['-std=c99',
+                                                    '-Ibuild/temp.linux-x86_64-2.7/src/norm-lib/'])
     # OLD c module to find TADs
     pytadbit_module_old = Extension('pytadbit.tadbitalone_py',
                                     language = "c",
@@ -183,7 +191,7 @@ def main():
         version      = version_full,
         author       = 'Davide Bau, Francois Serra, Guillaume Filion and Marc Marti-Renom',
         author_email = 'serra.francois@gmail.com',
-        ext_modules  = [pytadbit_module, pytadbit_module_old,
+        ext_modules  = [norm_module,pytadbit_module, pytadbit_module_old,
                         eqv_rmsd_module, centroid_module,
                         consistency_module, aligner3d_module],
         package_dir  = {'pytadbit': PATH + '/_pytadbit'},

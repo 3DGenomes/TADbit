@@ -1,4 +1,4 @@
-#include "libraries.h"
+#include "iterative.h"
 using namespace std;
 
 struct Files
@@ -29,14 +29,6 @@ int compare_dec_a1b1(const double ** a, const double ** b)
 {
     if ((*a)[1] - (*b)[1] < 0) return 1;
     else return -1;
-}
-
-void mkdir(string st)
-{
-    struct stat sta; // to use stat
-    string mkd = "mkdir " + st;
-    if (stat(st.c_str(), &sta) != 0) redi::ipstream in(mkd.c_str());
-    return;
 }
 
 void read_arg(int argc, const char *argv[], Files *files, Computation* comp);
@@ -124,7 +116,7 @@ void read_arg(int argc, const char *argv[], Files *files, Computation* comp)
         if (!strcmp(argv[i], "-nmax")) comp->nloop_max = atoi(argv[i + 1]);       
         if (!strcmp(argv[i], "-iterative")){
             files->HiC_iterative_fo = argv[i + 1];
-            mkdir(files->HiC_iterative_fo);
+            // mkdir(files->HiC_iterative_fo);
         }
         if (!strcmp(argv[i], "-freq_low")) comp->freq_low_bound = atof(argv[i + 1]);
         if (!strcmp(argv[i], "-no_drop")) comp->drop_bin = 0;
