@@ -251,7 +251,7 @@ class StructuralModels(object):
                       if self._zeros[i]])
             z.append([self[model]['z'][i] for i in xrange(self.nloci)
                       if self._zeros[i]])
-        idx = centroid_wrapper(x, y, z, self.nloci, len(models),
+        idx = centroid_wrapper(x, y, z, len(x[0]), len(x),
                                int(verbose), 0)
         return models[idx]
 

@@ -213,19 +213,34 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     :param n_cpus: number of CPUs to use
     :param n_models: number of models to generate
     """
+
+    pool = mu.Pool(n_cpus)
+    jobs = {}
+    for rand_init in xrange(START, n_models + START):
+        jobs[rand_init] = pool.apply_async(generate_IMPmodel,
+                                           args=(rand_init,))
+
+    pool.close()
+    pool.join()
+
+
     results = []
-    n_forks = 4
-    for i in xrange(START, START + n_models, n_cpus * n_forks):
-        # print i, range(i, min(START + n_models, i + n_cpus * n_forks))
-        pool = mu.Pool(processes=n_cpus, maxtasksperchild=1)
-        # need to use imap, otherwise memory collapses.
-        # unorder, becasue it may be more efficient
-        # chunksize default is 1, and again, the higher, the more efficient
-        results.extend(pool.imap_unordered(generate_IMPmodel,
-                                           xrange(i, min(START + n_models,
-                                                         i + n_cpus * n_forks)),
-                                           chunksize=1))
-        pool.close()
+    for rand_init in xrange(START, n_models + START):
+        results.append((rand_init, jobs[rand_init].get()))   
+
+    # results = []
+    # n_forks = 4
+    # for i in xrange(START, START + n_models, n_cpus * n_forks):
+    #     # print i, range(i, min(START + n_models, i + n_cpus * n_forks))
+    #     pool = mu.Pool(processes=n_cpus, maxtasksperchild=1)
+    #     # need to use imap, otherwise memory collapses.
+    #     # unorder, becasue it may be more efficient
+    #     # chunksize default is 1, and again, the higher, the more efficient
+    #     results.extend(pool.imap_unordered(generate_IMPmodel,
+    #                                        xrange(i, min(START + n_models,
+    #                                                      i + n_cpus * n_forks)),
+    #                                        chunksize=1))
+    #     pool.close()
     models = {}
     bad_models = {}
     for i, (_, m) in enumerate(
@@ -394,7 +409,7 @@ def generate_IMPmodel(rand_init):
                    part.get_value(z), part.get_value(radius))
     # gets radius from last particle, assuming that all are the same
     result['radius'] = part.get_value(radius)
-    return rand_init, result
+    return result # rand_init, result
 
 
 def addAllHarmonics(model, verbose=False):

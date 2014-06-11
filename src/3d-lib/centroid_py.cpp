@@ -53,6 +53,7 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   map<string, float**> xyzlist;
   
   xyz = new float*[size];
+
   for(int i=0; i<size; i++) {
     xyz[i] = new float[3];
     memset(xyz[i], 0, 3*sizeof(float));
@@ -65,7 +66,6 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   }
 
   for (j=0; j<nmodels; j++){
-
     for (i=0; i<size; i++){
       xyz[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(PyList_GET_ITEM(py_xs, j), i));
       xyz[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(PyList_GET_ITEM(py_ys, j), i));
