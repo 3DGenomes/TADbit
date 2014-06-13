@@ -33,6 +33,7 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   PyObject **py_xs;
   PyObject **py_ys;
   PyObject **py_zs;
+  PyObject *py_zeros;
   PyObject **py_models;
   int size;
   int one;
@@ -42,10 +43,12 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   int normed;
   // cout << "START" << endl << flush;
  
-  if (!PyArg_ParseTuple(args, "OOOifOiisi", &py_xs, &py_ys, &py_zs, &size, &thres, &py_models, &nmodels, &one, &what, &normed))
+  if (!PyArg_ParseTuple(args, "OOOOifOiisi", &py_xs, &py_ys, &py_zs, &py_zeros, 
+			&size, &thres, &py_models, &nmodels, &one, &what, &normed))
     return NULL;
  
   float ***xyzn;
+  int zeros[size];
   float *nrmsds;
   float *drmsds;
   float *scores;
@@ -70,6 +73,9 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   // cout << "START" << endl << flush;
 
 
+  for (i=0; i<size; i++)
+    zeros[i] = PyObject_IsTrue(PyList_GET_ITEM(zeros, i));
+
   PyObject * py_result = NULL;
   PyObject * py_subresult = NULL;
   py_result = PyDict_New();
@@ -90,7 +96,7 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
       rms = 0;
 	drms = 0;
       eqv = 0;
-      rmsdRMSD(xyzn[j], xyzn[jj], size, thres, eqv, rms, drms);
+      rmsdRMSD(xyzn[j], xyzn[jj], zeros, size, thres, eqv, rms, drms);
       nrmsds[k] = rms;
       drmsds[k] = drms;
       scores[k] = eqv * drms / rms;

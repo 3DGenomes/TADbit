@@ -25,15 +25,18 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   PyObject *py_xs;
   PyObject *py_ys;
   PyObject *py_zs;
+  PyObject *py_zeros;
   int size;
   int nmodels;
   int verbose;
   int getavg;
 
-  if (!PyArg_ParseTuple(args, "OOOiiii", &py_xs, &py_ys, &py_zs, &size, &nmodels, &verbose, &getavg))
+  if (!PyArg_ParseTuple(args, "OOOiiii", &py_xs, &py_ys, &py_zs, &py_zeros, &size, 
+			&nmodels, &verbose, &getavg))
     return NULL;
  
   float **xyz;
+  int zeros[size];
   int i;
   int j;
   int numP;
@@ -48,6 +51,9 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   string modelId;
   ostringstream tmpStr;
 
+
+  for (i=0; i<size; i++)
+    zeros[i] = PyObject_IsTrue(PyList_GET_ITEM(zeros, i));
 
   //map<string, float**> xyzlist;
   map<string, float**> xyzlist;
@@ -85,7 +91,7 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   for ((it2=it1)++; it2!=xyzlist.end(); it2++) {
     //cout << it1->first << " " << it2->first << endl;
     // avgCoord(it1->second, it2->second, size, avg);
-    avgCoord(it1, it2, size, modelList, add_first, avg);
+    avgCoord(it1, it2, zeros, size, modelList, add_first, avg);
     add_first = 0;
     numP++;
     // cout << "\n";

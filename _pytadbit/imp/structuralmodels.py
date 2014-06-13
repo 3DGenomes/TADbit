@@ -177,6 +177,7 @@ class StructuralModels(object):
                                        self[sec]['x'],
                                        self[sec]['y'],
                                        self[sec]['z'],
+                                       self._zeros,
                                        self.nloci)
             if in_place:
                 self[sec]['x'], self[sec]['y'], self[sec]['z'] = coords
@@ -251,7 +252,7 @@ class StructuralModels(object):
                       if self._zeros[i]])
             z.append([self[model]['z'][i] for i in xrange(self.nloci)
                       if self._zeros[i]])
-        idx = centroid_wrapper(x, y, z, len(x[0]), len(x),
+        idx = centroid_wrapper(x, y, z, len(x[0]), len(models),
                                int(verbose), 0)
         return models[idx]
 
@@ -290,7 +291,7 @@ class StructuralModels(object):
                       if self._zeros[i]])
             z.append([self[model]['z'][i] for i in xrange(self.nloci)
                       if self._zeros[i]])
-        idx = centroid_wrapper(x, y, z, self.nloci, len(models),
+        idx = centroid_wrapper(x, y, z, len(x[0]), len(models),
                                int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
                              ('rand_init', 'avg'), ('objfun', None),

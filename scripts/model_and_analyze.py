@@ -252,7 +252,7 @@ def main():
         out = open(os.path.join(opts.outdir, name ,
                                 name + '_column_filtering.dat'), 'w')
         out.write('# particles not considered in the analysis\n' +
-                  '\n'.join(map(str, exp._zeros.keys())))
+                  '\n'.join(map(str, sorted(exp._zeros.keys()))))
 
     if not opts.analyze_only:
         logging.info("\tSaving the chromosome...")
@@ -337,13 +337,15 @@ def main():
                  " models...")
     ffact    = 0.95 # Fraction of particles that are within the dcutoff value
     clcutoff = dcutoff - 50 # RMSD cut-off to consider two models equivalent(nm)
-    for clcutoff in range(clcutoff, clcutoff * 2, 50):
-        try:
-            logging.info('   cutoff = ' + str(clcutoff))
-            models.cluster_models(fact=ffact, dcutoff=clcutoff)
-            break
-        except:
-            continue
+    for ffact in [0.65, 0.6, 0.55, 0.5, 0.95, 0.9, 0.85, 0.8]:
+        logging.info('   fact = ' + str(ffact))
+        for clcutoff in range(dcutoff - 150, (dcutoff - 150) * 4, 50):
+            try:
+                logging.info('      cutoff = ' + str(clcutoff))
+                models.cluster_models(fact=ffact, dcutoff=clcutoff)
+                break
+            except:
+                continue
     logging.info("\tSaving again the models this time with clusters...")
     models.save_models(os.path.join(opts.outdir, name, name + '.models'))
     # Plot the clustering
