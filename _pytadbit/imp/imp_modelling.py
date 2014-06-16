@@ -32,7 +32,8 @@ IMP.set_log_level(IMP.SILENT)
 def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, keep_all=False,
                        verbose=0, outfile=None, config=CONFIG['dmel_01'],
-                       values=None, experiment=None, coords=None, zeros=None):
+                       values=None, experiment=None, coords=None, zeros=None,
+                       first=None):
     """
     This function generates three-dimensional models starting from Hi-C data. 
     The final analysis will be performed on the n_keep top models.
@@ -105,6 +106,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
               }
           }
+    :param None first: particle number at which model should start (0 should be
+       used inside TADbit)
 
     :returns: a StructuralModels object
 
@@ -147,8 +150,9 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     
     global LOCI, NLOCI
     # if z-scores are generated outside TADbit they may not start at zero
-    first = min([int(j) for i in zscores for j in zscores[i]] +
-                [int(i) for i in zscores])
+    if first == None:
+        first = min([int(j) for i in zscores for j in zscores[i]] +
+                    [int(i) for i in zscores])
     
     LOCI  = range(first, nloci + first)
     NLOCI = len(LOCI)

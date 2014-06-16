@@ -74,7 +74,7 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
 
 
   for (i=0; i<size; i++)
-    zeros[i] = PyObject_IsTrue(PyList_GET_ITEM(zeros, i));
+    zeros[i] = PyObject_IsTrue(PyTuple_GET_ITEM(py_zeros, i));
 
   PyObject * py_result = NULL;
   PyObject * py_subresult = NULL;

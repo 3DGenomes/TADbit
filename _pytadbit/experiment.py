@@ -663,7 +663,7 @@ class Experiment(object):
         return generate_3d_models(zscores, self.resolution, nloci,
                                   values=values, n_models=n_models,
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
-                                  verbose=verbose, keep_all=keep_all,
+                                  verbose=verbose, keep_all=keep_all, first=0,
                                   close_bins=close_bins, config=config,
                                   experiment=self, coords=coords, zeros=zeros)
 

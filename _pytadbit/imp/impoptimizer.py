@@ -172,7 +172,7 @@ class IMPoptimizer(object):
                             self.zscores, self.resolution,
                             self.nloci, n_models=self.n_models,
                             n_keep=self.n_keep, config=tmp,
-                            n_cpus=n_cpus,
+                            n_cpus=n_cpus, first=0,
                             values=self.values,
                             close_bins=self.close_bins, zeros=self.zeros)
                         count += 1

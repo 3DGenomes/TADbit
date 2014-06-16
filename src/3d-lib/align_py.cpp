@@ -1,7 +1,5 @@
 #include "Python.h"
 #include "align.h"
-#include <iostream>
-using namespace std;
 
 
 /* The function doc string */
@@ -30,8 +28,6 @@ static PyObject* aligner3d_wrapper(PyObject* self, PyObject* args)
   PyObject *py_zeros;
   int size;
 
-  cout << "Hola guapo " << endl << flush;
-
   if (!PyArg_ParseTuple(args, "OOOOOOOi", &py_xs1, &py_ys1, &py_zs1, 
 			&py_xs2, &py_ys2, &py_zs2, &py_zeros, &size))
     return NULL;
@@ -53,10 +49,7 @@ static PyObject* aligner3d_wrapper(PyObject* self, PyObject* args)
 
 
   for (i=0; i<size; i++){
-    cout << "esto: "<<PyTuple_GET_ITEM(zeros, i) <<"|"<<endl<<flush;
-    cout << "esto: "<<PyBool_Check(PyTuple_GET_ITEM(zeros, i)) <<"|"<<endl<<flush;
-    cout << "esto: "<<PyInt_Check(PyTuple_GET_ITEM(zeros, i)) <<"|"<<endl<<flush;
-    zeros[i]   = PyObject_IsTrue(PyTuple_GET_ITEM(zeros, i));
+    zeros[i]   = PyObject_IsTrue(PyTuple_GET_ITEM(py_zeros, i));
     xyz1[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_xs1, i));
     xyz1[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_ys1, i));
     xyz1[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zs1, i));
@@ -65,9 +58,7 @@ static PyObject* aligner3d_wrapper(PyObject* self, PyObject* args)
     xyz2[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zs2, i));
   }
 
-  cout << "Hola guapo 3" << endl << flush;
   align(xyz2, xyz1, zeros, size);
-  cout << "Hola guapo 4" << endl << flush;
 
   // give it to me
   PyObject * py_result = NULL;

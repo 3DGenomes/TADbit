@@ -57,7 +57,7 @@ static PyObject* consistency_wrapper(PyObject* self, PyObject* args)
   //cout << "START1" << endl << flush;
 
   for (i=0; i<size; i++)
-    zeros[i] = PyObject_IsTrue(PyList_GET_ITEM(zeros, i));
+    zeros[i] = PyObject_IsTrue(PyTuple_GET_ITEM(py_zeros, i));
 
   msize = nmodels*(nmodels-1)/2;
   xyzn = new float **[nmodels];

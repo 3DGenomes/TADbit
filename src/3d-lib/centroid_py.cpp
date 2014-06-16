@@ -1,8 +1,8 @@
 #include "Python.h"
 #include "3dStats.h"
 #include <iostream>
-#include <string>
-using namespace std;
+// #include <string>
+// using namespace std;
 // cout << "START" << endl << flush;
 
 /* The function doc string */
@@ -31,7 +31,7 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
   int verbose;
   int getavg;
 
-  if (!PyArg_ParseTuple(args, "OOOiiii", &py_xs, &py_ys, &py_zs, &py_zeros, &size, 
+  if (!PyArg_ParseTuple(args, "OOOOiiii", &py_xs, &py_ys, &py_zs, &py_zeros, &size, 
 			&nmodels, &verbose, &getavg))
     return NULL;
  
@@ -53,7 +53,7 @@ static PyObject* centroid_wrapper(PyObject* self, PyObject* args)
 
 
   for (i=0; i<size; i++)
-    zeros[i] = PyObject_IsTrue(PyList_GET_ITEM(zeros, i));
+    zeros[i] = PyObject_IsTrue(PyTuple_GET_ITEM(py_zeros, i));
 
   //map<string, float**> xyzlist;
   map<string, float**> xyzlist;

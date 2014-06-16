@@ -32,23 +32,27 @@ def generate_sphere_points(n=100):
     return points
 
 
-def get_center_of_mass(x, y, z):
+def get_center_of_mass(x, y, z, zeros):
     """
     get the center of mass of a given object with list of x, y, z coordinates
     """
     xm = ym = zm = 0.
     size = len(x)
+    subsize  = 0
     for i in xrange(size):
+        if not zeros[i]:
+            continue
+        subsize += 1
         xm += x[i]
         ym += y[i]
         zm += z[i]
-    xm /= size
-    ym /= size
-    zm /= size
+    xm /= subsize
+    ym /= subsize
+    zm /= subsize
     return xm, ym, zm
 
 
-def mass_center(x, y, z):
+def mass_center(x, y, z, zeros):
     """
     Transforms coordinates according to the center of mass
 
@@ -56,7 +60,7 @@ def mass_center(x, y, z):
     :param y: list of y coordinates
     :param z: list of z coordinates
     """
-    xm, ym, zm = get_center_of_mass(x, y, z)
+    xm, ym, zm = get_center_of_mass(x, y, z, zeros)
     for i in xrange(len(x)):
         x[i] -= xm
         y[i] -= ym
@@ -279,12 +283,13 @@ def angle_between_3_points(point1, point2, point3):
     return g
 
 
-def calc_consistency(models, nloci, dcutoff=200):
+def calc_consistency(models, nloci, zeros, dcutoff=200):
     combines = list(combinations(models, 2))
     parts = [0 for _ in xrange(nloci)]
     for pm in consistency_wrapper([models[m]['x'] for m in models],
                                   [models[m]['y'] for m in models],
                                   [models[m]['z'] for m in models],
+                                  zeros,
                                   nloci, dcutoff, range(len(models)),
                                   len(models)):
         for i, p in enumerate(pm):
@@ -334,9 +339,9 @@ def calc_eqv_rmsd(models, nloci, zeros, dcutoff=200, one=False, what='score',
         x.append([models[m]['x'][i] for i in xrange(nloci) if zeros[i]])
         y.append([models[m]['y'][i] for i in xrange(nloci) if zeros[i]])
         z.append([models[m]['z'][i] for i in xrange(nloci) if zeros[i]])
-    scores = rmsdRMSD_wrapper(x, y, z, nloci - zeros.count(False), dcutoff,
-                              range(len(models)), len(models), int(one),
-                              what, int(normed))
+    scores = rmsdRMSD_wrapper(x, y, z, zeros, nloci - zeros.count(False),
+                              dcutoff, range(len(models)), len(models),
+                              int(one), what, int(normed))
     return scores
 
 
