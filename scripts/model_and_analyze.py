@@ -337,9 +337,9 @@ def main():
                  " models...")
     ffact    = 0.95 # Fraction of particles that are within the dcutoff value
     clcutoff = dcutoff - 50 # RMSD cut-off to consider two models equivalent(nm)
-    for ffact in [0.65, 0.6, 0.55, 0.5, 0.95, 0.9, 0.85, 0.8]:
+    for ffact in [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]:
         logging.info('   fact = ' + str(ffact))
-        for clcutoff in range(dcutoff - 150, (dcutoff - 150) * 4, 50):
+        for clcutoff in range(dcutoff - 50, (dcutoff - 50) * 4, 50):
             try:
                 logging.info('      cutoff = ' + str(clcutoff))
                 models.cluster_models(fact=ffact, dcutoff=clcutoff)
