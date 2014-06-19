@@ -673,6 +673,8 @@ class Chromosome(object):
                                   ha='left', transform=axe.transAxes)
                 else:
                     xper = self.get_experiment(names[i * cols + j])
+                    if not xper.hic_data and not xper.norm:
+                        continue
                     xper.view(tad=tad, focus=focus, paint_tads=paint_tads,
                               axe=axe, show=False, logarithm=logarithm,
                               normalized=normalized, relative=relative,

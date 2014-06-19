@@ -174,10 +174,10 @@ class Experiment(object):
             changed_reso = True
         if self.hic_data:
             new_hicdata = HiC_data([], size=self.size)
-            for i in self.hic_data:
-                new_hicdata[i] += self.hic_data.get(i)
-            for i in other.hic_data:
-                new_hicdata[i] += self.hic_data.get(i)
+            for i in self.hic_data[0]:
+                new_hicdata[i] = self.hic_data[0].get(i)
+            for i in other.hic_data[0]:
+                new_hicdata[i] += other.hic_data[0].get(i)
         else:
             new_hicdata = None
         xpr = Experiment(name='%s+%s' % (self.name, other.name),
@@ -1031,12 +1031,9 @@ class Experiment(object):
                 vmin = fun(vmin or (1 if logarithm else 0))
                 vmax = fun(max(norm_data))
             else:
-                if len(hic_data.values()) == len(hic_data.values()):
-                    vmin = fun(min(hic_data.values()) or
-                               (1 if logarithm else 0))
-                else:
-                    vmin = 1 if logarithm else 0
-                vmax = fun(max(hic_data.values()))
+                vmin = fun(min(hic_data[0].values()) or
+                           (1 if logarithm else 0))
+                vmax = fun(max(hic_data[0].values()))
         elif clim:
             vmin, vmax = clim
         if axe is None:
@@ -1053,7 +1050,7 @@ class Experiment(object):
                         for j in xrange(int(start) - 1, int(end))]
                 else:
                     matrix = [
-                        [hic_data[i+size*j]
+                        [hic_data[0][i+size*j]
                          for i in xrange(int(start) - 1, int(end))]
                         for j in xrange(int(start) - 1, int(end))]
             elif isinstance(tad, list):
@@ -1072,7 +1069,7 @@ class Experiment(object):
                            for i in xrange(size)]
                           for j in xrange(size)]
             else:
-                matrix = [[hic_data[i+size*j]\
+                matrix = [[hic_data[0][i+size*j]\
                            for i in xrange(size)] \
                           for j in xrange(size)]
         if where == 'up':
