@@ -25,16 +25,17 @@ static PyObject* aligner3d_wrapper(PyObject* self, PyObject* args)
   PyObject *py_xs2;
   PyObject *py_ys2;
   PyObject *py_zs2;
+  PyObject *py_zeros;
   int size;
 
-  if (!PyArg_ParseTuple(args, "OOOOOOi", &py_xs1, &py_ys1, &py_zs1, 
-			&py_xs2, &py_ys2, &py_zs2, &size))
+  if (!PyArg_ParseTuple(args, "OOOOOOOi", &py_xs1, &py_ys1, &py_zs1, 
+			&py_xs2, &py_ys2, &py_zs2, &py_zeros, &size))
     return NULL;
  
   float **xyz1;
   float **xyz2;
+  int zeros[size];
   int i;
-  int j;
 
  
   xyz1 = new float*[size];
@@ -48,6 +49,7 @@ static PyObject* aligner3d_wrapper(PyObject* self, PyObject* args)
 
 
   for (i=0; i<size; i++){
+    zeros[i]   = PyObject_IsTrue(PyTuple_GET_ITEM(py_zeros, i));
     xyz1[i][0] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_xs1, i));
     xyz1[i][1] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_ys1, i));
     xyz1[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zs1, i));
@@ -56,7 +58,7 @@ static PyObject* aligner3d_wrapper(PyObject* self, PyObject* args)
     xyz2[i][2] = PyFloat_AS_DOUBLE(PyList_GET_ITEM(py_zs2, i));
   }
 
-  align(xyz2, xyz1, size);
+  align(xyz2, xyz1, zeros, size);
 
   // give it to me
   PyObject * py_result = NULL;

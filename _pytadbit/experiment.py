@@ -188,8 +188,11 @@ class Experiment(object):
         if self._normalization != None and other._normalization != None:
             if (self._normalization.split('_factor:')[0] ==
                 other._normalization.split('_factor:')[0]):
-                xpr.norm = [tuple([i + j for i, j in zip(
-                    self.norm[0], other.norm[0])])]
+                xpr.norm = [HiC_data([], size=self.size)]
+                for i in self.norm[0]:
+                    xpr.norm[0][i] = self.norm[0].get(i)
+                for i in other.norm[0]:
+                    xpr.norm[0][i] += other.norm[0].get(i)
                 # The final value of the factor should be the sum of each
                 try:
                     xpr._normalization = (
@@ -212,7 +215,7 @@ class Experiment(object):
             other.norm = norm2
         xpr.crm = self.crm
         if not xpr.size:
-            xpr.size = int(sqrt(len(xpr.norm[0])))
+            xpr.size = len(xpr.norm[0])
         
         def __merge(own, fgn):
             "internal function to merge descriptions"
@@ -430,17 +433,21 @@ class Experiment(object):
         :param False silent: does not warn for removed columns
         
         """
-        nums, size = read_matrix(norm_data, parser=parser, hic=False)
+        nums = read_matrix(norm_data, parser=parser, hic=False)
         self.norm = nums
+        size = len(nums[0])
         self._ori_size       = self.size       = size
         self._ori_resolution = self.resolution = resolution or self._ori_resolution
         if not self._zeros: # in case we do not have original Hi-C data
             for i in xrange(self.size):
                 if all([isnan(j) for j in
-                        self.norm[0][i * self.size:i * self.size + self.size]]):
+                        [self.norm[0][k] for k in
+                         xrange(i * self.size, i * self.size + self.size)]]):
                     self._zeros[i] = None
         # remove NaNs, we do not need them as we have zeroes
-        self.norm[0] = [0.0 if isnan(i) else i for i in self.norm[0]]
+        for i in self.norm[0].keys():
+            if isnan(self.norm[0][i]):
+                del(self.norm[0][i])
         self._normalization = normalization
 
 
@@ -662,7 +669,7 @@ class Experiment(object):
         return generate_3d_models(zscores, self.resolution, nloci,
                                   values=values, n_models=n_models,
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
-                                  verbose=verbose, keep_all=keep_all,
+                                  verbose=verbose, keep_all=keep_all, first=0,
                                   close_bins=close_bins, config=config,
                                   experiment=self, coords=coords, zeros=zeros)
 

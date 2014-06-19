@@ -97,7 +97,7 @@ def autoreader(f):
             try:
                 # Some data may contain 'NaN' or 'NA'
                 items = [
-                    [float('nan') if a.lower() in ['na', 'nan']
+                    [0 if a.lower() in ['na', 'nan']
                      else int(float(a)+.5) for a in line[trim:]]
                 for line in items]
                 warn('WARNING: NA or NaN founds, set to zero')

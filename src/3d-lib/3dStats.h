@@ -11,10 +11,10 @@ using namespace std;
 
 
 extern void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator it2,
-		     int size, set<string> modelList, bool add_first, float** avg);
-extern void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres, 
+		     int *zeros, int size, set<string> modelList, bool add_first, float** avg);
+extern void rmsdRMSD(float** xyzA, float** xyzB, int *zeros, int size, float thres, 
 		     int &eqv, float &rms, float &drms);
-extern void consistency(float** xyzA, float** xyzB, int size, float thres, 
+extern void consistency(float** xyzA, float** xyzB, int *zeros, int size, float thres, 
 			int * &cons_list);
 
 

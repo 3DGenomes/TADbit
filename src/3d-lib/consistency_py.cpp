@@ -34,16 +34,19 @@ static PyObject* consistency_wrapper(PyObject* self, PyObject* args)
   PyObject **py_xs;
   PyObject **py_ys;
   PyObject **py_zs;
+  PyObject *py_zeros;
   PyObject **py_models;
   int size;
   int nmodels;
   float thres;
   //cout << "START" << endl << flush;
  
-  if (!PyArg_ParseTuple(args, "OOOifOi", &py_xs, &py_ys, &py_zs, &size, &thres, &py_models, &nmodels))
+  if (!PyArg_ParseTuple(args, "OOOOifOi", &py_xs, &py_ys, &py_zs, &py_zeros, &size, 
+			&thres, &py_models, &nmodels))
     return NULL;
  
   float ***xyzn;
+  int zeros[size];
   int   *cons_list;
   int **scores;
   int i;
@@ -52,6 +55,9 @@ static PyObject* consistency_wrapper(PyObject* self, PyObject* args)
   int k;
   int msize;
   //cout << "START1" << endl << flush;
+
+  for (i=0; i<size; i++)
+    zeros[i] = PyObject_IsTrue(PyTuple_GET_ITEM(py_zeros, i));
 
   msize = nmodels*(nmodels-1)/2;
   xyzn = new float **[nmodels];
@@ -77,7 +83,7 @@ static PyObject* consistency_wrapper(PyObject* self, PyObject* args)
     for (jj=j+1; jj<nmodels; jj++){
       cons_list = new int[size];
       scores[k] = new int[size];
-      consistency(xyzn[j], xyzn[jj], size, thres, cons_list);
+      consistency(xyzn[j], xyzn[jj], zeros, size, thres, cons_list);
       scores[k] = cons_list;
       k++;
       // scores[j+jj-1] = cons_list;

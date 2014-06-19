@@ -1,19 +1,24 @@
 #include "matrices.h"
-
+// #include <iostream>
+// using namespace std;
 // Set origin to center of mass
-void massCenter(float** xyz, int size) {
+void massCenter(float** xyz, int *zeros, int size) {
   float xm, ym, zm;
   xm = ym = zm = 0.;
   int i;
+  int subsize=0;
 
   for( i = 0; i < size; i++ ) {
+    if (zeros[i]==0)
+      continue;
+    subsize ++;
     xm += xyz[i][0];
     ym += xyz[i][1];
     zm += xyz[i][2];
   }
-  xm /= size;
-  ym /= size;
-  zm /= size;
+  xm /= subsize;
+  ym /= subsize;
+  zm /= subsize;
   for( i = 0; i < size; i++ ) {
     xyz[i][0] -= xm;
     xyz[i][1] -= ym;
@@ -22,9 +27,9 @@ void massCenter(float** xyz, int size) {
 }
 
 
-void align(float** xyzA, float** xyzB, int size){
-  massCenter(xyzA, size);
-  massCenter(xyzB, size);
+void align(float** xyzA, float** xyzB, int *zeros, int size){
+  massCenter(xyzA, zeros, size);
+  massCenter(xyzB, zeros, size);
   // PStruct
   //  double dist;
   double u[4][4];
@@ -64,7 +69,12 @@ void align(float** xyzA, float** xyzB, int size){
     op[i] = 0.;
   }
   int k;
+  // cout << "skipping " << flush;
   for (k = 0; k < size; k++) {
+    if (zeros[k]==0){
+      // cout << k << " " << zeros[k] << " " << flush;
+      continue;
+    }
     u[1][1] = u[1][1] + xyzA[k][0] * xyzB[k][0];
     u[1][2] = u[1][2] + xyzA[k][0] * xyzB[k][1];
     u[1][3] = u[1][3] + xyzA[k][0] * xyzB[k][2];
@@ -75,13 +85,14 @@ void align(float** xyzA, float** xyzB, int size){
     u[3][2] = u[3][2] + xyzA[k][2] * xyzB[k][1];
     u[3][3] = u[3][3] + xyzA[k][2] * xyzB[k][2];
   }
+  // cout << endl << flush;
 
   det = u[1][1] * u[2][2] * u[3][3] +
-    u[1][2] * u[2][3] * u[3][1] +
-    u[1][3] * u[2][1] * u[3][2]-
-    u[1][3] * u[2][2] * u[3][1]-
-    u[1][1] * u[2][3] * u[3][2]-
-    u[1][2] * u[2][1] * u[3][3];
+        u[1][2] * u[2][3] * u[3][1] +
+        u[1][3] * u[2][1] * u[3][2] -
+        u[1][3] * u[2][2] * u[3][1] -
+        u[1][1] * u[2][3] * u[3][2] -
+        u[1][2] * u[2][1] * u[3][3];
 
   //cout << "DET= " << det << endl << flush;
   for (i = 1; i <= 6; i++) {

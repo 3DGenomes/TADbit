@@ -403,6 +403,7 @@ class TestTadbit(unittest.TestCase):
             [models[m]['x'] for m in xrange(nmd)] + [avg['x']],
             [models[m]['y'] for m in xrange(nmd)] + [avg['y']],
             [models[m]['z'] for m in xrange(nmd)] + [avg['z']],
+            models._zeros,
             models.nloci, 200, range(len(models)+1),
             len(models)+1, int(False), 'rmsd', 0)
         centroid = models[models.centroid_model()]

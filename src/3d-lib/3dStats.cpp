@@ -30,10 +30,10 @@ float ddistance(float* p1, float* p2) {
 
 
 void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator it2,
-	      int size, set<string> modelList, bool add_first, float** avg) {
+	      int *zeros, int size, set<string> modelList, bool add_first, float** avg) {
   bool is_in; 
 
-  align(it2->second, it1->second, size);
+  align(it2->second, it1->second, zeros, size);
   // PStruct
   if(add_first) {
     // cout << it2->first << endl;
@@ -56,7 +56,7 @@ void avgCoord(map<string, float**>::iterator it1, map<string, float**>::iterator
 }
 
 
-void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres, 
+void rmsdRMSD(float** xyzA, float** xyzB, int *zeros, int size, float thres, 
 	      int &eqv, float &rms, float &drms) {
   float dist;
   int last;
@@ -67,7 +67,7 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
   last = size - 1;
   thres *= thres;
 
-  align(xyzA, xyzB, size);
+  align(xyzA, xyzB, zeros, size);
   // PStruct
 
   // rmsd last particle in the model since loop1 stops at the second last
@@ -94,14 +94,14 @@ void rmsdRMSD(float** xyzA, float** xyzB, int size, float thres,
 }
 
 
-void consistency(float** xyzA, float** xyzB, int size, float thres, 
-		     int * &cons_list) {
+void consistency(float** xyzA, float** xyzB, int *zeros, int size, float thres, 
+		 int * &cons_list) {
   float dist;
   int last;
   dist = .0;
   last = size - 1;
   thres *= thres;
-  align(xyzA, xyzB, size);
+  align(xyzA, xyzB, zeros, size);
   // PStruct
 
   // rmsd last particle in the model since loop1 stops at the second last

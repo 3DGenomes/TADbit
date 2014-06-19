@@ -177,6 +177,7 @@ class StructuralModels(object):
                                        self[sec]['x'],
                                        self[sec]['y'],
                                        self[sec]['z'],
+                                       self._zeros,
                                        self.nloci)
             if in_place:
                 self[sec]['x'], self[sec]['y'], self[sec]['z'] = coords
@@ -185,11 +186,11 @@ class StructuralModels(object):
 
         if in_place:
             mass_center(self[ref_model]['x'], self[ref_model]['y'],
-                        self[ref_model]['z'])
+                        self[ref_model]['z'], self._zeros)
         else:
             x, y, z = (self[ref_model]['x'][:], self[ref_model]['y'][:],
                        self[ref_model]['z'][:])
-            mass_center(x, y, z)
+            mass_center(x, y, z, self._zeros)
             aligned.insert(ref_model, (x, y, z))
             return aligned
 
@@ -251,7 +252,7 @@ class StructuralModels(object):
                       if self._zeros[i]])
             z.append([self[model]['z'][i] for i in xrange(self.nloci)
                       if self._zeros[i]])
-        idx = centroid_wrapper(x, y, z, len(x[0]), len(x),
+        idx = centroid_wrapper(x, y, z, self._zeros, len(x[0]), len(models),
                                int(verbose), 0)
         return models[idx]
 
@@ -290,7 +291,7 @@ class StructuralModels(object):
                       if self._zeros[i]])
             z.append([self[model]['z'][i] for i in xrange(self.nloci)
                       if self._zeros[i]])
-        idx = centroid_wrapper(x, y, z, self.nloci, len(models),
+        idx = centroid_wrapper(x, y, z, self._zeros, len(x[0]), len(models),
                                int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
                              ('rand_init', 'avg'), ('objfun', None),
@@ -1510,7 +1511,8 @@ class StructuralModels(object):
                        int(1.5 * self.resolution * self._config['scale']),
                        int(2.0 * self.resolution * self._config['scale']))
         for cut in cutoffs:
-            consistencies[cut] = calc_consistency(models, self.nloci, cut)
+            consistencies[cut] = calc_consistency(models, self.nloci,
+                                                  self._zeros, cut)
         # write consistencies to file
         if savedata:
             out = open(savedata, 'w')
