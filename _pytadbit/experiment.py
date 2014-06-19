@@ -4,21 +4,21 @@
 
 """
 
-from pytadbit.parsers.hic_parser         import read_matrix
-from pytadbit.utils.extraviews           import nicer
-from pytadbit.utils.extraviews           import tadbit_savefig
-from pytadbit.utils.tadmaths             import zscore
-from pytadbit.utils.hic_filtering        import hic_filtering_for_modelling
-from pytadbit.parsers.tad_parser         import parse_tads
-from math                                import sqrt, isnan
-from numpy                               import log2, array
-from pytadbit.imp.CONFIG                 import CONFIG
-from copy                                import deepcopy as copy
-from sys                                 import stderr
+from pytadbit.parsers.hic_parser   import read_matrix, HiC_data
+from pytadbit.utils.extraviews     import nicer
+from pytadbit.utils.extraviews     import tadbit_savefig
+from pytadbit.utils.tadmaths       import zscore
+from pytadbit.utils.hic_filtering  import hic_filtering_for_modelling
+from pytadbit.parsers.tad_parser   import parse_tads
+from math                          import sqrt, isnan
+from numpy                         import log2, array
+from pytadbit.imp.CONFIG           import CONFIG
+from copy                          import deepcopy as copy
+from sys                           import stderr
 
 try:
-    from pytadbit.imp.impoptimizer           import IMPoptimizer
-    from pytadbit.imp.imp_modelling          import generate_3d_models
+    from pytadbit.imp.impoptimizer  import IMPoptimizer
+    from pytadbit.imp.imp_modelling import generate_3d_models
 except ImportError:
     stderr.write('IMP not found, check PYTHONPATH\n')
 
@@ -173,8 +173,11 @@ class Experiment(object):
                 other.normalize_hic()
             changed_reso = True
         if self.hic_data:
-            new_hicdata = tuple([(i + j) for i, j in zip(
-                self.hic_data[0], other.hic_data[0])])
+            new_hicdata = HiC_data([], size=self.size)
+            for i in self.hic_data[0]:
+                new_hicdata[i] = self.hic_data[0].get(i)
+            for i in other.hic_data[0]:
+                new_hicdata[i] += other.hic_data[0].get(i)
         else:
             new_hicdata = None
         xpr = Experiment(name='%s+%s' % (self.name, other.name),
@@ -260,7 +263,7 @@ class Experiment(object):
         # if current resolution is the original one
         if self.resolution == self._ori_resolution:
             if self.hic_data:
-                self._ori_hic  = self.hic_data[:]
+                self._ori_hic  = copy(self.hic_data)
             if self.norm:
                 self._ori_norm = self.norm[:]
                 # change the factor value in normalization description
@@ -276,10 +279,10 @@ class Experiment(object):
         fact = self.resolution / self._ori_resolution
         # super for!
         try:
-            size = int(sqrt(len(self._ori_hic[0])))
+            size = len(self._ori_hic[0])
         except TypeError:
             size = int(sqrt(len(self._ori_norm[0])))
-        self.hic_data = [[]]
+        self.hic_data = [HiC_data([], size)]
         self.norm     = [[]]
         self.size     = size / fact
         rest = size % fact
@@ -297,7 +300,8 @@ class Experiment(object):
                             if j + l >= size:
                                 break
                             val += copee[(i + k) * size + j + l]
-                    mtrx.append(val)
+                    if val:
+                        mtrx[i, j] = val
         try:
             resize(self.hic_data[0], self._ori_hic[0])
         except TypeError:
@@ -311,8 +315,6 @@ class Experiment(object):
             stderr.write('WARNING: definition of filtered columns lost at ' +
                          'this resolution\n')
             self._filtered_cols = False
-        # hic_data needs always to be stored as tuple
-        self.hic_data[0] = tuple(self.hic_data[0])
         self.norm[0] = tuple(self.norm[0])
         if not keep_original:
             del(self._ori_hic)
@@ -335,23 +337,21 @@ class Experiment(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
-        
+
         """
         self._zeros, has_nans = hic_filtering_for_modelling(
             self.get_hic_matrix(normalized=self.hic_data==None,
                                 diagonal=False), silent=silent,
             draw_hist=draw_hist, savefig=savefig)
         if has_nans: # to make it simple
-            for i in xrange(len(self.hic_data[0])):
+            for i in xrange(self.hic_data[0]._size2):
                 if repr(self.hic_data[0][i]) == 'nan':
-                    self.hic_data[0] = tuple(list(self.hic_data[0][:i]) +
-                                             [0] +
-                                             list(self.hic_data[0][i + 1:]))
+                    del(self.hic_data[0][i])
         # Also remove columns where there is no data in the diagonal
         size = self.size
         if self.hic_data:
             self._zeros.update(dict([(i, None) for i in xrange(size)
-                                     if not self.hic_data[0][i * size + i]]))
+                                     if not self.hic_data[0].get(i * size + i)]))
         else:
             self._zeros.update(dict([(i, None) for i in xrange(size)
                                      if not self.norm[0][i * size + i]]))
@@ -390,11 +390,10 @@ class Experiment(object):
         :param True filter_columns: filter the columns with unexpectedly high 
            content of low values
         :param False silent: does not warn for removed columns
-        
+
         """
-        nums, size = read_matrix(hic_data, parser=parser)
-        self.hic_data = nums
-        self._ori_size       = self.size       = size
+        self.hic_data = read_matrix(hic_data, parser=parser)
+        self._ori_size       = self.size       = len(self.hic_data[0])
         self._ori_resolution = self.resolution = data_resolution or self._ori_resolution
         wanted_resolution = wanted_resolution or self.resolution
         self.set_resolution(wanted_resolution, keep_original=False)
@@ -1018,15 +1017,9 @@ class Experiment(object):
             start =  1
             end   = size
         if normalized:
-            if len(self.norm) > 1:
-                norm_data = [sum(i) for i in zip(*self.norm)]
-            else:
-                norm_data = self.norm[0]
+            norm_data = self.norm
         else:
-            if len(self.hic_data) > 1:
-                hic_data = [sum(i) for i in zip(*self.hic_data)]
-            else:
-                hic_data = self.hic_data[0]
+            hic_data = self.hic_data
         if relative and not clim:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
@@ -1038,8 +1031,9 @@ class Experiment(object):
                 vmin = fun(vmin or (1 if logarithm else 0))
                 vmax = fun(max(norm_data))
             else:
-                vmin = fun(min(hic_data) or (1 if logarithm else 0))
-                vmax = fun(max(hic_data))
+                vmin = fun(min(hic_data[0].values()) or
+                           (1 if logarithm else 0))
+                vmax = fun(max(hic_data[0].values()))
         elif clim:
             vmin, vmax = clim
         if axe is None:
@@ -1056,7 +1050,7 @@ class Experiment(object):
                         for j in xrange(int(start) - 1, int(end))]
                 else:
                     matrix = [
-                        [hic_data[i+size*j]
+                        [hic_data[0][i+size*j]
                          for i in xrange(int(start) - 1, int(end))]
                         for j in xrange(int(start) - 1, int(end))]
             elif isinstance(tad, list):
@@ -1075,7 +1069,7 @@ class Experiment(object):
                            for i in xrange(size)]
                           for j in xrange(size)]
             else:
-                matrix = [[hic_data[i+size*j]\
+                matrix = [[hic_data[0][i+size*j]\
                            for i in xrange(size)] \
                           for j in xrange(size)]
         if where == 'up':
@@ -1207,3 +1201,4 @@ class Experiment(object):
     #     for i in self.size:
     #         dens[i] = self.resolution
     #     return dens
+

@@ -45,7 +45,8 @@ def autoreader(f):
     # Skip initial comment lines and read in the whole file
     # as a list of lists.
     for line in f:
-        if line[0] != '#': break
+        if line[0] != '#':
+            break
     items = [line.split()] + [line.split() for line in f]
 
     # Count the number of elements per line after the first.
@@ -55,7 +56,8 @@ def autoreader(f):
     ncol = S.pop()
     # If the set 'S' is not empty, at least two lines have a
     # different number of items.
-    if S: raise AutoReadFail('ERROR: unequal column number')
+    if S:
+        raise AutoReadFail('ERROR: unequal column number')
 
     nrow = len(items)
     # Auto-detect the format, there are only 4 cases.
@@ -118,27 +120,28 @@ def read_matrix(things, parser=None, hic=True):
     Read and checks a matrix from a file (using
     :func:`pytadbit.parser.hic_parser.autoreader`) or a list.
 
-    :param things: might be either a file name, a file handler, a list of them
-        or a list of list (all with same length)
-    :param None parser: a parser function that returns a tuple of lists representing the data matrix,
-        with this file example.tsv:
-        ::
-        
-          chrT_001	chrT_002	chrT_003	chrT_004
-          chrT_001	629	164	88	105
-          chrT_002	86	612	175	110
-          chrT_003	159	216	437	105
-          chrT_004	100	111	146	278
+    :param things: might be either a file name, a file handler or a list of
+        list (all with same length)
+    :param None parser: a parser function that returns a tuple of lists
+       representing the data matrix,
+       with this file example.tsv:
+       ::
+       
+         chrT_001	chrT_002	chrT_003	chrT_004
+         chrT_001	629	164	88	105
+         chrT_002	86	612	175	110
+         chrT_003	159	216	437	105
+         chrT_004	100	111	146	278
 
-        the output of parser('example.tsv') might be:
-        ``([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105, 110,
-        105, 278])``
+       the output of parser('example.tsv') might be:
+       ``([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105, 110,
+       105, 278])``
 
 
     :param True hic: if False, TADbit assumes that files contains normalized
        data
     :returns: the corresponding matrix concatenated into a huge list, also
-        returns number or rows
+       returns number or rows
 
     """
     global HIC_DATA
@@ -147,13 +150,14 @@ def read_matrix(things, parser=None, hic=True):
     if not isinstance(things, list):
         things = [things]
     matrices = []
-    sizes    = []
     for thing in things:
-        if isinstance(thing, file):
+        if isinstance(thing, HiC_data):
+            matrices.append(thing)
+        elif isinstance(thing, file):
             matrix, size = parser(thing)
             thing.close()
-            matrices.append(matrix)
-            sizes.append(size)
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
         elif isinstance(thing, str):
             try:
                 matrix, size = parser(gzopen(thing))
@@ -162,34 +166,110 @@ def read_matrix(things, parser=None, hic=True):
                     matrix, size = parser(thing.split('\n'))
                 else:
                     raise IOError('\n   ERROR: file %s not found\n' % thing)
-            matrices.append(matrix)
-            sizes.append(size)
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
         elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
-                matrices.append(reduce(lambda x, y: x+y, thing))
-                sizes.append(len(thing))
+                matrix  = reduce(lambda x, y: x+y, thing)
+                size = len(thing)
             else:
+                print thing
                 raise Exception('must be list of lists, all with same length.')
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
         elif isinstance(thing, tuple):
             # case we know what we are doing and passing directly list of tuples
-            matrices.append(thing)
+            matrix = thing
             siz = sqrt(len(thing))
             if int(siz) != siz:
                 raise AttributeError('ERROR: matrix should be square.\n')
-            sizes.append(int(siz))
+            size = int(siz)
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
         elif 'matrix' in str(type(thing)):
             try:
                 row, col = thing.shape
                 if row != col:
                     raise Exception('matrix needs to be square.')
-                matrices.append(thing.reshape(-1).tolist()[0])
-                sizes.append(row)
+                matrix  = thing.reshape(-1).tolist()[0]
+                size = row
             except Exception as exc:
                 print 'Error found:', exc
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
         else:
             raise Exception('Unable to read this file or whatever it is :)')
-    if all([s == sizes[0] for s in sizes]):
-        return matrices, sizes[0]
-    raise Exception('All matrices must have the same size ' +
-                    '(same chromosome and same bins).')
+        
+    return matrices
 
+
+class HiC_data(dict):
+    """
+    This may also hold the print/write-to-file matrix functions
+    """
+    def __init__(self, items, size):
+        super(HiC_data, self).__init__(items)
+        self.__size = size
+        self._size2 = size**2
+        self.bias = None
+
+    def __len__(self):
+        return self.__size
+
+    def __getitem__(self, row_col):
+        """
+        slow one... for user
+        for fast item getting, use self.get()
+        """
+        try:
+            row, col = row_col
+            pos = row * self.__size + col
+            if pos > self._size2:
+                raise IndexError(
+                    'ERROR: row or column larger than %s' % self.__size)
+            return self.get(pos, 0)
+        except TypeError:
+            if row_col > self._size2:
+                raise IndexError(
+                    'ERROR: position larger than %s^2' % self.__size)
+            return self.get(row_col, 0)
+
+
+    def get_as_tuple(self):
+        return tuple([self[i, j] for j  in xrange(len(self)) for i in xrange(len(self))])
+
+    def get_matrix(self, focus=None, diagonal=True, normalized=False):
+        """
+        get the matrix
+        """
+        siz = len(self)
+        if normalized and not self.bias:
+            raise Exception('ERROR: experiment not normalized yet')
+        if focus:
+            start, end = focus
+            start -= 1
+        else:
+            start = 0
+            end   = siz
+        if normalized:
+            if diagonal:
+                return [[self[i, j] / self.bias[i] / self.bias[j]
+                         for i in xrange(start, end)]
+                        for j in xrange(start, end)]
+            else:
+                mtrx = [[self[i, j] / self.bias[i] / self.bias[j]
+                         for i in xrange(start, end)]
+                        for j in xrange(start, end)]
+                for i in xrange(start, end):
+                    mtrx[i][i] = 1 if mtrx[i][i] else 0
+                return mtrx
+        else:
+            if diagonal:
+                return [[self[i, j] for i in xrange(start, end)]
+                        for j in xrange(start, end)]
+            else:
+                mtrx = [[self[i, j] for i in xrange(start, end)]
+                        for j in xrange(start, end)]
+                for i in xrange(start, end):
+                    mtrx[i][i] = 1 if mtrx[i][i] else 0
+                return mtrx

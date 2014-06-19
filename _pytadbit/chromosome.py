@@ -673,6 +673,8 @@ class Chromosome(object):
                                   ha='left', transform=axe.transAxes)
                 else:
                     xper = self.get_experiment(names[i * cols + j])
+                    if not xper.hic_data and not xper.norm:
+                        continue
                     xper.view(tad=tad, focus=focus, paint_tads=paint_tads,
                               axe=axe, show=False, logarithm=logarithm,
                               normalized=normalized, relative=relative,
@@ -757,9 +759,9 @@ class Chromosome(object):
         best = (0, 0, 0)
         pos = 0
         for pos, raw in enumerate(xrange(0, size * size, size)):
-            if sum(hic[raw:raw + size]) == 0 and not beg:
+            if sum([hic[i] for i in xrange(raw, raw + size)]) == 0 and not beg:
                 beg = float(pos)
-            if sum(hic[raw:raw + size]) != 0 and beg:
+            if sum([hic[i] for i in xrange(raw, raw + size)]) != 0 and beg:
                 end = float(pos)
                 if (end - beg) > best[0]:
                     best = ((end - beg), beg, end)
