@@ -115,12 +115,12 @@ def autoreader(f):
     return tuple([a for line in items for a in line]), ncol
 
 
-def read_matrix(thing, parser=None, hic=True):
+def read_matrix(things, parser=None, hic=True):
     """
     Read and checks a matrix from a file (using
     :func:`pytadbit.parser.hic_parser.autoreader`) or a list.
 
-    :param thing: might be either a file name, a file handler or a list of
+    :param things: might be either a file name, a file handler or a list of
         list (all with same length)
     :param None parser: a parser function that returns a tuple of lists
        representing the data matrix,
@@ -147,43 +147,60 @@ def read_matrix(thing, parser=None, hic=True):
     global HIC_DATA
     HIC_DATA = hic
     parser = parser or autoreader
-    if isinstance(thing, file):
-        matrix, size = parser(thing)
-        thing.close()
-    elif isinstance(thing, str):
-        try:
-            matrix, size = parser(gzopen(thing))
-        except IOError:
-            if len(thing.split('\n')) > 1:
-                matrix, size = parser(thing.split('\n'))
+    if not isinstance(things, list):
+        things = [things]
+    matrices = []
+    for thing in things:
+        if isinstance(thing, HiC_data):
+            matrices.append(thing)
+        elif isinstance(thing, file):
+            matrix, size = parser(thing)
+            thing.close()
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
+        elif isinstance(thing, str):
+            try:
+                matrix, size = parser(gzopen(thing))
+            except IOError:
+                if len(thing.split('\n')) > 1:
+                    matrix, size = parser(thing.split('\n'))
+                else:
+                    raise IOError('\n   ERROR: file %s not found\n' % thing)
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
+        elif isinstance(thing, list):
+            if all([len(thing)==len(l) for l in thing]):
+                matrix  = reduce(lambda x, y: x+y, thing)
+                size = len(thing)
             else:
-                raise IOError('\n   ERROR: file %s not found\n' % thing)
-    elif isinstance(thing, list):
-        if all([len(thing)==len(l) for l in thing]):
-            matrix  = reduce(lambda x, y: x+y, thing)
-            size = len(thing)
+                print thing
+                raise Exception('must be list of lists, all with same length.')
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
+        elif isinstance(thing, tuple):
+            # case we know what we are doing and passing directly list of tuples
+            matrix = thing
+            siz = sqrt(len(thing))
+            if int(siz) != siz:
+                raise AttributeError('ERROR: matrix should be square.\n')
+            size = int(siz)
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
+        elif 'matrix' in str(type(thing)):
+            try:
+                row, col = thing.shape
+                if row != col:
+                    raise Exception('matrix needs to be square.')
+                matrix  = thing.reshape(-1).tolist()[0]
+                size = row
+            except Exception as exc:
+                print 'Error found:', exc
+            matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
+                                      if matrix[i]], size))
         else:
-            raise Exception('must be list of lists, all with same length.')
-    elif isinstance(thing, tuple):
-        # case we know what we are doing and passing directly list of tuples
-        matrix = thing
-        siz = sqrt(len(thing))
-        if int(siz) != siz:
-            raise AttributeError('ERROR: matrix should be square.\n')
-        size = int(siz)
-    elif 'matrix' in str(type(thing)):
-        try:
-            row, col = thing.shape
-            if row != col:
-                raise Exception('matrix needs to be square.')
-            matrix  = thing.reshape(-1).tolist()[0]
-            size = row
-        except Exception as exc:
-            print 'Error found:', exc
-    else:
-        raise Exception('Unable to read this file or whatever it is :)')
-    return HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                           if matrix[i]], size)
+            raise Exception('Unable to read this file or whatever it is :)')
+        
+    return matrices
 
 
 class HiC_data(dict):
@@ -194,6 +211,7 @@ class HiC_data(dict):
         super(HiC_data, self).__init__(items)
         self.__size = size
         self._size2 = size**2
+        self.bias = None
 
     def __len__(self):
         return self.__size
@@ -216,8 +234,42 @@ class HiC_data(dict):
                     'ERROR: position larger than %s^2' % self.__size)
             return self.get(row_col, 0)
 
-    def get_matrix():
+
+    def get_as_tuple(self):
+        return tuple([self[i, j] for j  in xrange(len(self)) for i in xrange(len(self))])
+
+    def get_matrix(self, focus=None, diagonal=True, normalized=False):
         """
         get the matrix
         """
-        matrix = [[]for _ in xrange()]
+        siz = len(self)
+        if normalized and not self.bias:
+            raise Exception('ERROR: experiment not normalized yet')
+        if focus:
+            start, end = focus
+            start -= 1
+        else:
+            start = 0
+            end   = siz
+        if normalized:
+            if diagonal:
+                return [[self[i, j] / self.bias[i] / self.bias[j]
+                         for i in xrange(start, end)]
+                        for j in xrange(start, end)]
+            else:
+                mtrx = [[self[i, j] / self.bias[i] / self.bias[j]
+                         for i in xrange(start, end)]
+                        for j in xrange(start, end)]
+                for i in xrange(start, end):
+                    mtrx[i][i] = 1 if mtrx[i][i] else 0
+                return mtrx
+        else:
+            if diagonal:
+                return [[self[i, j] for i in xrange(start, end)]
+                        for j in xrange(start, end)]
+            else:
+                mtrx = [[self[i, j] for i in xrange(start, end)]
+                        for j in xrange(start, end)]
+                for i in xrange(start, end):
+                    mtrx[i][i] = 1 if mtrx[i][i] else 0
+                return mtrx

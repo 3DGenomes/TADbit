@@ -279,10 +279,10 @@ class Experiment(object):
         fact = self.resolution / self._ori_resolution
         # super for!
         try:
-            size = len(self._ori_hic)
+            size = len(self._ori_hic[0])
         except TypeError:
             size = int(sqrt(len(self._ori_norm[0])))
-        self.hic_data = HiC_data([], size)
+        self.hic_data = [HiC_data([], size)]
         self.norm     = [[]]
         self.size     = size / fact
         rest = size % fact
@@ -300,7 +300,8 @@ class Experiment(object):
                             if j + l >= size:
                                 break
                             val += copee[(i + k) * size + j + l]
-                    mtrx.append(val)
+                    if val:
+                        mtrx[i, j] = val
         try:
             resize(self.hic_data[0], self._ori_hic[0])
         except TypeError:
@@ -343,14 +344,14 @@ class Experiment(object):
                                 diagonal=False), silent=silent,
             draw_hist=draw_hist, savefig=savefig)
         if has_nans: # to make it simple
-            for i in xrange(self.hic_data._size2):
-                if repr(self.hic_data[i]) == 'nan':
-                    del(self.hic_data[i])
+            for i in xrange(self.hic_data[0]._size2):
+                if repr(self.hic_data[0][i]) == 'nan':
+                    del(self.hic_data[0][i])
         # Also remove columns where there is no data in the diagonal
         size = self.size
         if self.hic_data:
             self._zeros.update(dict([(i, None) for i in xrange(size)
-                                     if not self.hic_data.get(i * size + i)]))
+                                     if not self.hic_data[0].get(i * size + i)]))
         else:
             self._zeros.update(dict([(i, None) for i in xrange(size)
                                      if not self.norm[0][i * size + i]]))
@@ -392,7 +393,7 @@ class Experiment(object):
 
         """
         self.hic_data = read_matrix(hic_data, parser=parser)
-        self._ori_size       = self.size       = len(self.hic_data)
+        self._ori_size       = self.size       = len(self.hic_data[0])
         self._ori_resolution = self.resolution = data_resolution or self._ori_resolution
         wanted_resolution = wanted_resolution or self.resolution
         self.set_resolution(wanted_resolution, keep_original=False)
