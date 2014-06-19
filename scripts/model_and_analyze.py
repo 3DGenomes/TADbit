@@ -346,6 +346,9 @@ def main():
                 break
             except:
                 continue
+        else:
+            continue
+        break
     logging.info("\tSaving again the models this time with clusters...")
     models.save_models(os.path.join(opts.outdir, name, name + '.models'))
     # Plot the clustering
