@@ -1,4 +1,16 @@
 #include "iterative.h"
+#include <pstream.h>
+#include <cfloat>
+#include <climits>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/regex/v4/regex.hpp>
 using namespace std;
 
 struct Files
@@ -32,7 +44,7 @@ int compare_dec_a1b1(const double ** a, const double ** b)
 }
 
 void read_arg(int argc, const char *argv[], Files *files, Computation* comp);
-void init_W(map<string, map<int, map<string, map<int, double> > > > *W, map<string, map<int, map<string, map<int, bool> > > > *pairW, Files *file, Computation *comp);
+void init_W(map<string, map<int, map<string, map<int, double> > > > *W, map<string, map<int, map<string, map<int, bool> > > > *pairW, int *chroms1, int *chroms2, int *bins1, int *bins2, double *freqs, int N);
 void drop_the_bins(Computation *comp, map<string, map<int, map<string, map<int, double> > > > *W,
         map<string, map<int, map<string, map<int, bool> > > > *pairW);
 void init_B(map<string, map<int, double> > *B, map<string, map<int, map<string, map<int, double> > > > &W);
@@ -45,6 +57,71 @@ void print_out_W(map<string, map<int, map<string, map<int, double> > > > &W, dou
         map<string, map<int, map<string, map<int, bool> > > > &pairW, Files *file, int nloop);
 void print_out_B(map<string, map<int, double> > &B, double mtW, Files *file, int nloop);
 
+
+
+double **iterative(int *chroms1,
+		   int *chroms2,
+		   int *bins1,
+		   int *bins2,
+		   double *freqs,
+		   int N)
+{
+    map<string, map<int, map<string, map<int, double> > > > W; // Imakaev annotation ([chrom1][bin1][chrom2][bin2] => freq)
+    map<string, map<int, map<string, map<int, bool> > > > pairW; // test only half pairs
+
+    init_W(&W, &pairW, chroms1, chroms2, bins1, bins2, freqs, N);
+
+    Computation *comp = new Computation;
+
+    comp->freq_low_bound = 0.02; // 2%: Ismakaev
+    comp->drop_bin = 1;
+    comp->t_chrom = 0;
+    comp->nloop_init = 0;
+    comp->nloop_max = 20;
+    comp->B = 0;
+
+    // drop the bins with too few contacts        
+    if (comp->drop_bin) drop_the_bins(comp, &W, &pairW); 
+
+    // Biases
+    map<string, map<int, double> > B;
+    init_B(&B, W);
+    
+    // mean total weight for the normalisation of B
+    double mtW = 0;
+    for (int nloop = comp->nloop_init; nloop <= comp->nloop_max; nloop++) {
+      int nmtW = 0;
+      for (map < string, map<int, map < string, map<int, bool> > > >::iterator itW = pairW.begin(); itW != pairW.end(); itW++) {
+        string chrom1 = (*itW).first;
+	for (map<int, map < string, map<int, bool> > >::iterator itC1 = pairW[chrom1].begin(); itC1 != pairW[chrom1].end(); itC1++) {
+	  int bin1 = (*itC1).first;
+	  double norm = 0.;
+	  for (map < string, map<int, bool> >::iterator itCb1 = pairW[chrom1][bin1].begin(); itCb1 != pairW[chrom1][bin1].end(); itCb1++) {
+	    string chrom2 = (*itCb1).first;                                
+	    for (map<int, bool>::iterator itC2 = pairW[chrom1][bin1][chrom2].begin(); itC2 != pairW[chrom1][bin1][chrom2].end(); itC2++) {
+	      int bin2 = (*itC2).first;
+	      norm += W[chrom1][bin1][chrom2][bin2];
+	    }                                
+	  }
+	  mtW += norm;
+	  nmtW++;
+	}
+      }
+      mtW /= nmtW;
+      // Coverages
+      map<string, map<int, double> > S;
+      double meanS;
+      update_S(&S, &meanS, W);
+      // Additional Biases
+      map<string, map<int, double> > DB; 
+      update_DB(&DB, S, meanS);
+      if(comp->B) update_B(&B, DB);
+      update_W(&W, DB);
+    }
+    
+    return 0;
+}
+
 int main(int argc, const char *argv[])
 {
     Files *files = new Files;
@@ -54,7 +131,7 @@ int main(int argc, const char *argv[])
     
     map<string, map<int, map<string, map<int, double> > > > W; // Imakaev annotation ([chrom1][bin1][chrom2][bin2] => freq)
     map<string, map<int, map<string, map<int, bool> > > > pairW; // test only half pairs
-    init_W(&W, &pairW, files, comp);
+    // init_W(&W, &pairW, files, comp);
     
     // drop the bins with too few contacts        
     if (comp->drop_bin) drop_the_bins(comp, &W, &pairW); 
@@ -66,8 +143,6 @@ int main(int argc, const char *argv[])
     // mean total weight for the normalisation of B
     double mtW = 0;
     for (int nloop = comp->nloop_init; nloop <= comp->nloop_max; nloop++) {
-        print_out_W(W, &mtW,pairW, files, nloop);
-        if(comp->B) print_out_B(B,mtW,files, nloop);
         
         // Coverages
         map<string, map<int, double> > S;
@@ -80,6 +155,9 @@ int main(int argc, const char *argv[])
         
         if(comp->B) update_B(&B, DB);
         update_W(&W, DB);
+
+        print_out_W(W, &mtW,pairW, files, nloop);
+        if(comp->B) print_out_B(B,mtW,files, nloop);
     }
     
     return 0;
@@ -129,30 +207,23 @@ void read_arg(int argc, const char *argv[], Files *files, Computation* comp)
     return;
 }
 
-void init_W(map<string, map<int, map<string, map<int, double> > > > *W, map<string, map<int, map<string, map<int, bool> > > > *pairW,
-        Files *file, Computation *comp)
+void init_W(map<string, map<int, map<string, map<int, double> > > > *W, 
+	    map<string, map<int, map<string, map<int, bool> > > > *pairW,
+	    int *chroms1,
+	    int *chroms2,
+	    int *bins1,
+	    int *bins2,
+	    double *freqs,
+	    int N)
 {
-    ifstream ifstr(file->HiC_in.c_str());
-    string line;
-    getline(ifstr, line); // headers
-    int nline = 1;
-    while (getline(ifstr, line)) {
-        if (!(nline % 10000)) {
-            cout << "Downloading line " << nline << "             \r";
-            cout.flush();
-        }        
-        vector<string> terms;
-        boost::split(terms, line, boost::is_any_of("\t"));
-        if (!comp->t_chrom || ((terms[0] == comp->chrom)&&(terms[2] == comp->chrom))) {
-            (*W)[terms[0]][atoi(terms[1].c_str())][terms[2]][atoi(terms[3].c_str())] = atof(terms[4].c_str());
-            (*pairW)[terms[0]][atoi(terms[1].c_str())][terms[2]][atoi(terms[3].c_str())] = 1;
-            (*W)[terms[2]][atoi(terms[3].c_str())][terms[0]][atoi(terms[1].c_str())] = atof(terms[4].c_str());
-        }
-        nline++;
-    }
-    ifstr.close();
-    return;
+  for (int i=0; i<N; i++) {
+    (*W)[std::to_string(chroms1[i])][bins1[i]][std::to_string(chroms2[i])][bins2[i]] = freqs[i];
+    (*pairW)[std::to_string(chroms1[i])][bins1[i]][std::to_string(chroms2[i])][bins2[i]] = 1;
+    (*W)[std::to_string(chroms2[i])][bins2[i]][std::to_string(chroms1[i])][bins1[i]] = freqs[i];
+  }
+  return;
 }
+
 
 void drop_the_bins(Computation *comp, map<string, map<int, map<string, map<int, double> > > > *W,
         map<string, map<int, map<string, map<int, bool> > > > *pairW)
@@ -164,7 +235,7 @@ void drop_the_bins(Computation *comp, map<string, map<int, map<string, map<int, 
 
     for (map<string, map<int, map<string, map<int, double> > > >::iterator itW = (*W).begin(); itW != (*W).end(); itW++) {
         string chrom1 = (*itW).first;
-        cout << "Droping the bins chrom " << chrom1 << "          \r";
+        cout << "Droping the bins chrom " << chrom1 << endl;
         cout.flush();
         for (map<int, map<string, map<int, double> > >::iterator itC1 = (*W)[chrom1].begin(); itC1 != (*W)[chrom1].end(); itC1++) {
             int bin1 = (*itC1).first;
@@ -182,7 +253,7 @@ void drop_the_bins(Computation *comp, map<string, map<int, map<string, map<int, 
         }
     }
 
-    cout << "Sorting init...                            \r";
+    cout << "Sorting init..." << endl;
     cout.flush();
 
     long long nlist = list_contact_nb.size();
@@ -193,13 +264,13 @@ void drop_the_bins(Computation *comp, map<string, map<int, map<string, map<int, 
         to_be_sorted[i][1] = list_contact_nb[i];
     }
 
-    cout << "Sorting core of a list of size " << nlist << "                            \r";
+    cout << "Sorting core of a list of size " << nlist << endl;
     cout.flush();
     qsort(to_be_sorted, nlist, sizeof (double), (int(*)(const void*, const void*)) & compare_dec_a1b1);
 
     int i0 = (int) ((1 - comp->freq_low_bound) * nlist);
     for (long long i = i0; i < nlist; i++) {
-        cout << "Removing bins " << i << " of " << nlist << "                           \r";
+        cout << "Removing bins " << i << " of " << nlist << endl;
         cout.flush();
 
         long long itrue = (long long) to_be_sorted[i][0];
@@ -210,7 +281,7 @@ void drop_the_bins(Computation *comp, map<string, map<int, map<string, map<int, 
     }
 
     for (long long i = i0; i < nlist; i++) {
-        cout << "Removing (bis) bins " << i << " of " << nlist << "                           \r";
+        cout << "Removing (bis) bins " << i << " of " << nlist << endl;
         cout.flush();
 
         long itrue = (long long) to_be_sorted[i][0];
@@ -238,7 +309,7 @@ void init_B(map<string, map<int, double> > *B, map<string, map<int, map<string, 
 {
     for (map<string, map<int, map<string, map<int, double> > > >::iterator itW = W.begin(); itW != W.end(); itW++) {
         string chrom = (*itW).first;
-        cout << "initializing B chrom " << chrom << "          \r";
+        cout << "initializing B chrom " << chrom << endl;
         cout.flush();
 
         for (map<int, map<string, map<int, double> > >::iterator itC = W[chrom].begin(); itC != W[chrom].end(); itC++) {
@@ -256,7 +327,7 @@ void update_S(map<string, map<int, double> > *S, double *meanS, map<string, map<
     for (map<string, map<int, map<string, map<int, double> > > >::iterator itW = W.begin(); itW != W.end(); itW++) {
         string chrom1 = (*itW).first;
 
-        cout << "Updating S chrom " << chrom1 << "          \r";
+        cout << "Updating S chrom " << chrom1 << endl;
         cout.flush();
 
         for (map<int, map<string, map<int, double> > >::iterator itC1 = W[chrom1].begin(); itC1 != W[chrom1].end(); itC1++) {
@@ -284,7 +355,7 @@ void update_DB(map<string, map<int, double> > *DB, map<string, map<int, double> 
 {
     for (map<string, map<int, double> >::iterator itS = S.begin(); itS != S.end(); itS++) {
         string chrom = (*itS).first;
-        cout << "Updating DB chrom " << chrom << "          \r";
+        cout << "Updating DB chrom " << chrom << endl;
         cout.flush();
 
         for (map<int, double>::iterator itC = S[chrom].begin(); itC != S[chrom].end(); itC++) {
@@ -300,7 +371,7 @@ void update_W(map<string, map<int, map<string, map<int, double> > > > *W, map<st
 {
     for (map<string, map<int, map<string, map<int, double> > > >::iterator itW = (*W).begin(); itW != (*W).end(); itW++) {
         string chrom1 = (*itW).first;
-        cout << "Updating W chrom " << chrom1 << "          \r";
+        cout << "Updating W chrom " << chrom1 << endl;
         cout.flush();
 
         for (map<int, map<string, map<int, double> > >::iterator itC1 = (*W)[chrom1].begin(); itC1 != (*W)[chrom1].end(); itC1++) {
@@ -324,7 +395,7 @@ void update_B(map<string, map<int, double> > *B, map<string, map<int, double> > 
 {
     for (map<string, map<int, double> >::iterator itB = (*B).begin(); itB != (*B).end(); itB++) {
         string chrom = (*itB).first;
-        cout << "Updating DB chrom " << chrom << "          \r";
+        cout << "Updating DB chrom " << chrom << endl;
         cout.flush();
 
         for (map<int, double>::iterator itC = (*B)[chrom].begin(); itC != (*B)[chrom].end(); itC++) {
@@ -355,7 +426,7 @@ void print_out_W(map<string, map<int, map<string, map<int, double> > > > &W, dou
     for (map < string, map<int, map < string, map<int, bool> > > >::iterator itW = pairW.begin(); itW != pairW.end(); itW++) {
         string chrom1 = (*itW).first;
 
-        cout << "Printing out intermediate W chrom " << chrom1 << "          \r";
+        cout << "Printing out intermediate W chrom " << chrom1 << endl;
         cout.flush();
                 
         for (map<int, map < string, map<int, bool> > >::iterator itC1 = pairW[chrom1].begin(); itC1 != pairW[chrom1].end(); itC1++) {
@@ -402,7 +473,7 @@ void print_out_B(map<string, map<int, double> > &B, double mtW, Files *file, int
     
     for (map<string, map<int, double> >::iterator itB = B.begin(); itB != B.end(); itB++) {
         string chrom = (*itB).first;
-        cout << "Printing out intermediate B values " << chrom << "          \r";
+        cout << "Printing out intermediate B values " << chrom << endl;
         cout.flush();
 
         for (map<int, double>::iterator itC = B[chrom].begin(); itC != B[chrom].end(); itC++) {

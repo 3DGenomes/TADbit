@@ -5,7 +5,8 @@ from os import path
 from re import sub
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
-
+# import os
+# os.environ["CC"] = "g++"
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
@@ -90,20 +91,16 @@ def main():
         if follow.upper() != 'Y' :
             exit('\n    Wise choice :)\n')
     
-    norm_module = Extension('pytadbit.norm',
-                            language = "c++",
-                            sources=[#'src/tadbit_py.c',
-                                     #'src/norm-lib/visibility.cpp',
-                                     'src/norm-lib/iterative.cpp'],
-                            extra_compile_args=['-I/usr/include/pstreams/'])
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
-                                language = "c",
-                                sources=['src/tadbit_py.c',
-                                         'src/norm-lib/visibility.cpp'],
-                                         #'src/norm-lib/iterative.cpp'],
-                                extra_compile_args=['-std=c99',
-                                                    '-Ibuild/temp.linux-x86_64-2.7/src/norm-lib/'])
+                                language = "c++",
+                                include_dirs=['/usr/include/pstreams/',
+                                              '/usr/include/itsol/'],
+                                sources=['src/norm-lib/visibility.cpp',
+                                         'src/norm-lib/iterative.cpp',
+                                         'src/tadbit_py.c'],
+                                extra_compile_args=['-std=c++11']
+                                )
     # OLD c module to find TADs
     pytadbit_module_old = Extension('pytadbit.tadbitalone_py',
                                     language = "c",
@@ -120,26 +117,29 @@ def main():
     # c++ module to align a pair of 3D models
     aligner3d_module = Extension('pytadbit.aligner3d',
                                  language = "c++",
-                                 sources=['src/3d-lib/align_py.cpp',
-                                          'src/3d-lib/matrices.cc',
-                                          'src/3d-lib/3dStats.cpp',
-                                          'src/3d-lib/align.cpp'],
+                                 runtime_library_dirs=['3d-lib/'],
+                                 sources=['src/3d-lib/align_py.cpp'],
+                                          #'src/3d-lib/matrices.cc',
+                                          #'src/3d-lib/3dStats.cpp',
+                                          #'src/3d-lib/align.cpp'],
                                  extra_compile_args=["-ffast-math"])
     # c++ module to align and calculate consistency of a group of 3D models
     consistency_module = Extension('pytadbit.consistency',
                                    language = "c++",
-                                   sources=['src/3d-lib/consistency_py.cpp',
-                                            'src/3d-lib/matrices.cc',
-                                            'src/3d-lib/3dStats.cpp',
-                                            'src/3d-lib/align.cpp'],
+                                   runtime_library_dirs=['3d-lib/'],
+                                   sources=['src/3d-lib/consistency_py.cpp'],
+                                            # 'src/3d-lib/matrices.cc',
+                                            # 'src/3d-lib/3dStats.cpp',
+                                            # 'src/3d-lib/align.cpp'],
                                    extra_compile_args=["-ffast-math"])
     # c++ module to get centroid of a group of 3D models
     centroid_module = Extension('pytadbit.centroid',
                                 language = "c++",
-                                sources=['src/3d-lib/centroid_py.cpp',
-                                         'src/3d-lib/matrices.cc',
-                                         'src/3d-lib/3dStats.cpp',
-                                         'src/3d-lib/align.cpp'],
+                                runtime_library_dirs=['3d-lib/'],
+                                sources=['src/3d-lib/centroid_py.cpp'],
+                                         # 'src/3d-lib/matrices.cc',
+                                         # 'src/3d-lib/3dStats.cpp',
+                                         # 'src/3d-lib/align.cpp'],
                                 extra_compile_args=["-ffast-math"])
 
     # UPDATE version number
@@ -191,7 +191,7 @@ def main():
         version      = version_full,
         author       = 'Davide Bau, Francois Serra, Guillaume Filion and Marc Marti-Renom',
         author_email = 'serra.francois@gmail.com',
-        ext_modules  = [norm_module,pytadbit_module, pytadbit_module_old,
+        ext_modules  = [pytadbit_module, pytadbit_module_old,
                         eqv_rmsd_module, centroid_module,
                         consistency_module, aligner3d_module],
         package_dir  = {'pytadbit': PATH + '/_pytadbit'},

@@ -5,7 +5,6 @@
 #include "Python.h"
 #include "tadbit.c"
 #include "norm-lib/visibility.h"
-#include "norm-lib/iterative.h"
 
 /* The module doc string */
 PyDoc_STRVAR(tadbit_py__doc__,
@@ -56,12 +55,13 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
     for (j = 0 ; j < n*n ; j++)
       obs[i][j] = PyInt_AS_LONG(PyTuple_GET_ITEM(PyList_GET_ITEM(py_obs, i), j));
 
+  double **weights;
   if (normalization==1)
-    double **weights = visibility(obs, m, n);
+    weights = visibility(obs, m, n);
   else if (normalization==2)
-    double **weights = iterative(obs, m, n);
+    weights = iterative(obs, m, n);
   else
-    return 11;
+    return 0;
 
   char *remove = (char *) malloc (n * sizeof(char));
   for (j = 0 ; j < n ; j++){
