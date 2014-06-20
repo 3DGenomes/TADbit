@@ -4,13 +4,15 @@
 
 """
 
-from os import path, listdir
-from pytadbit.parsers.hic_parser import read_matrix
-from pytadbit.tadbit_py import _tadbit_wrapper
+from os                           import path, listdir
+from pytadbit.parsers.hic_parser  import read_matrix
+from pytadbit.tadbit_py           import _tadbit_wrapper
+from pytadbit.tadbitalone_py      import _tadbitalone_wrapper
+from pytadbit.utils.normalize_hic import iterative
+from sys                          import stderr
 
-
-def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
-           no_heuristic=False, get_weights=False, **kwargs):
+def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
+           max_tad_size="max", no_heuristic=False, **kwargs):
     """
     The TADbit algorithm works on raw chromosome interaction count data.
     The normalization is neither necessary nor recommended,
@@ -30,6 +32,11 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
        of such matrices for replicated experiments. The counts must be evenly
        sampled and not normalized. x might be either a list of list, a path to
        a file or a file handler
+    :argument 'visibility' norm: kind of normalization to use. Choose between
+       'visibility' of 'Imakaev'
+    :argument None remove: a python list of lists of booleans mapping positively
+       columns to remove (if None only columns with a 0 in the diagonal will be
+       removed)
     :param 1 n_cpus: The number of CPUs to allocate to TADbit. If
        n_cpus='max' the total number of CPUs will be used
     :param auto max_tad_size: an integer defining maximum size of TAD. Default
@@ -41,15 +48,29 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
 
     :returns: the :py:func:`list` of topologically associated domains'
        boundaries, and the corresponding list associated log likelihoods.
-       Depending on the value of the get_weights parameter, may also return
-       weights.
+       If no weights are given, it may also return calculated weights.
     """
     nums = [hic_data.get_as_tuple() for hic_data in read_matrix(x)]
     size = int(len(nums[0])**.5)
+    if not weights:
+        weights = []
+        for num in nums:
+            W = {'1': {}}
+            for i in xrange(size):
+                W['1'][i] = {'1': {}}
+                for j in xrange(size):
+                    W['1'][i]['1'][j] = num[i+j*size]
+            B = iterative(W)
+            c = B.keys()[0]
+            weights.append(tuple([B[c][i]*B[c][j] for i in B[c] for j in B[c]]))
+    if not remove:
+        remove = tuple([int(nums[0][i+i*size]==0) for i in xrange(size)])
     n_cpus = n_cpus if n_cpus != 'max' else 0
     max_tad_size = size if max_tad_size is "auto" else max_tad_size
-    _, nbks, passages, _, _, bkpts, weights = \
-       _tadbit_wrapper(nums,             # list of lists representing matrices
+    _, nbks, passages, _, _, bkpts = \
+       _tadbit_wrapper(nums,             # list of lists of Hi-C data
+                       remove,           # list of columns marking filtered
+                       weights,
                        size,             # size of one row/column
                        len(nums),        # number of matrices
                        n_cpus,           # number of threads
@@ -68,14 +89,6 @@ def tadbit(x, n_cpus=1, verbose=True, max_tad_size="max",
         result['end'  ].append(breaks[brk] if brk < len(breaks) else size - 1)
         result['score'].append(scores[brk] if brk < len(breaks) else None)
 
-    if get_weights:
-        # in tadbit we are not using directly weights, but the
-        # multiplication by the real value
-        oks = [i for i in xrange(size) if nums[0][i*size+i]]
-        total = sum([nums[0][i*size+j] for i in oks for j in oks])
-        tadbit_weights = [[i/j*total if j else 0.0 for i, j in
-                           zip(nums[k], weights[k])] for k in xrange(len(nums))]
-        return result, tadbit_weights
     return result
 
 
@@ -101,6 +114,8 @@ def batch_tadbit(directory, parser=None, **kwargs):
     Other arguments such as max_size, n_CPU and verbose are passed to
     :func:`tadbit`.
   
+    NOTE: only used externally, not from Chromosome
+    
     :param directory: the directory containing the data files
     :param kwargs: arguments passed to :func:`tadbit` function
     :param None parser: a parser function that takes file name as input and
@@ -112,6 +127,7 @@ def batch_tadbit(directory, parser=None, **kwargs):
         corresponding files assumed to be replicates
 
     """
+
     matrix = []
     for f_name in listdir(directory):
         if f_name.startswith('.'):

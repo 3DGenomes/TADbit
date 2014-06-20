@@ -5,7 +5,8 @@ from os import path
 from re import sub
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
-
+# import os
+# os.environ["CC"] = "g++"
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
@@ -95,6 +96,11 @@ def main():
                                 language = "c",
                                 sources=['src/tadbit_py.c'],
                                 extra_compile_args=['-std=c99'])
+    # OLD c module to find TADs
+    pytadbit_module_old = Extension('pytadbit.tadbitalone_py',
+                                    language = "c",
+                                    sources=['src/tadbit_alone_py.c'],
+                                    extra_compile_args=['-std=c99'])
     # c++ module to align and calculate all distances between group of 3D models
     eqv_rmsd_module = Extension('pytadbit.eqv_rms_drms',
                                 language = "c++",
@@ -106,6 +112,7 @@ def main():
     # c++ module to align a pair of 3D models
     aligner3d_module = Extension('pytadbit.aligner3d',
                                  language = "c++",
+                                 runtime_library_dirs=['3d-lib/'],
                                  sources=['src/3d-lib/align_py.cpp',
                                           'src/3d-lib/matrices.cc',
                                           'src/3d-lib/3dStats.cpp',
@@ -114,6 +121,7 @@ def main():
     # c++ module to align and calculate consistency of a group of 3D models
     consistency_module = Extension('pytadbit.consistency',
                                    language = "c++",
+                                   runtime_library_dirs=['3d-lib/'],
                                    sources=['src/3d-lib/consistency_py.cpp',
                                             'src/3d-lib/matrices.cc',
                                             'src/3d-lib/3dStats.cpp',
@@ -122,6 +130,7 @@ def main():
     # c++ module to get centroid of a group of 3D models
     centroid_module = Extension('pytadbit.centroid',
                                 language = "c++",
+                                runtime_library_dirs=['3d-lib/'],
                                 sources=['src/3d-lib/centroid_py.cpp',
                                          'src/3d-lib/matrices.cc',
                                          'src/3d-lib/3dStats.cpp',
@@ -177,7 +186,8 @@ def main():
         version      = version_full,
         author       = 'Davide Bau, Francois Serra, Guillaume Filion and Marc Marti-Renom',
         author_email = 'serra.francois@gmail.com',
-        ext_modules  = [pytadbit_module, eqv_rmsd_module, centroid_module,
+        ext_modules  = [pytadbit_module, pytadbit_module_old,
+                        eqv_rmsd_module, centroid_module,
                         consistency_module, aligner3d_module],
         package_dir  = {'pytadbit': PATH + '/_pytadbit'},
         packages     = ['pytadbit', 'pytadbit.parsers',

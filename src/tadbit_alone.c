@@ -1,4 +1,4 @@
-#include "tadbit.h"
+#include "tadbit_alone.h"
 
 
 // Global variables. //
@@ -8,18 +8,22 @@ int _max_cache_index;
 int n_processed;              // Number of slices processed so far.
 int n_to_process;             // Total number of slices to process.
 int taskQ_i;                  // Index used for task queue.
-pthread_mutex_t tadbit_lock;  // Mutex to access task queue.
+pthread_mutex_t tadbit_alone_lock;  // Mutex to access task queue.
 
 // Convenience function to erase tadbit_output data structure //
 void
-destroy_tadbit_output(
-   tadbit_output *seg
+destroy_tadbit_alone_output(
+   tadbit_alone_output *seg
 )
 {
    free(seg->passages);
    free(seg->llikmat);
    free(seg->mllik);
    free(seg->bkpts);
+   for (int i = 0 ; i < seg->m ; i++) {
+      free(seg->weights[i]);
+   }   
+   free(seg->weights);
    free(seg);
 
    return;
@@ -277,16 +281,16 @@ fill_DP(
    int i;
 
    while (1) {
-      pthread_mutex_lock(&tadbit_lock);
+      pthread_mutex_lock(&tadbit_alone_lock);
       if (taskQ_i > n-1) {
          // Task queue is empty. Exit loop and return
-         pthread_mutex_unlock(&tadbit_lock);
+         pthread_mutex_unlock(&tadbit_alone_lock);
          break;
       }
       // A task gives an end point 'j'.
       int j = taskQ_i;
       taskQ_i++;
-      pthread_mutex_unlock(&tadbit_lock);
+      pthread_mutex_unlock(&tadbit_alone_lock);
 
       new_llik[j] = -INFINITY;
       int new_bkpt = -1;
@@ -380,7 +384,7 @@ DPwalk(
       new_llik[i] = -INFINITY;
    }
 
-   int err = pthread_mutex_init(&tadbit_lock, NULL);
+   int err = pthread_mutex_init(&tadbit_alone_lock, NULL);
    if (err) {
       fprintf(stderr, "error initializing mutex (%d)\n", err);
       return;
@@ -487,19 +491,19 @@ fill_llikmat(
    // Break out of the loop when task queue is empty.
    while (1) {
 
-      pthread_mutex_lock(&tadbit_lock);
+      pthread_mutex_lock(&tadbit_alone_lock);
       while ((taskQ_i < n*n) && (skip[taskQ_i] > 0)) {
          // Fast forward to the next job.
          taskQ_i++;
       }
       if (taskQ_i >= n*n) {
          // Task queue is empty. Exit loop and return
-         pthread_mutex_unlock(&tadbit_lock);
+         pthread_mutex_unlock(&tadbit_alone_lock);
          break;
       }
       job_index = taskQ_i;
       taskQ_i++;
-      pthread_mutex_unlock(&tadbit_lock);
+      pthread_mutex_unlock(&tadbit_alone_lock);
 
       // Compute the log-likelihood of slice '(i,j)'.
       i = job_index % n;
@@ -691,12 +695,10 @@ enforce_symmetry
 
 
 void
-tadbit
+tadbit_alone
 (
   // input //
   int **obs,
-  double **weights,
-  char *remove,
   int n,
   const int m,
   int n_threads,
@@ -705,7 +707,7 @@ tadbit
   const int nbrks,
   const int do_not_use_heuristic,
   // output //
-  tadbit_output *seg
+  tadbit_alone_output *seg
 )
 // TODO: write synopsis.
 {
@@ -733,25 +735,6 @@ tadbit
    // matrix 'dist' is the distance to the main diagonal. Every
    // element of coordinate (i,j) is on a diagonal; the distance
    // is the log-shift to the main diagonal 'i-j'.
-
-   /* // Simplify input. Remove line and column if 0 on the diagonal. */
-   /* char *remove = (char *) malloc (N * sizeof(char)); */
-   /* for (i = 0 ; i < N ; i++) { */
-   /*    remove[i] = 0; */
-   /*    for (k = 0 ; k < m ; k++) { */
-   /*       if (obs[k][i+i*N] < 1) { */
-   /*          remove[i] = 1; */
-   /*       } */
-   /*    } */
-   /* } */
-
-   // Update the dimension. 'N' is the original row/column number,
-   // 'n' is the row/column number after removing rows and columns
-   // with 0 on the diagonal.
-   for (i = 0 ; i < N ; i++) {
-      n -= remove[i];
-   }
-
    double *init_dist = (double *) malloc(N*N * sizeof(double));
 
    for (l = 0, i = 0; i < N ; i++) {
@@ -759,6 +742,24 @@ tadbit
       init_dist[l] = log(abs(i-j));
       l++;
    }
+   }
+
+   // Simplify input. Remove line and column if 0 on the diagonal.
+   char *remove = (char *) malloc (N * sizeof(char));
+   for (i = 0 ; i < N ; i++) {
+      remove[i] = 0;
+      for (k = 0 ; k < m ; k++) {
+         if (obs[k][i+i*N] < 1) {
+            remove[i] = 1;
+         }
+      }
+   }
+
+   // Update the dimension. 'N' is the original row/column number,
+   // 'n' is the row/column number after removing rows and columns
+   // with 0 on the diagonal.
+   for (i = 0 ; i < N ; i++) {
+      n -= remove[i];
    }
 
    // Exit if there are too few rows/columns after removal.
@@ -777,70 +778,61 @@ tadbit
    _cache_index = (int *) malloc(n*n * sizeof(int));
    _max_cache_index = N+1;
    // Allocate and copy.
-   double **log_gamma  = (double **) malloc(m * sizeof(double *));
-   double **new_weight = (double **) malloc(m * sizeof(double *));
-   int    **new_obs    = (int **) malloc(m * sizeof(int *));
+   double **log_gamma = (double **) malloc(m * sizeof(double *));
+   int **new_obs = (int **) malloc(m * sizeof(int *));
    double *dist = (double *) malloc(n*n * sizeof(double));
    for (k = 0 ; k < m ; k++) {
       l = 0;
       log_gamma[k] = (double *) malloc(n*n * sizeof(double));
-      new_weight[k] = (double *) malloc(n*n * sizeof(double));
       new_obs[k] = (int *) malloc(n*n * sizeof(int));
       for (j = 0 ; j < N ; j++) {
       for (i = 0 ; i < N ; i++) {
          if (remove[i] || remove[j]) continue;
          _cache_index[l] = i > j ? i-j : j-i;
-         log_gamma [k][l] = lgamma(obs[k][i+j*N]+1);
-         new_weight[k][l] = weights[k][i+j*N];
-         new_obs[k][l]    = obs[k][i+j*N];
+         log_gamma[k][l] = lgamma(obs[k][i+j*N]+1);
+         new_obs[k][l] = obs[k][i+j*N];
          dist[l] = init_dist[i+j*N];
          l++;
       }
       }
    }
 
-   /* fprintf(stderr, "WEIGHTS FROM INSIDE ME "); */
-   /* for (i = 0; i < 50; i++) */
-   /*   fprintf(stderr, "%f ", weights[0][i]); */
-   /* fprintf(stderr, "\n"); */
-
    // We will not need the initial observations any more.
    free(init_dist);
    obs = new_obs;
-   weights = new_weight;
 
    // Make sure the data is symmetric.
    enforce_symmetry(obs, n, m);
 
 
-   /* // Compute row/column sums (identical by symmetry). */
-   /* double **rowsums = (double **) malloc(m * sizeof(double *)); */
-   /* for (k = 0 ; k < m ; k++) { */
-   /*    rowsums[k] = (double *) malloc(n * sizeof(double)); */
-   /*    for (i = 0 ; i < n ; i++) rowsums[k][i] = 0.0; */
-   /* } */
+   // Compute row/column sums (identical by symmetry).
+   double **rowsums = (double **) malloc(m * sizeof(double *));
+   for (k = 0 ; k < m ; k++) {
+      rowsums[k] = (double *) malloc(n * sizeof(double));
+      for (i = 0 ; i < n ; i++) rowsums[k][i] = 0.0;
+   }
 
-   /* for (k = 0 ; k < m ; k++) */
-   /* for (i = 0 ; i < n ; i++) */
-   /* for (j = 0 ; j < n ; j++) */
-   /*    rowsums[k][i] += obs[k][i+j*n]; */
+   for (k = 0 ; k < m ; k++)
+   for (i = 0 ; i < n ; i++)
+   for (j = 0 ; j < n ; j++)
+      rowsums[k][i] += obs[k][i+j*n];
 
-   // compute the weights.
-   /* double **weights = (double **) malloc(m * sizeof(double *)); */
-   /* for (k = 0 ; k < m ; k++) { */
-   /*    weights[k] = (double *) malloc(n*n * sizeof(double)); */
-   /*    for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0; */
-   /*    // Compute product. */
-   /*    for (j = 0 ; j < n ; j++) { */
-   /*    for (i = 0 ; i < n ; i++) { */
-   /*       weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j]; */
-   /*    } */
-   /*    } */
-   /* } */
+   // Compute the weights.
+   double **weights = (double **) malloc(m * sizeof(double *));
+   for (k = 0 ; k < m ; k++) {
+      weights[k] = (double *) malloc(n*n * sizeof(double));
+      for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0;
+      // Compute product.
+      for (j = 0 ; j < n ; j++) {
+      for (i = 0 ; i < n ; i++) {
+         weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j];
+      }
+      }
+   }
 
    // We don't need the row/column sums any more.
-   /* for (l = 0 ; l < m ; l++) free(rowsums[l]); */
-   /* free(rowsums); */
+   for (l = 0 ; l < m ; l++) free(rowsums[l]);
+   free(rowsums);
 
    double *mllik = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkpts = (int *) malloc(MAXBREAKS*n * sizeof(int));
@@ -937,6 +929,10 @@ tadbit
 
    } // End of pre-heuristic.
 
+   /* fprintf(stderr, "WEIGHTS FROM INSIDE GU "); */
+   /* for (i = 0; i < 50; i++) */
+   /*   fprintf(stderr, "%f ", weights[0][i]); */
+   /* fprintf(stderr, "\n"); */
 
    // Allocate 'tid'.
    pthread_t *tid = (pthread_t *) malloc(n_threads * sizeof(pthread_t));
@@ -953,7 +949,7 @@ tadbit
       .verbose = verbose,
    };
 
-   err = pthread_mutex_init(&tadbit_lock, NULL);
+   err = pthread_mutex_init(&tadbit_alone_lock, NULL);
    if (err) {
       fprintf(stderr, "error initializing mutex (%d)\n", err);
       // Signal failure.
@@ -1026,7 +1022,7 @@ tadbit
 
    AIC = newAIC;
 
-   pthread_mutex_destroy(&tadbit_lock);
+   pthread_mutex_destroy(&tadbit_alone_lock);
    free(skip);
    free(tid);
    free(_cache_index);
@@ -1112,15 +1108,16 @@ tadbit
       }
       l++;
    }
+
    free(llikmat);
 
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
-      free(new_weight[k]);
       free(log_gamma[k]);
+      free(weights[k]);
    }
+   free(weights);
    free(new_obs);
-   free(new_weight);
    free(log_gamma);
    free(dist);
    free(remove);
@@ -1129,6 +1126,7 @@ tadbit
    seg->m = m;
    seg->maxbreaks = MAXBREAKS;
    seg->nbreaks_opt = nbreaks_opt;
+   seg->weights = resized_weights;
    seg->passages = resized_passages;
    seg->llikmat = resized_llikmat;
    seg->mllik = mllik;

@@ -82,7 +82,7 @@ class TestTadbit(unittest.TestCase):
         #breaks = [0, 4, 9, 15, 20, 29, 36, 44, 50, 62, 67, 76, 90, 95]
         #scores = [4.0, 7.0, 4.0, 8.0, 4.0, 4.0, 7.0, 7.0, 10.0, 10.0, 9.0, 8.0, 7.0, None]
         breaks = [0, 4, 14, 19, 34, 44, 50, 62, 67, 72, 90, 95]
-        scores = [4.0, 6.0, 6.0, 6.0, 6.0, 6.0, 5.0, 6.0, 4.0, 6.0, 5.0, None]
+        scores = [4.0, 6.0, 6.0, 5.0, 6.0, 5.0, 4.0, 6.0, 4.0, 6.0, 5.0, None]
         self.assertEqual(batch_exp['start'], breaks)
         self.assertEqual(batch_exp['score'], scores)
         if CHKTIME:
@@ -144,7 +144,7 @@ class TestTadbit(unittest.TestCase):
         # Values obtained with square root normalization.
         #self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 35.0, 43.0,
         #                  49.0, 61.0, 66.0, 75.0, 89.0, 94.0, 99.0], found)
-        self.assertEqual([3.0, 14.0, 19.0, 33.0, 43.0, 49.0, 61.0, 66.0,
+        self.assertEqual([3.0, 14.0, 19.0, 33.0, 38.0, 43.0, 49.0, 61.0, 66.0,
                            71.0, 89.0, 94.0, 99.0], found)
         
         if CHKTIME:

@@ -47,16 +47,15 @@ typedef struct {
    double *llikmat;
    double *mllik;
    int *bkpts;
-} tadbit_output;
+   double **weights;
+} tadbit_alone_output;
 
 
 
 void
-tadbit(
+tadbit_alone(
   /* input */
   int **obs,
-  double **weights,
-  char *remove,
   int n,
   const int m,
   int n_threads,
@@ -66,12 +65,12 @@ tadbit(
   const int nbrks,
   const int do_not_use_heuristic,
   /* output */
-  tadbit_output *seg
+  tadbit_alone_output *seg
 );
 
 
 void
-destroy_tadbit_output(
-   tadbit_output *seg
+destroy_tadbit_alone_output(
+   tadbit_alone_output *seg
 );
 #endif
