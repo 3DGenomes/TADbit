@@ -39,11 +39,13 @@ belongs the message.
 import matplotlib as mpl
 mpl.use('Agg')
 
-import pytadbit
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
 import os, sys
 import logging
+from cPickle import load, dump
+from random import random
+from string import ascii_letters as letters
 
 def search_tads(opts, crm, name):
     """
@@ -130,7 +132,8 @@ def load_optimal_imp_parameters(opts, name, exp, dcutoff):
                      os.path.join(opts.outdir, name)))
 
     from pytadbit import IMPoptimizer
-    results = IMPoptimizer(exp, opts.beg, opts.end, n_models=opts.nmodels_opt,
+    results = IMPoptimizer(exp, opts.beg,
+                           opts.end, n_models=opts.nmodels_opt,
                            n_keep=opts.nkeep_opt, cutoff=dcutoff)
     # load from log files
     if not opts.optimize_only:
@@ -160,9 +163,59 @@ def optimize(results, opts, name):
                                  opts.lowfreq)
     logpath = os.path.join(
         opts.outdir, name, '%s_optimal_params%s.tsv' % (name, optname))
-    results.run_grid_search(n_cpus=opts.ncpus, off_diag=2, verbose=True,
-                            lowfreq_range=lowfreq, upfreq_range=upfreq,
-                            maxdist_range=maxdist, scale_range=scale)
+
+    tmp_name = ''.join([letters[int(random()*52)]for _ in xrange(50)])
+
+    tmp = open('.results_' + tmp_name, 'w')
+    dump(results, tmp)
+    tmp.close()
+    
+    tmp = open('.opts_' + tmp_name, 'w')
+    dump(opts, tmp)
+    tmp.close()
+    
+    tmp = open('.tmp_' + tmp_name + '.py', 'w')
+    tmp.write('''
+from cPickle import load, dump
+tmp_name = "%s"
+results_file = open(".results_" + tmp_name)
+results = load(results_file)
+results_file.close()
+opts_file = open(".opts_" + tmp_name)
+opts = load(opts_file)
+opts_file.close()
+scale   = (tuple([float(i) for i in opts.scale.split(":")  ])
+           if ":" in opts.scale   else float(opts.scale)  )
+maxdist = (tuple([int(i) for i in opts.maxdist.split(":")])
+           if ":" in opts.maxdist else int(opts.maxdist))
+upfreq  = (tuple([float(i) for i in opts.upfreq.split(":") ])
+           if ":" in opts.upfreq  else float(opts.upfreq) )
+lowfreq = (tuple([float(i) for i in opts.lowfreq.split(":")])
+           if ":" in opts.lowfreq else float(opts.lowfreq))
+optname = "_{}_{}_{}".format(opts.maxdist,
+                             opts.upfreq ,
+                             opts.lowfreq)
+name = "%s"
+results.run_grid_search(n_cpus=opts.ncpus, off_diag=2, verbose=True,
+                        lowfreq_range=lowfreq, upfreq_range=upfreq,
+                        maxdist_range=maxdist, scale_range=scale)
+
+tmp = open(".results_" + tmp_name, "w")
+dump(results, tmp)
+tmp.close()
+''' % (tmp_name, name))
+    # results.run_grid_search(n_cpus=opts.ncpus, off_diag=2, verbose=True,
+    #                         lowfreq_range=lowfreq, upfreq_range=upfreq,
+    #                         maxdist_range=maxdist, scale_range=scale)
+    tmp.close()
+    os.system("python .tmp_%s.py" % tmp_name)
+
+    results_file = open(".results_" + tmp_name)
+    results = load(results_file)
+    results_file.close()
+    os.system('rm -f .results_%s' % (tmp_name))
+    os.system('rm -f .tmp_%s.py' % (tmp_name))
+    os.system('rm -f .opts_%s' % (tmp_name))
     results.write_result(logpath)
     if opts.optimize_only:
         logging.info('Optimization done.')
