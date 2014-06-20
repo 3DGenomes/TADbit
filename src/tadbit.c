@@ -733,14 +733,6 @@ tadbit
    // matrix 'dist' is the distance to the main diagonal. Every
    // element of coordinate (i,j) is on a diagonal; the distance
    // is the log-shift to the main diagonal 'i-j'.
-   double *init_dist = (double *) malloc(N*N * sizeof(double));
-
-   for (l = 0, i = 0; i < N ; i++) {
-   for (j = 0; j < N ; j++) {
-      init_dist[l] = log(abs(i-j));
-      l++;
-   }
-   }
 
    /* // Simplify input. Remove line and column if 0 on the diagonal. */
    /* char *remove = (char *) malloc (N * sizeof(char)); */
@@ -758,6 +750,15 @@ tadbit
    // with 0 on the diagonal.
    for (i = 0 ; i < N ; i++) {
       n -= remove[i];
+   }
+
+   double *init_dist = (double *) malloc(N*N * sizeof(double));
+
+   for (l = 0, i = 0; i < N ; i++) {
+   for (j = 0; j < N ; j++) {
+      init_dist[l] = log(abs(i-j));
+      l++;
+   }
    }
 
    // Exit if there are too few rows/columns after removal.

@@ -513,6 +513,7 @@ class Chromosome(object):
                             'experiment is passed')
         if batch_mode:
             matrix = []
+            weight = []
             if not name:
                 name = 'batch'
             resolution = xprs[0].resolution
@@ -521,22 +522,25 @@ class Chromosome(object):
                     raise Exception('All Experiments must have the same ' +
                                     'resolution\n')
                 matrix.append(xpr.hic_data[0])
+                weight.append(xpr.norm[0] if xpr.norm else None)
                 if name.startswith('batch'):
                     name += '_' + xpr.name
+            if not all(weight):
+                weight = None
             if normalized:
                 siz = xprs[0].size
                 tmp = reduce(lambda x, y: x+ y, xprs)
                 tmp.filter_columns()
             remove = tuple([1 if i in tmp._zeros else 0
                             for i in xrange(siz)]) if normalized else None
-            result, weights = tadbit(matrix,
-                                     norm=norm,
-                                     remove=remove,
-                                     n_cpus=n_cpus, verbose=verbose,
-                                     max_tad_size=max_tad_size,
-                                     no_heuristic=not heuristic, **kwargs)
+            result = tadbit(matrix,
+                            weights=weight,
+                            remove=remove,
+                            n_cpus=n_cpus, verbose=verbose,
+                            max_tad_size=max_tad_size,
+                            no_heuristic=not heuristic, **kwargs)
             xpr = Experiment(name, resolution, hic_data=matrix,
-                             tad_def=result, weights=weights, **kwargs)
+                             tad_def=result, weights=weight, **kwargs)
             xpr._zeros = xprs[0]._zeros
             for other in xprs[1:]:
                 xpr._zeros = dict([(k, None) for k in
@@ -545,15 +549,15 @@ class Chromosome(object):
             self.add_experiment(xpr)
             return
         for xpr in xprs:
-            result, weights = tadbit(
+            result = tadbit(
                 xpr.hic_data,
-                norm=norm,
+                weights=xpr.norm,
                 remove=tuple([1 if i in xpr._zeros else 0 for i in
                               xrange(xpr.size)]) if normalized else None,
                 n_cpus=n_cpus, verbose=verbose,
                 max_tad_size=max_tad_size,
                 no_heuristic=not heuristic, **kwargs)
-            xpr.load_tad_def(result, weights=weights)
+            xpr.load_tad_def(result)
             self._get_forbidden_region(xpr)
 
 

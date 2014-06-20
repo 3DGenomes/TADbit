@@ -93,14 +93,9 @@ def main():
     
     # c module to find TADs
     pytadbit_module = Extension('pytadbit.tadbit_py',
-                                language = "c++",
-                                include_dirs=['/usr/include/pstreams/',
-                                              '/usr/include/itsol/'],
-                                sources=['src/norm-lib/visibility.cpp',
-                                         'src/norm-lib/iterative.cpp',
-                                         'src/tadbit_py.c'],
-                                extra_compile_args=['-std=c++11']
-                                )
+                                language = "c",
+                                sources=['src/tadbit_py.c'],
+                                extra_compile_args=['-std=c99'])
     # OLD c module to find TADs
     pytadbit_module_old = Extension('pytadbit.tadbitalone_py',
                                     language = "c",
@@ -118,28 +113,28 @@ def main():
     aligner3d_module = Extension('pytadbit.aligner3d',
                                  language = "c++",
                                  runtime_library_dirs=['3d-lib/'],
-                                 sources=['src/3d-lib/align_py.cpp'],
-                                          #'src/3d-lib/matrices.cc',
-                                          #'src/3d-lib/3dStats.cpp',
-                                          #'src/3d-lib/align.cpp'],
+                                 sources=['src/3d-lib/align_py.cpp',
+                                          'src/3d-lib/matrices.cc',
+                                          'src/3d-lib/3dStats.cpp',
+                                          'src/3d-lib/align.cpp'],
                                  extra_compile_args=["-ffast-math"])
     # c++ module to align and calculate consistency of a group of 3D models
     consistency_module = Extension('pytadbit.consistency',
                                    language = "c++",
                                    runtime_library_dirs=['3d-lib/'],
-                                   sources=['src/3d-lib/consistency_py.cpp'],
-                                            # 'src/3d-lib/matrices.cc',
-                                            # 'src/3d-lib/3dStats.cpp',
-                                            # 'src/3d-lib/align.cpp'],
+                                   sources=['src/3d-lib/consistency_py.cpp',
+                                            'src/3d-lib/matrices.cc',
+                                            'src/3d-lib/3dStats.cpp',
+                                            'src/3d-lib/align.cpp'],
                                    extra_compile_args=["-ffast-math"])
     # c++ module to get centroid of a group of 3D models
     centroid_module = Extension('pytadbit.centroid',
                                 language = "c++",
                                 runtime_library_dirs=['3d-lib/'],
-                                sources=['src/3d-lib/centroid_py.cpp'],
-                                         # 'src/3d-lib/matrices.cc',
-                                         # 'src/3d-lib/3dStats.cpp',
-                                         # 'src/3d-lib/align.cpp'],
+                                sources=['src/3d-lib/centroid_py.cpp',
+                                         'src/3d-lib/matrices.cc',
+                                         'src/3d-lib/3dStats.cpp',
+                                         'src/3d-lib/align.cpp'],
                                 extra_compile_args=["-ffast-math"])
 
     # UPDATE version number

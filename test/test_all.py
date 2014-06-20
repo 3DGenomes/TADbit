@@ -49,15 +49,15 @@ class TestTadbit(unittest.TestCase):
 
         
         global exp1, exp2, exp3, exp4
-        exp1, _ = tadbit(PATH + '/40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
-                         verbose=False, no_heuristic=False, n_cpus='max')
-        exp2, _ = tadbit(PATH + '/20Kb/chrT/chrT_B.tsv', max_tad_size="auto",
-                         verbose=False, no_heuristic=False, n_cpus='max')
-        exp3, _ = tadbit(PATH + '/20Kb/chrT/chrT_C.tsv', max_tad_size="auto",
-                         verbose=False, no_heuristic=False, n_cpus='max')
-        exp4, _ = tadbit(PATH + '/20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
-                         n_cpus='max',
-                         verbose=False, no_heuristic=False, get_weights=True)
+        exp1 = tadbit(PATH + '/40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
+                      verbose=False, no_heuristic=False, n_cpus='max')
+        exp2 = tadbit(PATH + '/20Kb/chrT/chrT_B.tsv', max_tad_size="auto",
+                      verbose=False, no_heuristic=False, n_cpus='max')
+        exp3 = tadbit(PATH + '/20Kb/chrT/chrT_C.tsv', max_tad_size="auto",
+                      verbose=False, no_heuristic=False, n_cpus='max')
+        exp4 = tadbit(PATH + '/20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
+                      n_cpus='max',
+                      verbose=False, no_heuristic=False, get_weights=True)
 
         # Breaks and scores with square root normalization.
         #breaks = [0, 4, 10, 15, 23, 29, 38, 45]
@@ -76,13 +76,13 @@ class TestTadbit(unittest.TestCase):
             t0 = time()
 
         global batch_exp
-        batch_exp, _ = batch_tadbit(PATH + '/20Kb/chrT/', max_tad_size=20, 
-                                    verbose=False, no_heuristic=True)
+        batch_exp = batch_tadbit(PATH + '/20Kb/chrT/', max_tad_size=20, 
+                                 verbose=False, no_heuristic=True)
         # Breaks and scores with square root normalization.
         #breaks = [0, 4, 9, 15, 20, 29, 36, 44, 50, 62, 67, 76, 90, 95]
         #scores = [4.0, 7.0, 4.0, 8.0, 4.0, 4.0, 7.0, 7.0, 10.0, 10.0, 9.0, 8.0, 7.0, None]
         breaks = [0, 4, 14, 19, 34, 44, 50, 62, 67, 72, 90, 95]
-        scores = [4.0, 6.0, 6.0, 6.0, 6.0, 6.0, 5.0, 6.0, 4.0, 6.0, 5.0, None]
+        scores = [4.0, 6.0, 6.0, 5.0, 6.0, 5.0, 4.0, 6.0, 4.0, 6.0, 5.0, None]
         self.assertEqual(batch_exp['start'], breaks)
         self.assertEqual(batch_exp['score'], scores)
         if CHKTIME:
@@ -144,7 +144,7 @@ class TestTadbit(unittest.TestCase):
         # Values obtained with square root normalization.
         #self.assertEqual([3.0, 8.0, 16.0, 21.0, 28.0, 35.0, 43.0,
         #                  49.0, 61.0, 66.0, 75.0, 89.0, 94.0, 99.0], found)
-        self.assertEqual([3.0, 14.0, 19.0, 33.0, 43.0, 49.0, 61.0, 66.0,
+        self.assertEqual([3.0, 14.0, 19.0, 33.0, 38.0, 43.0, 49.0, 61.0, 66.0,
                            71.0, 89.0, 94.0, 99.0], found)
         
         if CHKTIME:

@@ -4,7 +4,6 @@
 
 #include "Python.h"
 #include "tadbit.c"
-#include "norm-lib/visibility.h"
 
 /* The module doc string */
 PyDoc_STRVAR(tadbit_py__doc__,
@@ -28,8 +27,8 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
 /* The wrapper to the underlying C function */
 static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject **py_obs;
+  PyObject **py_weights;
   PyObject *py_remove;
-  int normalization;
   int n;
   int m;
   int n_threads;
@@ -40,9 +39,9 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "OOiiiiiiii:tadbit", &py_obs, &py_remove, 
-			&normalization, &n, &m, &n_threads, &verbose, 
-			&max_tad_size, &nbks, &do_not_use_heuristic))
+  if (!PyArg_ParseTuple(args, "OOOiiiiiii:tadbit", &py_obs, &py_remove, 
+			&py_weights, &n, &m, &n_threads, 
+			&verbose, &max_tad_size, &nbks, &do_not_use_heuristic))
     return NULL;
   // convert list of lists to pointer o pointers
   // if something goes wrong, it is probably from there :S
@@ -56,12 +55,13 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
       obs[i][j] = PyInt_AS_LONG(PyTuple_GET_ITEM(PyList_GET_ITEM(py_obs, i), j));
 
   double **weights;
-  if (normalization==1)
-    weights = visibility(obs, m, n);
-  else if (normalization==2)
-    weights = iterative(obs, m, n);
-  else
-    return 0;
+  weights = malloc(m * sizeof(double*));
+  for (i = 0 ; i < m ; i++ )
+    weights[i] = malloc(n*n * sizeof(double));
+  for (i = 0 ; i < m ; i++)
+    for (j = 0 ; j < n*n ; j++){
+      weights[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_weights, i), j));
+    }
 
   char *remove = (char *) malloc (n * sizeof(char));
   for (j = 0 ; j < n ; j++){
