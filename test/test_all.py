@@ -308,7 +308,7 @@ class TestTadbit(unittest.TestCase):
         # exp.filter_columns(silent=True)
         exp.normalize_hic(factor=None)
         self.assertEqual([round(i, 3) for i in tadbit_weights[:100]],
-                         [round(i, 3) for i in exp.norm[0][:100]])
+                         [round(exp.norm[0][i], 3) for i in xrange(100)])
         if CHKTIME:
             print '10', time() - t0
 
