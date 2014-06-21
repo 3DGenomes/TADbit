@@ -530,7 +530,7 @@ class Chromosome(object):
             if normalized:
                 siz = xprs[0].size
                 tmp = reduce(lambda x, y: x+ y, xprs)
-                tmp.filter_columns(silent=silent)
+                tmp.filter_columns(silent=kwargs.get('silent', False))
             remove = tuple([1 if i in tmp._zeros else 0
                             for i in xrange(siz)]) if normalized else None
             result = tadbit(matrix,
