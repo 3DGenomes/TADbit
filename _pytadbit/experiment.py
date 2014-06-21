@@ -8,6 +8,7 @@ from pytadbit.parsers.hic_parser   import read_matrix, HiC_data
 from pytadbit.utils.extraviews     import nicer
 from pytadbit.utils.extraviews     import tadbit_savefig
 from pytadbit.utils.tadmaths       import zscore
+from pytadbit.utils.normalize_hic  import iterative
 from pytadbit.utils.hic_filtering  import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser   import parse_tads
 from math                          import sqrt, isnan
@@ -112,6 +113,7 @@ class Experiment(object):
         self.size            = None
         self.tads            = {}
         self.norm            = None
+        self.bias            = None 
         self._normalization  = None
         self._filtered_cols  = False
         self._zeros          = {}
@@ -474,7 +476,7 @@ class Experiment(object):
                 self._normalization = 'visibility'
 
 
-    def normalize_hic(self, factor=1, silent=False, rowsums=None):
+    def normalize_hic(self, factor=1, iterations=0, silent=False, rowsums=None):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
@@ -507,35 +509,20 @@ class Experiment(object):
         if self.norm and not silent:
             stderr.write('WARNING: removing previous weights\n')
         size = self.size
-        if not rowsums:
-            rowsums = [0 for _ in xrange(size)]
-            for i in xrange(size):
-                if i in self._zeros: continue
-                isi = i * size
-                for j in xrange(size):
-                    if j in self._zeros: continue
-                    rowsums[i] += self.hic_data[0][isi + j]
-
-        self.norm = [[0. for _ in xrange(size * size)]]
-        total = sum(rowsums)
-        func = lambda x, y: float(rowsums[x] * rowsums[y]) / total
-        for i in xrange(size):
-            if i in self._zeros: continue
-            isi = i * size
-            for j in xrange(size):
-                if j in self._zeros: continue
-                try:
-                    self.norm[0][isi + j] = (
-                        self.hic_data[0][isi + j] / func(i, j))
-                except ZeroDivisionError:
-                    continue
+        remove = [i in self._zeros for i in xrange(size)]
+        self.bias = iterative(self.hic_data[0], iterations=iterations,
+                              remove=remove)
+        self.norm = [HiC_data([(i + j * size, float(self.hic_data[0][i, j]) /
+                                self.bias[i] /
+                                self.bias[j] * size)
+                               for i in self.bias for j in self.bias], size)]
         # no need to use lists, tuples use less memory
         if factor:
             self._normalization = 'visibility_factor:' + str(factor)
-            factor = sum(self.norm[0]) / (self.size * self.size * factor)
-            self.norm[0] = tuple([n / factor for n in self.norm[0]])
+            factor = sum(self.norm[0].values()) / (self.size * self.size * factor)
+            for n in self.norm[0]:
+                self.norm[0][n] = self.norm[0][n] / factor
         else:
-            self.norm[0] = tuple(self.norm[0])
             self._normalization = 'visibility'
 
 
