@@ -305,7 +305,6 @@ class TestTadbit(unittest.TestCase):
         B = iterative(exp.hic_data[0], remove=[False] * exp.size)
         tadbit_weights = [float(exp.hic_data[0][i, j])/B[i]/B[j]*exp.size
                           for i in B for j in B]
-        # exp.filter_columns(silent=True)
         exp.normalize_hic(factor=None)
         self.assertEqual([round(i, 3) for i in tadbit_weights[:100]],
                          [round(exp.norm[0][i], 3) for i in xrange(100)])
