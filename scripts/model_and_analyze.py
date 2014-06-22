@@ -41,6 +41,7 @@ mpl.use('Agg')
 
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
+from pytadbit.imp.structuralmodels import load_structuralmodels
 import os, sys
 import logging
 from cPickle import load, dump
@@ -166,24 +167,28 @@ def optimize(results, opts, name):
 
     tmp_name = ''.join([letters[int(random()*52)]for _ in xrange(50)])
 
-    tmp = open('.results_' + tmp_name, 'w')
+    tmp = open('_tmp_results_' + tmp_name, 'w')
     dump(results, tmp)
     tmp.close()
     
-    tmp = open('.opts_' + tmp_name, 'w')
+    tmp = open('_tmp_opts_' + tmp_name, 'w')
     dump(opts, tmp)
     tmp.close()
     
-    tmp = open('.tmp_' + tmp_name + '.py', 'w')
+    tmp = open('_tmp_optim_' + tmp_name + '.py', 'w')
     tmp.write('''
 from cPickle import load, dump
+
 tmp_name = "%s"
-results_file = open(".results_" + tmp_name)
+
+results_file = open("_tmp_results_" + tmp_name)
 results = load(results_file)
 results_file.close()
-opts_file = open(".opts_" + tmp_name)
+
+opts_file = open("_tmp_opts_" + tmp_name)
 opts = load(opts_file)
 opts_file.close()
+
 scale   = (tuple([float(i) for i in opts.scale.split(":")  ])
            if ":" in opts.scale   else float(opts.scale)  )
 maxdist = (tuple([int(i) for i in opts.maxdist.split(":")])
@@ -200,7 +205,7 @@ results.run_grid_search(n_cpus=opts.ncpus, off_diag=2, verbose=True,
                         lowfreq_range=lowfreq, upfreq_range=upfreq,
                         maxdist_range=maxdist, scale_range=scale)
 
-tmp = open(".results_" + tmp_name, "w")
+tmp = open("_tmp_results_" + tmp_name, "w")
 dump(results, tmp)
 tmp.close()
 ''' % (tmp_name, name))
@@ -208,14 +213,14 @@ tmp.close()
     #                         lowfreq_range=lowfreq, upfreq_range=upfreq,
     #                         maxdist_range=maxdist, scale_range=scale)
     tmp.close()
-    os.system("python .tmp_%s.py" % tmp_name)
+    os.system("python _tmp_optim_%s.py" % tmp_name)
 
-    results_file = open(".results_" + tmp_name)
+    results_file = open("_tmp_results_" + tmp_name)
     results = load(results_file)
     results_file.close()
-    os.system('rm -f .results_%s' % (tmp_name))
-    os.system('rm -f .tmp_%s.py' % (tmp_name))
-    os.system('rm -f .opts_%s' % (tmp_name))
+    os.system('rm -f _tmp_results_%s' % (tmp_name))
+    os.system('rm -f _tmp_optim_%s.py' % (tmp_name))
+    os.system('rm -f _tmp_opts_%s' % (tmp_name))
     results.write_result(logpath)
     if opts.optimize_only:
         logging.info('Optimization done.')
@@ -246,6 +251,69 @@ tmp.close()
     optpar['kforce'] = kf # this is already the default but it can be changed
                           # like this
     return optpar
+
+
+def model_region(exp, optpar, opts, name):
+    """
+    generate structural models
+    """
+    zscores, values, zeros = exp._sub_experiment_zscore(opts.beg, opts.end)
+
+    tmp_name = ''.join([letters[int(random()*52)]for _ in xrange(50)])
+    
+    
+    tmp = open('_tmp_zscore_' + tmp_name, 'w')
+    dump([zscores, values, zeros, optpar], tmp)
+    tmp.close()
+
+    tmp = open('_tmp_opts_' + tmp_name, 'w')
+    dump(opts, tmp)
+    tmp.close()
+
+    tmp = open('_tmp_model_' + tmp_name + '.py', 'w')
+    tmp.write('''
+from cPickle import load, dump
+from pytadbit.imp.imp_modelling import generate_3d_models
+
+tmp_name = "%s"
+
+zscore_file = open("_tmp_zscore_" + tmp_name)
+zscores, values, zeros, optpar = load(zscore_file)
+zscore_file.close()
+
+opts_file = open("_tmp_opts_" + tmp_name)
+opts = load(opts_file)
+opts_file.close()
+
+nloci = opts.end - opts.beg + 1
+coords = {"crm"  : opts.crm,
+          "start": opts.beg,
+          "end"  : opts.end}
+
+models=  generate_3d_models(zscores, opts.res, nloci,
+                            values=values, n_models=opts.nmodels_mod,
+                            n_keep=opts.nkeep_mod,
+                            n_cpus=opts.ncpus,
+                            keep_all=True,
+                            config=optpar,
+                            coords=coords, zeros=zeros)
+# Save models
+logging.info("\tSaving the models...")
+models.save_models(
+    os.path.join(opts.outdir, "%s", "%s" + ".models"))
+
+''' % (tmp_name, name, name))
+
+    tmp.close()
+    os.system("python _tmp_model_%s.py" % tmp_name)
+
+    os.system('rm -f _tmp_zscore_%s' % (tmp_name))
+    os.system('rm -f _tmp_model_%s.py' % (tmp_name))
+    os.system('rm -f _tmp_opts_%s' % (tmp_name))
+    models = load_structuralmodels(
+        os.path.join(opts.outdir, name, name + '.models'))
+    models.experiment = exp
+    return models
 
 
 def main():
@@ -338,25 +406,16 @@ def main():
         and opts.analyze_only):
         ########################################################################
         # function for loading models
-        from pytadbit.imp.structuralmodels import load_structuralmodels
         models = load_structuralmodels(
             os.path.join(opts.outdir, name, name + '.models'))
         ########################################################################
     else:
         # Build 3D models based on the HiC data.
         logging.info("\tModeling (this can take long)...")
-        models = exp.model_region(opts.beg, opts.end, n_models=opts.nmodels_mod,
-                                  n_keep=opts.nkeep_mod, n_cpus=opts.ncpus,
-                                  keep_all=True, config=optpar)
+        models = model_region(exp, optpar, opts, name)
         for line in repr(models).split('\n'):
             logging.info(line)
 
-        # Save models
-        # Models can later on be loaded to avoid the CPU expensive modeling.
-        # See function "load_structuralmodels".
-        logging.info("\tSaving the models...")
-        models.save_models(
-            os.path.join(opts.outdir, name, name + '.models'))
 
     ############################################################################
     ##############################  ANALYZE MODELS #############################
