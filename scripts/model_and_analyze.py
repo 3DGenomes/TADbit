@@ -274,6 +274,7 @@ def model_region(exp, optpar, opts, name):
     tmp.write('''
 from cPickle import load, dump
 from pytadbit.imp.imp_modelling import generate_3d_models
+import os
 
 tmp_name = "%s"
 
@@ -298,7 +299,6 @@ models=  generate_3d_models(zscores, opts.res, nloci,
                             config=optpar,
                             coords=coords, zeros=zeros)
 # Save models
-logging.info("\tSaving the models...")
 models.save_models(
     os.path.join(opts.outdir, "%s", "%s" + ".models"))
 
