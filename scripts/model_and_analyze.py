@@ -291,6 +291,8 @@ coords = {"crm"  : opts.crm,
           "start": opts.beg,
           "end"  : opts.end}
 
+zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg + 1)])
+
 models=  generate_3d_models(zscores, opts.res, nloci,
                             values=values, n_models=opts.nmodels_mod,
                             n_keep=opts.nkeep_mod,
@@ -313,6 +315,25 @@ models.save_models(
     models = load_structuralmodels(
         os.path.join(opts.outdir, name, name + '.models'))
     models.experiment = exp
+    coords = {"crm"  : opts.crm,
+              "start": opts.beg,
+              "end"  : opts.end}
+    crm = exp.crm
+    for i, m in enumerate([m for m in models] + models._bad_models.values()):
+        m['description'] = {'identifier'     : exp.identifier,
+                            'chromosome'     : coords['crm'],
+                            'start'          : exp.resolution * coords['start'],
+                            'end'            : exp.resolution * coords['end'],
+                            'species'        : crm.species,
+                            'cell type'      : exp.cell_type,
+                            'experiment type': exp.exp_type,
+                            'resolution'     : exp.resolution,
+                            'assembly'       : crm.assembly}
+        for desc in exp.description:
+            m['description'][desc] = exp.description[desc]
+        for desc in crm.description:
+            m['description'][desc] = exp.description[desc]
+        m['index'] = i
     return models
 
 
