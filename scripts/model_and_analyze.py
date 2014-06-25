@@ -298,6 +298,7 @@ models=  generate_3d_models(zscores, opts.res, nloci,
                             n_keep=opts.nkeep_mod,
                             n_cpus=opts.ncpus,
                             keep_all=True,
+                            first=0,
                             config=optpar,
                             coords=coords, zeros=zeros)
 # Save models
