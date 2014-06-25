@@ -946,8 +946,12 @@ def get_options():
         log_format = '[TAD]   %(message)s'
     else:
         log_format = '[DEFAULT]   %(message)s'
-    logging.basicConfig(filename=os.path.join(opts.outdir, name, name + '.log'),
-                        level=logging.INFO, format=log_format)
+    try:
+        logging.basicConfig(filename=os.path.join(opts.outdir, name, name + '.log'),
+                            level=logging.INFO, format=log_format)
+    except IOError:
+        logging.basicConfig(filename=os.path.join(opts.outdir, name, name + '.log2'),
+                            level=logging.INFO, format=log_format)
     logging.getLogger().addHandler(logging.StreamHandler())
     logging.info(('\n' + log_format.replace('   %(message)s', '')
                   ).join(log.split('\n')))
