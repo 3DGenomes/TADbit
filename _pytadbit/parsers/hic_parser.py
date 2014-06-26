@@ -231,7 +231,8 @@ class HiC_data(dict):
         except TypeError:
             if row_col > self._size2:
                 raise IndexError(
-                    'ERROR: position larger than %s^2' % self.__size)
+                    'ERROR: position %d larger than %s^2' % (row_col,
+                                                             self.__size))
             return self.get(row_col, 0)
 
 

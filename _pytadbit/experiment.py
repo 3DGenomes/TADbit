@@ -205,8 +205,9 @@ class Experiment(object):
                 except IndexError: # no factor there
                     xpr._normalization = (self._normalization)
         elif self.norm or other.norm:
-            raise Exception('ERROR: normalization differs between each ' +
-                            'experiment\n')
+            if self.norm[0] or other.norm[0]:
+                raise Exception('ERROR: normalization differs between each ' +
+                                'experiment\n')
         else:
             stderr.write('WARNING: experiments should be normalized before ' +
                          'being summed\n')
@@ -306,7 +307,7 @@ class Experiment(object):
                                 break
                             val += copee[(i + k) * size + j + l]
                     if val:
-                        mtrx[i, j] = val
+                        mtrx[i/fact * self.size + j/fact] = val
         try:
             resize(self.hic_data[0], self._ori_hic[0])
         except TypeError:
