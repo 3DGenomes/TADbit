@@ -291,7 +291,7 @@ class Experiment(object):
             size = len(self._ori_hic[0])
         except TypeError:
             size = int(sqrt(len(self._ori_norm[0])))
-        self.hic_data = [HiC_data([], size)]
+        self.hic_data = [HiC_data([], size / fact)]
         self.norm     = [[]]
         self.size     = size / fact
         rest = size % fact
