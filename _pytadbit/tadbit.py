@@ -12,7 +12,7 @@ from pytadbit.utils.normalize_hic import iterative
 from sys                          import stderr
 
 def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
-           max_tad_size="max", no_heuristic=False, **kwargs):
+           max_tad_size="max", no_heuristic=0, **kwargs):
     """
     The TADbit algorithm works on raw chromosome interaction count data.
     The normalization is neither necessary nor recommended,

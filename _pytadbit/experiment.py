@@ -208,6 +208,9 @@ class Experiment(object):
             if self.norm[0] or other.norm[0]:
                 raise Exception('ERROR: normalization differs between each ' +
                                 'experiment\n')
+            else:
+                stderr.write('WARNING: experiments should be normalized before ' +
+                             'being summed\n')
         else:
             stderr.write('WARNING: experiments should be normalized before ' +
                          'being summed\n')
