@@ -442,10 +442,8 @@ class Experiment(object):
         :param False silent: does not warn for removed columns
         
         """
-        nums = read_matrix(norm_data, parser=parser, hic=False)
-        self.norm = nums
-        size = len(nums[0])
-        self._ori_size       = self.size       = size
+        self.norm = read_matrix(norm_data, parser=parser, hic=False)
+        self._ori_size       = self.size       = len(self.norm[0])
         self._ori_resolution = self.resolution = resolution or self._ori_resolution
         if not self._zeros: # in case we do not have original Hi-C data
             for i in xrange(self.size):
