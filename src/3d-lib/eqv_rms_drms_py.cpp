@@ -94,14 +94,14 @@ static PyObject* rmsdRMSD_wrapper(PyObject* self, PyObject* args)
   for (j=0; j<nmodels; j++){
     for (jj=j+1; jj<nmodels; jj++){
       rms = 0;
-	drms = 0;
+      drms = 0;
       eqv = 0;
       rmsdRMSD(xyzn[j], xyzn[jj], zeros, size, thres, eqv, rms, drms);
       nrmsds[k] = rms;
       drmsds[k] = drms;
       scores[k] = eqv * drms / rms;
-	// cout << j<<" " <<jj<<" " <<eqv<<" " <<drms<<" " <<rms<<" "<<scores[k]<< endl << flush;
-	k++;
+      // cout << j<<" " <<jj<<" " <<eqv<<" " <<drms<<" " <<rms<<" "<<scores[k]<< endl << flush;
+      k++;
     }
   }
   // cout << "START5" << endl << flush;

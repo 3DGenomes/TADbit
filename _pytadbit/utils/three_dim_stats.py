@@ -339,7 +339,8 @@ def calc_eqv_rmsd(models, nloci, zeros, dcutoff=200, one=False, what='score',
         x.append([models[m]['x'][i] for i in xrange(nloci) if zeros[i]])
         y.append([models[m]['y'][i] for i in xrange(nloci) if zeros[i]])
         z.append([models[m]['z'][i] for i in xrange(nloci) if zeros[i]])
-    scores = rmsdRMSD_wrapper(x, y, z, zeros, nloci - zeros.count(False),
+    zeros = tuple([True for _ in xrange(len(x[0]))])
+    scores = rmsdRMSD_wrapper(x, y, z, zeros, len(zeros),
                               dcutoff, range(len(models)), len(models),
                               int(one), what, int(normed))
     return scores

@@ -62,11 +62,12 @@ def autoreader(f):
     nrow = len(items)
     # Auto-detect the format, there are only 4 cases.
     if ncol == nrow:
-        if all([item.isdigit() or item == 'nan' for item in items[0]]):
-            # Case 1: pure integer matrix.
+        try:
+            _ = [float(item) for item in items[0]]
+            # Case 1: pure number matrix.
             header = False
             trim = 0
-        else:
+        except ValueError:
             # Case 2: matrix with row and column names.
             header = True
             trim = 1
@@ -89,6 +90,8 @@ def autoreader(f):
     try:
         items = [[what(a) for a in line[trim:]] for line in items]
     except ValueError:
+        if not HIC_DATA:
+            raise AutoReadFail('ERROR: non numeric values')
         try:
             # Dekker data 2009, uses integer but puts a comma... 
             items = [[int(float(a)+.5) for a in line[trim:]] for line in items]
@@ -231,7 +234,8 @@ class HiC_data(dict):
         except TypeError:
             if row_col > self._size2:
                 raise IndexError(
-                    'ERROR: position larger than %s^2' % self.__size)
+                    'ERROR: position %d larger than %s^2' % (row_col,
+                                                             self.__size))
             return self.get(row_col, 0)
 
 

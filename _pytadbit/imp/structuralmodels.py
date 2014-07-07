@@ -25,7 +25,8 @@ from numpy                          import histogram, linspace
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.stats                    import spearmanr, pearsonr, chisquare
-from scipy.stats                    import linregress, normaltest, norm as sc_norm
+from scipy.stats                    import linregress
+from scipy.stats                    import normaltest, norm as sc_norm
 from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
@@ -252,7 +253,8 @@ class StructuralModels(object):
                       if self._zeros[i]])
             z.append([self[model]['z'][i] for i in xrange(self.nloci)
                       if self._zeros[i]])
-        idx = centroid_wrapper(x, y, z, self._zeros, len(x[0]), len(models),
+        zeros = tuple([True for _ in xrange(len(x[0]))])
+        idx = centroid_wrapper(x, y, z, zeros, len(x[0]), len(models),
                                int(verbose), 0)
         return models[idx]
 
@@ -285,12 +287,9 @@ class StructuralModels(object):
         y = []
         z = []
         for model in xrange(len(models)):
-            x.append([self[model]['x'][i] for i in xrange(self.nloci)
-                      if self._zeros[i]])
-            y.append([self[model]['y'][i] for i in xrange(self.nloci)
-                      if self._zeros[i]])
-            z.append([self[model]['z'][i] for i in xrange(self.nloci)
-                      if self._zeros[i]])
+            x.append([self[model]['x'][i] for i in xrange(self.nloci)])
+            y.append([self[model]['y'][i] for i in xrange(self.nloci)])
+            z.append([self[model]['z'][i] for i in xrange(self.nloci)])
         idx = centroid_wrapper(x, y, z, self._zeros, len(x[0]), len(models),
                                int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
@@ -392,7 +391,7 @@ class StructuralModels(object):
         else:
             out_f = open(tmp_file, 'w')
             uniqs = list(set([tuple(sorted((m1, m2))) for m1, m2 in scores]))
-            cut = fact * self.nloci
+            cut = fact * (self.nloci - self._zeros.count(False))
             for md1, md2 in uniqs:
                 score = scores[(md1, md2)]
                 if score >= cut:

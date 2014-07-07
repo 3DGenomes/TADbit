@@ -476,7 +476,8 @@ def main():
         for clcutoff in range(dcutoff - 50, (dcutoff - 50) * 4, 50):
             try:
                 logging.info('      cutoff = ' + str(clcutoff))
-                models.cluster_models(fact=ffact, dcutoff=clcutoff)
+                models.cluster_models(fact=ffact, dcutoff=clcutoff,
+                                      n_cpus=int(opts.ncpus))
                 break
             except:
                 continue

@@ -608,7 +608,8 @@ class Chromosome(object):
 
     def visualize(self, names=None, tad=None, focus=None, paint_tads=False,
                   axe=None, show=True, logarithm=True, normalized=False,
-                  relative=True, decorate=True, savefig=None, clim=None):
+                  relative=True, decorate=True, savefig=None, clim=None,
+                  scale=(8, 6)):
         """
         Visualize the matrix of Hi-C interactions of a given experiment
 
@@ -657,8 +658,10 @@ class Chromosome(object):
             cols = int(round(sqrtxpr + (0.0 if int(sqrtxpr)==sqrtxpr else .5)))
             rows = int(sqrtxpr+.5)
         notaxe = axe == None
+        if not scale:
+            scale = (8, 6)
         if notaxe and len(names) != 1:
-            fig = plt.figure(figsize=(8 * cols, 6 * rows))
+            fig = plt.figure(figsize=(scale[0] * cols, scale[1] * rows))
         for i in xrange(rows):
             for j in xrange(cols):
                 if i * cols + j >= len(names):
@@ -669,7 +672,7 @@ class Chromosome(object):
                 if (isinstance(names[i * cols + j], tuple) or
                     isinstance(names[i * cols + j], list)):
                     if not axe:
-                        fig = plt.figure(figsize=(8 * cols, 6 * rows))
+                        fig = plt.figure(figsize=(scale[0] * cols, scale[1] * rows))
                         axe = fig.add_subplot(
                             rows, cols, i * cols + j + 1)                        
                     xpr1 = self.get_experiment(names[i * cols + j][0])

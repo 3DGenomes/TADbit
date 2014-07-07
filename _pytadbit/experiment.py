@@ -205,8 +205,16 @@ class Experiment(object):
                 except IndexError: # no factor there
                     xpr._normalization = (self._normalization)
         elif self.norm or other.norm:
-            raise Exception('ERROR: normalization differs between each ' +
-                            'experiment\n')
+            try:
+                if self.norm[0] or other.norm[0]:
+                    raise Exception('ERROR: normalization differs between each ' +
+                                    'experiment\n')
+                else:
+                    stderr.write('WARNING: experiments should be normalized before ' +
+                                 'being summed\n')
+            except TypeError:
+                stderr.write('WARNING: experiments should be normalized before ' +
+                             'being summed\n')
         else:
             stderr.write('WARNING: experiments should be normalized before ' +
                          'being summed\n')
@@ -286,13 +294,13 @@ class Experiment(object):
         try:
             size = len(self._ori_hic[0])
         except TypeError:
-            size = int(sqrt(len(self._ori_norm[0])))
-        self.hic_data = [HiC_data([], size)]
-        self.norm     = [[]]
+            size = len(self._ori_norm[0])
         self.size     = size / fact
         rest = size % fact
         if rest:
             self.size += 1
+        self.hic_data = [HiC_data([], size / fact + (1 if rest else 0))]
+        self.norm     = [HiC_data([], size / fact + (1 if rest else 0))]
         def resize(mtrx, copee):
             "resize both hic_data and normalized data"
             for i in xrange(0, size, fact):
@@ -306,7 +314,7 @@ class Experiment(object):
                                 break
                             val += copee[(i + k) * size + j + l]
                     if val:
-                        mtrx[i, j] = val
+                        mtrx[i/fact * self.size + j/fact] = val
         try:
             resize(self.hic_data[0], self._ori_hic[0])
         except TypeError:
@@ -320,7 +328,6 @@ class Experiment(object):
             stderr.write('WARNING: definition of filtered columns lost at ' +
                          'this resolution\n')
             self._filtered_cols = False
-        self.norm[0] = tuple(self.norm[0])
         if not keep_original:
             del(self._ori_hic)
             del(self._ori_norm)
@@ -435,10 +442,8 @@ class Experiment(object):
         :param False silent: does not warn for removed columns
         
         """
-        nums = read_matrix(norm_data, parser=parser, hic=False)
-        self.norm = nums
-        size = len(nums[0])
-        self._ori_size       = self.size       = size
+        self.norm = read_matrix(norm_data, parser=parser, hic=False)
+        self._ori_size       = self.size       = len(self.norm[0])
         self._ori_resolution = self.resolution = resolution or self._ori_resolution
         if not self._zeros: # in case we do not have original Hi-C data
             for i in xrange(self.size):
@@ -1017,13 +1022,13 @@ class Experiment(object):
         if relative and not clim:
             if normalized:
                 # find minimum, if value is non-zero... for logarithm
-                mini = min([i for i in norm_data if i])
+                mini = min([i for i in norm_data[0].values() if i])
                 if mini == int(mini):
-                    vmin = min(norm_data)
+                    vmin = min(norm_data[0].values())
                 else:
                     vmin = mini
                 vmin = fun(vmin or (1 if logarithm else 0))
-                vmax = fun(max(norm_data))
+                vmax = fun(max(norm_data[0].values()))
             else:
                 vmin = fun(min(hic_data[0].values()) or
                            (1 if logarithm else 0))
@@ -1057,7 +1062,7 @@ class Experiment(object):
                 pass
         else:
             if normalized:
-                matrix = [[norm_data[i+size*j]
+                matrix = [[norm_data[0][i+size*j]
                            if (not i in self._zeros
                                and not j in self._zeros) else float('nan')
                            for i in xrange(size)]
