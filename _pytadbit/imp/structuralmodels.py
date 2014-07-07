@@ -25,7 +25,8 @@ from numpy                          import histogram, linspace
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.stats                    import spearmanr, pearsonr, chisquare
-from scipy.stats                    import linregress, normaltest, norm as sc_norm
+from scipy.stats                    import linregress
+from scipy.stats                    import normaltest, norm as sc_norm
 from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
@@ -392,7 +393,7 @@ class StructuralModels(object):
         else:
             out_f = open(tmp_file, 'w')
             uniqs = list(set([tuple(sorted((m1, m2))) for m1, m2 in scores]))
-            cut = fact * self.nloci
+            cut = fact * (self.nloci - self._zeros.count(False))
             for md1, md2 in uniqs:
                 score = scores[(md1, md2)]
                 if score >= cut:
