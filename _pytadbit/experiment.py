@@ -526,7 +526,7 @@ class Experiment(object):
             self._normalization = 'visibility'
 
 
-    def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=False):
+    def get_hic_zscores(self, normalized=True, zscored=True, remove_zeros=True):
         """
         Normalize the Hi-C raw data. The result will be stored into
         the private Experiment._zscore list.
@@ -784,7 +784,7 @@ class Experiment(object):
         if len(exp._zeros) == (end - start):
             raise Exception('ERROR: no interaction found in selected regions')
         # ... but the z-scores in this particular region
-        exp.get_hic_zscores(remove_zeros=False)
+        exp.get_hic_zscores()
         values = [[float('nan') for _ in xrange(exp.size)]
                   for _ in xrange(exp.size)]
         for i in xrange(exp.size):
