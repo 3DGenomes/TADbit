@@ -253,7 +253,8 @@ class StructuralModels(object):
                       if self._zeros[i]])
             z.append([self[model]['z'][i] for i in xrange(self.nloci)
                       if self._zeros[i]])
-        idx = centroid_wrapper(x, y, z, self._zeros, len(x[0]), len(models),
+        zeros = tuple([True for _ in xrange(len(x[0]))])
+        idx = centroid_wrapper(x, y, z, zeros, len(x[0]), len(models),
                                int(verbose), 0)
         return models[idx]
 
@@ -286,12 +287,9 @@ class StructuralModels(object):
         y = []
         z = []
         for model in xrange(len(models)):
-            x.append([self[model]['x'][i] for i in xrange(self.nloci)
-                      if self._zeros[i]])
-            y.append([self[model]['y'][i] for i in xrange(self.nloci)
-                      if self._zeros[i]])
-            z.append([self[model]['z'][i] for i in xrange(self.nloci)
-                      if self._zeros[i]])
+            x.append([self[model]['x'][i] for i in xrange(self.nloci)])
+            y.append([self[model]['y'][i] for i in xrange(self.nloci)])
+            z.append([self[model]['z'][i] for i in xrange(self.nloci)])
         idx = centroid_wrapper(x, y, z, self._zeros, len(x[0]), len(models),
                                int(verbose), 1)
         avgmodel = IMPmodel((('x', idx[0]), ('y', idx[1]), ('z', idx[2]),
