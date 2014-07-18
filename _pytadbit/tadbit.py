@@ -62,7 +62,8 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
                                   for j in xrange(size)]))
     nums = [num.get_as_tuple() for num in nums]
     n_cpus = n_cpus if n_cpus != 'max' else 0
-    max_tad_size = size if max_tad_size is "max" else max_tad_size
+    max_tad_size = size if max_tad_size in ["max",
+                                            "auto"] else max_tad_size
     _, nbks, passages, _, _, bkpts = \
        _tadbit_wrapper(nums,             # list of lists of Hi-C data
                        remove,           # list of columns marking filtered

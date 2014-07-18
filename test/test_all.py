@@ -50,13 +50,13 @@ class TestTadbit(unittest.TestCase):
 
         
         global exp1, exp2, exp3, exp4
-        exp1 = tadbit(PATH + '/40Kb/chrT/chrT_A.tsv', max_tad_size="auto",
+        exp1 = tadbit(PATH + '/40Kb/chrT/chrT_A.tsv', max_tad_size="max",
                       verbose=False, no_heuristic=False, n_cpus='max')
-        exp2 = tadbit(PATH + '/20Kb/chrT/chrT_B.tsv', max_tad_size="auto",
+        exp2 = tadbit(PATH + '/20Kb/chrT/chrT_B.tsv', max_tad_size="max",
                       verbose=False, no_heuristic=False, n_cpus='max')
-        exp3 = tadbit(PATH + '/20Kb/chrT/chrT_C.tsv', max_tad_size="auto",
+        exp3 = tadbit(PATH + '/20Kb/chrT/chrT_C.tsv', max_tad_size="max",
                       verbose=False, no_heuristic=False, n_cpus='max')
-        exp4 = tadbit(PATH + '/20Kb/chrT/chrT_D.tsv', max_tad_size="auto",
+        exp4 = tadbit(PATH + '/20Kb/chrT/chrT_D.tsv', max_tad_size="max",
                       n_cpus='max',
                       verbose=False, no_heuristic=False, get_weights=True)
 
@@ -329,9 +329,9 @@ class TestTadbit(unittest.TestCase):
         exp.get_hic_zscores(zscored=False)
         exp.write_interaction_pairs('lala')
         lines = open('lala').readlines()
-        self.assertEqual(len(lines), 4851)
+        self.assertEqual(len(lines), 4674)
         self.assertEqual(lines[25], '1\t28\t0.612332461036\n')
-        self.assertEqual(lines[2000], '24\t100\t0.243591104465\n')
+        self.assertEqual(lines[2000], '26\t70\t0.0738742984321\n')
         system('rm -f lala')
         if CHKTIME:
             print '11', time() - t0

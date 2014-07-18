@@ -472,7 +472,7 @@ class Chromosome(object):
 
 
     def find_tad(self, experiments, normalized=True, name=None, n_cpus=1,
-                 verbose=True, max_tad_size="auto", heuristic=True,
+                 verbose=True, max_tad_size="max", heuristic=True,
                  norm='visibility', batch_mode=False, **kwargs):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
@@ -487,7 +487,7 @@ class Chromosome(object):
            where value at the diagonal is null)
         :param 1 n_cpus: The number of CPUs to allocate to TADbit. If
            n_cpus='max' the total number of CPUs will be used
-        :param auto max_tad_size: an integer defining the maximum size of a 
+        :param max max_tad_size: an integer defining the maximum size of a 
            TAD. Default (auto) defines it as the number of rows/columns
         :param True heuristic: whether to use or not some heuristics
         :param False batch_mode: if True, all the experiments will be 
