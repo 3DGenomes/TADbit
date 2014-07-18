@@ -126,7 +126,7 @@ def batch_tadbit(directory, parser=None, **kwargs):
     """
 
     matrix = []
-    for f_name in listdir(directory):
+    for f_name in sorted(listdir(directory)):
         if f_name.startswith('.'):
             continue
         f_name = path.join(directory, f_name)

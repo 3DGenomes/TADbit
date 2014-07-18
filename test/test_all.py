@@ -80,10 +80,9 @@ class TestTadbit(unittest.TestCase):
         batch_exp = batch_tadbit(PATH + '/20Kb/chrT/', max_tad_size=20, 
                                  verbose=False, no_heuristic=True)
         # Breaks and scores with square root normalization.
-        #breaks = [0, 4, 9, 15, 20, 29, 36, 44, 50, 62, 67, 76, 90, 95]
-        #scores = [4.0, 7.0, 4.0, 8.0, 4.0, 4.0, 7.0, 7.0, 10.0, 10.0, 9.0, 8.0, 7.0, None]
-        breaks = [0, 4, 14, 19, 34, 44, 50, 62, 67, 72, 90, 95]
-        scores = [4.0, 6.0, 6.0, 6.0, 6.0, 6.0, 5.0, 6.0, 4.0, 6.0, 5.0, None]
+        breaks = [0, 4, 14, 19, 34, 39, 44, 50, 62, 67, 72, 90, 95]
+        scores = [4.0, 6.0, 6.0, 5.0, 4.0, 8.0, 5.0, 4.0, 6.0, 5.0,
+                  6.0, 6.0, None]
         self.assertEqual(batch_exp['start'], breaks)
         self.assertEqual(batch_exp['score'], scores)
         if CHKTIME:
