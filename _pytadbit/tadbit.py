@@ -5,7 +5,7 @@
 """
 
 from os                           import path, listdir
-from pytadbit.parsers.hic_parser  import read_matrix
+from pytadbit.parsers.hic_parser  import read_matrix, HiC_data
 from pytadbit.tadbit_py           import _tadbit_wrapper
 from pytadbit.tadbitalone_py      import _tadbitalone_wrapper
 from pytadbit.utils.normalize_hic import iterative

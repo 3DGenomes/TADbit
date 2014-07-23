@@ -522,7 +522,7 @@ class Chromosome(object):
                     raise Exception('All Experiments must have the same ' +
                                     'resolution\n')
                 matrix.append(xpr.hic_data[0])
-                weight.append(xpr.norm[0] if xpr.norm else None)
+                weight.append(xpr.norm[0].get_as_tuple() if xpr.norm else None)
                 if name.startswith('batch'):
                     name += '_' + xpr.name
             if not all(weight):
@@ -551,7 +551,7 @@ class Chromosome(object):
         for xpr in xprs:
             result = tadbit(
                 xpr.hic_data,
-                weights=xpr.norm,
+                weights=[w.get_as_tuple() for w in xpr.norm],
                 remove=tuple([1 if i in xpr._zeros else 0 for i in
                               xrange(xpr.size)]) if normalized else None,
                 n_cpus=n_cpus, verbose=verbose,

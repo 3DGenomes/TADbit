@@ -60,7 +60,7 @@ def search_tads(opts, crm, name):
         for i in exps:
             logging.info('\t   * ' + i.name)
 
-        crm.find_tad(exps, verbose=True, n_cpus=opts.ncpus,
+        crm.find_tad(exps, verbose=False, n_cpus=opts.ncpus,
                      batch_mode=True if len(exps) > 1 else False)
         if len(exps) > 1:
             aligned += ['batch_' + '_'.join([i.name for i in exps])]
@@ -111,7 +111,7 @@ def load_hic_data(opts, xnames):
             norm_data=xnorm)
         if not xnorm:
             logging.info("\tNormalizing HiC data of %s..." % xnam)
-            crm.experiments[xnam].normalize_hic(factor=1)
+            crm.experiments[xnam].normalize_hic(iterations=5)
     if opts.beg > crm.experiments[-1].size:
         raise Exception('ERROR: beg parameter is larger than chromosome size.')
     if opts.end > crm.experiments[-1].size:
