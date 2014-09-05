@@ -65,15 +65,17 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>things</strong> &#8211; might be either a file name, a file handler, a list of them
-or a list of list (all with same length)</li>
-<li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists representing the data matrix,
+<li><strong>things</strong> &#8211; might be either a file name, a file handler or a list of
+list (all with same length)</li>
+<li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
+representing the data matrix,
 with this file example.tsv:</p>
-<div class="highlight-python"><pre>chrT_001      chrT_002        chrT_003        chrT_004
-chrT_001      629     164     88      105
-chrT_002      86      612     175     110
-chrT_003      159     216     437     105
-chrT_004      100     111     146     278</pre>
+<div class="highlight-python"><div class="highlight"><pre>chrT_001       chrT_002        chrT_003        chrT_004
+chrT_001       629     164     88      105
+chrT_002       86      612     175     110
+chrT_003       159     216     437     105
+chrT_004       100     111     146     278
+</pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) might be:
 <tt class="docutils literal"><span class="pre">([629,</span> <span class="pre">86,</span> <span class="pre">159,</span> <span class="pre">100,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">216,</span> <span class="pre">111,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">146,</span> <span class="pre">105,</span> <span class="pre">110,</span>
@@ -194,8 +196,8 @@ experiment. This file might have been generated whith the
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 14, 2014.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Last updated on Sep 05, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

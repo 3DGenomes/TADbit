@@ -58,19 +58,20 @@
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="kn">import</span> <span class="n">tadbit_savefig</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>         <span class="kn">import</span> <span class="n">_tad_density_plot</span>
 <span class="kn">from</span> <span class="nn">pytadbit.experiment</span>               <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.hic_filtering</span>      <span class="kn">import</span> <span class="n">hic_filtering_for_modelling</span>
 <span class="kn">from</span> <span class="nn">string</span>                            <span class="kn">import</span> <span class="n">ascii_lowercase</span> <span class="k">as</span> <span class="n">letters</span>
-<span class="kn">from</span> <span class="nn">warnings</span>                          <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">copy</span>                              <span class="kn">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>
 <span class="kn">from</span> <span class="nn">cPickle</span>                           <span class="kn">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">dump</span>
 <span class="kn">from</span> <span class="nn">pytadbit.alignment</span>                <span class="kn">import</span> <span class="n">Alignment</span><span class="p">,</span> <span class="n">randomization_test</span>
 <span class="kn">from</span> <span class="nn">numpy</span>                             <span class="kn">import</span> <span class="n">log2</span>
 <span class="kn">from</span> <span class="nn">random</span>                            <span class="kn">import</span> <span class="n">random</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">math</span>                              <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">sys</span>                               <span class="kn">import</span> <span class="n">stderr</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;matplotlib not found</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;matplotlib not found</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="load_chromosome"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.load_chromosome">[docs]</a><span class="k">def</span> <span class="nf">load_chromosome</span><span class="p">(</span><span class="n">in_f</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
@@ -144,7 +145,7 @@
             <span class="k">if</span> <span class="n">fast</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">crm</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">dicp</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s">&#39;wght&#39;</span><span class="p">]</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="n">fast</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: data not saved correctly for fast loading.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: data not saved correctly for fast loading.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">crm</span>
 
 </div>
@@ -209,9 +210,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">assembly</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">experiment_resolutions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment_tads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">experiment_hic_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">max_tad_size</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">),</span> <span class="n">chr_len</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">centromere_search</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_descr</span><span class="p">):</span>
+                 <span class="n">experiment_hic_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment_norm_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experiment_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_tad_size</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">),</span>
+                 <span class="n">chr_len</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">centromere_search</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_descr</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span>             <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span>             <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_given_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_size</span> <span class="o">=</span> <span class="n">chr_len</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span>             <span class="o">=</span> <span class="n">ChromosomeSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
@@ -246,6 +248,22 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">experiment_resolutions</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                         <span class="n">hic_data</span><span class="o">=</span><span class="n">handler</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span>
+                                        <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">experiment_norm_data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">handler</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">experiment_norm_data</span> <span class="ow">or</span> <span class="p">[]):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">experiment_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">experiment_names</span> <span class="k">else</span> <span class="bp">None</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">xpr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">xpr</span><span class="o">.</span><span class="n">load_norm_data</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
+                    <span class="n">handler</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">handler</span><span class="o">.</span><span class="n">name</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">experiment_resolutions</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                        <span class="n">norm_data</span><span class="o">=</span><span class="n">handler</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span>
                                         <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -412,7 +430,7 @@
 <span class="sd">            if reciprocal, a method based on reciprocal closest boundaries is</span>
 <span class="sd">            used (see :func:`pytadbit.boundary_aligner.reciprocally.reciprocal`)</span>
 
-<span class="sd">        :returns: the alignment and the score of the alignment (by default)</span>
+<span class="sd">        :returns: the alignment or the score, p-value of the alignment</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">names</span><span class="p">:</span>
             <span class="n">xpers</span> <span class="o">=</span> <span class="n">ExperimentList</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">],</span>
@@ -448,8 +466,8 @@
 
 </div>
 <div class="viewcode-block" id="Chromosome.add_experiment"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tad_def</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                       <span class="n">hic_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                       <span class="n">conditions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                       <span class="n">hic_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">norm_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                       <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a Hi-C experiment to Chromosome</span>
 <span class="sd">        </span>
@@ -482,26 +500,29 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">letters</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">letters</span><span class="p">))]</span> \
                             <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">)])</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s">&#39;No name provided, random name generated: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: No name provided, random name &#39;</span> <span class="o">+</span>
+                         <span class="s">&#39;generated: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
             <span class="k">if</span> <span class="s">&#39;hi-c&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">replace</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s">&#39;&#39;&#39;Hi-C data already loaded under the name: </span><span class="si">%s</span><span class="s">.</span>
-<span class="s">                This experiment will be kept under </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="s">&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span>
-                                                               <span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="p">))</span>
+                <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="sd">&#39;&#39;&#39;WARNING: Hi-C data already loaded under the name: %s.</span>
+<span class="sd">                    This experiment will be kept under %s.\n&#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span>
+                                                                   <span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="p">))</span>
                 <span class="n">name</span> <span class="o">+=</span> <span class="s">&#39;_&#39;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">resolution</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">hic_data</span><span class="p">,</span>
-                                               <span class="n">tad_def</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span>
-                                               <span class="n">conditions</span><span class="o">=</span><span class="n">conditions</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Experiment</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">norm_data</span><span class="o">=</span><span class="n">norm_data</span><span class="p">,</span>
+                <span class="n">tad_def</span><span class="o">=</span><span class="n">tad_def</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="n">conditions</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;resolution param is needed</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="Chromosome.find_tad"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.find_tad">[docs]</a>    <span class="k">def</span> <span class="nf">find_tad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiments</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;auto&quot;</span><span class="p">,</span> <span class="n">heuristic</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">batch_mode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Chromosome.find_tad"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.find_tad">[docs]</a>    <span class="k">def</span> <span class="nf">find_tad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiments</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;max&quot;</span><span class="p">,</span> <span class="n">heuristic</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">norm</span><span class="o">=</span><span class="s">&#39;visibility&#39;</span><span class="p">,</span> <span class="n">batch_mode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call the :func:`pytadbit.tadbit.tadbit` function to calculate the</span>
 <span class="sd">        position of Topologically Associated Domain boundaries</span>
@@ -510,9 +531,12 @@
 <span class="sd">           data or a list of such matrices for replicated experiments. The</span>
 <span class="sd">           counts must be evenly sampled and not normalized. &#39;experiment&#39;</span>
 <span class="sd">           can be either a list of lists, a path to a file or a file handler</span>
+<span class="sd">        :param True normalized: if False simple normalization will be computed,</span>
+<span class="sd">           as well as a simple column filtering will be applied (remove columns</span>
+<span class="sd">           where value at the diagonal is null)</span>
 <span class="sd">        :param 1 n_cpus: The number of CPUs to allocate to TADbit. If</span>
 <span class="sd">           n_cpus=&#39;max&#39; the total number of CPUs will be used</span>
-<span class="sd">        :param auto max_tad_size: an integer defining the maximum size of a </span>
+<span class="sd">        :param max max_tad_size: an integer defining the maximum size of a </span>
 <span class="sd">           TAD. Default (auto) defines it as the number of rows/columns</span>
 <span class="sd">        :param True heuristic: whether to use or not some heuristics</span>
 <span class="sd">        :param False batch_mode: if True, all the experiments will be </span>
@@ -522,32 +546,50 @@
 <span class="sd">           name would be: &#39;batch_exp1_exp2&#39;).</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">experiments</span> <span class="o">=</span> <span class="n">experiments</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">experiments</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">experiments</span> <span class="o">=</span> <span class="p">[</span><span class="n">experiments</span><span class="p">]</span>
+        <span class="n">xprs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xpr</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
+                <span class="n">xpr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
+            <span class="n">xprs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
+            <span class="c"># if normalized and (not xpr._zeros or not xpr._normalization):</span>
+            <span class="c">#     raise Exception(&#39;ERROR: Experiments should be normalized, and&#39; +</span>
+            <span class="c">#                     &#39; filtered first&#39;)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xprs</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">batch_mode</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: batch_mode implies that more than one &#39;</span> <span class="o">+</span>
+                            <span class="s">&#39;experiment is passed&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">batch_mode</span><span class="p">:</span>
             <span class="n">matrix</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;batch&#39;</span>
-            <span class="n">experiments</span> <span class="o">=</span> <span class="n">experiments</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span>
-            <span class="n">xprs</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xpr</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
-                    <span class="n">xprs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">xpr</span><span class="p">))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">xprs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
             <span class="n">resolution</span> <span class="o">=</span> <span class="n">xprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">resolution</span>
             <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">xprs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">!=</span> <span class="n">resolution</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;All Experiments must have the same &#39;</span> <span class="o">+</span>
                                     <span class="s">&#39;resolution</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
                 <span class="n">matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">weight</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_as_tuple</span><span class="p">()</span> <span class="k">if</span> <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;batch&#39;</span><span class="p">):</span>
                     <span class="n">name</span> <span class="o">+=</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">xpr</span><span class="o">.</span><span class="n">name</span>
-            <span class="n">result</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span>
-                                     <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-                                     <span class="n">max_tad_size</span><span class="o">=</span><span class="n">max_tad_size</span><span class="p">,</span>
-                                     <span class="n">no_heuristic</span><span class="o">=</span><span class="ow">not</span> <span class="n">heuristic</span><span class="p">,</span>
-                                     <span class="n">get_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">weight</span><span class="p">):</span>
+                <span class="n">weight</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
+                <span class="n">siz</span> <span class="o">=</span> <span class="n">xprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="n">xprs</span><span class="p">)</span>
+                <span class="n">tmp</span><span class="o">.</span><span class="n">filter_columns</span><span class="p">(</span><span class="n">silent</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;silent&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+            <span class="n">remove</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tmp</span><span class="o">.</span><span class="n">_zeros</span> <span class="k">else</span> <span class="mi">0</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">siz</span><span class="p">)])</span> <span class="k">if</span> <span class="n">normalized</span> <span class="k">else</span> <span class="bp">None</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span>
+                            <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span>
+                            <span class="n">remove</span><span class="o">=</span><span class="n">remove</span><span class="p">,</span>
+                            <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                            <span class="n">max_tad_size</span><span class="o">=</span><span class="n">max_tad_size</span><span class="p">,</span>
+                            <span class="n">no_heuristic</span><span class="o">=</span><span class="ow">not</span> <span class="n">heuristic</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">xpr</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="n">matrix</span><span class="p">,</span>
-                             <span class="n">tad_def</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                             <span class="n">tad_def</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span> <span class="o">=</span> <span class="n">xprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_zeros</span>
             <span class="k">for</span> <span class="n">other</span> <span class="ow">in</span> <span class="n">xprs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
                 <span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
@@ -555,18 +597,17 @@
                                        <span class="n">other</span><span class="o">.</span><span class="n">_zeros</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
             <span class="k">return</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">experiments</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="n">experiments</span> <span class="o">=</span> <span class="p">[</span><span class="n">experiments</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">experiment</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">):</span>
-                <span class="n">experiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
-            <span class="n">result</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">hic_data</span><span class="p">,</span>
-                                     <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-                                     <span class="n">max_tad_size</span><span class="o">=</span><span class="n">max_tad_size</span><span class="p">,</span>
-                                     <span class="n">no_heuristic</span><span class="o">=</span><span class="ow">not</span> <span class="n">heuristic</span><span class="p">,</span>
-                                     <span class="n">get_weights</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="n">experiment</span><span class="o">.</span><span class="n">load_tad_def</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="n">xprs</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">tadbit</span><span class="p">(</span>
+                <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span><span class="p">,</span>
+                <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">get_as_tuple</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span><span class="p">],</span>
+                <span class="n">remove</span><span class="o">=</span><span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">_zeros</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span>
+                              <span class="nb">xrange</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">size</span><span class="p">)])</span> <span class="k">if</span> <span class="n">normalized</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
+                <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                <span class="n">max_tad_size</span><span class="o">=</span><span class="n">max_tad_size</span><span class="p">,</span>
+                <span class="n">no_heuristic</span><span class="o">=</span><span class="ow">not</span> <span class="n">heuristic</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">xpr</span><span class="o">.</span><span class="n">load_tad_def</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_forbidden_region</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
 
 </div>
     <span class="k">def</span> <span class="nf">__update_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xpr</span><span class="p">):</span>
@@ -616,7 +657,8 @@
 </div>
 <div class="viewcode-block" id="Chromosome.visualize"><a class="viewcode-back" href="../../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tad</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                   <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                  <span class="n">relative</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                  <span class="n">relative</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize the matrix of Hi-C interactions of a given experiment</span>
 
@@ -665,8 +707,10 @@
             <span class="n">cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sqrtxpr</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.0</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrtxpr</span><span class="p">)</span><span class="o">==</span><span class="n">sqrtxpr</span> <span class="k">else</span> <span class="o">.</span><span class="mi">5</span><span class="p">)))</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrtxpr</span><span class="o">+.</span><span class="mi">5</span><span class="p">)</span>
         <span class="n">notaxe</span> <span class="o">=</span> <span class="n">axe</span> <span class="o">==</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">scale</span><span class="p">:</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">notaxe</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">rows</span><span class="p">))</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">scale</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="n">scale</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">rows</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">):</span>
@@ -677,7 +721,7 @@
                 <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span>
                     <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">],</span> <span class="nb">list</span><span class="p">)):</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
-                        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">rows</span><span class="p">))</span>
+                        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">scale</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="n">scale</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">rows</span><span class="p">))</span>
                         <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span>
                             <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>                        
                     <span class="n">xpr1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
@@ -692,8 +736,8 @@
                                     <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="n">relative</span><span class="p">,</span>
                                     <span class="n">decorate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s">&#39;down&#39;</span><span class="p">,</span>
                                     <span class="n">clim</span><span class="o">=</span><span class="n">clim</span> <span class="ow">or</span> <span class="n">img</span><span class="o">.</span><span class="n">get_clim</span><span class="p">())</span>
-                    <span class="c"># axe = axe.twinx()</span>
-                    <span class="c"># axe.set_aspect(&#39;equal&#39;, adjustable=&#39;box-forced&#39;, anchor=&#39;NE&#39;)</span>
+                    <span class="c">#axe = axe.twinx()</span>
+                    <span class="c">#axe.set_aspect(&#39;equal&#39;,adjustable=&#39;box-forced&#39;,anchor=&#39;NE&#39;)</span>
                     <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
                         <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">1.01</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> 
                                  <span class="s">&#39;Chromosome </span><span class="si">%s</span><span class="s"> experiment </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
@@ -702,10 +746,12 @@
                                   <span class="n">ha</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axe</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">xper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">j</span><span class="p">])</span>
-                    <span class="n">xper</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">tad</span><span class="o">=</span><span class="n">tad</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="n">paint_tads</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span>
-                              <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="n">logarithm</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span>
-                              <span class="n">relative</span><span class="o">=</span><span class="n">relative</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="n">decorate</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                              <span class="n">clim</span><span class="o">=</span><span class="n">clim</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">xper</span><span class="o">.</span><span class="n">hic_data</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">xper</span><span class="o">.</span><span class="n">norm</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">xper</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">tad</span><span class="o">=</span><span class="n">tad</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="n">paint_tads</span><span class="p">,</span>
+                              <span class="n">axe</span><span class="o">=</span><span class="n">axe</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="n">logarithm</span><span class="p">,</span>
+                              <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="n">relative</span><span class="p">,</span>
+                              <span class="n">decorate</span><span class="o">=</span><span class="n">decorate</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="n">clim</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
             <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
@@ -786,9 +832,9 @@
         <span class="n">best</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">raw</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hic</span><span class="p">[</span><span class="n">raw</span><span class="p">:</span><span class="n">raw</span> <span class="o">+</span> <span class="n">size</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">beg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">([</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">raw</span> <span class="o">+</span> <span class="n">size</span><span class="p">)])</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">beg</span><span class="p">:</span>
                 <span class="n">beg</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hic</span><span class="p">[</span><span class="n">raw</span><span class="p">:</span><span class="n">raw</span> <span class="o">+</span> <span class="n">size</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">beg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">([</span><span class="n">hic</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">raw</span> <span class="o">+</span> <span class="n">size</span><span class="p">)])</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">beg</span><span class="p">:</span>
                 <span class="n">end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">beg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                     <span class="n">best</span> <span class="o">=</span> <span class="p">((</span><span class="n">end</span> <span class="o">-</span> <span class="n">beg</span><span class="p">),</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
@@ -1052,8 +1098,8 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 28, 2014.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Last updated on Sep 05, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

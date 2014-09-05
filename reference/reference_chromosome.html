@@ -85,11 +85,12 @@ inferred from the distribution of TADs</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
 representing the data matrix and the length of a row/column. With
 the file example.tsv:</p>
-<div class="highlight-python"><pre>chrT_001       chrT_002        chrT_003        chrT_004
+<div class="highlight-python"><div class="highlight"><pre>chrT_001       chrT_002        chrT_003        chrT_004
 chrT_001       629     164     88      105
 chrT_002       164     612     175     110
 chrT_003       88      175     437     100
-chrT_004       105     110     100     278</pre>
+chrT_004       105     110     100     278
+</pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be be:
 <tt class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
@@ -142,11 +143,12 @@ name</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
 representing the data matrix and the length of a row/column. With 
 a file example.tsv containing:</p>
-<div class="highlight-python"><pre>chrT_001   chrT_002        chrT_003        chrT_004
+<div class="highlight-python"><div class="highlight"><pre>chrT_001   chrT_002        chrT_003        chrT_004
 chrT_001   629     164     88      105
 chrT_002   164     612     175     110
 chrT_003   88      175     437     100
-chrT_004   105     110     100     278</pre>
+chrT_004   105     110     100     278
+</pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be:
 <tt class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
@@ -193,7 +195,7 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the alignment and the score of the alignment (by default)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the alignment or the score, p-value of the alignment</p>
 </td>
 </tr>
 </tbody>
@@ -202,7 +204,7 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.find_tad">
-<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='auto'</em>, <em>heuristic=True</em>, <em>batch_mode=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>normalized=True</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='max'</em>, <em>heuristic=True</em>, <em>norm='visibility'</em>, <em>batch_mode=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function to calculate the
 position of Topologically Associated Domain boundaries</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -214,9 +216,12 @@ position of Topologically Associated Domain boundaries</p>
 data or a list of such matrices for replicated experiments. The
 counts must be evenly sampled and not normalized. &#8216;experiment&#8217;
 can be either a list of lists, a path to a file or a file handler</li>
+<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False simple normalization will be computed,
+as well as a simple column filtering will be applied (remove columns
+where value at the diagonal is null)</li>
 <li><strong>n_cpus</strong> (<em>1</em>) &#8211; The number of CPUs to allocate to TADbit. If
 n_cpus=&#8217;max&#8217; the total number of CPUs will be used</li>
-<li><strong>max_tad_size</strong> (<em>auto</em>) &#8211; an integer defining the maximum size of a 
+<li><strong>max_tad_size</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#max" title="(in Python v2.7)"><em>max</em></a>) &#8211; an integer defining the maximum size of a 
 TAD. Default (auto) defines it as the number of rows/columns</li>
 <li><strong>heuristic</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; whether to use or not some heuristics</li>
 <li><strong>batch_mode</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, all the experiments will be 
@@ -284,7 +289,7 @@ This can also be done directly with Chromosome.experiments[name].</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Yields :</th><td class="field-body"><p class="first last">Hi-C data corresponding to each TAD</p>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first last">Hi-C data corresponding to each TAD</p>
 </td>
 </tr>
 </tbody>
@@ -295,14 +300,14 @@ This can also be done directly with Chromosome.experiments[name].</p>
 <dt id="pytadbit.chromosome.Chromosome.save_chromosome">
 <tt class="descname">save_chromosome</tt><big>(</big><em>out_f</em>, <em>fast=True</em>, <em>divide=True</em>, <em>force=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.save_chromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.save_chromosome" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a Chromosome object to a file (it uses <a class="reference external" href="http://docs.python.org/library/pickle.html#pickle.load" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">pickle.load()</span></tt></a> from
-the <a class="reference external" href="http://docs.python.org/library/pickle.html#cPickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">cPickle</span></tt></a>). Once saved, the object can be loaded with
+the <a class="reference external" href="http://docs.python.org/library/pickle.html#module-cPickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">cPickle</span></tt></a>). Once saved, the object can be loaded with
 <a class="reference internal" href="#pytadbit.chromosome.load_chromosome" title="pytadbit.chromosome.load_chromosome"><tt class="xref py py-func docutils literal"><span class="pre">load_chromosome()</span></tt></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>out_f</strong> &#8211; path to the file where to store the <a class="reference external" href="http://docs.python.org/library/pickle.html#cPickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">cPickle</span></tt></a>
+<li><strong>out_f</strong> &#8211; path to the file where to store the <a class="reference external" href="http://docs.python.org/library/pickle.html#module-cPickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">cPickle</span></tt></a>
 object</li>
 <li><strong>fast</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True, skip Hi-C data and weights</li>
 <li><strong>divide</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if True writes two pickles, one with what would
@@ -368,7 +373,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.visualize">
-<tt class="descname">visualize</tt><big>(</big><em>names=None</em>, <em>tad=None</em>, <em>focus=None</em>, <em>paint_tads=False</em>, <em>axe=None</em>, <em>show=True</em>, <em>logarithm=True</em>, <em>normalized=False</em>, <em>relative=True</em>, <em>decorate=True</em>, <em>savefig=None</em>, <em>clim=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.visualize" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">visualize</tt><big>(</big><em>names=None</em>, <em>tad=None</em>, <em>focus=None</em>, <em>paint_tads=False</em>, <em>axe=None</em>, <em>show=True</em>, <em>logarithm=True</em>, <em>normalized=False</em>, <em>relative=True</em>, <em>decorate=True</em>, <em>savefig=None</em>, <em>clim=None</em>, <em>scale=(8</em>, <em>6)</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.visualize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize the matrix of Hi-C interactions of a given experiment</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -538,8 +543,8 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 28, 2014.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Last updated on Sep 05, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -53,13 +53,15 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">listdir</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">read_matrix</span>
-<span class="kn">from</span> <span class="nn">pytadbit.tadbit_py</span> <span class="kn">import</span> <span class="n">_tadbit_wrapper</span>
+<span class="kn">from</span> <span class="nn">os</span>                           <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">listdir</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>  <span class="kn">import</span> <span class="n">read_matrix</span><span class="p">,</span> <span class="n">HiC_data</span>
+<span class="kn">from</span> <span class="nn">pytadbit.tadbit_py</span>           <span class="kn">import</span> <span class="n">_tadbit_wrapper</span>
+<span class="kn">from</span> <span class="nn">pytadbit.tadbitalone_py</span>      <span class="kn">import</span> <span class="n">_tadbitalone_wrapper</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.normalize_hic</span> <span class="kn">import</span> <span class="n">iterative</span>
+<span class="kn">from</span> <span class="nn">sys</span>                          <span class="kn">import</span> <span class="n">stderr</span>
 
-
-<div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;max&quot;</span><span class="p">,</span>
-           <span class="n">no_heuristic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+           <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;max&quot;</span><span class="p">,</span> <span class="n">no_heuristic</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The TADbit algorithm works on raw chromosome interaction count data.</span>
 <span class="sd">    The normalization is neither necessary nor recommended,</span>
@@ -79,6 +81,11 @@
 <span class="sd">       of such matrices for replicated experiments. The counts must be evenly</span>
 <span class="sd">       sampled and not normalized. x might be either a list of list, a path to</span>
 <span class="sd">       a file or a file handler</span>
+<span class="sd">    :argument &#39;visibility&#39; norm: kind of normalization to use. Choose between</span>
+<span class="sd">       &#39;visibility&#39; of &#39;Imakaev&#39;</span>
+<span class="sd">    :argument None remove: a python list of lists of booleans mapping positively</span>
+<span class="sd">       columns to remove (if None only columns with a 0 in the diagonal will be</span>
+<span class="sd">       removed)</span>
 <span class="sd">    :param 1 n_cpus: The number of CPUs to allocate to TADbit. If</span>
 <span class="sd">       n_cpus=&#39;max&#39; the total number of CPUs will be used</span>
 <span class="sd">    :param auto max_tad_size: an integer defining maximum size of TAD. Default</span>
@@ -90,14 +97,26 @@
 
 <span class="sd">    :returns: the :py:func:`list` of topologically associated domains&#39;</span>
 <span class="sd">       boundaries, and the corresponding list associated log likelihoods.</span>
-<span class="sd">       Depending on the value of the get_weights parameter, may also return</span>
-<span class="sd">       weights.</span>
+<span class="sd">       If no weights are given, it may also return calculated weights.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">nums</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">hic_data</span> <span class="k">for</span> <span class="n">hic_data</span> <span class="ow">in</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">remove</span><span class="p">:</span>
+        <span class="n">remove</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">weights</span><span class="p">:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">:</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">iterative</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">remove</span><span class="p">)</span>
+            <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">([</span><span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">B</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+                                  <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]))</span>
+    <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">get_as_tuple</span><span class="p">()</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">]</span>
     <span class="n">n_cpus</span> <span class="o">=</span> <span class="n">n_cpus</span> <span class="k">if</span> <span class="n">n_cpus</span> <span class="o">!=</span> <span class="s">&#39;max&#39;</span> <span class="k">else</span> <span class="mi">0</span>
-    <span class="n">max_tad_size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="n">max_tad_size</span> <span class="ow">is</span> <span class="s">&quot;auto&quot;</span> <span class="k">else</span> <span class="n">max_tad_size</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">nbks</span><span class="p">,</span> <span class="n">passages</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bkpts</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> \
-       <span class="n">_tadbit_wrapper</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span>             <span class="c"># list of lists representing matrices</span>
+    <span class="n">max_tad_size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="n">max_tad_size</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;max&quot;</span><span class="p">,</span>
+                                            <span class="s">&quot;auto&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">max_tad_size</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">nbks</span><span class="p">,</span> <span class="n">passages</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bkpts</span> <span class="o">=</span> \
+       <span class="n">_tadbit_wrapper</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span>             <span class="c"># list of lists of Hi-C data</span>
+                       <span class="n">remove</span><span class="p">,</span>           <span class="c"># list of columns marking filtered</span>
+                       <span class="n">weights</span><span class="p">,</span>
                        <span class="n">size</span><span class="p">,</span>             <span class="c"># size of one row/column</span>
                        <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">),</span>        <span class="c"># number of matrices</span>
                        <span class="n">n_cpus</span><span class="p">,</span>           <span class="c"># number of threads</span>
@@ -116,14 +135,6 @@
         <span class="n">result</span><span class="p">[</span><span class="s">&#39;end&#39;</span>  <span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">result</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">get_weights</span><span class="p">:</span>
-        <span class="c"># in tadbit we are not using directly weights, but the</span>
-        <span class="c"># multiplication by the real value</span>
-        <span class="n">oks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]]</span>
-        <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">oks</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">oks</span><span class="p">])</span>
-        <span class="n">tadbit_weights</span> <span class="o">=</span> <span class="p">[[</span><span class="n">i</span><span class="o">/</span><span class="n">j</span><span class="o">*</span><span class="n">total</span> <span class="k">if</span> <span class="n">j</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span>
-                           <span class="nb">zip</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">weights</span><span class="p">[</span><span class="n">k</span><span class="p">])]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">))]</span>
-        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">tadbit_weights</span>
     <span class="k">return</span> <span class="n">result</span>
 
 </div>
@@ -149,6 +160,8 @@
 <span class="sd">    Other arguments such as max_size, n_CPU and verbose are passed to</span>
 <span class="sd">    :func:`tadbit`.</span>
 <span class="sd">  </span>
+<span class="sd">    NOTE: only used externally, not from Chromosome</span>
+<span class="sd">    </span>
 <span class="sd">    :param directory: the directory containing the data files</span>
 <span class="sd">    :param kwargs: arguments passed to :func:`tadbit` function</span>
 <span class="sd">    :param None parser: a parser function that takes file name as input and</span>
@@ -162,7 +175,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">matrix</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">f_name</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">f_name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">f_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">):</span>
             <span class="k">continue</span>
         <span class="n">f_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f_name</span><span class="p">)</span>
@@ -244,8 +257,8 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 28, 2014.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Last updated on Sep 05, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -712,7 +712,11 @@
                 <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">view_mesh</span><span class="p">:</span>
             <span class="n">chimera_cmd</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="s">&#39;focus&#39;</span><span class="p">,</span> <span class="s">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
+                <span class="s">&#39;focus&#39;</span><span class="p">,</span>
+                <span class="s">&#39;bonddisplay never #1&#39;</span><span class="p">,</span>
+                <span class="s">&#39;shape tube #1 radius 15 bandLength 300 segmentSubdivisions 1 followBonds on&#39;</span><span class="p">,</span>
+                <span class="s">&#39;~show #1&#39;</span><span class="p">,</span>
+                <span class="s">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
                 <span class="s">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s">&#39;set subdivision 1&#39;</span><span class="p">,</span> <span class="s">&#39;set depth_cue&#39;</span><span class="p">,</span>
                 <span class="s">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_start 0.5&#39;</span><span class="p">,</span> <span class="s">&#39;set dc_end 1&#39;</span><span class="p">,</span>
                 <span class="s">&#39;scale 0.8&#39;</span><span class="p">]</span>
@@ -727,7 +731,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">write_cmm</span><span class="p">(</span><span class="s">&#39;/tmp/&#39;</span><span class="p">)</span>
             <span class="n">chimera_view</span><span class="p">([</span><span class="s">&#39;/tmp/tmp_mesh.cmm&#39;</span><span class="p">,</span>
                           <span class="s">&#39;/tmp/model.</span><span class="si">%s</span><span class="s">.cmm&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])],</span>
-                         <span class="n">chimera_bin</span><span class="o">=</span><span class="n">chimera_bin</span><span class="p">,</span>
+                         <span class="n">chimera_bin</span><span class="o">=</span><span class="n">chimera_bin</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                          <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">,</span> <span class="n">chimera_cmd</span><span class="o">=</span><span class="n">chimera_cmd</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">possibles</span><span class="p">,</span> <span class="n">outdot</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span> <span class="n">area</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">acc_parts</span><span class="p">)</span>
@@ -1049,8 +1053,8 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 28, 2014.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Last updated on Sep 05, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -79,11 +79,12 @@ experiment</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
 representing the data matrix and the length of a row/column. With
 the file example.tsv:</p>
-<div class="highlight-python"><pre>chrT_001       chrT_002        chrT_003        chrT_004
+<div class="highlight-python"><div class="highlight"><pre>chrT_001       chrT_002        chrT_003        chrT_004
 chrT_001       629     164     88      105
 chrT_002       164     612     175     110
 chrT_003       88      175     437     100
-chrT_004       105     110     100     278</pre>
+chrT_004       105     110     100     278
+</pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be be:
 <tt class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
@@ -124,7 +125,7 @@ complementary descriptive field. For example:</p>
 TODO: normalization</p>
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.filter_columns">
-<tt class="descname">filter_columns</tt><big>(</big><em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em><big>)</big><a class="headerlink" href="#pytadbit.experiment.Experiment.filter_columns" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">filter_columns</tt><big>(</big><em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.filter_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.filter_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call filtering function, to remove artefactual columns in a given Hi-C
 matrix. This function will detect columns with very low interaction
 counts; columns passing through a cell with no interaction in the
@@ -180,7 +181,7 @@ current experiment</p>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.get_hic_zscores">
-<tt class="descname">get_hic_zscores</tt><big>(</big><em>normalized=True</em>, <em>zscored=True</em>, <em>remove_zeros=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.get_hic_zscores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.get_hic_zscores" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_hic_zscores</tt><big>(</big><em>normalized=True</em>, <em>zscored=True</em>, <em>remove_zeros=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.get_hic_zscores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.get_hic_zscores" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C raw data. The result will be stored into
 the private Experiment._zscore list.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -217,11 +218,12 @@ name</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. 
 With the file example.tsv:</p>
-<div class="highlight-python"><pre>chrT_001   chrT_002        chrT_003        chrT_004
+<div class="highlight-python"><div class="highlight"><pre>chrT_001   chrT_002        chrT_003        chrT_004
 chrT_001   629     164     88      105
 chrT_002   86      612     175     110
 chrT_003   159     216     437     105
-chrT_004   100     111     146     278</pre>
+chrT_004   100     111     146     278
+</pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be:
 <tt class="docutils literal"><span class="pre">[([629,</span> <span class="pre">86,</span> <span class="pre">159,</span> <span class="pre">100,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">216,</span> <span class="pre">111,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">146,</span> <span class="pre">105,</span>
@@ -243,7 +245,7 @@ content of low values</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.load_norm_data">
-<tt class="descname">load_norm_data</tt><big>(</big><em>norm_data</em>, <em>parser=None</em>, <em>resolution=None</em>, <em>normalization='visibility'</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pytadbit.experiment.Experiment.load_norm_data" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">load_norm_data</tt><big>(</big><em>norm_data</em>, <em>parser=None</em>, <em>resolution=None</em>, <em>normalization='visibility'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.load_norm_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.load_norm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a normalized Hi-C experiment to the Chromosome object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -258,11 +260,12 @@ name</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. 
 With the file example.tsv:</p>
-<div class="highlight-python"><pre>chrT_001   chrT_002        chrT_003        chrT_004
+<div class="highlight-python"><div class="highlight"><pre>chrT_001   chrT_002        chrT_003        chrT_004
 chrT_001   12.5    164     8.8     0.5
 chrT_002   8.6     61.2    1.5     1.1
 chrT_003   15.9    21.6    3.7     0.5
-chrT_004   0.0     1.1     1.6     2.8</pre>
+chrT_004   0.0     1.1     1.6     2.8
+</pre></div>
 </div>
 </li>
 <li><strong>resolution</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; resolution of the experiment in the file; it
@@ -338,28 +341,29 @@ Examples can be seen by doing:</p>
 </div>
 <p>where CONFIG is a dictionarry of dictionnaries to be passed to this
 function:</p>
-<div class="highlight-python"><pre>CONFIG = {
- 'dmel_01': {
+<div class="highlight-python"><div class="highlight"><pre>CONFIG = {
+ &#39;dmel_01&#39;: {
      # use these paramaters with the Hi-C data from:
-     'reference' : 'victor corces dataset 2013',
+     &#39;reference&#39; : &#39;victor corces dataset 2013&#39;,
 
      # Force applied to the restraints inferred to neighbor particles
-     'kforce'    : 5,
+     &#39;kforce&#39;    : 5,
 
      # Maximum experimental contact distance
-     'maxdist'   : 600, # OPTIMIZATION: 500-1200
+     &#39;maxdist&#39;   : 600, # OPTIMIZATION: 500-1200
 
      # Minimum and maximum thresholds used to decide which experimental values have to be
      # included in the computation of restraints. Z-score values bigger than upfreq
      # and less that lowfreq will be include, whereas all the others will be rejected
-     'upfreq'    : 0.3, # OPTIMIZATION: min/max Z-score
+     &#39;upfreq&#39;    : 0.3, # OPTIMIZATION: min/max Z-score
 
-     'lowfreq'   : -0.7 # OPTIMIZATION: min/max Z-score
+     &#39;lowfreq&#39;   : -0.7 # OPTIMIZATION: min/max Z-score
 
      # How much space (radius in nm) ocupies a nucleotide
-     'scale'     : 0.005
+     &#39;scale&#39;     : 0.005
      }
- }</pre>
+ }
+</pre></div>
 </div>
 </li>
 </ul>
@@ -374,7 +378,7 @@ function:</p>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.normalize_hic">
-<tt class="descname">normalize_hic</tt><big>(</big><em>factor=1</em>, <em>silent=False</em>, <em>rowsums=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">normalize_hic</tt><big>(</big><em>factor=1</em>, <em>iterations=0</em>, <em>silent=False</em>, <em>rowsums=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C data. This normalization step does the same of
 the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function (default parameters),</p>
 <p>It fills the Experiment.norm variable with the Hi-C values divided by
@@ -575,7 +579,7 @@ scale. I.e. clim=(-4, 10)</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.write_interaction_pairs">
-<tt class="descname">write_interaction_pairs</tt><big>(</big><em>fname</em>, <em>normalized=True</em>, <em>zscored=True</em>, <em>diagonal=False</em>, <em>cutoff=None</em>, <em>header=False</em>, <em>true_position=False</em>, <em>uniq=True</em>, <em>remove_zeros=False</em>, <em>focus=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.write_interaction_pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.write_interaction_pairs" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_interaction_pairs</tt><big>(</big><em>fname</em>, <em>normalized=True</em>, <em>zscored=True</em>, <em>diagonal=False</em>, <em>cutoff=None</em>, <em>header=False</em>, <em>true_position=False</em>, <em>uniq=True</em>, <em>remove_zeros=False</em>, <em>focus=None</em>, <em>format='tsv'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.write_interaction_pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.write_interaction_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a tab separated file with all the pairwise interactions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -592,6 +596,8 @@ be writen to the file</li>
 otherwise, genomic bin.</li>
 <li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; writes interactions between the start and stop bin
 passed to this parameter.</li>
+<li><strong>format</strong> (<em>&#8216;tsv&#8217;</em>) &#8211; in which to write the file, can be tab separated
+(tsv) or JSON (json)</li>
 </ul>
 </td>
 </tr>
@@ -691,8 +697,8 @@ a table.</td>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on May 28, 2014.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Last updated on Sep 05, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
