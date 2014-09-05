@@ -381,7 +381,7 @@ class Chromosome(object):
             if reciprocal, a method based on reciprocal closest boundaries is
             used (see :func:`pytadbit.boundary_aligner.reciprocally.reciprocal`)
 
-        :returns: the alignment and the score of the alignment (by default)
+        :returns: the alignment or the score, p-value of the alignment
         """
         if names:
             xpers = ExperimentList([self.get_experiment(n) for n in names],

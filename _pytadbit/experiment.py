@@ -810,7 +810,7 @@ class Experiment(object):
     def write_interaction_pairs(self, fname, normalized=True, zscored=True,
                                 diagonal=False, cutoff=None, header=False,
                                 true_position=False, uniq=True,
-                                remove_zeros=False, focus=None):
+                                remove_zeros=False, focus=None, format='tsv'):
         """
         Creates a tab separated file with all the pairwise interactions.
         
@@ -824,6 +824,8 @@ class Experiment(object):
            otherwise, genomic bin.
         :param None focus: writes interactions between the start and stop bin
            passed to this parameter.
+        :param 'tsv' format: in which to write the file, can be tab separated
+           (tsv) or JSON (json)
            
         """
         if not self._zscores and zscored:
@@ -838,9 +840,37 @@ class Experiment(object):
         else:
             raise Exception('Not recognize file type\n')
         if header:
-            out.write('elt1\telt2\t%s\n' % ('zscore' if zscored else 
-                                            'normalized hi-c' if normalized 
-                                            else 'raw hi-c'))
+            if format == 'tsv':
+                out.write('elt1\telt2\t%s\n' % ('zscore' if zscored else 
+                                                'normalized hi-c' if normalized 
+                                                else 'raw hi-c'))
+            elif format == 'json':
+                out.write('''
+{
+    "metadata": {
+                        "formatVersion" : 3,
+                        %s
+                        "species" : "%s",
+                        "cellType" : "%s",
+                        "experimentType" : "%s",
+                        "identifier" : "%s",
+                        "resolution" : %s,
+                        "chromosome" : "%s",
+                        "start" : %s,
+                        "end" : %s
+                },
+    "interactions": [
+                ''' % ('\n'.join(['"%s": "%s",' % (k, self.description[k])
+                                  for k in self.description]),
+                       self.description.get('species', ''),
+                       self.cell_type,
+                       self.exp_type,
+                       self.identifier,
+                       self.resolution,
+                       self.crm.name,
+                       focus[0] * self.resolution if focus else 1,
+                       (focus[1] * self.resolution if focus else
+                        self.resolution * self.size)))
         if focus:
             start, end = focus[0], focus[1] + 1
         else:
@@ -870,10 +900,23 @@ class Experiment(object):
                 if remove_zeros and not val:
                     continue
                 if true_position:
-                    out.write('%s\t%s\t%s\n' % (self.resolution * (i + 1),
-                                                self.resolution * (j + 1), val))
+                    if format == 'tsv':
+                        out.write('%s\t%s\t%s\n' % (
+                            self.resolution * (i + 1),
+                            self.resolution * (j + 1), val))
+                    elif format == 'json':
+                        out.write('%s,%s,%s,\n' % (
+                            self.resolution * (i + 1),
+                            self.resolution * (j + 1), val))
                 else:
-                    out.write('%s\t%s\t%s\n' % (i + 1 - start, j + 1 - start, val))
+                    if format == 'tsv':
+                        out.write('%s\t%s\t%s\n' % (
+                            i + 1 - start, j + 1 - start, val))
+                    elif format == 'json':
+                        out.write('%s,%s,%s\n' % (
+                            i + 1 - start, j + 1 - start, val))
+        if format == 'json':
+            out.write(']}\n')
         out.close()
 
 
@@ -1175,10 +1218,10 @@ class Experiment(object):
            a table.
         """
         table = ''
-        table += '%-6s%6s%6s%6s\n' % ('#', 'start', 'end', 'score')
+        table += '%-8s%8s%8s%8s\n' % ('#', 'start', 'end', 'score')
         for i in self.tads:
-            table += '%-6s%6s%6s%6s\n' % (i+1, self.tads[i]['start'] + 1,
-                                          self.tads[i]['end'] + 1,
+            table += '%-8s%8s%8s%8s\n' % (i, int(self.tads[i]['start'] + 1),
+                                          int(self.tads[i]['end'] + 1),
                                           abs(self.tads[i]['score']))
         if not savedata:
             print table
