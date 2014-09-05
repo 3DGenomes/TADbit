@@ -828,11 +828,18 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         for scr in xrange(1, 11):
             plots += plt.plot((100,),(100,), marker=6, ms=9,
                               color=jet(float(scr) / 10), mec='none')
-        axe.legend(plots,
-                   [str(scr) for scr in xrange(1, 11)],
-                   numpoints=1, title='Border scores',
-                   fontsize='small', loc='lower left',
-                   bbox_to_anchor=(1, 0.1))
+        try:
+            axe.legend(plots,
+                       [str(scr) for scr in xrange(1, 11)],
+                       numpoints=1, title='Border scores',
+                       fontsize='small', loc='lower left',
+                       bbox_to_anchor=(1, 0.1))
+        except TypeError:
+            axe.legend(plots,
+                       [str(scr) for scr in xrange(1, 11)],
+                       numpoints=1, title='Border scores',
+                       loc='lower left',
+                       bbox_to_anchor=(1, 0.1))
         axe.set_ylim((0, max(maxys) + 0.4))
         if savefig:
             tadbit_savefig(savefig)
