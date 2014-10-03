@@ -104,13 +104,21 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
         b = plt.vlines(root, 0, plt.ylim()[1], colors='r', linestyles='dashed')
         # c = plt.vlines(median - mad * 1.5, 0, 110, colors='g',
         #                linestyles='dashed')
-        plt.legend(a+[b], ['polyfit \n%s' % (
-            ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
-                         '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
-                                           '{' + str(i) + '}'))
-                     for i, j in enumerate(list(p)[::-1])])),
-                               'first solution of polynomial derivation'],
-                   fontsize='x-small')
+        try:
+            plt.legend(a+[b], ['polyfit \n%s' % (
+                ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
+                             '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
+                                               '{' + str(i) + '}'))
+                         for i, j in enumerate(list(p)[::-1])])),
+                                   'first solution of polynomial derivation'],
+                       fontsize='x-small')
+        except TypeError:
+            plt.legend(a+[b], ['polyfit \n%s' % (
+                ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
+                             '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
+                                               '{' + str(i) + '}'))
+                         for i, j in enumerate(list(p)[::-1])])),
+                                   'first solution of polynomial derivation'])
         # plt.legend(a+[b]+[c], ['polyfit \n{}'.format (
         #     ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
         #                  '${}{:.1}x^{}$'.format ('+' if j>0 else '', j,
@@ -202,13 +210,21 @@ def filter_by_zero_count(matrx, draw_hist=False, savefig=None):
     if draw_hist:
         a = plt.plot(xp, p(xp), "--", color='k')
         b = plt.vlines(root, 0, plt.ylim()[1], colors='r', linestyles='dashed')
-        plt.legend(a + [b], ['polyfit \n%s' % (
-            ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
-                         '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
-                                           '{' + str(i) + '}'))
-                     for i, j in enumerate(list(p)[::-1])])),
-                               'first solution of polynomial derivation'],
-                   fontsize='x-small')
+        try:
+            plt.legend(a + [b], ['polyfit \n%s' % (
+                ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
+                             '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
+                                               '{' + str(i) + '}'))
+                         for i, j in enumerate(list(p)[::-1])])),
+                                   'first solution of polynomial derivation'],
+                       fontsize='x-small')
+        except TypeError:
+            plt.legend(a + [b], ['polyfit \n%s' % (
+                ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
+                             '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
+                                               '{' + str(i) + '}'))
+                         for i, j in enumerate(list(p)[::-1])])),
+                                   'first solution of polynomial derivation'])
         plt.ylim(0, plt.ylim()[1])
         if savefig:
             tadbit_savefig(savefig)

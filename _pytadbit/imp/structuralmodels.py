@@ -1277,12 +1277,20 @@ class StructuralModels(object):
         p3 = plt.Rectangle((0, 0), 1, 1, fc=red, color='k')
         labels.append('> %.2f (force particles together)' % (
         self._config['upfreq']))
-        ax.legend([p1, p2, p3, normplot[0]], labels + [
-            "Fitted normal distribution" +
-            (("\n D'Agostino Pearson's normality test $K^2$=%.2f pv=%.3f"
-              % (k2, pv)) if do_normaltest else '')],
-                  fontsize='small', frameon=False,
-                  bbox_to_anchor=(1.013, 1.3 + (.03 if do_normaltest else 0)))
+        try:
+            ax.legend([p1, p2, p3, normplot[0]], labels + [
+                "Fitted normal distribution" +
+                (("\n D'Agostino Pearson's normality test $K^2$=%.2f pv=%.3f"
+                  % (k2, pv)) if do_normaltest else '')],
+                      fontsize='small', frameon=False,
+                      bbox_to_anchor=(1.013, 1.3 + (.03 if do_normaltest else 0)))
+        except TypeError:
+            ax.legend([p1, p2, p3, normplot[0]], labels + [
+                "Fitted normal distribution" +
+                (("\n D'Agostino Pearson's normality test $K^2$=%.2f pv=%.3f"
+                  % (k2, pv)) if do_normaltest else '')],
+                      frameon=False,
+                      bbox_to_anchor=(1.013, 1.3 + (.03 if do_normaltest else 0)))
         ax.set_xlabel('Z-scores')
         ax.set_ylabel('Number of particles')
         ax.vlines(self._config['lowfreq'], 0, height1, color=(.1,.1,.1),
