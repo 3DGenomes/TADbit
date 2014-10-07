@@ -549,6 +549,9 @@ class Chromosome(object):
             self.add_experiment(xpr)
             return
         for xpr in xprs:
+            if not xpr.norm:
+                raise Exception(
+                    'Error: interactions should be normalized first')
             result = tadbit(
                 xpr.hic_data,
                 weights=[w.get_as_tuple() for w in xpr.norm],
