@@ -28,7 +28,7 @@ Documentation
 TADbit training
 ***************
 
-Next TADbit training, "**CSDM14 Chromosome structure determination using modelling and Hi-C data**", 
+Next TADbit training, `CSDM14 Chromosome structure determination using modelling and Hi-C data <http://gtpb.igc.gulbenkian.pt/bicourses/CSDM14/>`_, 
 will take place at the *Instituto Gulbenkian de Ciencia* in Oeiras (Portugal) 
 at the `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_ training programme from the **Nov 25th to Nov 28th**.
 
