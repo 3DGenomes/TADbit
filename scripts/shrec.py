@@ -64,12 +64,12 @@ def main():
     """
     main function
     """
-    opts = get_options()
+    opts          = get_options()
 
-    fnam = opts.fnam
-    scale = opts.scale
-    show = opts.show
-    cmm = opts.cmm
+    fnam          = opts.fnam
+    scale         = float(opts.scale)
+    show          = opts.show
+    cmm           = opts.cmm
     strict_julien = opts.strict
 
     if opts.verbose:
@@ -79,6 +79,21 @@ def main():
     except ValueError:
         data = [[float(v) for v in l.split(',')] for l in open(fnam)]
 
+    to_remove = dict([(i, None) for i, d in enumerate(data) if sum(d)==10000])
+    if opts.verbose:
+        print to_remove
+    N = len(data)
+    clean_data = []
+    for i in xrange(N):
+        if i in to_remove:
+            continue
+        clean_data.append([])
+        for j in xrange(N):
+            if j in to_remove:
+                continue
+            clean_data[-1].append(data[i][j])
+    data  = clean_data
+    
     N = len(data)
     if opts.verbose:
         print '- Make the data symmetric'
@@ -102,7 +117,7 @@ def main():
     else:
         data = array([array([data[i][j] for j in xrange(N)])
                       for i in xrange(N)])
-    
+
     ############################################################################
     ### Here it starts
     ############################################################################
@@ -123,7 +138,6 @@ def main():
                 raise NotImplementedError('choose between cython cythonP or numpy')
     else:
         D = data
-
     # get the square of D for performence
     D2 = [[(D[i][j])**2 for j in xrange(N)] for i in xrange(N)]
 
@@ -137,17 +151,17 @@ def main():
         print '- Calculating metric matrix'
     M = [[(dO2[i] + dO2[j] - D2[i][j]) / 2 for j in xrange(N)]
          for i in xrange(N)]
-
     # Eigen vectors and values
     if opts.verbose:
         print '- Getting eigenvectors and eigenvalues'
     Eval, Evect = linalg.eigh(array(M))
     # sort eigen vectors
-    idx = (-abs(Eval)).argsort()
+    idx = (-Eval).argsort()
     Eval = Eval[idx]
     Evect = Evect[:, idx]
+
     # print '-'*80
-    # print ' '.join(['%.1f'%e for e in Eval])
+    # print ' '.join(['%f'%e for e in Eval])
     # print '-'*80
     # print (sum(Eval[:3]), sum([abs(e) for e in Eval]),
     #        sum(Eval[:3]) / sum([abs(e) for e in Eval]))
@@ -175,14 +189,23 @@ def main():
             distances.append(distance((x[i], y[i], z[i]),
                                       (x[i + 1], y[i + 1], z[i + 1])))
         meand = percentile(distances, 25)
-        factor = float(scale) / meand
+        factor = scale / meand
         x = [i * factor for i in x]
         y = [i * factor for i in y]
         z = [i * factor for i in z]
+        for p in sorted(to_remove.keys()):
+            if p:
+                x.insert(p, (x[p] + x[p-1])/2)
+                y.insert(p, (y[p] + y[p-1])/2)
+                z.insert(p, (z[p] + z[p-1])/2)
+            else:
+                x.insert(p, (x[p]))
+                y.insert(p, (y[p]))
+                z.insert(p, (z[p]))
     if show:
         plt.figure(figsize=(18, 7))
         plt.subplot(121)
-        plt.imshow(log2([([1. / data[k][l] for l in xrange(N)])
+        plt.imshow(log2([([data[k][l] for l in xrange(N)])
                          for k in xrange(N)]),
                    interpolation='none', cmap='jet')
         plt.colorbar()
