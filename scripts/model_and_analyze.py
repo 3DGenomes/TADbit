@@ -1,3 +1,5 @@
+#! /usr/bin/python
+
 """
 This script contains the main analysis that can be done using TADbit:
   * visualization of Hi-C data

@@ -204,6 +204,7 @@ def main():
         keywords     = ["testing"],
         url          = 'https://github.com/3DGenomes/tadbit',
         download_url = 'https://github.com/3DGenomes/tadbit/tarball/master',
+        scripts      = ['scripts/shrec.py', 'scripts/model_and_analyze.py']
     )
 
 
