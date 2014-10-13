@@ -176,7 +176,6 @@ def read_matrix(things, parser=None, hic=True):
                 matrix  = reduce(lambda x, y: x+y, thing)
                 size = len(thing)
             else:
-                print thing
                 raise Exception('must be list of lists, all with same length.')
             matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
                                       if matrix[i]], size))

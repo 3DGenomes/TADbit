@@ -10,15 +10,15 @@ Hi-C experiments generate genomic interaction data that is usually summarized at
 
 +-------------------------------------+---------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       |
-| Current version: 0.1_alpha.83       |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
+| Current version: 0.1_alpha.86       |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
 |                                     |                                                                           |
 +-------------------------------------+---------------------------------------------------------------------------+
 
 TADbit training
 ***************
 
-Next TADbit training, "**CSDM14 Chromosome structure determination using modelling and Hi-C data**", 
-will take place at the *Instituto Gulbenkian de Ciencia* in Oeiras (Portugal) 
+Next TADbit training, "**CSDM14 Chromosome structure determination using modelling and Hi-C data**",
+will take place at the *Instituto Gulbenkian de Ciencia* in Oeiras (Portugal)
 under the [GTPB](http://gtpb.igc.gulbenkian.pt/bicourses/index.html) training programme from the **Nov 24th to Nov 28th**.
 
 
