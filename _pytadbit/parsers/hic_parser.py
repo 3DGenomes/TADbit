@@ -237,6 +237,24 @@ class HiC_data(dict):
                                                              self.__size))
             return self.get(row_col, 0)
 
+    def __setitem__(self, row_col, val):
+        """
+        slow one... for user
+        for fast item getting, use self.get()
+        """
+        try:
+            row, col = row_col
+            pos = row * self.__size + col
+            if pos > self._size2:
+                raise IndexError(
+                    'ERROR: row or column larger than %s' % self.__size)
+            super(HiC_data, self).__setitem__(pos, val)
+        except TypeError:
+            if row_col > self._size2:
+                raise IndexError(
+                    'ERROR: position %d larger than %s^2' % (row_col,
+                                                             self.__size))
+            super(HiC_data, self).__setitem__(row_col, val)
 
     def get_as_tuple(self):
         return tuple([self[i, j] for j  in xrange(len(self)) for i in xrange(len(self))])

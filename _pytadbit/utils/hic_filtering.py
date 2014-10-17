@@ -272,7 +272,7 @@ def filter_by_mad(matrx):
 
 
 def hic_filtering_for_modelling(matrx, method='mean', silent=False,
-                                draw_hist=False, savefig=None):
+                                draw_hist=False, savefig=None, diagonal=True):
     """
     Call filtering function, to remove artefactual columns in a given Hi-C
     matrix. This function will detect columns with very low interaction
@@ -287,6 +287,7 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False,
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
+    :param True diagonal: remove row/columns with zero in the diagonal
 
     :returns: the indexes of the columns not to be considered for the
        calculation of the z-score
@@ -305,7 +306,7 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False,
     # also removes rows or columns containing a NaN
     has_nans = False
     for i in xrange(len(matrx)):
-        if matrx[i][i] == 0:
+        if matrx[i][i] == 0 and diagonal:
             if not i in bads:
                 bads[i] = None
         elif repr(sum(matrx[i])) == 'nan':

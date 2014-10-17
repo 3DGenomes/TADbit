@@ -378,14 +378,14 @@ def main():
     # matrices. See function "load_chromosome".
     if not opts.tad_only and not opts.analyze_only:
         # Sum all experiments into a new one
-        logging.info("\tSumming experiments %s..." % (' + '.join(xnames)))
         if len(xnames) > 1:
+            logging.info("\tSumming experiments %s..." % (' + '.join(xnames)))
             exp = crm.experiments[0] + crm.experiments[1]
             for i in range(2, len(xnames)):
                 exp += crm.experiments[i]
+            crm.add_experiment(exp)
         else:
             exp = crm.experiments[0]
-        crm.add_experiment(exp)
 
     if  not opts.tad_only and not opts.analyze_only:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,

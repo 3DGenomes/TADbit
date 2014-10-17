@@ -354,7 +354,7 @@ class Experiment(object):
         self._zeros, has_nans = hic_filtering_for_modelling(
             self.get_hic_matrix(normalized=self.hic_data==None,
                                 diagonal=False), silent=silent,
-            draw_hist=draw_hist, savefig=savefig)
+            draw_hist=draw_hist, savefig=savefig, diagonal=self.hic_data!=None)
         if has_nans: # to make it simple
             for i in xrange(self.hic_data[0]._size2):
                 if repr(self.hic_data[0][i]) == 'nan':
@@ -364,9 +364,9 @@ class Experiment(object):
         if self.hic_data:
             self._zeros.update(dict([(i, None) for i in xrange(size)
                                      if not self.hic_data[0].get(i * size + i)]))
-        else:
-            self._zeros.update(dict([(i, None) for i in xrange(size)
-                                     if not self.norm[0][i * size + i]]))
+        # else:
+        #     self._zeros.update(dict([(i, None) for i in xrange(size)
+        #                              if not self.norm[0][i * size + i]]))
         self._filtered_cols = True
 
 
