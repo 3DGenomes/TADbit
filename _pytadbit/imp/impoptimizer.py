@@ -32,7 +32,7 @@ class IMPoptimizer(object):
     :param None cutoff: distance cutoff (nm) to define whether two particles
        are in contact or not, default is 2 times resolution, times scale.
     """
-    def __init__(self, experiment, start, end, n_models=500, cutoff=300,
+    def __init__(self, experiment, start, end, n_models=500,
                  n_keep=100, close_bins=1):
 
         self.resolution = experiment.resolution
@@ -46,12 +46,12 @@ class IMPoptimizer(object):
         self.n_models    = n_models
         self.n_keep      = n_keep
         self.close_bins  = close_bins
-        self.cutoff      = cutoff
 
         self.scale_range   = []
         self.maxdist_range = []
         self.lowfreq_range = []
         self.upfreq_range  = []
+        self.dcutoff_range = []
         
         self.results = {}
 
@@ -61,6 +61,7 @@ class IMPoptimizer(object):
                         lowfreq_range=(-1, 0, 0.1),
                         maxdist_range=(400, 1500, 100),
                         scale_range=0.01,
+                        dcutoff_range=2,
                         corr='spearman', off_diag=1,
                         savedata=None, n_cpus=1, verbose=True):
         """
@@ -82,6 +83,10 @@ class IMPoptimizer(object):
         :param 0.01 scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
+        :param 2 dcutoff_range: upper and lower bounds used to search for
+           the optimal distance cutoff parameter (distance, in number of beads,
+           from which to consider 2 beads as being close). The last value of the
+           input tuple is the incremental step for scale parameter values
         :param None savedata: concatenate all generated models into a dictionary
            and save it into a file named by this argument
         :param True verbose: print the results to the standard output
@@ -95,6 +100,7 @@ class IMPoptimizer(object):
             if isinstance(maxdist_range, (float, int)):
                 maxdist_range = [maxdist_range]
             maxdist_arange = maxdist_range
+        #
         if isinstance(lowfreq_range, tuple):
             lowfreq_step = lowfreq_range[2]
             lowfreq_arange = np.arange(lowfreq_range[0],
@@ -104,6 +110,7 @@ class IMPoptimizer(object):
             if isinstance(lowfreq_range, (float, int)):
                 lowfreq_range = [lowfreq_range]
             lowfreq_arange = lowfreq_range
+        #
         if isinstance(upfreq_range, tuple):
             upfreq_step = upfreq_range[2]
             upfreq_arange = np.arange(upfreq_range[0],
@@ -113,6 +120,7 @@ class IMPoptimizer(object):
             if isinstance(upfreq_range, (float, int)):
                 upfreq_range = [upfreq_range]
             upfreq_arange = upfreq_range
+        #
         if isinstance(scale_range, tuple):
             scale_step = scale_range[2]
             scale_arange = np.arange(scale_range[0],
@@ -122,6 +130,16 @@ class IMPoptimizer(object):
             if isinstance(scale_range, (float, int)):
                 scale_range = [scale_range]
             scale_arange = scale_range
+        #
+        if isinstance(dcutoff_range, tuple):
+            dcutoff_step = dcutoff_range[2]
+            dcutoff_arange = np.arange(dcutoff_range[0],
+                                          dcutoff_range[1] + dcutoff_step / 2,
+                                          dcutoff_step)
+        else:
+            if isinstance(dcutoff_range, (float, int)):
+                dcutoff_range = [dcutoff_range]
+            dcutoff_arange = dcutoff_range
 
         # round everything
         if not self.maxdist_range:
@@ -148,20 +166,25 @@ class IMPoptimizer(object):
             self.scale_range = sorted([my_round(i) for i in scale_arange
                                        if not my_round(i) in self.scale_range] +
                                       self.scale_range)
-        
+        if not self.dcutoff_range:
+            self.dcutoff_range = [my_round(i) for i in dcutoff_arange]
+        else:
+            self.dcutoff_range = sorted([my_round(i) for i in dcutoff_arange
+                                         if not my_round(i) in self.dcutoff_range] +
+                                        self.dcutoff_range)
         # grid search
         models = {}
         count = 0
+        if verbose:
+            stderr.write('# %3s %6s %7s %7s %6s %7s %7s\n' % (
+                                    "num", "upfrq", "lowfrq", "maxdist",
+                                    "scale", "cutoff", "corr"))
         for scale in [my_round(i) for i in scale_arange]:
             for maxdist in [my_round(i) for i in maxdist_arange]:
                 for upfreq in [my_round(i) for i in upfreq_arange]:
                     for lowfreq in [my_round(i) for i in lowfreq_arange]:
                         if (scale, maxdist, upfreq, lowfreq) in self.results:
                             continue
-                        if not self.cutoff:
-                            cutoff = int(2 * self.resolution * float(scale))
-                        else:
-                            cutoff = self.cutoff
                         tmp = {'kforce'   : 5,
                                'lowrdist' : 100,
                                'maxdist'  : int(maxdist),
@@ -176,26 +199,34 @@ class IMPoptimizer(object):
                             values=self.values,
                             close_bins=self.close_bins, zeros=self.zeros)
                         count += 1
-                        if verbose:
-                            verb = '%5s  %s %s %s %s ' % (
-                                count, upfreq, lowfreq, maxdist, scale)
                         try:
-                            # TODO: cutoff optimization round here?
-                            result = tdm.correlate_with_real_data(
-                                cutoff=cutoff, corr=corr,
-                                off_diag=off_diag)[0]
+                            result = 0
+                            for cut in [i for i in dcutoff_arange]:
+                                sub_result = tdm.correlate_with_real_data(
+                                    cutoff=(int(cut * self.resolution *
+                                                float(scale))),
+                                    corr=corr,
+                                    off_diag=off_diag)[0]
+                                if result < sub_result:
+                                    result = sub_result
+                                    cutoff = my_round(cut)
                             if verbose:
+                                verb = '%5s %6s %7s %7s %6s %7s  ' % (
+                                    count, upfreq, lowfreq, maxdist,
+                                    scale, cutoff)
                                 if verbose == 2:
-                                    stderr.write(verb + str(result) + '\n')
+                                    stderr.write(verb + str(round(result, 4))
+                                                 + '\n')
                                 else:
-                                    print verb + str(result)
+                                    print verb + str(round(result, 4))
                         except Exception, e:
                             print 'ERROR %s' % e
                             continue
                         # store
-                        self.results[(scale, maxdist, upfreq, lowfreq)] = result
+                        self.results[(scale, maxdist,
+                                      upfreq, lowfreq, cutoff)] = result
                         if savedata:
-                            models[(scale, maxdist, upfreq, lowfreq)
+                            models[(scale, maxdist, upfreq, lowfreq, cutoff)
                                    ] = tdm._reduce_models(minimal=True)
         if savedata:
             out = open(savedata, 'w')
@@ -205,6 +236,7 @@ class IMPoptimizer(object):
         self.maxdist_range.sort(key=float)
         self.lowfreq_range.sort(key=float)
         self.upfreq_range.sort( key=float)
+        self.dcutoff_range.sort(key=float)
 
 
     def load_grid_search(self, filenames, corr='spearman', off_diag=1,
@@ -231,18 +263,18 @@ class IMPoptimizer(object):
         count = 0
         pool = mu.Pool(n_cpus, maxtasksperchild=20)
         jobs = {}
-        for scale, maxdist, upfreq, lowfreq in models:
-            svd = models[(scale, maxdist, upfreq, lowfreq)]
-            jobs[(scale, maxdist, upfreq, lowfreq)] = pool.apply_async(
-                _mu_correlate, args=(svd, self.cutoff, corr, off_diag,
-                                     scale, maxdist, upfreq, lowfreq,
+        for scale, maxdist, upfreq, lowfreq, dcutoff in models:
+            svd = models[(scale, maxdist, upfreq, lowfreq, dcutoff)]
+            jobs[(scale, maxdist, upfreq, lowfreq, dcutoff)] = pool.apply_async(
+                _mu_correlate, args=(svd, corr, off_diag,
+                                     scale, maxdist, upfreq, lowfreq, dcutoff,
                                      verbose, count))
             count += 1
         pool.close()
         pool.join()
-        for scale, maxdist, upfreq, lowfreq in models:
-            self.results[(scale, maxdist, upfreq, lowfreq)] = \
-                                 jobs[(scale, maxdist, upfreq, lowfreq)].get()
+        for scale, maxdist, upfreq, lowfreq, dcutoff in models:
+            self.results[(scale, maxdist, upfreq, lowfreq, dcutoff)] = \
+                                 jobs[(scale, maxdist, upfreq, lowfreq, dcutoff)].get()
             if not scale in self.scale_range:
                 self.scale_range.append(scale)
             if not maxdist in self.maxdist_range:
@@ -251,10 +283,13 @@ class IMPoptimizer(object):
                 self.lowfreq_range.append(lowfreq)
             if not upfreq in self.upfreq_range:
                 self.upfreq_range.append(upfreq)
+            if not dcutoff in self.dcutoff_range:
+                self.dcutoff_range.append(dcutoff)
         self.scale_range.sort(  key=float)
         self.maxdist_range.sort(key=float)
         self.lowfreq_range.sort(key=float)
         self.upfreq_range.sort( key=float)
+        self.dcutoff_range.sort(key=float)
 
 
     def get_best_parameters_dict(self, reference=None, with_corr=False):
@@ -270,14 +305,15 @@ class IMPoptimizer(object):
             stderr.write('WARNING: no optimization done yet\n')
             return
         best = ((None, None, None, None), 0.0)
-        for (sca, mxd, ufq, lfq), val in self.results.iteritems():
+        for (sca, mxd, ufq, lfq, cut), val in self.results.iteritems():
             if val > best[-1]:
-                best = ((sca, mxd, ufq, lfq), val)
+                best = ((sca, mxd, ufq, lfq, cut), val)
         if with_corr:
             return (dict((('scale'  , float(best[0][0])),
                           ('maxdist', float(best[0][1])),
                           ('upfreq' , float(best[0][2])),
                           ('lowfreq', float(best[0][3])),
+                          ('dcutoff', float(best[0][4])),
                           ('reference', reference or ''), ('kforce', 5))),
                     best[-1])
         else:
@@ -285,6 +321,7 @@ class IMPoptimizer(object):
                          ('maxdist', float(best[0][1])),
                          ('upfreq' , float(best[0][2])),
                          ('lowfreq', float(best[0][3])),
+                         ('dcutoff', float(best[0][4])),
                          ('reference', reference or ''), ('kforce', 5)))
     
 
@@ -340,9 +377,12 @@ class IMPoptimizer(object):
             for x, maxdist in enumerate(self.maxdist_range):
                 for y, upfreq in enumerate(self.upfreq_range):
                     for z, lowfreq in enumerate(self.lowfreq_range):
+                        cut = [c for c in self.dcutoff_range
+                               if (scale, maxdist, upfreq, lowfreq, c)
+                               in self.results][0]
                         try:
                             results[w, x, y, z] = self.results[
-                                (scale, maxdist, upfreq, lowfreq)]
+                                (scale, maxdist, upfreq, lowfreq, cut)]
                         except KeyError:
                             results[w, x, y, z] = float('nan')
         return results
@@ -359,19 +399,22 @@ class IMPoptimizer(object):
         :param f_name: file name with the absolute path
         """
         out = open(f_name, 'w')
-        out.write(('## n_models: %s cutoff: %s n_keep: %s ' +
-                   'close_bins: %s\n') % (self.n_models, self.cutoff,
+        out.write(('## n_models: %s n_keep: %s ' +
+                   'close_bins: %s\n') % (self.n_models, 
                                           self.n_keep, self.close_bins))
-        out.write('# scale\tmax_dist\tup_freq\tlow_freq\tcorrelation\n')
+        out.write('# scale\tmax_dist\tup_freq\tlow_freq\tdcutoff\tcorrelation\n')
         for scale in self.scale_range:
             for maxdist in self.maxdist_range:
                 for upfreq in self.upfreq_range:
                     for lowfreq in self.lowfreq_range:
+                        cut = [c for c in self.dcutoff_range
+                               if (scale, maxdist, upfreq, lowfreq, c)
+                               in self.results][0]
                         try:
                             result = self.results[(scale, maxdist,
-                                                   upfreq, lowfreq)]
-                            out.write('%s\t%s\t%s\t%s\t%s\n' % (
-                                scale, maxdist, upfreq, lowfreq, result))
+                                                   upfreq, lowfreq, cut)]
+                            out.write('%s\t%s\t%s\t%s\t%s\t%s\n' % (
+                                scale, maxdist, upfreq, lowfreq, cut, result))
                         except KeyError:
                             continue
         out.close()
@@ -389,25 +432,26 @@ class IMPoptimizer(object):
         for line in open(f_name):
             # Check same parameters
             if line.startswith('##'):
-                n_models, _, cutoff, _, n_keep, _, close_bins = line.split()[2:]
-                if ([int(n_models), int(cutoff), int(n_keep), int(close_bins)]
+                n_models, _, n_keep, _, close_bins = line.split()[2:]
+                if ([int(n_models), int(n_keep), int(close_bins)]
                     != 
-                    [self.n_models, self.cutoff, self.n_keep, self.close_bins]):
-                    raise Exception('Parameters does not match: %s\n%s' % (
-                        [int(n_models), int(cutoff),
-                         int(n_keep), int(close_bins)],
-                        [self.n_models, self.cutoff,
-                         self.n_keep, self.close_bins]))
+                    [self.n_models, self.n_keep, self.close_bins]):
+                    raise Exception('Parameters does in %s not match: %s\n%s' %(
+                        f_name,
+                        [int(n_models), int(n_keep), int(close_bins)],
+                        [self.n_models, self.n_keep, self.close_bins]))
             if line.startswith('#'):
                 continue
-            scale, maxdist, upfreq, lowfreq, result = line.split()
-            scale, maxdist, upfreq, lowfreq = (
-                float(scale), int(maxdist), float(upfreq), float(lowfreq))
+            scale, maxdist, upfreq, lowfreq, dcutoff, result = line.split()
+            scale, maxdist, upfreq, lowfreq, dcutoff = (
+                float(scale), int(maxdist), float(upfreq), float(lowfreq),
+                float(dcutoff))
             scale   = my_round(scale)
             maxdist = my_round(maxdist)
             upfreq  = my_round(upfreq)
             lowfreq = my_round(lowfreq)
-            self.results[(scale, maxdist, upfreq, lowfreq)] = float(result)
+            dcutoff = my_round(dcutoff)
+            self.results[(scale, maxdist, upfreq, lowfreq, dcutoff)] = float(result)
             if not scale in self.scale_range:
                 self.scale_range.append(scale)
             if not maxdist in self.maxdist_range:
@@ -416,10 +460,13 @@ class IMPoptimizer(object):
                 self.upfreq_range.append(upfreq)
             if not lowfreq in self.lowfreq_range:
                 self.lowfreq_range.append(lowfreq)
+            if not dcutoff in self.dcutoff_range:
+                self.dcutoff_range.append(dcutoff)
         self.scale_range.sort(  key=float)
         self.maxdist_range.sort(key=float)
         self.lowfreq_range.sort(key=float)
         self.upfreq_range.sort( key=float)
+        self.dcutoff_range.sort(key=float)
 
 
 def my_round(num, val=4):
@@ -427,8 +474,8 @@ def my_round(num, val=4):
     return str(int(num) if num == int(num) else num)
 
 
-def _mu_correlate(svd, cutoff, corr, off_diag, scale, maxdist, upfreq, lowfreq,
-                  verbose, count):
+def _mu_correlate(svd, corr, off_diag, scale, maxdist, upfreq, lowfreq,
+                  dcutoff, verbose, count):
     tdm = StructuralModels(
         nloci=svd['nloci'], models=svd['models'],
         bad_models=svd['bad_models'],
@@ -438,11 +485,11 @@ def _mu_correlate(svd, cutoff, corr, off_diag, scale, maxdist, upfreq, lowfreq,
         zscores=svd['zscore'])
     try:
         result = tdm.correlate_with_real_data(
-            cutoff=cutoff, corr=corr,
+            cutoff=dcutoff, corr=corr,
             off_diag=off_diag)[0]
         if verbose:
-            verb = '%5s  %s %s %s %s ' % (
-                count, upfreq, lowfreq, maxdist, scale)
+            verb = '%5s  %s %s %s %s %s' % (
+                count, upfreq, lowfreq, maxdist, scale, dcutoff)
             if verbose == 2:
                 stderr.write(verb + str(result) + '\n')
             else:

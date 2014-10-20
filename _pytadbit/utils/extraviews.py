@@ -547,7 +547,8 @@ def my_round(num, val):
     return int(num) if num == int(num) else num
 
 
-def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
+def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
+                                              'lowfreq'), dcutoff=None,
                                 show_best=0, skip=None, savefig=None):
     """
     A grid of heatmaps representing the result of the optimization.
@@ -559,6 +560,7 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     :param 0 show_best: number of best correlation value to identifie.
     :param None skip: a dict can be passed here in order to fix a given axe,
        e.g.: {'scale': 0.001, 'maxdist': 500}
+    :param None dcutoff: optimized cutoff
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
@@ -588,8 +590,10 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     xax = [my_round(i, 3) for i in axes_range[3]]
     yax = [my_round(i, 3) for i in axes_range[2]]
 
+
     # get best correlations
-    sort_result =  sorted([(result[i, j, k, l], wax[i], zax[j], xax[l], yax[k])
+    sort_result =  sorted([(result[i, j, k, l],
+                            wax[i], zax[j], xax[l], yax[k])
                            for i in range(len(wax))
                            for j in range(len(zax))
                            for k in range(len(yax))
@@ -675,9 +679,10 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq', 'low
     grid.cbar_axes[0].colorbar(im)
     grid.cbar_axes[0].set_ylabel('Correlation value')
     tit = 'Optimal IMP parameters\n'
-    tit += 'Best: %s=%%s, %s=%%s, %s=%%s, %s=%%s' % (axes[0], axes[1],
-                                                     axes[3], axes[2])
-    fig.suptitle(tit % tuple([my_round(i, 3) for i in sort_result[0][1:]]),
+    tit += 'Best: %s=%%s, %s=%%s, %s=%%s, %s=%%s %s=%%s' % (
+        axes[0], axes[1], axes[3], axes[2], 'dcutoff')
+    fig.suptitle(tit % tuple([my_round(i, 3) for i in sort_result[0][1:]] +
+                             [str(dcutoff)]),
                  size='large')
     if savefig:
         tadbit_savefig(savefig)

@@ -670,7 +670,8 @@ class Experiment(object):
                                n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1,
                                lowfreq_range=(-1, 0, 0.1),
                                scale_range=[0.01][:],
-                               maxdist_range=(400, 1400, 100), cutoff=None,
+                               maxdist_range=(400, 1400, 100),
+                               dcutoff_range=[2][:],
                                outfile=None, verbose=True, corr='spearman',
                                off_diag=1, savedata=None):
         """
@@ -702,6 +703,10 @@ class Experiment(object):
         :param [0.01] scale_range: upper and lower bounds used to search for
            the optimal scale parameter (nm per nucleotide). The last value of
            the input tuple is the incremental step for scale parameter values
+        :param [2] dcutoff_range: upper and lower bounds used to search for
+           the optimal distance cutoff parameter (distance, in number of beads,
+           from which to consider 2 beads as being close). The last value of the
+           input tuple is the incremental step for scale parameter values
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
         :param True verbose: print the results to the standard output
@@ -730,12 +735,13 @@ class Experiment(object):
                          'Experiment.normalize_hic()\n')
         if not end:
             end = self.size
-        optimizer = IMPoptimizer(self, start, end, n_keep=n_keep, cutoff=cutoff,
+        optimizer = IMPoptimizer(self, start, end, n_keep=n_keep,
                                  n_models=n_models, close_bins=close_bins)
         optimizer.run_grid_search(maxdist_range=maxdist_range,
                                   upfreq_range=upfreq_range,
                                   lowfreq_range=lowfreq_range,
-                                  scale_range=scale_range, corr=corr,
+                                  scale_range=scale_range,
+                                  dcutoff_range=dcutoff_range, corr=corr,
                                   n_cpus=n_cpus, verbose=verbose,
                                   off_diag=off_diag, savedata=savedata)
 

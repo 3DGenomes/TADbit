@@ -124,7 +124,7 @@ def load_hic_data(opts, xnames):
     return crm
 
 
-def load_optimal_imp_parameters(opts, name, exp, dcutoff):
+def load_optimal_imp_parameters(opts, name, exp):
     """
     Load optimal IMP parameters
     """
@@ -137,7 +137,7 @@ def load_optimal_imp_parameters(opts, name, exp, dcutoff):
     from pytadbit import IMPoptimizer
     results = IMPoptimizer(exp, opts.beg,
                            opts.end, n_models=opts.nmodels_opt,
-                           n_keep=opts.nkeep_opt, cutoff=dcutoff)
+                           n_keep=opts.nkeep_opt)
     # load from log files
     if not opts.optimize_only:
         for fnam in os.listdir(os.path.join(opts.outdir, name)):
@@ -158,12 +158,16 @@ def optimize(results, opts, name):
                if ':' in opts.upfreq  else float(opts.upfreq) )
     lowfreq = (tuple([float(i) for i in opts.lowfreq.split(':')])
                if ':' in opts.lowfreq else float(opts.lowfreq))
+    dcutoff = (tuple([float(i) for i in opts.dcutoff.split(':')])
+               if ':' in opts.dcutoff else float(opts.dcutoff))
     # Find optimal parameters
     logging.info("\tFinding optimal parameters for modeling " +
                  "(this can take long)...")
-    optname = '_{}_{}_{}'.format(opts.maxdist,
-                                 opts.upfreq ,
-                                 opts.lowfreq)
+    optname = '_{}_{}_{}_{}_{}'.format(opts.maxdist,
+                                       opts.upfreq ,
+                                       opts.lowfreq,
+                                       opts.scale,
+                                       opts.dcutoff)
     logpath = os.path.join(
         opts.outdir, name, '%s_optimal_params%s.tsv' % (name, optname))
 
@@ -199,13 +203,16 @@ upfreq  = (tuple([float(i) for i in opts.upfreq.split(":") ])
            if ":" in opts.upfreq  else float(opts.upfreq) )
 lowfreq = (tuple([float(i) for i in opts.lowfreq.split(":")])
            if ":" in opts.lowfreq else float(opts.lowfreq))
-optname = "_{}_{}_{}".format(opts.maxdist,
-                             opts.upfreq ,
-                             opts.lowfreq)
+dcutoff = (tuple([float(i) for i in opts.dcutoff.split(":")])
+           if ":" in opts.dcutoff else float(opts.dcutoff))
+optname = "_{}_{}_{}_{}_{}".format(opts.maxdist, opts.upfreq ,
+                             opts.lowfreq, opts.scale,
+                             opts.dcutoff)
 name = "%s"
 results.run_grid_search(n_cpus=opts.ncpus, off_diag=2, verbose=True,
                         lowfreq_range=lowfreq, upfreq_range=upfreq,
-                        maxdist_range=maxdist, scale_range=scale)
+                        maxdist_range=maxdist, scale_range=scale,
+                        dcutoff_range=dcutoff)
 
 tmp = open("_tmp_results_" + tmp_name, "w")
 dump(results, tmp)
@@ -229,7 +236,6 @@ tmp.close()
         exit()
 
     ## get best parameters
-
     optpar, cc = results.get_best_parameters_dict(
         reference='Optimized for %s' % (name), with_corr=True)
 
@@ -237,9 +243,11 @@ tmp.close()
     md = optpar['maxdist']
     uf = optpar['upfreq']
     lf = optpar['lowfreq']
+    dc = optpar['dcutoff']
 
-    logging.info(("\t\tOptimal values: scale:{0} maxdist:{1} upper:{2} lower:{3}" +
-                  " with cc: {4}").format(sc, md, uf, lf, cc))
+    logging.info(("\t\tOptimal values: scale:{0} maxdist:{1} upper:{2} " +
+                  "lower:{3} dcutoff:{4} with cc: {5:.4}"
+                  ).format(sc, md, uf, lf, dc, cc))
     results.write_result(os.path.join(
         opts.outdir, name, '%s_optimal_params.tsv' % (name)))
     if "optimization plot" in opts.analyze:
@@ -355,8 +363,6 @@ def main():
     else:
         xnames = [os.path.split(d)[-1] for d in opts.norm]
 
-    # distance cutoff equals 2 bins
-    dcutoff = int(opts.res * float(opts.scale) * 2)
     name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
     opts.outdir
 
@@ -412,7 +418,7 @@ def main():
     ############################################################################
 
     if not opts.analyze_only:
-        results = load_optimal_imp_parameters(opts, name, exp, dcutoff)
+        results = load_optimal_imp_parameters(opts, name, exp)
         
     ############################################################################
     #########################  OPTIMIZE IMP PARAMETERS #########################
@@ -444,7 +450,10 @@ def main():
     ############################################################################
     ##############################  ANALYZE MODELS #############################
     ############################################################################
-
+    dcutoff = int(models._config['dcutoff'] *
+                  models._config['scale']   *
+                  models.resolution)
+    
     if "correlation real/models" in opts.analyze:
         # Calculate the correlation coefficient between a set of kept models and
         # the original HiC matrix
@@ -791,11 +800,6 @@ def get_options():
                         default='1000', type=int,
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
-    glopts.add_argument('--scale', dest='scale', metavar="LIST",
-                      default="0.01",
-                  help='''[%(default)s] range of numbers to be test as optimal
-                  scale value, i.e. 0.005:0.01:0.001 -- Can also pass only one
-                      number''')
 
     #########################################
     # OPTIMIZATION
@@ -811,6 +815,18 @@ def get_options():
                         default='0',
                         help='range of numbers for lowfreq' +
                         ', i.e. -1.2:0:0.3 -- or just a number')
+    optimo.add_argument('--scale', dest='scale', metavar="LIST",
+                        default="0.01",
+                        help='[%(default)s] range of numbers to be test as ' +
+                        'optimal scale value, i.e. 0.005:0.01:0.001 -- Can ' +
+                        'also pass only one number')
+    optimo.add_argument('--dcutoff', dest='dcutoff', metavar="LIST",
+                        default="2",
+                        help='[%(default)s] range of numbers to be test as ' +
+                        'optimal distance cutoff parameter (distance, in ' +
+                        'number of beads, from which to consider 2 beads as ' +
+                        'being close), i.e. 1:5:0.5 -- Can also pass only one' +
+                        ' number')
     optimo.add_argument('--nmodels_opt', dest='nmodels_opt', metavar="INT",
                         default='500', type=int,
                         help='[%(default)s] number of models to generate for ' +
@@ -995,8 +1011,8 @@ def get_options():
 
     # write log
     if opts.optimize_only:
-        log_format = '[OPTIMIZATION {}_{}_{}]   %(message)s'.format(
-            opts.maxdist, opts.upfreq, opts.lowfreq)
+        log_format = '[OPTIMIZATION {}_{}_{}_{}_{}]   %(message)s'.format(
+            opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale, opts.dcutoff)
     elif opts.analyze_only:
         log_format = '[ANALYZE]   %(message)s'
     elif opts.tad_only:
