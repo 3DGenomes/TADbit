@@ -689,7 +689,7 @@ class IMPmodel(dict):
 
 
     def write_cmm(self, directory, color='index', rndname=True,
-                  model_num=None, **kwargs):
+                  model_num=None, filename=None, **kwargs):
         """
         Save a model in the cmm format, read by Chimera
         (http://www.cgl.ucsf.edu/chimera).
@@ -705,6 +705,7 @@ class IMPmodel(dict):
            generate the corresponding model. If False, the format will be:
            model_NUM_RND.cmm where NUM is the rank of the model in terms of
            objective function value
+        :param None filename: overide the default file name writing
         :param 'index' color: can be:
 
              * a string as:
@@ -760,12 +761,15 @@ class IMPmodel(dict):
             out += form % (i, i + 1)
         out += '</marker_set>\n'
 
-        if rndname:
-            out_f = open('%s/model.%s.cmm' % (directory,
-                                              self['rand_init']), 'w')
+        if filename:
+                out_f = open('%s/%s' % (directory, filename), 'w')
         else:
-            out_f = open('%s/model_%s_rnd%s.cmm' % (
-                directory, model_num, self['rand_init']), 'w')
+            if rndname:
+                out_f = open('%s/model.%s.cmm' % (directory,
+                                                  self['rand_init']), 'w')
+            else:
+                out_f = open('%s/model_%s_rnd%s.cmm' % (
+                    directory, model_num, self['rand_init']), 'w')
         out_f.write(out)
         out_f.close()
 
@@ -810,7 +814,7 @@ class IMPmodel(dict):
 
 
     def write_xyz(self, directory, model_num=None, get_path=False,
-                  rndname=True, header=True):
+                  rndname=True, filename=None, header=True):
         """
         Writes a xyz file containing the 3D coordinates of each particle in the
         model.
@@ -828,14 +832,18 @@ class IMPmodel(dict):
            objective function value
         :param False get_path: whether to return, or not, the full path where
            the file has been written
+        :param None filename: overide the default file name writing
         :param True header: write a header describing the experiment from which
            the model was calculated.
         """
-        if rndname:
-            path_f = '%s/model.%s.xyz' % (directory, self['rand_init'])
+        if filename:
+            path_f = '%s/%s' % (directory, filename)
         else:
-            path_f = '%s/model_%s_rnd%s.xyz' % (directory, model_num,
-                                                self['rand_init'])
+            if rndname:
+                path_f = '%s/model.%s.xyz' % (directory, self['rand_init'])
+            else:
+                path_f = '%s/model_%s_rnd%s.xyz' % (directory, model_num,
+                                                    self['rand_init'])
         out = ''
         if header:
             out += model_header(self)

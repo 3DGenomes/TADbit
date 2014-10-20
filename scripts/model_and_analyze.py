@@ -510,11 +510,11 @@ def main():
                 opts.outdir, name, 'models', 'cl_' + str(cluster))):
                 os.makedirs(os.path.join(
                     opts.outdir, name, 'models', 'cl_' + str(cluster)))
-            if not opts.not_write_cmm:
+            if not opts.not_write_xyz:
                 models.write_xyz(directory=os.path.join(
                     opts.outdir, name, 'models', 'cl_' + str(cluster)),
                                  cluster=cluster)
-            if not opts.not_write_xyz:
+            if not opts.not_write_cmm:
                 models.write_cmm(directory=os.path.join(
                     opts.outdir, name, 'models', 'cl_' + str(cluster)),
                                  cluster=cluster)
@@ -538,7 +538,60 @@ def main():
                 for i in range(1, len(models.clusters[cluster]) + 1):
                     out.write("match #{0} #0\n".format(i-1))
                 out.close()
+        # same with singletons
+        singletons = [m['rand_init'] for m in models if m['cluster']=='Singleton']
+        logging.info("\t\tSingletons has {1} models {2}".format(
+            'Singletons', len(singletons), singletons))
+        if not os.path.exists(os.path.join(
+            opts.outdir, name, 'models', 'Singletons')):
+            os.makedirs(os.path.join(
+                opts.outdir, name, 'models', 'Singletons'))
+        if not opts.not_write_xyz:
+            models.write_xyz(directory=os.path.join(
+                opts.outdir, name, 'models', 'Singletons'),
+                             models=singletons)
+        if not opts.not_write_cmm:
+            models.write_cmm(directory=os.path.join(
+                opts.outdir, name, 'models', 'Singletons'),
+                             models=singletons)
+        # Write best model and centroid model
+        models[models.centroid_model()].write_cmm(
+            directory=os.path.join(opts.outdir, name, 'models'),
+            filename='centroid.cmm')
+        models[models.centroid_model()].write_cmm(
+            directory=os.path.join(opts.outdir, name, 'models'),
+            filename='centroid.xyz')
+        models[0].write_cmm(
+            directory=os.path.join(opts.outdir, name, 'models'),
+            filename='best.cmm')
+        models[0].write_cmm(
+            directory=os.path.join(opts.outdir, name, 'models'),
+            filename='best.xyz')
+        # Write list file
+        clslstfile = os.path.join(
+            opts.outdir, name, 'models', 'Singletons.lst')
+        out = open(clslstfile,'w')
+        for model_n in singletons:
+            out.write("model.{0}\n".format(model_n))
+        out.close()
+        if not opts.not_write_cmm:
+            # Write chimera file
+            clschmfile = os.path.join(
+                opts.outdir, name, 'models', 'Singletons_superimpose.cmd')
+            out = open(clschmfile, 'w')
+            out.write("open " + " ".join(["Singletons/model.{0}.cmm".format(
+                model_n) for model_n in singletons]))
+            out.write("\nlabel; represent wire; ~bondcolor\n")
+            for i in range(1, len(singletons) + 1):
+                out.write("match #{0} #0\n".format(i-1))
+            out.close()
 
+    if "objective function" in opts.analyze:
+        logging.info("\tPlotting objective function decay for vbest model...")
+        models.objective_function_model(
+            0, log=True, smooth=False,
+            savefig=os.path.join(opts.outdir, name, name + '_obj-func.pdf'))
+        
     if "centroid" in opts.analyze:
         # Get the centroid model of cluster #1
         logging.info("\tGetting centroid...")
@@ -651,14 +704,15 @@ def get_options():
                4  : "optimization plot",
                5  : "correlation real/models",
                6  : "z-score plot",
-               7  : "centroid",
-               8  : "consistency",
-               9  : "density",
-               10 : "contact map",
-               11 : "walking angle",
-               12 : "persistence length",
-               13 : "accessibility",
-               14 : "interaction"}
+               7  : "objective function",
+               8  : "centroid",
+               9  : "consistency",
+               10 : "density",
+               11 : "contact map",
+               12 : "walking angle",
+               13 : "persistence length",
+               14 : "accessibility",
+               15 : "interaction"}
 
     parser.add_argument('--usage', dest='usage', action="store_true",
                         default=False,
@@ -737,11 +791,11 @@ def get_options():
                         default='1000', type=int,
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
-    # glopts.add_argument('--scale', dest='scale', metavar="LIST",
-    #                   default="0.01",
-    #               help='''[%(default)s] range of numbers to be test as optimal
-    #               scale value, i.e. 0.005:0.01:0.001 -- Can also pass only one
-    #                   number''')
+    glopts.add_argument('--scale', dest='scale', metavar="LIST",
+                      default="0.01",
+                  help='''[%(default)s] range of numbers to be test as optimal
+                  scale value, i.e. 0.005:0.01:0.001 -- Can also pass only one
+                      number''')
 
     #########################################
     # OPTIMIZATION
@@ -908,7 +962,7 @@ def get_options():
         exit()
 
     # this options should stay as this now
-    opts.scale = '0.01'
+    # opts.scale = '0.01'
 
     # switch to number
     opts.nmodels_mod = int(opts.nmodels_mod)

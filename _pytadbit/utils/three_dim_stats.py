@@ -430,9 +430,12 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
         orthoz /= normer
         # define the number of circle to draw in this section
         between = int(fact * adj1 + 0.5)
-        stepx = difx / between
-        stepy = dify / between
-        stepz = difz / between
+        try:
+            stepx = difx / between
+            stepy = dify / between
+            stepz = difz / between
+        except ZeroDivisionError:
+            stepx = stepy = stepz = 0
 
         hyp1 = sqrt(adj1**2 + radius**2)
         # this is an attempt of correction for the integrity of dots

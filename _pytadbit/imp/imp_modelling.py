@@ -221,7 +221,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     pool = mu.Pool(n_cpus)
     jobs = {}
     for rand_init in xrange(START, n_models + START):
-        jobs[rand_init] = pool.apply_async(generate_IMPmodel,
+        jobs[rand_init] = pool.apply_async(_do_it,
                                            args=(rand_init,))
 
     pool.close()
@@ -255,6 +255,13 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
         sorted(results, key=lambda x: x[1]['objfun'])[n_keep:]):
             bad_models[i+n_keep] = m
     return models, bad_models
+
+
+def _do_it(num):
+    """
+    Workaround in order pass to the multiprocessing queue a pickable object.
+    """
+    return generate_IMPmodel(num)
 
 
 def generate_IMPmodel(rand_init):

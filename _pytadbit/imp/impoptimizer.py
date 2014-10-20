@@ -180,6 +180,7 @@ class IMPoptimizer(object):
                             verb = '%5s  %s %s %s %s ' % (
                                 count, upfreq, lowfreq, maxdist, scale)
                         try:
+                            # TODO: cutoff optimization round here?
                             result = tdm.correlate_with_real_data(
                                 cutoff=cutoff, corr=corr,
                                 off_diag=off_diag)[0]
