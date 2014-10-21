@@ -64,7 +64,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
        neighbors (e.g. 1 means consecutive particles)
     :param n_cpus: number of CPUs to use
     :param False verbose: if set to True, information about the distance, force
-       and Z-score between particles will be printed
+       and Z-score between particles will be printed. If verbose is 0.5 than
+       constraints will be printed only for the first model calculated.
     :param None values: the normalized Hi-C data in a list of lists (equivalent 
        to a square matrix)
     :param CONFIG['dmel_01'] config: a dictionary containing the standard 
@@ -304,6 +305,9 @@ def generate_IMPmodel(rand_init):
         model['pps']  = IMP.kernel.ParticlePairsTemp()
 
     # CALL BIG FUNCTION
+    if rand_init == 1 and verbose == 0.5:
+        verbose = 1
+        stdout.write("# Harmonic\tpart1\tpart2\tdist\tkforce\n")
     addAllHarmonics(model, verbose=verbose)
 
     # Setup an excluded volume restraint between a bunch of particles
@@ -438,7 +442,7 @@ def addAllHarmonics(model, verbose=False):
             num_loci2 = int(y)
 
             log = addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2)
-            if verbose:
+            if verbose >= 1:
                 stdout.write(log)
                 
 

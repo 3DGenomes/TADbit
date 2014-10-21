@@ -49,6 +49,7 @@ import logging
 from cPickle import load, dump
 from random import random
 from string import ascii_letters as letters
+from subprocess import Popen, PIPE
 
 def search_tads(opts, crm, name):
     """
@@ -309,7 +310,7 @@ models=  generate_3d_models(zscores, opts.res, nloci,
                             n_cpus=opts.ncpus,
                             keep_all=True,
                             first=0,
-                            config=optpar,
+                            config=optpar, verbose=0.5,
                             coords=coords, zeros=zeros)
 # Save models
 models.save_models(
@@ -318,8 +319,14 @@ models.save_models(
 ''' % (tmp_name, name, name))
 
     tmp.close()
-    os.system("python _tmp_model_%s.py" % tmp_name)
-
+    constraints = Popen("python _tmp_model_%s.py" % tmp_name,
+                        shell=True, stdout=PIPE).communicate()[0]
+    if "constraints" in opts.analyze:
+        out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
+                   'w')
+        out.write(constraints)
+        out.close()
+    
     os.system('rm -f _tmp_zscore_%s' % (tmp_name))
     os.system('rm -f _tmp_model_%s.py' % (tmp_name))
     os.system('rm -f _tmp_opts_%s' % (tmp_name))
@@ -713,15 +720,16 @@ def get_options():
                4  : "optimization plot",
                5  : "correlation real/models",
                6  : "z-score plot",
-               7  : "objective function",
-               8  : "centroid",
-               9  : "consistency",
-               10 : "density",
-               11 : "contact map",
-               12 : "walking angle",
-               13 : "persistence length",
-               14 : "accessibility",
-               15 : "interaction"}
+               7  : "constraints",
+               8  : "objective function",
+               9  : "centroid",
+               10 : "consistency",
+               11 : "density",
+               12 : "contact map",
+               13 : "walking angle",
+               14 : "persistence length",
+               15 : "accessibility",
+               16 : "interaction"}
 
     parser.add_argument('--usage', dest='usage', action="store_true",
                         default=False,
