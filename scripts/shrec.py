@@ -74,12 +74,12 @@ def main():
 
     if opts.verbose:
         print '- Getting data'
-    try:
-        data = [[float(v) for v in l.split()] for l in open(fnam)]
+    try: # diagonal replaced by zero
+        data = [[float(v) if i!= j else 0 for j, v in enumerate(l.split())] for i, l in enumerate(open(fnam))]
     except ValueError:
-        data = [[float(v) for v in l.split(',')] for l in open(fnam)]
+        data = [[float(v) if i!= j else 0 for j, v in enumerate(l.split(','))] for i, l in enumerate(open(fnam))]
 
-    to_remove = dict([(i, None) for i, d in enumerate(data) if sum(d)==10000])
+    to_remove = dict([(i, None) for i, d in enumerate(data) if sum(d)==0])
     if opts.verbose:
         print to_remove
     N = len(data)
