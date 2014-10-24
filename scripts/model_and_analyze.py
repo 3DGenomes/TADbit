@@ -580,7 +580,7 @@ def main():
         models[0].write_cmm(
             directory=os.path.join(opts.outdir, name, 'models'),
             filename='best.cmm')
-        models[0].write_cmm(
+        models[0].write_xyz(
             directory=os.path.join(opts.outdir, name, 'models'),
             filename='best.xyz')
         # Write list file

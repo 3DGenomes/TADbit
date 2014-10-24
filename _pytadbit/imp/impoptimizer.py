@@ -407,15 +407,23 @@ class IMPoptimizer(object):
             for maxdist in self.maxdist_range:
                 for upfreq in self.upfreq_range:
                     for lowfreq in self.lowfreq_range:
-                        cut = [c for c in self.dcutoff_range
-                               if (scale, maxdist, upfreq, lowfreq, c)
-                               in self.results][0]
+                        try:
+                            cut = sorted(
+                                [c for c in self.dcutoff_range
+                                 if (scale, maxdist, upfreq, lowfreq, c)
+                                 in self.results],
+                                key=lambda x: self.results[
+                                    (scale, maxdist, upfreq, lowfreq, x)])[0]
+                        except IndexError:
+                            print 'Missing dcutoff', (scale, maxdist, upfreq, lowfreq)
+                            continue
                         try:
                             result = self.results[(scale, maxdist,
                                                    upfreq, lowfreq, cut)]
                             out.write('%s\t%s\t%s\t%s\t%s\t%s\n' % (
                                 scale, maxdist, upfreq, lowfreq, cut, result))
                         except KeyError:
+                            print 'KeyError', (scale, maxdist, upfreq, lowfreq, cut, result)
                             continue
         out.close()
 
@@ -470,7 +478,7 @@ class IMPoptimizer(object):
 
 
 def my_round(num, val=4):
-    num = round(num, val)
+    num = round(float(num), val)
     return str(int(num) if num == int(num) else num)
 
 
