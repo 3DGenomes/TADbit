@@ -578,7 +578,8 @@ class Experiment(object):
         size = self.size
         remove = [i in self._zeros for i in xrange(size)]
         self.bias = iterative(self.hic_data[0], iterations=iterations,
-                              remove=remove)
+                              max_dev=max_dev, remove=remove,
+                              verbose=not silent)
         self.norm = [HiC_data([(i + j * size, float(self.hic_data[0][i, j]) /
                                 self.bias[i] /
                                 self.bias[j] * size)
