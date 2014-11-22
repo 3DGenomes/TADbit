@@ -4,10 +4,8 @@
 Getting started
 ===============
 
-
 Hi-C data format
 ----------------
-
 
 Hi-C data are usually represented as symmetric matrices in a tab
 separated file, as in the example below:
@@ -21,7 +19,6 @@ separated file, as in the example below:
     chrT_004      100     111     146     278     70      42
     chrT_005      16      36      26      79      243     39
     chrT_006      19      50      53      42      37      224
-
 
 TADbit allows to load most of this kind of matrices. A Hi-C matrix is
 loaded as this *(note: this example loads human chromosome 19 from*
@@ -65,7 +62,6 @@ loaded as this *(note: this example loads human chromosome 19 from*
 Unrecognized data format
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 In some cases users may found data that are not readable by TADbit. In
 such case, a parser function can be written and passed as an argument to
 the ``add_experiment`` function:
@@ -98,7 +94,6 @@ And call it as follow:
 
 Experiment objects
 ------------------
-
 
 Experiments, when loaded, are stored in a special kind of list attached
 to chromosome objects:
@@ -138,7 +133,6 @@ Each Experiment is an independent object with a list of associated functions
 
 Basic manipulation of Experiments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Two Hi-C experiments can be summed up easily, resulting in a new Hi-c
 experiment contatining the sum of the interaction counts of the summed
@@ -192,7 +186,6 @@ chromosome.
 Hi-C matric visualization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 To quickly view how does the interaction matrix look like, experiment objects have the :func:`pytadbit.experiment.Experiment.view` function
 
 .. code:: python
@@ -235,7 +228,6 @@ Note how we pass the list of experiments to show to the :func:`pytadbit.chromoso
 
 Find Topologically Associating Domains
 --------------------------------------
-
 
 Once an experiment has been loaded, the location of Topologically Associating Domains (TADs) can be estimated as:
 
@@ -310,7 +302,6 @@ have to be multiplied by the resolution of the experiment,
 TADs to text
 ~~~~~~~~~~~~
 
-
 TADs can also be seen or saved to a file using this write function:
 
 .. code:: python
@@ -365,7 +356,6 @@ Another way to view TADs is using the matrix visualization:
 TADs in interaction matrices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 .. code:: python
 
     my_chrom.visualize(exp.name, paint_tads=True)
@@ -401,7 +391,6 @@ border.*
 TADs in density plots
 ~~~~~~~~~~~~~~~~~~~~~
 
-
 Finally TAD bourders can be seen using the density plot summary:
 
 .. code:: python
@@ -426,7 +415,6 @@ identification of the border.
 Finding TADs in related Hi-C experiments
 ----------------------------------------
 
-
 TADbit also allows to search for TADs in a chromosome using the information of several Hi-C experiments. To do this experiments do not need to be summed up (like in :ref:`exp_operations`), as the find_tad function has a batch_mode:
 
 .. code:: python
@@ -448,7 +436,6 @@ TADbit also allows to search for TADs in a chromosome using the information of s
 
 Forbidden regions and centromeres
 ---------------------------------
-
 
 By default TADbit does not put limitation in sizes of TADs, owever it may make sense to set a maximum TAD size of 5 Mb in humans [Dekker2013]_. In this case we can set this cutoff when first defining the chromosome (see the option in :class:`pytadbit.Chromosome`), or just use the function :class:`pytadbit.Chromosome.set_max_tad_size`:
 
@@ -481,7 +468,6 @@ after.
 
 Saving and restoring data
 -------------------------
-
 
 In order to avoid having to calculate TAD positions each time, TADbit allows to save and load Chromosome 
 objects, with all the associated experiments. To save a Chromosome object:

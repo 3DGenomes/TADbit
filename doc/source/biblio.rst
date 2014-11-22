@@ -4,7 +4,6 @@
 Bibliography
 ============
 
-
 .. [Baù2012] Baù, D., & Marti-Renom, M. a. (2012). Genome structure determination via 3C-based data integration by the Integrative Modeling Platform. Methods, 58(3), 300–6. doi:10.1016/j.ymeth.2012.04.004
 
 .. [Bystricky2004] Bystricky, K., Heun, P., Gehlen, L., Langowski, J., & Gasser, S. M. (2004). Long-range compaction and flexibility of interphase chromatin in budding yeast analyzed by high-resolution imaging techniques. Proceedings of the National Academy of Sciences of the United States of America, 101(47), 16495–500. doi:10.1073/pnas.0402766101

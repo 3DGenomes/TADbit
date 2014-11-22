@@ -4,7 +4,6 @@ TAD clustering
 
 
 
-
 .. contents::
    :depth: 3
 
@@ -19,7 +18,6 @@ in order to find group of TADs with specific characteristics.
 
 Compare two TADs
 ----------------
-
 
 To compare TADs, a Chromosome with defined TADs is needed. Thus, following with the example chromosome used 
 in :ref:`getting_start` (following the example up to :ref:`run_tadbit`), these re the steps to follow:

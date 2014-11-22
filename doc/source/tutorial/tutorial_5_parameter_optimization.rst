@@ -2,7 +2,6 @@
 Parameter optimization for IMP.
 ===============================
 
-
 *Recover data from previous section by loading the previously saved chromosome and its Hi-C data.*
 
 Import the necessary libraries.
@@ -115,7 +114,6 @@ first thing we need to do is to filter columns with low counts:
 
 Optimization of IMP 3D modeling parameters
 ------------------------------------------
-
 
 In the previous tutorial we found a specific TAD (region 406 to 448) that seemed quite conserved accross different cell types.
 
@@ -251,7 +249,6 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 Optimizing from Experiment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 The exact same as above can be done from Experiment objects directly:
 
 .. code:: python
@@ -263,7 +260,6 @@ The exact same as above can be done from Experiment objects directly:
 
 Visualize the results
 ---------------------
-
 
 .. code:: python
 
@@ -411,7 +407,6 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 Retrieve best parameters
 ------------------------
-
 
 Once done, best results can be returned as a dictionary to be used for modeling (see next section of the tutorial)
 
