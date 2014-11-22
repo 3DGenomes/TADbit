@@ -205,6 +205,32 @@ def read_matrix(things, parser=None, hic=True):
     return matrices
 
 
+def load_hic_data_from_reads(fnam, genome_seq, resolution):
+    """
+    :param fnam: tsv file with reads1 and reads2
+    :param resolution: the resolution of the experiment (size of a bin in
+       bases)
+    :param genome_seq: a dictionary containing the genomic sequence by
+       chromosome
+    """
+    size = 0
+    section_sizes = {}
+    sections = []
+    for crm in genome_seq:
+        len_crm = int(float(len(genome_seq[crm])) / resolution + 1)
+        section_sizes[(crm,)] = len_crm
+        size += len_crm + 1
+        sections.extend([(crm, i) for i in xrange(len_crm + 1)])
+    imx = HiC_data((), size)
+    dict_sec = dict([(j, i) for i, j in enumerate(sections)])
+    for line in open(fnam):
+        _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
+        ps1 = dict_sec[(cr1, int(ps1) / resolution)]
+        ps2 = dict_sec[(cr2, int(ps2) / resolution)]
+        imx[ps1 + ps2 * size] += 1
+        imx[ps2 + ps1 * size] += 1
+    return imx
+
 class HiC_data(dict):
     """
     This may also hold the print/write-to-file matrix functions

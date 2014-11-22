@@ -31,7 +31,9 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
     nbins = 100
     # get sum of columns
     cols = []
-    for c in sorted(matrx, key=sum):
+    size = len(matrx)
+    for c in sorted([[matrx.get(i+j*size, 0) for j in xrange(size)]
+                     for i in xrange(size)], key=sum):
         cols.append(sum(c))
     cols = np.array(cols)
     if draw_hist:
@@ -134,7 +136,9 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
             plt.show()
     # label as bad the columns with sums lower than the root
     bads = {}
-    for i, col in enumerate(matrx):
+    for i, col in enumerate(sorted([[matrx.get(i+j*size, 0)
+                                     for j in xrange(size)]
+                                    for i in xrange(size)], key=sum)):
         if sum(col) < root:
             bads[i] = sum(col)
     # now stored in Experiment._zeros, used for getting more accurate z-scores
@@ -306,10 +310,11 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False,
     # also removes rows or columns containing a NaN
     has_nans = False
     for i in xrange(len(matrx)):
-        if matrx[i][i] == 0 and diagonal:
+        if matrx.get(i + i * len(matrx), 0) == 0 and diagonal:
             if not i in bads:
                 bads[i] = None
-        elif repr(sum(matrx[i])) == 'nan':
+        elif repr(sum([matrx.get(i + j * len(matrx), 0)
+                       for j in xrange(len(matrx))])) == 'nan':
             has_nans = True
             if not i in bads:
                 bads[i] = None

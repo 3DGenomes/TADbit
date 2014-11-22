@@ -412,10 +412,15 @@ class Experiment(object):
            of the file name will determine the desired format).
 
         """
+        diagonal = False
+        try:
+            data = self.hic_data[0]
+        except:
+            data = self.norm[0]
+            diagonal = True
         self._zeros, has_nans = hic_filtering_for_modelling(
-            self.get_hic_matrix(normalized=self.hic_data==None,
-                                diagonal=False), silent=silent,
-            draw_hist=draw_hist, savefig=savefig, diagonal=self.hic_data!=None)
+            data, silent=silent, draw_hist=draw_hist, savefig=savefig,
+            diagonal=diagonal)
         if has_nans: # to make it simple
             for i in xrange(self.hic_data[0]._size2):
                 if repr(self.hic_data[0][i]) == 'nan':
@@ -576,9 +581,8 @@ class Experiment(object):
         if self.norm and not silent:
             stderr.write('WARNING: removing previous weights\n')
         size = self.size
-        remove = [i in self._zeros for i in xrange(size)]
         self.bias = iterative(self.hic_data[0], iterations=iterations,
-                              max_dev=max_dev, remove=remove,
+                              max_dev=max_dev, bads=self._zeros,
                               verbose=not silent)
         self.norm = [HiC_data([(i + j * size, float(self.hic_data[0][i, j]) /
                                 self.bias[i] /

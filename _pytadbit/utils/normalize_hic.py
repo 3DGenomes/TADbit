@@ -77,7 +77,7 @@ def _update_W(W, DB):
             except ZeroDivisionError: # whole row is empty
                 continue
 
-def iterative(hic_data, remove=None, iterations=0, max_dev=0.00001,
+def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
               verbose=False):
     """
     :param hic_data: dictionary containing the interaction data
@@ -88,8 +88,10 @@ def iterative(hic_data, remove=None, iterations=0, max_dev=0.00001,
        mean value of all raws
     :returns: a vector of biases (length equal to the size of the matrix)
     """
-    print 'iterative correction'
+    if verbose:
+        print 'iterative correction'
     size = len(hic_data)
+    remove = [i in bads for i in xrange(size)]
     remove = remove or tuple([int(hic_data[i+i*size]==0) for i in xrange(size)])
     W = {}
     for i in xrange(size):

@@ -13,35 +13,53 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
-def hic_map(fnam, genome_seq, masked=None, resolution=100000,
-            savefig=None):
-    cumcs = {} 
-    total = 0
-    for crm in genome_seq:
-        cumcs[crm] = total
-        total += len(genome_seq[crm]) / resolution
-    # bin the data
-    data = [[0 for _ in xrange(total + 1)] for _ in xrange(total + 1)]
-    masked = masked or set()
-    for line in open(fnam):
-        read, cr1, ps1, _, _, _, _, cr2, ps2, _, _, _, _ = line.split()
-        if read in masked:
-            continue
-        ps1 = int(ps1) / resolution
-        ps2 = int(ps2) / resolution
-        try:
-            data[cumcs[cr1] + ps1][cumcs[cr2] + ps2] += 1
-        except:
-            break
-    # do the plot
-    import numpy as np
-    plt.figure(figsize=(16, 12))
-    plt.imshow(np.log2(data), origin='lower', cmap='gist_earth')
-    plt.colorbar()
-    if savefig:
-        tadbit_savefig(savefig)
+def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
+            savefig=None, show=False, savedata=None):
+    if isinstance(data, str):
+        fnam = data
+        cumcs = {} 
+        total = 0
+        for crm in genome_seq:
+            cumcs[crm] = total
+            total += len(genome_seq[crm]) / resolution
+        # bin the data
+        data = [[0 for _ in xrange(total + 1)] for _ in xrange(total + 1)]
+        masked = masked or set()
+        for line in open(fnam):
+            read, cr1, ps1, _, _, _, _, cr2, ps2, _, _, _, _ = line.split()
+            if read in masked:
+                continue
+            ps1 = int(ps1) / resolution
+            ps2 = int(ps2) / resolution
+            try:
+                data[cumcs[cr1] + ps1][cumcs[cr2] + ps2] += 1
+            except:
+                break
     else:
-        plt.show()
+        hic_data = data
+        if biases:
+            data = [[hic_data[len(hic_data) * i + j] / (biases[i] * biases[j])
+                     for j in xrange(len(hic_data))]
+                    for i in xrange(len(hic_data))]
+        else: 
+            data = [[hic_data[len(hic_data) * i + j]
+                     for j in xrange(len(hic_data))]
+                    for i in xrange(len(hic_data))]
+    # do the plot
+    if show or savefig:
+        import numpy as np
+        plt.figure(figsize=(16, 12))
+        plt.imshow(np.log2(data), origin='lower', cmap='gist_earth')
+        plt.colorbar()
+        if savefig:
+            tadbit_savefig(savefig)
+        elif show:
+            plt.show()
+    if savedata:
+        out = open(savedata, 'w')
+        for line in xrange(data):
+            out.write('\t'.join([str(cell) for cell in line]) + '\n')
+        out.closew()
 
 def plot_distance_vs_interactions(fnam, min_diff=100, max_diff=1000000,
                                   resolution=100, axe=None, savefig=None):
