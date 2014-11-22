@@ -40,11 +40,11 @@ def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
         beg, end = focus if focus else (0, len(hic_data))
         beg -= 1 if focus else 0
         if biases:
-            data = [[hic_data[beg, end * i + j] / (biases[i] * biases[j])
+            data = [[hic_data[len(hic_data) * i + j] / (biases[i] * biases[j])
                      for j in xrange(beg, end)]
                     for i in xrange(beg, end)]
         else: 
-            data = [[hic_data[beg, end * i + j]
+            data = [[hic_data[len(hic_data) * i + j]
                      for j in xrange(beg, end)]
                     for i in xrange(beg, end)]
     # do the plot

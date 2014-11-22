@@ -12,7 +12,7 @@ def apply_filter(fnam, outfile, masked, filters=None):
     masked_reads = set()
     filters = filters or masked.keys()
     for filt in filters:
-        masked_reads.update(masked[filt])
+        masked_reads.update(masked[filt]['reads'])
     out = open(outfile, 'w')
     for line in open(fnam):
         read = line.split('\t', 1)[0]
