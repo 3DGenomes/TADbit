@@ -2,6 +2,53 @@
 20 juin 2014
 
 Implementation of iterative correction Imakaev 2012
+
+Schematic flow chart for five iterations (it = 0->5) starting from the symmetric
+matrix W of size N:
+
+   +---------->  Wij
+   |    
+   |              |
+   |              v
+   |             __
+   |             \
+   |        Si = /_    Wij
+   |            j=0->N
+   |    
+   |              |
+   |              v
+   |    
+   |                   _
+   |        DBi = Si / S
+   |    
+   |              |
+   |              v
+   |    
+   |        Bi = Bi x DBi             ---> keep track, used as expected value
+   |    
+   |              |
+   |              v
+   |    
+   |                 Wij
+   |       Wij = -----------
+   |              DBi x DBj  
+   |    
+   |              |
+   |        it<5 / \ it=5
+   |____________/   \_________   TADbit          _           
+    it++                     \`----------> Wij / S    meaning that: Si = O(1)
+                             |                        ('Si' tends towards one
+                             |                         when 'it' -> infinite)
+                             |Strict Imakaev
+                             |
+                             v
+                             
+                            Wij
+                          -------  meaning that: Si = 1
+                           ___
+                           \
+                           /__ Wi
+
 """
 
 def _update_S(W):
@@ -30,9 +77,18 @@ def _update_W(W, DB):
             except ZeroDivisionError: # whole row is empty
                 continue
 
-def iterative(hic_data, remove=None, iterations=0):
+def iterative(hic_data, remove=None, iterations=0, max_dev=0.00001,
+              verbose=False):
     """
+    :param hic_data: dictionary containing the interaction data
+    :param None remove: columns not to consider
+    :param 0 iterations: number of iterations to do (99 if a fully smoothed
+       matrix with no visibility differences between columns is desired)
+    :param 0.00001 max_dev: maximum difference allowed between a row and the
+       mean value of all raws
+    :returns: a vector of biases (length equal to the size of the matrix)
     """
+    print 'iterative correction'
     size = len(hic_data)
     remove = remove or tuple([int(hic_data[i+i*size]==0) for i in xrange(size)])
     W = {}
@@ -43,12 +99,19 @@ def iterative(hic_data, remove=None, iterations=0):
         for j in xrange(size):
             if remove[j]:
                 continue
-            W[i][j] = hic_data[i, j]
+            if hic_data[i, j]:
+                W[i][j] = hic_data[i, j]
     B = dict([(b, 1.) for b in W])
-    for _ in xrange(iterations + 1):
+    for it in xrange(iterations + 1):
         S, meanS = _update_S(W)
         DB = _updateDB(S, meanS, B)
         _update_W(W, DB)
+        S = sorted(S.values())
+        dev = max(abs(S[0]  / meanS - 1), abs(S[-1] / meanS - 1))
+        if verbose:
+            print '   %15.3f %15.3f %15.3f %4s %9.5f' % (S[0], meanS, S[-1], it, dev)
+        if dev < max_dev:
+            break
     for i in xrange(size):
         try:
             if B[i]:

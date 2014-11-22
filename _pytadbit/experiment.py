@@ -30,6 +30,67 @@ except ImportError:
     stderr.write('matplotlib not found\n')
 
 
+
+def load_experiment_from_reads(name, fnam, genome_seq, resolution, 
+                               conditions=None, identifier=None, cell_type=None,
+                               enzyme=None, exp_type='Hi-C', **kw_descr):
+    """
+    :param fnam: tsv file with reads1 and reads2
+    :param name: name of the experiment
+    :param resolution: the resolution of the experiment (size of a bin in
+       bases)
+    :param None identifier: some identifier relative to the Hi-C data
+    :param None cell_type: cell type on which the experiment was done
+    :param None enzyme: restriction enzyme used in  the Hi-C experiment
+    :param Hi-C exp_type: name of the experiment used (currently only Hi-C is
+       supported)
+    :param None conditions: :py:func:`list` of experimental conditions, e.g. 
+       the cell type, the enzyme... (i.e.: ['HindIII', 'cortex', 'treatment']).
+       This parameter may be used to compare the effect of this conditions on
+       the TADs
+    :param None kw_descr: any other argument passed would be stored as
+       complementary descriptive field. For example::
+       
+           exp  = Experiment('k562_rep2', resolution=100000,
+                             identifier='SRX015263', cell_type='K562',
+                             enzyme='HindIII', cylce='synchronized')
+           print exp
+
+           # Experiment k562_rep2:
+           #    resolution        : 100Kb
+           #    TADs              : None
+           #    Hi-C rows         : None
+           #    normalized        : None
+           #    identifier        : SRX015263
+           #    cell type         : K562
+           #    restriction enzyme: HindIII
+           #    cylce             : synchronized
+
+       *note that these fields may appear in the header of generated out files*
+    """
+    size = 0
+    section_sizes = {}
+    sections = []
+    for crm in genome_seq:
+        len_crm = int(float(len(genome_seq[crm])) / resolution + 1)
+        section_sizes[(crm,)] = len_crm
+        size += len_crm + 1
+        sections.extend([(crm, '%04d' % i) for i in xrange(len_crm + 1)])
+    imx = HiC_data((), size)
+    dict_sec = dict([(j, i) for i, j in enumerate(sections)])
+    for line in open(fnam):
+        _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
+        ps1 = dict_sec[(cr1, '%04d' % (int(ps1) / resolution))]
+        ps2 = dict_sec[(cr2, '%04d' % (int(ps2) / resolution))]
+        imx[ps1 + ps2 * size] += 1
+        imx[ps2 + ps1 * size] += 1
+    
+    return Experiment(name, resolution=resolution, hic_data=imx,
+                      conditions=conditions, identifier=identifier,
+                      cell_type=cell_type, enzyme=enzyme, exp_type=exp_type,
+                      **kw_descr)
+
+
 class Experiment(object):
     """
     Hi-C experiment.
@@ -481,7 +542,8 @@ class Experiment(object):
                 self._normalization = 'visibility'
 
 
-    def normalize_hic(self, factor=1, iterations=0, silent=False, rowsums=None):
+    def normalize_hic(self, factor=1, iterations=0, max_dev=0.1, silent=False,
+                      rowsums=None):
         """
         Normalize the Hi-C data. This normalization step does the same of
         the :func:`pytadbit.tadbit.tadbit` function (default parameters),
