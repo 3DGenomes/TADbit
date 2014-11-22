@@ -14,7 +14,7 @@ except ImportError:
     warn('matplotlib not found\n')
 
 def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
-            savefig=None, show=False, savedata=None):
+            savefig=None, show=False, savedata=None, focus=None):
     if isinstance(data, str):
         fnam = data
         cumcs = {} 
@@ -37,14 +37,16 @@ def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
                 break
     else:
         hic_data = data
+        beg, end = focus if focus else (0, len(hic_data))
+        beg -= 1 if focus else 0
         if biases:
-            data = [[hic_data[len(hic_data) * i + j] / (biases[i] * biases[j])
-                     for j in xrange(len(hic_data))]
-                    for i in xrange(len(hic_data))]
+            data = [[hic_data[beg, end * i + j] / (biases[i] * biases[j])
+                     for j in xrange(beg, end)]
+                    for i in xrange(beg, end)]
         else: 
-            data = [[hic_data[len(hic_data) * i + j]
-                     for j in xrange(len(hic_data))]
-                    for i in xrange(len(hic_data))]
+            data = [[hic_data[beg, end * i + j]
+                     for j in xrange(beg, end)]
+                    for i in xrange(beg, end)]
     # do the plot
     if show or savefig:
         import numpy as np

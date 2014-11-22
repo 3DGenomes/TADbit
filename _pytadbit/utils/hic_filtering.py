@@ -136,9 +136,9 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
             plt.show()
     # label as bad the columns with sums lower than the root
     bads = {}
-    for i, col in enumerate(sorted([[matrx.get(i+j*size, 0)
-                                     for j in xrange(size)]
-                                    for i in xrange(size)], key=sum)):
+    for i, col in enumerate([[matrx.get(i+j*size, 0)
+                              for j in xrange(size)]
+                             for i in xrange(size)]):
         if sum(col) < root:
             bads[i] = sum(col)
     # now stored in Experiment._zeros, used for getting more accurate z-scores
