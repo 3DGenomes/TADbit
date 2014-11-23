@@ -830,7 +830,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
     axe.minorticks_on()
     axe.xaxis.set_minor_locator(MultipleLocator(10))
-    axe.hlines(1, 1, end, 'k', lw=1.5)
+    axe.hlines(1, tads[tads.keys()[0]]['start'], end, 'k', lw=1.5)
     if show:
         tit1 = fig.suptitle("TAD borders", size='x-large')
         plt.subplots_adjust(top=0.76)
