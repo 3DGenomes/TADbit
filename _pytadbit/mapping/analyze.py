@@ -21,7 +21,7 @@ def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
         total = 0
         for crm in genome_seq:
             cumcs[crm] = total
-            total += len(genome_seq[crm]) / resolution
+            total += len(genome_seq[crm]) / resolution + 1
         # bin the data
         data = [[0 for _ in xrange(total + 1)] for _ in xrange(total + 1)]
         masked = masked or set()
@@ -51,7 +51,8 @@ def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
     if show or savefig:
         import numpy as np
         plt.figure(figsize=(16, 12))
-        plt.imshow(np.log2(data), origin='lower', cmap='gist_earth')
+        plt.imshow(np.log2(data), origin='lower', cmap='gist_earth',
+                   interpolation='nearest')
         plt.colorbar()
         if savefig:
             tadbit_savefig(savefig)

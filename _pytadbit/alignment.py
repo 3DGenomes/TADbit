@@ -312,9 +312,10 @@ class Alignment(object):
                 continue
             _tad_density_plot(xpr, maxys=maxys, normalized=normalized,
                               fact_res=facts[iex], axe=axes[iex],
-                              extras=extras, shape=shape)
+                              extras=extras, shape=shape, focus=focus)
         # draw alignment columns
-        end = xpr.tads[max(xpr.tads)]['end']
+        start = focus[0] if focus else 1
+        end = focus[1] if focus else xpr.tads[max(xpr.tads)]['end']
         maxy = (ymax or max(maxys)) + 0.4
         maxxs = []
         for iex in range(len(experiments)):

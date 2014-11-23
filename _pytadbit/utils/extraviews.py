@@ -727,12 +727,18 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     """
     """
     from matplotlib.cm import jet
-    siz = xpr.size
     show=False
     if focus:
+        siz = focus[1] - focus[0]
         figsiz = 4 + (focus[1] - focus[0])/30
+        beg, end = focus
+        tads = dict([(t, xpr.tads[t]) for t in xpr.tads
+                     if (xpr.tads[t]['start'] + 1 >= beg
+                         and xpr.tads[t]['end'] <= end)])
     else:
+        siz = xpr.size
         figsiz = 4 + (siz)/30
+        tads = xpr.tads
 
     if not axe:
         fig = plt.figure(figsize=(figsiz, 1 + 1 * 1.8))
@@ -783,9 +789,9 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
                              if not (i in zeros
                                      or (i + k) in zeros) else 0.
                               for i in xrange(siz - k)]) / (siz - k))
-    for tad in xpr.tads:
-        start, end = (int(xpr.tads[tad]['start']) + 1,
-                      int(xpr.tads[tad]['end']) + 1)
+    for tad in tads:
+        start, end = (int(tads[tad]['start']) + 1,
+                      int(tads[tad]['end']) + 1)
         if norms:
             matrix = sum([norms[i + siz * j]
                          if not (i in zeros
@@ -813,14 +819,14 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
     axe.patch.set_visible(False)
     axe.set_ylabel('Relative\nHi-C count')
     #
-    for tad in xpr.tads:
-        if not xpr.tads[tad]['end']:
+    for tad in tads:
+        if not tads[tad]['end']:
             continue
-        tad = xpr.tads[tad]
-        axe.plot(((tad['end'] + 1.) / fact_res, ), (0, ),
+        tad = tads[tad]
+        axe.plot(((tad['end'] + 1.) / fact_res, ), (0., ),
                  color=jet(tad['score'] / 10) if tad['score'] else 'w',
-                 mec='none' if tad['score'] else 'k', marker=6, ms=9, alpha=1,
-                 clip_on=False)
+                 mec=jet(tad['score'] / 10) if tad['score'] else 'k',
+                 marker=6, ms=9, alpha=1, clip_on=False)
     axe.set_xticks([1] + range(100, int(tad['end'] + 1), 50))
     axe.minorticks_on()
     axe.xaxis.set_minor_locator(MultipleLocator(10))

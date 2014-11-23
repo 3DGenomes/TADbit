@@ -1158,7 +1158,7 @@ class Experiment(object):
             if start > -1:
                 if normalized:
                     matrix = [
-                        [norm_data[i+size*j]
+                        [norm_data[0][i+size*j]
                          if (not i in self._zeros
                              and not j in self._zeros) else float('nan')
                          for i in xrange(int(start) - 1, int(end))]

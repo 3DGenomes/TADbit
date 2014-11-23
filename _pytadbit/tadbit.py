@@ -79,6 +79,7 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
 
     breaks = [i for i in xrange(size) if bkpts[i + nbks * size] == 1]
     scores = [p for p in passages if p > 0]
+    print scores
 
     result = {'start': [], 'end'  : [], 'score': []}
     for brk in xrange(len(breaks)+1):
