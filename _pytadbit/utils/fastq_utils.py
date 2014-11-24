@@ -24,10 +24,10 @@ def quality_plot(fnam, nreads=None, axe=None, savefig=None):
     """
     phred = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
     quals = []
-    try:
-        fhandler = open(fnam)
-    except IOError:
+    if fnam.endswith('.gz'):
         fhandler = gopen(fnam)
+    else:
+        fhandler = open(fnam)
     if nreads:
         while True:
             try:

@@ -80,7 +80,10 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
         kwargs.get('temp_dir', tempfile.gettempdir())))
 
     #get the length of a read
-    fastqh = open(fastq_path)
+    if fastq_path.endswith('.gz'):
+        fastqh = gzip.open(fastq_path)
+    else:
+        fastqh = open(fastq_path)
     raw_seq_len = int(fastqh.next().strip().split('length=')[1])
     fastqh.close()
 
