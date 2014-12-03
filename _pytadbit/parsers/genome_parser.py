@@ -47,6 +47,7 @@ def parse_fasta(f_names, chr_names=None):
                             genome_seq[header] = ''
                             break
                     else:
+                        _ = fhandler.next()
                         header = chr_names.pop(0)
                         genome_seq[header] = ''
                         break
