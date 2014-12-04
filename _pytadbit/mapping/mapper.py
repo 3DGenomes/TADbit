@@ -79,12 +79,23 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', tempfile.gettempdir())))
 
+    # create directories
+    for rep in [temp_dir, out_sam_path]:
+        try:
+            os.mkdir(rep)
+        except OSError, error:
+            if error.strerror != 'File exists':
+                raise error
+
     #get the length of a read
     if fastq_path.endswith('.gz'):
         fastqh = gzip.open(fastq_path)
     else:
         fastqh = open(fastq_path)
-    raw_seq_len = int(fastqh.next().strip().split('length=')[1])
+    # get the length from the length of the second line, which is the sequence
+    # can not use the "length" keyword, as it is not always present
+    _ = fastqh.next()
+    raw_seq_len = len(fastqh.next().strip())
     fastqh.close()
 
     # Split input files if required and apply iterative mapping to each
