@@ -74,13 +74,14 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     max_edit_distance   = kwargs.get('max_edit_distance'   , 0.04)
     mismatches          = kwargs.get('mismatches'          , 0.04)
     nthreads            = kwargs.get('nthreads'            , 4)
-    max_reads_per_chunk = kwargs.get('max_reads_per_chunk', -1)
-    out_files           = kwargs.get('out_files'          , [])
+    max_reads_per_chunk = kwargs.get('max_reads_per_chunk' , -1)
+    out_files           = kwargs.get('out_files'           , [])
+    output_is_bam       = kwargs.get('output_is_bam'       , True)
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', tempfile.gettempdir())))
 
     # create directories
-    for rep in [temp_dir, out_sam_path]:
+    for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
         try:
             os.mkdir(rep)
         except OSError, error:
@@ -154,6 +155,13 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     # convert to sam
     sam = gem.gem2sam(mapped, index=gem_index_path, output=local_out_sam,
                       threads=nthreads, single_end=single_end)
+    if output_is_bam:
+        sam = gem.gem2sam(mapped, index=gem_index_path, threads=nthreads,
+                          single_end=single_end)
+        _ = gem.sam2bam(sam, output=local_out_sam, threads=nthreads)
+    else:
+        sam = gem.gem2sam(mapped, index=gem_index_path, output=local_out_sam,
+                          threads=nthreads, single_end=single_end)
 
     # Recursively go to the next iteration.
     unmapped_fastq_path = os.path.join(
