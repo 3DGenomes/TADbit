@@ -164,7 +164,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
 
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
-                              axe=None, ylim=None, savefig=None):
+                              genome_seq=None, axe=None, ylim=None, savefig=None):
     """
     :param fnam: input file name
     :param True first_read: map first read.
@@ -196,11 +196,16 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
 
     max_y = max([max(distr[c].values()) for c in distr])
     max_x = max([len(distr[c].values()) for c in distr])
-    for i, crm in enumerate(distr):
+    for i, crm in enumerate(genome_seq if genome_seq else distr):
         plt.subplot(len(distr.keys()), 1, i + 1)
         plt.plot(range(max(distr[crm])),
                  [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))],
                  color='red', lw=1.5, alpha=0.7)
+        if genome_seq:
+            if ylim:
+                plt.vlines(len(genome_seq[crm]) / resolution, ylim[0], ylim[1])
+            else:
+                plt.vlines(len(genome_seq[crm]) / resolution, 0, max_y)
         plt.xlim((0, max_x))
         plt.ylim(ylim or (0, max_y))
         plt.title(crm)
