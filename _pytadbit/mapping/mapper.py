@@ -171,7 +171,6 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     out_files.extend(iterative_mapping(gem_index_path, unmapped_fastq_path,
                                        out_sam_path,
                                        range_start, range_stop, **kwargs))
-
     os.remove(unmapped_fastq_path)
     return out_files
 

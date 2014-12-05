@@ -60,9 +60,9 @@ def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
             plt.show()
     if savedata:
         out = open(savedata, 'w')
-        for line in xrange(data):
+        for line in data:
             out.write('\t'.join([str(cell) for cell in line]) + '\n')
-        out.closew()
+        out.close()
 
 def plot_distance_vs_interactions(fnam, min_diff=100, max_diff=1000000,
                                   resolution=100, axe=None, savefig=None):
