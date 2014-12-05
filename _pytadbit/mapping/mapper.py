@@ -76,7 +76,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     nthreads            = kwargs.get('nthreads'            , 4)
     max_reads_per_chunk = kwargs.get('max_reads_per_chunk' , -1)
     out_files           = kwargs.get('out_files'           , [])
-    output_is_bam       = kwargs.get('output_is_bam'       , True)
+    output_is_bam       = kwargs.get('output_is_bam'       , False)
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', tempfile.gettempdir())))
 
