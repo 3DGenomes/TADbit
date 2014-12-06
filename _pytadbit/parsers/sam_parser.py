@@ -58,7 +58,11 @@ def parse_sam(f_names1, f_names2, frags, out_file1, out_file2, genome_seq,
                 crm        = crm_dict[r.tid]
                 len_seq    = len(r.seq)
                 pos        = r.pos + (0 if positive else len_seq)
-                frag_piece = frags[crm][pos / frag_chunk]
+                try:
+                    frag_piece = frags[crm][pos / frag_chunk]
+                except KeyError:
+                    # Chromosome not in hash
+                    continue
                 idx        = bisect(frag_piece, pos)
                 prev_re    = frag_piece[idx - 1]
                 next_re    = frag_piece[idx]
