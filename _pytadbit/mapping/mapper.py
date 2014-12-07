@@ -179,7 +179,7 @@ def _line_count(path):
     Mikola Kharechko on Stackoverflow.
     '''
 
-    f = open(path)
+    f = _gzopen(path)
     lines = 0
     buf_size = 1024 * 1024
     read_f = f.read  # loop optimization
@@ -201,7 +201,7 @@ def _chunk_file(in_path, out_basename, max_num_lines):
 
     out_paths = []
 
-    for i, line in enumerate(open(in_path)):
+    for i, line in enumerate(_gzopen(in_path)):
         if i % max_num_lines == 0:
             out_path = out_basename + '.%d' % (i // max_num_lines + 1)
             out_paths.append(out_path)
