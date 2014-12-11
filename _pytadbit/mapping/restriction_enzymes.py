@@ -37,7 +37,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     """
     enzyme      = RESTRICTION_ENZYMES[enzyme_name]
     enz_pattern = compile(enzyme.replace('|', ''))
-    enz_cut     = enzyme.index('|')
+    enz_cut     = enzyme.index('|') + 1 # re search starts at 0
     frags = {}
     count = 0
     for crm in genome_seq:

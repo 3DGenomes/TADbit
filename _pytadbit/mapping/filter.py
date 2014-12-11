@@ -85,28 +85,29 @@ def filter_reads(fnam, max_molecule_length=500,
                 masked[5]["reads"].add(uniq_check[uniq_key])
         ps1, ps2, sd1, sd2, re1, rs1, re2, rs2 = map(int, (
             ps1, ps2, sd1, sd2, re1, rs1, re2, rs2))
-        if cr1 != cr2:
-            continue
-        if re1 == re2:
-            if sd1 != sd2:
-                if (ps2 > ps1) == sd2:
-                    # ----<===---===>---
-                    masked[1]["reads"].add(read)
+        if cr1 == cr2:
+            if re1 == re2:
+                if sd1 != sd2:
+                    if (ps2 > ps1) == sd2:
+                        # ----<===---===>---                       self-circles
+                        masked[1]["reads"].add(read)
+                    else:
+                        # ----===>---<===---                       dangling-ends
+                        masked[2]["reads"].add(read)
                 else:
-                    # ----===>---<===---
-                    masked[2]["reads"].add(read)
-            else:
-                # ---===>--===>--- or ---<===--<===---
-                masked[4]["reads"].add(read)
-        elif (abs(ps1 - ps2) < max_molecule_length
-              and ps1 != ps2
-              and ps2 > ps1 != sd2):
-            # different fragments but facing and very close
-            masked[3]["reads"].add(read)
-        elif ((abs(re1 - ps1) < re_proximity) or
-              (abs(rs1 - ps1) < re_proximity) or 
-              (abs(re2 - ps2) < re_proximity) or
-              (abs(rs2 - ps2) < re_proximity)):
+                    # --===>--===>-- or --<===--<===-- or same     errors
+                    masked[4]["reads"].add(read)
+                continue
+            elif (abs(ps1 - ps2) < max_molecule_length
+                  and ps1 != ps2
+                  and ps2 > ps1 != sd2):
+                # different fragments but facing and very close
+                masked[3]["reads"].add(read)
+                continue
+        if ((abs(re1 - ps1) < re_proximity) or
+            (abs(rs1 - ps1) < re_proximity) or 
+            (abs(re2 - ps2) < re_proximity) or
+            (abs(rs2 - ps2) < re_proximity)):
             masked[6]["reads"].add(read)
         elif ((re1 - rs1) < min_frag_size) or ((re2 - rs2) < min_frag_size) :
             masked[7]["reads"].add(read)

@@ -14,7 +14,7 @@ except ImportError:
     warn('matplotlib not found\n')
 
 def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
-            savefig=None, show=False, savedata=None, focus=None):
+            savefig=None, show=False, savedata=None, focus=None, cmap='gist_earth'):
     if isinstance(data, str):
         fnam = data
         cumcs = {} 
@@ -51,7 +51,7 @@ def hic_map(data, genome_seq, biases=None, masked=None, resolution=100000,
     if show or savefig:
         import numpy as np
         plt.figure(figsize=(16, 12))
-        plt.imshow(np.log2(data), origin='lower', cmap='gist_earth',
+        plt.imshow(np.log2(data), origin='lower', cmap=cmap,
                    interpolation='nearest')
         plt.colorbar()
         if savefig:
