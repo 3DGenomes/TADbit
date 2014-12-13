@@ -3,7 +3,7 @@
 
 
 """
-from bisect import bisect
+from bisect import bisect_left as bisect
 from pysam import Samfile
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 
@@ -64,8 +64,15 @@ def parse_sam(f_names1, f_names2, frags, out_file1, out_file2, genome_seq,
                     # Chromosome not in hash
                     continue
                 idx        = bisect(frag_piece, pos)
+                try:
+                    next_re    = frag_piece[idx]
+                except IndexError:
+                    # case where read mapped 1 nucleotide outside chromosome
+                    pos -= 1
+                    frag_piece = frags[crm][pos / frag_chunk]
+                    idx        = bisect(frag_piece, pos)
+                    next_re    = frag_piece[idx]
                 prev_re    = frag_piece[idx - 1]
-                next_re    = frag_piece[idx]
                 name       = r.qname
 
                 reads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
