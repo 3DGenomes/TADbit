@@ -75,16 +75,9 @@ def filter_reads(fnam, max_molecule_length=500,
     cut = sorted([frag_count[crm] for crm in frag_count])[cut]
 
     for line in open(fnam):
-        read, cr1, ps1, sd1, _, rs1, re1, cr2, ps2, sd2, _, rs2, re2 = line.split()
-        uniq_key = tuple(sorted((cr1 + ps1, cr2 + ps2)))
-        if not uniq_key in uniq_check:
-            uniq_check[uniq_key] = read
-        else:
-            masked[5]["reads"].add(read)
-            if not uniq_check[uniq_key] in masked[5]["reads"]:
-                masked[5]["reads"].add(uniq_check[uniq_key])
+        read, cr1, pos1, sd1, _, rs1, re1, cr2, pos2, sd2, _, rs2, re2 = line.split()
         ps1, ps2, sd1, sd2, re1, rs1, re2, rs2 = map(int, (
-            ps1, ps2, sd1, sd2, re1, rs1, re2, rs2))
+            pos1, pos2, sd1, sd2, re1, rs1, re2, rs2))
         if cr1 == cr2:
             if re1 == re2:
                 if sd1 != sd2:
@@ -116,6 +109,15 @@ def filter_reads(fnam, max_molecule_length=500,
         elif (frag_count.get((cr1, rs1), 0) > cut or
               frag_count.get((cr2, rs2), 0) > cut):
             masked[9]["reads"].add(read)
+        else:
+            uniq_key = tuple(sorted((cr1 + pos1, cr2 + pos2)))
+            if not uniq_key in uniq_check:
+                uniq_check[uniq_key] = read
+            else:
+                masked[5]["reads"].add(read)
+                if not uniq_check[uniq_key] in masked[5]["reads"]:
+                    masked[5]["reads"].add(uniq_check[uniq_key])
+                    continue
     del(uniq_check)
     if verbose:
         for k in xrange(1, len(masked) + 1):
