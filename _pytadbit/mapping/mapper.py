@@ -95,9 +95,12 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
         fastqh = open(fastq_path)
     # get the length from the length of the second line, which is the sequence
     # can not use the "length" keyword, as it is not always present
-    _ = fastqh.next()
-    raw_seq_len = len(fastqh.next().strip())
-    fastqh.close()
+    try:
+        _ = fastqh.next()
+        raw_seq_len = len(fastqh.next().strip())
+        fastqh.close()
+    except StopIteration:
+        raise IOError('ERROR: problem reading %s\n' % fastq_path)
 
     # Split input files if required and apply iterative mapping to each
     # segment separately.
