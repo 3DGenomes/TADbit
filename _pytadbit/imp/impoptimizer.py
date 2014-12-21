@@ -377,9 +377,13 @@ class IMPoptimizer(object):
             for x, maxdist in enumerate(self.maxdist_range):
                 for y, upfreq in enumerate(self.upfreq_range):
                     for z, lowfreq in enumerate(self.lowfreq_range):
-                        cut = [c for c in self.dcutoff_range
-                               if (scale, maxdist, upfreq, lowfreq, c)
-                               in self.results][0]
+                        try:
+                            cut = [c for c in self.dcutoff_range
+                                   if (scale, maxdist, upfreq, lowfreq, c)
+                                   in self.results][0]
+                        except IndexError:
+                            results[w, x, y, z] = float('nan')
+                            continue
                         try:
                             results[w, x, y, z] = self.results[
                                 (scale, maxdist, upfreq, lowfreq, cut)]
