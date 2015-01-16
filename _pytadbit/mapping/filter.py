@@ -35,7 +35,7 @@ def filter_reads(fnam, max_molecule_length=500,
        4- error              : reads are comming from a single RE fragment and
           point in the same direction
        5- duplicated         : the combination of the start positions of the
-          reads is repeated -> PCR artifact
+          reads is repeated -> PCR artifact (only keep one copy)
        6- too close from RE  : start position of one of the read is too close (
           5 bp by default) from RE cutting site. Non-canonical enzyme activity
           or random physical breakage of the chromatin.
@@ -68,16 +68,20 @@ def filter_reads(fnam, max_molecule_length=500,
               7: {'name': 'too short'         , 'reads': set()},
               8: {'name': 'too large'         , 'reads': set()},
               9: {'name': 'over-represented'  , 'reads': set()}}
-    uniq_check = {}
+    uniq_check = set()
+    # uniq_check = {}
     frag_count = count_re_fragments(fnam)
     num_frags = len(frag_count)
     cut = int((1 - over_represented) * num_frags + 0.5)
     cut = sorted([frag_count[crm] for crm in frag_count])[cut]
 
     for line in open(fnam):
-        read, cr1, pos1, sd1, _, rs1, re1, cr2, pos2, sd2, _, rs2, re2 = line.split()
-        ps1, ps2, sd1, sd2, re1, rs1, re2, rs2 = map(int, (
-            pos1, pos2, sd1, sd2, re1, rs1, re2, rs2))
+        (read,
+         cr1, pos1, sd1, _, rs1, re1,
+         cr2, pos2, sd2, _, rs2, re2) = line.split()
+        (ps1, ps2, sd1, sd2,
+         re1, rs1, re2, rs2) = map(int, (pos1, pos2, sd1, sd2,
+                                         re1, rs1, re2, rs2))
         if cr1 == cr2:
             if re1 == re2:
                 if sd1 != sd2:
@@ -111,13 +115,15 @@ def filter_reads(fnam, max_molecule_length=500,
             masked[9]["reads"].add(read)
         else:
             uniq_key = tuple(sorted((cr1 + pos1, cr2 + pos2)))
-            if not uniq_key in uniq_check:
-                uniq_check[uniq_key] = read
-            else:
+            if uniq_key in uniq_check:
                 masked[5]["reads"].add(read)
-                if not uniq_check[uniq_key] in masked[5]["reads"]:
-                    masked[5]["reads"].add(uniq_check[uniq_key])
-                    continue
+                # in case we want to forget about all reads (not keeping one)
+                # if not uniq_check[uniq_key] in masked[5]["reads"]:
+                #     masked[5]["reads"].add(uniq_check[uniq_key])
+                #     continue
+            else:
+                # uniq_check[uniq_key] = read
+                uniq_check.add(uniq_key)
     del(uniq_check)
     if verbose:
         for k in xrange(1, len(masked) + 1):
