@@ -2,14 +2,11 @@
 Hi-C data processing
 ====================
 
-
 Data filtering
 --------------
 
-
 Remove outliers
 ~~~~~~~~~~~~~~~
-
 
 To model chromatin structure, we need to ensure that our data is clean
 enough. The first step is thus to draw the distribution of the sum of
@@ -83,7 +80,6 @@ creating a :class:``pytadbit.experiment.Experiment``
 Remove row/columns where diagonal is null
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 In case TADbit find a null value right in the diagonal of the Hi-C data
 matrix (where highest values are expected), TADbit assumes that this
 observation is artefactual and removes the whole row and column passing
@@ -92,20 +88,17 @@ through this bin.
 Dealing with NaNs
 ~~~~~~~~~~~~~~~~~
 
-
 Any row or column that contains a *NaN* value will be removed from
 further steps.
 
 Data normalization
 ------------------
 
-
 Hi-C data stored in :class:`pytadbit.experiment.Experiment` might be normalized in order to be used by IMP.
 This normalization is achieve in two steps, first we generate weight for each pair of interactions, depending on the interaction count in the corresponding row/column, second we calculate the `z-score <http://en.wikipedia.org/wiki/Standard_score#Calculation_from_raw_score>`_ of each of these interaction pairs.
 
 Calculation of weights
 ~~~~~~~~~~~~~~~~~~~~~~
-
 
 Weights are calculated according to this formula (see :func:`pytadbit.experiment.Experiment.normalize_hic`):
 
@@ -131,7 +124,6 @@ There is one extra step of the normalization that consists in making the normali
 Calculation of the z-score
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 Z-scores are computed according to classical formula (:math:`\frac{x-\mu}{\sigma}`), over the decimal logarithm values of the normalized data (see above). Ending in this formula:
 
 .. math::
@@ -142,7 +134,6 @@ Z-scores are computed according to classical formula (:math:`\frac{x-\mu}{\sigma
 
 Dealing with zeros
 ^^^^^^^^^^^^^^^^^^
-
 
 A zero in an Hi-C interaction matrix, means that the given two fragments of DNA were never found close enough to be crosslinked together. However such values are also highly suspicious to be artifacts. 
 

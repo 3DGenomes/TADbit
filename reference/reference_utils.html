@@ -125,7 +125,7 @@ w, z, y or x axe.</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.extraviews.plot_2d_optimization_result">
-<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">plot_2d_optimization_result</tt><big>(</big><em>result</em>, <em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.extraviews.</tt><tt class="descname">plot_2d_optimization_result</tt><big>(</big><em>result</em>, <em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>dcutoff=None</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/extraviews.html#plot_2d_optimization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.extraviews.plot_2d_optimization_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>A grid of heatmaps representing the result of the optimization.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -139,6 +139,7 @@ w, z, y or x axe.</li>
 <li><strong>show_best</strong> (<em>0</em>) &#8211; number of best correlation value to identifie.</li>
 <li><strong>skip</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a dict can be passed here in order to fix a given axe,
 e.g.: {&#8216;scale&#8217;: 0.001, &#8216;maxdist&#8217;: 500}</li>
+<li><strong>dcutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; optimized cutoff</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
@@ -315,7 +316,7 @@ Can be either &#8216;all&#8217;, or a model number</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.hic_filtering.hic_filtering_for_modelling">
-<tt class="descclassname">pytadbit.utils.hic_filtering.</tt><tt class="descname">hic_filtering_for_modelling</tt><big>(</big><em>matrx</em>, <em>method='mean'</em>, <em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.hic_filtering.</tt><tt class="descname">hic_filtering_for_modelling</tt><big>(</big><em>matrx</em>, <em>method='mean'</em>, <em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em>, <em>diagonal=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/hic_filtering.html#hic_filtering_for_modelling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.hic_filtering.hic_filtering_for_modelling" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call filtering function, to remove artefactual columns in a given Hi-C
 matrix. This function will detect columns with very low interaction
 counts; and columns with NaN values (in this case NaN will be replaced
@@ -333,6 +334,7 @@ remove columns with abnormally low count of interactions</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
+<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; remove row/columns with zero in the diagonal</li>
 </ul>
 </td>
 </tr>
@@ -520,6 +522,8 @@ for details</p>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">Mapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html#filtering">Filtering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
@@ -577,7 +581,7 @@ for details</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -1,0 +1,321 @@
+<!doctype html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytadbit.mapping.analyze &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/black-on-white.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pytadbit.mapping.analyze</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">18 Nov 2014</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span> <span class="kn">import</span> <span class="n">tadbit_savefig</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="c"># from scipy.ndimage import gaussian_filter1d</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;matplotlib not found</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="hic_map"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.hic_map">[docs]</a><span class="k">def</span> <span class="nf">hic_map</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">genome_seq</span><span class="p">,</span> <span class="n">biases</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+            <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s">&#39;gist_earth&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">fnam</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">cumcs</span> <span class="o">=</span> <span class="p">{}</span> 
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">genome_seq</span><span class="p">:</span>
+            <span class="n">cumcs</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="o">=</span> <span class="n">total</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="n">crm</span><span class="p">])</span> <span class="o">/</span> <span class="n">resolution</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="c"># bin the data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">total</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">total</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">masked</span> <span class="o">=</span> <span class="n">masked</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
+            <span class="n">read</span><span class="p">,</span> <span class="n">cr1</span><span class="p">,</span> <span class="n">ps1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cr2</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">masked</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">ps1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps1</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span>
+            <span class="n">ps2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps2</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">cumcs</span><span class="p">[</span><span class="n">cr1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ps1</span><span class="p">][</span><span class="n">cumcs</span><span class="p">[</span><span class="n">cr2</span><span class="p">]</span> <span class="o">+</span> <span class="n">ps2</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hic_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">focus</span> <span class="k">if</span> <span class="n">focus</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">))</span>
+        <span class="n">beg</span> <span class="o">-=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">focus</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">biases</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[[</span><span class="n">hic_data</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">biases</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">biases</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[[</span><span class="n">hic_data</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span>
+                     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+    <span class="c"># do the plot</span>
+    <span class="k">if</span> <span class="n">show</span> <span class="ow">or</span> <span class="n">savefig</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                   <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="plot_distance_vs_interactions"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.plot_distance_vs_interactions">[docs]</a><span class="k">def</span> <span class="nf">plot_distance_vs_interactions</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">min_diff</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_diff</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span>
+                                  <span class="n">resolution</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param fnam: input file name</span>
+<span class="sd">    :param 100 min_diff: lower limit kn genomic distance (usually equal to read</span>
+<span class="sd">       length)</span>
+<span class="sd">    :param 1000000 max_diff: upper limit in genomic distance to look for</span>
+<span class="sd">    :param 100 resolution: group reads that are closer than this resolution</span>
+<span class="sd">       parameter</span>
+<span class="sd">    :param None axe: a matplotlib.axes.Axes object to define the plot</span>
+<span class="sd">       appearance</span>
+<span class="sd">    :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">       if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">       of the file name will determine the desired format).</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dist_intr</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">cr1</span><span class="p">,</span> <span class="n">ps1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cr2</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cr1</span> <span class="o">!=</span> <span class="n">cr2</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">resolution</span> <span class="o">*</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">ps1</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps2</span><span class="p">))</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_diff</span> <span class="o">&gt;</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="n">min_diff</span><span class="p">:</span>
+            <span class="n">dist_intr</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">dist_intr</span><span class="p">[</span><span class="n">diff</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">dist_intr</span><span class="o">.</span><span class="n">keys</span><span class="p">()[:]:</span>
+        <span class="k">if</span> <span class="n">dist_intr</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">del</span><span class="p">(</span><span class="n">dist_intr</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="nb">sorted</span><span class="p">(</span><span class="n">dist_intr</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s">&#39;k.&#39;</span><span class="p">)</span>
+    <span class="c"># sigma = 10</span>
+    <span class="c"># p_x = gaussian_filter1d(x, sigma)</span>
+    <span class="c"># p_y = gaussian_filter1d(y, sigma)</span>
+    <span class="c"># plot line of best fit</span>
+    <span class="c"># plt.plot(p_x, p_y,color= &#39;darkgreen&#39;, lw=2, label=&#39;Gaussian fit&#39;)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Log genomic distance (binned by </span><span class="si">%d</span><span class="s"> bp)&#39;</span> <span class="o">%</span> <span class="n">resolution</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Log interaction count&#39;</span><span class="p">)</span>
+    <span class="c"># plt.legend()</span>
+    <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+        <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="plot_iterative_mapping"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.plot_iterative_mapping">[docs]</a><span class="k">def</span> <span class="nf">plot_iterative_mapping</span><span class="p">(</span><span class="n">fnam1</span><span class="p">,</span> <span class="n">fnam2</span><span class="p">,</span> <span class="n">total_reads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param fnam: input file name</span>
+<span class="sd">    :param total_reads: total number of reads in the initial FASTQ file</span>
+<span class="sd">    :param None axe: a matplotlib.axes.Axes object to define the plot</span>
+<span class="sd">       appearance</span>
+<span class="sd">    :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">       if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">       of the file name will determine the desired format).</span>
+<span class="sd">    :returns: a dictionary with the number of reads per mapped length</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">count_by_len</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">total_reads</span> <span class="o">=</span> <span class="n">total_reads</span> <span class="ow">or</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;olive&#39;</span><span class="p">,</span> <span class="s">&#39;darkcyan&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fnam</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">fnam1</span><span class="p">,</span> <span class="n">fnam2</span><span class="p">]):</span>
+        <span class="k">print</span> <span class="n">fnam</span>
+        <span class="n">count_by_len</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">count_by_len</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">length</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">count_by_len</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">length</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">lengths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">count_by_len</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">lengths</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">count_by_len</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">count_by_len</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+                                       <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">lengths</span> <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lengths</span><span class="p">,</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">count_by_len</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="p">])</span> <span class="o">/</span> <span class="n">total_reads</span>
+                           <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">lengths</span><span class="p">],</span>
+                 <span class="n">label</span><span class="o">=</span><span class="s">&#39;read&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;read length (bp)&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">total_reads</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Proportion of mapped reads&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Number of mapped reads&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+        <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">count_by_len</span>
+
+
+</div>
+<div class="viewcode-block" id="plot_genomic_distribution"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.plot_genomic_distribution">[docs]</a><span class="k">def</span> <span class="nf">plot_genomic_distribution</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+                              <span class="n">genome_seq</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param fnam: input file name</span>
+<span class="sd">    :param True first_read: map first read.</span>
+<span class="sd">    :param 100 resolution: group reads that are closer than this resolution</span>
+<span class="sd">       parameter</span>
+<span class="sd">    :param None axe: a matplotlib.axes.Axes object to define the plot</span>
+<span class="sd">       appearance</span>
+<span class="sd">    :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">       if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">       of the file name will determine the desired format).</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">distr</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">idx1</span><span class="p">,</span> <span class="n">idx2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">if</span> <span class="n">first_read</span> <span class="k">else</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
+        <span class="n">crm</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">idx1</span><span class="p">:</span><span class="n">idx2</span><span class="p">]</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">distr</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="n">pos</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">distr</span><span class="p">[</span><span class="n">crm</span><span class="p">][</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">distr</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">pos</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">distr</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+
+    <span class="n">max_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="n">distr</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">distr</span><span class="p">])</span>
+    <span class="n">max_x</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">distr</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">distr</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">genome_seq</span> <span class="k">if</span> <span class="n">genome_seq</span> <span class="k">else</span> <span class="n">distr</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">distr</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">distr</span><span class="p">[</span><span class="n">crm</span><span class="p">])),</span>
+                 <span class="p">[</span><span class="n">distr</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">distr</span><span class="p">[</span><span class="n">crm</span><span class="p">]))],</span>
+                 <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">genome_seq</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ylim</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="n">crm</span><span class="p">])</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="n">crm</span><span class="p">])</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_y</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_x</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ylim</span> <span class="ow">or</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_y</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">crm</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+        <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Jan 19, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

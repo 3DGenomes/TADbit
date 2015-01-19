@@ -57,7 +57,7 @@
 <h1>IMPoptimizer class<a class="headerlink" href="#impoptimizer-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer">
-<em class="property">class </em><tt class="descclassname">pytadbit.imp.impoptimizer.</tt><tt class="descname">IMPoptimizer</tt><big>(</big><em>experiment</em>, <em>start</em>, <em>end</em>, <em>n_models=500</em>, <em>cutoff=300</em>, <em>n_keep=100</em>, <em>close_bins=1</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.imp.impoptimizer.</tt><tt class="descname">IMPoptimizer</tt><big>(</big><em>experiment</em>, <em>start</em>, <em>end</em>, <em>n_models=500</em>, <em>n_keep=100</em>, <em>close_bins=1</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class optimizes a set of paramaters (scale, maxdist, lowfreq and
 upfreq) in order to maximize the correlation between the models generated 
 by IMP and the input data.</p>
@@ -188,7 +188,7 @@ be placed on the x, y, z or w axe.</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search">
-<tt class="descname">run_grid_search</tt><big>(</big><em>upfreq_range=(0</em>, <em>1</em>, <em>0.1)</em>, <em>lowfreq_range=(-1</em>, <em>0</em>, <em>0.1)</em>, <em>maxdist_range=(400</em>, <em>1500</em>, <em>100)</em>, <em>scale_range=0.01</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>savedata=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">run_grid_search</tt><big>(</big><em>upfreq_range=(0</em>, <em>1</em>, <em>0.1)</em>, <em>lowfreq_range=(-1</em>, <em>0</em>, <em>0.1)</em>, <em>maxdist_range=(400</em>, <em>1500</em>, <em>100)</em>, <em>scale_range=0.01</em>, <em>dcutoff_range=2</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>savedata=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function calculates the correlation between the models generated 
 by IMP and the input data for the four main IMP parameters (scale, 
 maxdist, lowfreq and upfreq) in the given ranges of values.</p>
@@ -211,6 +211,10 @@ values</li>
 <li><strong>scale_range</strong> (<em>0.01</em>) &#8211; upper and lower bounds used to search for
 the optimal scale parameter (nm per nucleotide). The last value of
 the input tuple is the incremental step for scale parameter values</li>
+<li><strong>dcutoff_range</strong> (<em>2</em>) &#8211; upper and lower bounds used to search for
+the optimal distance cutoff parameter (distance, in number of beads,
+from which to consider 2 beads as being close). The last value of the
+input tuple is the incremental step for scale parameter values</li>
 <li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; concatenate all generated models into a dictionary
 and save it into a file named by this argument</li>
 <li><strong>verbose</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; print the results to the standard output</li>
@@ -256,6 +260,8 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">Mapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html#filtering">Filtering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_experiment.html">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
@@ -313,7 +319,7 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

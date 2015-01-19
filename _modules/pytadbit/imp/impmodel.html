@@ -738,7 +738,7 @@
 
 </div>
 <div class="viewcode-block" id="IMPmodel.write_cmm"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_cmm">[docs]</a>    <span class="k">def</span> <span class="nf">write_cmm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                  <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                  <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save a model in the cmm format, read by Chimera</span>
 <span class="sd">        (http://www.cgl.ucsf.edu/chimera).</span>
@@ -754,6 +754,7 @@
 <span class="sd">           generate the corresponding model. If False, the format will be:</span>
 <span class="sd">           model_NUM_RND.cmm where NUM is the rank of the model in terms of</span>
 <span class="sd">           objective function value</span>
+<span class="sd">        :param None filename: overide the default file name writing</span>
 <span class="sd">        :param &#39;index&#39; color: can be:</span>
 
 <span class="sd">             * a string as:</span>
@@ -809,12 +810,15 @@
             <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">+=</span> <span class="s">&#39;&lt;/marker_set&gt;</span><span class="se">\n</span><span class="s">&#39;</span>
 
-        <span class="k">if</span> <span class="n">rndname</span><span class="p">:</span>
-            <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">/model.</span><span class="si">%s</span><span class="s">.cmm&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span>
-                                              <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">]),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">/model_</span><span class="si">%s</span><span class="s">_rnd</span><span class="si">%s</span><span class="s">.cmm&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">]),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rndname</span><span class="p">:</span>
+                <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">/model.</span><span class="si">%s</span><span class="s">.cmm&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">]),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">/model_</span><span class="si">%s</span><span class="s">_rnd</span><span class="si">%s</span><span class="s">.cmm&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">]),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
         <span class="n">out_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
         <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
@@ -859,7 +863,7 @@
 
 </div>
 <div class="viewcode-block" id="IMPmodel.write_xyz"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">write_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">get_path</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                  <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+                  <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes a xyz file containing the 3D coordinates of each particle in the</span>
 <span class="sd">        model.</span>
@@ -877,14 +881,18 @@
 <span class="sd">           objective function value</span>
 <span class="sd">        :param False get_path: whether to return, or not, the full path where</span>
 <span class="sd">           the file has been written</span>
+<span class="sd">        :param None filename: overide the default file name writing</span>
 <span class="sd">        :param True header: write a header describing the experiment from which</span>
 <span class="sd">           the model was calculated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">rndname</span><span class="p">:</span>
-            <span class="n">path_f</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/model.</span><span class="si">%s</span><span class="s">.xyz&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">path_f</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">path_f</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/model_</span><span class="si">%s</span><span class="s">_rnd</span><span class="si">%s</span><span class="s">.xyz&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="p">,</span>
-                                                <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">rndname</span><span class="p">:</span>
+                <span class="n">path_f</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/model.</span><span class="si">%s</span><span class="s">.xyz&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">path_f</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/model_</span><span class="si">%s</span><span class="s">_rnd</span><span class="si">%s</span><span class="s">.xyz&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])</span>
         <span class="n">out</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">+=</span> <span class="n">model_header</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -1053,7 +1061,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

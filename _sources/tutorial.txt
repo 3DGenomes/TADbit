@@ -2,10 +2,8 @@
 Tutorials
 =========
 
-
 Identification and Analysis of TADs
 -----------------------------------
-
 
 .. toctree::
    :maxdepth: 2
@@ -17,7 +15,6 @@ Identification and Analysis of TADs
 
 Three-dimentional modelling
 ---------------------------
-
 
 .. toctree::
    :maxdepth: 2

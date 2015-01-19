@@ -11,7 +11,6 @@ Welcome to TADbit's documentation!
 ==================================
 
 
-
 TADbit is a computational package that deals with 3C-based data (more specifically Hi-C data) to detect Topologically A
 ssociating Domain (TAD) borders and to further analyze TADs by: i) the identification of conserved TAD borders and ii) 
 the definition of sets of TADs sharing structural features iii) the three-dimensional modeling of the chromatin.
@@ -25,7 +24,6 @@ grams using TADbit as a complementary tool.
 
 Documentation index:
 ~~~~~~~~~~~~~~~~~~~~
-
 
 .. epigraph::
 

@@ -598,6 +598,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">xpr</span><span class="p">)</span>
             <span class="k">return</span>
         <span class="k">for</span> <span class="n">xpr</span> <span class="ow">in</span> <span class="n">xprs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s">&#39;Error: interactions should be normalized first&#39;</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">tadbit</span><span class="p">(</span>
                 <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span><span class="p">,</span>
                 <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">get_as_tuple</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span><span class="p">],</span>
@@ -1098,7 +1101,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

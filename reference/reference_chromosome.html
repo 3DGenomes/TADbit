@@ -71,11 +71,11 @@ chromosome of DNA, and to compare them.</p>
 <li><strong>assembly</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; version number of the genomic assembly used</li>
 <li><strong>resolutions</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of resolutions corresponding to a list of
 experiments passed.</li>
-<li><strong>experiment_hic_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of paths to files
+<li><strong>experiment_hic_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt> of paths to files
 containing the Hi-C count matrices corresponding to different experiments</li>
-<li><strong>experiment_tads</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of paths to files
+<li><strong>experiment_tads</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt> of paths to files
 containing the definition of TADs corresponding to different experiments</li>
-<li><strong>experiment_names</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of the names of each 
+<li><strong>experiment_names</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt> of the names of each 
 experiment</li>
 <li><strong>max_tad_size</strong> (<em>infinite</em>) &#8211; maximum TAD size allowed. TADs longer than
 this value will not be considered, and size of the corresponding
@@ -456,7 +456,7 @@ memory. Finally if fast=0, both the weights and Hi-C data will be loaded</li>
 <dl class="class">
 <dt id="pytadbit.chromosome.ExperimentList">
 <em class="property">class </em><tt class="descclassname">pytadbit.chromosome.</tt><tt class="descname">ExperimentList</tt><big>(</big><em>thing</em>, <em>crm</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#ExperimentList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.ExperimentList" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inherited from python built in <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a>, modified for tadbit
+<dd><p>Inherited from python built in <tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt>, modified for tadbit
 <tt class="xref py py-class docutils literal"><span class="pre">pytadbit.Experiment</span></tt>.</p>
 <p>Mainly, <cite>getitem</cite>, <cite>setitem</cite>, and <cite>append</cite> were modified in order to
 be able to search for experiments by index or by name, and to add
@@ -543,7 +543,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Nov 22, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

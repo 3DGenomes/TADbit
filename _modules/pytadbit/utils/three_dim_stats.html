@@ -479,9 +479,12 @@
         <span class="n">orthoz</span> <span class="o">/=</span> <span class="n">normer</span>
         <span class="c"># define the number of circle to draw in this section</span>
         <span class="n">between</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fact</span> <span class="o">*</span> <span class="n">adj1</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
-        <span class="n">stepx</span> <span class="o">=</span> <span class="n">difx</span> <span class="o">/</span> <span class="n">between</span>
-        <span class="n">stepy</span> <span class="o">=</span> <span class="n">dify</span> <span class="o">/</span> <span class="n">between</span>
-        <span class="n">stepz</span> <span class="o">=</span> <span class="n">difz</span> <span class="o">/</span> <span class="n">between</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stepx</span> <span class="o">=</span> <span class="n">difx</span> <span class="o">/</span> <span class="n">between</span>
+            <span class="n">stepy</span> <span class="o">=</span> <span class="n">dify</span> <span class="o">/</span> <span class="n">between</span>
+            <span class="n">stepz</span> <span class="o">=</span> <span class="n">difz</span> <span class="o">/</span> <span class="n">between</span>
+        <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+            <span class="n">stepx</span> <span class="o">=</span> <span class="n">stepy</span> <span class="o">=</span> <span class="n">stepz</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">hyp1</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">adj1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">radius</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
         <span class="c"># this is an attempt of correction for the integrity of dots</span>
@@ -634,7 +637,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

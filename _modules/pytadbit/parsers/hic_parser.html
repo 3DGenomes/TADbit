@@ -225,7 +225,6 @@
                 <span class="n">matrix</span>  <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span><span class="p">,</span> <span class="n">thing</span><span class="p">)</span>
                 <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">print</span> <span class="n">thing</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;must be list of lists, all with same length.&#39;</span><span class="p">)</span>
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
                                       <span class="k">if</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">size</span><span class="p">))</span>
@@ -255,6 +254,32 @@
     <span class="k">return</span> <span class="n">matrices</span>
 
 </div>
+<span class="k">def</span> <span class="nf">load_hic_data_from_reads</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">genome_seq</span><span class="p">,</span> <span class="n">resolution</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param fnam: tsv file with reads1 and reads2</span>
+<span class="sd">    :param resolution: the resolution of the experiment (size of a bin in</span>
+<span class="sd">       bases)</span>
+<span class="sd">    :param genome_seq: a dictionary containing the genomic sequence by</span>
+<span class="sd">       chromosome</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">section_sizes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">sections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">genome_seq</span><span class="p">:</span>
+        <span class="n">len_crm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">genome_seq</span><span class="p">[</span><span class="n">crm</span><span class="p">]))</span> <span class="o">/</span> <span class="n">resolution</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">section_sizes</span><span class="p">[(</span><span class="n">crm</span><span class="p">,)]</span> <span class="o">=</span> <span class="n">len_crm</span>
+        <span class="n">size</span> <span class="o">+=</span> <span class="n">len_crm</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">crm</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">len_crm</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="n">imx</span> <span class="o">=</span> <span class="n">HiC_data</span><span class="p">((),</span> <span class="n">size</span><span class="p">)</span>
+    <span class="n">dict_sec</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sections</span><span class="p">)])</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">cr1</span><span class="p">,</span> <span class="n">ps1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cr2</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+        <span class="n">ps1</span> <span class="o">=</span> <span class="n">dict_sec</span><span class="p">[(</span><span class="n">cr1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps1</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)]</span>
+        <span class="n">ps2</span> <span class="o">=</span> <span class="n">dict_sec</span><span class="p">[(</span><span class="n">cr2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps2</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)]</span>
+        <span class="n">imx</span><span class="p">[</span><span class="n">ps1</span> <span class="o">+</span> <span class="n">ps2</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">imx</span><span class="p">[</span><span class="n">ps2</span> <span class="o">+</span> <span class="n">ps1</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">imx</span>
+
 <span class="k">class</span> <span class="nc">HiC_data</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This may also hold the print/write-to-file matrix functions</span>
@@ -287,6 +312,24 @@
                                                              <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">))</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row_col</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_col</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        slow one... for user</span>
+<span class="sd">        for fast item getting, use self.get()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">row_col</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">row</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">+</span> <span class="n">col</span>
+            <span class="k">if</span> <span class="n">pos</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                    <span class="s">&#39;ERROR: row or column larger than </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">row_col</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                    <span class="s">&#39;ERROR: position </span><span class="si">%d</span><span class="s"> larger than </span><span class="si">%s</span><span class="s">^2&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_col</span><span class="p">,</span>
+                                                             <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">))</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">row_col</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_as_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span>  <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))])</span>
@@ -374,7 +417,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

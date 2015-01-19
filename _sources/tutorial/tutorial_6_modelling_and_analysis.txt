@@ -2,7 +2,6 @@
 Three-dimensional modeling of chromatine structure
 ==================================================
 
-
 Recover data from previous tutorial by loading the previously saved chromosome.
 
 .. code:: python
@@ -70,7 +69,6 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
 Model the 3D structure of a selected TAD
 ----------------------------------------
 
-
 TADbit uses the Integrative Modeling Platform (IMP, http://www.integrativemodeling.org) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.
 
 All models are based on specific sets of experimental data for which TADbit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.
@@ -135,6 +133,18 @@ To set the values for the parameters, one can create an array and use it for moo
        - scale       : 0.01
        - lowrdist    : 1000.0
       Models where clustered into 0 clusters
+
+
+.. code:: python
+
+    models.experiment
+
+
+
+.. ansi-block::
+
+    Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility_factor:1)
+
 
 
 Once finished, the IMP generated models are stored in a dictionary which keys are numbered from smaller to larger based on the IMP Objective Function (that is, how well the model satifies the input restraints). One can select parts of the models or single models to get some information.
@@ -204,7 +214,7 @@ One measure to check whether the IMP optimization has reached equilibrium is to 
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_15_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_16_0.png
 
 
 One important aspect is to identfy whether the set of models has a good correlation with the input HiC data. This can be done with a single function that affects the models.
@@ -218,7 +228,7 @@ One important aspect is to identfy whether the set of models has a good correlat
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_17_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_18_0.png
 
 
 
@@ -234,7 +244,7 @@ One important aspect is to identfy whether the set of models has a good correlat
     models.zscore_plot()
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_18_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_19_0.png
 
 
 .. code:: python
@@ -253,16 +263,14 @@ One important aspect is to identfy whether the set of models has a good correlat
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_19_1.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_20_1.png
 
 
 Model analysis
 --------------
 
-
 Model clustering
 ~~~~~~~~~~~~~~~~
-
 
 First we are going to cluster the 3D models based on their structural similarity. Clusters are numbered from larger (more models) to smallest (less models).
 
@@ -317,7 +325,7 @@ Once a cluster is generated, one can plot it for easy visualization. The "y" axi
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_26_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_27_0.png
 
 
 One can also show the similarity betwen clusters for a limited number of them (5 in this example)
@@ -329,12 +337,11 @@ One can also show the similarity betwen clusters for a limited number of them (5
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_28_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_29_0.png
 
 
 Models consistency
 ~~~~~~~~~~~~~~~~~~
-
 
 To assess how "deterministic" a cluster is, one can calculate for each particle the percentage of models (in the cluster) that superimpose a given particle within a given cut-off (pre-set cut-offs of 50, 100, 150 and 200 nm). The lower the consistency value (in %) the less deterministic the models within the selected cluster. This measure can be taken as a proxy of variability across the model. 
 
@@ -345,14 +352,13 @@ To assess how "deterministic" a cluster is, one can calculate for each particle 
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_31_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_32_0.png
 
 
 Be aware that this measure makes sense using only models within a cluster and not models from different clusters.
 
 DNA density plots
 ~~~~~~~~~~~~~~~~~
-
 
 From the 3D models, the DNA density (or local compactness) can be calculated as the ratio of the bin size (in base pairs) and the distances between consequtive particles in the models. The higher the density the more compact DNA for the region. As this measure varies dramatically from particle to particle, one can calculate it using running averages.
 
@@ -363,16 +369,13 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_35_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_36_0.png
 
 
 .. code:: python
 
     # Get a similar plot for only the top cluster and show the standar deviation for a specific(s) running window (steps)
     models.density_plot(cluster=1,error=True, steps=(5))
-.. code:: python
-
-    models.walking_angle(steps=(3, 5, 7), signed=False)
 
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_37_0.png
@@ -380,15 +383,22 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
 .. code:: python
 
-    models.interactions(cutoff=2000)
+    models.walking_angle(steps=(3, 5, 7), signed=False)
 
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_38_0.png
 
 
+.. code:: python
+
+    models.interactions(cutoff=2000)
+
+
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_39_0.png
+
+
 Models contact map
 ~~~~~~~~~~~~~~~~~~
-
 
 Given a set of selected models (either from a cluster or a list) one can calculate the percentage of pairs of particles within a distance cut-off. This can then be represented as a heat-map which is equivalent to a Hi-C interaction matrix.
 
@@ -409,15 +419,15 @@ The goal of TADbit is to find a 3D structure (or ensemble of structures) that be
     models.correlate_with_real_data(cluster=10, plot=True, cutoff=1500)
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_43_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_44_0.png
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_43_1.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_44_1.png
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_43_2.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_44_2.png
 
 
 
@@ -430,7 +440,6 @@ The goal of TADbit is to find a 3D structure (or ensemble of structures) that be
 
 Calculating distances between particles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Sometimes is useful to get a distribution of distances between pairs of particles in the models (or sub-set of models). Next we show several ways of getting such representations.
 
@@ -455,7 +464,7 @@ Lets plot the distribution used to get this median value.
     models.median_3d_dist(15, 20, plot=True)
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_48_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_49_0.png
 
 
 We may also want to use only the 10 first models (lowest energy), or the models belonging to a cluster (example cluster 1).
@@ -466,7 +475,7 @@ We may also want to use only the 10 first models (lowest energy), or the models 
     models.median_3d_dist(13, 30, models=range(100))
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_50_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_51_0.png
 
 
 .. code:: python
@@ -475,12 +484,11 @@ We may also want to use only the 10 first models (lowest energy), or the models 
     models.median_3d_dist(0, 54, plot=True, cluster=1)
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_51_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_52_0.png
 
 
 Save and load models and analysis
 ---------------------------------
-
 
 By saving your analysis, you won't need to repeat some of the most expensive calculations.
 
@@ -494,8 +502,8 @@ And to load them:
 .. code:: python
 
     # Load the models
-    models = load_structuralmodels('gm_01.models')
-    print models
+    loaded_models = load_structuralmodels('gm_01.models')
+    print loaded_models
 
 
 .. ansi-block::
@@ -534,10 +542,8 @@ Specific 3D models can be saved in two formats:
 Related Software
 ----------------
 
-
 Chimera
 ~~~~~~~
-
 
 Our group has been using the visualization tool Chimera from Ferrin's Group at UCSF (http://www.cgl.ucsf.edu/chimera/) to visualize the 3D models. Here we provide a couple of automatic ways of getting static and video images of selected models. A user can input the models using the generated CMM format in the previous step of this tutorial.
 
@@ -547,15 +553,37 @@ To properly insert the images/videos in this tutorial, we need to import librari
 
 .. code:: python
 
-    models.view_models(stress='centroid', tool='plot', figsize=(10,10), azimuth=-60, elevation=100, gyradius=True)
+    models.view_models(stress='centroid', tool='plot', figsize=(10,10), azimuth=-60, elevation=100)
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_62_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_63_0.png
 
 
 *Note that we represent with colors, only 1 model, the centromere. An
 easy way to get the centromere model is using the get\_centromere
 funtion:*
+
+As models are linked to experiments, we can paint TADs in this
+visualization:
+
+.. code:: python
+
+    models.view_models(highlight='centroid', show='highlighted', tool='plot', figsize=(10,10), azimuth=-60, elevation=100, color='tad')
+
+
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_66_0.png
+
+
+We can also color only the border, and in this view, borders are colored
+according to their score:
+
+.. code:: python
+
+    models.view_models(highlight='centroid', show='highlighted', tool='plot', figsize=(10,10), azimuth=-60, elevation=100, color='border')
+
+
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_68_0.png
+
 
 .. code:: python
 
@@ -583,7 +611,7 @@ funtion:*
 
 
 
-.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_66_0.png
+.. image:: ../nbpictures/tutorial_6_modelling_and_analysis_71_0.png
 
 
 

@@ -113,7 +113,8 @@
 <span class="sd">       neighbors (e.g. 1 means consecutive particles)</span>
 <span class="sd">    :param n_cpus: number of CPUs to use</span>
 <span class="sd">    :param False verbose: if set to True, information about the distance, force</span>
-<span class="sd">       and Z-score between particles will be printed</span>
+<span class="sd">       and Z-score between particles will be printed. If verbose is 0.5 than</span>
+<span class="sd">       constraints will be printed only for the first model calculated.</span>
 <span class="sd">    :param None values: the normalized Hi-C data in a list of lists (equivalent </span>
 <span class="sd">       to a square matrix)</span>
 <span class="sd">    :param CONFIG[&#39;dmel_01&#39;] config: a dictionary containing the standard </span>
@@ -270,7 +271,7 @@
     <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">n_cpus</span><span class="p">)</span>
     <span class="n">jobs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">rand_init</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="n">n_models</span> <span class="o">+</span> <span class="n">START</span><span class="p">):</span>
-        <span class="n">jobs</span><span class="p">[</span><span class="n">rand_init</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">generate_IMPmodel</span><span class="p">,</span>
+        <span class="n">jobs</span><span class="p">[</span><span class="n">rand_init</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_do_it</span><span class="p">,</span>
                                            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rand_init</span><span class="p">,))</span>
 
     <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -304,6 +305,13 @@
         <span class="nb">sorted</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s">&#39;objfun&#39;</span><span class="p">])[</span><span class="n">n_keep</span><span class="p">:]):</span>
             <span class="n">bad_models</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">n_keep</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
     <span class="k">return</span> <span class="n">models</span><span class="p">,</span> <span class="n">bad_models</span>
+
+
+<span class="k">def</span> <span class="nf">_do_it</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Workaround in order pass to the multiprocessing queue a pickable object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">generate_IMPmodel</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">generate_IMPmodel</span><span class="p">(</span><span class="n">rand_init</span><span class="p">):</span>
@@ -346,6 +354,9 @@
         <span class="n">model</span><span class="p">[</span><span class="s">&#39;pps&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">ParticlePairsTemp</span><span class="p">()</span>
 
     <span class="c"># CALL BIG FUNCTION</span>
+    <span class="k">if</span> <span class="n">rand_init</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mf">0.5</span><span class="p">:</span>
+        <span class="n">verbose</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;# Harmonic</span><span class="se">\t</span><span class="s">part1</span><span class="se">\t</span><span class="s">part2</span><span class="se">\t</span><span class="s">dist</span><span class="se">\t</span><span class="s">kforce</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
     <span class="n">addAllHarmonics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
     <span class="c"># Setup an excluded volume restraint between a bunch of particles</span>
@@ -480,7 +491,7 @@
             <span class="n">num_loci2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
             <span class="n">log</span> <span class="o">=</span> <span class="n">addHarmonicPair</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">num_loci1</span><span class="p">,</span> <span class="n">num_loci2</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
                 
 
@@ -804,7 +815,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -90,7 +90,7 @@ chrT_004       105     110     100     278
 <tt class="docutils literal"><span class="pre">[([629,</span> <span class="pre">164,</span> <span class="pre">88,</span> <span class="pre">105,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">175,</span> <span class="pre">110,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">100,</span> <span class="pre">105,</span>
 <span class="pre">110,</span> <span class="pre">100,</span> <span class="pre">278]),</span> <span class="pre">4]</span></tt></p>
 </li>
-<li><strong>conditions</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt></a> of experimental conditions, e.g. 
+<li><strong>conditions</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <tt class="xref py py-func docutils literal"><span class="pre">list()</span></tt> of experimental conditions, e.g. 
 the cell type, the enzyme... (i.e.: [&#8216;HindIII&#8217;, &#8216;cortex&#8217;, &#8216;treatment&#8217;]).
 This parameter may be used to compare the effect of this conditions on
 the TADs</li>
@@ -378,7 +378,7 @@ function:</p>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.normalize_hic">
-<tt class="descname">normalize_hic</tt><big>(</big><em>factor=1</em>, <em>iterations=0</em>, <em>silent=False</em>, <em>rowsums=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">normalize_hic</tt><big>(</big><em>factor=1</em>, <em>iterations=0</em>, <em>max_dev=0.1</em>, <em>silent=False</em>, <em>rowsums=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.normalize_hic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the Hi-C data. This normalization step does the same of
 the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function (default parameters),</p>
 <p>It fills the Experiment.norm variable with the Hi-C values divided by
@@ -410,7 +410,7 @@ per cell</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.optimal_imp_parameters">
-<tt class="descname">optimal_imp_parameters</tt><big>(</big><em>start=1, end=None, n_models=500, n_keep=100, n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1, lowfreq_range=(-1, 0, 0.1), scale_range=[0.01], maxdist_range=(400, 1400, 100), cutoff=None, outfile=None, verbose=True, corr='spearman', off_diag=1, savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.optimal_imp_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.optimal_imp_parameters" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">optimal_imp_parameters</tt><big>(</big><em>start=1, end=None, n_models=500, n_keep=100, n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1, lowfreq_range=(-1, 0, 0.1), scale_range=[0.01], maxdist_range=(400, 1400, 100), dcutoff_range=[2], outfile=None, verbose=True, corr='spearman', off_diag=1, savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.optimal_imp_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.optimal_imp_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the optimal set of parameters to be used for the 3D modeling in
 IMP.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -443,6 +443,10 @@ of the input tuple is the incremental step for maxdist values</li>
 <li><strong>scale_range</strong> (<em>[0.01]</em>) &#8211; upper and lower bounds used to search for
 the optimal scale parameter (nm per nucleotide). The last value of
 the input tuple is the incremental step for scale parameter values</li>
+<li><strong>dcutoff_range</strong> (<em>[2]</em>) &#8211; upper and lower bounds used to search for
+the optimal distance cutoff parameter (distance, in number of beads,
+from which to consider 2 beads as being close). The last value of the
+input tuple is the incremental step for scale parameter values</li>
 <li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</li>
 <li><strong>verbose</strong> &#8211; print the results to the standard output</li>
@@ -640,6 +644,8 @@ a table.</td>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">Mapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html#filtering">Filtering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
@@ -697,7 +703,7 @@ a table.</td>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

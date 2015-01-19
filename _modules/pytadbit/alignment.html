@@ -361,9 +361,10 @@
                 <span class="k">continue</span>
             <span class="n">_tad_density_plot</span><span class="p">(</span><span class="n">xpr</span><span class="p">,</span> <span class="n">maxys</span><span class="o">=</span><span class="n">maxys</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span>
                               <span class="n">fact_res</span><span class="o">=</span><span class="n">facts</span><span class="p">[</span><span class="n">iex</span><span class="p">],</span> <span class="n">axe</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="n">iex</span><span class="p">],</span>
-                              <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
+                              <span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">)</span>
         <span class="c"># draw alignment columns</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">)][</span><span class="s">&#39;end&#39;</span><span class="p">]</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">focus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">focus</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">focus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">focus</span> <span class="k">else</span> <span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">xpr</span><span class="o">.</span><span class="n">tads</span><span class="p">)][</span><span class="s">&#39;end&#39;</span><span class="p">]</span>
         <span class="n">maxy</span> <span class="o">=</span> <span class="p">(</span><span class="n">ymax</span> <span class="ow">or</span> <span class="nb">max</span><span class="p">(</span><span class="n">maxys</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.4</span>
         <span class="n">maxxs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">iex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">experiments</span><span class="p">)):</span>
@@ -654,7 +655,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Sep 05, 2014.
+      Last updated on Jan 19, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

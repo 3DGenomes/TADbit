@@ -2,7 +2,6 @@
 Alignment of TAD boundaries
 ===========================
 
-
 .. contents::
    :depth: 3
 
@@ -47,7 +46,6 @@ We now have loaded two Hi-C experiments, both at 100 Kb resolution, and have pre
 Aligning boundaries
 -------------------
 
-
 To align TAD boundaries several algorithms have been implemented 
 (see :func:`pytadbit.chromosome.Chromosome.align_experiments`); our recommendation, however, is to use 
 the default "reciprocal" method (:func:`pytadbit.boundary_aligner.reciprocally.reciprocal`). 
@@ -76,7 +74,6 @@ alignment dictionary attached to the Chromosome object. Each alignment is an obj
 Check alignment consistency through randomization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 In order to check that the alignment makes sense and that it does not correspond to a random association of boundaries, the “randomize” parameter can be set to True when aligning:
 
 .. code:: python
@@ -96,10 +93,8 @@ In order to check that the alignment makes sense and that it does not correspond
 Alignment objects
 -----------------
 
-
 Visualization
 ~~~~~~~~~~~~~
-
 
 The first function to call to check the quality of the generated alignments is the 
 :func:`pytadbit.alignment.Alignment.write_alignment`:
@@ -134,7 +129,6 @@ Alignment can also be viewed using matplotlib (already mention in :ref:`density_
 
 The get\_column function
 ~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 The :func:`pytadbit.alignment.Alignment.get_column` function allows to select specific columns of an alignment. 
 
