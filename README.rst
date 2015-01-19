@@ -3,19 +3,28 @@
    :height: 50
    :width: 240
 
+TADbit is a complete Python library to deal with all steps to analyze,
+model and explore 3C-based data. With TADbit the user can map FASTQ
+files to obtain raw interaction binned matrices (Hi-C like matrices),
+normalize and correct interaction matrices, identify adn compare the
+so-called Topologically Associating Domains (TADs), build 3D models
+from the interaction matrices, and finally, extract structural
+properties from the models. TADbit is complemented by TADkit for
+visualizing 3D models.
 
-TADbit is a computational package that precesses and analyze Hi-C data to detect Topologically Associating Domain (TAD) borders. The TAD analysis performed in TADbit  allows to:
-
-#. identify conserved TAD borders
-#. define sets of TADs sharing structural features
-#. model the three-dimensional structures of selected TADs
-
-Hi-C experiments generate genomic interaction between loci located in the same or in different chromosomes. TADbit is built around the concept of a chromosome, and uses it as a central item to store and compare different Hi-C experiments. The library has been designed to be used by researchers with no expertise in computer science. All-in-one scripts provided in TADbit allow to run the full analysis using one single command line; advanced users may produce their own programs using TADbit as a complementary library.
+Hi-C experiments generate genomic interaction between loci located in
+the same or in different chromosomes. TADbit is built around the
+concept of a chromosome, and uses it as a central item to store and
+compare different Hi-C experiments. The library has been designed to
+be used by researchers with no expertise in computer
+science. All-in-one scripts provided in TADbit allow to run the full
+analysis using one single command line; advanced users may produce
+their own programs using TADbit as a complementary library.
 
 
 +-------------------------------------+---------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       |
-| Current version: 0.1_alpha.125      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
+| Current version: 0.1_alpha.129      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
 |                                     |                                                                           |
 +-------------------------------------+---------------------------------------------------------------------------+
 

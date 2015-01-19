@@ -8,6 +8,15 @@ from pytadbit.mapping.restriction_enzymes import count_re_fragments
 
 def apply_filter(fnam, outfile, masked, filters=None):
     """
+    Create a new file with reads filtered
+
+    :param fnam: input file path, where non-filtered read are stored
+    :param outfile: output file path, where filtered read will be stored
+    :param masked: dictionary given by the
+       :func:`pytadbit.mapping.filter.filter_reads`
+    :param None filters: list of numbers corresponding to the filters we want
+       to apply (numbers correspond to the keys in the masked dictionary)
+    
     """
     masked_reads = set()
     filters = filters or masked.keys()
