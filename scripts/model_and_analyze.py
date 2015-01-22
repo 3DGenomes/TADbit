@@ -113,8 +113,9 @@ def load_hic_data(opts, xnames):
             hic_data=xpath,
             norm_data=xnorm)
         if not xnorm:
+            crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag)
             logging.info("\tNormalizing HiC data of %s..." % xnam)
-            crm.experiments[xnam].normalize_hic(iterations=5)
+            crm.experiments[xnam].normalize_hic(iterations=10, max_dev=0.1)
     if opts.beg > crm.experiments[-1].size:
         raise Exception('ERROR: beg parameter is larger than chromosome size.')
     if opts.end > crm.experiments[-1].size:
@@ -404,7 +405,8 @@ def main():
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
                            savefig=os.path.join(
                                opts.outdir, name ,
-                               name + '_column_filtering.pdf'))
+                               name + '_column_filtering.pdf'),
+                           diagonal=not opts.nodiag)
     if (not opts.tad_only and "column filtering" in opts.analyze
         and not opts.analyze_only):
         out = open(os.path.join(opts.outdir, name ,
@@ -771,6 +773,9 @@ def get_options():
     glopts.add_argument('--norm', dest='norm', metavar="PATH", nargs='+',
                         type=str,
                         help='path to file(s) with normalizedHi-C data matrix.')
+    glopts.add_argument('--nodiag', dest='nodiag', action='store_true',
+                        help='''If the matrix does not contain self interacting
+                        bins (only zeroes in the diagonal)''')
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,

@@ -394,7 +394,8 @@ class Experiment(object):
             del(self._ori_norm)
 
 
-    def filter_columns(self, silent=False, draw_hist=False, savefig=None):
+    def filter_columns(self, silent=False, draw_hist=False, savefig=None,
+                       diagonal=True):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -410,9 +411,9 @@ class Experiment(object):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param True diagonal: remove row/columns with zero in the diagonal
 
         """
-        diagonal = False
         try:
             data = self.hic_data[0]
         except:
@@ -427,9 +428,6 @@ class Experiment(object):
                     del(self.hic_data[0][i])
         # Also remove columns where there is no data in the diagonal
         size = self.size
-        if self.hic_data:
-            self._zeros.update(dict([(i, None) for i in xrange(size)
-                                     if not self.hic_data[0].get(i * size + i)]))
         # else:
         #     self._zeros.update(dict([(i, None) for i in xrange(size)
         #                              if not self.norm[0][i * size + i]]))
