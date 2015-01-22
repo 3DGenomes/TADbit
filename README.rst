@@ -24,7 +24,7 @@ their own programs using TADbit as a complementary library.
 
 +-------------------------------------+---------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       |
-| Current version: 0.1_alpha.129      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
+| Current version: 0.1_alpha.130      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
 |                                     |                                                                           |
 +-------------------------------------+---------------------------------------------------------------------------+
 
@@ -37,13 +37,18 @@ Documentation
 TADbit training
 ***************
 
-Next TADbit training, `CSDM14 Chromosome structure determination using modelling and Hi-C data <http://gtpb.igc.gulbenkian.pt/bicourses/CSDM14/>`_,
-will take place at the *Instituto Gulbenkian de Ciencia* in Oeiras (Portugal)
-at the `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_ training programme from the **Nov 25th to Nov 28th**.
-
-
 Past editions
 -------------
 
-* September 6th 2014: `TADbit: Automated Analysis and Three-Dimensional Modeling of Genomic Domains <http://www.eccb14.org/program/tutorials/tadbit>`_ at `ECCB14 <http://www.eccb14.org/>`_ Strasbourg (France)
-* November 27th to November 29th 2013: `CSDM 2013 <http://gtpb.igc.gulbenkian.pt/bicourses/2013/CSDM13/>`_ at the `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_ training programme Oeiras (Portugal)
+* November 25th to November 28th 2013: `CSDM 2014
+  <http://gtpb.igc.gulbenkian.pt/bicourses/2014/CSDM14/>`_ at the
+  `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
+  training programme Oeiras (Portugal)
+* September 6th 2014: `TADbit: Automated Analysis and
+  Three-Dimensional Modeling of Genomic Domains
+  <http://www.eccb14.org/program/tutorials/tadbit>`_ at `ECCB14
+  <http://www.eccb14.org/>`_ Strasbourg (France)
+* November 27th to November 29th 2013: `CSDM 2013
+  <http://gtpb.igc.gulbenkian.pt/bicourses/2013/CSDM13/>`_ at the
+  `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
+  training programme Oeiras (Portugal)
