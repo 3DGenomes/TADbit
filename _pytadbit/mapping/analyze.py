@@ -181,7 +181,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     distr = {}
     idx1, idx2 = (1, 3) if first_read else (7, 9)
     for line in open(fnam):
-        crm, pos = line.split('\t')[idx1:idx2].strip()
+        crm, pos = line.strip().split('\t')[idx1:idx2]
         pos = int(pos) / resolution
         try:
             distr[crm][pos] += 1

@@ -87,7 +87,7 @@ def filter_reads(fnam, max_molecule_length=500,
     for line in open(fnam):
         (read,
          cr1, pos1, sd1, _, rs1, re1,
-         cr2, pos2, sd2, _, rs2, re2) = line.split('\t').strip()
+         cr2, pos2, sd2, _, rs2, re2) = line.strip().split('\t')
         (ps1, ps2, sd1, sd2,
          re1, rs1, re2, rs2) = map(int, (pos1, pos2, sd1, sd2,
                                          re1, rs1, re2, rs2))
