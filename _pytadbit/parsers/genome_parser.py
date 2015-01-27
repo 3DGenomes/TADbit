@@ -26,15 +26,22 @@ def parse_fasta(f_names, chr_names=None):
 
     genome_seq = OrderedDict()
     if len(f_names) == 1:
+        header = None
+        seq = ''
         for line in open(f_names[0]):
             if line.startswith('>'):
+                if header:
+                    genome_seq[header] = seq
                 if not chr_names:
                     header = line[1:].split()[0]
+                    print 'Parsing %s' % (header)
                 else:
                     header = chr_names.pop(0)
-                genome_seq[header] = ''
+                    print 'Parsing %s as %s' % (line[1:].strip(), header)
+                seq = ''
                 continue
-            genome_seq[header] += line.strip()
+            seq += line.strip().upper()
+        genome_seq[header] = seq
     else:
         for fnam in f_names:
             fhandler = open(fnam)
