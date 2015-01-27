@@ -191,16 +191,17 @@ class IMPoptimizer(object):
                                'upfreq'   : float(upfreq),
                                'lowfreq'  : float(lowfreq),
                                'scale'    : float(scale)}
-                        tdm = generate_3d_models(
-                            self.zscores, self.resolution,
-                            self.nloci, n_models=self.n_models,
-                            n_keep=self.n_keep, config=tmp,
-                            n_cpus=n_cpus, first=0,
-                            values=self.values,
-                            close_bins=self.close_bins, zeros=self.zeros)
-                        count += 1
                         try:
+                            count += 1
+                            tdm = generate_3d_models(
+                                self.zscores, self.resolution,
+                                self.nloci, n_models=self.n_models,
+                                n_keep=self.n_keep, config=tmp,
+                                n_cpus=n_cpus, first=0,
+                                values=self.values,
+                                close_bins=self.close_bins, zeros=self.zeros)
                             result = 0
+                            cutoff = my_round(dcutoff_arange[0])
                             for cut in [i for i in dcutoff_arange]:
                                 sub_result = tdm.correlate_with_real_data(
                                     cutoff=(int(cut * self.resolution *
@@ -210,22 +211,23 @@ class IMPoptimizer(object):
                                 if result < sub_result:
                                     result = sub_result
                                     cutoff = my_round(cut)
-                            if verbose:
-                                verb = '%5s %6s %7s %7s %6s %7s  ' % (
-                                    count, upfreq, lowfreq, maxdist,
-                                    scale, cutoff)
-                                if verbose == 2:
-                                    stderr.write(verb + str(round(result, 4))
-                                                 + '\n')
-                                else:
-                                    print verb + str(round(result, 4))
                         except Exception, e:
-                            print 'ERROR %s' % e
-                            continue
+                            print '  SKIPPING: %s' % e
+                            result = 0
+                            cutoff = my_round(dcutoff_arange[0])
+                        if verbose:
+                            verb = '%5s %6s %7s %7s %6s %7s  ' % (
+                                count, upfreq, lowfreq, maxdist,
+                                scale, cutoff)
+                            if verbose == 2:
+                                stderr.write(verb + str(round(result, 4))
+                                             + '\n')
+                            else:
+                                print verb + str(round(result, 4))
                         # store
                         self.results[(scale, maxdist,
                                       upfreq, lowfreq, cutoff)] = result
-                        if savedata:
+                        if savedata and result:
                             models[(scale, maxdist, upfreq, lowfreq, cutoff)
                                    ] = tdm._reduce_models(minimal=True)
         if savedata:
@@ -458,7 +460,7 @@ class IMPoptimizer(object):
             scale, maxdist, upfreq, lowfreq, dcutoff = (
                 float(scale), int(maxdist), float(upfreq), float(lowfreq),
                 float(dcutoff))
-            scale   = my_round(scale)
+            scale   = my_round(scale, val=5)
             maxdist = my_round(maxdist)
             upfreq  = my_round(upfreq)
             lowfreq = my_round(lowfreq)
