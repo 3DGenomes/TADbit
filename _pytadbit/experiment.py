@@ -11,7 +11,7 @@ from pytadbit.utils.tadmaths       import zscore
 from pytadbit.utils.normalize_hic  import iterative
 from pytadbit.utils.hic_filtering  import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser   import parse_tads
-from math                          import sqrt, isnan
+from math                          import isnan
 from numpy                         import log2, array
 from pytadbit.imp.CONFIG           import CONFIG
 from copy                          import deepcopy as copy
