@@ -232,7 +232,7 @@ def _filter_fastq(ids, in_fastq, out_fastq):
 
         fastq_entry = [line, in_file.readline(),
                        in_file.readline(), in_file.readline()]
-        read_id = line.split('\t')[0][1:]
+        read_id = line.split()[0][1:]
         if read_id.endswith('/1') or read_id.endswith('/2'):
             read_id = read_id[:-2]
         if read_id in ids:
