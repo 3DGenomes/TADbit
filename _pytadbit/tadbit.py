@@ -61,6 +61,7 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
             weights.append(tuple([B[i]*B[j] for i in xrange(size)
                                   for j in xrange(size)]))
     nums = [num.get_as_tuple() for num in nums]
+    print nums
     n_cpus = n_cpus if n_cpus != 'max' else 0
     max_tad_size = size if max_tad_size in ["max",
                                             "auto"] else max_tad_size
