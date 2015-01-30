@@ -813,11 +813,101 @@ class IMPmodel(dict):
             return None
 
 
+
+    def write_json(self, directory, color='index', rndname=True,
+                   model_num=None, filename=None, **kwargs):
+        """
+        Save a model in the json format, read by TADkit.
+
+        **Note:** If none of model_num, models or cluster parameter are set,
+        ALL the models will be written.
+
+        :param directory: location where the file will be written (note: the
+           name of the file will be model_1.cmm if model number is 1)
+        :param None model_num: the number of the model to save
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.cmm, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.cmm where NUM is the rank of the model in terms of
+           objective function value
+        :param None filename: overide the default file name writing
+        :param 'index' color: can be:
+
+             * a string as:
+                 * '**index**' to color particles according to their position in the
+                   model (:func:`pytadbit.utils.extraviews.color_residues`)
+                 * '**tad**' to color particles according to the TAD they belong to
+                   (:func:`pytadbit.utils.extraviews.tad_coloring`)
+                 * '**border**' to color particles marking borders. Color according to
+                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
+                   coloring function like.
+             * a function, that takes as argument a model and any other parameter
+               passed through the kwargs.
+             * a list of (r, g, b) tuples (as long as the number of particles).
+               Each r, g, b between 0 and 1.
+        :param kwargs: any extra argument will be passed to the coloring
+           function
+        """
+        if isinstance(color, str):
+            if color == 'index':
+                color = color_residues(self, **kwargs)
+            elif color == 'tad':
+                if not 'tads' in kwargs:
+                    raise Exception('ERROR: missing TADs\n   ' +
+                                    'pass an Experiment.tads disctionary\n')
+                color = tad_coloring(self, **kwargs)
+            elif color == 'border':
+                if not 'tads' in kwargs:
+                    raise Exception('ERROR: missing TADs\n   ' +
+                                    'pass an Experiment.tads disctionary\n')
+                color = tad_border_coloring(self, **kwargs)
+            else:
+                raise NotImplementedError(('%s type of coloring is not yet ' +
+                                           'implemeted\n') % color)
+        elif hasattr(color, '__call__'): # it's a function
+            color = color(self, **kwargs)
+        elif not isinstance(color, list):
+            raise TypeError('one of function, list or string is required\n')
+        out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
+        form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
+                ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
+                'radius=\"' + #str(30) +
+                str(self['radius']) +
+                '\" note=\"%s\"/>\n')
+        for i in xrange(len(self['x'])):
+            out += form % (i + 1,
+                           self['x'][i], self['y'][i], self['z'][i],
+                           color[i][0], color[i][1], color[i][2], i + 1)
+        form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
+                'g=\"1\" b=\"1\" radius=\"' + str(10) +
+                # str(self['radius']/2) +
+                '\"/>\n')
+        for i in xrange(1, len(self['x'])):
+            out += form % (i, i + 1)
+        out += '</marker_set>\n'
+
+        if filename:
+                out_f = open('%s/%s' % (directory, filename), 'w')
+        else:
+            if rndname:
+                out_f = open('%s/model.%s.cmm' % (directory,
+                                                  self['rand_init']), 'w')
+            else:
+                out_f = open('%s/model_%s_rnd%s.cmm' % (
+                    directory, model_num, self['rand_init']), 'w')
+        out_f.write(out)
+        out_f.close()
+
+
+
     def write_xyz(self, directory, model_num=None, get_path=False,
                   rndname=True, filename=None, header=True):
         """
         Writes a xyz file containing the 3D coordinates of each particle in the
         model.
+        Outfile is tab separated column with the bead number being the
+        first column, then the genomic coordinate and finaly the 3
+        coordinates X, Y and Z
 
         **Note:** If none of model_num, models or cluster parameter are set,
         ALL the models will be written.
@@ -834,7 +924,6 @@ class IMPmodel(dict):
            the file has been written
         :param None filename: overide the default file name writing
         :param True header: write a header describing the experiment from which
-           the model was calculated.
         """
         if filename:
             path_f = '%s/%s' % (directory, filename)
