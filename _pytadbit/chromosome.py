@@ -471,9 +471,9 @@ class Chromosome(object):
             raise Exception('resolution param is needed\n')
 
 
-    def find_tad(self, experiments, normalized=True, name=None, n_cpus=1,
+    def find_tad(self, experiments, weights=None, name=None, n_cpus=1,
                  verbose=True, max_tad_size="max", heuristic=True,
-                 norm='visibility', batch_mode=False, **kwargs):
+                 batch_mode=False, **kwargs):
         """
         Call the :func:`pytadbit.tadbit.tadbit` function to calculate the
         position of Topologically Associated Domain boundaries
@@ -513,7 +513,6 @@ class Chromosome(object):
                             'experiment is passed')
         if batch_mode:
             matrix = []
-            weight = []
             if not name:
                 name = 'batch'
             resolution = xprs[0].resolution
@@ -522,25 +521,20 @@ class Chromosome(object):
                     raise Exception('All Experiments must have the same ' +
                                     'resolution\n')
                 matrix.append(xpr.hic_data[0])
-                weight.append(xpr.norm[0].get_as_tuple() if xpr.norm else None)
                 if name.startswith('batch'):
                     name += '_' + xpr.name
-            if not all(weight):
-                weight = None
-            if normalized:
-                siz = xprs[0].size
-                tmp = reduce(lambda x, y: x+ y, xprs)
-                tmp.filter_columns(silent=kwargs.get('silent', False))
+            siz = xprs[0].size
+            tmp = reduce(lambda x, y: x+ y, xprs)
+            tmp.filter_columns(silent=kwargs.get('silent', False))
             remove = tuple([1 if i in tmp._zeros else 0
-                            for i in xrange(siz)]) if normalized else None
+                            for i in xrange(siz)])
             result = tadbit(matrix,
-                            weights=weight,
                             remove=remove,
                             n_cpus=n_cpus, verbose=verbose,
                             max_tad_size=max_tad_size,
                             no_heuristic=not heuristic, **kwargs)
             xpr = Experiment(name, resolution, hic_data=matrix,
-                             tad_def=result, weights=weight, **kwargs)
+                             tad_def=result, **kwargs)
             xpr._zeros = xprs[0]._zeros
             for other in xprs[1:]:
                 xpr._zeros = dict([(k, None) for k in
@@ -549,14 +543,10 @@ class Chromosome(object):
             self.add_experiment(xpr)
             return
         for xpr in xprs:
-            if not xpr.norm:
-                raise Exception(
-                    'Error: interactions should be normalized first')
             result = tadbit(
                 xpr.hic_data,
-                weights=[w.get_as_tuple() for w in xpr.norm],
                 remove=tuple([1 if i in xpr._zeros else 0 for i in
-                              xrange(xpr.size)]) if normalized else None,
+                              xrange(xpr.size)]),
                 n_cpus=n_cpus, verbose=verbose,
                 max_tad_size=max_tad_size,
                 no_heuristic=not heuristic, **kwargs)

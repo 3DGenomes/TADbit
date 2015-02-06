@@ -695,7 +695,6 @@ tadbit
 (
   // input //
   int **obs,
-  double **weights,
   char *remove,
   int n,
   const int m,
@@ -778,20 +777,17 @@ tadbit
    _max_cache_index = N+1;
    // Allocate and copy.
    double **log_gamma  = (double **) malloc(m * sizeof(double *));
-   double **new_weight = (double **) malloc(m * sizeof(double *));
    int    **new_obs    = (int **) malloc(m * sizeof(int *));
    double *dist = (double *) malloc(n*n * sizeof(double));
    for (k = 0 ; k < m ; k++) {
       l = 0;
       log_gamma[k] = (double *) malloc(n*n * sizeof(double));
-      new_weight[k] = (double *) malloc(n*n * sizeof(double));
       new_obs[k] = (int *) malloc(n*n * sizeof(int));
       for (j = 0 ; j < N ; j++) {
       for (i = 0 ; i < N ; i++) {
          if (remove[i] || remove[j]) continue;
          _cache_index[l] = i > j ? i-j : j-i;
          log_gamma [k][l] = lgamma(obs[k][i+j*N]+1);
-         new_weight[k][l] = weights[k][i+j*N];
          new_obs[k][l]    = obs[k][i+j*N];
          dist[l] = init_dist[i+j*N];
          l++;
@@ -807,40 +803,39 @@ tadbit
    // We will not need the initial observations any more.
    free(init_dist);
    obs = new_obs;
-   weights = new_weight;
 
    // Make sure the data is symmetric.
    enforce_symmetry(obs, n, m);
 
 
-   /* // Compute row/column sums (identical by symmetry). */
-   /* double **rowsums = (double **) malloc(m * sizeof(double *)); */
-   /* for (k = 0 ; k < m ; k++) { */
-   /*    rowsums[k] = (double *) malloc(n * sizeof(double)); */
-   /*    for (i = 0 ; i < n ; i++) rowsums[k][i] = 0.0; */
-   /* } */
+   // Compute row/column sums (identical by symmetry).
+   double **rowsums = (double **) malloc(m * sizeof(double *));
+   for (k = 0 ; k < m ; k++) {
+      rowsums[k] = (double *) malloc(n * sizeof(double));
+      for (i = 0 ; i < n ; i++) rowsums[k][i] = 0.0;
+   }
 
-   /* for (k = 0 ; k < m ; k++) */
-   /* for (i = 0 ; i < n ; i++) */
-   /* for (j = 0 ; j < n ; j++) */
-   /*    rowsums[k][i] += obs[k][i+j*n]; */
+   for (k = 0 ; k < m ; k++)
+   for (i = 0 ; i < n ; i++)
+   for (j = 0 ; j < n ; j++)
+      rowsums[k][i] += obs[k][i+j*n];
 
    // compute the weights.
-   /* double **weights = (double **) malloc(m * sizeof(double *)); */
-   /* for (k = 0 ; k < m ; k++) { */
-   /*    weights[k] = (double *) malloc(n*n * sizeof(double)); */
-   /*    for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0; */
-   /*    // Compute product. */
-   /*    for (j = 0 ; j < n ; j++) { */
-   /*    for (i = 0 ; i < n ; i++) { */
-   /*       weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j]; */
-   /*    } */
-   /*    } */
-   /* } */
+   double **weights = (double **) malloc(m * sizeof(double *));
+   for (k = 0 ; k < m ; k++) {
+      weights[k] = (double *) malloc(n*n * sizeof(double));
+      for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0;
+      // Compute product.
+      for (j = 0 ; j < n ; j++) {
+      for (i = 0 ; i < n ; i++) {
+         weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j];
+      }
+      }
+   }
 
    // We don't need the row/column sums any more.
-   /* for (l = 0 ; l < m ; l++) free(rowsums[l]); */
-   /* free(rowsums); */
+   for (l = 0 ; l < m ; l++) free(rowsums[l]);
+   free(rowsums);
 
    double *mllik = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkpts = (int *) malloc(MAXBREAKS*n * sizeof(int));
@@ -1116,11 +1111,9 @@ tadbit
 
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
-      free(new_weight[k]);
       free(log_gamma[k]);
    }
    free(new_obs);
-   free(new_weight);
    free(log_gamma);
    free(dist);
    free(remove);

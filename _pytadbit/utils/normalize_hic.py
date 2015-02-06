@@ -123,3 +123,4 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
         except KeyError:
             B[i] = 1.
     return B
+

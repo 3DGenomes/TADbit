@@ -283,7 +283,9 @@ class HiC_data(dict):
             super(HiC_data, self).__setitem__(row_col, val)
 
     def get_as_tuple(self):
-        return tuple([self[i, j] for j  in xrange(len(self)) for i in xrange(len(self))])
+        return tuple([self[i, j]
+                      for j in xrange(len(self))
+                      for i in xrange(len(self))])
 
     def get_matrix(self, focus=None, diagonal=True, normalized=False):
         """

@@ -27,7 +27,6 @@ PyDoc_STRVAR(_tadbit_wrapper__doc__,
 /* The wrapper to the underlying C function */
 static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   PyObject **py_obs;
-  PyObject **py_weights;
   PyObject *py_remove;
   int n;
   int m;
@@ -39,8 +38,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   /* output */
   tadbit_output *seg = (tadbit_output *) malloc(sizeof(tadbit_output));
 
-  if (!PyArg_ParseTuple(args, "OOOiiiiiii:tadbit", &py_obs, &py_remove, 
-			&py_weights, &n, &m, &n_threads, 
+  if (!PyArg_ParseTuple(args, "OOiiiiiii:tadbit", &py_obs, &py_remove, 
+			&n, &m, &n_threads, 
 			&verbose, &max_tad_size, &nbks, &do_not_use_heuristic))
     return NULL;
   // convert list of lists to pointer o pointers
@@ -54,22 +53,13 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
     for (j = 0 ; j < n*n ; j++)
       obs[i][j] = PyInt_AS_LONG(PyTuple_GET_ITEM(PyList_GET_ITEM(py_obs, i), j));
 
-  double **weights;
-  weights = malloc(m * sizeof(double*));
-  for (i = 0 ; i < m ; i++ )
-    weights[i] = malloc(n*n * sizeof(double));
-  for (i = 0 ; i < m ; i++)
-    for (j = 0 ; j < n*n ; j++){
-      weights[i][j] = PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(PyList_GET_ITEM(py_weights, i), j));
-    }
-
   char *remove = (char *) malloc (n * sizeof(char));
   for (j = 0 ; j < n ; j++){
     remove[j] = PyInt_AS_LONG(PyTuple_GET_ITEM(py_remove, j)); // automatic casting into char
   }
 
   // run tadbit
-  tadbit(obs, weights, remove, n, m, n_threads, verbose, max_tad_size, nbks, do_not_use_heuristic, seg);
+  tadbit(obs, remove, n, m, n_threads, verbose, max_tad_size, nbks, do_not_use_heuristic, seg);
 
   // store each tadbit output
 
@@ -115,10 +105,8 @@ static PyObject *_tadbit_wrapper (PyObject *self, PyObject *args){
   // free many things... no leaks here!!
   for (i = 0 ; i < m ; i++){
     free(obs[i]);
-    free(weights[i]);
   }
   free(obs);
-  free(weights);
 
   destroy_tadbit_output(seg);
 

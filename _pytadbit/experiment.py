@@ -267,7 +267,7 @@ class Experiment(object):
                     xpr._normalization = (self._normalization)
         elif self.norm or other.norm:
             try:
-                if self.norm[0] or other.norm[0]:
+                if (self.norm[0] or other.norm[0]) != {}:
                     raise Exception('ERROR: normalization differs between each ' +
                                     'experiment\n')
                 else:

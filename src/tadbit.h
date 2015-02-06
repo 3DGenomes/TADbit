@@ -55,7 +55,6 @@ void
 tadbit(
   /* input */
   int **obs,
-  double **weights,
   char *remove,
   int n,
   const int m,

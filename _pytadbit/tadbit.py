@@ -1,17 +1,13 @@
 """
 24 Oct 2012
-
-
 """
 
 from os                           import path, listdir
-from pytadbit.parsers.hic_parser  import read_matrix, HiC_data
+from pytadbit.parsers.hic_parser  import read_matrix
 from pytadbit.tadbit_py           import _tadbit_wrapper
-from pytadbit.tadbitalone_py      import _tadbitalone_wrapper
-from pytadbit.utils.normalize_hic import iterative
-from sys                          import stderr
 
-def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
+
+def tadbit(x, remove=None, n_cpus=1, verbose=True,
            max_tad_size="max", no_heuristic=0, **kwargs):
     """
     The TADbit algorithm works on raw chromosome interaction count data.
@@ -52,23 +48,15 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
     """
     nums = [hic_data for hic_data in read_matrix(x)]
     size = len(nums[0])
-    if not remove:
-        remove = tuple([int(nums[0][i+i*size]==0) for i in xrange(size)])
-    if not weights:
-        weights = []
-        for num in nums:
-            B = iterative(num, remove)
-            weights.append(tuple([B[i]*B[j] for i in xrange(size)
-                                  for j in xrange(size)]))
     nums = [num.get_as_tuple() for num in nums]
-    print nums
+    if not remove:
+        # if not given just remove columns with zero in diagonal
+        remove = tuple([0 if nums[0][i*size+i] else 1 for i in xrange(size)])
     n_cpus = n_cpus if n_cpus != 'max' else 0
-    max_tad_size = size if max_tad_size in ["max",
-                                            "auto"] else max_tad_size
+    max_tad_size = size if max_tad_size in ["max", "auto"] else max_tad_size
     _, nbks, passages, _, _, bkpts = \
        _tadbit_wrapper(nums,             # list of lists of Hi-C data
                        remove,           # list of columns marking filtered
-                       weights,
                        size,             # size of one row/column
                        len(nums),        # number of matrices
                        n_cpus,           # number of threads
@@ -80,7 +68,6 @@ def tadbit(x, weights=None, remove=None, n_cpus=1, verbose=True,
 
     breaks = [i for i in xrange(size) if bkpts[i + nbks * size] == 1]
     scores = [p for p in passages if p > 0]
-    print scores
 
     result = {'start': [], 'end'  : [], 'score': []}
     for brk in xrange(len(breaks)+1):
