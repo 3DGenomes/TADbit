@@ -38,7 +38,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
     cols = np.array(cols)
     if draw_hist:
         plt.figure(figsize=(9, 9))
-    median = np.median(cols)
+    percentile = np.percentile(cols, 5)
     # mad = np.median([abs(median - c ) for c in cols])
     best =(None, None, None, None)
     # bin the sum of columns
@@ -88,7 +88,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
         if root <= 0:
             continue
         # and lower than the median
-        if root >= median:
+        if root >= percentile:
             continue
         p  = np.poly1d(z)
         R2 = get_r2(p, x, y)
