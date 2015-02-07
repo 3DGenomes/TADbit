@@ -1061,7 +1061,8 @@ class Experiment(object):
 
     def view(self, tad=None, focus=None, paint_tads=False, axe=None,
              show=True, logarithm=True, normalized=False, relative=True,
-             decorate=True, savefig=None, where='both', clim=None):
+             decorate=True, savefig=None, where='both', clim=None,
+             cmap='jet'):
         """
         Visualize the matrix of Hi-C interactions
 
@@ -1201,14 +1202,14 @@ class Experiment(object):
             jet._lut[:,-1] = alphas
         if relative:
             img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
-                             interpolation="nearest",
+                             interpolation="nearest", cmap=cmap,
                              extent=(int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5,
                                      int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5))
         else:
             img = axe.imshow(fun(matrix), origin='lower',
-                             interpolation="nearest",
+                             interpolation="nearest", cmap=cmap,
                              extent=(int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5,
                                      int(start or 1) - 0.5,

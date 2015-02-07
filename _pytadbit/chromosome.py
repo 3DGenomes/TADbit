@@ -602,7 +602,7 @@ class Chromosome(object):
     def visualize(self, names=None, tad=None, focus=None, paint_tads=False,
                   axe=None, show=True, logarithm=True, normalized=False,
                   relative=True, decorate=True, savefig=None, clim=None,
-                  scale=(8, 6)):
+                  scale=(8, 6), cmap='jet'):
         """
         Visualize the matrix of Hi-C interactions of a given experiment
 
@@ -674,12 +674,12 @@ class Chromosome(object):
                                     axe=axe, show=False, logarithm=logarithm,
                                     normalized=normalized, relative=relative,
                                     decorate=decorate, savefig=False,
-                                    where='up', clim=clim)
+                                    where='up', clim=clim, cmap=cmap)
                     img = xpr2.view(tad=tad, focus=focus, paint_tads=paint_tads,
                                     axe=axe, show=False, logarithm=logarithm,
                                     normalized=normalized, relative=relative,
                                     decorate=False, savefig=False, where='down',
-                                    clim=clim or img.get_clim())
+                                    clim=clim or img.get_clim(), cmap=cmap)
                     #axe = axe.twinx()
                     #axe.set_aspect('equal',adjustable='box-forced',anchor='NE')
                     if decorate:
@@ -695,7 +695,8 @@ class Chromosome(object):
                     xper.view(tad=tad, focus=focus, paint_tads=paint_tads,
                               axe=axe, show=False, logarithm=logarithm,
                               normalized=normalized, relative=relative,
-                              decorate=decorate, savefig=False, clim=clim)
+                              decorate=decorate, savefig=False, clim=clim,
+                              cmap=cmap)
         if savefig:
             tadbit_savefig(savefig)
         if show:
