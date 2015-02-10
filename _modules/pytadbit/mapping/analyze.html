@@ -59,6 +59,8 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_reads</span>
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span> <span class="k">as</span> <span class="n">sc_norm</span><span class="p">,</span> <span class="n">skew</span><span class="p">,</span> <span class="n">kurtosis</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">spearmanr</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">eigh</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="k">try</span><span class="p">:</span>
@@ -66,19 +68,19 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">warn</span><span class="p">(</span><span class="s">&#39;matplotlib not found</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="hic_map"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.hic_map">[docs]</a><span class="k">def</span> <span class="nf">hic_map</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">biases</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">by_chrom</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-            <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-            <span class="n">cmap</span><span class="o">=</span><span class="s">&#39;Reds&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="hic_map"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.hic_map">[docs]</a><span class="k">def</span> <span class="nf">hic_map</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">by_chrom</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s">&#39;Reds&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    function to retrieve data from HiC-data object. Data can be stored as</span>
 <span class="sd">    a square matrix, or drawn using matplotlib</span>
 
 <span class="sd">    :param data: can be either a path to a file with pre-processed reads</span>
 <span class="sd">       (filtered or not), or a Hi-C-data object</span>
-<span class="sd">    :param resolution: at which to bin the data (try having a dense matrix</span>
-<span class="sd">       with &lt; 10% of cells with zero interaction counts).</span>
-<span class="sd">    :param biases: a list of biases, one per column, each cell (i, j) will be</span>
-<span class="sd">       divided by the product: BixBj</span>
+<span class="sd">    :param None resolution: at which to bin the data (try having a dense matrix</span>
+<span class="sd">       with &lt; 10% of cells with zero interaction counts). Note: not necessary</span>
+<span class="sd">       if a hic_data object is passed as &#39;data&#39;.</span>
+<span class="sd">    :param False normalized: used normalized data, based on precalculated biases</span>
 <span class="sd">    :param masked: a list of columns to be removed. Usually because to few</span>
 <span class="sd">       interactions</span>
 <span class="sd">    :param False by_chrom: data can be stored in a partitioned way. This</span>
@@ -106,7 +108,6 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">load_hic_data_from_reads</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">)</span>
     <span class="n">hic_data</span> <span class="o">=</span> <span class="n">data</span>
-    <span class="n">hic_data</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">biases</span>
     <span class="n">hic_data</span><span class="o">.</span><span class="n">bads</span> <span class="o">=</span> <span class="n">masked</span>
     <span class="c"># save and draw the data</span>
     <span class="k">if</span> <span class="n">by_chrom</span><span class="p">:</span>
@@ -122,7 +123,8 @@
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="n">by_chrom</span> <span class="o">==</span> <span class="s">&#39;inter&#39;</span> <span class="ow">and</span> <span class="n">crm1</span> <span class="o">==</span> <span class="n">crm2</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="n">subdata</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">))</span>
+                <span class="n">subdata</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">),</span>
+                                              <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
                     <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">.mat&#39;</span> <span class="o">%</span> <span class="p">(</span>
                         <span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">set</span><span class="p">((</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">)))),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
@@ -150,10 +152,12 @@
                 <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                     <span class="p">[</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span>
-                     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">)])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span>
+                         <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">)])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">show</span> <span class="ow">or</span> <span class="n">savefig</span><span class="p">:</span>
-            <span class="n">subdata</span> <span class="o">=</span> <span class="n">nozero_log</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">)</span>
+            <span class="n">subdata</span> <span class="o">=</span> <span class="n">nozero_log</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span>
+                <span class="n">focus</span><span class="o">=</span><span class="n">focus</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">masked</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subdata</span><span class="p">)):</span>
                     <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">masked</span><span class="p">:</span>
@@ -406,7 +410,98 @@
         <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div></div>
+
+</div>
+<div class="viewcode-block" id="correlate_matrices"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.correlate_matrices">[docs]</a><span class="k">def</span> <span class="nf">correlate_matrices</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="n">hic_data2</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                       <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compare the iteractions of two Hi-C matrices at a given distance,</span>
+<span class="sd">    with spearman rank correlation</span>
+
+<span class="sd">    :param hic_data1: Hi-C-data object</span>
+<span class="sd">    :param hic_data2: Hi-C-data object</span>
+<span class="sd">    :param 1 resolution: to be used for scaling the plot</span>
+<span class="sd">    :param None savefig: path to save the plot</span>
+<span class="sd">    :param False show: displays the plot</span>
+
+<span class="sd">    :returns: list of correlations and list of genomic distances</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">corr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">)):</span>
+        <span class="n">diag1</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">diag2</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">):</span>
+            <span class="n">diag1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">diag2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hic_data2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">])</span>
+        <span class="n">corr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spearmanr</span><span class="p">(</span><span class="n">diag1</span><span class="p">,</span> <span class="n">diag2</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">resolution</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="n">show</span> <span class="ow">or</span> <span class="n">savefig</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">corr</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;orange&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="s">&#39;2&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">8</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Genomic distance&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Spearman rank correlation&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s">&#39;all&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;# genomic distance</span><span class="se">\n</span><span class="s">Spearman rank correlation</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">corr</span><span class="p">)):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">corr</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">corr</span><span class="p">,</span> <span class="n">x</span>
+
+</div>
+<div class="viewcode-block" id="eig_correlate_matrices"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.analyze.eig_correlate_matrices">[docs]</a><span class="k">def</span> <span class="nf">eig_correlate_matrices</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">,</span> <span class="n">hic_data2</span><span class="p">,</span> <span class="n">nvect</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+                           <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compare the iteractions of two Hi-C matrices using their 6 first</span>
+<span class="sd">    eigenvectors, with spearman rank correlation</span>
+
+<span class="sd">    :param hic_data1: Hi-C-data object</span>
+<span class="sd">    :param hic_data2: Hi-C-data object</span>
+<span class="sd">    :param 6 nvect: number of eigenvectors to compare</span>
+<span class="sd">    :param None savefig: path to save the plot</span>
+<span class="sd">    :param False show: displays the plot</span>
+
+<span class="sd">    :returns: matrix of correlations</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">corr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">evect1</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">([[</span><span class="n">hic_data1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+                       <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">))]</span>
+                      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data1</span><span class="p">))])</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">evect2</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">([[</span><span class="n">hic_data2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+                       <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data2</span><span class="p">))]</span>
+                      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hic_data2</span><span class="p">))])</span>
+
+    <span class="n">corr</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nvect</span><span class="p">)]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nvect</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nvect</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nvect</span><span class="p">):</span>
+            <span class="n">corr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">spearmanr</span><span class="p">(</span><span class="n">evect1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">evect2</span><span class="p">[</span><span class="n">j</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">show</span> <span class="ow">or</span> <span class="n">savefig</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Eigen Vectors exp. 1&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Eigen Vectors exp. 2&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Spearman rank correlation&#39;</span><span class="p">)</span>
+        <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Spearman rank correlation&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s">&#39;all&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;# &#39;</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;Eigen Vector </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span> <span class="n">i</span>
+                                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nvect</span><span class="p">)])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nvect</span><span class="p">):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">corr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+                                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nvect</span><span class="p">)])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">corr</span></div>
+</pre></div>
 
           </div>
         </div>

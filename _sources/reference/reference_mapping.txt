@@ -20,6 +20,10 @@ Quality check and plotting
 
 .. autofunction:: hic_map
 
+.. autofunction:: correlate_matrices
+
+.. autofunction:: eig_correlate_matrices
+
 .. autofunction:: plot_distance_vs_interactions
 
 .. autofunction:: plot_iterative_mapping

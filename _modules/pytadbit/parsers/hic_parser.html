@@ -55,7 +55,9 @@
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">isnan</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.gzopen</span> <span class="kn">import</span> <span class="n">gzopen</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.hic_filtering</span>   <span class="kn">import</span> <span class="n">filter_by_mean</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.normalize_hic</span>  <span class="kn">import</span> <span class="n">iterative</span>
 
 <span class="n">HIC_DATA</span> <span class="o">=</span> <span class="bp">True</span>
 
@@ -352,6 +354,41 @@
                     <span class="s">&#39;ERROR: position </span><span class="si">%d</span><span class="s"> larger than </span><span class="si">%s</span><span class="s">^2&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_col</span><span class="p">,</span>
                                                              <span class="bp">self</span><span class="o">.</span><span class="n">__size</span><span class="p">))</span>
             <span class="nb">super</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">row_col</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call filtering function, to remove artefactual columns in a given Hi-C</span>
+<span class="sd">        matrix. This function will detect columns with very low interaction</span>
+<span class="sd">        counts; columns passing through a cell with no interaction in the</span>
+<span class="sd">        diagonal; and columns with NaN values (in this case NaN will be replaced</span>
+<span class="sd">        by zero in the original Hi-C data matrix). Filtered out columns will be</span>
+<span class="sd">        stored in the dictionary Experiment._zeros.</span>
+
+<span class="sd">        :param False draw_hist: shows the distribution of mean values by column</span>
+<span class="sd">           the polynomial fit, and the cut applied.</span>
+<span class="sd">        :param None savefig: path to a file where to save the image generated;</span>
+<span class="sd">           if None, the image will be shown using matplotlib GUI (the extension</span>
+<span class="sd">           of the file name will determine the desired format).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bads</span> <span class="o">=</span> <span class="n">filter_by_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="n">draw_hist</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalize the Hi-C data.</span>
+
+<span class="sd">        It fills the Experiment.norm variable with the Hi-C values divided by</span>
+<span class="sd">        the calculated weight.</span>
+
+<span class="sd">        :param 0 iteration: number of iterations</span>
+<span class="sd">        :param 0.1 max_dev: iterative process stops when the maximum deviation</span>
+<span class="sd">           between the sum of row is equal to this number (0.1 means 10%)</span>
+<span class="sd">        :param False silent: does not warn when overwriting weights</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">iterative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span>
+                              <span class="n">max_dev</span><span class="o">=</span><span class="n">max_dev</span><span class="p">,</span> <span class="n">bads</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bads</span><span class="p">,</span>
+                              <span class="n">verbose</span><span class="o">=</span><span class="ow">not</span> <span class="n">silent</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_as_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>

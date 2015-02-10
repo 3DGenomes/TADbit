@@ -101,7 +101,7 @@ end. Both to be read from left to right.</td>
 <h2>Quality check and plotting<a class="headerlink" href="#quality-check-and-plotting" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.hic_map">
-<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">hic_map</tt><big>(</big><em>data</em>, <em>resolution</em>, <em>biases=None</em>, <em>masked=None</em>, <em>by_chrom=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>focus=None</em>, <em>clim=None</em>, <em>cmap='Reds'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">hic_map</tt><big>(</big><em>data</em>, <em>resolution=None</em>, <em>normalized=False</em>, <em>masked=None</em>, <em>by_chrom=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>focus=None</em>, <em>clim=None</em>, <em>cmap='Reds'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>function to retrieve data from HiC-data object. Data can be stored as
 a square matrix, or drawn using matplotlib</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -111,10 +111,10 @@ a square matrix, or drawn using matplotlib</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>data</strong> &#8211; can be either a path to a file with pre-processed reads
 (filtered or not), or a Hi-C-data object</li>
-<li><strong>resolution</strong> &#8211; at which to bin the data (try having a dense matrix
-with &lt; 10% of cells with zero interaction counts).</li>
-<li><strong>biases</strong> &#8211; a list of biases, one per column, each cell (i, j) will be
-divided by the product: BixBj</li>
+<li><strong>resolution</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; at which to bin the data (try having a dense matrix
+with &lt; 10% of cells with zero interaction counts). Note: not necessary
+if a hic_data object is passed as &#8216;data&#8217;.</li>
+<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; used normalized data, based on precalculated biases</li>
 <li><strong>masked</strong> &#8211; a list of columns to be removed. Usually because to few
 interactions</li>
 <li><strong>by_chrom</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; <p>data can be stored in a partitioned way. This
@@ -147,6 +147,56 @@ chromosomes</li>
 of the heatmap</li>
 <li><strong>cmap</strong> (<em>Reds</em>) &#8211; color map to be used for the heatmap</li>
 </ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.mapping.analyze.correlate_matrices">
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">correlate_matrices</tt><big>(</big><em>hic_data1</em>, <em>hic_data2</em>, <em>resolution=1</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare the iteractions of two Hi-C matrices at a given distance,
+with spearman rank correlation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>hic_data1</strong> &#8211; Hi-C-data object</li>
+<li><strong>hic_data2</strong> &#8211; Hi-C-data object</li>
+<li><strong>resolution</strong> (<em>1</em>) &#8211; to be used for scaling the plot</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to save the plot</li>
+<li><strong>show</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; displays the plot</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of correlations and list of genomic distances</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.mapping.analyze.eig_correlate_matrices">
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">eig_correlate_matrices</tt><big>(</big><em>hic_data1</em>, <em>hic_data2</em>, <em>nvect=6</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#eig_correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.eig_correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare the iteractions of two Hi-C matrices using their 6 first
+eigenvectors, with spearman rank correlation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>hic_data1</strong> &#8211; Hi-C-data object</li>
+<li><strong>hic_data2</strong> &#8211; Hi-C-data object</li>
+<li><strong>nvect</strong> (<em>6</em>) &#8211; number of eigenvectors to compare</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to save the plot</li>
+<li><strong>show</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; displays the plot</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">matrix of correlations</p>
 </td>
 </tr>
 </tbody>
