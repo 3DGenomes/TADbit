@@ -260,10 +260,11 @@ class HiC_data(dict):
         self.chromosomes = chromosomes
         self.sections = dict_sec
         self.section_pos = {}
-        total = 0
-        for crm in self.chromosomes:
-            self.section_pos[crm] = (total, total + self.chromosomes[crm])
-            total += self.chromosomes[crm]
+        if self.chromosomes:
+            total = 0
+            for crm in self.chromosomes:
+                self.section_pos[crm] = (total, total + self.chromosomes[crm])
+                total += self.chromosomes[crm]
 
     def __len__(self):
         return self.__size
