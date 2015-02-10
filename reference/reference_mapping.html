@@ -101,8 +101,57 @@ end. Both to be read from left to right.</td>
 <h2>Quality check and plotting<a class="headerlink" href="#quality-check-and-plotting" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.hic_map">
-<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">hic_map</tt><big>(</big><em>data</em>, <em>genome_seq</em>, <em>biases=None</em>, <em>masked=None</em>, <em>resolution=100000</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>focus=None</em>, <em>cmap='gist_earth'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">hic_map</tt><big>(</big><em>data</em>, <em>resolution</em>, <em>biases=None</em>, <em>masked=None</em>, <em>by_chrom=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>focus=None</em>, <em>clim=None</em>, <em>cmap='Reds'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to retrieve data from HiC-data object. Data can be stored as
+a square matrix, or drawn using matplotlib</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> &#8211; can be either a path to a file with pre-processed reads
+(filtered or not), or a Hi-C-data object</li>
+<li><strong>resolution</strong> &#8211; at which to bin the data (try having a dense matrix
+with &lt; 10% of cells with zero interaction counts).</li>
+<li><strong>biases</strong> &#8211; a list of biases, one per column, each cell (i, j) will be
+divided by the product: BixBj</li>
+<li><strong>masked</strong> &#8211; a list of columns to be removed. Usually because to few
+interactions</li>
+<li><strong>by_chrom</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; <p>data can be stored in a partitioned way. This
+parameter can take the values of:</p>
+<blockquote>
+<div><ul>
+<li>&#8216;intra&#8217;: one output per each chromosome will be created</li>
+<li><dl class="first docutils">
+<dt>&#8216;inter&#8217;: one output per each possible pair of chromosome will be</dt>
+<dd>created</dd>
+</dl>
+</li>
+<li>&#8216;all&#8217;  : both of the above outputs</li>
+</ul>
+</div></blockquote>
+</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to store the output images. Note that, if
+the by_chrom option is used, then savefig will be the name of the
+directory containing the output files.</li>
+<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to store the output matrices. Note that, if
+the by_chrom option is used, then savefig will be the name of the
+directory containing the output files.</li>
+<li><strong>focus</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; can be either two number (i.e.: (1, 100)) specifying the
+start and end position of the sub-matrix to display (start and end, along
+the diagonal of the original matrix); or directly a chromosome name; or
+two chromosome names (i.e.: focus=(&#8216;chr2, chrX&#8217;)), in order to store the
+data corresponding to inter chromosomal interactions between these two
+chromosomes</li>
+<li><strong>clim</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cutoff for the upper and lower bound in the coloring scale
+of the heatmap</li>
+<li><strong>cmap</strong> (<em>Reds</em>) &#8211; color map to be used for the heatmap</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_distance_vs_interactions">
@@ -157,7 +206,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_genomic_distribution">
-<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">plot_genomic_distribution</tt><big>(</big><em>fnam</em>, <em>first_read=True</em>, <em>resolution=10000</em>, <em>genome_seq=None</em>, <em>axe=None</em>, <em>ylim=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">plot_genomic_distribution</tt><big>(</big><em>fnam</em>, <em>first_read=True</em>, <em>resolution=10000</em>, <em>axe=None</em>, <em>ylim=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -259,7 +308,24 @@ a set of read IDs to be removed</p>
 <dl class="function">
 <dt id="pytadbit.mapping.filter.apply_filter">
 <tt class="descclassname">pytadbit.mapping.filter.</tt><tt class="descname">apply_filter</tt><big>(</big><em>fnam</em>, <em>outfile</em>, <em>masked</em>, <em>filters=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/filter.html#apply_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.filter.apply_filter" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Create a new file with reads filtered</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fnam</strong> &#8211; input file path, where non-filtered read are stored</li>
+<li><strong>outfile</strong> &#8211; output file path, where filtered read will be stored</li>
+<li><strong>masked</strong> &#8211; dictionary given by the
+<a class="reference internal" href="#pytadbit.mapping.filter.filter_reads" title="pytadbit.mapping.filter.filter_reads"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.mapping.filter.filter_reads()</span></tt></a></li>
+<li><strong>filters</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of numbers corresponding to the filters we want
+to apply (numbers correspond to the keys in the masked dictionary)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 </div>
@@ -341,7 +407,7 @@ a set of read IDs to be removed</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 19, 2015.
+      Last updated on Feb 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

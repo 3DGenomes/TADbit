@@ -57,6 +57,15 @@
 
 <div class="viewcode-block" id="apply_filter"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.filter.apply_filter">[docs]</a><span class="k">def</span> <span class="nf">apply_filter</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a new file with reads filtered</span>
+
+<span class="sd">    :param fnam: input file path, where non-filtered read are stored</span>
+<span class="sd">    :param outfile: output file path, where filtered read will be stored</span>
+<span class="sd">    :param masked: dictionary given by the</span>
+<span class="sd">       :func:`pytadbit.mapping.filter.filter_reads`</span>
+<span class="sd">    :param None filters: list of numbers corresponding to the filters we want</span>
+<span class="sd">       to apply (numbers correspond to the keys in the masked dictionary)</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">masked_reads</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">filters</span> <span class="o">=</span> <span class="n">filters</span> <span class="ow">or</span> <span class="n">masked</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -127,7 +136,7 @@
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
         <span class="p">(</span><span class="n">read</span><span class="p">,</span>
          <span class="n">cr1</span><span class="p">,</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re1</span><span class="p">,</span>
-         <span class="n">cr2</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rs2</span><span class="p">,</span> <span class="n">re2</span><span class="p">)</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+         <span class="n">cr2</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rs2</span><span class="p">,</span> <span class="n">re2</span><span class="p">)</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
         <span class="p">(</span><span class="n">ps1</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span>
          <span class="n">re1</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re2</span><span class="p">,</span> <span class="n">rs2</span><span class="p">)</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span>
                                          <span class="n">re1</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re2</span><span class="p">,</span> <span class="n">rs2</span><span class="p">))</span>
@@ -226,7 +235,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 19, 2015.
+      Last updated on Feb 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

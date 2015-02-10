@@ -60,7 +60,7 @@
 <span class="kn">from</span> <span class="nn">pytadbit.utils.normalize_hic</span>  <span class="kn">import</span> <span class="n">iterative</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.hic_filtering</span>  <span class="kn">import</span> <span class="n">hic_filtering_for_modelling</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.tad_parser</span>   <span class="kn">import</span> <span class="n">parse_tads</span>
-<span class="kn">from</span> <span class="nn">math</span>                          <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">isnan</span>
+<span class="kn">from</span> <span class="nn">math</span>                          <span class="kn">import</span> <span class="n">isnan</span>
 <span class="kn">from</span> <span class="nn">numpy</span>                         <span class="kn">import</span> <span class="n">log2</span><span class="p">,</span> <span class="n">array</span>
 <span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span>           <span class="kn">import</span> <span class="n">CONFIG</span>
 <span class="kn">from</span> <span class="nn">copy</span>                          <span class="kn">import</span> <span class="n">deepcopy</span> <span class="k">as</span> <span class="n">copy</span>
@@ -316,7 +316,7 @@
                     <span class="n">xpr</span><span class="o">.</span><span class="n">_normalization</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">norm</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="p">{}:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: normalization differs between each &#39;</span> <span class="o">+</span>
                                     <span class="s">&#39;experiment</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -443,7 +443,8 @@
             <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ori_norm</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="Experiment.filter_columns"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.filter_columns"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                       <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call filtering function, to remove artefactual columns in a given Hi-C</span>
 <span class="sd">        matrix. This function will detect columns with very low interaction</span>
@@ -459,9 +460,9 @@
 <span class="sd">        :param None savefig: path to a file where to save the image generated;</span>
 <span class="sd">           if None, the image will be shown using matplotlib GUI (the extension</span>
 <span class="sd">           of the file name will determine the desired format).</span>
+<span class="sd">        :param True diagonal: remove row/columns with zero in the diagonal</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">diagonal</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">except</span><span class="p">:</span>
@@ -476,9 +477,6 @@
                     <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
         <span class="c"># Also remove columns where there is no data in the diagonal</span>
         <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-                                     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">size</span> <span class="o">+</span> <span class="n">i</span><span class="p">)]))</span>
         <span class="c"># else:</span>
         <span class="c">#     self._zeros.update(dict([(i, None) for i in xrange(size)</span>
         <span class="c">#                              if not self.norm[0][i * size + i]]))</span>
@@ -1112,7 +1110,8 @@
 </div>
 <div class="viewcode-block" id="Experiment.view"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.view">[docs]</a>    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tad</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
              <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">logarithm</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-             <span class="n">decorate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+             <span class="n">decorate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+             <span class="n">cmap</span><span class="o">=</span><span class="s">&#39;jet&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize the matrix of Hi-C interactions</span>
 
@@ -1252,14 +1251,14 @@
             <span class="n">jet</span><span class="o">.</span><span class="n">_lut</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">alphas</span>
         <span class="k">if</span> <span class="n">relative</span><span class="p">:</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fun</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
-                             <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
+                             <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
                              <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fun</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span>
-                             <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
+                             <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
                              <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
@@ -1413,7 +1412,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 19, 2015.
+      Last updated on Feb 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

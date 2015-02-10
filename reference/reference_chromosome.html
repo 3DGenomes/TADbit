@@ -28,7 +28,7 @@
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="Experiment class" href="reference_experiment.html" />
-    <link rel="prev" title="Reference Guide" href="index.html" /> 
+    <link rel="prev" title="From FASTQ to matrix" href="reference_mapping.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,7 +41,7 @@
           <a href="reference_experiment.html" title="Experiment class"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Reference Guide"
+          <a href="reference_mapping.html" title="From FASTQ to matrix"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
@@ -204,7 +204,7 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.find_tad">
-<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>normalized=True</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='max'</em>, <em>heuristic=True</em>, <em>norm='visibility'</em>, <em>batch_mode=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_tad</tt><big>(</big><em>experiments</em>, <em>weights=None</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='max'</em>, <em>heuristic=True</em>, <em>batch_mode=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></tt></a> function to calculate the
 position of Topologically Associated Domain boundaries</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -373,7 +373,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.visualize">
-<tt class="descname">visualize</tt><big>(</big><em>names=None</em>, <em>tad=None</em>, <em>focus=None</em>, <em>paint_tads=False</em>, <em>axe=None</em>, <em>show=True</em>, <em>logarithm=True</em>, <em>normalized=False</em>, <em>relative=True</em>, <em>decorate=True</em>, <em>savefig=None</em>, <em>clim=None</em>, <em>scale=(8</em>, <em>6)</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.visualize" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">visualize</tt><big>(</big><em>names=None</em>, <em>tad=None</em>, <em>focus=None</em>, <em>paint_tads=False</em>, <em>axe=None</em>, <em>show=True</em>, <em>logarithm=True</em>, <em>normalized=False</em>, <em>relative=True</em>, <em>decorate=True</em>, <em>savefig=None</em>, <em>clim=None</em>, <em>scale=(8</em>, <em>6)</em>, <em>cmap='jet'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.visualize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize the matrix of Hi-C interactions of a given experiment</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -482,6 +482,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Chromosome class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#load-chromosome">Load chromosome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#experimentlist-class">ExperimentList class</a></li>
@@ -503,8 +504,8 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Reference Guide</a></p>
+  <p class="topless"><a href="reference_mapping.html"
+                        title="previous chapter">From FASTQ to matrix</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="reference_experiment.html"
                         title="next chapter">Experiment class</a></p>
@@ -535,7 +536,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
           <a href="reference_experiment.html" title="Experiment class"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Reference Guide"
+          <a href="reference_mapping.html" title="From FASTQ to matrix"
              >previous</a> |</li>
         <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
           <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
@@ -543,7 +544,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Nov 22, 2014.
+      Last updated on Feb 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

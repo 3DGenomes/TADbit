@@ -125,7 +125,7 @@ complementary descriptive field. For example:</p>
 TODO: normalization</p>
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.filter_columns">
-<tt class="descname">filter_columns</tt><big>(</big><em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.filter_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.filter_columns" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">filter_columns</tt><big>(</big><em>silent=False</em>, <em>draw_hist=False</em>, <em>savefig=None</em>, <em>diagonal=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.filter_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.filter_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call filtering function, to remove artefactual columns in a given Hi-C
 matrix. This function will detect columns with very low interaction
 counts; columns passing through a cell with no interaction in the
@@ -144,6 +144,7 @@ the polynomial fit, and the cut applied.</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
+<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; remove row/columns with zero in the diagonal</li>
 </ul>
 </td>
 </tr>
@@ -536,7 +537,7 @@ must be a multiple of the original resolution, and higher than it</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.view">
-<tt class="descname">view</tt><big>(</big><em>tad=None</em>, <em>focus=None</em>, <em>paint_tads=False</em>, <em>axe=None</em>, <em>show=True</em>, <em>logarithm=True</em>, <em>normalized=False</em>, <em>relative=True</em>, <em>decorate=True</em>, <em>savefig=None</em>, <em>where='both'</em>, <em>clim=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.view"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.view" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">view</tt><big>(</big><em>tad=None</em>, <em>focus=None</em>, <em>paint_tads=False</em>, <em>axe=None</em>, <em>show=True</em>, <em>logarithm=True</em>, <em>normalized=False</em>, <em>relative=True</em>, <em>decorate=True</em>, <em>savefig=None</em>, <em>where='both'</em>, <em>clim=None</em>, <em>cmap='jet'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.view"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.view" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize the matrix of Hi-C interactions</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -644,8 +645,7 @@ a table.</td>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">Mapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html#filtering">Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
@@ -703,7 +703,7 @@ a table.</td>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 19, 2015.
+      Last updated on Feb 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

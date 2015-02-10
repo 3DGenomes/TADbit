@@ -54,13 +54,12 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">gzip</span>
 <span class="kn">import</span> <span class="nn">pysam</span>
 <span class="kn">import</span> <span class="nn">gem</span>
-    
+
 
 <div class="viewcode-block" id="get_intersection"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.mapper.get_intersection">[docs]</a><span class="k">def</span> <span class="nf">get_intersection</span><span class="p">(</span><span class="n">fname1</span><span class="p">,</span> <span class="n">fname2</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -76,11 +75,25 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">reads_fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">reads1</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname1</span><span class="p">)</span>
-    <span class="n">reads2</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname2</span><span class="p">)</span>
     <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="n">header1</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">while</span> <span class="n">line1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
+        <span class="n">header1</span> <span class="o">+=</span> <span class="n">line1</span>
+        <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">read1</span> <span class="o">=</span> <span class="n">line1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">reads2</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname2</span><span class="p">)</span>
     <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="n">header2</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">while</span> <span class="n">line2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
+        <span class="n">header2</span> <span class="o">+=</span> <span class="n">line2</span>
+        <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">read2</span> <span class="o">=</span> <span class="n">line2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">header1</span> <span class="o">!=</span> <span class="n">header2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;seems to be mapped onover different chromosomes</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="c"># writes header in output</span>
+    <span class="n">reads_fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header1</span><span class="p">)</span>
+    <span class="c"># writes common reads</span>
     <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
@@ -366,7 +379,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Jan 19, 2015.
+      Last updated on Feb 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
