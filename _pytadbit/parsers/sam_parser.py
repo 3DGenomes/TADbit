@@ -7,7 +7,6 @@ from bisect import bisect_left as bisect
 from pysam import Samfile
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 
-
 def parse_sam(f_names1, f_names2, out_file1, out_file2, genome_seq,
               re_name, verbose=False, **kwargs):
     """
@@ -85,6 +84,11 @@ def parse_sam(f_names1, f_names2, out_file1, out_file2, genome_seq,
                 reads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
                     name, crm, pos, positive, len_seq, prev_re, next_re))
         reads_fh = open(outfiles[read], 'w')
+        ## write file header
+        # chromosome sizes (in order)
+        reads_fh.write('## Chromosome lengths (order matters):\n')
+        for crm in genome_seq:
+            reads_fh.write('# CRM %s\t%d\n' % (crm, len(genome_seq[crm])))
         reads_fh.write(''.join(sorted(reads)))
         reads_fh.close()
     del(reads)

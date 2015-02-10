@@ -9,21 +9,27 @@ from re import compile
 
 def count_re_fragments(fnam):
     frag_count = {}
-    for line in open(fnam):
-        _, cr1, _, _, _, rs1, _, cr2, _, _, _, rs2, _ = line.split()
-        try:
-            frag_count[(cr1, int(rs1))] += 1
-        except KeyError:
-            frag_count[(cr1, int(rs1))] = 1
-        try:
-            frag_count[(cr2, int(rs2))] += 1
-        except KeyError:
-            frag_count[(cr2, int(rs2))] = 1
+    fhandler = open(fnam)
+    line = fhandler.next()
+    while line.startswith('#'):
+        line = fhandler.next()
+    try:
+        while True:
+            _, cr1, _, _, _, rs1, _, cr2, _, _, _, rs2, _ = line.split()
+            try:
+                frag_count[(cr1, int(rs1))] += 1
+            except KeyError:
+                frag_count[(cr1, int(rs1))] = 1
+            try:
+                frag_count[(cr2, int(rs2))] += 1
+            except KeyError:
+                frag_count[(cr2, int(rs2))] = 1
+            line = fhandler.next()
+    except StopIteration:
+        pass
     return frag_count
 
 
-"""genome_seq = dict([(crm, ''.join([line.strip() for line in open('dmel_reference/chr%s.fa' % crm).readlines()[1:]]).upper()) for crm in ('2R', '2L', '3L', '3R', '4', 'X')])
-"""
 def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     """
     map all restriction enzyme (RE) sites of a given enzyme in a genome.

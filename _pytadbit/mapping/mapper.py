@@ -5,13 +5,12 @@ iterative mapping copied from hiclib
 
 """
 
-import os, sys
+import os
 import tempfile
-import subprocess
 import gzip
 import pysam
 import gem
-    
+
 
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
@@ -27,11 +26,25 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     """
     reads_fh = open(out_path, 'w')
     reads1 = open(fname1)
-    reads2 = open(fname2)
     line1 = reads1.next()
+    header1 = ''
+    while line1.startswith('#'):
+        header1 += line1
+        line1 = reads1.next()
     read1 = line1.split('\t', 1)[0]
+
+    reads2 = open(fname2)
     line2 = reads2.next()
+    header2 = ''
+    while line2.startswith('#'):
+        header2 += line2
+        line2 = reads2.next()
     read2 = line2.split('\t', 1)[0]
+    if header1 != header2:
+        raise Exception('seems to be mapped onover different chromosomes\n')
+    # writes header in output
+    reads_fh.write(header1)
+    # writes common reads
     count = 0
     try:
         while True:
