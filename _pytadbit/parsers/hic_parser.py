@@ -6,6 +6,7 @@ November 7, 2013.
 from warnings import warn
 from math import sqrt, isnan
 from pytadbit.parsers.gzopen import gzopen
+from collections import OrderedDict
 
 HIC_DATA = True
 
@@ -205,7 +206,7 @@ def read_matrix(things, parser=None, hic=True):
     return matrices
 
 
-def load_hic_data_from_reads(fnam, genome_seq, resolution):
+def load_hic_data_from_reads(fnam, resolution):
     """
     :param fnam: tsv file with reads1 and reads2
     :param resolution: the resolution of the experiment (size of a bin in
@@ -213,33 +214,54 @@ def load_hic_data_from_reads(fnam, genome_seq, resolution):
     :param genome_seq: a dictionary containing the genomic sequence by
        chromosome
     """
+    sections = []
+    genome_seq = OrderedDict()
+    fhandler = open(fnam)
+    line = fhandler.next()
+    while line.startswith('#'):
+        if line.startswith('# CRM '):
+            crm, clen = line[6:].split()
+            genome_seq[crm] = int(clen) / resolution + 1
+        line = fhandler.next()
     size = 0
     section_sizes = {}
-    sections = []
     for crm in genome_seq:
-        len_crm = int(float(len(genome_seq[crm])) / resolution + 1)
+        len_crm = genome_seq[crm]
         section_sizes[(crm,)] = len_crm
-        size += len_crm + 1
-        sections.extend([(crm, i) for i in xrange(len_crm + 1)])
-    imx = HiC_data((), size)
+        size += len_crm
+        sections.extend([(crm, i) for i in xrange(len_crm)])
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
-    for line in open(fnam):
+    imx = HiC_data((), size, genome_seq, dict_sec)
+    while True:
         _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
         ps1 = dict_sec[(cr1, int(ps1) / resolution)]
         ps2 = dict_sec[(cr2, int(ps2) / resolution)]
         imx[ps1 + ps2 * size] += 1
         imx[ps2 + ps1 * size] += 1
+        try:
+            line = fhandler.next()
+        except StopIteration:
+            break
     return imx
+
 
 class HiC_data(dict):
     """
     This may also hold the print/write-to-file matrix functions
     """
-    def __init__(self, items, size):
+    def __init__(self, items, size, chromosomes=None, dict_sec=None):
         super(HiC_data, self).__init__(items)
         self.__size = size
         self._size2 = size**2
         self.bias = None
+        self.bads = None
+        self.chromosomes = chromosomes
+        self.sections = dict_sec
+        self.section_pos = {}
+        total = 0
+        for crm in self.chromosomes:
+            self.section_pos[crm] = (total, total + self.chromosomes[crm])
+            total += self.chromosomes[crm]
 
     def __len__(self):
         return self.__size
@@ -295,30 +317,39 @@ class HiC_data(dict):
         if normalized and not self.bias:
             raise Exception('ERROR: experiment not normalized yet')
         if focus:
-            start, end = focus
-            start -= 1
+            if isinstance(focus, tuple) and isinstance(focus[0], int):
+                start1, end1 = focus
+                start2, end2 = focus
+            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+                start1, end1 = self.section_pos[focus[0]]
+                start2, end2 = self.section_pos[focus[1]]
+            else:
+                start1, end1 = self.section_pos[focus]
+                start2, end2 = self.section_pos[focus]
         else:
-            start = 0
-            end   = siz
+            start1 = start2 = 0
+            end1   = end2   = siz
         if normalized:
             if diagonal:
                 return [[self[i, j] / self.bias[i] / self.bias[j]
-                         for i in xrange(start, end)]
-                        for j in xrange(start, end)]
+                         for i in xrange(start2, end2)]
+                        for j in xrange(start1, end1)]
             else:
                 mtrx = [[self[i, j] / self.bias[i] / self.bias[j]
-                         for i in xrange(start, end)]
-                        for j in xrange(start, end)]
-                for i in xrange(start, end):
-                    mtrx[i][i] = 1 if mtrx[i][i] else 0
+                         for i in xrange(start2, end2)]
+                        for j in xrange(start1, end1)]
+                if start1 == start2:
+                    for i in xrange(start1, end1):
+                        mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx
         else:
             if diagonal:
-                return [[self[i, j] for i in xrange(start, end)]
-                        for j in xrange(start, end)]
+                return [[self[i, j] for i in xrange(start2, end2)]
+                        for j in xrange(start1, end1)]
             else:
-                mtrx = [[self[i, j] for i in xrange(start, end)]
-                        for j in xrange(start, end)]
-                for i in xrange(start, end):
-                    mtrx[i][i] = 1 if mtrx[i][i] else 0
+                mtrx = [[self[i, j] for i in xrange(start2, end2)]
+                        for j in xrange(start1, end1)]
+                if start1 == start2:
+                    for i in xrange(start1, end1):
+                        mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx

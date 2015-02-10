@@ -4,9 +4,11 @@
 
 """
 from pytadbit.utils.extraviews import tadbit_savefig
+from pytadbit.utils.tadmaths import nozero_log_matrix as nozero_log
 from warnings import warn
 from collections import OrderedDict
 import numpy as np
+from pytadbit.parsers.hic_parser import load_hic_data_from_reads
 from scipy.stats import norm as sc_norm, skew, kurtosis
 import os
 
@@ -15,125 +17,139 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
-def hic_map(data, biases=None, masked=None, resolution=100000, by_chrom=False,
-            savefig=None, show=False, savedata=None, focus=None, cmap='Reds'):
+def hic_map(data, resolution, biases=None, masked=None, by_chrom=False,
+            savefig=None, show=False, savedata=None, focus=None, clim=None,
+            cmap='Reds'):
+    """
+    function to retrieve data from HiC-data object. Data can be stored as
+    a square matrix, or drawn using matplotlib
+
+    :param data: can be either a path to a file with pre-processed reads
+       (filtered or not), or a Hi-C-data object
+    :param resolution: at which to bin the data (try having a dense matrix
+       with < 10% of cells with zero interaction counts).
+    :param biases: a list of biases, one per column, each cell (i, j) will be
+       divided by the product: BixBj
+    :param masked: a list of columns to be removed. Usually because to few
+       interactions
+    :param False by_chrom: data can be stored in a partitioned way. This
+       parameter can take the values of:
+        * 'intra': one output per each chromosome will be created
+        * 'inter': one output per each possible pair of chromosome will be
+           created
+        * 'all'  : both of the above outputs
+    :param None savefig: path where to store the output images. Note that, if
+       the by_chrom option is used, then savefig will be the name of the
+       directory containing the output files.
+    :param None savedata: path where to store the output matrices. Note that, if
+       the by_chrom option is used, then savefig will be the name of the
+       directory containing the output files.
+    :param None focus: can be either two number (i.e.: (1, 100)) specifying the
+       start and end position of the sub-matrix to display (start and end, along
+       the diagonal of the original matrix); or directly a chromosome name; or
+       two chromosome names (i.e.: focus=('chr2, chrX')), in order to store the
+       data corresponding to inter chromosomal interactions between these two
+       chromosomes
+    :param None clim: cutoff for the upper and lower bound in the coloring scale
+       of the heatmap
+    :param Reds cmap: color map to be used for the heatmap
+    """
     if isinstance(data, str):
-        genome_seq = OrderedDict()
-        fhandler = open(data)
-        line = fhandler.next()
-        while line.startswith('#'):
-            if line.startswith('# CRM '):
-                crm, clen = line[6:].split()
-                genome_seq[crm] = int(clen)
-            line = fhandler.next()
-        cumcs = {} 
-        total = 0
-        for crm in genome_seq:
-            cumcs[crm] = (total, total + genome_seq[crm] / resolution + 1)
-            total += genome_seq[crm] / resolution + 1
-        # bin the data
-        data = [[0 for _ in xrange(total + 1)] for _ in xrange(total + 1)]
-        masked = masked or set()
-        try:
-            while True:
-                read, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
-                if read in masked:
+        data = load_hic_data_from_reads(data, resolution=resolution)
+    hic_data = data
+    hic_data.bias = biases
+    hic_data.bads = masked
+    # save and draw the data
+    if by_chrom:
+        if focus:
+            raise Exception('Incompatible options focus and by_chrom\n')
+        os.system('mkdir -p ' + savedata)
+        if not clim:
+            clim = (np.log2(min(hic_data.values())),
+                    np.log2(max(hic_data.values())))
+        for i, crm1 in enumerate(hic_data.chromosomes):
+            for crm2 in hic_data.chromosomes.keys()[i:]:
+                if by_chrom == 'intra' and crm1 != crm2:
                     continue
-                ps1 = int(ps1) / resolution
-                ps2 = int(ps2) / resolution
-                try:
-                    data[cumcs[cr1][0] + ps1][cumcs[cr2][0] + ps2] += 1
-                    data[cumcs[cr2][0] + ps2][cumcs[cr1][0] + ps1] += 1
-                except:
-                    break
-                line = fhandler.next()
-        except StopIteration:
-            pass
-        fhandler.close()
-    else:
-        hic_data = data
-        beg, end = focus if focus else (0, len(hic_data))
-        beg -= 1 if focus else 0
-        if biases:
-            data = [[hic_data[len(hic_data) * i + j] / (biases[i] * biases[j])
-                     for j in xrange(beg, end)]
-                    for i in xrange(beg, end)]
-        else: 
-            data = [[hic_data[len(hic_data) * i + j]
-                     for j in xrange(beg, end)]
-                    for i in xrange(beg, end)]
-        if masked:
-            data = [[float('nan') for j in xrange(len(hic_data))]
-                    if i in masked else data[i] for i in xrange(len(hic_data))]
-            data = [[float('nan') if j in masked else data[i][j]
-                     for j in xrange(len(hic_data))]
-                    for i in xrange(len(hic_data))]
-    # save the data
-    if savedata:
-        if by_chrom:
-            if focus:
-                raise Exception('Incompatible options focus and by_chrom\n')
-            os.system('mkdir -p ' + savedata)
-            for i, crm1 in enumerate(genome_seq):
-                for crm2 in genome_seq.keys()[i:]:
-                    if by_chrom == 'intra' and crm1 != crm2:
-                        continue
-                    if by_chrom == 'inter' and crm1 == crm2:
-                        continue
-                    out = open('%s/%s.mat' % (savedata,
-                                              '_'.join(set((crm1, crm2)))), 'w')
-                    subdata = [[cell for cell in
-                                line[cumcs[crm2][0]:cumcs[crm2][1]]]
-                               for line in data[cumcs[crm1][0]:cumcs[crm1][1]]]
+                if by_chrom == 'inter' and crm1 == crm2:
+                    continue
+                subdata = hic_data.get_matrix(focus=(crm1, crm2))
+                if savedata:
+                    out = open('%s/%s.mat' % (
+                        savedata, '_'.join(set((crm1, crm2)))), 'w')
                     out.write('\n'.join(['\t'.join([str(i) for i in d])
                                          for d in subdata]) + '\n')
                     out.close()
-                    if show or savefig:
-                        draw_map(subdata, 
-                                 OrderedDict([(k, genome_seq[k])
-                                              for k in genome_seq.keys()[:]
-                                              if k in [crm1, crm2]]),
-                                 resolution,
-                                 '%s/%s.pdf' % (savefig,
-                                                '_'.join(set((crm1, crm2)))),
-                                 show, cmap=cmap)
-        else:
-            out = open(savedata, 'w')
-            for line in data:
-                out.write('\t'.join([str(cell) for cell in line]) + '\n')
-            out.close()
-            if show or savefig:
-                draw_map(data, genome_seq, resolution, savefig, show, cmap='Reds')
+                if show or savefig:
+                    draw_map(subdata, 
+                             OrderedDict([(k, hic_data.chromosomes[k])
+                                          for k in hic_data.chromosomes.keys()
+                                          if k in [crm1, crm2]]),
+                             hic_data.section_pos,
+                             '%s/%s.pdf' % (savefig,
+                                            '_'.join(set((crm1, crm2)))),
+                             show, one=True, clim=clim, cmap=cmap)
+    else:
+        if savedata:
+            if not focus:
+                out = open(savedata, 'w')
+                for i in xrange(len(hic_data)):
+                    out.write('\t'.join([str(hic_data[i,j])
+                                         for j in xrange(len(hic_data))]) + '\n')
+                out.close()
+            else:
+                out = open(savedata, 'w')
+                out.write('\n'.join(
+                    ['\t'.join([str(i) for i in line])
+                     for line in hic_data.get_matrix(focus=focus)]) + '\n')
+                out.close()
+        if show or savefig:
+            subdata = nozero_log(hic_data.get_matrix(focus=focus), np.log2)
+            if masked:
+                for i in xrange(len(subdata)):
+                    if i in masked:
+                        subdata[i] = [float('nan')
+                                      for j in xrange(len(subdata))]
+                    for j in xrange(len(subdata)):
+                        if j in masked:
+                            subdata[i][j] = float('nan') 
+            draw_map(subdata,
+                     {} if focus else hic_data.chromosomes,
+                     hic_data.section_pos, savefig, show,
+                     one = True if focus else False,
+                     clim=clim, cmap=cmap)
 
-def draw_map(data, genome_seq, resolution, savefig, show, cmap='Reds'):
-    cumcs = {} 
-    total = 0
-    for crm in genome_seq:
-        cumcs[crm] = (total, total + genome_seq[crm] / resolution + 1)
-        total += genome_seq[crm] / resolution + 1
+
+def draw_map(data, genome_seq, cumcs, savefig, show, one=False,
+             clim=None, cmap='Reds'):
     fig = plt.figure(figsize=(10.,9.1))
     axe = fig.add_subplot(111)
-    axe.imshow(np.log2(data), interpolation='none',
-               cmap=cmap)
-    fig.subplots_adjust(top=.8, left=0.35)
+    cmap = plt.get_cmap(cmap)
+    cmap.set_bad('darkgrey', 1)
+    axe.imshow(data, interpolation='none',
+               cmap=cmap, vmin=clim[0] if clim else None,
+               vmax=clim[1] if clim else None)
     size = len(data)
-    data = np.log2([(i or 0.1)  for j in data for i in j])
-    gradient = np.linspace(min(data), max(data), size)
+    data = [i for d in data for i in d if not np.isnan(i)]
+    fig.subplots_adjust(top=.8, left=0.35)
+    gradient = np.linspace(np.nanmin(data),
+                           np.nanmax(data), size)
     gradient = np.vstack((gradient, gradient))
     axe2 = fig.add_axes([0.1, 0.78, 0.2, 0.1])
-    h  = axe2.hist(data, color='grey', bins=20, histtype='step', normed=True)
+    h  = axe2.hist(data, color='lightgrey',
+                   bins=20, histtype='step', normed=True)
     _  = axe2.imshow(gradient, aspect='auto', cmap=cmap,
-                     extent=(min(data), max(data) , 0, max(h[0])))
+                     extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
     for crm in genome_seq:
-        axe.vlines(cumcs[crm][0], cumcs[crm][0], cumcs[crm][1], color='k',
+        axe.vlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
                    linestyle=':')
-        axe.vlines(cumcs[crm][1], cumcs[crm][0], cumcs[crm][1], color='k',
+        axe.vlines(cumcs[crm][1]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
                    linestyle=':')
-        axe.hlines(cumcs[crm][1], cumcs[crm][0], cumcs[crm][1], color='k',
+        axe.hlines(cumcs[crm][1]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
                    linestyle=':')
-        axe.hlines(cumcs[crm][0], cumcs[crm][0], cumcs[crm][1], color='k',
+        axe.hlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
                    linestyle=':')
-    axe2.set_xlim((min(data), max(data)))
+    axe2.set_xlim((np.nanmin(data), np.nanmax(data)))
     axe2.set_ylim((0, max(h[0])))
     axe.set_xlim ((-0.5, size - .5))
     axe.set_ylim ((-0.5, size - .5))
@@ -143,19 +159,20 @@ def draw_map(data, genome_seq, resolution, savefig, show, cmap='Reds'):
     axe2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
                                                    kurtosis(data)),
                    size='small')
-    vals = [0]
-    keys = ['']
-    for crm in genome_seq:
-        vals.append(cumcs[crm][0])
-        keys.append(crm)
-    vals.append(cumcs[crm][1])
-    axe.set_yticks(vals)
-    axe.set_yticklabels('')
-    axe.set_yticks([float(vals[i]+vals[i+1])/2 for i in xrange(len(vals) - 1)], minor=True)
-    axe.set_yticklabels(keys, minor=True)
-    for t in axe.yaxis.get_minor_ticks():
-        t.tick1On = False
-        t.tick2On = False 
+    if not one:
+        vals = [0]
+        keys = ['']
+        for crm in genome_seq:
+            vals.append(cumcs[crm][0])
+            keys.append(crm)
+        vals.append(cumcs[crm][1])
+        axe.set_yticks(vals)
+        axe.set_yticklabels('')
+        axe.set_yticks([float(vals[i]+vals[i+1])/2 for i in xrange(len(vals) - 1)], minor=True)
+        axe.set_yticklabels(keys, minor=True)
+        for t in axe.yaxis.get_minor_ticks():
+            t.tick1On = False
+            t.tick2On = False 
     if savefig:
         tadbit_savefig(savefig)
     elif show:

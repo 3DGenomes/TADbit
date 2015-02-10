@@ -92,7 +92,17 @@ def nozero_log_list(values):
     #     minv /= 2  # TODO: something better
     logminv = transform(minv)
     return [transform(v) if v else logminv for v in values]
-    
+
+def nozero_log_matrix(values, transformation):
+    # Set the virtual minimum of the matrix to half the non-null real minimum
+    try:
+        transform(0)
+        minv = 0.
+    except:
+        minv = float(min([v for l in values for v in l if v])) / 2
+    logminv = transformation(minv)
+    return [[transformation(v) if v else logminv for v in l] for l in values]
+
 
 def zscore(values):
     """
