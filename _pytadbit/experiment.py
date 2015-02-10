@@ -404,7 +404,6 @@ class Experiment(object):
         by zero in the original Hi-C data matrix). Filtered out columns will be
         stored in the dictionary Experiment._zeros.
 
-        :param matrx: Hi-C matrix of a given experiment
         :param False silent: does not warn for removed columns
         :param False draw_hist: shows the distribution of mean values by column
            the polynomial fit, and the cut applied.

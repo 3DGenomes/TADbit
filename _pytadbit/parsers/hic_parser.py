@@ -6,7 +6,9 @@ November 7, 2013.
 from warnings import warn
 from math import sqrt, isnan
 from pytadbit.parsers.gzopen import gzopen
+from pytadbit.utils.hic_filtering   import filter_by_mean
 from collections import OrderedDict
+from pytadbit.utils.normalize_hic  import iterative
 
 HIC_DATA = True
 
@@ -303,6 +305,41 @@ class HiC_data(dict):
                     'ERROR: position %d larger than %s^2' % (row_col,
                                                              self.__size))
             super(HiC_data, self).__setitem__(row_col, val)
+
+
+    def filter_columns(self, draw_hist=False, savefig=None):
+        """
+        Call filtering function, to remove artefactual columns in a given Hi-C
+        matrix. This function will detect columns with very low interaction
+        counts; columns passing through a cell with no interaction in the
+        diagonal; and columns with NaN values (in this case NaN will be replaced
+        by zero in the original Hi-C data matrix). Filtered out columns will be
+        stored in the dictionary Experiment._zeros.
+
+        :param False draw_hist: shows the distribution of mean values by column
+           the polynomial fit, and the cut applied.
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+
+        """
+        self.bads = filter_by_mean(self, draw_hist=draw_hist, savefig=savefig)
+
+    def normalize_hic(self, iterations=0, max_dev=0.1, silent=False):
+        """
+        Normalize the Hi-C data.
+
+        It fills the Experiment.norm variable with the Hi-C values divided by
+        the calculated weight.
+
+        :param 0 iteration: number of iterations
+        :param 0.1 max_dev: iterative process stops when the maximum deviation
+           between the sum of row is equal to this number (0.1 means 10%)
+        :param False silent: does not warn when overwriting weights
+        """
+        self.bias = iterative(self, iterations=iterations,
+                              max_dev=max_dev, bads=self.bads,
+                              verbose=not silent)
 
     def get_as_tuple(self):
         return tuple([self[i, j]

@@ -10,6 +10,8 @@ from collections import OrderedDict
 import numpy as np
 from pytadbit.parsers.hic_parser import load_hic_data_from_reads
 from scipy.stats import norm as sc_norm, skew, kurtosis
+from scipy.stats import spearmanr
+from scipy.linalg import eigh
 import os
 
 try:
@@ -17,19 +19,19 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
-def hic_map(data, resolution, biases=None, masked=None, by_chrom=False,
-            savefig=None, show=False, savedata=None, focus=None, clim=None,
-            cmap='Reds'):
+def hic_map(data, resolution=None, normalized=False, masked=None,
+            by_chrom=False, savefig=None, show=False, savedata=None,
+            focus=None, clim=None, cmap='Reds'):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
 
     :param data: can be either a path to a file with pre-processed reads
        (filtered or not), or a Hi-C-data object
-    :param resolution: at which to bin the data (try having a dense matrix
-       with < 10% of cells with zero interaction counts).
-    :param biases: a list of biases, one per column, each cell (i, j) will be
-       divided by the product: BixBj
+    :param None resolution: at which to bin the data (try having a dense matrix
+       with < 10% of cells with zero interaction counts). Note: not necessary
+       if a hic_data object is passed as 'data'.
+    :param False normalized: used normalized data, based on precalculated biases
     :param masked: a list of columns to be removed. Usually because to few
        interactions
     :param False by_chrom: data can be stored in a partitioned way. This
@@ -57,7 +59,6 @@ def hic_map(data, resolution, biases=None, masked=None, by_chrom=False,
     if isinstance(data, str):
         data = load_hic_data_from_reads(data, resolution=resolution)
     hic_data = data
-    hic_data.bias = biases
     hic_data.bads = masked
     # save and draw the data
     if by_chrom:
@@ -73,7 +74,8 @@ def hic_map(data, resolution, biases=None, masked=None, by_chrom=False,
                     continue
                 if by_chrom == 'inter' and crm1 == crm2:
                     continue
-                subdata = hic_data.get_matrix(focus=(crm1, crm2))
+                subdata = hic_data.get_matrix(focus=(crm1, crm2),
+                                              normalized=normalized)
                 if savedata:
                     out = open('%s/%s.mat' % (
                         savedata, '_'.join(set((crm1, crm2)))), 'w')
@@ -101,10 +103,12 @@ def hic_map(data, resolution, biases=None, masked=None, by_chrom=False,
                 out = open(savedata, 'w')
                 out.write('\n'.join(
                     ['\t'.join([str(i) for i in line])
-                     for line in hic_data.get_matrix(focus=focus)]) + '\n')
+                     for line in hic_data.get_matrix(
+                         focus=focus, normalized=normalized)]) + '\n')
                 out.close()
         if show or savefig:
-            subdata = nozero_log(hic_data.get_matrix(focus=focus), np.log2)
+            subdata = nozero_log(hic_data.get_matrix(
+                focus=focus, normalized=normalized), np.log2)
             if masked:
                 for i in xrange(len(subdata)):
                     if i in masked:
@@ -358,3 +362,93 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     elif not axe:
         plt.show()
 
+
+def correlate_matrices(hic_data1, hic_data2, resolution=1,
+                       savefig=None, show=False, savedata=None):
+    """
+    Compare the iteractions of two Hi-C matrices at a given distance,
+    with spearman rank correlation
+
+    :param hic_data1: Hi-C-data object
+    :param hic_data2: Hi-C-data object
+    :param 1 resolution: to be used for scaling the plot
+    :param None savefig: path to save the plot
+    :param False show: displays the plot
+
+    :returns: list of correlations and list of genomic distances
+    """
+    corr = []
+    for j in xrange(len(hic_data1)):
+        diag1 = []
+        diag2 = []
+        for i in xrange(len(hic_data1) - j):
+            diag1.append(hic_data1[i, i + j])
+            diag2.append(hic_data2[i, i + j])
+        corr.append(spearmanr(diag1, diag2)[0])
+    x = [i * resolution for i in xrange(len(hic_data1))]
+    if show or savefig:
+        plt.plot(x, corr, color='orange', linewidth='2', alpha=.8)
+        plt.xlabel('Genomic distance')
+        plt.ylabel('Spearman rank correlation')
+        if savefig:
+            tadbit_savefig(savefig)
+        if show:
+            plt.show()
+        plt.close('all')
+    if savedata:
+        out = open(savedata, 'w')
+        out.write('# genomic distance\nSpearman rank correlation\n')
+        for i in xrange(len(corr)):
+            out.write('%s\t%s\n' % (x[i], corr[i]))
+        out.close()
+
+    return corr, x
+
+
+def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
+                           savefig=None, show=False, savedata=None):
+    """
+    Compare the iteractions of two Hi-C matrices using their 6 first
+    eigenvectors, with spearman rank correlation
+
+    :param hic_data1: Hi-C-data object
+    :param hic_data2: Hi-C-data object
+    :param 6 nvect: number of eigenvectors to compare
+    :param None savefig: path to save the plot
+    :param False show: displays the plot
+
+    :returns: matrix of correlations
+    """
+    corr = []
+    _, evect1 = eigh([[hic_data1[i, j]
+                       for j in xrange(len(hic_data1))]
+                      for i in xrange(len(hic_data1))])
+    _, evect2 = eigh([[hic_data2[i, j]
+                       for j in xrange(len(hic_data2))]
+                      for i in xrange(len(hic_data2))])
+
+    corr = [[0 for _ in xrange(nvect)] for _ in xrange(nvect)]
+    for i in xrange(nvect):
+        for j in xrange(nvect):
+            corr[i][j] = spearmanr(evect1[i], evect2[j])[0]
+    if show or savefig:
+        plt.imshow(corr, interpolation='none')
+        plt.xlabel('Eigen Vectors exp. 1')
+        plt.xlabel('Eigen Vectors exp. 2')
+        plt.ylabel('Spearman rank correlation')
+        cbar = plt.colorbar()
+        cbar.set_ylabel('Spearman rank correlation')
+        if savefig:
+            tadbit_savefig(savefig)
+        if show:
+            plt.show()
+        plt.close('all')
+    if savedata:
+        out = open(savedata, 'w')
+        out.write('# ' + '\t'.join(['Eigen Vector %s'% i
+                                    for i in xrange(nvect)]) + '\n')
+        for i in xrange(nvect):
+            out.write('\t'.join([str(corr[i][j])
+                                 for j in xrange(nvect)]) + '\n')
+        out.close()
+    return corr
