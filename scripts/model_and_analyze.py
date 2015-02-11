@@ -923,7 +923,7 @@ def get_options():
                 value = True
             elif value == 'False':
                 value = False
-            elif key in ['data', 'xname', 'group', 'analyze']:
+            elif key in ['data', 'norm', 'xname', 'group', 'analyze']:
                 new_opts.setdefault(key, []).extend(value.split())
                 continue
             new_opts[key] = value
@@ -1047,6 +1047,12 @@ def get_options():
         for i in xrange(len(opts.data)):
             logging.info(os.path.join(opts.root_path, opts.data[i]))
             opts.data[i] = os.path.join(opts.root_path, opts.data[i])
+
+    # update path to Hi-C norm adding root directory
+    if opts.root_path and opts.norm[0]:
+        for i in xrange(len(opts.norm)):
+            logging.info(os.path.join(opts.root_path, opts.norm[i]))
+            opts.norm[i] = os.path.join(opts.root_path, opts.norm[i])
 
     return opts
 
