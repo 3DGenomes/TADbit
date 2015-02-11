@@ -444,7 +444,7 @@ def addAllHarmonics(model, verbose=False):
             log = addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2)
             if verbose >= 1:
                 stdout.write(log)
-                
+
 
 def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
     """
@@ -461,19 +461,19 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
     :param num_loci2: index of the second particle
     """
     seqdist = num_loci2 - num_loci1
-    log = ''
+    log = '%s\t%s\t%s\t%s\t%s\n'
     # SHORT RANGE DISTANCE BETWEEN TWO CONSECUTIVE LOCI
     if (seqdist == 1):
         if (x in PDIST and y in PDIST[x]
             and float(PDIST[x][y]) > CONFIG['upfreq']):
             kforce1 = CONFIG['kforce']
-            log += addHarmonicNeighborsRestraints(model, p1, p2, kforce1)
+            log = log % (addHarmonicNeighborsRestraints(model, p1, p2, kforce1))
             #prin t"harmo1\t%s\t%s\t%f\t%f" % ( x, y, dist1, kforce1)
         else:
             kforce1 = CONFIG['kforce']
             dist1 = (p1.get_value(model['rk']) + p2.get_value(model['rk']))
-            log += addHarmonicUpperBoundRestraints(model, p1, p2,
-                                                   dist1, kforce1)
+            log = log % (addHarmonicUpperBoundRestraints(model, p1, p2,
+                                                   dist1, kforce1))
             #print "upper1\t%s\t%s\t%f\t%f" % ( x, y, dist1, kforce1)
 
             # SHORT RANGE DISTANCE BETWEEN TWO SEQDIST = 2
@@ -493,8 +493,8 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
         kforce2 = CONFIG['kforce']
         dist2 = (p1.get_value(model['rk']) + p2.get_value(model['rk'])
                 + 2.0 * p3.get_value(model['rk']))
-        log += addHarmonicUpperBoundRestraints(model, p1, p2,
-                                               dist2, kforce2)
+        log = log % (addHarmonicUpperBoundRestraints(model, p1, p2,
+                                               dist2, kforce2))
         #print "upper2\t%s\t%s\t%f\t%f" % ( x, y, dist2, kforce2)
 
     else:
@@ -504,19 +504,17 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
             # FREQUENCY > UPFREQ
             if (float(PDIST[x][y]) > CONFIG['upfreq']):
                 kforce3 = kForce(float(PDIST[x][y]))
-                log += addHarmonicRestraints(model, p1, p2,
-                                             float(PDIST[x][y]), kforce3)
+                log = log % (addHarmonicRestraints(model, p1, p2,
+                                             float(PDIST[x][y]), kforce3))
                 #print "harmo3\t%s\t%s\t%f\t%f" % ( x, y, dist3, kforce3)
             # FREQUENCY > LOW THIS HAS TO BE THE THRESHOLD FOR
             # "PHYSICAL INTERACTIONS"
             elif (float(PDIST[x][y]) < CONFIG['lowfreq']):
                 kforce3 = kForce(float(PDIST[x][y]))
-                log += addHarmonicLowerBoundRestraints(model, p1, p2,
+                log = log % (addHarmonicLowerBoundRestraints(model, p1, p2,
                                                        float(PDIST[x][y]),
-                                                       kforce3)
+                                                       kforce3))
            #print "lower3\t%s\t%s\t%f\t%f" % ( x, y, dist3, kforce3)
-            else:
-                return log
 
         # X IN PDIST BY Y NOT IN PDIST[X]
         elif (x in PDIST): # and y not in PDIST[x]):
@@ -534,49 +532,40 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
                              float(PDIST[x][pnext])) / 2.0
                 if (virt_freq > CONFIG['upfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicRestraints(model, p1, p2,
-                                                 virt_freq, kforce4)
+                    log = log % (addHarmonicRestraints(model, p1, p2,
+                                                 virt_freq, kforce4))
                     #print "harmo4\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
                 elif (virt_freq < CONFIG['lowfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicLowerBoundRestraints(model, p1, p2,
-                                                           virt_freq, kforce4)
+                    log = log % (addHarmonicLowerBoundRestraints(model, p1, p2,
+                                                           virt_freq, kforce4))
                     #print "lower4\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
-                else:
-                    return log
 
             elif (pnext in PDIST[x]):
                 virt_freq = float(PDIST[x][pnext])
                 if (virt_freq > CONFIG['upfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicRestraints(model, p1, p2,
-                                                 virt_freq, kforce4)
+                    log = log % (addHarmonicRestraints(model, p1, p2,
+                                                 virt_freq, kforce4))
                     #print "harmo5\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
                 elif (virt_freq < CONFIG['lowfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicLowerBoundRestraints(model, p1, p2,
-                                                           virt_freq, kforce4)
+                    log = log % (addHarmonicLowerBoundRestraints(model, p1, p2,
+                                                           virt_freq, kforce4))
                     #print "lower5\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
-                else:
-                    return log
 
             elif (prev in PDIST[x]):
                 virt_freq = float(PDIST[x][prev])
                 if (virt_freq > CONFIG['upfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicRestraints(model, p1, p2,
-                                                 virt_freq, kforce4)
+                    log = log % (addHarmonicRestraints(model, p1, p2,
+                                                 virt_freq, kforce4))
                     #print "harmo6\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
                 elif (virt_freq < CONFIG['lowfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicLowerBoundRestraints(model, p1, p2,
-                                                           virt_freq, kforce4)
+                    log = log % (addHarmonicLowerBoundRestraints(model, p1, p2,
+                                                           virt_freq, kforce4))
                     #print "lower6\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
-                else:
-                    return log
-
-            else:
-                return log
 
         # MISSING DATA (X)
         else:
@@ -597,63 +586,53 @@ def addHarmonicPair(model, p1, p2, x, y, j, num_loci1, num_loci2):
 
             # CASE 1
             if (xprev in PDIST and xpnext in PDIST):
-                if (y in PDIST[xprev] and y in PDIST[xpnext]):
-                    virt_freq = (float(PDIST[xprev][y]) +
-                                 float(PDIST[xpnext][y]) ) / 2.0
-                    kforce4 = 0.5 * kForce(virt_freq)
-                elif (y in PDIST[xprev]):
-                    virt_freq = float(PDIST[xprev][y])
-                    kforce4 = 0.5 * kForce(virt_freq)
-                elif (y in PDIST[xpnext]):
-                    virt_freq = float(PDIST[xpnext][y])
-                    kforce4 = 0.5 * kForce(virt_freq)
-                else:
-                    return log
+                if (y in PDIST[xprev] or y in PDIST[xpnext]):
+                    if not y in PDIST[xpnext]:
+                        virt_freq = float(PDIST[xprev][y])
+                        kforce4 = 0.5 * kForce(virt_freq)
+                    elif not y in PDIST[xprev]:
+                        virt_freq = float(PDIST[xpnext][y])
+                        kforce4 = 0.5 * kForce(virt_freq)
+                    else:
+                        virt_freq = (float(PDIST[xprev][y]) +
+                                     float(PDIST[xpnext][y]) ) / 2.0
+                        kforce4 = 0.5 * kForce(virt_freq)
 
-                if (virt_freq > CONFIG['upfreq']):
-                    log += addHarmonicRestraints(model, p1, p2,
-                                                 virt_freq, kforce4)
-                elif (virt_freq < CONFIG['lowfreq']):
-                    log += addHarmonicLowerBoundRestraints(model, p1, p2,
-                                                           virt_freq, kforce4)
-                    #print "lower7\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
-                else:
-                    return log
+                    if (virt_freq > CONFIG['upfreq']):
+                        log = log % (addHarmonicRestraints(model, p1, p2,
+                                                     virt_freq, kforce4))
+                    elif (virt_freq < CONFIG['lowfreq']):
+                        log = log % (addHarmonicLowerBoundRestraints(model, p1, p2,
+                                                               virt_freq, kforce4))
+                        #print "lower7\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
 
             # CASE 2
             elif (xprev in PDIST and y in PDIST[xprev]):
                 virt_freq = float(PDIST[xprev][y])
                 if (virt_freq > CONFIG['upfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicRestraints(model, p1, p2,
-                                                 virt_freq, kforce4)
+                    log = log % (addHarmonicRestraints(model, p1, p2,
+                                                 virt_freq, kforce4))
                     #print "harmo8\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
                 elif (virt_freq < CONFIG['lowfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicLowerBoundRestraints(model, p1, p2,
-                                                           virt_freq, kforce4)
+                    log = log % (addHarmonicLowerBoundRestraints(model, p1, p2,
+                                                           virt_freq, kforce4))
                     #print "lower8\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
-                else:
-                    return log
 
             # CASE 3
             elif (xpnext in PDIST and y in PDIST[xpnext]):
                 virt_freq = float(PDIST[xpnext][y])
                 if (virt_freq > CONFIG['upfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicRestraints(model, p1, p2,
-                                                 virt_freq, kforce4)
+                    log = log % (addHarmonicRestraints(model, p1, p2,
+                                                 virt_freq, kforce4))
                     #print "harmo9\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
                 elif (virt_freq < CONFIG['lowfreq']):
                     kforce4 = 0.5 * kForce(virt_freq)
-                    log += addHarmonicLowerBoundRestraints(model, p1, p2,
-                                                           virt_freq, kforce4)
+                    log = log % (addHarmonicLowerBoundRestraints(model, p1, p2,
+                                                           virt_freq, kforce4))
                     #print "lower9\t%s\t%s\t%f\t%f" % ( x, y, dist4, kforce4)
-                else:
-                    return log
-
-            else:
-                return log
     return log
 
 
@@ -677,8 +656,7 @@ def addHarmonicNeighborsRestraints(model, p1, p2, kforce):
     model['pps'].append(p)
     dr = IMP.core.DistanceRestraint(IMP.core.Harmonic(dist, kforce),p1, p2)
     model['model'].add_restraint(dr)
-    return "addHn\t%s\t%s\t%f\t%f\n" % (p1.get_name(), p2.get_name(),
-                                        dist, kforce)
+    return ("addHn", p1.get_name(), p2.get_name(), dist, kforce)
 
 
 def addHarmonicUpperBoundRestraints(model, p1, p2, dist, kforce):
@@ -688,8 +666,7 @@ def addHarmonicUpperBoundRestraints(model, p1, p2, dist, kforce):
     dr = IMP.core.DistanceRestraint(IMP.core.HarmonicUpperBound(dist, kforce),
                                     p1, p2)
     model['model'].add_restraint(dr)
-    return "addHu\t%s\t%s\t%f\t%f\n" % (p1.get_name(), p2.get_name(),
-                                        dist, kforce)
+    return ("addHu", p1.get_name(), p2.get_name(), dist, kforce)
 
 
 def addHarmonicRestraints(model, p1, p2, freq, kforce):
@@ -698,8 +675,7 @@ def addHarmonicRestraints(model, p1, p2, freq, kforce):
     model['pps'].append(p)
     dr = IMP.core.DistanceRestraint(IMP.core.Harmonic(dist, kforce),p1, p2)
     model['model'].add_restraint(dr)
-    return "addHa\t%s\t%s\t%f\t%f\n" % (p1.get_name(), p2.get_name(),
-                                        dist, kforce)
+    return ("addHa", p1.get_name(), p2.get_name(), dist, kforce)
 
 def addHarmonicLowerBoundRestraints(model, p1, p2, freq, kforce):
     dist = distance(freq)
@@ -708,8 +684,7 @@ def addHarmonicLowerBoundRestraints(model, p1, p2, freq, kforce):
     dr = IMP.core.DistanceRestraint(IMP.core.HarmonicLowerBound(dist, kforce),
                                     p1, p2)
     model['model'].add_restraint(dr)
-    return "addHl\t%s\t%s\t%f\t%f\n" % (p1.get_name(), p2.get_name(),
-                                        dist, kforce)
+    return ("addHl", p1.get_name(), p2.get_name(), dist, kforce)
 
 
 def kForce(freq):

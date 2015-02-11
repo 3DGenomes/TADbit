@@ -12,11 +12,13 @@ from pytadbit.utils.three_dim_stats import build_mesh
 from pytadbit.utils.extraviews      import tad_coloring
 from pytadbit.utils.extraviews      import tad_border_coloring
 from pytadbit.utils.tadmaths        import newton_raphson
+from pytadbit                       import __version__ as version
 from scipy.interpolate              import spline
 from numpy                          import linspace
 from warnings                       import warn
 from re                             import findall, compile as compil
 from math                           import sqrt, pi
+import sha
 
 try:
     from matplotlib import pyplot as plt
@@ -815,7 +817,7 @@ class IMPmodel(dict):
 
 
     def write_json(self, directory, color='index', rndname=True,
-                   model_num=None, filename=None, **kwargs):
+                   model_num=None, title=None, filename=None, **kwargs):
         """
         Save a model in the json format, read by TADkit.
 
@@ -868,24 +870,38 @@ class IMPmodel(dict):
             color = color(self, **kwargs)
         elif not isinstance(color, list):
             raise TypeError('one of function, list or string is required\n')
-        out = '<marker_set name=\"%s\">\n' % (self['rand_init'])
-        form = ('<marker id=\"%s\" x=\"%s\" y=\"%s\" z=\"%s\"' +
-                ' r=\"%s\" g=\"%s\" b=\"%s\" ' +
-                'radius=\"' + #str(30) +
-                str(self['radius']) +
-                '\" note=\"%s\"/>\n')
-        for i in xrange(len(self['x'])):
-            out += form % (i + 1,
-                           self['x'][i], self['y'][i], self['z'][i],
-                           color[i][0], color[i][1], color[i][2], i + 1)
-        form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
-                'g=\"1\" b=\"1\" radius=\"' + str(10) +
-                # str(self['radius']/2) +
-                '\"/>\n')
-        for i in xrange(1, len(self['x'])):
-            out += form % (i, i + 1)
-        out += '</marker_set>\n'
-
+        form = '''
+{
+	"chromatin" : {
+		"id" : %(sha)s,
+		"title" : "%(title)s",
+		"source" : "TADbit %(version)s",
+		"metadata": {%(descr)s},
+		"type" : "tadbit",
+	        "data": {
+		    "models":     [
+		        { %(xyz)s },
+		    ],
+	            "clusters":[%(cluster)s],
+      	            "centroid":[%(centroid)s],
+	            "restraints": [[][]],
+		    "chromatinColor" : [ ]
+		}    
+	}
+}
+'''
+        fil = {}
+        fil['sha']     = sha.new(fil['xyz']).hexdigest()
+        fil['title']   = title or "Sample TADbit data"
+        fil['version'] = version
+        fil['descr']   = ''.join('\n', ',\n'.join([
+            '"%s" : %s' % (k, ('"%s"' % (v)) if isinstance(v, str) else v)
+            for k, v in self['description'].items()]), '\n')
+        fil['xyz']     = ','.join(['[%.4f,%.4f,%.4f]' % (self['x'][i], self['y'][i],
+                                                         self['z'][i])
+                                   for i in xrange(len(self['x']))])
+        
+        
         if filename:
                 out_f = open('%s/%s' % (directory, filename), 'w')
         else:
