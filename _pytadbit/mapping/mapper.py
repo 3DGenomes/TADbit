@@ -169,8 +169,6 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
                         threads=nthreads)
 
     # convert to sam
-    sam = gem.gem2sam(mapped, index=gem_index_path, output=local_out_sam,
-                      threads=nthreads, single_end=single_end)
     if output_is_bam:
         sam = gem.gem2sam(mapped, index=gem_index_path, threads=nthreads,
                           single_end=single_end)
