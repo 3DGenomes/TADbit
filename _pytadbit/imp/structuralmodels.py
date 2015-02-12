@@ -55,12 +55,13 @@ def load_structuralmodels(path_f):
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
-            zeros=svd['zeros'])
+            zeros=svd['zeros'], restraints=svd['restraints'])
     except KeyError: # old version
         return StructuralModels(
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
             resolution=svd['resolution'], original_data=svd['original_data'],
-            clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'])
+            clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
+            restraints=svd['restraints'])
 
 class StructuralModels(object):
     """
@@ -102,7 +103,7 @@ class StructuralModels(object):
         self._zeros         = zeros or {}   # filtered out columns
         self._config        = config or {}
         self.experiment     = experiment
-
+        self._restraints     = restraints
 
     def __getitem__(self, nam):
         if isinstance(nam, str):
@@ -2335,6 +2336,7 @@ class StructuralModels(object):
         to_save['original_data'] = self._original_data
         to_save['config']        = self._config
         to_save['zscore']        = {} if minimal else self._zscores
+        to_save['restraints']    = {} if minimal else self._restraints
         to_save['zeros']         = self._zeros
 
         return to_save

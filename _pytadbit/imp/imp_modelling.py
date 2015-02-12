@@ -217,7 +217,7 @@ def _get_restraints():
         p = model['ps'].get_particle(i)
         p.set_name(str(LOCI[i]))
         #p.set_value(model['rk'], RADIUS)
-    restraints = []
+    restraints = {}
     for i in range(len(LOCI)):
         p1 = model['ps'].get_particle(i)
         x = p1.get_name()
@@ -225,12 +225,12 @@ def _get_restraints():
         for j in range(i+1, len(LOCI)):
             p2 = model['ps'].get_particle(j)
             y = p2.get_name()
-            restr, dist, frc = addHarmonicPair(model, p1, p2, x, y, j, dry=True)
+            typ, dist, frc = addHarmonicPair(model, p1, p2, x, y, j, dry=True)
             if VERBOSE >= 1:
-                stdout.write('%s\t%s\t%s\t%s\t%s\n' % (restr, x, y, dist, frc))
-            restraints.append((restr, x, y, dist, frc))
+                stdout.write('%s\t%s\t%s\t%s\t%s\n' % (typ, x, y, dist, frc))
+            restraints[tuple(sorted((x, y)))] = typ[-1], dist, frc
     return restraints
-    
+
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     """
@@ -454,7 +454,7 @@ def addHarmonicPair(model, p1, p2, x, y, j, dry=False):
     """
     num_loci1, num_loci2 = int(x), int(y)
     seqdist = num_loci2 - num_loci1
-    restraint = (None, 0, 0)
+    restraint = ('no', 0, 0)
     freq = float('nan')
     # SHORT RANGE DISTANCE BETWEEN TWO CONSECUTIVE LOCI
     if seqdist == 1:

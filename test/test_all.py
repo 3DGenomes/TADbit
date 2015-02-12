@@ -281,7 +281,7 @@ class TestTadbit(unittest.TestCase):
                                 silent=True)
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
-        exp.normalize_hic()
+        exp.normalize_hic(silent=True)
         exp.get_hic_zscores()
         exp.get_hic_zscores(zscored=False)
         sumz = sum([exp._zscores[k1][k2] for k1 in exp._zscores.keys()
@@ -325,7 +325,7 @@ class TestTadbit(unittest.TestCase):
         exp = test_chr.experiments[0]
         exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
         exp.filter_columns(silent=True)
-        exp.normalize_hic(factor=None)
+        exp.normalize_hic(factor=None, silent=True)
         exp.get_hic_zscores(zscored=False)
         exp.write_interaction_pairs('lala')
         lines = open('lala').readlines()
