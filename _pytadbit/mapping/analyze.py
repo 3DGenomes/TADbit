@@ -10,8 +10,8 @@ from collections import OrderedDict
 import numpy as np
 from pytadbit.parsers.hic_parser import load_hic_data_from_reads
 from scipy.stats import norm as sc_norm, skew, kurtosis
-from scipy.stats import spearmanr
-from scipy.linalg import eigh
+from scipy.stats import pearsonr, spearmanr
+from numpy.linalg import eigh
 import os
 
 try:
@@ -126,62 +126,73 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
 
 def draw_map(data, genome_seq, cumcs, savefig, show, one=False,
              clim=None, cmap='Reds'):
-    fig = plt.figure(figsize=(10.,9.1))
-    axe = fig.add_subplot(111)
+    _ = plt.figure(figsize=(18.,15))
+    ax1 = plt.axes([0.25, 0.1, 0.7, 0.7])
+    ax2 = plt.axes([0.07, 0.7, 0.18, 0.1])
+    ax3 = plt.axes([0.3085, 0.82, 0.5825, 0.08])
     cmap = plt.get_cmap(cmap)
     cmap.set_bad('darkgrey', 1)
-    axe.imshow(data, interpolation='none',
+    ax1.imshow(data, interpolation='none',
                cmap=cmap, vmin=clim[0] if clim else None,
                vmax=clim[1] if clim else None)
     size = len(data)
+    evals, evect = eigh(data)
+    sort_perm = evals.argsort()
+    evect = evect[sort_perm][::-1]
     data = [i for d in data for i in d if not np.isnan(i)]
-    fig.subplots_adjust(top=.8, left=0.35)
     gradient = np.linspace(np.nanmin(data),
                            np.nanmax(data), size)
     gradient = np.vstack((gradient, gradient))
-    axe2 = fig.add_axes([0.1, 0.78, 0.2, 0.1])
-    h  = axe2.hist(data, color='lightgrey',
+    h  = ax2.hist(data, color='black', linewidth=2,
                    bins=20, histtype='step', normed=True)
-    _  = axe2.imshow(gradient, aspect='auto', cmap=cmap,
+    _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
                      extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
-    for crm in genome_seq:
-        axe.vlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
-                   linestyle=':')
-        axe.vlines(cumcs[crm][1]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
-                   linestyle=':')
-        axe.hlines(cumcs[crm][1]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
-                   linestyle=':')
-        axe.hlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
-                   linestyle=':')
-    axe2.set_xlim((np.nanmin(data), np.nanmax(data)))
-    axe2.set_ylim((0, max(h[0])))
-    axe.set_xlim ((-0.5, size - .5))
-    axe.set_ylim ((-0.5, size - .5))
-    axe2.set_xlabel('log interaction count', size='small')
-    normfit = sc_norm.pdf(data, np.mean(data), np.std(data))
-    axe2.plot(data, normfit, 'g.', markersize=1, alpha=.1)
-    axe2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
-                                                   kurtosis(data)),
-                   size='small')
-    if not one:
-        vals = [0]
-        keys = ['']
+    if genome_seq:
         for crm in genome_seq:
-            vals.append(cumcs[crm][0])
-            keys.append(crm)
-        vals.append(cumcs[crm][1])
-        axe.set_yticks(vals)
-        axe.set_yticklabels('')
-        axe.set_yticks([float(vals[i]+vals[i+1])/2 for i in xrange(len(vals) - 1)], minor=True)
-        axe.set_yticklabels(keys, minor=True)
-        for t in axe.yaxis.get_minor_ticks():
-            t.tick1On = False
-            t.tick2On = False 
+            ax1.vlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
+                       linestyle=':')
+            ax1.vlines(cumcs[crm][1]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
+                       linestyle=':')
+            ax1.hlines(cumcs[crm][1]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
+                       linestyle=':')
+            ax1.hlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
+                       linestyle=':')
+
+        if not one:
+            vals = [0]
+            keys = ['']
+            for crm in genome_seq:
+                vals.append(cumcs[crm][0])
+                keys.append(crm)
+            vals.append(cumcs[crm][1])
+            ax1.set_yticks(vals)
+            ax1.set_yticklabels('')
+            ax1.set_yticks([float(vals[i]+vals[i+1])/2 for i in xrange(len(vals) - 1)], minor=True)
+            ax1.set_yticklabels(keys, minor=True)
+            for t in ax1.yaxis.get_minor_ticks():
+                t.tick1On = False
+                t.tick2On = False 
+    ax2.set_xlim((np.nanmin(data), np.nanmax(data)))
+    ax2.set_ylim((0, max(h[0])))
+    ax1.set_xlim ((-0.5, size - .5))
+    ax1.set_ylim ((-0.5, size - .5))
+    ax2.set_xlabel('log interaction count')
+    normfit = sc_norm.pdf(data, np.mean(data), np.std(data))
+    ax2.plot(data, normfit, 'w.', markersize=2.5, alpha=.4)
+    ax2.plot(data, normfit, 'k.', markersize=1.5, alpha=1)
+    ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
+                                                   kurtosis(data)))
+    ax3.vlines(range(size), 0, evect[:,0], color='k')
+    ax3.hlines(0, 0, size, color='red')
+    ax3.set_xlim((-0.5, size - .5))
+    ax3.get_xaxis().set_ticks([])
+    ax3.set_ylabel('Eigen Vector #1')
     if savefig:
         tadbit_savefig(savefig)
     elif show:
         plt.show()
     plt.close('all')
+
 
 def plot_distance_vs_interactions(fnam, min_diff=100, max_diff=1000000,
                                   resolution=100, axe=None, savefig=None):
@@ -363,7 +374,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         plt.show()
 
 
-def correlate_matrices(hic_data1, hic_data2, resolution=1,
+def correlate_matrices(hic_data1, hic_data2, resolution=1, max_dist=10,
                        savefig=None, show=False, savedata=None):
     """
     Compare the iteractions of two Hi-C matrices at a given distance,
@@ -372,24 +383,28 @@ def correlate_matrices(hic_data1, hic_data2, resolution=1,
     :param hic_data1: Hi-C-data object
     :param hic_data2: Hi-C-data object
     :param 1 resolution: to be used for scaling the plot
+    :param 10 max_dist: maximum distance from diagonal (e.g. 10 mean we will
+       not look further than 10 times the resolution)
     :param None savefig: path to save the plot
     :param False show: displays the plot
 
     :returns: list of correlations and list of genomic distances
     """
     corr = []
-    for j in xrange(len(hic_data1)):
+    dist = []
+    for i in xrange(1, max_dist + 1):
         diag1 = []
         diag2 = []
-        for i in xrange(len(hic_data1) - j):
+        for j in xrange(len(hic_data1) - i):
             diag1.append(hic_data1[i, i + j])
             diag2.append(hic_data2[i, i + j])
         corr.append(spearmanr(diag1, diag2)[0])
-    x = [i * resolution for i in xrange(len(hic_data1))]
+        dist.append(i)
     if show or savefig:
-        plt.plot(x, corr, color='orange', linewidth='2', alpha=.8)
+        plt.plot(dist, corr, color='orange', linewidth=3, alpha=.8)
         plt.xlabel('Genomic distance')
         plt.ylabel('Spearman rank correlation')
+        plt.xlim((0, dist[-1]))
         if savefig:
             tadbit_savefig(savefig)
         if show:
@@ -397,12 +412,12 @@ def correlate_matrices(hic_data1, hic_data2, resolution=1,
         plt.close('all')
     if savedata:
         out = open(savedata, 'w')
-        out.write('# genomic distance\nSpearman rank correlation\n')
+        out.write('# genomic distance\tSpearman rank correlation\n')
         for i in xrange(len(corr)):
-            out.write('%s\t%s\n' % (x[i], corr[i]))
+            out.write('%s\t%s\n' % (dist[i], corr[i]))
         out.close()
 
-    return corr, x
+    return corr, dist
 
 
 def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
@@ -420,24 +435,29 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
     :returns: matrix of correlations
     """
     corr = []
-    _, evect1 = eigh([[hic_data1[i, j]
-                       for j in xrange(len(hic_data1))]
-                      for i in xrange(len(hic_data1))])
-    _, evect2 = eigh([[hic_data2[i, j]
-                       for j in xrange(len(hic_data2))]
-                      for i in xrange(len(hic_data2))])
-
+    ev1, evect1 = eigh(np.array([[hic_data1[i, j]
+                         for j in xrange(len(hic_data1))]
+                        for i in xrange(len(hic_data1))]))
+    ev2, evect2 = eigh(np.array([[hic_data2[i, j]
+                         for j in xrange(len(hic_data2))]
+                        for i in xrange(len(hic_data2))]))
     corr = [[0 for _ in xrange(nvect)] for _ in xrange(nvect)]
+    sort_perm = ev1.argsort()
+    evect1 = evect1[sort_perm][::-1]
+    sort_perm = ev2.argsort()
+    evect2 = evect2[sort_perm][::-1]
     for i in xrange(nvect):
         for j in xrange(nvect):
-            corr[i][j] = spearmanr(evect1[i], evect2[j])[0]
+            corr[i][j] = abs(pearsonr(evect1[:,i],
+                                      evect2[:,j])[0])
     if show or savefig:
-        plt.imshow(corr, interpolation='none')
+        plt.imshow(corr, interpolation='none',origin='lower')
         plt.xlabel('Eigen Vectors exp. 1')
-        plt.xlabel('Eigen Vectors exp. 2')
-        plt.ylabel('Spearman rank correlation')
+        plt.ylabel('Eigen Vectors exp. 2')
+        plt.xticks(range(nvect), range(1, nvect + 1))
+        plt.yticks(range(nvect), range(1, nvect + 1))
         cbar = plt.colorbar()
-        cbar.set_ylabel('Spearman rank correlation')
+        cbar.ax.set_ylabel('Pearson correlation')
         if savefig:
             tadbit_savefig(savefig)
         if show:

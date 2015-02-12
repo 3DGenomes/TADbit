@@ -74,7 +74,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
                          'SKIPPING...\n')
         return {}
     # find best polynomial fit in a given range
-    for order in range(6, 14):
+    for order in range(6, 18):
         z = np.polyfit(y, x, order)
         zp = np.polyder(z, m=1)
         roots = np.roots(np.polyder(z))
@@ -92,6 +92,9 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
             continue
         p  = np.poly1d(z)
         R2 = get_r2(p, x, y)
+        # try to avoid very large orders by weigthing negatively their fit
+        if order > 13:
+            R2 -= float(order)/30
         if best[0] < R2:
             best = (R2, order, p, z, root)
     try:
