@@ -155,7 +155,7 @@ of the heatmap</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.correlate_matrices">
-<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">correlate_matrices</tt><big>(</big><em>hic_data1</em>, <em>hic_data2</em>, <em>resolution=1</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">correlate_matrices</tt><big>(</big><em>hic_data1</em>, <em>hic_data2</em>, <em>resolution=1</em>, <em>max_dist=10</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare the iteractions of two Hi-C matrices at a given distance,
 with spearman rank correlation</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -166,6 +166,8 @@ with spearman rank correlation</p>
 <li><strong>hic_data1</strong> &#8211; Hi-C-data object</li>
 <li><strong>hic_data2</strong> &#8211; Hi-C-data object</li>
 <li><strong>resolution</strong> (<em>1</em>) &#8211; to be used for scaling the plot</li>
+<li><strong>max_dist</strong> (<em>10</em>) &#8211; maximum distance from diagonal (e.g. 10 mean we will
+not look further than 10 times the resolution)</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to save the plot</li>
 <li><strong>show</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; displays the plot</li>
 </ul>
@@ -306,7 +308,7 @@ of the file name will determine the desired format).</li>
 <dt id="pytadbit.mapping.filter.filter_reads">
 <tt class="descclassname">pytadbit.mapping.filter.</tt><tt class="descname">filter_reads</tt><big>(</big><em>fnam</em>, <em>max_molecule_length=500</em>, <em>over_represented=0.005</em>, <em>max_frag_size=100000</em>, <em>min_frag_size=100</em>, <em>re_proximity=5</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/filter.html#filter_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.filter.filter_reads" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
-<dt>Apply different filters on pair of reads:</dt>
+<dt>Apply different filters on pair of reads (in order of application):</dt>
 <dd><dl class="first last docutils">
 <dt>1- self-circle <span class="classifier-delimiter">:</span> <span class="classifier">reads are comming from a single RE fragment and</span></dt>
 <dd>point to the outside (&#8212;-&lt;===&#8212;===&gt;&#8212;)</dd>
@@ -316,19 +318,19 @@ of the file name will determine the desired format).</li>
 <dd>are close enough (&lt; max_molecule length) and point to the inside</dd>
 <dt>4- error <span class="classifier-delimiter">:</span> <span class="classifier">reads are comming from a single RE fragment and</span></dt>
 <dd>point in the same direction</dd>
-<dt>5- duplicated <span class="classifier-delimiter">:</span> <span class="classifier">the combination of the start positions of the</span></dt>
-<dd>reads is repeated -&gt; PCR artifact (only keep one copy)</dd>
-<dt>6- too close from RE <span class="classifier-delimiter">:</span> <span class="classifier">start position of one of the read is too close (</span></dt>
+<dt>5- too close from RE <span class="classifier-delimiter">:</span> <span class="classifier">start position of one of the read is too close (</span></dt>
 <dd>5 bp by default) from RE cutting site. Non-canonical enzyme activity
 or random physical breakage of the chromatin.</dd>
-<dt>7- too short <span class="classifier-delimiter">:</span> <span class="classifier">remove reads comming from small restriction less</span></dt>
+<dt>6- too short <span class="classifier-delimiter">:</span> <span class="classifier">remove reads comming from small restriction less</span></dt>
 <dd>than 100 bp (default) because they are comparable to the read length</dd>
-<dt>8- too large <span class="classifier-delimiter">:</span> <span class="classifier">remove reads comming from large restriction</span></dt>
+<dt>7- too large <span class="classifier-delimiter">:</span> <span class="classifier">remove reads comming from large restriction</span></dt>
 <dd>fragments (default: 100 Kb, P &lt; 10-5 to occur in a randomized genome)
 as they likely represent poorly assembled or repeated regions</dd>
-<dt>9- over-represented <span class="classifier-delimiter">:</span> <span class="classifier">reads coming from the top 0.5% most frequently</span></dt>
+<dt>8- over-represented <span class="classifier-delimiter">:</span> <span class="classifier">reads coming from the top 0.5% most frequently</span></dt>
 <dd>detected restriction fragments, they may be prone to PCR artifacts or
 represent fragile regions of the genome or genome assembly errors</dd>
+<dt>9- duplicated <span class="classifier-delimiter">:</span> <span class="classifier">the combination of the start positions of the</span></dt>
+<dd>reads is repeated -&gt; PCR artifact (only keep one copy)</dd>
 </dl>
 </dd>
 </dl>
@@ -457,7 +459,7 @@ to apply (numbers correspond to the keys in the masked dictionary)</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 10, 2015.
+      Last updated on Feb 12, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

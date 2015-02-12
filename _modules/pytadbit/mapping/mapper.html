@@ -218,8 +218,6 @@
                         <span class="n">threads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">)</span>
 
     <span class="c"># convert to sam</span>
-    <span class="n">sam</span> <span class="o">=</span> <span class="n">gem</span><span class="o">.</span><span class="n">gem2sam</span><span class="p">(</span><span class="n">mapped</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">local_out_sam</span><span class="p">,</span>
-                      <span class="n">threads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">,</span> <span class="n">single_end</span><span class="o">=</span><span class="n">single_end</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">output_is_bam</span><span class="p">:</span>
         <span class="n">sam</span> <span class="o">=</span> <span class="n">gem</span><span class="o">.</span><span class="n">gem2sam</span><span class="p">(</span><span class="n">mapped</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">,</span>
                           <span class="n">single_end</span><span class="o">=</span><span class="n">single_end</span><span class="p">)</span>
@@ -379,7 +377,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 10, 2015.
+      Last updated on Feb 12, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

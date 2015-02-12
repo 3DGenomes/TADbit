@@ -309,10 +309,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span> <span class="o">=</span> <span class="n">chromosomes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sections</span> <span class="o">=</span> <span class="n">dict_sec</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">section_pos</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="n">total</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">crm</span><span class="p">])</span>
-            <span class="n">total</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">section_pos</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="n">total</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">crm</span><span class="p">])</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__size</span>
@@ -487,7 +488,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 10, 2015.
+      Last updated on Feb 12, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
