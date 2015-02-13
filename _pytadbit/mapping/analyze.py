@@ -59,7 +59,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     if isinstance(data, str):
         data = load_hic_data_from_reads(data, resolution=resolution)
     hic_data = data
-    hic_data.bads = masked
+    if hic_data.bads and not masked:
+        masked = hic_data.bads
     # save and draw the data
     if by_chrom:
         if focus:
@@ -121,24 +122,34 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      {} if focus else hic_data.chromosomes,
                      hic_data.section_pos, savefig, show,
                      one = True if focus else False,
-                     clim=clim, cmap=cmap)
+                     clim=clim, cmap=cmap, resolution=resolution)
 
 
-def draw_map(data, genome_seq, cumcs, savefig, show, one=False,
+def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
              clim=None, cmap='Reds'):
-    _ = plt.figure(figsize=(18.,15))
-    ax1 = plt.axes([0.25, 0.1, 0.7, 0.7])
-    ax2 = plt.axes([0.07, 0.7, 0.18, 0.1])
-    ax3 = plt.axes([0.3085, 0.82, 0.5825, 0.08])
+    _ = plt.figure(figsize=(15.,12.5))
+    ax1 = plt.axes([0.34, 0.08, 0.6, 0.7205])
+    ax2 = plt.axes([0.07, 0.65, 0.21, 0.15])
+    ax3 = plt.axes([0.07, 0.42, 0.21, 0.15])
+    ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
+    ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
+    ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
     cmap = plt.get_cmap(cmap)
     cmap.set_bad('darkgrey', 1)
     ax1.imshow(data, interpolation='none',
                cmap=cmap, vmin=clim[0] if clim else None,
                vmax=clim[1] if clim else None)
+    plot_distance_vs_interactions(data, axe=ax3, resolution=resolution, ylog=False)
     size = len(data)
+    for i in xrange(size):
+        for j in xrange(i, size):
+            if np.isnan(data[i][j]):
+                data[i][j] = 0
+                data[j][i] = 0
+            #data[j][i] = data[i][j]
     evals, evect = eigh(data)
     sort_perm = evals.argsort()
-    evect = evect[sort_perm][::-1]
+    evect = evect[sort_perm]
     data = [i for d in data for i in d if not np.isnan(i)]
     gradient = np.linspace(np.nanmin(data),
                            np.nanmax(data), size)
@@ -182,11 +193,21 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False,
     ax2.plot(data, normfit, 'k.', markersize=1.5, alpha=1)
     ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
                                                    kurtosis(data)))
-    ax3.vlines(range(size), 0, evect[:,0], color='k')
-    ax3.hlines(0, 0, size, color='red')
-    ax3.set_xlim((-0.5, size - .5))
-    ax3.get_xaxis().set_ticks([])
-    ax3.set_ylabel('Eigen Vector #1')
+    ax4.vlines(range(size), 0, evect[:,-1], color='k')
+    ax4.hlines(0, 0, size, color='red')
+    ax4.set_ylabel('E1')
+    ax4.set_yticklabels([])
+    plt.setp(ax4, 'xticklabels', [])
+    ax5.vlines(range(size), 0, evect[:,-2], color='k')
+    ax5.hlines(0, 0, size, color='red')
+    ax5.set_ylabel('E2')
+    ax5.set_yticklabels([])
+    plt.setp(ax5, 'xticklabels', [])
+    ax6.vlines(range(size), 0, evect[:,-3], color='k')
+    ax6.hlines(0, 0, size, color='red')
+    ax6.set_ylabel('E3')
+    ax6.set_yticklabels([])
+    plt.setp(ax6, 'xticklabels', [])
     if savefig:
         tadbit_savefig(savefig)
     elif show:
@@ -194,8 +215,9 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False,
     plt.close('all')
 
 
-def plot_distance_vs_interactions(fnam, min_diff=100, max_diff=1000000,
-                                  resolution=100, axe=None, savefig=None):
+def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000000,
+                                  ylog=True, resolution=None, axe=None,
+                                  savefig=None):
     """
     :param fnam: input file name
     :param 100 min_diff: lower limit kn genomic distance (usually equal to read
@@ -210,45 +232,56 @@ def plot_distance_vs_interactions(fnam, min_diff=100, max_diff=1000000,
        of the file name will determine the desired format).
     
     """
-    dist_intr = {}
-    fhandler = open(fnam)
-    line = fhandler.next()
-    while line.startswith('#'):
+    resolution = resolution or 1
+    if isinstance(data, str):
+        dist_intr = dict([(i, 0) for i in xrange(max_diff)])
+        fhandler = open(data)
         line = fhandler.next()
-    try:
-        while True:
-            _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.rsplit('\t', 9)
-            if cr1 != cr2:
-                line = fhandler.next()
-                continue
-            diff = resolution * (abs(int(ps1) - int(ps2)) / resolution)
-            if max_diff > diff > min_diff:
-                dist_intr.setdefault(diff, 0)
-                dist_intr[diff] += 1
+        while line.startswith('#'):
             line = fhandler.next()
-    except StopIteration:
-        pass
-    fhandler.close()
-            
-    for k in dist_intr.keys()[:]:
-        if dist_intr[k] <= 2:
-            del(dist_intr[k])
-                    
+        try:
+            while True:
+                _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.rsplit('\t', 9)
+                if cr1 != cr2:
+                    line = fhandler.next()
+                    continue
+                diff = abs(int(ps1) - int(ps2))
+                if max_diff > diff > min_diff:
+                    dist_intr[diff] += 1
+                line = fhandler.next()
+        except StopIteration:
+            pass
+        fhandler.close()
+        for k in dist_intr.keys()[:]:
+            if dist_intr[k] <= 2:
+                del(dist_intr[k])
+    else:
+        max_diff = min(len(data), max_diff)
+        dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
+        for diff in xrange(min_diff, max_diff):
+            for i in xrange(len(data) - diff):
+                if not np.isnan(data[i][i + diff]):
+                    dist_intr[diff] += np.exp(data[i][i + diff])
     if not axe:
         fig=plt.figure()
-        _ = fig.add_subplot(111)
+        axe = fig.add_subplot(111)
         
     x, y = zip(*sorted(dist_intr.items(), key=lambda x:x[0]))
-    plt.plot(x, y, 'k.')
-    # sigma = 10
-    # p_x = gaussian_filter1d(x, sigma)
-    # p_y = gaussian_filter1d(y, sigma)
+    axe.plot(x, y, 'k.')
+    coeffs = np.polyfit(np.log(x[:5*len(x)/10]),
+                       np.log(y[:5*len(x)/10]), 1)
+    poly = np.poly1d(coeffs)
+    yfit = lambda x: np.exp(poly(np.log(x)))
     # plot line of best fit
-    # plt.plot(p_x, p_y,color= 'darkgreen', lw=2, label='Gaussian fit')
-    plt.yscale('log')
-    plt.xscale('log')
-    plt.xlabel('Log genomic distance (binned by %d bp)' % resolution)
-    plt.ylabel('Log interaction count')
+    axe.plot(x,yfit(x), color= 'red', lw=2)
+    axe.set_ylabel('Log interaction count')
+    axe.set_xlabel('Log genomic distance (binned by %d bp)' % resolution)
+    axe.set_xlim((np.log(min_diff), np.log(max_diff)))
+    axe.set_title('Slope (first half, up to %d bins)\n' % (max_diff / 2) +
+                  r'$\alpha=%.2f$' % (coeffs[0]))
+    axe.set_xscale('log')
+    axe.set_yscale('log')
+    axe.set_xlim((0, max_diff))
     # plt.legend()
     if savefig:
         tadbit_savefig(savefig)
