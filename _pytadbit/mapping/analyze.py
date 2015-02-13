@@ -21,7 +21,7 @@ except ImportError:
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
-            focus=None, clim=None, cmap='Reds'):
+            focus=None, clim=None, cmap='Reds', pdf=False):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
@@ -54,6 +54,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
        chromosomes
     :param None clim: cutoff for the upper and lower bound in the coloring scale
        of the heatmap
+    :param False pdf: when using the bny_chrom option, to specify the format of
+       the stored images
     :param Reds cmap: color map to be used for the heatmap
     """
     if isinstance(data, str):
@@ -75,8 +77,9 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                     continue
                 if by_chrom == 'inter' and crm1 == crm2:
                     continue
-                subdata = hic_data.get_matrix(focus=(crm1, crm2),
-                                              normalized=normalized)
+                subdata = nozero_log(hic_data.get_matrix(focus=(crm1, crm2),
+                                                         normalized=normalized),
+                                     np.log2)
                 if savedata:
                     out = open('%s/%s.mat' % (
                         savedata, '_'.join(set((crm1, crm2)))), 'w')
@@ -89,9 +92,11 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                           for k in hic_data.chromosomes.keys()
                                           if k in [crm1, crm2]]),
                              hic_data.section_pos,
-                             '%s/%s.pdf' % (savefig,
-                                            '_'.join(set((crm1, crm2)))),
-                             show, one=True, clim=clim, cmap=cmap)
+                             '%s/%s.%s' % (savefig,
+                                           '_'.join(set((crm1, crm2))),
+                                           'pdf' if pdf else 'png'),
+                             show, one=True, clim=clim, cmap=cmap,
+                             resolution=resolution)
     else:
         if savedata:
             if not focus:
@@ -139,7 +144,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax1.imshow(data, interpolation='none',
                cmap=cmap, vmin=clim[0] if clim else None,
                vmax=clim[1] if clim else None)
-    plot_distance_vs_interactions(data, axe=ax3, resolution=resolution, ylog=False)
+    plot_distance_vs_interactions(data, axe=ax3, resolution=resolution)
     size = len(data)
     for i in xrange(size):
         for j in xrange(i, size):
@@ -216,8 +221,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
 
 
 def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000000,
-                                  ylog=True, resolution=None, axe=None,
-                                  savefig=None):
+                                  resolution=None, axe=None, savefig=None):
     """
     :param fnam: input file name
     :param 100 min_diff: lower limit kn genomic distance (usually equal to read
@@ -233,8 +237,8 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000000,
     
     """
     resolution = resolution or 1
+    dist_intr = dict([(i, 0.00001) for i in xrange(max_diff)])
     if isinstance(data, str):
-        dist_intr = dict([(i, 0) for i in xrange(max_diff)])
         fhandler = open(data)
         line = fhandler.next()
         while line.startswith('#'):
@@ -257,19 +261,18 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000000,
                 del(dist_intr[k])
     else:
         max_diff = min(len(data), max_diff)
-        dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
-        for diff in xrange(min_diff, max_diff):
+        dist_intr = dict([(i, 0.00001) for i in xrange(1, max_diff)])
+        for diff in xrange(1, max_diff):
             for i in xrange(len(data) - diff):
                 if not np.isnan(data[i][i + diff]):
-                    dist_intr[diff] += np.exp(data[i][i + diff])
+                    dist_intr[diff] += np.exp2(data[i][i + diff])
     if not axe:
         fig=plt.figure()
         axe = fig.add_subplot(111)
-        
     x, y = zip(*sorted(dist_intr.items(), key=lambda x:x[0]))
     axe.plot(x, y, 'k.')
     coeffs = np.polyfit(np.log(x[:5*len(x)/10]),
-                       np.log(y[:5*len(x)/10]), 1)
+                        np.log(y[:5*len(x)/10]), 1)
     poly = np.poly1d(coeffs)
     yfit = lambda x: np.exp(poly(np.log(x)))
     # plot line of best fit
