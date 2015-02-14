@@ -137,7 +137,9 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     _ = plt.figure(figsize=(15.,12.5))
     ax1 = plt.axes([0.34, 0.08, 0.6, 0.7205])
     ax2 = plt.axes([0.07, 0.65, 0.21, 0.15])
-    ax3 = plt.axes([0.07, 0.42, 0.21, 0.15])
+    if decay:
+        ax3 = plt.axes([0.07, 0.42, 0.21, 0.15])
+        plot_distance_vs_interactions(data, axe=ax3, resolution=resolution)
     ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
     ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
@@ -146,8 +148,6 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax1.imshow(data, interpolation='none',
                cmap=cmap, vmin=clim[0] if clim else None,
                vmax=clim[1] if clim else None)
-    if decay:
-        plot_distance_vs_interactions(data, axe=ax3, resolution=resolution)
     size = len(data)
     for i in xrange(size):
         for j in xrange(i, size):
