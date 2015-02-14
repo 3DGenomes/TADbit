@@ -79,9 +79,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                     continue
                 if by_chrom == 'inter' and crm1 == crm2:
                     continue
-                subdata = nozero_log(hic_data.get_matrix(focus=(crm1, crm2),
-                                                         normalized=normalized),
-                                     np.log2)
+                subdata = hic_data.get_matrix(focus=(crm1, crm2), normalized=normalized)
                 if savedata:
                     out = open('%s/%s.mat' % (
                         savedata, '_'.join(set((crm1, crm2)))), 'w')
@@ -101,22 +99,14 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                              resolution=resolution)
     else:
         if savedata:
-            if not focus:
-                out = open(savedata, 'w')
-                for i in xrange(len(hic_data)):
-                    out.write('\t'.join([str(hic_data[i,j])
-                                         for j in xrange(len(hic_data))]) + '\n')
-                out.close()
-            else:
-                out = open(savedata, 'w')
-                out.write('\n'.join(
-                    ['\t'.join([str(i) for i in line])
-                     for line in hic_data.get_matrix(
-                         focus=focus, normalized=normalized)]) + '\n')
-                out.close()
+            out = open(savedata, 'w')
+            out.write('\n'.join(
+                ['\t'.join([str(i) for i in line])
+                 for line in hic_data.get_matrix(
+                     focus=focus, normalized=normalized)]) + '\n')
+            out.close()
         if show or savefig:
-            subdata = nozero_log(hic_data.get_matrix(
-                focus=focus, normalized=normalized), np.log2)
+            subdata = hic_data.get_matrix(focus=focus, normalized=normalized)
             if masked:
                 for i in xrange(len(subdata)):
                     if i in masked:
@@ -145,6 +135,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
     cmap = plt.get_cmap(cmap)
     cmap.set_bad('darkgrey', 1)
+    data = nozero_log(data, np.log2)
     ax1.imshow(data, interpolation='none',
                cmap=cmap, vmin=clim[0] if clim else None,
                vmax=clim[1] if clim else None)
