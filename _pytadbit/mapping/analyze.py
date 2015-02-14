@@ -21,7 +21,7 @@ except ImportError:
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
-            focus=None, clim=None, cmap='Reds', pdf=False):
+            focus=None, clim=None, cmap='Reds', pdf=False, decay=False):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
@@ -52,6 +52,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
        two chromosome names (i.e.: focus=('chr2, chrX')), in order to store the
        data corresponding to inter chromosomal interactions between these two
        chromosomes
+    :param False decay: plot the correlation between genomic distance and
+       interactions (usually a decay).
     :param None clim: cutoff for the upper and lower bound in the coloring scale
        of the heatmap
     :param False pdf: when using the bny_chrom option, to specify the format of
@@ -126,12 +128,12 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
             draw_map(subdata,
                      {} if focus else hic_data.chromosomes,
                      hic_data.section_pos, savefig, show,
-                     one = True if focus else False,
+                     one = True if focus else False, decay=decay,
                      clim=clim, cmap=cmap, resolution=resolution)
 
 
 def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
-             clim=None, cmap='Reds'):
+             clim=None, cmap='Reds', decay=False):
     _ = plt.figure(figsize=(15.,12.5))
     ax1 = plt.axes([0.34, 0.08, 0.6, 0.7205])
     ax2 = plt.axes([0.07, 0.65, 0.21, 0.15])
@@ -144,7 +146,8 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax1.imshow(data, interpolation='none',
                cmap=cmap, vmin=clim[0] if clim else None,
                vmax=clim[1] if clim else None)
-    plot_distance_vs_interactions(data, axe=ax3, resolution=resolution)
+    if decay:
+        plot_distance_vs_interactions(data, axe=ax3, resolution=resolution)
     size = len(data)
     for i in xrange(size):
         for j in xrange(i, size):
