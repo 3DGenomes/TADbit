@@ -150,7 +150,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     trim_5, trim_3 = trimming(raw_seq_len, seq_beg, seq_len)
 
     # output
-    local_out_sam = out_sam_path + '.%d' % (seq_len)
+    local_out_sam = out_sam_path + '.%d-%d' % (seq_beg, seq_end)
     out_files.append(local_out_sam)
     # input
     inputf = gem.files.open(fastq_path)
@@ -179,7 +179,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
 
     # Recursively go to the next iteration.
     unmapped_fastq_path = os.path.join(
-        temp_dir, os.path.split(fastq_path)[1] + '.%d' % seq_len)
+        temp_dir, os.path.split(fastq_path)[1] + '.%d-%d' % (seq_beg, seq_end))
     _filter_unmapped_fastq(fastq_path, local_out_sam, unmapped_fastq_path)
 
     out_files.extend(iterative_mapping(gem_index_path, unmapped_fastq_path,
