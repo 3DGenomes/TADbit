@@ -473,26 +473,55 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
                         for i in xrange(len(hic_data2))]))
     corr = [[0 for _ in xrange(nvect)] for _ in xrange(nvect)]
     sort_perm = ev1.argsort()
+    ev1.sort()
     evect1 = evect1[sort_perm][::-1]
     sort_perm = ev2.argsort()
+    ev2.sort()
     evect2 = evect2[sort_perm][::-1]
     for i in xrange(nvect):
         for j in xrange(nvect):
             corr[i][j] = abs(pearsonr(evect1[:,i],
                                       evect2[:,j])[0])
+
+    axe    = plt.axes([0.1, 0.1, 0.6, 0.8])
+    cbaxes = plt.axes([0.85, 0.1, 0.03, 0.8])
     if show or savefig:
-        plt.imshow(corr, interpolation="nearest",origin='lower')
-        plt.xlabel('Eigen Vectors exp. 1')
-        plt.ylabel('Eigen Vectors exp. 2')
-        plt.xticks(range(nvect), range(1, nvect + 1))
-        plt.yticks(range(nvect), range(1, nvect + 1))
-        cbar = plt.colorbar()
-        cbar.ax.set_ylabel('Pearson correlation')
+        im = axe.imshow(corr, interpolation="nearest",origin='lower')
+        axe.set_xlabel('Eigen Vectors exp. 1')
+        axe.set_ylabel('Eigen Vectors exp. 2')
+        axe.set_xticks(range(nvect), range(1, nvect + 1))
+        axe.set_yticks(range(nvect), range(1, nvect + 1))
+        axe.set_xticklabels(range(nvect + 1), range(1, nvect + 2))
+        axe.set_yticklabels(range(nvect + 1), range(1, nvect + 2))
+        axe.xaxis.set_tick_params(length=0, width=0)
+        axe.yaxis.set_tick_params(length=0, width=0)
+        
+        cbar = plt.colorbar(im, cax = cbaxes )
+        cbar.ax.set_ylabel('Pearson correlation', rotation=90*3,
+                           verticalalignment='bottom')
+        axe2 = axe.twinx()
+        axe2.set_yticks([i for i in range(nvect)])
+        axe2.set_yticklabels(['%.1f' % (e) for e in ev2[-nvect:][::-1]])
+        axe2.set_ylabel('corresponding eigen Values exp. 2', rotation=90*3,
+                        verticalalignment='bottom')
+        axe2.set_ylim((-0.5, nvect - 0.5))
+        axe2.yaxis.set_tick_params(length=0, width=0)
+        
+        axe3 = axe.twiny()
+        axe3.set_xticks([i for i in range(nvect)])
+        axe3.set_xticklabels(['%.1f' % (e) for e in ev1[-nvect:][::-1]])
+        axe3.set_xlabel('corresponding eigen Values exp. 1')
+        axe3.set_xlim((-0.5, nvect - 0.5))
+        axe3.xaxis.set_tick_params(length=0, width=0)
+        
+        axe.set_ylim((-0.5, nvect - 0.5))
+        axe.set_xlim((-0.5, nvect - 0.5))
         if savefig:
             tadbit_savefig(savefig)
         if show:
             plt.show()
         plt.close('all')
+
     if savedata:
         out = open(savedata, 'w')
         out.write('# ' + '\t'.join(['Eigen Vector %s'% i
@@ -501,4 +530,5 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
             out.write('\t'.join([str(corr[i][j])
                                  for j in xrange(nvect)]) + '\n')
         out.close()
+
     return corr
