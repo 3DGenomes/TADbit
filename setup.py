@@ -148,11 +148,13 @@ def main():
     try:
         git_revision, err = Popen(['git', 'describe'], stdout=PIPE,
                                   stderr=PIPE).communicate()
-        git_status, err2 = Popen(['git', 'status'], stdout=PIPE,
+        git_status, err2 = Popen(['git', 'diff'], stdout=PIPE,
                                 stderr=PIPE).communicate()
         if err or err2:
             raise OSError('git not found')
-        plus = 'nothing to commit' not in git_status
+        plus = git_status != ''
+        if plus:
+            print '\n\nFOUND changes:\n' + git_status + '.'
         git_version  = git_revision.split('-')[0]
         git_revision = str(int(git_revision.split('-')[1]) + plus)
     except OSError:
