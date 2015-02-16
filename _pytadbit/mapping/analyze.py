@@ -426,13 +426,13 @@ def correlate_matrices(hic_data1, hic_data2, resolution=1, max_dist=10,
         diag1 = []
         diag2 = []
         for j in xrange(len(hic_data1) - i):
-            diag1.append(hic_data1[i, i + j])
-            diag2.append(hic_data2[i, i + j])
+            diag1.append(hic_data1[j, i + j])
+            diag2.append(hic_data2[j, i + j])
         corr.append(spearmanr(diag1, diag2)[0])
         dist.append(i)
     if show or savefig:
         plt.plot(dist, corr, color='orange', linewidth=3, alpha=.8)
-        plt.xlabel('Genomic distance')
+        plt.xlabel('Genomic distance in bins')
         plt.ylabel('Spearman rank correlation')
         plt.xlim((0, dist[-1]))
         if savefig:
@@ -481,7 +481,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
             corr[i][j] = abs(pearsonr(evect1[:,i],
                                       evect2[:,j])[0])
     if show or savefig:
-        plt.imshow(corr, interpolation='none',origin='lower')
+        plt.imshow(corr, interpolation="nearest",origin='lower')
         plt.xlabel('Eigen Vectors exp. 1')
         plt.ylabel('Eigen Vectors exp. 2')
         plt.xticks(range(nvect), range(1, nvect + 1))
