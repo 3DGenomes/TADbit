@@ -7,8 +7,9 @@ from bisect import bisect_left as bisect
 from pysam import Samfile
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 
-def parse_sam(f_names1, f_names2, out_file1, out_file2, genome_seq,
-              re_name, verbose=False, **kwargs):
+
+def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
+              genome_seq=None, re_name=None, verbose=False, **kwargs):
     """
     Parse sam/bam file using pysam tools.
 
@@ -31,12 +32,28 @@ def parse_sam(f_names1, f_names2, out_file1, out_file2, genome_seq,
     
 
     """
+    # not nice, dirty fix in order to allow this function to only parse
+    # one SAM file
+    if not out_file1:
+        raise Exception('ERROR: outfile1 should be given\n')
+    if not re_name:
+        raise Exception('ERROR: re_name should be given\n')
+    if not genome_seq:
+        raise Exception('ERROR: genome_seq should be given\n')
+    if (f_names2 and not out_file2) or (not f_names2 and out_file2):
+        raise Exception('ERROR: out_file2 AND f_names2 needed\n')
+
     frags = map_re_sites(re_name, genome_seq, verbose=True)
     frag_chunk = kwargs.get('frag_chunk', 100000)
 
-    fnames = f_names1, f_names2
-    outfiles = out_file1, out_file2
-    for read in range(2):
+    if f_names2:
+        fnames = f_names1, f_names2
+        outfiles = out_file1, out_file2
+    else:
+        fnames = (f_names1,)
+        outfiles = (out_file1, )
+        
+    for read in range(len(fnames)):
         if verbose:
             print 'Loading read' + str(read + 1)
         reads    = []
