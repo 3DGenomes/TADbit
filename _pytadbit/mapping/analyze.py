@@ -21,7 +21,7 @@ except ImportError:
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
-            focus=None, clim=None, cmap='Reds', pdf=False, decay=False):
+            focus=None, clim=None, cmap='jet', pdf=False, decay=True):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
@@ -52,7 +52,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
        two chromosome names (i.e.: focus=('chr2, chrX')), in order to store the
        data corresponding to inter chromosomal interactions between these two
        chromosomes
-    :param False decay: plot the correlation between genomic distance and
+    :param True decay: plot the correlation between genomic distance and
        interactions (usually a decay).
     :param None clim: cutoff for the upper and lower bound in the coloring scale
        of the heatmap
@@ -70,9 +70,6 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
         if focus:
             raise Exception('Incompatible options focus and by_chrom\n')
         os.system('mkdir -p ' + savedata)
-        if not clim:
-            clim = (np.log2(min(hic_data.values())),
-                    np.log2(max(hic_data.values())))
         for i, crm1 in enumerate(hic_data.chromosomes):
             for crm2 in hic_data.chromosomes.keys()[i:]:
                 if by_chrom == 'intra' and crm1 != crm2:
@@ -159,15 +156,14 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
                     extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
     if genome_seq:
         for crm in genome_seq:
-            ax1.vlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
-                       linestyle=':')
-            ax1.vlines(cumcs[crm][1]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
-                       linestyle=':')
-            ax1.hlines(cumcs[crm][1]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
-                       linestyle=':')
-            ax1.hlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
-                       linestyle=':')
-
+            ax1.vlines([cumcs[crm][0]-.5, cumcs[crm][1]-.5], cumcs[crm][0]-.5, cumcs[crm][1]-.5,
+                       color='w', linestyle='-', linewidth=2, alpha=.5)
+            ax1.hlines([cumcs[crm][1]-.5, cumcs[crm][0]-.5], cumcs[crm][0]-.5, cumcs[crm][1]-.5,
+                       color='w', linestyle='-', linewidth=2, alpha=.5)
+            ax1.vlines([cumcs[crm][0]-.5, cumcs[crm][1]-.5], cumcs[crm][0]-.5, cumcs[crm][1]-.5,
+                       color='k', linestyle=':')
+            ax1.hlines([cumcs[crm][1]-.5, cumcs[crm][0]-.5], cumcs[crm][0]-.5, cumcs[crm][1]-.5,
+                       color='k', linestyle=':')
         if not one:
             vals = [0]
             keys = ['']
@@ -187,7 +183,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax1.set_xlim ((-0.5, size - .5))
     ax1.set_ylim ((-0.5, size - .5))
     ax2.set_xlabel('log interaction count')
-    # we reduce the number of dots displayed.... we just wnat to see the shape
+    # we reduce the number of dots displayed.... we just want to see the shape
     subdata = np.array(list(set([float(int(d*100))/100 for d in data])))
     normfit = sc_norm.pdf(subdata, np.mean(data), np.std(data))
     ax2.plot(subdata, normfit, 'w.', markersize=2.5, alpha=.4)
@@ -198,17 +194,16 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax4.hlines(0, 0, size, color='red')
     ax4.set_ylabel('E1')
     ax4.set_yticklabels([])
-    plt.setp(ax4, 'xticklabels', [])
     ax5.vlines(range(size), 0, evect[:,-2], color='k')
     ax5.hlines(0, 0, size, color='red')
     ax5.set_ylabel('E2')
     ax5.set_yticklabels([])
-    plt.setp(ax5, 'xticklabels', [])
     ax6.vlines(range(size), 0, evect[:,-3], color='k')
     ax6.hlines(0, 0, size, color='red')
     ax6.set_ylabel('E3')
     ax6.set_yticklabels([])
-    plt.setp(ax6, 'xticklabels', [])
+    xticklabels = ax4.get_xticklabels() + ax5.get_xticklabels() + ax6.get_xticklabels()
+    plt.setp(xticklabels, visible=False)
     if savefig:
         tadbit_savefig(savefig)
     elif show:
