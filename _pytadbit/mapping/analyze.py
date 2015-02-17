@@ -156,7 +156,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     h  = ax2.hist(data, color='black', linewidth=2,
                    bins=20, histtype='step', normed=True)
     _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
-                     extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
+                    extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
     if genome_seq:
         for crm in genome_seq:
             ax1.vlines(cumcs[crm][0]-.5, cumcs[crm][0]-.5, cumcs[crm][1]-.5, color='k',
@@ -187,9 +187,11 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax1.set_xlim ((-0.5, size - .5))
     ax1.set_ylim ((-0.5, size - .5))
     ax2.set_xlabel('log interaction count')
-    normfit = sc_norm.pdf(data, np.mean(data), np.std(data))
-    ax2.plot(data, normfit, 'w.', markersize=2.5, alpha=.4)
-    ax2.plot(data, normfit, 'k.', markersize=1.5, alpha=1)
+    # we reduce the number of dots displayed.... we just wnat to see the shape
+    subdata = np.array(list(set([float(int(d*100))/100 for d in data])))
+    normfit = sc_norm.pdf(subdata, np.mean(data), np.std(data))
+    ax2.plot(subdata, normfit, 'w.', markersize=2.5, alpha=.4)
+    ax2.plot(subdata, normfit, 'k.', markersize=1.5, alpha=1)
     ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
                                                    kurtosis(data)))
     ax4.vlines(range(size), 0, evect[:,-1], color='k')
