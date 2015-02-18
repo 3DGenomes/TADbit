@@ -5,12 +5,13 @@
 """
 from pytadbit.utils.extraviews import tadbit_savefig
 from pytadbit.utils.tadmaths import nozero_log_matrix as nozero_log
+from pytadbit.parsers.hic_parser import HiC_data
 from warnings import warn
 from collections import OrderedDict
 import numpy as np
 from pytadbit.parsers.hic_parser import load_hic_data_from_reads
 from scipy.stats import norm as sc_norm, skew, kurtosis
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import pearsonr, spearmanr, linregress
 from numpy.linalg import eigh
 import os
 
@@ -126,7 +127,8 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax2 = plt.axes([0.07, 0.65, 0.21, 0.15])
     if decay:
         ax3 = plt.axes([0.07, 0.42, 0.21, 0.15])
-        plot_distance_vs_interactions(data, axe=ax3, resolution=resolution)
+        plot_distance_vs_interactions(data, genome_seq=genome_seq, axe=ax3,
+                                      resolution=resolution)
     ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
     ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
@@ -157,13 +159,13 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     if genome_seq:
         for crm in genome_seq:
             ax1.vlines([cumcs[crm][0]-.5, cumcs[crm][1]-.5], cumcs[crm][0]-.5, cumcs[crm][1]-.5,
-                       color='w', linestyle='-', linewidth=2, alpha=.5)
+                       color='w', linestyle='-', linewidth=1, alpha=1)
             ax1.hlines([cumcs[crm][1]-.5, cumcs[crm][0]-.5], cumcs[crm][0]-.5, cumcs[crm][1]-.5,
-                       color='w', linestyle='-', linewidth=2, alpha=.5)
+                       color='w', linestyle='-', linewidth=1, alpha=1)
             ax1.vlines([cumcs[crm][0]-.5, cumcs[crm][1]-.5], cumcs[crm][0]-.5, cumcs[crm][1]-.5,
-                       color='k', linestyle=':')
+                       color='k', linestyle='--')
             ax1.hlines([cumcs[crm][1]-.5, cumcs[crm][0]-.5], cumcs[crm][0]-.5, cumcs[crm][1]-.5,
-                       color='k', linestyle=':')
+                       color='k', linestyle='--')
         if not one:
             vals = [0]
             keys = ['']
@@ -211,13 +213,13 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     plt.close('all')
 
 
-def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000000,
-                                  resolution=None, axe=None, savefig=None):
+def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
+                                  genome_seq=None, resolution=None, axe=None,
+                                  savefig=None):
     """
     :param fnam: input file name
-    :param 100 min_diff: lower limit kn genomic distance (usually equal to read
-       length)
-    :param 1000000 max_diff: upper limit in genomic distance to look for
+    :param 100 min_diff: lower limit (in number of bins)
+    :param 1000 max_diff: upper limit (in number of bins) to look for
     :param 100 resolution: group reads that are closer than this resolution
        parameter
     :param None axe: a matplotlib.axes.Axes object to define the plot
@@ -228,7 +230,7 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000000,
     
     """
     resolution = resolution or 1
-    dist_intr = dict([(i, 0.00001) for i in xrange(max_diff)])
+    dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
     if isinstance(data, str):
         fhandler = open(data)
         line = fhandler.next()
@@ -240,7 +242,7 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000000,
                 if cr1 != cr2:
                     line = fhandler.next()
                     continue
-                diff = abs(int(ps1) - int(ps2))
+                diff = abs(int(ps1) - int(ps2)) / resolution
                 if max_diff > diff > min_diff:
                     dist_intr[diff] += 1
                 line = fhandler.next()
@@ -250,36 +252,99 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000000,
         for k in dist_intr.keys()[:]:
             if dist_intr[k] <= 2:
                 del(dist_intr[k])
-    else:
+    elif isinstance(data, HiC_data):
         max_diff = min(len(data), max_diff)
-        dist_intr = dict([(i, 0.00001) for i in xrange(1, max_diff)])
-        for diff in xrange(1, max_diff):
-            for i in xrange(len(data) - diff):
-                if not np.isnan(data[i][i + diff]):
-                    dist_intr[diff] += np.exp2(data[i][i + diff])
+        dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
+        if data.section_pos:
+            for crm in data.section_pos:
+                for diff in xrange(min_diff, min(
+                    (max_diff,
+                     data.section_pos[crm][1] - data.section_pos[crm][0]))):
+                    for i in xrange(data.section_pos[crm][0],
+                                    data.section_pos[crm][1] - diff):
+                        dist_intr[diff] += data[i, i + diff]
+        else:
+            for diff in xrange(min_diff, max_diff):
+                for i in xrange(len(data) - diff):
+                    if not np.isnan(data[i, i + diff]):
+                        dist_intr[diff] += data[i,i + diff]
+    else:
+        if genome_seq:
+            max_diff = min(max(genome_seq.values()), max_diff)
+            dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
+            cnt = 0
+            for crm in genome_seq:
+                for diff in xrange(min_diff, min(
+                    (max_diff, genome_seq[crm]))):
+                    for i in xrange(cnt, cnt + genome_seq[crm] - diff):
+                        if not np.isnan(data[i][i + diff]):
+                            dist_intr[diff] += data[i][i + diff]
+                cnt += genome_seq[crm]
+        else:
+            max_diff = min(len(data), max_diff)
+            dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
+            for diff in xrange(min_diff, max_diff):
+                for i in xrange(len(data) - diff):
+                    if not np.isnan(data[i][i + diff]):
+                        dist_intr[diff] += data[i][i + diff]
     if not axe:
         fig=plt.figure()
         axe = fig.add_subplot(111)
-    x, y = zip(*sorted(dist_intr.items(), key=lambda x:x[0]))
+    xp, yp = zip(*sorted(dist_intr.items(), key=lambda x:x[0]))
+    x = []
+    y = []
+    for k in xrange(len(xp)):
+        if yp[k]:
+            x.append(xp[k])
+            y.append(yp[k])
     axe.plot(x, y, 'k.')
-    coeffs = np.polyfit(np.log(x[:5*len(x)/10]),
-                        np.log(y[:5*len(x)/10]), 1)
-    poly = np.poly1d(coeffs)
-    yfit = lambda x: np.exp(poly(np.log(x)))
+    best = (float('-inf'), 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    logx = np.log(x)
+    logy = np.log(y)
+    ntries = 100
+    # set k for better fit
+    # for k in xrange(1, ntries/5, ntries/5/5):
+    k = 1
+    for i in xrange(3, ntries-2-k):
+        v1 = i * len(x) / ntries
+        a1, b1, r21, _, _ = linregress(logx[ :v1], logy[ :v1])
+        r21 *= r21
+        for j in xrange(i + 1 + k, ntries - 2 - k):
+            v2 = j * len(x) / ntries
+            a2, b2, r22, _, _ = linregress(logx[v1+k:v2], logy[v1+k:v2])
+            a3, b3, r23, _, _ = linregress(logx[v2+k:  ], logy[v2+k: ])
+            r2 = r21 + r22**2 + r23**2
+            if r2 > best[0]:
+                best = (r2, v1, v2, a1, a2, a3,
+                        b1, b2, b3, k)
     # plot line of best fit
-    axe.plot(x,yfit(x), color= 'red', lw=2)
+    (v1, v2, 
+     a1, a2, a3,
+     b1, b2, b3, k) = best[1:]
+    yfit1 = lambda xx: np.exp(b1 + a1*np.array (np.log(xx)))
+    yfit2 = lambda xx: np.exp(b2 + a2*np.array (np.log(xx)))
+    yfit3 = lambda xx: np.exp(b3 + a3*np.array (np.log(xx)))
+    axe.plot(x[  :v1], yfit1(x[  :v1] ), color= 'yellow', lw=2,
+             label = r'$\alpha_1=%.2f$' % (a1))
+             #label = r'$\alpha_1=%.2f$ (0-%d)' % (a1, x[v1]))
+    axe.plot(x[v1+k:v2], yfit2(x[v1+k:v2]),  color= 'orange', lw=2,
+             label = r'$\alpha_2=%.2f$' % (a2))
+             # label = r'$\alpha_2=%.2f$ (%d-%d)' % (a2, x[v1], x[v2]))
+    axe.plot(x[v2+k:  ], yfit3(x[v2+k:  ] ), color= 'red'   , lw=2,
+             label = r'$\alpha_3=%.2f$' % (a3))
+             # label = r'$\alpha_3=%.2f$ (%d-$\infty$)' % (a3, x[v2+k]))
     axe.set_ylabel('Log interaction count')
     axe.set_xlabel('Log genomic distance (binned by %d bp)' % resolution)
-    axe.set_xlim((np.log(min_diff), np.log(max_diff)))
-    axe.set_title('Slope (first half, up to %d bins)\n' % (max_diff / 2) +
-                  r'$\alpha=%.2f$' % (coeffs[0]))
+    axe.set_xlim((min_diff, max_diff))
+    axe.legend(loc='lower left', frameon=False)
     axe.set_xscale('log')
     axe.set_yscale('log')
     axe.set_xlim((0, max_diff))
+    axe.set_ylim((0, max(y)))
     # plt.legend()
     if savefig:
         tadbit_savefig(savefig)
-    elif not axe:
+    elif show==True:
         plt.show()
 
 
