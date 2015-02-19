@@ -75,6 +75,27 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     return frags
 
 
+def repaired(r_enz):
+    """
+    returns the resulting sequence after reparation of two digested and repaired
+    ends, marking dangling ends.
+    """
+    site = RESTRICTION_ENZYMES[r_enz]
+    beg, end = site.split('|')
+    site = site.replace('|', '')
+    return beg + site[min(len(beg), len(end)) : max(len(beg), len(end))]
+
+def religated(r_enz):
+    """
+    returns the resulting sequence after religation of two digested and repaired
+    ends.
+    """
+    site = RESTRICTION_ENZYMES[r_enz]
+    beg, end = site.split('|')
+    site = site.replace('|', '')
+    return beg + site[min(len(beg), len(end)) : max(len(beg), len(end))] + end
+
+
 RESTRICTION_ENZYMES = {'AanI': 'TTA|TAA',
                        'AarI': 'CACCTGC|',
                        'AasI': 'GACNNNN|NNGTC',

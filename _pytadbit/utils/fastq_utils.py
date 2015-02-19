@@ -6,13 +6,15 @@ from warnings import warn
 from gzip import open as gopen
 import numpy as np
 from pytadbit.utils.extraviews import tadbit_savefig
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated, repaired
+import re
 
 try:
     from matplotlib import pyplot as plt
 except ImportError:
     warn('matplotlib not found\n')
 
-def quality_plot(fnam, nreads=None, axe=None, savefig=None):
+def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
     """
     Plot the qualities
 
@@ -22,49 +24,95 @@ def quality_plot(fnam, nreads=None, axe=None, savefig=None):
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
     """
-    phred = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+    phred = dict([(c, i) for i, c in enumerate(
+        '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~')])
     quals = []
+    sites = []
+    fixes = []
+    liges = []
     if fnam.endswith('.gz'):
         fhandler = gopen(fnam)
     else:
         fhandler = open(fnam)
-    if nreads:
-        while True:
-            try:
+    if not r_enz:
+        if nreads:
+            while True:
+                try:
+                    next(fhandler)
+                except EOFError:
+                    break
                 next(fhandler)
-            except EOFError:
-                break
-            next(fhandler)
-            next(fhandler)
-            line = next(fhandler)
-            quals.append([phred.index(i) for i in line.strip()])
-            if len(quals) > nreads:
-                break
-    else: # do this because it's faster
-        while True:
-            try:
                 next(fhandler)
-            except EOFError:
-                break
-            next(fhandler)
-            next(fhandler)
-            next(fhandler)
-            line = next(fhandler)
-            quals.append([phred.index(i) for i in line.strip()])
-    fhandler.close()
+                line = next(fhandler)
+                quals.append([phred[i] for i in line.strip()])
+                if len(quals) > nreads:
+                    break
+        else: # do this because it's faster
+            while True:
+                try:
+                    next(fhandler)
+                except EOFError:
+                    break
+                next(fhandler)
+                next(fhandler)
+                line = next(fhandler)
+                quals.append([phred[i] for i in line.strip()])
+    else:
+        r_site = RESTRICTION_ENZYMES[r_enz].replace('|', '')
+        l_site = religated(r_enz)
+        d_site = repaired(r_enz)
+        if r_site*2 == l_site:
 
+            # in case the religated site equals 2 restriction sites (like DnpII)
+            site = re.compile('(?<!%s)' % r_site + r_site + '(?!%s)' % r_site)
+            fixe = re.compile('(?<!%s)' % d_site + d_site + '(?!%s)' % d_site)
+        else:
+            site = re.compile(r_site)
+            fixe = re.compile(d_site)
+        lige = re.compile(l_site)
+        if nreads:
+            while True:
+                try:
+                    next(fhandler)
+                except EOFError:
+                    break
+                seq = next(fhandler)
+                sites.extend([m.start() for m in site.finditer(seq)])
+                fixes.extend([m.start() for m in fixe.finditer(seq)])
+                liges.extend([m.start() for m in lige.finditer(seq)])
+                next(fhandler)
+                line = next(fhandler)
+                quals.append([phred[i] for i in line.strip()])
+                if len(quals) > nreads:
+                    break
+        else: # do this because it's faster
+            while True:
+                try:
+                    next(fhandler)
+                except EOFError:
+                    break
+                seq = next(fhandler)
+                sites.extend([m.start() for m in site.finditer(seq)])
+                fixes.extend([m.start() for m in fixe.finditer(seq)])
+                liges.extend([m.start() for m in lige.finditer(seq)])
+                next(fhandler)
+                line = next(fhandler)
+                quals.append([phred[i] for i in line.strip()])
+    fhandler.close()
+    if not nreads:
+        nreads = len(quals)
     quals = zip(*quals)
     meanquals = [np.mean(q) for q in quals]
     errorquals = [np.std(q) for q in quals]
 
     if axe:
         ax = axe
-        fig = axe.get_figure()
-        plt.clf()
+        _ = axe.get_figure()
     else:
-        fig = plt.figure()
-        plt.clf()
-        ax = fig.add_subplot(111)
+        if r_enz:
+            _, (ax, ax2) = plt.subplots(2,1, figsize=(15, 12))
+        else:
+            _, ax = plt.subplots(1,1, figsize=(15, 6))
         ax.patch.set_facecolor('lightgrey')
         ax.patch.set_alpha(0.4)
         ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
@@ -75,15 +123,60 @@ def quality_plot(fnam, nreads=None, axe=None, savefig=None):
                        left=False, bottom=False)
         ax.tick_params(axis='both', direction='out', top=False, right=False,
                        left=False, bottom=False, which='minor')
-    plt.figure(figsize=(15, 7))
-    plt.errorbar(range(len(line.strip())), meanquals,
-                 yerr=errorquals, ecolor='orange')
+    ax.errorbar(range(len(line.strip())), meanquals,
+                yerr=errorquals, ecolor='orange')
 
-    plt.xlim((0, len(line)))
-    plt.xlabel('Sequence')
-    plt.ylabel('PHRED score')
+    ax.set_xlim((0, len(line)))
+    ax.set_xlabel('Nucleotidic position')
+    ax.set_ylabel('PHRED score')
+    ax.set_title('Sequencing Quality (%d reads)' % (nreads))
+
+    if r_enz:
+        ax.set_title('Sequencing Quality and deconvolution (%s %d reads)' % (
+            r_enz, nreads))
+        ax.set_xlabel('')
+        plt.setp(ax.get_xticklabels(), visible=False)
+        ax2.patch.set_facecolor('lightgrey')
+        ax2.patch.set_alpha(0.4)
+        ax2.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+        ax2.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+        ax2.set_axisbelow(True)
+        ax2.set_xlabel('Nucleotidic position')
+        sites = [sites.count(k) for k in xrange(len(line))]
+        liges = [liges.count(k) for k in xrange(len(line))]
+        fixes = [fixes.count(k) - sites[k] - liges[k] for k in xrange(len(line))]
+        ax2.plot(sites, linewidth=2, color='darkred')
+        ax2.set_ylabel('Undigested RE site (%s)' % r_site)
+        ax2.yaxis.label.set_color('darkred')
+        tkw = dict(size=4, width=1.5)
+        ax2.tick_params(axis='y', colors='darkred', **tkw)
+        ax3 = ax2.twinx()
+        ax3.plot(liges, linewidth=2, color='darkblue')
+        ax3.yaxis.label.set_color('darkblue')
+        ax3.tick_params(axis='y', colors='darkblue', **tkw)
+        ax3.set_ylabel('Religated (%s)' % l_site)
+        if any([f > 0 for f in fixes]):
+            ax4 = ax2.twinx()
+            ax4.spines["right"].set_position(("axes", 1.07))
+            make_patch_spines_invisible(ax4)
+            ax4.spines["right"].set_visible(True)        
+            ax4.plot(fixes, linewidth=2, color='darkorange')
+            ax4.yaxis.label.set_color('darkorange')
+            ax4.tick_params(axis='y', colors='darkorange', **tkw)
+            ax4.set_ylabel('Dangling-ends (%s)' % d_site)
+        else:
+            ax2.set_ylabel('RE site & Dangling-ends  (%s)' % r_site)
+        ax2.set_xlim((0, len(line)))
+        
+        
     if savefig:
         tadbit_savefig(savefig)
+        plt.close('all')
     elif not axe:
         plt.show()
 
+def make_patch_spines_invisible(ax):
+    ax.set_frame_on(True)
+    ax.patch.set_visible(False)
+    for sp in ax.spines.itervalues():
+        sp.set_visible(False)
