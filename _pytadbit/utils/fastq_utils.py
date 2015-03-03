@@ -27,9 +27,11 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
     phred = dict([(c, i) for i, c in enumerate(
         '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~')])
     quals = []
+    henes = []
     sites = []
     fixes = []
     liges = []
+    tkw = dict(size=4, width=1.5)
     if fnam.endswith('.gz'):
         fhandler = gopen(fnam)
     else:
@@ -41,7 +43,9 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
                     next(fhandler)
                 except EOFError:
                     break
-                next(fhandler)
+                seq = next(fhandler)
+                if 'N' in seq:
+                    henes.extend([i for i, s in enumerate(seq) if s == 'N'])
                 next(fhandler)
                 line = next(fhandler)
                 quals.append([phred[i] for i in line.strip()])
@@ -53,7 +57,9 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
                     next(fhandler)
                 except EOFError:
                     break
-                next(fhandler)
+                seq = next(fhandler)
+                if 'N' in seq:
+                    henes.extend([i for i, s in enumerate(seq) if s == 'N'])
                 next(fhandler)
                 line = next(fhandler)
                 quals.append([phred[i] for i in line.strip()])
@@ -74,12 +80,14 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
             while True:
                 try:
                     next(fhandler)
-                except EOFError:
+                except StopIteration:
                     break
                 seq = next(fhandler)
                 sites.extend([m.start() for m in site.finditer(seq)])
                 fixes.extend([m.start() for m in fixe.finditer(seq)])
                 liges.extend([m.start() for m in lige.finditer(seq)])
+                if 'N' in seq:
+                    henes.extend([i for i, s in enumerate(seq) if s == 'N'])
                 next(fhandler)
                 line = next(fhandler)
                 quals.append([phred[i] for i in line.strip()])
@@ -89,12 +97,14 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
             while True:
                 try:
                     next(fhandler)
-                except EOFError:
+                except StopIteration:
                     break
                 seq = next(fhandler)
                 sites.extend([m.start() for m in site.finditer(seq)])
                 fixes.extend([m.start() for m in fixe.finditer(seq)])
                 liges.extend([m.start() for m in lige.finditer(seq)])
+                if 'N' in seq:
+                    henes.extend([i for i, s in enumerate(seq) if s == 'N'])
                 next(fhandler)
                 line = next(fhandler)
                 quals.append([phred[i] for i in line.strip()])
@@ -107,7 +117,8 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
 
     if axe:
         ax = axe
-        _ = axe.get_figure()
+        fig = axe.get_figure()
+        ax2 = fig.add_subplot(212)
     else:
         if r_enz:
             _, (ax, ax2) = plt.subplots(2,1, figsize=(15, 12))
@@ -124,12 +135,25 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
         ax.tick_params(axis='both', direction='out', top=False, right=False,
                        left=False, bottom=False, which='minor')
     ax.errorbar(range(len(line.strip())), meanquals,
+                linewidth=1, elinewidth=1, color='darkblue',
                 yerr=errorquals, ecolor='orange')
 
     ax.set_xlim((0, len(line)))
     ax.set_xlabel('Nucleotidic position')
     ax.set_ylabel('PHRED score')
     ax.set_title('Sequencing Quality (%d reads)' % (nreads))
+    ax.yaxis.label.set_color('darkblue')
+    ax.tick_params(axis='y', colors='darkblue', **tkw)
+    axb = ax.twinx()
+    axb.plot([henes.count(i) for i in xrange(len(line))], linewidth=1,
+             color='black', linestyle='--')
+    axb.yaxis.label.set_color('black')
+    axb.tick_params(axis='y', colors='black', **tkw)
+    axb.set_ylabel('Number of "N" per position')
+    axb.set_yscale('log')
+    axb.set_ylim((0, axb.get_ylim()[1] * 1000))
+    ax.set_ylim((0, ax.get_ylim()[1]))
+    ax.set_xlim((0, len(line)))
 
     if r_enz:
         ax.set_title('Sequencing Quality and deconvolution (%s %d reads)' % (
@@ -144,28 +168,28 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
         ax2.set_xlabel('Nucleotidic position')
         sites = [sites.count(k) for k in xrange(len(line))]
         liges = [liges.count(k) for k in xrange(len(line))]
-        fixes = [fixes.count(k) - sites[k] - liges[k] for k in xrange(len(line))]
+        fixes = [fixes.count(k) - sites[k] - liges[k]
+                 for k in xrange(len(line) - len(l_site))]
         ax2.plot(sites, linewidth=2, color='darkred')
         ax2.set_ylabel('Undigested RE site (%s)' % r_site)
         ax2.yaxis.label.set_color('darkred')
-        tkw = dict(size=4, width=1.5)
         ax2.tick_params(axis='y', colors='darkred', **tkw)
         ax3 = ax2.twinx()
         ax3.plot(liges, linewidth=2, color='darkblue')
         ax3.yaxis.label.set_color('darkblue')
         ax3.tick_params(axis='y', colors='darkblue', **tkw)
         ax3.set_ylabel('Religated (%s)' % l_site)
-        if any([f > 0 for f in fixes]):
-            ax4 = ax2.twinx()
-            ax4.spines["right"].set_position(("axes", 1.07))
-            make_patch_spines_invisible(ax4)
-            ax4.spines["right"].set_visible(True)        
-            ax4.plot(fixes, linewidth=2, color='darkorange')
-            ax4.yaxis.label.set_color('darkorange')
-            ax4.tick_params(axis='y', colors='darkorange', **tkw)
-            ax4.set_ylabel('Dangling-ends (%s)' % d_site)
-        else:
-            ax2.set_ylabel('RE site & Dangling-ends  (%s)' % r_site)
+        # if any([f > 0 for f in fixes]):
+        #     ax4 = ax2.twinx()
+        #     ax4.spines["right"].set_position(("axes", 1.07))
+        #     make_patch_spines_invisible(ax4)
+        #     ax4.spines["right"].set_visible(True)        
+        #     ax4.plot(fixes, linewidth=2, color='darkorange')
+        #     ax4.yaxis.label.set_color('darkorange')
+        #     ax4.tick_params(axis='y', colors='darkorange', **tkw)
+        #     ax4.set_ylabel('Dangling-ends (%s)' % d_site)
+        # else:
+        #     ax2.set_ylabel('RE site & Dangling-ends  (%s)' % r_site)
         ax2.set_xlim((0, len(line)))
         
         
