@@ -1,7 +1,5 @@
 """
 06 Aug 2013
-
-
 """
 
 from warnings                  import warn

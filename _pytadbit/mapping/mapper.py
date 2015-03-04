@@ -178,8 +178,11 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
                           threads=nthreads, single_end=single_end)
 
     # Recursively go to the next iteration.
+    unmapped_fastq_path = os.path.split(fastq_path)[1]
+    if unmapped_fastq_path[-1].isdigit():
+        unmapped_fastq_path = unmapped_fastq_path.rsplit('.', 1)[0]
     unmapped_fastq_path = os.path.join(
-        temp_dir, os.path.split(fastq_path)[1] + '.%d-%d' % (seq_beg, seq_end))
+        temp_dir, unmapped_fastq_path + '.%d-%d' % (seq_beg, seq_end))
     _filter_unmapped_fastq(fastq_path, local_out_sam, unmapped_fastq_path)
 
     out_files.extend(iterative_mapping(gem_index_path, unmapped_fastq_path,
