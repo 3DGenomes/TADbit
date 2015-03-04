@@ -10,6 +10,7 @@ from warnings import warn
 from collections import OrderedDict
 import numpy as np
 from pytadbit.parsers.hic_parser import load_hic_data_from_reads
+from pytadbit.utils.extraviews import nicer
 from scipy.stats import norm as sc_norm, skew, kurtosis
 from scipy.stats import pearsonr, spearmanr, linregress
 from numpy.linalg import eigh
@@ -218,7 +219,7 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
                                   savefig=None):
     """
     :param fnam: input file name
-    :param 100 min_diff: lower limit (in number of bins)
+    :param 10 min_diff: lower limit (in number of bins)
     :param 1000 max_diff: upper limit (in number of bins) to look for
     :param 100 resolution: group reads that are closer than this resolution
        parameter
@@ -238,28 +239,24 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
             line = fhandler.next()
         try:
             while True:
-                _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.rsplit('\t', 9)
+                _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
                 if cr1 != cr2:
                     line = fhandler.next()
                     continue
-                diff = abs(int(ps1) - int(ps2)) / resolution
-                if max_diff > diff > min_diff:
+                diff = abs(int(ps1)  / resolution - int(ps2) / resolution)
+                if max_diff > diff >= min_diff:
                     dist_intr[diff] += 1
                 line = fhandler.next()
         except StopIteration:
             pass
         fhandler.close()
-        for k in dist_intr.keys()[:]:
-            if dist_intr[k] <= 2:
-                del(dist_intr[k])
     elif isinstance(data, HiC_data):
         max_diff = min(len(data), max_diff)
-        dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
         if data.section_pos:
             for crm in data.section_pos:
                 for diff in xrange(min_diff, min(
                     (max_diff,
-                     data.section_pos[crm][1] - data.section_pos[crm][0]))):
+                     1 + data.section_pos[crm][1] - data.section_pos[crm][0]))):
                     for i in xrange(data.section_pos[crm][0],
                                     data.section_pos[crm][1] - diff):
                         dist_intr[diff] += data[i, i + diff]
@@ -271,7 +268,6 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
     else:
         if genome_seq:
             max_diff = min(max(genome_seq.values()), max_diff)
-            dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
             cnt = 0
             for crm in genome_seq:
                 for diff in xrange(min_diff, min(
@@ -282,7 +278,6 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
                 cnt += genome_seq[crm]
         else:
             max_diff = min(len(data), max_diff)
-            dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
             for diff in xrange(min_diff, max_diff):
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i][i + diff]):
@@ -290,6 +285,17 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
     if not axe:
         fig=plt.figure()
         axe = fig.add_subplot(111)
+    # remove last part of the plot in case no interaction is count... reduce max_dist
+    for diff in xrange(max_diff - 1, min_diff, -1):
+        try:
+            if not dist_intr[diff]:
+                del(dist_intr[diff])
+                max_diff -=1
+                continue
+        except KeyError:
+            max_diff -=1
+            continue
+        break
     xp, yp = zip(*sorted(dist_intr.items(), key=lambda x:x[0]))
     x = []
     y = []
@@ -304,44 +310,66 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
     ntries = 100
     # set k for better fit
     # for k in xrange(1, ntries/5, ntries/5/5):
-    k = 1
-    for i in xrange(3, ntries-2-k):
-        v1 = i * len(x) / ntries
-        a1, b1, r21, _, _ = linregress(logx[ :v1], logy[ :v1])
-        r21 *= r21
-        for j in xrange(i + 1 + k, ntries - 2 - k):
-            v2 = j * len(x) / ntries
-            a2, b2, r22, _, _ = linregress(logx[v1+k:v2], logy[v1+k:v2])
-            a3, b3, r23, _, _ = linregress(logx[v2+k:  ], logy[v2+k: ])
-            r2 = r21 + r22**2 + r23**2
-            if r2 > best[0]:
-                best = (r2, v1, v2, a1, a2, a3,
-                        b1, b2, b3, k)
-    # plot line of best fit
-    (v1, v2, 
-     a1, a2, a3,
-     b1, b2, b3, k) = best[1:]
-    yfit1 = lambda xx: np.exp(b1 + a1*np.array (np.log(xx)))
-    yfit2 = lambda xx: np.exp(b2 + a2*np.array (np.log(xx)))
-    yfit3 = lambda xx: np.exp(b3 + a3*np.array (np.log(xx)))
-    axe.plot(x[  :v1], yfit1(x[  :v1] ), color= 'yellow', lw=2,
-             label = r'$\alpha_1=%.2f$' % (a1))
-             #label = r'$\alpha_1=%.2f$ (0-%d)' % (a1, x[v1]))
-    axe.plot(x[v1+k:v2], yfit2(x[v1+k:v2]),  color= 'orange', lw=2,
-             label = r'$\alpha_2=%.2f$' % (a2))
-             # label = r'$\alpha_2=%.2f$ (%d-%d)' % (a2, x[v1], x[v2]))
-    axe.plot(x[v2+k:  ], yfit3(x[v2+k:  ] ), color= 'red'   , lw=2,
-             label = r'$\alpha_3=%.2f$' % (a3))
-             # label = r'$\alpha_3=%.2f$ (%d-$\infty$)' % (a3, x[v2+k]))
+    if resolution == 1:
+        k = 1
+        for i in xrange(3, ntries-2-k):
+            v1 = i * len(x) / ntries
+            a1, b1, r21, _, _ = linregress(logx[ :v1], logy[ :v1])
+            r21 *= r21
+            for j in xrange(i + 1 + k, ntries - 2 - k):
+                v2 = j * len(x) / ntries
+                a2, b2, r22, _, _ = linregress(logx[v1+k:v2], logy[v1+k:v2])
+                a3, b3, r23, _, _ = linregress(logx[v2+k:  ], logy[v2+k: ])
+                r2 = r21 + r22**2 + r23**2
+                if r2 > best[0]:
+                    best = (r2, v1, v2, a1, a2, a3,
+                            b1, b2, b3, k)
+        # plot line of best fit
+        (v1, v2, 
+         a1, a2, a3,
+         b1, b2, b3, k) = best[1:]
+        yfit1 = lambda xx: np.exp(b1 + a1*np.array (np.log(xx)))
+        yfit2 = lambda xx: np.exp(b2 + a2*np.array (np.log(xx)))
+        yfit3 = lambda xx: np.exp(b3 + a3*np.array (np.log(xx)))
+        axe.plot(x[  :v1], yfit1(x[  :v1] ), color= 'yellow', lw=2,
+                 label = r'$\alpha_1=%.2f$' % (a1))
+                 #label = r'$\alpha_1=%.2f$ (0-%d)' % (a1, x[v1]))
+        axe.plot(x[v1+k:v2], yfit2(x[v1+k:v2]),  color= 'orange', lw=2,
+                 label = r'$\alpha_{2%s}=%.2f$' % (': 0.7-10 \mathrm{Mb}' if resolution != 1 else '', a2))
+                 # label = r'$\alpha_2=%.2f$ (%d-%d)' % (a2, x[v1], x[v2]))
+        axe.plot(x[v2+k:  ], yfit3(x[v2+k:  ] ), color= 'red'   , lw=2,
+                 label = r'$\alpha_3=%.2f$' % (a3))
+                 # label = r'$\alpha_3=%.2f$ (%d-$\infty$)' % (a3, x[v2+k]))
+    else:
+        # from 0.7 Mb
+        v1 = 700000   / resolution
+        # to 10 Mb
+        v2 = 10000000 / resolution
+        a1, b1, r21, _, _ = linregress(logx[  :v1], logy[  :v1])
+        a2, b2, r22, _, _ = linregress(logx[v1:v2], logy[v1:v2])
+        try:
+            a3, b3, r23, _, _ = linregress(logx[v2:  ], logy[v2:  ])
+        except ValueError:
+            a3, b3, r23 = 0, 0, 0
+        yfit1 = lambda xx: np.exp(b1 + a1*np.array (np.log(xx)))
+        yfit2 = lambda xx: np.exp(b2 + a2*np.array (np.log(xx)))
+        yfit3 = lambda xx: np.exp(b3 + a3*np.array (np.log(xx)))
+        axe.plot(x[  :v1], yfit1(x[  :v1] ), color= 'yellow', lw=2,
+                 label = r'$\alpha_1=%.2f$' % (a1))
+                 #label = r'$\alpha_1=%.2f$ (0-%d)' % (a1, x[v1]))
+        axe.plot(x[v1:v2], yfit2(x[v1:v2]),  color= 'orange', lw=2,
+                 label = r'$\alpha_{2%s}=%.2f$' % (': 0.7-10 \mathrm{Mb}' if resolution != 1 else '', a2))
+                 # label = r'$\alpha_2=%.2f$ (%d-%d)' % (a2, x[v1], x[v2]))
+        axe.plot(x[v2:  ], yfit3(x[v2:  ] ), color= 'red'   , lw=2,
+                 label = r'$\alpha_3=%.2f$' % (a3))
+                 # label = r'$\alpha_3=%.2f$ (%d-$\infty$)' % (a3, x[v2+k]))
     axe.set_ylabel('Log interaction count')
-    axe.set_xlabel('Log genomic distance (binned by %d bp)' % resolution)
-    axe.set_xlim((min_diff, max_diff))
+    axe.set_xlabel('Log genomic distance (resolution: %s)' % nicer(resolution))
     axe.legend(loc='lower left', frameon=False)
     axe.set_xscale('log')
     axe.set_yscale('log')
-    axe.set_xlim((0, max_diff))
-    axe.set_ylim((0, max(y)))
-    # plt.legend()
+    axe.set_xlim((min_diff, max_diff))
+    axe.set_ylim((min_diff, max(y)))
     if savefig:
         tadbit_savefig(savefig)
     elif show==True:
