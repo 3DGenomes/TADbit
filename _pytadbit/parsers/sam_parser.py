@@ -90,10 +90,16 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 try:
                     next_re    = frag_piece[idx]
                 except IndexError:
-                    # case where read mapped 1 nucleotide outside chromosome
-                    pos -= 1
-                    frag_piece = frags[crm][pos / frag_chunk]
-                    idx        = bisect(frag_piece, pos)
+                    # case where part of the read is mapped outside chromosome
+                    count = 0
+                    while idx >= len(frag_piece) and count < len_seq:
+                        pos -= 1
+                        count += 1
+                        frag_piece = frags[crm][pos / frag_chunk]
+                        idx        = bisect(frag_piece, pos)
+                    if count >= len_seq:
+                        raise Exception('Read mapped mostly outside ' +
+                                        'chromosome\n')
                     next_re    = frag_piece[idx]
                 prev_re    = frag_piece[idx - 1]
                 name       = r.qname

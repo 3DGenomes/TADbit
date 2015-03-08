@@ -50,11 +50,11 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         seq = genome_seq[crm]
         frags[crm] = dict([(i, []) for i in xrange(len(seq) / frag_chunk + 1)])
         frags[crm][0] = [0]
-        frags[crm][len(seq) / frag_chunk] = [len(seq)]
         for match in enz_pattern.finditer(seq):
             pos = match.start() + enz_cut
             frags[crm][pos / frag_chunk].append(pos)
             count += 1
+        frags[crm][len(seq) / frag_chunk] = [len(seq)]
         for i in xrange(len(seq) / frag_chunk + 1):
             try:
                 try:
