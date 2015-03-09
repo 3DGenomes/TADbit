@@ -308,6 +308,49 @@ class HiC_data(dict):
             super(HiC_data, self).__setitem__(row_col, val)
 
 
+
+    def cis_trans_ratio(self, normalized=False, exclude=None, diagonal=False,
+                        equals=None, verbose=False):
+        """
+        Counts the number of interactions occuring within chromosomes (cis) with
+        respect to the total number of interactions
+
+        :param False normalized: used normalized data
+        :param None exclude: exclude a given list of chromosome from the
+           ratio (may want to exclude translocated chromosomes)
+        :param False diagonal: replace values in the diagonal by 0 or 1
+        :param None equals: can pass a function that would decide if 2 chromosomes
+           have to be considered as the same. e.g. lambda x, y: x[:4]==y[:4] will
+           consider chr2L and chr2R as being the same chromosome
+
+        :returns: the ratio of cis interactions over the total number of
+           interactions. This number is expected to be between at least 40-60%
+           in Human classic dilution Hi-C with HindIII as restriction enzyme.
+        """
+        if exclude == None:
+            exclude = []
+        if equals == None:
+            equals = lambda x, y: x == y
+        intra = inter = 0
+        for i, crm1 in enumerate(self.chromosomes):
+            for crm2 in self.chromosomes.keys()[i:]:
+                if crm1 in exclude or crm2 in exclude:
+                    continue
+                if equals(crm1, crm2):
+                    val = sum([sum(d) for d in self.get_matrix(
+                        focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)])
+                    if verbose:
+                        print 'INTRA', crm1, crm2, val
+                    intra += val
+                else:
+                    val = sum([sum(d) for d in self.get_matrix(
+                        focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)])
+                    if verbose:
+                        print '  INTER', crm1, crm2, val
+                    inter += val
+        return float(intra) / (intra + inter)
+    
+
     def filter_columns(self, draw_hist=False, savefig=None):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
@@ -377,7 +420,7 @@ class HiC_data(dict):
                          for i in xrange(start2, end2)]
                         for j in xrange(start1, end1)]
                 if start1 == start2:
-                    for i in xrange(start1, end1):
+                    for i in xrange(len(mtrx)):
                         mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx
         else:
@@ -388,6 +431,6 @@ class HiC_data(dict):
                 mtrx = [[self[i, j] for i in xrange(start2, end2)]
                         for j in xrange(start1, end1)]
                 if start1 == start2:
-                    for i in xrange(start1, end1):
+                    for i in xrange(len(mtrx)):
                         mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx
