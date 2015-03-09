@@ -308,7 +308,6 @@ class HiC_data(dict):
             super(HiC_data, self).__setitem__(row_col, val)
 
 
-
     def cis_trans_ratio(self, normalized=False, exclude=None, diagonal=False,
                         equals=None, verbose=False):
         """
@@ -336,18 +335,25 @@ class HiC_data(dict):
             for crm2 in self.chromosomes.keys()[i:]:
                 if crm1 in exclude or crm2 in exclude:
                     continue
-                if equals(crm1, crm2):
-                    val = sum([sum(d) for d in self.get_matrix(
-                        focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)])
+                if crm1 == crm2:
+                    mtrx = self.get_matrix(
+                        focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)
+                    val = sum([sum([mtrx[i][j] for j in xrange(i + 1, len(mtrx))])
+                               for i in xrange(len(mtrx))])
                     if verbose:
                         print 'INTRA', crm1, crm2, val
                     intra += val
                 else:
                     val = sum([sum(d) for d in self.get_matrix(
                         focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)])
-                    if verbose:
-                        print '  INTER', crm1, crm2, val
-                    inter += val
+                    if equals(crm1, crm2):
+                        if verbose:
+                            print '  INTRA', crm1, crm2, val
+                        intra += val
+                    else:
+                        if verbose:
+                            print '  INTER', crm1, crm2, val
+                        inter += val
         return float(intra) / (intra + inter)
     
 
