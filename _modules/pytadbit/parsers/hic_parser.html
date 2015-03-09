@@ -296,7 +296,7 @@
     <span class="k">return</span> <span class="n">imx</span>
 
 
-<span class="k">class</span> <span class="nc">HiC_data</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data">[docs]</a><span class="k">class</span> <span class="nc">HiC_data</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This may also hold the print/write-to-file matrix functions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -357,7 +357,50 @@
             <span class="nb">super</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">row_col</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 
 
-    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="HiC_data.cis_trans_ratio"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio">[docs]</a>    <span class="k">def</span> <span class="nf">cis_trans_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">equals</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Counts the number of interactions occuring within chromosomes (cis) with</span>
+<span class="sd">        respect to the total number of interactions</span>
+
+<span class="sd">        :param False normalized: used normalized data</span>
+<span class="sd">        :param None exclude: exclude a given list of chromosome from the</span>
+<span class="sd">           ratio (may want to exclude translocated chromosomes)</span>
+<span class="sd">        :param False diagonal: replace values in the diagonal by 0 or 1</span>
+<span class="sd">        :param None equals: can pass a function that would decide if 2 chromosomes</span>
+<span class="sd">           have to be considered as the same. e.g. lambda x, y: x[:4]==y[:4] will</span>
+<span class="sd">           consider chr2L and chr2R as being the same chromosome</span>
+
+<span class="sd">        :returns: the ratio of cis interactions over the total number of</span>
+<span class="sd">           interactions. This number is expected to be between at least 40-60%</span>
+<span class="sd">           in Human classic dilution Hi-C with HindIII as restriction enzyme.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">exclude</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">equals</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">equals</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span>
+        <span class="n">intra</span> <span class="o">=</span> <span class="n">inter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crm1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">crm2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="n">i</span><span class="p">:]:</span>
+                <span class="k">if</span> <span class="n">crm1</span> <span class="ow">in</span> <span class="n">exclude</span> <span class="ow">or</span> <span class="n">crm2</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">equals</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">):</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span>
+                        <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">),</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="n">diagonal</span><span class="p">)])</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&#39;INTRA&#39;</span><span class="p">,</span> <span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">,</span> <span class="n">val</span>
+                    <span class="n">intra</span> <span class="o">+=</span> <span class="n">val</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span>
+                        <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">),</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="n">diagonal</span><span class="p">)])</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&#39;  INTER&#39;</span><span class="p">,</span> <span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">,</span> <span class="n">val</span>
+                    <span class="n">inter</span> <span class="o">+=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">intra</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">intra</span> <span class="o">+</span> <span class="n">inter</span><span class="p">)</span>
+    
+</div>
+<div class="viewcode-block" id="HiC_data.filter_columns"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call filtering function, to remove artefactual columns in a given Hi-C</span>
 <span class="sd">        matrix. This function will detect columns with very low interaction</span>
@@ -374,8 +417,8 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bads</span> <span class="o">=</span> <span class="n">filter_by_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="n">draw_hist</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="HiC_data.normalize_hic"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.normalize_hic">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_hic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Normalize the Hi-C data.</span>
 
@@ -390,13 +433,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">iterative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span>
                               <span class="n">max_dev</span><span class="o">=</span><span class="n">max_dev</span><span class="p">,</span> <span class="n">bads</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bads</span><span class="p">,</span>
                               <span class="n">verbose</span><span class="o">=</span><span class="ow">not</span> <span class="n">silent</span><span class="p">)</span>
-
+</div>
     <span class="k">def</span> <span class="nf">get_as_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
                       <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
                       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))])</span>
 
-    <span class="k">def</span> <span class="nf">get_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="HiC_data.get_matrix"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get the matrix</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -426,7 +469,7 @@
                          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start2</span><span class="p">,</span> <span class="n">end2</span><span class="p">)]</span>
                         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">)]</span>
                 <span class="k">if</span> <span class="n">start1</span> <span class="o">==</span> <span class="n">start2</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mtrx</span><span class="p">)):</span>
                         <span class="n">mtrx</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">mtrx</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
                 <span class="k">return</span> <span class="n">mtrx</span>
         <span class="k">else</span><span class="p">:</span>
@@ -437,9 +480,9 @@
                 <span class="n">mtrx</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start2</span><span class="p">,</span> <span class="n">end2</span><span class="p">)]</span>
                         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">)]</span>
                 <span class="k">if</span> <span class="n">start1</span> <span class="o">==</span> <span class="n">start2</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mtrx</span><span class="p">)):</span>
                         <span class="n">mtrx</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">mtrx</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
-                <span class="k">return</span> <span class="n">mtrx</span>
+                <span class="k">return</span> <span class="n">mtrx</span></div></div>
 </pre></div>
 
           </div>
@@ -488,7 +531,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 12, 2015.
+      Last updated on Mar 09, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

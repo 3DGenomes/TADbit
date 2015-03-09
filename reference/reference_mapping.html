@@ -101,7 +101,7 @@ end. Both to be read from left to right.</td>
 <h2>Quality check and plotting<a class="headerlink" href="#quality-check-and-plotting" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.hic_map">
-<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">hic_map</tt><big>(</big><em>data</em>, <em>resolution=None</em>, <em>normalized=False</em>, <em>masked=None</em>, <em>by_chrom=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>focus=None</em>, <em>clim=None</em>, <em>cmap='Reds'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">hic_map</tt><big>(</big><em>data</em>, <em>resolution=None</em>, <em>normalized=False</em>, <em>masked=None</em>, <em>by_chrom=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>focus=None</em>, <em>clim=None</em>, <em>cmap='jet'</em>, <em>pdf=False</em>, <em>decay=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#hic_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.hic_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>function to retrieve data from HiC-data object. Data can be stored as
 a square matrix, or drawn using matplotlib</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -143,8 +143,12 @@ the diagonal of the original matrix); or directly a chromosome name; or
 two chromosome names (i.e.: focus=(&#8216;chr2, chrX&#8217;)), in order to store the
 data corresponding to inter chromosomal interactions between these two
 chromosomes</li>
+<li><strong>decay</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; plot the correlation between genomic distance and
+interactions (usually a decay).</li>
 <li><strong>clim</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; cutoff for the upper and lower bound in the coloring scale
 of the heatmap</li>
+<li><strong>pdf</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; when using the bny_chrom option, to specify the format of
+the stored images</li>
 <li><strong>cmap</strong> (<em>Reds</em>) &#8211; color map to be used for the heatmap</li>
 </ul>
 </td>
@@ -155,7 +159,7 @@ of the heatmap</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.correlate_matrices">
-<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">correlate_matrices</tt><big>(</big><em>hic_data1</em>, <em>hic_data2</em>, <em>resolution=1</em>, <em>max_dist=10</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">correlate_matrices</tt><big>(</big><em>hic_data1</em>, <em>hic_data2</em>, <em>max_dist=10</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare the iteractions of two Hi-C matrices at a given distance,
 with spearman rank correlation</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -207,16 +211,15 @@ eigenvectors, with spearman rank correlation</p>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_distance_vs_interactions">
-<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">plot_distance_vs_interactions</tt><big>(</big><em>fnam</em>, <em>min_diff=100</em>, <em>max_diff=1000000</em>, <em>resolution=100</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_distance_vs_interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_distance_vs_interactions" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.mapping.analyze.</tt><tt class="descname">plot_distance_vs_interactions</tt><big>(</big><em>data</em>, <em>min_diff=10</em>, <em>max_diff=1000</em>, <em>show=False</em>, <em>genome_seq=None</em>, <em>resolution=None</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_distance_vs_interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_distance_vs_interactions" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fnam</strong> &#8211; input file name</li>
-<li><strong>min_diff</strong> (<em>100</em>) &#8211; lower limit kn genomic distance (usually equal to read
-length)</li>
-<li><strong>max_diff</strong> (<em>1000000</em>) &#8211; upper limit in genomic distance to look for</li>
+<li><strong>min_diff</strong> (<em>10</em>) &#8211; lower limit (in number of bins)</li>
+<li><strong>max_diff</strong> (<em>1000</em>) &#8211; upper limit (in number of bins) to look for</li>
 <li><strong>resolution</strong> (<em>100</em>) &#8211; group reads that are closer than this resolution
 parameter</li>
 <li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
@@ -282,7 +285,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="function">
 <dt id="pytadbit.utils.fastq_utils.quality_plot">
-<tt class="descclassname">pytadbit.utils.fastq_utils.</tt><tt class="descname">quality_plot</tt><big>(</big><em>fnam</em>, <em>nreads=None</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#quality_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.quality_plot" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.utils.fastq_utils.</tt><tt class="descname">quality_plot</tt><big>(</big><em>fnam</em>, <em>r_enz=None</em>, <em>nreads=None</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#quality_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.quality_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the qualities</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -341,7 +344,8 @@ represent fragile regions of the genome or genome assembly errors</dd>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>fnam</strong> &#8211; path to file containing the pair of reads in tsv format, file
 generated by <a class="reference internal" href="#pytadbit.mapping.mapper.get_intersection" title="pytadbit.mapping.mapper.get_intersection"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.mapping.mapper.get_intersection()</span></tt></a></li>
-<li><strong>max_molecule_length</strong> (<em>500</em>) &#8211; </li>
+<li><strong>max_molecule_length</strong> (<em>500</em>) &#8211; facing reads that are within
+max_molecule_length, will be classified as &#8216;extra dangling-ends&#8217;</li>
 <li><strong>over_represented</strong> (<em>0.005</em>) &#8211; </li>
 <li><strong>max_frag_size</strong> (<em>100000</em>) &#8211; </li>
 <li><strong>min_frag_size</strong> (<em>100</em>) &#8211; </li>
@@ -459,7 +463,7 @@ to apply (numbers correspond to the keys in the masked dictionary)</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Feb 12, 2015.
+      Last updated on Mar 09, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
