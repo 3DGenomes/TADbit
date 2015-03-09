@@ -43,8 +43,11 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
     if (f_names2 and not out_file2) or (not f_names2 and out_file2):
         raise Exception('ERROR: out_file2 AND f_names2 needed\n')
 
-    frags = map_re_sites(re_name, genome_seq, verbose=True)
     frag_chunk = kwargs.get('frag_chunk', 100000)
+    if verbose:
+        print 'Searching and mapping RE sites to the reference genome'
+    frags = map_re_sites(re_name, genome_seq, frag_chunk=frag_chunk,
+                         verbose=verbose)
 
     if f_names2:
         fnames = f_names1, f_names2

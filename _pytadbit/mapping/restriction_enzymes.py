@@ -54,22 +54,31 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
             pos = match.start() + enz_cut
             frags[crm][pos / frag_chunk].append(pos)
             count += 1
-        frags[crm][len(seq) / frag_chunk] = [len(seq)]
+        # at the end of last chunk we add the chromosome length
+        frags[crm][len(seq) / frag_chunk].append(len(seq))
+        # now we need to assign as first RE site of a fragment the last RE site
+        # of previsou fragment, and as last RE site, the first RE site of the
+        # next fragment.
         for i in xrange(len(seq) / frag_chunk + 1):
             try:
                 try:
                     frags[crm][i].insert(0, frags[crm][i - 1][-2])
                 except IndexError:
+                    # in case there was no RE site in previous fragment
                     frags[crm][i].insert(0, frags[crm][i - 1][-1])
             except KeyError:
+                # it is the very first chunk
                 pass
             plus = 1
             while True:
                 try:
-                    frags[crm][i].append(frags[crm].get(i + plus, [len(seq)])[0])
+                    frags[crm][i].append(frags[crm][i + plus][0])
                     break
-                except IndexError:
+                except KeyError:
                     plus += 1
+                    if plus > len(frags[crm]):
+                        # case where we only have one fragment for the whole
+                        break
     if verbose:
         print 'Found %d RE sites' % count
     return frags

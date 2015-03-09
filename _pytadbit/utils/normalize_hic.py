@@ -91,7 +91,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     if verbose:
         print 'iterative correction'
     size = len(hic_data)
-    remove = [i in bads for i in xrange(size)]
+    remove = [i in bads for i in xrange(size)] if bads else []
     remove = remove or tuple([int(hic_data[i+i*size]==0) for i in xrange(size)])
     W = {}
     for i in xrange(size):
