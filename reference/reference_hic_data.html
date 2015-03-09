@@ -1,0 +1,191 @@
+<!doctype html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>HiC_data class &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="hic-data-class">
+<h1>HiC_data class<a class="headerlink" href="#hic-data-class" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pytadbit.parsers.hic_parser.HiC_data">
+<em class="property">class </em><tt class="descclassname">pytadbit.parsers.hic_parser.</tt><tt class="descname">HiC_data</tt><big>(</big><em>items</em>, <em>size</em>, <em>chromosomes=None</em>, <em>dict_sec=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#HiC_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>This may also hold the print/write-to-file matrix functions</p>
+<dl class="method">
+<dt id="pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio">
+<tt class="descname">cis_trans_ratio</tt><big>(</big><em>normalized=False</em>, <em>exclude=None</em>, <em>diagonal=False</em>, <em>equals=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#HiC_data.cis_trans_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts the number of interactions occuring within chromosomes (cis) with
+respect to the total number of interactions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; used normalized data</li>
+<li><strong>exclude</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; exclude a given list of chromosome from the
+ratio (may want to exclude translocated chromosomes)</li>
+<li><strong>diagonal</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; replace values in the diagonal by 0 or 1</li>
+<li><strong>equals</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; can pass a function that would decide if 2 chromosomes
+have to be considered as the same. e.g. lambda x, y: x[:4]==y[:4] will
+consider chr2L and chr2R as being the same chromosome</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the ratio of cis interactions over the total number of
+interactions. This number is expected to be between at least 40-60%
+in Human classic dilution Hi-C with HindIII as restriction enzyme.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.parsers.hic_parser.HiC_data.filter_columns">
+<tt class="descname">filter_columns</tt><big>(</big><em>draw_hist=False</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#HiC_data.filter_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.filter_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call filtering function, to remove artefactual columns in a given Hi-C
+matrix. This function will detect columns with very low interaction
+counts; columns passing through a cell with no interaction in the
+diagonal; and columns with NaN values (in this case NaN will be replaced
+by zero in the original Hi-C data matrix). Filtered out columns will be
+stored in the dictionary Experiment._zeros.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>draw_hist</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; shows the distribution of mean values by column
+the polynomial fit, and the cut applied.</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
+if None, the image will be shown using matplotlib GUI (the extension
+of the file name will determine the desired format).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.parsers.hic_parser.HiC_data.get_matrix">
+<tt class="descname">get_matrix</tt><big>(</big><em>focus=None</em>, <em>diagonal=True</em>, <em>normalized=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#HiC_data.get_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.get_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytadbit.parsers.hic_parser.HiC_data.normalize_hic">
+<tt class="descname">normalize_hic</tt><big>(</big><em>iterations=0</em>, <em>max_dev=0.1</em>, <em>silent=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#HiC_data.normalize_hic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.HiC_data.normalize_hic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize the Hi-C data.</p>
+<p>It fills the Experiment.norm variable with the Hi-C values divided by
+the calculated weight.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>iteration</strong> (<em>0</em>) &#8211; number of iterations</li>
+<li><strong>max_dev</strong> (<em>0.1</em>) &#8211; iterative process stops when the maximum deviation
+between the sum of row is equal to this number (0.1 means 10%)</li>
+<li><strong>silent</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; does not warn when overwriting weights</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Mar 09, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>
