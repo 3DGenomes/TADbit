@@ -3,6 +3,12 @@
    :height: 50
    :width: 240
 
++-------------------------------------+---------------------------------------------------------------------------+
+|                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       |
+| Current version: 0.1_alpha.185      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
+|                                     |                                                                           |
++-------------------------------------+---------------------------------------------------------------------------+
+
 TADbit is a complete Python library to deal with all steps to analyze,
 model and explore 3C-based data. With TADbit the user can map FASTQ
 files to obtain raw interaction binned matrices (Hi-C like matrices),
@@ -21,12 +27,6 @@ science. All-in-one scripts provided in TADbit allow to run the full
 analysis using one single command line; advanced users may produce
 their own programs using TADbit as a complementary library.
 
-
-+-------------------------------------+---------------------------------------------------------------------------+
-|                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       |
-| Current version: 0.1_alpha.184      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
-|                                     |                                                                           |
-+-------------------------------------+---------------------------------------------------------------------------+
 
 Documentation
 *************

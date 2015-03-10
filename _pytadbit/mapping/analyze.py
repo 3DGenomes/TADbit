@@ -18,12 +18,15 @@ import os
 
 try:
     from matplotlib import pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap
 except ImportError:
     warn('matplotlib not found\n')
 
+
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
-            focus=None, clim=None, cmap='jet', pdf=False, decay=True):
+            focus=None, clim=None, cmap='tadbit', pdf=False, decay=True,
+            perc=10, name='NoName', **kwargs):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
@@ -95,7 +98,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                            '_'.join(set((crm1, crm2))),
                                            'pdf' if pdf else 'png'),
                              show, one=True, clim=clim, cmap=cmap,
-                             resolution=resolution)
+                             resolution=resolution, perc=perc,
+                             name=name, cistrans=float('NaN'))
     else:
         if savedata:
             out = open(savedata, 'w')
@@ -106,6 +110,9 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
             out.close()
         if show or savefig:
             subdata = hic_data.get_matrix(focus=focus, normalized=normalized)
+            if focus:
+                # rescale masked
+                masked = dict([(m - focus[0], masked[m]) for m in masked])
             if masked:
                 for i in xrange(len(subdata)):
                     if i in masked:
@@ -118,11 +125,17 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      {} if focus else hic_data.chromosomes,
                      hic_data.section_pos, savefig, show,
                      one = True if focus else False, decay=decay,
-                     clim=clim, cmap=cmap, resolution=resolution)
+                     clim=clim, cmap=cmap, resolution=resolution, perc=perc,
+                     name=name, cistrans=float('NaN') if focus else
+                     hic_data.cis_trans_ratio(kwargs.get('normalized', False),
+                                              kwargs.get('exclude', None),
+                                              kwargs.get('diagonal', False),
+                                              kwargs.get('equals', None),
+                                              kwargs.get('verbose', False)))
 
 
 def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
-             clim=None, cmap='Reds', decay=False):
+             clim=None, cmap='tadbit', decay=False, perc=10, name=None, cistrans=None):
     _ = plt.figure(figsize=(15.,12.5))
     ax1 = plt.axes([0.34, 0.08, 0.6, 0.7205])
     ax2 = plt.axes([0.07, 0.65, 0.21, 0.15])
@@ -133,12 +146,59 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
     ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
-    cmap = plt.get_cmap(cmap)
-    cmap.set_bad('darkgrey', 1)
+    minoridata   = np.min(data)
+    maxoridata   = np.max(data)
+    totaloridata = np.sum(data)
     data = nozero_log(data, np.log2)
+    vals = np.array([i for d in data for i in d])
+    vals = vals[np.isfinite(vals)]
+
+    mindata = np.min(vals)
+    maxdata = np.max(vals)
+    diff = maxdata - mindata
+    posI = 0.01 if not clim else (float(clim[0]) / diff) if clim[0] != None else 0.01
+    posF = 1.0  if not clim else (float(clim[1]) / diff) if clim[1] != None else 1.0
+    if cmap == 'tadbit':
+        cuts = perc
+        cdict = {'red'  : [(0.0,  0.0, 0.0)],
+                 'green': [(0.0,  0.0, 0.0)],
+                 'blue' : [(0.0,  0.5, 0.5)]}
+        prev_pos  = 0
+        median = (np.median(vals) - mindata) / diff
+        for prc in np.linspace(posI, median, cuts / 2, endpoint=False):
+            pos = (np.percentile(vals, prc * 100.) - mindata) / diff
+            prc = ((prc - posI) / (median - posI)) + 1. / cuts
+            if prev_pos >= pos:
+                continue
+            cdict['red'  ].append([pos, prc, prc])
+            cdict['green'].append([pos, prc, prc])
+            cdict['blue' ].append([pos, 1, 1])
+            prev_pos  = pos
+        for prc in np.linspace(median + 1. / cuts, posF, cuts / 2, endpoint=False):
+            pos = (np.percentile(vals, prc * 100.) - mindata) / diff
+            prc = ((prc - median) / (posF - median))
+            if prev_pos >= pos:
+                continue
+            cdict['red'  ].append([pos, 1.0, 1.0])
+            cdict['green'].append([pos, 1 - prc, 1 - prc])
+            cdict['blue' ].append([pos, 1 - prc, 1 - prc])
+            prev_pos  = pos
+        pos = (np.percentile(vals ,97.) - mindata) / diff
+        cdict['red'  ].append([pos, 0.1, 0.1])
+        cdict['green'].append([pos, 0, 0])
+        cdict['blue' ].append([pos, 0, 0])
+
+        cdict['red'  ].append([1.0, 1, 1])
+        cdict['green'].append([1.0, 1, 1])
+        cdict['blue' ].append([1.0, 0, 0])
+        cmap  = LinearSegmentedColormap(cmap, cdict)
+        clim = None
+    else:
+        cmap = plt.get_cmap(cmap)
+    cmap.set_bad('darkgrey', 1)
+
     ax1.imshow(data, interpolation='none',
-               cmap=cmap, vmin=clim[0] if clim else None,
-               vmax=clim[1] if clim else None)
+               cmap=cmap, vmin=clim[0] if clim else None, vmax=clim[1] if clim else None)
     size = len(data)
     for i in xrange(size):
         for j in xrange(i, size):
@@ -153,8 +213,8 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     gradient = np.linspace(np.nanmin(data),
                            np.nanmax(data), size)
     gradient = np.vstack((gradient, gradient))
-    h  = ax2.hist(data, color='black', linewidth=2,
-                   bins=20, histtype='step', normed=True)
+    h  = ax2.hist(data, color='darkgrey', linewidth=2,
+                  bins=20, histtype='step', normed=True)
     _  = ax2.imshow(gradient, aspect='auto', cmap=cmap,
                     extent=(np.nanmin(data), np.nanmax(data) , 0, max(h[0])))
     if genome_seq:
@@ -176,11 +236,20 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
             vals.append(cumcs[crm][1])
             ax1.set_yticks(vals)
             ax1.set_yticklabels('')
-            ax1.set_yticks([float(vals[i]+vals[i+1])/2 for i in xrange(len(vals) - 1)], minor=True)
+            ax1.set_yticks([float(vals[i]+vals[i+1])/2
+                            for i in xrange(len(vals) - 1)], minor=True)
             ax1.set_yticklabels(keys, minor=True)
             for t in ax1.yaxis.get_minor_ticks():
                 t.tick1On = False
-                t.tick2On = False 
+                t.tick2On = False
+        totaloridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j in enumerate(str(totaloridata)[::-1])])[::-1].strip(',')
+        minoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(minoridata)[::-1])])[::-1].strip(',')
+        maxoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(maxoridata)[::-1])])[::-1].strip(',')
+        plt.figtext(0.05,0.25, '\n'.join([
+            name,
+            'Number of interactions: %s' % str(totaloridata),
+            'Percentage of cis interactions: %.0f%%' % (cistrans*100),
+            'Min-max interactions: %s-%s' % (minoridata, maxoridata)]))
     ax2.set_xlim((np.nanmin(data), np.nanmax(data)))
     ax2.set_ylim((0, max(h[0])))
     ax1.set_xlim ((-0.5, size - .5))
