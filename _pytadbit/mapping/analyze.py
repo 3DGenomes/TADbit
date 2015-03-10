@@ -332,13 +332,16 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
         yfit2 = lambda xx: np.exp(b2 + a2*np.array (np.log(xx)))
         yfit3 = lambda xx: np.exp(b3 + a3*np.array (np.log(xx)))
         axe.plot(x[  :v1], yfit1(x[  :v1] ), color= 'yellow', lw=2,
-                 label = r'$\alpha_1=%.2f$' % (a1))
+                 label = r'$\alpha_{%s}=%.2f$' % (
+                     '0-0.7 \mathrm{ Mb}' if resolution != 1 else '1', a1))
                  #label = r'$\alpha_1=%.2f$ (0-%d)' % (a1, x[v1]))
         axe.plot(x[v1+k:v2], yfit2(x[v1+k:v2]),  color= 'orange', lw=2,
-                 label = r'$\alpha_{2%s}=%.2f$' % (': 0.7-10 \mathrm{Mb}' if resolution != 1 else '', a2))
+                 label = r'$\alpha_{%s}=%.2f$' % (
+                     '0.7-10 \mathrm{ Mb}' if resolution != 1 else '2', a2))
                  # label = r'$\alpha_2=%.2f$ (%d-%d)' % (a2, x[v1], x[v2]))
         axe.plot(x[v2+k:  ], yfit3(x[v2+k:  ] ), color= 'red'   , lw=2,
-                 label = r'$\alpha_3=%.2f$' % (a3))
+                 label = r'$\alpha_{%s}=%.2f$' % (
+                     '10 \mathrm{ Mb}-\infty' if resolution != 1 else '3', a3))
                  # label = r'$\alpha_3=%.2f$ (%d-$\infty$)' % (a3, x[v2+k]))
     else:
         # from 0.7 Mb
@@ -355,13 +358,16 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
         yfit2 = lambda xx: np.exp(b2 + a2*np.array (np.log(xx)))
         yfit3 = lambda xx: np.exp(b3 + a3*np.array (np.log(xx)))
         axe.plot(x[  :v1], yfit1(x[  :v1] ), color= 'yellow', lw=2,
-                 label = r'$\alpha_1=%.2f$' % (a1))
+                 label = r'$\alpha_{%s}=%.2f$' % (
+                     '0-0.7 \mathrm{ Mb}' if resolution != 1 else '1', a1))
                  #label = r'$\alpha_1=%.2f$ (0-%d)' % (a1, x[v1]))
         axe.plot(x[v1:v2], yfit2(x[v1:v2]),  color= 'orange', lw=2,
-                 label = r'$\alpha_{2%s}=%.2f$' % (': 0.7-10 \mathrm{Mb}' if resolution != 1 else '', a2))
+                 label = r'$\alpha_{%s}=%.2f$' % (
+                     '0.7-10 \mathrm{ Mb}' if resolution != 1 else '2', a2))
                  # label = r'$\alpha_2=%.2f$ (%d-%d)' % (a2, x[v1], x[v2]))
         axe.plot(x[v2:  ], yfit3(x[v2:  ] ), color= 'red'   , lw=2,
-                 label = r'$\alpha_3=%.2f$' % (a3))
+                 label = r'$\alpha_{%s}=%.2f$' % (
+                     '10 \mathrm{ Mb}-\infty' if resolution != 1 else '3', a3))
                  # label = r'$\alpha_3=%.2f$ (%d-$\infty$)' % (a3, x[v2+k]))
     axe.set_ylabel('Log interaction count')
     axe.set_xlabel('Log genomic distance (resolution: %s)' % nicer(resolution))
@@ -369,7 +375,7 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
     axe.set_xscale('log')
     axe.set_yscale('log')
     axe.set_xlim((min_diff, max_diff))
-    axe.set_ylim((min_diff, max(y)))
+    axe.set_ylim((0, max(y)))
     if savefig:
         tadbit_savefig(savefig)
     elif show==True:

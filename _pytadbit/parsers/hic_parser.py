@@ -238,8 +238,8 @@ def load_hic_data_from_reads(fnam, resolution):
         _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
         ps1 = dict_sec[(cr1, int(ps1) / resolution)]
         ps2 = dict_sec[(cr2, int(ps2) / resolution)]
-        imx[ps1 + ps2 * size] += 1
-        imx[ps2 + ps1 * size] += 1
+        imx[ps1, ps2] += 1
+        imx[ps2, ps1] += 1
         try:
             line = fhandler.next()
         except StopIteration:

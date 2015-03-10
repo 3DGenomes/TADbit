@@ -29,12 +29,12 @@ def nicer(res):
     writes resolution number for human beings.
     """
     if not res % 1000000000:
-        return str(res)[:-9] + 'Gb'
+        return str(res)[:-9] + ' Gb'
     if not res % 1000000:
-        return str(res)[:-6] + 'Mb'
+        return str(res)[:-6] + ' Mb'
     if not res % 1000:
-        return str(res)[:-3] + 'Kb'
-    return str(res) + 'b'
+        return str(res)[:-3] + ' kb'
+    return str(res) + ' b'
 
 
 COLOR = {None: '\033[31m', # red
