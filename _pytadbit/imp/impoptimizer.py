@@ -42,7 +42,6 @@ class IMPoptimizer(object):
         self.nloci       = end - start + 1
         if not self.nloci == len(self.zeros):
             raise Exception('ERROR: in optimization, bad number of particles\n')
-        stderr.write('Preparing to optimize %s particles\n' % self.nloci)
         self.n_models    = n_models
         self.n_keep      = n_keep
         self.close_bins  = close_bins
@@ -91,6 +90,8 @@ class IMPoptimizer(object):
            and save it into a file named by this argument
         :param True verbose: print the results to the standard output
         """
+        if verbose:
+            stderr.write('Optimizing %s particles\n' % self.nloci)
         if isinstance(maxdist_range, tuple):
             maxdist_step = maxdist_range[2]
             maxdist_arange = range(maxdist_range[0],

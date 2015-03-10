@@ -9,12 +9,10 @@ from pytadbit                          import tadbit
 from pytadbit.utils.extraviews         import tadbit_savefig
 from pytadbit.utils.extraviews         import _tad_density_plot
 from pytadbit.experiment               import Experiment
-from pytadbit.utils.hic_filtering      import hic_filtering_for_modelling
 from string                            import ascii_lowercase as letters
 from copy                              import deepcopy as copy
 from cPickle                           import load, dump
 from pytadbit.alignment                import Alignment, randomization_test
-from numpy                             import log2
 from random                            import random
 from math                              import sqrt
 from sys                               import stderr
@@ -524,7 +522,7 @@ class Chromosome(object):
                 if name.startswith('batch'):
                     name += '_' + xpr.name
             siz = xprs[0].size
-            tmp = reduce(lambda x, y: x+ y, xprs)
+            tmp = reduce(lambda x, y: x.__add__(y, silent=True), xprs)
             tmp.filter_columns(silent=kwargs.get('silent', False))
             remove = tuple([1 if i in tmp._zeros else 0
                             for i in xrange(siz)])
