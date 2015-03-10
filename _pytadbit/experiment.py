@@ -213,7 +213,7 @@ class Experiment(object):
         return outstr
         
 
-    def __add__(self, other):
+    def __add__(self, other, silent=False):
         """
         sum Hi-C data of experiments into a new one.
         """
@@ -225,9 +225,10 @@ class Experiment(object):
             resolution = max(reso1, reso2)
             self.set_resolution(resolution)
             other.set_resolution(resolution)
-            stderr.write('WARNING: experiments of different resolution, ' +
-                         'setting both resolution of %s, and normalizing at ' +
-                         'this resolution\n' % (resolution))
+            if not silent:
+                stderr.write('WARNING: experiments of different resolution, ' +
+                             'setting both resolution of %s, and normalizing ' +
+                             'at this resolution\n' % (resolution))
             norm1 = copy(self.norm)
             norm2 = copy(other.norm)
             if self._normalization:
@@ -268,17 +269,21 @@ class Experiment(object):
         elif self.norm or other.norm:
             try:
                 if (self.norm[0] or other.norm[0]) != {}:
-                    raise Exception('ERROR: normalization differs between each ' +
-                                    'experiment\n')
+                    if not silent:
+                        raise Exception('ERROR: normalization differs between' +
+                                        ' each experiment\n')
                 else:
-                    stderr.write('WARNING: experiments should be normalized before ' +
-                                 'being summed\n')
+                    if not silent:
+                        stderr.write('WARNING: experiments should be ' +
+                                     'normalized before being summed\n')
             except TypeError:
-                stderr.write('WARNING: experiments should be normalized before ' +
-                             'being summed\n')
+                if not silent:
+                    stderr.write('WARNING: experiments should be normalized ' +
+                                 'before being summed\n')
         else:
-            stderr.write('WARNING: experiments should be normalized before ' +
-                         'being summed\n')
+            if not silent:
+                stderr.write('WARNING: experiments should be normalized ' +
+                             'before being summed\n')
         if changed_reso:
             self.set_resolution(reso1)
             self.norm = norm1
@@ -721,7 +726,8 @@ class Experiment(object):
                   'end'  : end}
         zeros = tuple([i not in zeros for i in xrange(end - start + 1)])
         nloci = end - start + 1
-        stderr.write('Preparing to model %s particles\n' % nloci)
+        if verbose:
+            stderr.write('Preparing to model %s particles\n' % nloci)
         return generate_3d_models(zscores, self.resolution, nloci,
                                   values=values, n_models=n_models,
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
