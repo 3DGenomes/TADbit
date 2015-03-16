@@ -74,7 +74,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
                 try:
                     frags[crm][i].append(frags[crm][i + plus][0])
                     break
-                except KeyError:
+                except IndexError:
                     plus += 1
                     if plus > len(frags[crm]):
                         # case where we only have one fragment for the whole
