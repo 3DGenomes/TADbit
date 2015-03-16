@@ -52,8 +52,9 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         frags[crm][0] = [0]
         for match in enz_pattern.finditer(seq):
             pos = match.start() + enz_cut
-            frags[crm][pos / frag_chunk].append(pos)
-            count += 1
+            if pos / frag_chunk < len(seq) / frag_chunk:
+                frags[crm][pos / frag_chunk].append(pos)
+                count += 1
         # at the end of last chunk we add the chromosome length
         frags[crm][len(seq) / frag_chunk].append(len(seq))
         # now we need to assign as first RE site of a fragment the last RE site
@@ -79,6 +80,9 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
                     if plus > len(frags[crm]):
                         # case where we only have one fragment for the whole
                         break
+                except IndexError:
+                    del(frags[crm][i + plus])
+                    print 'WARNING: strange behaviour with 4 base pair cutter to be fixed'
     if verbose:
         print 'Found %d RE sites' % count
     return frags
