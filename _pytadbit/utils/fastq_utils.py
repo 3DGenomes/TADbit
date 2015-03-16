@@ -14,15 +14,23 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
-def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
+
+def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=False):
     """
-    Plot the qualities
+    Plots the sequencing quality of a given FASTQ file. If a restrinction enzyme
+    (RE) name is provided, can also represent the distribution of digested and
+    undigested RE sites and estimate an expected proportion of dangling-ends.
+
+    Proportion of dangling-ends is inferred by counting the number of times a
+    dangling-end site, is found at the beginning of any of the reads (divided by
+    the number of reads).
 
     :param fnam: path to FASTQ file
     :param None nreads: max number of reads to read, not necesary to read all
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
+    :param False paired: is input FASTQ contains both ends
     """
     phred = dict([(c, i) for i, c in enumerate(
         '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~')])
@@ -68,7 +76,6 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
         l_site = religated(r_enz)
         d_site = repaired(r_enz)
         if r_site*2 == l_site:
-
             # in case the religated site equals 2 restriction sites (like DnpII)
             site = re.compile('(?<!%s)' % r_site + r_site + '(?!%s)' % r_site)
             fixe = re.compile('(?<!%s)' % d_site + d_site + '(?!%s)' % d_site)
@@ -166,10 +173,26 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
         ax2.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
         ax2.set_axisbelow(True)
         ax2.set_xlabel('Nucleotidic position')
-        sites = [sites.count(k) for k in xrange(len(line))]
-        liges = [liges.count(k) for k in xrange(len(line))]
-        fixes = [fixes.count(k) - sites[k] - liges[k]
-                 for k in xrange(len(line) - len(l_site))]
+        seq_len = len(line) - max((len(r_site), len(l_site), len(d_site)))
+        sites = [sites.count(k) for k in xrange(seq_len)] # Undigested
+        liges = [liges.count(k) for k in xrange(seq_len)] # OK
+        fixes = [fixes.count(k) for k in xrange(seq_len)] # DE
+        if d_site in r_site:
+            pos = r_site.find(d_site)
+            fixes = (fixes[:pos] +
+                     [fixes[k] - sites[k-pos] for k in xrange(pos, seq_len)])
+        if d_site in l_site:
+            pos = l_site.find(d_site)
+            fixes = (fixes[:pos] +
+                     [fixes[k] - liges[k-pos] for k in xrange(pos, seq_len)])
+        site_len = max((len(r_site), len(l_site), len(d_site)))
+        if paired:
+            sites[len(line) / 2 - site_len:
+                  len(line) / 2] = [float('nan')] * site_len
+            liges[len(line) / 2 - site_len:
+                  len(line) / 2] = [float('nan')] * site_len
+            fixes[len(line) / 2 - site_len:
+                  len(line) / 2] = [float('nan')] * site_len
         ax2.plot(sites, linewidth=2, color='darkred')
         ax2.set_ylabel('Undigested RE site (%s)' % r_site)
         ax2.yaxis.label.set_color('darkred')
@@ -179,25 +202,36 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None):
         ax3.yaxis.label.set_color('darkblue')
         ax3.tick_params(axis='y', colors='darkblue', **tkw)
         ax3.set_ylabel('Religated (%s)' % l_site)
-        # if any([f > 0 for f in fixes]):
-        #     ax4 = ax2.twinx()
-        #     ax4.spines["right"].set_position(("axes", 1.07))
-        #     make_patch_spines_invisible(ax4)
-        #     ax4.spines["right"].set_visible(True)        
-        #     ax4.plot(fixes, linewidth=2, color='darkorange')
-        #     ax4.yaxis.label.set_color('darkorange')
-        #     ax4.tick_params(axis='y', colors='darkorange', **tkw)
-        #     ax4.set_ylabel('Dangling-ends (%s)' % d_site)
-        # else:
-        #     ax2.set_ylabel('RE site & Dangling-ends  (%s)' % r_site)
+        if any([f > 0 for f in fixes]):
+            ax4 = ax2.twinx()
+            ax4.spines["right"].set_position(("axes", 1.07))
+            make_patch_spines_invisible(ax4)
+            ax4.spines["right"].set_visible(True)        
+            ax4.plot(fixes, linewidth=2, color='darkorange')
+            ax4.yaxis.label.set_color('darkorange')
+            ax4.tick_params(axis='y', colors='darkorange', **tkw)
+            ax4.set_ylabel('Dangling-ends (%s)' % d_site)
+        else:
+            ax2.set_ylabel('RE site & Dangling-ends  (%s)' % r_site)
         ax2.set_xlim((0, len(line)))
-        
-        
+        lig_cnt = (np.nansum(liges) - liges[0] - liges[len(line) / 2])
+        sit_cnt = (np.nansum(sites) - sites[0] - sites[len(line) / 2])
+        plt.title(('Proportion of digested sites: %.0f%%\n' +
+                   'Proportion of dangling-ends: %.0f%%') %(
+                      (100. * lig_cnt) / (lig_cnt + sit_cnt),
+                      ((100. * (fixes[0] + (fixes[(len(line) / 2)]
+                                            if paired else 0)))
+                       / nreads)
+                      if any([f > 0 for f in fixes])
+                      else (100. * (sites[0] + (sites[(len(line) / 2)]
+                                                if paired else 0))) / nreads))
+        plt.subplots_adjust(right=0.85)
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
     elif not axe:
         plt.show()
+
 
 def make_patch_spines_invisible(ax):
     ax.set_frame_on(True)

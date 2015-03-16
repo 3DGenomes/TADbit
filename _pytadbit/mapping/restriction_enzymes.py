@@ -83,6 +83,9 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         print 'Found %d RE sites' % count
     return frags
 
+def complementary(seq):
+    trs = dict([(nt1, nt2) for nt1, nt2 in zip('ATGCN', 'TACGN')])
+    return ''.join([trs[s] for s in seq[::-1]])
 
 def repaired(r_enz):
     """
@@ -92,7 +95,8 @@ def repaired(r_enz):
     site = RESTRICTION_ENZYMES[r_enz]
     beg, end = site.split('|')
     site = site.replace('|', '')
-    return beg + site[min(len(beg), len(end)) : max(len(beg), len(end))]
+    return complementary(beg + site[min(len(beg), len(end)) :
+                                    max(len(beg), len(end))])
 
 def religated(r_enz):
     """
