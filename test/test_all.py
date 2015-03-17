@@ -557,6 +557,14 @@ class TestTadbit(unittest.TestCase):
         ref_genome = parse_fasta(PATH + '/ref_genome/chr2L_chr4_dm3.bz2',
                                  verbose=False)
         self.assertEqual(len(ref_genome['chr4']), 1351857)
+        frags = map_re_sites('dpnIi', ref_genome)
+        self.assertEqual(len(frags['chr2L']), 231)
+        self.assertEqual(len(frags['chr2L'][230]), 16)
+        self.assertEqual(frags['chr4'][10][50], 1018069)
+        frags = map_re_sites('hindiii', ref_genome)
+        self.assertEqual(len(frags['chr2L']), 231)
+        self.assertEqual(len(frags['chr2L'][230]), 3)
+        self.assertEqual(frags['chr4'][10][5], 1017223)
 
 
     def test_18_tadbit_c(self):
