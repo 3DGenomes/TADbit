@@ -5,16 +5,17 @@ unittest for pytadbit functions
 """
 
 import unittest
-from pytadbit                        import Chromosome, load_chromosome
-from pytadbit                        import tadbit, batch_tadbit
-from pytadbit.tad_clustering.tad_cmo import optimal_cmo
-from pytadbit.imp.structuralmodels   import load_structuralmodels
-from pytadbit.imp.impmodel           import load_impmodel_from_cmm
-from pytadbit.eqv_rms_drms           import rmsdRMSD_wrapper
-from pytadbit.utils.normalize_hic    import iterative
-from os                              import system, path
-from warnings                        import warn
-from distutils.spawn                 import find_executable
+from pytadbit                             import Chromosome, load_chromosome
+from pytadbit                             import tadbit, batch_tadbit
+from pytadbit.tad_clustering.tad_cmo      import optimal_cmo
+from pytadbit.imp.structuralmodels        import load_structuralmodels
+from pytadbit.imp.impmodel                import load_impmodel_from_cmm
+from pytadbit.eqv_rms_drms                import rmsdRMSD_wrapper
+from os                                   import system, path, chdir
+from warnings                             import warn
+from distutils.spawn                      import find_executable
+from pytadbit.parsers.genome_parser       import parse_fasta
+from pytadbit.mapping.restriction_enzymes import map_re_sites
 
 CHKTIME = False
 
@@ -549,23 +550,33 @@ class TestTadbit(unittest.TestCase):
             print '16', time() - t0
 
 
-    # def test_17_tadbit_c(self):
-    #     """
-    #     Runs tests written in c, around the detection of TADs
-    #     """
-    #     if CHKTIME:
-    #         t0 = time()
+    def test_17_map_re_sites(self):
+        """
+        test fasta parsing and mapping re sites
+        """
+        ref_genome = parse_fasta(PATH + '/ref_genome/chr2L_chr4_dm3.bz2',
+                                 verbose=False)
+        self.assertEqual(len(ref_genome['chr4']), 1351857)
 
-    #     print '\n\nC SIDE'
-    #     print '------'
-    #     chdir(PATH + '/../src/test/')
-    #     system('make clean')
-    #     system('make')
-    #     return_code = system('make test')
-    #     chdir(PATH)
-    #     self.assertEqual(return_code, 0)
-    #     if CHKTIME:
-    #         print '17', time() - t0
+
+    def test_18_tadbit_c(self):
+        """
+        Runs tests written in c, around the detection of TADs
+        """
+        if CHKTIME:
+            t0 = time()
+
+        print '\n\nC SIDE'
+        print '------'
+        chdir(PATH + '/../src/test/')
+        system('make clean')
+        system('make')
+        return_code = system('make test')
+        chdir(PATH)
+        if return_code != 0:
+            print 'ERROR problem with C test'
+        if CHKTIME:
+            print '17', time() - t0
 
 
 if __name__ == "__main__":

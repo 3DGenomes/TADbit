@@ -5,8 +5,9 @@ convert a bunch of fasta files, or a single multi fasta file, into a dictionary
 """
 
 from collections import OrderedDict
+from pytadbit.parsers import magic_open
 
-def parse_fasta(f_names, chr_names=None):
+def parse_fasta(f_names, chr_names=None, verbose=True):
     """
     Parse a list of fasta files, or just one fasta.
 
@@ -28,23 +29,25 @@ def parse_fasta(f_names, chr_names=None):
     if len(f_names) == 1:
         header = None
         seq = ''
-        for line in open(f_names[0]):
+        for line in magic_open(f_names[0]):
             if line.startswith('>'):
                 if header:
                     genome_seq[header] = seq
                 if not chr_names:
                     header = line[1:].split()[0]
-                    print 'Parsing %s' % (header)
+                    if verbose:
+                        print 'Parsing %s' % (header)
                 else:
                     header = chr_names.pop(0)
-                    print 'Parsing %s as %s' % (line[1:].strip(), header)
+                    if verbose:
+                        print 'Parsing %s as %s' % (line[1:].strip(), header)
                 seq = ''
                 continue
             seq += line.strip().upper()
         genome_seq[header] = seq
     else:
         for fnam in f_names:
-            fhandler = open(fnam)
+            fhandler = magic_open(fnam)
             try:
                 while True:
                     if not chr_names:
