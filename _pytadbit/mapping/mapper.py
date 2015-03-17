@@ -93,6 +93,12 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', tempfile.gettempdir())))
 
+    # check windows:
+    if (len(zip(range_start, range_stop)) < len(range_start) or
+        len(range_start) != len(range_stop)):
+        raise Exception('ERROR: range_start and range_stop should have the ' +
+                        'same sizes and windows should be uniques.')
+
     # create directories
     for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
         try:
