@@ -417,8 +417,14 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
         v1 = 700000   / resolution
         # to 10 Mb
         v2 = 10000000 / resolution
-        a1, b1, r21, _, _ = linregress(logx[  :v1], logy[  :v1])
-        a2, b2, r22, _, _ = linregress(logx[v1:v2], logy[v1:v2])
+        try:
+            a1, b1, r21, _, _ = linregress(logx[  :v1], logy[  :v1])
+        except ValueError:
+            a1, b1, r21 = 0, 0, 0
+        try:
+            a2, b2, r22, _, _ = linregress(logx[v1:v2], logy[v1:v2])
+        except ValueError:
+            a2, b2, r22 = 0, 0, 0
         try:
             a3, b3, r23, _, _ = linregress(logx[v2:  ], logy[v2:  ])
         except ValueError:

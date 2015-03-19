@@ -116,6 +116,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     # Main config parameters
     global CONFIG
     CONFIG = config or CONFIG['dmel_01']
+    CONFIG['kforce'] = CONFIG.get('kforce', 5)
     
     # Particles initial radius
     global RADIUS
@@ -228,6 +229,9 @@ def _get_restraints():
             typ, dist, frc = addHarmonicPair(model, p1, p2, x, y, j, dry=True)
             if VERBOSE >= 1:
                 stdout.write('%s\t%s\t%s\t%s\t%s\n' % (typ, x, y, dist, frc))
+            # only h, l, u and c
+            # if typ[-1] == 'o':
+            #     continue
             restraints[tuple(sorted((x, y)))] = typ[-1], dist, frc
     return restraints
 
