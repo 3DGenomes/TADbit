@@ -121,7 +121,7 @@ def autoreader(f):
     return tuple([a for line in items for a in line]), ncol
 
 
-def read_matrix(things, parser=None, hic=True):
+def read_matrix(things, parser=None, hic=True, **kwargs):
     """
     Read and checks a matrix from a file (using
     :func:`pytadbit.parser.hic_parser.autoreader`) or a list.
@@ -150,6 +150,7 @@ def read_matrix(things, parser=None, hic=True):
        returns number or rows
 
     """
+    one = kwargs.get('one', True)
     global HIC_DATA
     HIC_DATA = hic
     parser = parser or autoreader
@@ -204,9 +205,10 @@ def read_matrix(things, parser=None, hic=True):
                                       if matrix[i]], size))
         else:
             raise Exception('Unable to read this file or whatever it is :)')
-        
-    return matrices
-
+    if one:
+        return matrices[0]
+    else:
+        return matrices
 
 def load_hic_data_from_reads(fnam, resolution):
     """

@@ -90,7 +90,6 @@ def load_experiment_from_reads(name, fnam, genome_seq, resolution,
                       cell_type=cell_type, enzyme=enzyme, exp_type=exp_type,
                       **kw_descr)
 
-
 class Experiment(object):
     """
     Hi-C experiment.
@@ -472,7 +471,7 @@ class Experiment(object):
         :param False silent: does not warn for removed columns
 
         """
-        self.hic_data = read_matrix(hic_data, parser=parser)
+        self.hic_data = read_matrix(hic_data, parser=parser, one=False)
         self._ori_size       = self.size       = len(self.hic_data[0])
         self._ori_resolution = self.resolution = data_resolution or self._ori_resolution
         wanted_resolution = wanted_resolution or self.resolution
@@ -510,7 +509,7 @@ class Experiment(object):
         :param False silent: does not warn for removed columns
         
         """
-        self.norm = read_matrix(norm_data, parser=parser, hic=False)
+        self.norm = read_matrix(norm_data, parser=parser, hic=False, one=False)
         self._ori_size       = self.size       = len(self.norm[0])
         self._ori_resolution = self.resolution = resolution or self._ori_resolution
         if not self._zeros: # in case we do not have original Hi-C data

@@ -10,6 +10,7 @@ from pytadbit.imp.structuralmodels import load_structuralmodels
 from pytadbit.imp.impmodel import load_impmodel_from_cmm
 from pytadbit.imp.impmodel import load_impmodel_from_xyz
 from pytadbit.imp.impmodel import IMPmodel
+from pytadbit.parsers.hic_parser import read_matrix
 try:
     from pytadbit.imp.impoptimizer import IMPoptimizer
 except ImportError:

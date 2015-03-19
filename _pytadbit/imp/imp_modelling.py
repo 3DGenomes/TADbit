@@ -169,22 +169,25 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     try:
         xpr = experiment
         crm = xpr.crm
+        description = {'identifier'        : xpr.identifier,
+                       'chromosome'        : coords['crm'],
+                       'start'             : xpr.resolution * coords['start'],
+                       'end'               : xpr.resolution * coords['end'],
+                       'species'           : crm.species,
+                       'restriction enzyme': xpr.enzyme,
+                       'cell type'         : xpr.cell_type,
+                       'experiment type'   : xpr.exp_type,
+                       'resolution'        : xpr.resolution,
+                       'assembly'          : crm.assembly}
+        for desc in xpr.description:
+            description[desc] = xpr.description[desc]
+        for desc in crm.description:
+            description[desc] = xpr.description[desc]
         for i, m in enumerate(models.values() + bad_models.values()):
-            m['description'] = {'identifier'     : xpr.identifier,
-                                'chromosome'     : coords['crm'],
-                                'start'          : xpr.resolution * coords['start'],
-                                'end'            : xpr.resolution * coords['end'],
-                                'species'        : crm.species,
-                                'cell type'      : xpr.cell_type,
-                                'experiment type': xpr.exp_type,
-                                'resolution'     : xpr.resolution,
-                                'assembly'       : crm.assembly}
-            for desc in xpr.description:
-                m['description'][desc] = xpr.description[desc]
-            for desc in crm.description:
-                m['description'][desc] = xpr.description[desc]
             m['index'] = i
+            m['description'] = description
     except AttributeError: # case we are doing optimization
+        description = None
         for i, m in enumerate(models.values() + bad_models.values()):
             m['index'] = i
     if outfile:
@@ -201,8 +204,8 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
         return StructuralModels(
             len(LOCI), models, bad_models, resolution, original_data=values,
             zscores=zscores, config=CONFIG, experiment=experiment, zeros=zeros,
-            restraints=_get_restraints())
-
+            restraints=_get_restraints(),
+            description=description)
 
 def _get_restraints():
     """
@@ -222,19 +225,24 @@ def _get_restraints():
     for i in range(len(LOCI)):
         p1 = model['ps'].get_particle(i)
         x = p1.get_name()
-
         for j in range(i+1, len(LOCI)):
             p2 = model['ps'].get_particle(j)
             y = p2.get_name()
             typ, dist, frc = addHarmonicPair(model, p1, p2, x, y, j, dry=True)
             if VERBOSE >= 1:
                 stdout.write('%s\t%s\t%s\t%s\t%s\n' % (typ, x, y, dist, frc))
-            # only h, l, u and c
-            # if typ[-1] == 'o':
-            #     continue
+            if typ[-1] == 'a':
+                typ = 'H'
+            elif typ[-1] == 'l':
+                typ = 'L'
+            elif typ[-1] == 'u':
+                typ = 'U'
+            elif typ[-1] == 'n':
+                typ = 'C'
+            else:
+                continue
             restraints[tuple(sorted((x, y)))] = typ[-1], dist, frc
     return restraints
-
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     """
@@ -540,7 +548,6 @@ def distance(freq):
     Function mapping the Z-scores into distances for non-neighbor fragments
     """
     return (SLOPE * freq) + INTERCEPT
-
 
 def addHarmonicNeighborsRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)

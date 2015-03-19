@@ -31,6 +31,12 @@ from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
 from os.path                        import exists
+from pytadbit                       import __version__ as version
+from pytadbit.utils.extraviews      import tad_coloring
+from pytadbit.utils.extraviews      import tad_border_coloring
+from pytadbit.utils.extraviews      import color_residues, chimera_view
+
+import sha
 
 try:
     from matplotlib import pyplot as plt
@@ -55,7 +61,8 @@ def load_structuralmodels(path_f):
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
-            zeros=svd['zeros'], restraints=svd['restraints'])
+            zeros=svd['zeros'], restraints=svd['restraints'],
+            description=svd.get('description', None))
     except KeyError: # old version
         return StructuralModels(
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
@@ -91,7 +98,8 @@ class StructuralModels(object):
 
     def __init__(self, nloci, models, bad_models, resolution,
                  original_data=None, zscores=None, clusters=None,
-                 config=None, experiment=None, zeros=None, restraints=None):
+                 config=None, experiment=None, zeros=None, restraints=None,
+                 description=None):
 
         self.__models       = models
         self._bad_models    = bad_models
@@ -103,7 +111,8 @@ class StructuralModels(object):
         self._zeros         = zeros or {}   # filtered out columns
         self._config        = config or {}
         self.experiment     = experiment
-        self._restraints     = restraints
+        self._restraints    = restraints
+        self.description    = description
 
     def __getitem__(self, nam):
         if isinstance(nam, str):
@@ -2255,6 +2264,122 @@ class StructuralModels(object):
                             model_num=model_num, **kwargs)
 
 
+    def write_json(self, filename, color='index', models=None, cluster=None,
+                   title=None, **kwargs):
+        """
+        Save a model in the json format, read by TADkit.
+
+        **Note:** If none of model_num, models or cluster parameter are set,
+        ALL the models will be written.
+
+        :param directory: location where the file will be written (note: the
+           name of the file will be model_1.cmm if model number is 1)
+        :param None model_num: the number of the model to save
+        :param True rndname: If True, file names will be formatted as:
+           model.RND.cmm, where RND is the random number feed used by IMP to
+           generate the corresponding model. If False, the format will be:
+           model_NUM_RND.cmm where NUM is the rank of the model in terms of
+           objective function value
+        :param None filename: overide the default file name writing
+        :param 'index' color: can be:
+
+             * a string as:
+                 * '**index**' to color particles according to their position in the
+                   model (:func:`pytadbit.utils.extraviews.color_residues`)
+                 * '**tad**' to color particles according to the TAD they belong to
+                   (:func:`pytadbit.utils.extraviews.tad_coloring`)
+                 * '**border**' to color particles marking borders. Color according to
+                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)
+                   coloring function like.
+             * a function, that takes as argument a model and any other parameter
+               passed through the kwargs.
+             * a list of (r, g, b) tuples (as long as the number of particles).
+               Each r, g, b between 0 and 1.
+        :param kwargs: any extra argument will be passed to the coloring
+           function
+        """
+        if isinstance(color, str):
+            if color == 'index':
+                color = color_residues(self, **kwargs)
+            elif color == 'tad':
+                if not 'tads' in kwargs:
+                    raise Exception('ERROR: missing TADs\n   ' +
+                                    'pass an Experiment.tads disctionary\n')
+                color = tad_coloring(self, **kwargs)
+            elif color == 'border':
+                if not 'tads' in kwargs:
+                    raise Exception('ERROR: missing TADs\n   ' +
+                                    'pass an Experiment.tads disctionary\n')
+                color = tad_border_coloring(self, **kwargs)
+            else:
+                raise NotImplementedError(('%s type of coloring is not yet ' +
+                                           'implemeted\n') % color)
+        elif hasattr(color, '__call__'): # it's a function
+            color = color(self, **kwargs)
+        elif not isinstance(color, list):
+            raise TypeError('one of function, list or string is required\n')
+        form = '''
+{
+	"metadata" : {
+		"version"  : 1.0
+		"type"     : "dataset",
+                "generator": "TADkit"
+                }
+	"object": {\n%(descr)s
+		   "uuid": "%(sha)s",
+		   "title": "%(title)s",
+                   "source": "TADbit %(version)s",
+                   "datatype": "xyz",
+                   "components": "3"
+                             },
+        "models":
+                 [\n%(xyz)s
+                 ],
+        "clusters":[%(cluster)s],
+        "centroids":[%(centroid)s],
+        "restraints": [%(restr)s],
+}
+'''
+        fil = {}
+        fil['title']   = title or "Sample TADbit data"
+        fil['version'] = version
+        ukw = 'UNKNOWN'
+        # try:
+        fil['descr']   = ',\n'.join([
+            (' ' * 19) + '"%s" : %s' % (k, ('"%s"' % (v))
+                                          if isinstance(v, str) else v)
+            for k, v in self.description.items()])
+        # except AttributeError:
+        #     fil['descr']   = '"description": "Just some models"'
+        if models:
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
+        elif cluster > -1:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        fil['xyz'] = []
+        for m in models:
+            model = self[m]
+            fil['xyz'].append((' ' * 18) + '[' + ','.join(
+                ['%.0f,%.0f,%.0f' % (model['x'][i], model['y'][i],
+                                     model['z'][i])
+                 for i in xrange(len(model['x']))]) + ']')
+        fil['xyz'] = ',\n'.join(fil['xyz'])
+        fil['sha']     = sha.new(fil['xyz']).hexdigest()
+        fil['restr']  = '[' + ','.join(['[%s,%s,"%s",%f]' % (
+            k[0], k[1], self._restraints[k][0], self._restraints[k][2])
+                                        for k in self._restraints]) + ']'
+        fil['cluster'] = '[' + ','.join(['[' + ','.join(self.clusters[c]) + ']'
+                                         for c in self.clusters]) + ']'
+        fil['centroid'] = '[' + ','.join(
+            [self[self.centroid_model(cluster=c)]['rand_init']
+             for c in self.clusters]) + ']'
+        out_f = open(filename, 'w')
+        out_f.write(form % fil)
+        out_f.close()
+
+
     def write_xyz(self, directory, model_num=None, models=None, cluster=None,
                   get_path=False, rndname=True):
         """
@@ -2326,10 +2451,11 @@ class StructuralModels(object):
         if minimal:
             for m in self.__models:
                 self.__models[m]['log_objfun'] = None
-            to_save['models']        = self.__models
+            to_save['models']    = self.__models
         else:
-            to_save['models']        = self.__models
+            to_save['models']    = self.__models
         to_save['bad_models']    = self._bad_models
+        to_save['description']   = self.description
         to_save['nloci']         = self.nloci
         to_save['clusters']      = self.clusters
         to_save['resolution']    = self.resolution

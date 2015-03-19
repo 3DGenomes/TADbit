@@ -46,7 +46,7 @@ def tadbit(x, remove=None, n_cpus=1, verbose=True,
        boundaries, and the corresponding list associated log likelihoods.
        If no weights are given, it may also return calculated weights.
     """
-    nums = [hic_data for hic_data in read_matrix(x)]
+    nums = [hic_data for hic_data in read_matrix(x, one=False)]
     size = len(nums[0])
     nums = [num.get_as_tuple() for num in nums]
     if not remove:

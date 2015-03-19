@@ -338,21 +338,23 @@ models.save_models(
               "start": opts.beg,
               "end"  : opts.end}
     crm = exp.crm
+    description = {'identifier'     : exp.identifier,
+                   'chromosome'     : coords['crm'],
+                   'start'          : exp.resolution * coords['start'],
+                   'end'            : exp.resolution * coords['end'],
+                   'species'        : crm.species,
+                   'cell type'      : exp.cell_type,
+                   'experiment type': exp.exp_type,
+                   'resolution'     : exp.resolution,
+                   'assembly'       : crm.assembly}
+    for desc in exp.description:
+        description[desc] = exp.description[desc]
+    for desc in crm.description:
+        description[desc] = exp.description[desc]
     for i, m in enumerate([m for m in models] + models._bad_models.values()):
-        m['description'] = {'identifier'     : exp.identifier,
-                            'chromosome'     : coords['crm'],
-                            'start'          : exp.resolution * coords['start'],
-                            'end'            : exp.resolution * coords['end'],
-                            'species'        : crm.species,
-                            'cell type'      : exp.cell_type,
-                            'experiment type': exp.exp_type,
-                            'resolution'     : exp.resolution,
-                            'assembly'       : crm.assembly}
-        for desc in exp.description:
-            m['description'][desc] = exp.description[desc]
-        for desc in crm.description:
-            m['description'][desc] = exp.description[desc]
         m['index'] = i
+        m['description'] = description
+    models.description = description
     return models
 
 
