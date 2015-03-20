@@ -36,7 +36,7 @@ from pytadbit.utils.extraviews      import tad_coloring
 from pytadbit.utils.extraviews      import tad_border_coloring
 from pytadbit.utils.extraviews      import color_residues, chimera_view
 
-import sha
+import uuid
 
 try:
     from matplotlib import pyplot as plt
@@ -2345,9 +2345,15 @@ class StructuralModels(object):
         fil['version'] = version
         ukw = 'UNKNOWN'
         # try:
+        def tocamel(key):
+            key = ''.join([(w[0].upper()+w[1:]) if i else w
+                           for i, w in enumerate(key.split('_'))])
+            key = ''.join([(w[0].upper()+w[1:]) if i else w
+                           for i, w in enumerate(key.split(' '))])
+            return key
         fil['descr']   = ',\n'.join([
-            (' ' * 19) + '"%s" : %s' % (k, ('"%s"' % (v))
-                                          if isinstance(v, str) else v)
+            (' ' * 19) + '"%s" : %s' % (tocamel(k), ('"%s"' % (v))
+                                        if isinstance(v, str) else v)
             for k, v in self.description.items()])
         # except AttributeError:
         #     fil['descr']   = '"description": "Just some models"'
@@ -2366,7 +2372,8 @@ class StructuralModels(object):
                                      model['z'][i])
                  for i in xrange(len(model['x']))]) + ']')
         fil['xyz'] = ',\n'.join(fil['xyz'])
-        fil['sha']     = sha.new(fil['xyz']).hexdigest()
+        fil['sha'] = str(uuid.uuid5(uuid.UUID(version.encode('hex').zfill(32)),
+                                    fil['xyz']))
         fil['restr']  = '[' + ','.join(['[%s,%s,"%s",%f]' % (
             k[0], k[1], self._restraints[k][0], self._restraints[k][2])
                                         for k in self._restraints]) + ']'
