@@ -1,7 +1,5 @@
 """
 19 Jul 2013
-
-
 """
 from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
 from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
@@ -31,11 +29,10 @@ from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
 from os.path                        import exists
-from pytadbit                       import __version__ as version
 from pytadbit.utils.extraviews      import tad_coloring
 from pytadbit.utils.extraviews      import tad_border_coloring
 from pytadbit.utils.extraviews      import color_residues, chimera_view
-
+from pytadbit                       import get_dependencies_version
 import uuid
 
 try:
@@ -2323,15 +2320,16 @@ class StructuralModels(object):
 	"metadata" : {
 		"version"  : 1.0
 		"type"     : "dataset",
-                "generator": "TADkit"
+                "generator": "TADbit",
                 }
 	"object": {\n%(descr)s
 		   "uuid": "%(sha)s",
 		   "title": "%(title)s",
-                   "source": "TADbit %(version)s",
                    "datatype": "xyz",
-                   "components": "3"
-                             },
+                   "components": 3,
+                   "source": "local"
+                   "dependencies": %(dep)s
+                  },
         "models":
                  [\n%(xyz)s
                  ],
@@ -2342,7 +2340,9 @@ class StructuralModels(object):
 '''
         fil = {}
         fil['title']   = title or "Sample TADbit data"
-        fil['version'] = version
+        versions = get_dependencies_version(dico=True)
+        fil['dep'] = dict([(k.strip(), v.strip()) for k, v in versions.items()
+                           if k in ['  TADbit', 'IMP', 'MCL']])
         ukw = 'UNKNOWN'
         # try:
         def tocamel(key):
@@ -2372,7 +2372,8 @@ class StructuralModels(object):
                                      model['z'][i])
                  for i in xrange(len(model['x']))]) + ']')
         fil['xyz'] = ',\n'.join(fil['xyz'])
-        fil['sha'] = str(uuid.uuid5(uuid.UUID(version.encode('hex').zfill(32)),
+        fil['sha'] = str(uuid.uuid5(uuid.UUID(
+            versions['  TADbit'].encode('hex').zfill(32)),
                                     fil['xyz']))
         fil['restr']  = '[' + ','.join(['[%s,%s,"%s",%f]' % (
             k[0], k[1], self._restraints[k][0], self._restraints[k][2])

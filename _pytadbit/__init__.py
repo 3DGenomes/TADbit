@@ -1,24 +1,9 @@
 
 
 from pytadbit._version import __version__
-from pytadbit.tadbit import tadbit, batch_tadbit
-from pytadbit.chromosome import Chromosome
-from pytadbit.experiment import Experiment, load_experiment_from_reads
-from pytadbit.chromosome import load_chromosome
-from pytadbit.imp.structuralmodels import StructuralModels
-from pytadbit.imp.structuralmodels import load_structuralmodels
-from pytadbit.imp.impmodel import load_impmodel_from_cmm
-from pytadbit.imp.impmodel import load_impmodel_from_xyz
-from pytadbit.imp.impmodel import IMPmodel
-from pytadbit.parsers.hic_parser import read_matrix
-try:
-    from pytadbit.imp.impoptimizer import IMPoptimizer
-except ImportError:
-    from warnings import warn
-    warn('IMP not found, check PYTHONPATH\n')
 
 
-def get_dependencies_version():
+def get_dependencies_version(dico=False):
     """
     Check versions of TADbit and all dependencies, as well and retieves system
     info. May be used to ensure reproductibility.
@@ -56,7 +41,7 @@ def get_dependencies_version():
         versions['matplotlib'] = 'Not found'
     from subprocess import Popen, PIPE
     try:
-        mcl, err = Popen(['mcl', '--version'], stdout=PIPE,
+        mcl, _ = Popen(['mcl', '--version'], stdout=PIPE,
                          stderr=PIPE).communicate()
         versions['MCL'] = mcl.split()[1]
     except:
@@ -80,5 +65,26 @@ def get_dependencies_version():
     except:
         versions[' Machine'] = 'Not found'
 
-    return '\n'.join(['%15s : %s' % (k, versions[k]) for k in
-                      sorted(versions.keys())])
+    if dico:
+        return versions
+    else:
+        return '\n'.join(['%15s : %s' % (k, versions[k]) for k in
+                          sorted(versions.keys())])
+
+
+from pytadbit.tadbit import tadbit, batch_tadbit
+from pytadbit.chromosome import Chromosome
+from pytadbit.experiment import Experiment, load_experiment_from_reads
+from pytadbit.chromosome import load_chromosome
+from pytadbit.imp.structuralmodels import StructuralModels
+from pytadbit.imp.structuralmodels import load_structuralmodels
+from pytadbit.imp.impmodel import load_impmodel_from_cmm
+from pytadbit.imp.impmodel import load_impmodel_from_xyz
+from pytadbit.imp.impmodel import IMPmodel
+from pytadbit.parsers.hic_parser import read_matrix
+try:
+    from pytadbit.imp.impoptimizer import IMPoptimizer
+except ImportError:
+    from warnings import warn
+    warn('IMP not found, check PYTHONPATH\n')
+
