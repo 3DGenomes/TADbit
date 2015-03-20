@@ -1021,6 +1021,169 @@ class StructuralModels(object):
         elif show:
             plt.show()
 
+    def accessibility(self, radius, models=None, cluster=None, nump=100,
+                      superradius=200, savefig=None, savedata=None, axe=None,
+                      plot=True, error=True):
+        """
+        Calculates a mesh surface around the model (distance equal to input
+        **radius**) and checks if each point of this mesh could be replaced by
+        an object (i.e. a protein) of a given **radius**
+
+        Outer part of the model can be excluded from the estimation of
+        accessible surface, as the occupancy outside the model is unkown (see
+        superradius option).
+
+        :param radius: radius of the object we want to fit in the model.
+        :param 100 nump: number of points to draw around a given particle. This
+           number also sets the number of points drawn around edges, as each
+           point occupies a given surface (see maths below). *Note that this
+           number is considerably lowered by the occupancy of edges, depending
+           of the angle formed by the edges surrounding a given particle, only
+           10% to 50% of the ``nump`` will be drawn in fact.*
+        :param True include_edges: if False, edges will not be included in the
+           calculation of the accessible surface, only particles. Note that
+           statistics on particles (like last item returned) will not change,
+           and computation time will be significantly decreased.
+        :param None savefig: path where to save chimera image
+        :param 200 superradius: radius of an object used to exclude outer
+           surface of the model. Superradius must be higher than radius.
+
+        This function will first define a mesh around the chromatin,
+        representing all possible position of the center of the object we want
+        to fit. This mesh will be at a distance of *radius* from the chromatin
+        strand. All dots in the mesh represents an equal area (*a*), the whole
+        surface of the chromatin strand being: :math:`A=n \\times a` (*n* being
+        the total number of dots in the mesh).
+
+        The mesh consists of spheres around particles of the model, and
+        cylinders around edges joining particles (no overlap is allowed between
+        sphere and cylinders or cylinder and cylinder when they are
+        consecutive).
+        
+        If we want that all dots of the mesh representing the surface of the
+        chromatin, corresponds to an equal area (:math:`a`)
+
+        .. math::
+
+          a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}
+
+        with:
+
+        * :math:`r` radius of the object to fit (as the input parameter **radius**)
+        * :math:`s` number of points in sphere
+        * :math:`c` number of points in circle (as the input parameter **nump**)
+        * :math:`N_{(d)}` number of circles in an edge of length :math:`d`
+
+        According to this, when the distance between two particles is equal
+        to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.
+
+        As :
+
+        .. math::
+
+          2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}
+        
+        It is fair to state the number of dots represented along a circle as:
+
+        .. math::
+
+          c = \sqrt{s} \\times \sqrt{\pi}
+
+        Thus the number of circles in an edge of length :math:`d` must be:
+
+        .. math::
+
+          N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}
+
+        :returns: a list of *1-* the number of dots in the mesh that could be
+           occupied by an object of the given radius *2-* the total number of
+           dots in the mesh *3-* the estimated area of the mesh (in square
+           micrometers) *4-* the area of the mesh of a virtually straight strand
+           of chromatin defined as 
+           :math:`contour\\times 2\pi r + 4\pi r^2` (also in
+           micrometers) *5-* a list of number of (accessibles, inaccessible) for
+           each particle (percentage burried can be infered afterwards by
+           accessible/(accessible+inaccessible) )
+        """
+        if models:
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
+        elif cluster > -1:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        acc = [[] for _ in xrange(self.nloci)]
+        for model in models:
+            acc_vs_inacc = self[model].accessible_surface(
+                radius, nump=nump, superradius=superradius, include_edges=False)[-1]
+            for i, j, k in acc_vs_inacc:
+                try:
+                    acc[i-1].append(float(j) / (j + k))
+                except ZeroDivisionError:
+                    acc[i-1].append(0.0)
+        errorp = []
+        errorn = []
+        accper = []
+        for i in xrange(self.nloci):
+            accper.append(np_mean(acc[i]))
+            errorp.append(accper[-1] + 2 * np_std(acc[i]))
+            if errorp[-1] > 1:
+                errorp[-1] = 1
+            errorn.append(accper[-1] - 2 * np_std(acc[i]))
+            if errorn[-1] < 0:
+                errorn[-1] = 0
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#Particle\taccessibility\t2*stddev\n')
+            for i in xrange(self.nloci):
+                out.write('%s\t%.3f\t%.3f\n' % (
+                    i + 1, accper[i], 2 * np_std(acc[i])))
+            out.close()
+            if not plot:
+                return # stop here, we do not want to display anything
+        # plot
+        if axe:
+            ax = axe
+            fig = ax.get_figure()
+        else:
+            fig = plt.figure(figsize=(11, 5))
+            ax = fig.add_subplot(111)
+            ax.patch.set_facecolor('lightgrey')
+            ax.patch.set_alpha(0.4)
+            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+            ax.set_axisbelow(True)
+            ax.minorticks_on() # always on, not only for log
+            # remove tick marks
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False)
+            ax.tick_params(axis='both', direction='out', top=False, right=False,
+                           left=False, bottom=False, which='minor')
+        plots = []
+        plots += ax.plot(range(1, len(accper) + 1), accper,
+                         color='darkred',
+                         lw=2, alpha=0.5)
+        if error:
+            plots += ax.plot(range(1, len(errorp) + 1), errorp,
+                             color='darkred', ls='--')
+            ax.plot(range(1, len(errorp) + 1), errorn,
+                    color='darkred', ls='--')
+        ax.set_ylabel('Accessibility to an object with a radius of %s nm ' % (radius))
+        ax.set_xlabel('Particle number')
+        try:
+            ax.legend(plots, ['mean accessibility', '2*stddev of accessibility'], fontsize='small',
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        except TypeError:
+            ax.legend(plots, ['mean accessibility', '2*stddev of accessibility'], 
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        ax.set_xlim((1, self.nloci))
+        ax.set_title('Accesibility per particle')
+        plt.subplots_adjust(left=0.1, right=0.78)
+        if savefig:
+            tadbit_savefig(savefig)
+        elif not axe:
+            plt.show()
+            
 
     def interactions(self, models=None, cluster=None, cutoff=None,
                      steps=(1, 2, 3, 4, 5), axe=None, error=False,
@@ -2318,16 +2481,16 @@ class StructuralModels(object):
         form = '''
 {
 	"metadata" : {
-		"version"  : 1.0
+		"version"  : 1.0,
 		"type"     : "dataset",
                 "generator": "TADbit",
-                }
+                },
 	"object": {\n%(descr)s
 		   "uuid": "%(sha)s",
 		   "title": "%(title)s",
                    "datatype": "xyz",
                    "components": 3,
-                   "source": "local"
+                   "source": "local",
                    "dependencies": %(dep)s
                   },
         "models":
@@ -2341,22 +2504,24 @@ class StructuralModels(object):
         fil = {}
         fil['title']   = title or "Sample TADbit data"
         versions = get_dependencies_version(dico=True)
-        fil['dep'] = dict([(k.strip(), v.strip()) for k, v in versions.items()
-                           if k in ['  TADbit', 'IMP', 'MCL']])
+        fil['dep'] = str(dict([(k.strip(), v.strip()) for k, v in versions.items()
+                               if k in ['  TADbit', 'IMP', 'MCL']])).replace("'", '"')
         ukw = 'UNKNOWN'
-        # try:
         def tocamel(key):
             key = ''.join([(w[0].upper()+w[1:]) if i else w
                            for i, w in enumerate(key.split('_'))])
             key = ''.join([(w[0].upper()+w[1:]) if i else w
                            for i, w in enumerate(key.split(' '))])
             return key
-        fil['descr']   = ',\n'.join([
-            (' ' * 19) + '"%s" : %s' % (tocamel(k), ('"%s"' % (v))
-                                        if isinstance(v, str) else v)
-            for k, v in self.description.items()])
-        # except AttributeError:
-        #     fil['descr']   = '"description": "Just some models"'
+        try:
+            fil['descr']   = ',\n'.join([
+                (' ' * 19) + '"%s" : %s' % (tocamel(k), ('"%s"' % (v))
+                                            if not isinstance(v, int) else v)
+                for k, v in self.description.items()])
+            if fil['descr']:
+                fil['descr'] += ','
+        except AttributeError:
+            fil['descr']   = '"description": "Just some models"'
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
