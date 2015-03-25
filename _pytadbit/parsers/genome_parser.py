@@ -7,6 +7,7 @@ convert a bunch of fasta files, or a single multi fasta file, into a dictionary
 from collections import OrderedDict
 from pytadbit.parsers import magic_open
 
+
 def parse_fasta(f_names, chr_names=None, verbose=True):
     """
     Parse a list of fasta files, or just one fasta.
@@ -28,11 +29,11 @@ def parse_fasta(f_names, chr_names=None, verbose=True):
     genome_seq = OrderedDict()
     if len(f_names) == 1:
         header = None
-        seq = ''
+        seq = []
         for line in magic_open(f_names[0]):
             if line.startswith('>'):
                 if header:
-                    genome_seq[header] = seq
+                    genome_seq[header] = ''.join(seq).upper()
                 if not chr_names:
                     header = line[1:].split()[0]
                     if verbose:
@@ -40,11 +41,11 @@ def parse_fasta(f_names, chr_names=None, verbose=True):
                 else:
                     header = chr_names.pop(0)
                     if verbose:
-                        print 'Parsing %s as %s' % (line[1:].strip(), header)
-                seq = ''
+                        print 'Parsing %s as %s' % (line[1:].rstrip(), header)
+                seq = []
                 continue
-            seq += line.strip().upper()
-        genome_seq[header] = seq
+            seq.append(line.rstrip())
+        genome_seq[header] = ''.join(seq).upper()
     else:
         for fnam in f_names:
             fhandler = magic_open(fnam)
@@ -63,5 +64,5 @@ def parse_fasta(f_names, chr_names=None, verbose=True):
                         break
             except StopIteration:
                 raise Exception('No crocodiles found, is it fasta?')
-            genome_seq[header] = ''.join([l.strip() for l in fhandler]).upper()
+            genome_seq[header] = ''.join([l.rstrip() for l in fhandler]).upper()
     return genome_seq
