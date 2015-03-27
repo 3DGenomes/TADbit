@@ -398,6 +398,12 @@ class HiC_data(dict):
                       for j in xrange(len(self))
                       for i in xrange(len(self))])
 
+    def write_matrix(self, focus=None, diagonal=True, normalized=False):
+        """
+        writes the matrix
+        """
+        pass
+
     def get_matrix(self, focus=None, diagonal=True, normalized=False):
         """
         get the matrix
