@@ -62,7 +62,6 @@
 <span class="kn">from</span> <span class="nn">os.path</span>                       <span class="kn">import</span> <span class="n">exists</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="kn">as</span> <span class="nn">mu</span>
 
-
 <span class="kn">import</span> <span class="nn">IMP.core</span>
 <span class="kn">import</span> <span class="nn">IMP.algebra</span>
 <span class="kn">import</span> <span class="nn">IMP.display</span>
@@ -80,7 +79,7 @@
 
 <div class="viewcode-block" id="generate_3d_models"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.imp_modelling.generate_3d_models">[docs]</a><span class="k">def</span> <span class="nf">generate_3d_models</span><span class="p">(</span><span class="n">zscores</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
                        <span class="n">n_keep</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keep_all</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                       <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;dmel_01&#39;</span><span class="p">],</span>
+                       <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                        <span class="n">values</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                        <span class="n">first</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -117,7 +116,7 @@
 <span class="sd">       constraints will be printed only for the first model calculated.</span>
 <span class="sd">    :param None values: the normalized Hi-C data in a list of lists (equivalent </span>
 <span class="sd">       to a square matrix)</span>
-<span class="sd">    :param CONFIG[&#39;dmel_01&#39;] config: a dictionary containing the standard </span>
+<span class="sd">    :param None config: a dictionary containing the standard </span>
 <span class="sd">       parameters used to generate the models. The dictionary should contain</span>
 <span class="sd">       the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be</span>
 <span class="sd">       seen by doing:</span>
@@ -165,7 +164,8 @@
 
     <span class="c"># Main config parameters</span>
     <span class="k">global</span> <span class="n">CONFIG</span>
-    <span class="n">CONFIG</span> <span class="o">=</span> <span class="n">config</span>
+    <span class="n">CONFIG</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;dmel_01&#39;</span><span class="p">]</span>
+    <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;kforce&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;kforce&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
     
     <span class="c"># Particles initial radius</span>
     <span class="k">global</span> <span class="n">RADIUS</span>
@@ -174,12 +174,11 @@
     
 
     <span class="k">if</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowrdist&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;maxdist&#39;</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: we must prevent you from doing this for &#39;</span> <span class="o">+</span>
-                        <span class="s">&#39;the safe of our universe...</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span> 
-                        <span class="s">&#39;In this case, maxdist must be higher than </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                            <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowrdist&#39;</span><span class="p">])</span> <span class="o">+</span>
-                        <span class="s">&#39;   -&gt; resolution times scale -- </span><span class="si">%s</span><span class="s">*</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                            <span class="n">resolution</span><span class="p">,</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;scale&#39;</span><span class="p">]))</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="p">(</span><span class="s">&#39;ERROR: we must prevent you from doing this for the safe of our&#39;</span> <span class="o">+</span>
+             <span class="s">&#39;universe...</span><span class="se">\n</span><span class="s">In this case, maxdist must be higher than </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span>
+             <span class="s">&#39;   -&gt; resolution times scale -- </span><span class="si">%s</span><span class="s">*</span><span class="si">%s</span><span class="s">)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowrdist&#39;</span><span class="p">],</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;scale&#39;</span><span class="p">]))</span>
 
     <span class="c"># get SLOPE and regression for all particles of the z-score data</span>
     <span class="k">global</span> <span class="n">SLOPE</span><span class="p">,</span> <span class="n">INTERCEPT</span>
@@ -187,10 +186,8 @@
                 <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="c"># condition is to avoid</span>
                                              <span class="c"># taking into account selfies</span>
                                              <span class="c"># and neighbors</span>
-    <span class="n">zmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">zsc_vals</span><span class="p">)</span>
-    <span class="n">zmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">zsc_vals</span><span class="p">)</span>
-    <span class="n">SLOPE</span><span class="p">,</span> <span class="n">INTERCEPT</span>   <span class="o">=</span> <span class="n">polyfit</span><span class="p">([</span><span class="n">zmin</span><span class="p">,</span> <span class="n">zmax</span><span class="p">],</span> <span class="p">[</span><span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;maxdist&#39;</span><span class="p">],</span>
-                                                <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowrdist&#39;</span><span class="p">]],</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">SLOPE</span><span class="p">,</span> <span class="n">INTERCEPT</span>   <span class="o">=</span> <span class="n">polyfit</span><span class="p">([</span><span class="nb">min</span><span class="p">(</span><span class="n">zsc_vals</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">zsc_vals</span><span class="p">)],</span>
+                                 <span class="p">[</span><span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;maxdist&#39;</span><span class="p">],</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowrdist&#39;</span><span class="p">]],</span> <span class="mi">1</span><span class="p">)</span>
     <span class="c"># get SLOPE and regression for neighbors of the z-score data</span>
     <span class="k">global</span> <span class="n">NSLOPE</span><span class="p">,</span> <span class="n">NINTERCEPT</span>
     <span class="n">xarray</span> <span class="o">=</span> <span class="p">[</span><span class="n">zscores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">zscores</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">zscores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -198,23 +195,19 @@
     <span class="n">yarray</span> <span class="o">=</span> <span class="p">[</span><span class="n">RADIUS</span> <span class="o">*</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xarray</span><span class="p">))]</span>
     <span class="n">NSLOPE</span><span class="p">,</span> <span class="n">NINTERCEPT</span> <span class="o">=</span> <span class="n">polyfit</span><span class="p">(</span><span class="n">xarray</span><span class="p">,</span> <span class="n">yarray</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     
-    <span class="k">global</span> <span class="n">LOCI</span><span class="p">,</span> <span class="n">NLOCI</span>
+    <span class="k">global</span> <span class="n">LOCI</span>
     <span class="c"># if z-scores are generated outside TADbit they may not start at zero</span>
     <span class="k">if</span> <span class="n">first</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">first</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">zscores</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">zscores</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">+</span>
                     <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">zscores</span><span class="p">])</span>
-    
     <span class="n">LOCI</span>  <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">nloci</span> <span class="o">+</span> <span class="n">first</span><span class="p">)</span>
-    <span class="n">NLOCI</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)</span>
     
     <span class="c"># Z-scores</span>
     <span class="k">global</span> <span class="n">PDIST</span>
     <span class="n">PDIST</span> <span class="o">=</span> <span class="n">zscores</span>
-
     <span class="c"># random inital number</span>
     <span class="k">global</span> <span class="n">START</span>
     <span class="n">START</span> <span class="o">=</span> <span class="n">start</span>
-
     <span class="c"># verbose</span>
     <span class="k">global</span> <span class="n">VERBOSE</span>
     <span class="n">VERBOSE</span> <span class="o">=</span> <span class="n">verbose</span>
@@ -225,22 +218,25 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">xpr</span> <span class="o">=</span> <span class="n">experiment</span>
         <span class="n">crm</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">crm</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;identifier&#39;</span>        <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
+                       <span class="s">&#39;chromosome&#39;</span>        <span class="p">:</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;crm&#39;</span><span class="p">],</span>
+                       <span class="s">&#39;start&#39;</span>             <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">],</span>
+                       <span class="s">&#39;end&#39;</span>               <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">],</span>
+                       <span class="s">&#39;species&#39;</span>           <span class="p">:</span> <span class="n">crm</span><span class="o">.</span><span class="n">species</span><span class="p">,</span>
+                       <span class="s">&#39;restriction enzyme&#39;</span><span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">enzyme</span><span class="p">,</span>
+                       <span class="s">&#39;cell type&#39;</span>         <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">cell_type</span><span class="p">,</span>
+                       <span class="s">&#39;experiment type&#39;</span>   <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">exp_type</span><span class="p">,</span>
+                       <span class="s">&#39;resolution&#39;</span>        <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
+                       <span class="s">&#39;assembly&#39;</span>          <span class="p">:</span> <span class="n">crm</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+            <span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">crm</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+            <span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="o">+</span> <span class="n">bad_models</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
-            <span class="n">m</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;identifier&#39;</span>     <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
-                                <span class="s">&#39;chromosome&#39;</span>     <span class="p">:</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;crm&#39;</span><span class="p">],</span>
-                                <span class="s">&#39;start&#39;</span>          <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">],</span>
-                                <span class="s">&#39;end&#39;</span>            <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="n">coords</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">],</span>
-                                <span class="s">&#39;species&#39;</span>        <span class="p">:</span> <span class="n">crm</span><span class="o">.</span><span class="n">species</span><span class="p">,</span>
-                                <span class="s">&#39;cell type&#39;</span>      <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">cell_type</span><span class="p">,</span>
-                                <span class="s">&#39;experiment type&#39;</span><span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">exp_type</span><span class="p">,</span>
-                                <span class="s">&#39;resolution&#39;</span>     <span class="p">:</span> <span class="n">xpr</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span>
-                                <span class="s">&#39;assembly&#39;</span>       <span class="p">:</span> <span class="n">crm</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span>
-            <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
-                <span class="n">m</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">][</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">crm</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
-                <span class="n">m</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">][</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span>
             <span class="n">m</span><span class="p">[</span><span class="s">&#39;index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">m</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
     <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span> <span class="c"># case we are doing optimization</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="o">+</span> <span class="n">bad_models</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
             <span class="n">m</span><span class="p">[</span><span class="s">&#39;index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
     <span class="k">if</span> <span class="n">outfile</span><span class="p">:</span>
@@ -255,10 +251,48 @@
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">StructuralModels</span><span class="p">(</span>
-            <span class="n">NLOCI</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">bad_models</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">original_data</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
-            <span class="n">zscores</span><span class="o">=</span><span class="n">zscores</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="n">experiment</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="n">zeros</span><span class="p">)</span>
-
+            <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">),</span> <span class="n">models</span><span class="p">,</span> <span class="n">bad_models</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">original_data</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">zscores</span><span class="o">=</span><span class="n">zscores</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">CONFIG</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="n">experiment</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="n">zeros</span><span class="p">,</span>
+            <span class="n">restraints</span><span class="o">=</span><span class="n">_get_restraints</span><span class="p">(),</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
 </div>
+<span class="k">def</span> <span class="nf">_get_restraints</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Same function as addAllHarmonic but just to get restraints</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;rk&#39;</span>    <span class="p">:</span> <span class="n">IMP</span><span class="o">.</span><span class="n">FloatKey</span><span class="p">(</span><span class="s">&quot;radius&quot;</span><span class="p">),</span>
+             <span class="s">&#39;model&#39;</span> <span class="p">:</span> <span class="n">Model</span><span class="p">(),</span>
+             <span class="s">&#39;ps&#39;</span>    <span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+    <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ListSingletonContainer</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">create_xyzr_particles</span><span class="p">(</span>
+        <span class="n">model</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">),</span> <span class="n">RADIUS</span><span class="p">,</span> <span class="mi">100000</span><span class="p">))</span>
+    <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">LOCI</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="c">#p.set_value(model[&#39;rk&#39;], RADIUS)</span>
+    <span class="n">restraints</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)):</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)):</span>
+            <span class="n">p2</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+            <span class="n">typ</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">frc</span> <span class="o">=</span> <span class="n">addHarmonicPair</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">dry</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">VERBOSE</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">frc</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">typ</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;a&#39;</span><span class="p">:</span>
+                <span class="n">typ</span> <span class="o">=</span> <span class="s">&#39;H&#39;</span>
+            <span class="k">elif</span> <span class="n">typ</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;l&#39;</span><span class="p">:</span>
+                <span class="n">typ</span> <span class="o">=</span> <span class="s">&#39;L&#39;</span>
+            <span class="k">elif</span> <span class="n">typ</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;u&#39;</span><span class="p">:</span>
+                <span class="n">typ</span> <span class="o">=</span> <span class="s">&#39;U&#39;</span>
+            <span class="k">elif</span> <span class="n">typ</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;n&#39;</span><span class="p">:</span>
+                <span class="n">typ</span> <span class="o">=</span> <span class="s">&#39;C&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">restraints</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)))]</span> <span class="o">=</span> <span class="n">typ</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dist</span><span class="p">,</span> <span class="n">frc</span>
+    <span class="k">return</span> <span class="n">restraints</span>
+
 <span class="k">def</span> <span class="nf">multi_process_model_generation</span><span class="p">(</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">n_models</span><span class="p">,</span> <span class="n">n_keep</span><span class="p">,</span> <span class="n">keep_all</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parallelize the</span>
@@ -271,30 +305,16 @@
     <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">n_cpus</span><span class="p">)</span>
     <span class="n">jobs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">rand_init</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="n">n_models</span> <span class="o">+</span> <span class="n">START</span><span class="p">):</span>
-        <span class="n">jobs</span><span class="p">[</span><span class="n">rand_init</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_do_it</span><span class="p">,</span>
+        <span class="n">jobs</span><span class="p">[</span><span class="n">rand_init</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">generate_IMPmodel</span><span class="p">,</span>
                                            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rand_init</span><span class="p">,))</span>
 
     <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 
-
     <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">rand_init</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="n">n_models</span> <span class="o">+</span> <span class="n">START</span><span class="p">):</span>
         <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">rand_init</span><span class="p">,</span> <span class="n">jobs</span><span class="p">[</span><span class="n">rand_init</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>   
 
-    <span class="c"># results = []</span>
-    <span class="c"># n_forks = 4</span>
-    <span class="c"># for i in xrange(START, START + n_models, n_cpus * n_forks):</span>
-    <span class="c">#     # print i, range(i, min(START + n_models, i + n_cpus * n_forks))</span>
-    <span class="c">#     pool = mu.Pool(processes=n_cpus, maxtasksperchild=1)</span>
-    <span class="c">#     # need to use imap, otherwise memory collapses.</span>
-    <span class="c">#     # unorder, becasue it may be more efficient</span>
-    <span class="c">#     # chunksize default is 1, and again, the higher, the more efficient</span>
-    <span class="c">#     results.extend(pool.imap_unordered(generate_IMPmodel,</span>
-    <span class="c">#                                        xrange(i, min(START + n_models,</span>
-    <span class="c">#                                                      i + n_cpus * n_forks)),</span>
-    <span class="c">#                                        chunksize=1))</span>
-    <span class="c">#     pool.close()</span>
     <span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">bad_models</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
@@ -305,13 +325,6 @@
         <span class="nb">sorted</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s">&#39;objfun&#39;</span><span class="p">])[</span><span class="n">n_keep</span><span class="p">:]):</span>
             <span class="n">bad_models</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">n_keep</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
     <span class="k">return</span> <span class="n">models</span><span class="p">,</span> <span class="n">bad_models</span>
-
-
-<span class="k">def</span> <span class="nf">_do_it</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Workaround in order pass to the multiprocessing queue a pickable object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">generate_IMPmodel</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">generate_IMPmodel</span><span class="p">(</span><span class="n">rand_init</span><span class="p">):</span>
@@ -333,23 +346,20 @@
              <span class="s">&#39;ps&#39;</span>    <span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
              <span class="s">&#39;pps&#39;</span>   <span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ListSingletonContainer</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">create_xyzr_particles</span><span class="p">(</span>
-        <span class="n">model</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">],</span> <span class="n">NLOCI</span><span class="p">,</span> <span class="n">RADIUS</span><span class="p">,</span> <span class="mi">100000</span><span class="p">))</span>
+        <span class="n">model</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">),</span> <span class="n">RADIUS</span><span class="p">,</span> <span class="mi">100000</span><span class="p">))</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>
 
     <span class="c"># initialize each particles</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">NLOCI</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)):</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="n">p</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">LOCI</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-        <span class="c"># radius = diameter/2 (0.01/2)</span>
         <span class="c"># computed following the relationship with the 30nm vs 40nm fiber</span>
-        <span class="n">newrk</span> <span class="o">=</span> <span class="n">RADIUS</span>
-        <span class="n">p</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">],</span> <span class="n">newrk</span><span class="p">)</span>
+        <span class="c">#p.set_value(model[&#39;rk&#39;], RADIUS)</span>
 
     <span class="c"># Restraints between pairs of LOCI proportional to the PDIST</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="c"># model[&#39;pps&#39;]  = IMP.ParticlePairs() # this was used for IMP</span>
         <span class="c"># version: 847e65d44da7d06718bcad366b09264c818752d5</span>
-        <span class="n">model</span><span class="p">[</span><span class="s">&#39;pps&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePairs</span><span class="p">()</span> <span class="c"># this was used for IMP</span>
+        <span class="n">model</span><span class="p">[</span><span class="s">&#39;pps&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePairs</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
         <span class="n">model</span><span class="p">[</span><span class="s">&#39;pps&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">ParticlePairsTemp</span><span class="p">()</span>
 
@@ -357,7 +367,8 @@
     <span class="k">if</span> <span class="n">rand_init</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mf">0.5</span><span class="p">:</span>
         <span class="n">verbose</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;# Harmonic</span><span class="se">\t</span><span class="s">part1</span><span class="se">\t</span><span class="s">part2</span><span class="se">\t</span><span class="s">dist</span><span class="se">\t</span><span class="s">kforce</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
-    <span class="n">addAllHarmonics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="n">addAllHarmonics</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="c"># Setup an excluded volume restraint between a bunch of particles</span>
     <span class="c"># with radius</span>
@@ -402,10 +413,10 @@
     <span class="n">stopCount</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">endLoopValue</span> <span class="o">=</span> <span class="mf">0.00001</span>
     <span class="c"># alpha is a parameter that takes into account the number of particles in</span>
-    <span class="c"># the model (NLOCI).</span>
+    <span class="c"># the model (len(LOCI)).</span>
     <span class="c"># The multiplier (in this case is 1.0) is used to give a different weight</span>
     <span class="c"># to the number of particles</span>
-    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">NLOCI</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)</span>
     <span class="c"># During the firsts hightemp iterations, do not stop the optimization</span>
     <span class="n">hightemp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.025</span> <span class="o">*</span> <span class="n">NROUNDS</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">hightemp</span><span class="p">):</span>
@@ -441,13 +452,12 @@
     <span class="c">#&quot;&quot;&quot;simulated_annealing_full: preform simulated annealing for nrounds</span>
     <span class="c"># iterations&quot;&quot;&quot;</span>
     <span class="c"># # IMP.fivec.simulatedannealing.full_rounds(m, o, nrounds, steps)</span>
-    <span class="c"># alpha = 1.0 * NLOCI</span>
+    <span class="c"># alpha = 1.0 * len(LOCI)</span>
     <span class="c"># for i in range(0,nrounds):</span>
     <span class="c">#    temperature = alpha * (1.1 * nrounds - i) / nrounds</span>
     <span class="c">#    o.set_kt(temperature)</span>
     <span class="c">#    e = o.optimize(steps)</span>
     <span class="c">#    print str(i) + &quot; &quot; + str(e) + &quot; &quot; + str(o.get_kt())</span>
-    <span class="c"># Print the IMP score of the final model</span>
 
     <span class="n">log_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;=</span><span class="mi">1</span><span class="p">:</span>
@@ -476,26 +486,20 @@
     <span class="k">return</span> <span class="n">result</span> <span class="c"># rand_init, result</span>
 
 
-<span class="k">def</span> <span class="nf">addAllHarmonics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">addAllHarmonics</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Add harmonics to all pair of particles.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">NLOCI</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)):</span>
         <span class="n">p1</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
-        <span class="n">num_loci1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">NLOCI</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)):</span>
             <span class="n">p2</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
-            <span class="n">num_loci2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">addHarmonicPair</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
 
-            <span class="n">log</span> <span class="o">=</span> <span class="n">addHarmonicPair</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">num_loci1</span><span class="p">,</span> <span class="n">num_loci2</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
-                
 
-<span class="k">def</span> <span class="nf">addHarmonicPair</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">num_loci1</span><span class="p">,</span> <span class="n">num_loci2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">addHarmonicPair</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">dry</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    add harmonic to a given pair of particles</span>
 
@@ -509,202 +513,78 @@
 <span class="sd">    :param num_loci1: index of the first particle</span>
 <span class="sd">    :param num_loci2: index of the second particle</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_loci1</span><span class="p">,</span> <span class="n">num_loci2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
     <span class="n">seqdist</span> <span class="o">=</span> <span class="n">num_loci2</span> <span class="o">-</span> <span class="n">num_loci1</span>
-    <span class="n">log</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">restraint</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;no&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">)</span>
     <span class="c"># SHORT RANGE DISTANCE BETWEEN TWO CONSECUTIVE LOCI</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">seqdist</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="ow">and</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
-            <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
-            <span class="n">kforce1</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;kforce&#39;</span><span class="p">]</span>
-            <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicNeighborsRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">kforce1</span><span class="p">)</span>
-            <span class="c">#prin t&quot;harmo1\t%s\t%s\t%f\t%f&quot; % ( x, y, dist1, kforce1)</span>
+    <span class="k">if</span> <span class="n">seqdist</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">kforce</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;kforce&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="ow">and</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">and</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]:</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">distConseq12</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">()][</span><span class="n">p2</span><span class="o">.</span><span class="n">get_name</span><span class="p">()])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dry</span><span class="p">:</span>
+                <span class="n">addHarmonicNeighborsRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="s">&quot;addHn&quot;</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">kforce1</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;kforce&#39;</span><span class="p">]</span>
-            <span class="n">dist1</span> <span class="o">=</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">]))</span>
-            <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicUpperBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                   <span class="n">dist1</span><span class="p">,</span> <span class="n">kforce1</span><span class="p">)</span>
-            <span class="c">#print &quot;upper1\t%s\t%s\t%f\t%f&quot; % ( x, y, dist1, kforce1)</span>
-
-            <span class="c"># SHORT RANGE DISTANCE BETWEEN TWO SEQDIST = 2</span>
-    <span class="k">elif</span> <span class="p">(</span><span class="n">seqdist</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
-<span class="c">#        if (x in PDIST and y in PDIST[x] and float(PDIST[x][y]) &gt; CONFIG[&#39;upfreq&#39;]):</span>
-<span class="c">#            kforce2 = CONFIG[&#39;kforce&#39;]</span>
-<span class="c">#            log += addHarmonicNeighborsRestraints(model, p1, p2, kforce2)</span>
-<span class="c">#        else:</span>
-<span class="c">#            p3 = model[&#39;ps&#39;].get_particle(j-1)</span>
-<span class="c">#            kforce2 = CONFIG[&#39;kforce&#39;]</span>
-<span class="c">#            dist2 = (p1.get_value(model[&#39;rk&#39;]) + p2.get_value(model[&#39;rk&#39;])</span>
-<span class="c">#                    + 2.0 * p3.get_value(model[&#39;rk&#39;]))</span>
-<span class="c">#            log += addHarmonicUpperBoundRestraints(model, p1, p2,</span>
-<span class="c">#                                                   dist2, kforce2)</span>
-<span class="c">#            #print &quot;upper2\t%s\t%s\t%f\t%f&quot; % ( x, y, dist2, kforce2)</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">]))</span>
+            <span class="c"># dist = (p1.get_value(rk) + p2.get_value(rk))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dry</span><span class="p">:</span>
+                <span class="n">addHarmonicUpperBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="s">&quot;addHu&quot;</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
+    <span class="c"># SHORT RANGE DISTANCE BETWEEN TWO SEQDIST = 2</span>
+    <span class="k">elif</span> <span class="n">seqdist</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">p3</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">kforce2</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;kforce&#39;</span><span class="p">]</span>
-        <span class="n">dist2</span> <span class="o">=</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">])</span>
+        <span class="n">kforce</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;kforce&#39;</span><span class="p">]</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">])</span>
                 <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">p3</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;rk&#39;</span><span class="p">]))</span>
-        <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicUpperBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                               <span class="n">dist2</span><span class="p">,</span> <span class="n">kforce2</span><span class="p">)</span>
-        <span class="c">#print &quot;upper2\t%s\t%s\t%f\t%f&quot; % ( x, y, dist2, kforce2)</span>
-
-    <span class="k">else</span><span class="p">:</span>
-
-        <span class="c"># LONG RANGE DISTANCE DISTANCE BETWEEN TWO NON-CONSECUTIVE LOCI</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="ow">and</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]):</span>
-            <span class="c"># FREQUENCY &gt; UPFREQ</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
-                <span class="n">kforce3</span> <span class="o">=</span> <span class="n">kForce</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]))</span>
-                <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                             <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]),</span> <span class="n">kforce3</span><span class="p">)</span>
-                <span class="c">#print &quot;harmo3\t%s\t%s\t%f\t%f&quot; % ( x, y, dist3, kforce3)</span>
-            <span class="c"># FREQUENCY &gt; LOW THIS HAS TO BE THE THRESHOLD FOR</span>
-            <span class="c"># &quot;PHYSICAL INTERACTIONS&quot;</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowfreq&#39;</span><span class="p">]):</span>
-                <span class="n">kforce3</span> <span class="o">=</span> <span class="n">kForce</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]))</span>
-                <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                       <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]),</span>
-                                                       <span class="n">kforce3</span><span class="p">)</span>
-           <span class="c">#print &quot;lower3\t%s\t%s\t%f\t%f&quot; % ( x, y, dist3, kforce3)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">log</span>
-
-        <span class="c"># X IN PDIST BY Y NOT IN PDIST[X]</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">):</span> <span class="c"># and y not in PDIST[x]):</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">num_loci2</span> <span class="o">&gt;</span> <span class="n">num_loci1</span><span class="p">):</span>
-                <span class="n">prev_num</span> <span class="o">=</span> <span class="n">num_loci2</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="n">pnext_num</span> <span class="o">=</span> <span class="n">num_loci2</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">prev_num</span> <span class="o">=</span> <span class="n">num_loci1</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="n">pnext_num</span> <span class="o">=</span> <span class="n">num_loci1</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="n">prev</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">prev_num</span><span class="p">)</span>
-            <span class="n">pnext</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pnext_num</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="p">(</span><span class="n">prev</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">and</span> <span class="n">pnext</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]):</span>
-                <span class="n">virt_freq</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">prev</span><span class="p">])</span> <span class="o">+</span>
-                             <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">pnext</span><span class="p">]))</span> <span class="o">/</span> <span class="mf">2.0</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                 <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;harmo4\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">elif</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&lt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                           <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;lower4\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">log</span>
-
-            <span class="k">elif</span> <span class="p">(</span><span class="n">pnext</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]):</span>
-                <span class="n">virt_freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">pnext</span><span class="p">])</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                 <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;harmo5\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">elif</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&lt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                           <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;lower5\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">log</span>
-
-            <span class="k">elif</span> <span class="p">(</span><span class="n">prev</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]):</span>
-                <span class="n">virt_freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">prev</span><span class="p">])</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                 <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;harmo6\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">elif</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&lt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                           <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;lower6\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">log</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">log</span>
-
-        <span class="c"># MISSING DATA (X)</span>
+        <span class="c"># dist = (p1.get_value(rk) + p2.get_value(rk))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dry</span><span class="p">:</span>
+            <span class="n">addHarmonicUpperBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">num_loci2</span> <span class="o">&gt;</span> <span class="n">num_loci1</span><span class="p">):</span>
-                <span class="n">xprev_num</span> <span class="o">=</span> <span class="n">num_loci1</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="n">xpnext_num</span> <span class="o">=</span> <span class="n">num_loci1</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="n">prev_num</span> <span class="o">=</span> <span class="n">num_loci2</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="n">pnext_num</span> <span class="o">=</span> <span class="n">num_loci2</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">xprev_num</span> <span class="o">=</span> <span class="n">num_loci2</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="n">xpnext_num</span> <span class="o">=</span> <span class="n">num_loci2</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="n">prev_num</span> <span class="o">=</span> <span class="n">num_loci1</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="n">pnext_num</span> <span class="o">=</span> <span class="n">num_loci1</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="n">xprev</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">xprev_num</span><span class="p">)</span>
-            <span class="n">xpnext</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">xpnext_num</span><span class="p">)</span>
-            <span class="n">prev</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">prev_num</span><span class="p">)</span>
-            <span class="n">pnext</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pnext_num</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s">&quot;addHu&quot;</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
+    <span class="c"># LONG RANGE DISTANCE DISTANCE BETWEEN TWO NON-CONSECUTIVE LOCI</span>
+    <span class="k">elif</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="ow">and</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]:</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]</span>
+        <span class="n">kforce</span> <span class="o">=</span> <span class="n">kForce</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+    <span class="c"># X IN PDIST BUT Y NOT IN PDIST[X]</span>
+    <span class="k">elif</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">:</span>
+        <span class="n">prevy</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_loci2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">posty</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_loci2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c"># mean dist to prev and next part are used with half weight</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prevy</span><span class="p">,</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">posty</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">)))</span> <span class="o">+</span>
+                <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">posty</span><span class="p">,</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prevy</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">))))</span> <span class="o">/</span> <span class="mi">2</span>
 
-            <span class="c"># CASE 1</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">xprev</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="ow">and</span> <span class="n">xpnext</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">):</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">xprev</span><span class="p">]</span> <span class="ow">and</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">xpnext</span><span class="p">]):</span>
-                    <span class="n">virt_freq</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">xprev</span><span class="p">][</span><span class="n">y</span><span class="p">])</span> <span class="o">+</span>
-                                 <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">xpnext</span><span class="p">][</span><span class="n">y</span><span class="p">])</span> <span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="p">(</span><span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">xprev</span><span class="p">]):</span>
-                    <span class="n">virt_freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">xprev</span><span class="p">][</span><span class="n">y</span><span class="p">])</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="p">(</span><span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">xpnext</span><span class="p">]):</span>
-                    <span class="n">virt_freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">xpnext</span><span class="p">][</span><span class="n">y</span><span class="p">])</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">log</span>
+        <span class="n">kforce</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+    <span class="c"># X NOT IN PDIST</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">prevx</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_loci1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">postx</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_loci1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">prevx</span> <span class="o">=</span> <span class="n">prevx</span> <span class="k">if</span> <span class="n">prevx</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="k">else</span> <span class="n">postx</span>
+        <span class="n">postx</span> <span class="o">=</span> <span class="n">postx</span> <span class="k">if</span> <span class="n">postx</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="k">else</span> <span class="n">prevx</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">prevx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">postx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">)))</span> <span class="o">+</span>
+                    <span class="n">PDIST</span><span class="p">[</span><span class="n">postx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">prevx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">))))</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">kforce</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                 <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&lt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                           <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;lower7\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">log</span>
-
-            <span class="c"># CASE 2</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">xprev</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="ow">and</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">xprev</span><span class="p">]):</span>
-                <span class="n">virt_freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">xprev</span><span class="p">][</span><span class="n">y</span><span class="p">])</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                 <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;harmo8\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">elif</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&lt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                           <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;lower8\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">log</span>
-
-            <span class="c"># CASE 3</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">xpnext</span> <span class="ow">in</span> <span class="n">PDIST</span> <span class="ow">and</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">PDIST</span><span class="p">[</span><span class="n">xpnext</span><span class="p">]):</span>
-                <span class="n">virt_freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">xpnext</span><span class="p">][</span><span class="n">y</span><span class="p">])</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                 <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;harmo9\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">elif</span> <span class="p">(</span><span class="n">virt_freq</span> <span class="o">&lt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowfreq&#39;</span><span class="p">]):</span>
-                    <span class="n">kforce4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">kForce</span><span class="p">(</span><span class="n">virt_freq</span><span class="p">)</span>
-                    <span class="n">log</span> <span class="o">+=</span> <span class="n">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>
-                                                           <span class="n">virt_freq</span><span class="p">,</span> <span class="n">kforce4</span><span class="p">)</span>
-                    <span class="c">#print &quot;lower9\t%s\t%s\t%f\t%f&quot; % ( x, y, dist4, kforce4)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">log</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">log</span>
-    <span class="k">return</span> <span class="n">log</span>
-
+    <span class="c"># FREQUENCY &gt; UPFREQ</span>
+    <span class="k">if</span> <span class="n">freq</span> <span class="o">&gt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;upfreq&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dry</span><span class="p">:</span>
+            <span class="n">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">distance</span><span class="p">(</span><span class="n">freq</span><span class="p">),</span> <span class="n">kforce</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s">&quot;addHa&quot;</span><span class="p">,</span> <span class="n">distance</span><span class="p">(</span><span class="n">freq</span><span class="p">),</span> <span class="n">kforce</span><span class="p">)</span>
+    <span class="c"># FREQUENCY &gt; LOW THIS HAS TO BE THE THRESHOLD FOR</span>
+    <span class="c"># &quot;PHYSICAL INTERACTIONS&quot;</span>
+    <span class="k">elif</span> <span class="n">freq</span> <span class="o">&lt;</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s">&#39;lowfreq&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dry</span><span class="p">:</span>
+            <span class="n">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">distance</span><span class="p">(</span><span class="n">freq</span><span class="p">),</span> <span class="n">kforce</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s">&quot;addHl&quot;</span><span class="p">,</span> <span class="n">distance</span><span class="p">(</span><span class="n">freq</span><span class="p">),</span> <span class="n">kforce</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dry</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">restraint</span>
 
 <span class="k">def</span> <span class="nf">distConseq12</span><span class="p">(</span><span class="n">freq</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -712,53 +592,37 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">NSLOPE</span> <span class="o">*</span> <span class="n">freq</span><span class="p">)</span> <span class="o">+</span> <span class="n">NINTERCEPT</span>
 
-
 <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="n">freq</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Function mapping the Z-scores into distances for non-neighbor fragments</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">SLOPE</span> <span class="o">*</span> <span class="n">freq</span><span class="p">)</span> <span class="o">+</span> <span class="n">INTERCEPT</span>
 
-
-<span class="k">def</span> <span class="nf">addHarmonicNeighborsRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
-    <span class="n">dist</span> <span class="o">=</span> <span class="n">distConseq12</span><span class="p">(</span><span class="n">PDIST</span><span class="p">[</span><span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">()][</span><span class="n">p2</span><span class="o">.</span><span class="n">get_name</span><span class="p">()])</span>
+<span class="k">def</span> <span class="nf">addHarmonicNeighborsRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s">&quot;addHn</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span>
-                                        <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
-
 
 <span class="k">def</span> <span class="nf">addHarmonicUpperBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
-    <span class="c">#dist = (p1.get_value(rk) + p2.get_value(rk))</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicUpperBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span>
                                     <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s">&quot;addHu</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span>
-                                        <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
-    <span class="n">dist</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s">&quot;addHa</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span>
-                                        <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
-    <span class="n">dist</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicLowerBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span>
                                     <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s">&quot;addHl</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">p2</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span>
-                                        <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">kForce</span><span class="p">(</span><span class="n">freq</span><span class="p">):</span>
@@ -815,7 +679,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -128,10 +128,10 @@ further steps.</p>
 <div class="section" id="data-normalization">
 <h2>Data normalization<a class="headerlink" href="#data-normalization" title="Permalink to this headline">¶</a></h2>
 <p>Hi-C data stored in <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment" title="pytadbit.experiment.Experiment"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.experiment.Experiment</span></tt></a> might be normalized in order to be used by IMP.
-This normalization is achieve in two steps, first we generate weight for each pair of interactions, depending on the interaction count in the corresponding row/column, second we calculate the <a class="reference external" href="http://en.wikipedia.org/wiki/Standard_score#Calculation_from_raw_score">z-score</a> of each of these interaction pairs.</p>
-<div class="section" id="calculation-of-weights">
-<h3>Calculation of weights<a class="headerlink" href="#calculation-of-weights" title="Permalink to this headline">¶</a></h3>
-<p>Weights are calculated according to this formula (see <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic" title="pytadbit.experiment.Experiment.normalize_hic"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.normalize_hic()</span></tt></a>):</p>
+This normalization is achieve in two steps, first we generate weight for each pair of interactions, depending on the interaction count in the corresponding row/column, second we calculate the <a class="reference external" href="http://en.wikipedia.org/wiki/Standard_score#Calculation_from_raw_score">z-score</a> of each of these interaction pairs.
+Calculation of weights
+~~~~~~~~~~~~~~~~~~~~~~
+Weights are calculated according to this formula (see <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment.normalize_hic" title="pytadbit.experiment.Experiment.normalize_hic"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.normalize_hic()</span></tt></a>):</p>
 <div class="math">
 \[weight(I, J) = \frac{\sum^N_{i=0}{\sum^N_{j=0}{(matrix(i, j))}}}{\sum^N_{i=0}{(matrix(i, J))} \times \sum^N_{j=0}{(matrix(I, j))}}\]</div>
 <p>&#8220;matrix&#8221;, being our row data (count of interactions), N the number of rows/columns.</p>
@@ -145,18 +145,16 @@ This normalization is achieve in two steps, first we generate weight for each pa
 <p class="first admonition-title">Note</p>
 <p class="last">When modelling a portion of a chromosome values used are taken from the normalization of the whole chromosome, <strong>no local normalization is done</strong>.</p>
 </div>
-</div>
 <div class="section" id="calculation-of-the-z-score">
 <h3>Calculation of the z-score<a class="headerlink" href="#calculation-of-the-z-score" title="Permalink to this headline">¶</a></h3>
 <p>Z-scores are computed according to classical formula (<span class="math">\(\frac{x-\mu}{\sigma}\)</span>), over the decimal logarithm values of the normalized data (see above). Ending in this formula:</p>
 <div class="math">
 \[zscore(I, J) = \frac{log_{10}(weight(I, J) \times matrix(I, J)) - mean(log_{10}(weight \times matrix))}{stddev(log_{10}(weight \times matrix))}\]</div>
-<p><strong>Important: values on the diagonal are not taken into account for this calculus.</strong></p>
-<div class="section" id="dealing-with-zeros">
-<h4>Dealing with zeros<a class="headerlink" href="#dealing-with-zeros" title="Permalink to this headline">¶</a></h4>
-<p>A zero in an Hi-C interaction matrix, means that the given two fragments of DNA were never found close enough to be crosslinked together. However such values are also highly suspicious to be artifacts.</p>
+<p><strong>Important: values on the diagonal are not taken into account for this calculus.</strong>
+Dealing with zeros
+^^^^^^^^^^^^^^^^^^
+A zero in an Hi-C interaction matrix, means that the given two fragments of DNA were never found close enough to be crosslinked together. However such values are also highly suspicious to be artifacts.</p>
 <p>Right now we assume that <span class="math">\(log_{10}(0) = 0\)</span>, in the calculation of the mean and stddev, and equal to -1 in the calculation of the z-score itself.</p>
-</div>
 </div>
 </div>
 </div>
@@ -174,6 +172,7 @@ This normalization is achieve in two steps, first we generate weight for each pa
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="">Hi-C data processing</a></li>
@@ -229,7 +228,7 @@ This normalization is achieve in two steps, first we generate weight for each pa
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

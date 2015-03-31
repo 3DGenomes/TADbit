@@ -59,50 +59,102 @@
 <p class="topic-title first">Contents</p>
 <ul class="simple">
 <li><a class="reference internal" href="#alignment-of-tad-boundaries" id="id2">Alignment of TAD boundaries</a><ul>
-<li><a class="reference internal" href="#aligning-boundaries" id="id3">Aligning boundaries</a><ul>
-<li><a class="reference internal" href="#check-alignment-consistency-through-randomization" id="id4">Check alignment consistency through randomization</a></li>
+<li><a class="reference internal" href="#check-alignment-consistency-through-randomization" id="id3">Check alignment consistency through randomization</a><ul>
+<li><a class="reference internal" href="#alignment-objects" id="id4">Alignment objects</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#alignment-objects" id="id5">Alignment objects</a><ul>
-<li><a class="reference internal" href="#visualization" id="id6">Visualization</a></li>
-<li><a class="reference internal" href="#the-get-column-function" id="id7">The get_column function</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#visualization" id="id5">Visualization</a></li>
+<li><a class="reference internal" href="#the-get-column-function" id="id6">The get_column function</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <p>TADbit allows to use the information from different Hi-C experiments and to put it together in order to
 decide whether some TAD boundaries are conserved or not.</p>
-<p>Following with the example in the previous section (<a class="reference internal" href="tutorial_1_general.html#getting-start"><em>Getting started</em></a>), we will load one extra experiment
-(from the same works of <a class="reference internal" href="../biblio.html#lieberman-aiden2009" id="id1">[Lieberman-Aiden2009]</a>):</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">Chromosome</span>
-
-<span class="c"># initiate a chromosome object that will store all Hi-C data and analysis</span>
-<span class="n">my_chrom</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;My fisrt chromosome&#39;</span><span class="p">,</span> <span class="n">centromere_search</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-<span class="c"># load Hi-C data</span>
-<span class="n">my_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s">&#39;First Hi-C experiment&#39;</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="s">&quot;../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt&quot;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
-<span class="n">my_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s">&#39;Second Hi-C experiment&#39;</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="s">&quot;../../scripts/sample_data/HIC_gm06690_chr19_chr19_100000_obs.txt&quot;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
-
-<span class="c"># run core tadbit function to find TADs, on each experiment</span>
-<span class="n">my_chrom</span><span class="o">.</span><span class="n">find_tad</span><span class="p">(</span><span class="s">&#39;First Hi-C experiment&#39;</span><span class="p">)</span>
-<span class="n">my_chrom</span><span class="o">.</span><span class="n">find_tad</span><span class="p">(</span><span class="s">&#39;Second Hi-C experiment&#39;</span><span class="p">)</span>
-
-<span class="k">print</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span>
-</pre></div>
-</div>
+<p>Following with the example in the previous section (<em class="xref std std-ref">getting_start</em>), we will load one extra experiment
+(from the same works of <a class="reference internal" href="../biblio.html#lieberman-aiden2009" id="id1">[Lieberman-Aiden2009]</a>):
+.. code:: python</p>
+<blockquote>
+<div><p>from pytadbit import Chromosome</p>
+<p># initiate a chromosome object that will store all Hi-C data and analysis
+my_chrom = Chromosome(name=&#8217;My fisrt chromosome&#8217;, centromere_search=True)</p>
+<p># load Hi-C data
+my_chrom.add_experiment(&#8216;First Hi-C experiment&#8217;, hic_data=&#8221;../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt&#8221;, resolution=100000)
+my_chrom.add_experiment(&#8216;Second Hi-C experiment&#8217;, hic_data=&#8221;../../scripts/sample_data/HIC_gm06690_chr19_chr19_100000_obs.txt&#8221;, resolution=100000)</p>
+<p># Filter and normalize Hi-C matrices
+my_chrom.experiments[&#8216;First Hi-C experiment&#8217;].filter_columns()
+my_chrom.experiments[&#8216;Second Hi-C experiment&#8217;].filter_columns()
+my_chrom.experiments[&#8216;First Hi-C experiment&#8217;].normalize_hic(iterations=30, max_dev=0.1)
+my_chrom.experiments[&#8216;Second Hi-C experiment&#8217;].normalize_hic(iterations=30, max_dev=0.1)</p>
+<p># run core tadbit function to find TADs, on each experiment
+my_chrom.find_tad(&#8216;First Hi-C experiment&#8217;, ncpus=4)
+my_chrom.find_tad(&#8216;Second Hi-C experiment&#8217;, ncpus=4)</p>
+<p>print my_chrom.experiments</p>
+</div></blockquote>
 <pre class="ansi-block literal-block">
-[Experiment First Hi-C experiment (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: visibility), Experiment Second Hi-C experiment (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility)]
-</pre>
-<pre class="ansi-block literal-block">
-/usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
+/usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:98: UserWarning: WARNING: non integer values
   warn('WARNING: non integer values')
+/usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:148: ComplexWarning: Casting complex values to real discards the imaginary part
+  round(root, 3), ' '.join(
+
+WARNING: removing columns having less than 46.314 counts:
+   245   246   247   248   249   250   251   252   253   254   255   256   257   258   259   260   261   262   263   264
+   265   266   267   268   269   270   271   272   273   274   275   276   277   278   279   280   281   282   283   284
+   285   286   287   288   289   290   291   292   293   294   295   296   297   298   299   300   301   302   303   304
+   305   306   307   308   309   310   311   312   313   314   315   316   317   318   319   320   321   322   323   324
+   639
+
+WARNING: removing columns having less than 76.97 counts:
+   246   247   248   249   250   251   252   253   254   255   256   257   258   259   260   261   262   263   264   265
+   266   267   268   269   270   271   272   273   274   275   276   277   278   279   280   281   282   283   284   285
+   286   287   288   289   290   291   292   293   294   295   296   297   298   299   300   301   302   303   304   305
+   306   307   308   309   310   311   312   313   314   315   316   317   318   319   320   321   322   323   324   639
 </pre>
-<p>We now have loaded two Hi-C experiments, both at 100 Kb resolution, and have predicted the location of TADs in each of them (42 TADs detected in the first experiment and 31 in the second).</p>
-<div class="section" id="aligning-boundaries">
-<h2><a class="toc-backref" href="#id3">Aligning boundaries</a><a class="headerlink" href="#aligning-boundaries" title="Permalink to this headline">¶</a></h2>
-<p>To align TAD boundaries several algorithms have been implemented
+<pre class="ansi-block literal-block">
+iterative correction
+            49.000         341.532        1342.000    0   2.92935
+           139.270         402.232        1851.850    1   3.60393
+           106.547         446.349         823.188    2   0.84427
+           291.427         478.358        1558.017    3   2.25701
+           170.153         505.116         692.435    4   0.66314
+           388.071         526.012        1311.444    5   1.49318
+           235.726         543.686         688.292    6   0.56643
+           442.199         557.807        1137.874    7   1.03991
+           295.885         569.706         689.294    8   0.48064
+           480.023         579.308        1020.535    9   0.76165
+           350.139         587.353         687.806   10   0.40387
+           508.486         593.878         930.721   11   0.56719
+           398.234         599.321         684.504   12   0.33552
+           531.296         603.750         862.416   13   0.42843
+           439.558         607.430         678.216   14   0.27637
+           549.819         610.433         810.355   15   0.32751
+           474.266         612.921         671.209   16   0.22622
+           564.630         614.955         770.461   17   0.25287
+           502.952         616.638         664.452   18   0.18437
+           576.402         618.015         739.694   19   0.19689
+           526.394         619.153         658.326   20   0.14982
+           585.751         620.086         715.815   21   0.15438
+           545.408         620.855         652.947   22   0.12152
+           593.187         621.487         697.170   23   0.12178
+           560.754         622.007         648.310   24   0.09848
+iterative correction
+           145.000         980.181        2207.000    0   1.25163
+           608.654        1002.177        2710.006    1   1.70412
+           498.304        1010.461        1323.625    2   0.50685
+           865.363        1013.794        1629.838    3   0.60766
+           729.059        1015.556        1108.639    4   0.28211
+           966.332        1016.460        1272.554    5   0.25195
+           870.542        1016.979        1047.025    6   0.14399
+           994.846        1017.278        1131.194    7   0.11198
+           945.435        1017.459        1034.748    8   0.07079
+[3.0, 6.0, 3.0, 4.0, 3.0, 5.0, 8.0, 3.0, 5.0, 3.0, 7.0, 9.0, 5.0, 5.0, 8.0, 7.0, 5.0, 7.0, 4.0, 8.0, 8.0, 7.0, 3.0, 4.0, 7.0, 8.0, 5.0, 4.0, 8.0, 7.0, 6.0, 4.0, 5.0, 7.0, 2.0, 2.0, 3.0, 3.0, 8.0, 3.0, 6.0, 6.0, 2.0, 9.0, 4.0, 3.0, 6.0, 4.0, 6.0, 4.0, 5.0, 3.0, 5.0, 7.0, 7.0, 4.0, 3.0, 4.0, 5.0, 5.0, 3.0]
+[6.0, 4.0, 4.0, 3.0, 8.0, 4.0, 3.0, 3.0, 10.0, 3.0, 4.0, 4.0, 4.0, 6.0, 4.0, 3.0, 3.0, 4.0, 4.0, 4.0, 7.0, 3.0, 5.0, 2.0, 9.0, 4.0, 2.0, 3.0, 10.0, 8.0, 6.0, 6.0, 5.0, 2.0, 2.0, 2.0, 8.0, 5.0, 4.0, 5.0, 5.0, 5.0, 3.0, 2.0, 5.0, 2.0, 10.0, 7.0, 5.0, 3.0, 4.0, 5.0, 8.0, 1.0, 7.0, 3.0]
+[Experiment First Hi-C experiment (resolution: 100Kb, TADs: 63, Hi-C rows: 639, normalized: visibility_factor:1), Experiment Second Hi-C experiment (resolution: 100Kb, TADs: 58, Hi-C rows: 639, normalized: visibility_factor:1)]
+</pre>
+<p>We now have loaded two Hi-C experiments, both at 100 Kb resolution, and have predicted the location of TADs in each of them (42 TADs detected in the first experiment and 31 in the second).
+Aligning boundaries
+&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;-
+To align TAD boundaries several algorithms have been implemented
 (see <a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.align_experiments" title="pytadbit.chromosome.Chromosome.align_experiments"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.align_experiments()</span></tt></a>); our recommendation, however, is to use
 the default &#8220;reciprocal&#8221; method (<a class="reference internal" href="../reference/reference_aligner.html#pytadbit.boundary_aligner.reciprocally.reciprocal" title="pytadbit.boundary_aligner.reciprocally.reciprocal"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.boundary_aligner.reciprocally.reciprocal()</span></tt></a>).</p>
 <p><em>Note: If the align_experiments function is run with no argument, by default all the loaded experiments will be aligned.</em></p>
@@ -113,60 +165,71 @@ the default &#8220;reciprocal&#8221; method (<a class="reference internal" href=
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-{('First Hi-C experiment', 'Second Hi-C experiment'): Alignment of boundaries (length: 56, number of experiments: 2)}
+{('First Hi-C experiment', 'Second Hi-C experiment'): Alignment of boundaries (length: 95, number of experiments: 2)}
 </pre>
 <p>All the alignments done between the experiments belonging to the same chromosome are stored under the
 alignment dictionary attached to the Chromosome object. Each alignment is an object itself
 (see <a class="reference internal" href="../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment" title="pytadbit.alignment.Alignment"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.alignment.Alignment</span></tt></a>)</p>
 <div class="section" id="check-alignment-consistency-through-randomization">
-<h3><a class="toc-backref" href="#id4">Check alignment consistency through randomization</a><a class="headerlink" href="#check-alignment-consistency-through-randomization" title="Permalink to this headline">¶</a></h3>
-<p>In order to check that the alignment makes sense and that it does not correspond to a random association of boundaries, the “randomize” parameter can be set to True when aligning:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">score</span><span class="p">,</span> <span class="n">pval</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">align_experiments</span><span class="p">(</span><span class="n">randomize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">rnd_method</span><span class="o">=</span><span class="s">&quot;interpolate&quot;</span><span class="p">,</span>
-                                         <span class="n">rnd_num</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-
-<span class="k">print</span> <span class="s">&#39;score:&#39;</span><span class="p">,</span> <span class="n">score</span>
-<span class="k">print</span> <span class="s">&#39;p-value:&#39;</span><span class="p">,</span> <span class="n">pval</span>
-</pre></div>
-</div>
+<h2><a class="toc-backref" href="#id3">Check alignment consistency through randomization</a><a class="headerlink" href="#check-alignment-consistency-through-randomization" title="Permalink to this headline">¶</a></h2>
+<p>In order to check that the alignment makes sense and that it does not correspond to a random association of boundaries, the “randomize” parameter can be set to True when aligning:
+.. code:: python</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>score, pval = my_chrom.align_experiments(randomize=True, rnd_method=&#8221;interpolate&#8221;,</dt>
+<dd>rnd_num=100)</dd>
+</dl>
+<p>print &#8216;score:&#8217;, score
+print &#8216;p-value:&#8217;, pval</p>
+</div></blockquote>
 <pre class="ansi-block literal-block">
-score: 0.223214285714
+score: 0.2
 p-value: 0.0
 </pre>
-</div>
-</div>
 <div class="section" id="alignment-objects">
-<h2><a class="toc-backref" href="#id5">Alignment objects</a><a class="headerlink" href="#alignment-objects" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="visualization">
-<h3><a class="toc-backref" href="#id6">Visualization</a><a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h3>
-<p>The first function to call to check the quality of the generated alignments is the
-<a class="reference internal" href="../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment.write_alignment" title="pytadbit.alignment.Alignment.write_alignment"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.alignment.Alignment.write_alignment()</span></tt></a>:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ali</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">alignment</span><span class="p">[(</span><span class="s">&#39;First Hi-C experiment&#39;</span><span class="p">,</span> <span class="s">&#39;Second Hi-C experiment&#39;</span><span class="p">)]</span>
-
-<span class="k">print</span> <span class="n">ali</span>
-</pre></div>
+<h3><a class="toc-backref" href="#id4">Alignment objects</a><a class="headerlink" href="#alignment-objects" title="Permalink to this headline">¶</a></h3>
 </div>
+</div>
+<div class="section" id="visualization">
+<h2><a class="toc-backref" href="#id5">Visualization</a><a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h2>
+<p>The first function to call to check the quality of the generated alignments is the
+<a class="reference internal" href="../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment.write_alignment" title="pytadbit.alignment.Alignment.write_alignment"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.alignment.Alignment.write_alignment()</span></tt></a>:
+.. code:: python</p>
+<blockquote>
+<div><p>ali = my_chrom.alignment[(&#8216;First Hi-C experiment&#8217;, &#8216;Second Hi-C experiment&#8217;)]</p>
+<p>print ali</p>
+</div></blockquote>
 <pre class="ansi-block literal-block">
 Alignment shown in 100 Kb (2 experiments) (scores: <span class="ansi-blue">0</span> <span class="ansi-blue">1</span> <span class="ansi-blue">2</span> <span class="ansi-cyan">3</span> 4 <span class="ansi-bold">5</span> <span class="ansi-yellow">6</span> <span class="ansi-yellow">7</span> <span class="ansi-magenta">8</span> <span class="ansi-magenta">9</span> <span class="ansi-red">10</span>)
- First Hi-C experiment:|     <span class="ansi-blue">6</span>|     <span class="ansi-blue">6</span>| ---- |    <span class="ansi-blue">12</span>| ---- | ---- |    <span class="ansi-yellow">32</span>| ---- |    <span class="ansi-bold">46</span>|    <span class="ansi-bold">57</span>|    <span class="ansi-yellow">70</span>| ---- |    <span class="ansi-cyan">83</span>| ---- | ---- |   104|   <span class="ansi-yellow">109</span>| ---- | ---- |   <span class="ansi-yellow">129</span>| ---- | ---- | ---- |   <span class="ansi-yellow">184</span>|   195|   237|   <span class="ansi-bold">245</span>|   330|   348|   <span class="ansi-blue">353</span>| ---- |   <span class="ansi-magenta">378</span>|   <span class="ansi-cyan">384</span>| ---- |   <span class="ansi-yellow">400</span>| ---- |   <span class="ansi-magenta">413</span>| ---- |   <span class="ansi-cyan">433</span>|   <span class="ansi-yellow">446</span>|   472|   <span class="ansi-bold">478</span>|   <span class="ansi-yellow">486</span>| ---- |   <span class="ansi-cyan">501</span>|   <span class="ansi-yellow">506</span>| ---- |   <span class="ansi-blue">522</span>|   <span class="ansi-bold">531</span>|   554|   <span class="ansi-yellow">563</span>|   <span class="ansi-bold">570</span>|   <span class="ansi-yellow">594</span>|   <span class="ansi-yellow">609</span>| ---- |   <span class="ansi-red">639</span>
-Second Hi-C experiment:|     <span class="ansi-bold">5</span>| ---- |    <span class="ansi-bold">12</span>| ---- |    <span class="ansi-magenta">18</span>|    <span class="ansi-cyan">28</span>| ---- |    <span class="ansi-yellow">42</span>|    <span class="ansi-cyan">47</span>|    <span class="ansi-yellow">57</span>| ---- |    <span class="ansi-red">79</span>| ---- |    <span class="ansi-bold">86</span>|    <span class="ansi-red">98</span>| ---- | ---- |   <span class="ansi-magenta">115</span>|   126| ---- |   <span class="ansi-bold">131</span>|   <span class="ansi-yellow">145</span>|   164| ---- |   <span class="ansi-magenta">195</span>| ---- |   <span class="ansi-yellow">246</span>| ---- | ---- | ---- |   <span class="ansi-yellow">375</span>| ---- | ---- |   <span class="ansi-yellow">397</span>| ---- |   <span class="ansi-yellow">402</span>|   <span class="ansi-bold">413</span>|   <span class="ansi-yellow">431</span>| ---- | ---- | ---- |   <span class="ansi-magenta">478</span>|   <span class="ansi-magenta">486</span>|   <span class="ansi-yellow">498</span>| ---- | ---- |   <span class="ansi-yellow">510</span>| ---- |   531|   <span class="ansi-red">554</span>|   <span class="ansi-bold">563</span>|   <span class="ansi-yellow">569</span>|   <span class="ansi-yellow">593</span>|   <span class="ansi-red">609</span>|   624|   <span class="ansi-red">639</span>
+ First Hi-C experiment:|     <span class="ansi-cyan">8</span>| ---- |    <span class="ansi-yellow">24</span>| ---- |    <span class="ansi-cyan">33</span>| ---- |    44| ---- |    <span class="ansi-cyan">50</span>| ---- |    <span class="ansi-bold">58</span>|    <span class="ansi-magenta">64</span>| ---- |    <span class="ansi-cyan">76</span>|    <span class="ansi-bold">82</span>|    <span class="ansi-cyan">90</span>| ---- | ---- |   <span class="ansi-yellow">102</span>| ---- | ---- |   <span class="ansi-magenta">114</span>| ---- |   <span class="ansi-bold">126</span>|   <span class="ansi-bold">132</span>|   <span class="ansi-magenta">137</span>| ---- |   <span class="ansi-yellow">143</span>| ---- |   <span class="ansi-bold">156</span>| ---- |   <span class="ansi-yellow">168</span>| ---- | ---- | ---- |   192|   <span class="ansi-magenta">197</span>|   <span class="ansi-magenta">204</span>| ---- |   <span class="ansi-yellow">226</span>|   <span class="ansi-cyan">233</span>|   238| ---- |   <span class="ansi-yellow">246</span>|   <span class="ansi-yellow">325</span>|   <span class="ansi-magenta">330</span>|   <span class="ansi-bold">349</span>|   356|   <span class="ansi-magenta">364</span>|   <span class="ansi-yellow">378</span>| ---- |   <span class="ansi-yellow">383</span>|   388|   <span class="ansi-bold">403</span>|   <span class="ansi-yellow">409</span>| ---- |   <span class="ansi-blue">418</span>| ---- |   <span class="ansi-blue">427</span>| ---- |   <span class="ansi-cyan">437</span>| ---- |   <span class="ansi-cyan">444</span>|   <span class="ansi-magenta">454</span>| ---- |   <span class="ansi-cyan">459</span>|   <span class="ansi-yellow">465</span>|   <span class="ansi-yellow">471</span>|   <span class="ansi-blue">477</span>|   <span class="ansi-magenta">487</span>| ---- | ---- |   500|   <span class="ansi-cyan">505</span>| ---- |   <span class="ansi-yellow">511</span>|   516|   <span class="ansi-yellow">525</span>| ---- |   530|   <span class="ansi-bold">538</span>|   <span class="ansi-cyan">548</span>|   <span class="ansi-bold">556</span>|   <span class="ansi-yellow">562</span>| ---- |   <span class="ansi-yellow">576</span>|   587|   <span class="ansi-cyan">592</span>|   600|   <span class="ansi-bold">606</span>| ---- |   <span class="ansi-bold">622</span>| ---- |   <span class="ansi-cyan">633</span>|   <span class="ansi-red">639</span>
+Second Hi-C experiment:|     <span class="ansi-yellow">7</span>|    19|    25|    <span class="ansi-cyan">30</span>| ---- |    <span class="ansi-magenta">40</span>| ---- |    48| ---- |    <span class="ansi-cyan">53</span>|    <span class="ansi-cyan">58</span>| ---- |    <span class="ansi-red">72</span>| ---- |    <span class="ansi-cyan">82</span>| ---- |    92|    98| ---- |   105|   <span class="ansi-yellow">111</span>| ---- |   123| ---- | ---- | ---- |   <span class="ansi-cyan">139</span>|   <span class="ansi-cyan">144</span>|   150| ---- |   163|   168|   <span class="ansi-yellow">174</span>|   <span class="ansi-cyan">179</span>|   <span class="ansi-bold">188</span>|   <span class="ansi-blue">193</span>| ---- | ---- |   <span class="ansi-magenta">210</span>|   227|   <span class="ansi-blue">234</span>|   <span class="ansi-cyan">239</span>|   <span class="ansi-red">244</span>|   <span class="ansi-magenta">246</span>| ---- | ---- | ---- | ---- | ---- | ---- |   <span class="ansi-magenta">380</span>| ---- | ---- |   <span class="ansi-yellow">404</span>|   <span class="ansi-yellow">410</span>|   <span class="ansi-bold">415</span>| ---- |   <span class="ansi-blue">420</span>|   <span class="ansi-blue">426</span>|   <span class="ansi-blue">431</span>| ---- |   <span class="ansi-magenta">440</span>| ---- | ---- |   <span class="ansi-bold">456</span>| ---- |   465|   <span class="ansi-bold">471</span>|   <span class="ansi-bold">477</span>|   <span class="ansi-bold">486</span>|   <span class="ansi-cyan">493</span>|   <span class="ansi-blue">498</span>| ---- | ---- |   <span class="ansi-bold">509</span>| ---- | ---- | ---- |   <span class="ansi-blue">528</span>| ---- |   <span class="ansi-red">537</span>| ---- |   <span class="ansi-yellow">556</span>| ---- |   <span class="ansi-bold">568</span>|   <span class="ansi-cyan">576</span>|   588|   <span class="ansi-bold">593</span>|   <span class="ansi-magenta">600</span>| ---- |   <span class="ansi-blue">615</span>| ---- |   <span class="ansi-yellow">624</span>|   <span class="ansi-cyan">633</span>|   <span class="ansi-red">639</span>
 </pre>
 <p>The different colors, corresponding to the TADbit confidence in detecting the boundaries, show how conserved the boundaries are between (in this case) cell types.</p>
-<p>Alignment can also be viewed using matplotlib (already mention in <a class="reference internal" href="tutorial_1_general.html#density-plot"><em>TADs in density plots</em></a>):</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ali</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-</pre></div>
-</div>
+<p>Alignment can also be viewed using matplotlib (already mention in <a class="reference internal" href="tutorial_1_general.html#density-plot"><em>TADs in density plots</em></a>):
+.. code:: python</p>
+<blockquote>
+<div>ali.draw()</div></blockquote>
 <img alt="../_images/tutorial_2_boundary_alignment_17_0.png" src="../_images/tutorial_2_boundary_alignment_17_0.png" />
 <p><em>Note that this function can also be zoomed in.</em></p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ali</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_2_boundary_alignment_19_0.png" src="../_images/tutorial_2_boundary_alignment_19_0.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">xpr</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">my_chrom</span><span class="o">.</span><span class="n">tad_density_plot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">300</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_2_boundary_alignment_20_0.png" src="../_images/tutorial_2_boundary_alignment_20_0.png" />
 </div>
 <div class="section" id="the-get-column-function">
-<h3><a class="toc-backref" href="#id7">The get_column function</a><a class="headerlink" href="#the-get-column-function" title="Permalink to this headline">¶</a></h3>
+<h2><a class="toc-backref" href="#id6">The get_column function</a><a class="headerlink" href="#the-get-column-function" title="Permalink to this headline">¶</a></h2>
 <p>The <a class="reference internal" href="../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment.get_column" title="pytadbit.alignment.Alignment.get_column"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.alignment.Alignment.get_column()</span></tt></a> function allows to select specific columns of an alignment.</p>
 <p>To select, for example, the third column of an alignment:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">ali</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-[(2, [&gt;-&lt;, &gt;1100&lt;])]
+[(2, [&gt;2300&lt;, &gt;2400&lt;])]
 </pre>
 <p>The first element of the tuple is the column index, while the two values of the second element of the tuple
 are the TADs associated to the aligned boundaries in that column. Note that TAD objects are represented
@@ -177,30 +240,33 @@ boundaries with a score higher than 7:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">cond1</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">7</span>
 </pre></div>
 </div>
-<p>and to the get the selected columns:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ali</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="n">cond1</span><span class="o">=</span><span class="n">cond1</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>and to the get the selected columns:
+.. code:: python</p>
+<blockquote>
+<div>ali.get_column(cond1=cond1)</div></blockquote>
 <pre class="ansi-block literal-block">
-[(55, [&gt;63800&lt;, &gt;63800&lt;])]
+[(94, [&gt;63800&lt;, &gt;63800&lt;])]
 </pre>
-<p>resulting, in the selection of these 3 columns.</p>
-<p>To add a second condition, e.g. to select only the columns after the 50th column of the alignment:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">cond2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s">&#39;pos&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">50</span>
-<span class="n">ali</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="n">cond1</span><span class="o">=</span><span class="n">cond1</span><span class="p">,</span> <span class="n">cond2</span><span class="o">=</span><span class="n">cond2</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>resulting, in the selection of these 3 columns.To add a second condition, e.g. to select only the columns after the 50th column of the alignment:
+.. code:: python</p>
+<blockquote>
+<div>cond2 = lambda x: x[&#8216;pos&#8217;] &gt; 50
+ali.get_column(cond1=cond1, cond2=cond2)</div></blockquote>
 <pre class="ansi-block literal-block">
-[(55, [&gt;63800&lt;, &gt;63800&lt;])]
+[(94, [&gt;63800&lt;, &gt;63800&lt;])]
 </pre>
-<p>Finally, to be more flexible, this conditions can be applied to only a given number of experiments (in this example of a pairwise alignment, it does not make a lot of sense):</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ali</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="n">cond1</span><span class="o">=</span><span class="n">cond1</span><span class="p">,</span> <span class="n">cond2</span><span class="o">=</span><span class="n">cond2</span><span class="p">,</span> <span class="n">min_num</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Finally, to be more flexible, this conditions can be applied to only a given number of experiments (in this example of a pairwise alignment, it does not make a lot of sense):
+.. code:: python</p>
+<blockquote>
+<div>ali.get_column(cond1=cond1, cond2=cond2, min_num=1)</div></blockquote>
 <pre class="ansi-block literal-block">
-[(53, [&gt;60800&lt;, &gt;60800&lt;]), (55, [&gt;63800&lt;, &gt;63800&lt;])]
+[(61, [&gt;-&lt;, &gt;43900&lt;]),
+ (63, [&gt;45300&lt;, &gt;-&lt;]),
+ (69, [&gt;48600&lt;, &gt;48500&lt;]),
+ (80, [&gt;53700&lt;, &gt;53600&lt;]),
+ (88, [&gt;59900&lt;, &gt;59900&lt;]),
+ (94, [&gt;63800&lt;, &gt;63800&lt;])]
 </pre>
-</div>
 </div>
 </div>
 
@@ -217,6 +283,7 @@ boundaries with a score higher than 7:</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1_general.html">Getting started</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="">Alignment of TAD boundaries</a></li>
@@ -271,7 +338,7 @@ boundaries with a score higher than 7:</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

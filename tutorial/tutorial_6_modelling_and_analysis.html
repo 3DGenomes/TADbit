@@ -55,38 +55,46 @@
             
   <div class="section" id="three-dimensional-modeling-of-chromatine-structure">
 <h1>Three-dimensional modeling of chromatine structure<a class="headerlink" href="#three-dimensional-modeling-of-chromatine-structure" title="Permalink to this headline">¶</a></h1>
-<p>Recover data from previous tutorial by loading the previously saved chromosome.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Libraries</span>
-<span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">load_chromosome</span> <span class="c"># load chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span> <span class="kn">import</span> <span class="n">CONFIG</span> <span class="c"># Pre-defined parameters for modeling</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">load_structuralmodels</span> <span class="c"># library for modeling.</span>
-
-<span class="c"># Load the chromosome</span>
-<span class="n">my_chrom</span> <span class="o">=</span> <span class="n">load_chromosome</span><span class="p">(</span><span class="s">&#39;some_path.tdb&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromosome objects because of their size):</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Loop over experiments in chromosome and load Hi-C data.</span>
-<span class="n">res</span> <span class="o">=</span> <span class="mi">100000</span>
-
-<span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">exp</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">(</span><span class="s">&#39;../../scripts/sample_data/HIC_{0}_{1}_{1}_{2}_obs.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                          <span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&#39;file not found for experiment: &#39;</span> <span class="o">+</span> <span class="n">exp</span><span class="o">.</span><span class="n">name</span>
-        <span class="k">continue</span>
-
-<span class="c"># Load Hi-C of the individual experiments and put it into the sum experiment BR+TR1+TR2</span>
-<span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&#39;k562+gm06690&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">(</span>
-              <span class="p">(</span><span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&#39;k562&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&#39;gm06690&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">hic_data</span><span class="p">,</span>
-              <span class="s">&#39;k562+gm06690&#39;</span><span class="p">)</span>
-<span class="n">exp</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&#39;gm06690&#39;</span><span class="p">]</span>
-<span class="n">exp</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">()</span>
-<span class="n">exp</span><span class="o">.</span><span class="n">filter_columns</span><span class="p">()</span>
-<span class="k">print</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span>
-</pre></div>
-</div>
+<p>Recover data from previous tutorial by loading the previously saved chromosome.
+.. code:: python</p>
+<blockquote>
+<div><p># Libraries
+from pytadbit import load_chromosome # load chromosome
+from pytadbit.imp.CONFIG import CONFIG # Pre-defined parameters for modeling
+from pytadbit.imp.structuralmodels import load_structuralmodels # library for modeling.</p>
+<p># Load the chromosome
+my_chrom = load_chromosome(&#8216;some_path.tdb&#8217;)</p>
+</div></blockquote>
+<p>Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromosome objects because of their size):
+.. code:: python</p>
+<blockquote>
+<div><p># Loop over experiments in chromosome and load Hi-C data.
+res = 100000</p>
+<dl class="docutils">
+<dt>for exp in my_chrom.experiments:</dt>
+<dd><dl class="first last docutils">
+<dt>try:</dt>
+<dd><dl class="first last docutils">
+<dt>exp.load_hic_data(&#8216;../../scripts/sample_data/HIC_{0}_{1}_{1}_{2}_obs.txt&#8217;.format(</dt>
+<dd>exp.name, my_chrom.name, res))</dd>
+</dl>
+</dd>
+<dt>except:</dt>
+<dd>print &#8216;file not found for experiment: &#8216; + exp.name
+continue</dd>
+</dl>
+</dd>
+</dl>
+<p># Load Hi-C of the individual experiments and put it into the sum experiment BR+TR1+TR2
+my_chrom.experiments[&#8216;k562+gm06690&#8217;].load_hic_data(</p>
+<blockquote>
+<div>(my_chrom.experiments[&#8216;k562&#8217;] + my_chrom.experiments[&#8216;gm06690&#8217;]).hic_data,
+&#8216;k562+gm06690&#8217;)</div></blockquote>
+<p>exp = my_chrom.experiments[&#8216;gm06690&#8217;]
+exp.normalize_hic()
+exp.filter_columns()
+print my_chrom.experiments</p>
+</div></blockquote>
 <pre class="ansi-block literal-block">
 /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
   warn('WARNING: non integer values')
@@ -109,12 +117,11 @@ WARNING: removing columns having less than 67.485 counts:
 </pre>
 <div class="section" id="model-the-3d-structure-of-a-selected-tad">
 <h2>Model the 3D structure of a selected TAD<a class="headerlink" href="#model-the-3d-structure-of-a-selected-tad" title="Permalink to this headline">¶</a></h2>
-<p>TADbit uses the Integrative Modeling Platform (IMP, <a class="reference external" href="http://www.integrativemodeling.org">http://www.integrativemodeling.org</a>) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.</p>
-<p>All models are based on specific sets of experimental data for which TADbit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># See pre-defined sets of parameters</span>
-<span class="n">CONFIG</span>
-</pre></div>
-</div>
+<p>TADbit uses the Integrative Modeling Platform (IMP, <a class="reference external" href="http://www.integrativemodeling.org">http://www.integrativemodeling.org</a>) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.All models are based on specific sets of experimental data for which TADbit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.
+.. code:: python</p>
+<blockquote>
+<div># See pre-defined sets of parameters
+CONFIG</div></blockquote>
 <pre class="ansi-block literal-block">
 {'dmel_01': {'kforce': 5,
   'lowfreq': -0.7,
@@ -127,22 +134,23 @@ WARNING: removing columns having less than 67.485 counts:
 <p class="first admonition-title">Note</p>
 <p class="last">Overtime, we will populate the CONFIG dictionary with more optimal sets of parameters for released Hi-C matrices.</p>
 </div>
-<p>To set the values for the parameters, one can create an array and use it for moodeling (see config parameter for model_region function)</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Set of optimal parameters from pervious tutorial #2</span>
-
-<span class="n">optpar</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;kforce&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-          <span class="s">&#39;lowfreq&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-          <span class="s">&#39;lowrdist&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-          <span class="s">&#39;upfreq&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
-          <span class="s">&#39;maxdist&#39;</span><span class="p">:</span> <span class="mi">2750</span><span class="p">,</span>
-          <span class="s">&#39;scale&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
-          <span class="s">&#39;reference&#39;</span><span class="p">:</span> <span class="s">&#39;gm cell from Job Dekker 2009&#39;</span><span class="p">}</span>
-
-<span class="c"># Build 3D models based on the HiC data. This is done by IMP.</span>
-<span class="n">models</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">model_region</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">keep_all</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">optpar</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">models</span>
-</pre></div>
-</div>
+<p>To set the values for the parameters, one can create an array and use it for moodeling (see config parameter for model_region function)
+.. code:: python</p>
+<blockquote>
+<div><p># Set of optimal parameters from pervious tutorial #2</p>
+<dl class="docutils">
+<dt>optpar = {&#8216;kforce&#8217;: 5,</dt>
+<dd>&#8216;lowfreq&#8217;: 0.0,
+&#8216;lowrdist&#8217;: 100,
+&#8216;upfreq&#8217;: 0.8,
+&#8216;maxdist&#8217;: 2750,
+&#8216;scale&#8217;: 0.01,
+&#8216;reference&#8217;: &#8216;gm cell from Job Dekker 2009&#8217;}</dd>
+</dl>
+<p># Build 3D models based on the HiC data. This is done by IMP.
+models = exp.model_region(100, 200, n_models=500, n_keep=100, n_cpus=8, keep_all=True, config=optpar)
+print models</p>
+</div></blockquote>
 <pre class="ansi-block literal-block">
 Preparing to model 101 particles
 </pre>
@@ -166,22 +174,21 @@ StructuralModels with 100 models of 101 particles
 <pre class="ansi-block literal-block">
 Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility_factor:1)
 </pre>
-<p>Once finished, the IMP generated models are stored in a dictionary which keys are numbered from smaller to larger based on the IMP Objective Function (that is, how well the model satifies the input restraints). One can select parts of the models or single models to get some information.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Select top 10 models</span>
-<span class="n">models</span><span class="o">.</span><span class="n">define_best_models</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&quot;Lowest 10 IMP OF models:&quot;</span>
-<span class="k">print</span> <span class="n">models</span>
-
-<span class="c"># Select top 100 models</span>
-<span class="n">models</span><span class="o">.</span><span class="n">define_best_models</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&quot;Lowest 100 IMP OF models:&quot;</span>
-<span class="k">print</span> <span class="n">models</span>
-
-<span class="c"># Get the data for the lowest IMP OF model (number 0) in the set of models</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="k">print</span> <span class="n">model</span>
-</pre></div>
-</div>
+<p>Once finished, the IMP generated models are stored in a dictionary which keys are numbered from smaller to larger based on the IMP Objective Function (that is, how well the model satifies the input restraints). One can select parts of the models or single models to get some information.
+.. code:: python</p>
+<blockquote>
+<div><p># Select top 10 models
+models.define_best_models(10)
+print &#8220;Lowest 10 IMP OF models:&#8221;
+print models</p>
+<p># Select top 100 models
+models.define_best_models(100)
+print &#8220;Lowest 100 IMP OF models:&#8221;
+print models</p>
+<p># Get the data for the lowest IMP OF model (number 0) in the set of models
+model = models[0]
+print model</p>
+</div></blockquote>
 <pre class="ansi-block literal-block">
 Lowest 10 IMP OF models:
 StructuralModels with 10 models of 101 particles
@@ -218,19 +225,19 @@ IMP model ranked 1 (101 particles) with:
    -12418  -5912  -4701
    -11530  -5648  -5033
 </pre>
-<p>One measure to check whether the IMP optimization has reached equilibrium is to plot the value of the IMP Objective Function as a function of the iteration during optimization. If the plot has a plateau, this means that the modeling exercise run properly.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Get the IMP OF of the stored model in &quot;model&quot;</span>
-<span class="n">model</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>One measure to check whether the IMP optimization has reached equilibrium is to plot the value of the IMP Objective Function as a function of the iteration during optimization. If the plot has a plateau, this means that the modeling exercise run properly.
+.. code:: python</p>
+<blockquote>
+<div># Get the IMP OF of the stored model in &#8220;model&#8221;
+model.objective_function(log=True, smooth=False)</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_16_0.png" src="../_images/tutorial_6_modelling_and_analysis_16_0.png" />
-<p>One important aspect is to identfy whether the set of models has a good correlation with the input HiC data. This can be done with a single function that affects the models.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Re-select again the top 1000 models</span>
-<span class="n">models</span><span class="o">.</span><span class="n">define_best_models</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-<span class="c"># Calculate the correlation coefficient between a set of kept models and the original HiC matrix</span>
-<span class="n">models</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>One important aspect is to identfy whether the set of models has a good correlation with the input HiC data. This can be done with a single function that affects the models.
+.. code:: python</p>
+<blockquote>
+<div># Re-select again the top 1000 models
+models.define_best_models(100)
+# Calculate the correlation coefficient between a set of kept models and the original HiC matrix
+models.correlate_with_real_data(plot=True, cutoff=1000)</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_18_0.png" src="../_images/tutorial_6_modelling_and_analysis_18_0.png" />
 <pre class="ansi-block literal-block">
 (0.66973037475999819, 0.0)
@@ -256,12 +263,12 @@ Total number of clusters: 4
 <h2>Model analysis<a class="headerlink" href="#model-analysis" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="model-clustering">
 <h3>Model clustering<a class="headerlink" href="#model-clustering" title="Permalink to this headline">¶</a></h3>
-<p>First we are going to cluster the 3D models based on their structural similarity. Clusters are numbered from larger (more models) to smallest (less models).</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Cluster models based on structural similarity</span>
-<span class="n">models</span><span class="o">.</span><span class="n">cluster_models</span><span class="p">(</span><span class="n">fact</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">models</span><span class="o">.</span><span class="n">clusters</span>
-</pre></div>
-</div>
+<p>First we are going to cluster the 3D models based on their structural similarity. Clusters are numbered from larger (more models) to smallest (less models).
+.. code:: python</p>
+<blockquote>
+<div># Cluster models based on structural similarity
+models.cluster_models(fact=0.95, dcutoff=2000)
+print models.clusters</div></blockquote>
 <pre class="ansi-block literal-block">
 Number of singletons excluded from clustering: 20 (total singletons: 20)
 Total number of clusters: 12
@@ -292,37 +299,35 @@ Total number of clusters: 12
    Cluster #11 has 2 models [top model: 104]
    Cluster #12 has 2 models [top model: 311]
 </pre>
-<p>The output of this analysis is stored in a Python dictionary that contains the cluster number and the models within the cluster. The output shows that the models result in 39 clusters where cluster number 1 (named 0) contains 149 models and cluster number 2 (named 1) contains 136 models.</p>
-<p>Once a cluster is generated, one can plot it for easy visualization. The &#8220;y&#8221; axis of the plot shows the IMP Objective function. The width of the branch is proportional to the number of models in the cluster. One would expect that the largest cluster (the one numbered with a &#8220;0&#8221; and wider width branch) has the lowest IMP Objective Function. This is indicative that the optimization found most often the same solution, which corresponded to the lowest IMP Objective Function.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Plot the resulting clusers</span>
-<span class="n">cl</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">cluster_analysis_dendrogram</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>The output of this analysis is stored in a Python dictionary that contains the cluster number and the models within the cluster. The output shows that the models result in 39 clusters where cluster number 1 (named 0) contains 149 models and cluster number 2 (named 1) contains 136 models.Once a cluster is generated, one can plot it for easy visualization. The &#8220;y&#8221; axis of the plot shows the IMP Objective function. The width of the branch is proportional to the number of models in the cluster. One would expect that the largest cluster (the one numbered with a &#8220;0&#8221; and wider width branch) has the lowest IMP Objective Function. This is indicative that the optimization found most often the same solution, which corresponded to the lowest IMP Objective Function.
+.. code:: python</p>
+<blockquote>
+<div># Plot the resulting clusers
+cl = models.cluster_analysis_dendrogram(color=True)</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_27_0.png" src="../_images/tutorial_6_modelling_and_analysis_27_0.png" />
-<p>One can also show the similarity betwen clusters for a limited number of them (5 in this example)</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Show de dendogram for only the 5 top clusters and no colors</span>
-<span class="n">cl</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">cluster_analysis_dendrogram</span><span class="p">(</span><span class="n">n_best_clusters</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>One can also show the similarity betwen clusters for a limited number of them (5 in this example)
+.. code:: python</p>
+<blockquote>
+<div># Show de dendogram for only the 5 top clusters and no colors
+cl = models.cluster_analysis_dendrogram(n_best_clusters=5)</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_29_0.png" src="../_images/tutorial_6_modelling_and_analysis_29_0.png" />
 </div>
 <div class="section" id="models-consistency">
 <h3>Models consistency<a class="headerlink" href="#models-consistency" title="Permalink to this headline">¶</a></h3>
-<p>To assess how &#8220;deterministic&#8221; a cluster is, one can calculate for each particle the percentage of models (in the cluster) that superimpose a given particle within a given cut-off (pre-set cut-offs of 50, 100, 150 and 200 nm). The lower the consistency value (in %) the less deterministic the models within the selected cluster. This measure can be taken as a proxy of variability across the model.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Calculate the consistency plot for all models in the first cluster (cluster 0)</span>
-<span class="n">models</span><span class="o">.</span><span class="n">model_consistency</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cutoffs</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="mi">2000</span><span class="p">))</span>
-</pre></div>
-</div>
+<p>To assess how &#8220;deterministic&#8221; a cluster is, one can calculate for each particle the percentage of models (in the cluster) that superimpose a given particle within a given cut-off (pre-set cut-offs of 50, 100, 150 and 200 nm). The lower the consistency value (in %) the less deterministic the models within the selected cluster. This measure can be taken as a proxy of variability across the model.
+.. code:: python</p>
+<blockquote>
+<div># Calculate the consistency plot for all models in the first cluster (cluster 0)
+models.model_consistency(cluster=1, cutoffs=(1000,2000))</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_32_0.png" src="../_images/tutorial_6_modelling_and_analysis_32_0.png" />
-<p>Be aware that this measure makes sense using only models within a cluster and not models from different clusters.</p>
-</div>
-<div class="section" id="dna-density-plots">
-<h3>DNA density plots<a class="headerlink" href="#dna-density-plots" title="Permalink to this headline">¶</a></h3>
-<p>From the 3D models, the DNA density (or local compactness) can be calculated as the ratio of the bin size (in base pairs) and the distances between consequtive particles in the models. The higher the density the more compact DNA for the region. As this measure varies dramatically from particle to particle, one can calculate it using running averages.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Calculate a DNA density plot</span>
-<span class="n">models</span><span class="o">.</span><span class="n">density_plot</span><span class="p">()</span>
-</pre></div>
-</div>
+<p>Be aware that this measure makes sense using only models within a cluster and not models from different clusters.
+DNA density plots
+~~~~~~~~~~~~~~~~~
+From the 3D models, the DNA density (or local compactness) can be calculated as the ratio of the bin size (in base pairs) and the distances between consequtive particles in the models. The higher the density the more compact DNA for the region. As this measure varies dramatically from particle to particle, one can calculate it using running averages.
+.. code:: python</p>
+<blockquote>
+<div># Calculate a DNA density plot
+models.density_plot()</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_36_0.png" src="../_images/tutorial_6_modelling_and_analysis_36_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Get a similar plot for only the top cluster and show the standar deviation for a specific(s) running window (steps)</span>
 <span class="n">models</span><span class="o">.</span><span class="n">density_plot</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">error</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
@@ -340,20 +345,20 @@ Total number of clusters: 12
 </div>
 <div class="section" id="models-contact-map">
 <h3>Models contact map<a class="headerlink" href="#models-contact-map" title="Permalink to this headline">¶</a></h3>
-<p>Given a set of selected models (either from a cluster or a list) one can calculate the percentage of pairs of particles within a distance cut-off. This can then be represented as a heat-map which is equivalent to a Hi-C interaction matrix.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Get a contact map for the top 50 models at a distance cut-off of 300nm</span>
-<span class="n">models</span><span class="o">.</span><span class="n">contact_map</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="s">&quot;contact.txt&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The goal of TADbit is to find a 3D structure (or ensemble of structures) that best satisfies the original Hi-C matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix for parts of the models.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Correlate the contact map with the original input HiC matrix for cluster 1</span>
-<span class="n">models</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
-<span class="c"># Correlate the contact map with the original input HiC matrix for cluster 2</span>
-<span class="n">models</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
-<span class="c"># Correlate the contact map with the original input HiC matrix for cluster 10</span>
-<span class="n">models</span><span class="o">.</span><span class="n">correlate_with_real_data</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Given a set of selected models (either from a cluster or a list) one can calculate the percentage of pairs of particles within a distance cut-off. This can then be represented as a heat-map which is equivalent to a Hi-C interaction matrix.
+.. code:: python</p>
+<blockquote>
+<div># Get a contact map for the top 50 models at a distance cut-off of 300nm
+models.contact_map(models=range(5,10), cutoff=1200, savedata=&#8221;contact.txt&#8221;)</div></blockquote>
+<p>The goal of TADbit is to find a 3D structure (or ensemble of structures) that best satisfies the original Hi-C matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix for parts of the models.
+.. code:: python</p>
+<blockquote>
+<div># Correlate the contact map with the original input HiC matrix for cluster 1
+models.correlate_with_real_data(cluster=1, plot=True, cutoff=1500)
+# Correlate the contact map with the original input HiC matrix for cluster 2
+models.correlate_with_real_data(cluster=2, plot=True, cutoff=1500)
+# Correlate the contact map with the original input HiC matrix for cluster 10
+models.correlate_with_real_data(cluster=10, plot=True, cutoff=1500)</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_44_0.png" src="../_images/tutorial_6_modelling_and_analysis_44_0.png" />
 <img alt="../_images/tutorial_6_modelling_and_analysis_44_1.png" src="../_images/tutorial_6_modelling_and_analysis_44_1.png" />
 <img alt="../_images/tutorial_6_modelling_and_analysis_44_2.png" src="../_images/tutorial_6_modelling_and_analysis_44_2.png" />
@@ -363,25 +368,25 @@ Total number of clusters: 12
 </div>
 <div class="section" id="calculating-distances-between-particles">
 <h3>Calculating distances between particles<a class="headerlink" href="#calculating-distances-between-particles" title="Permalink to this headline">¶</a></h3>
-<p>Sometimes is useful to get a distribution of distances between pairs of particles in the models (or sub-set of models). Next we show several ways of getting such representations.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Get the average distance between particles 13 and 30 in all kept models</span>
-<span class="n">models</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Sometimes is useful to get a distribution of distances between pairs of particles in the models (or sub-set of models). Next we show several ways of getting such representations.
+.. code:: python</p>
+<blockquote>
+<div># Get the average distance between particles 13 and 30 in all kept models
+models.median_3d_dist(13, 20, plot=False)</div></blockquote>
 <pre class="ansi-block literal-block">
 1507.9106832517446
 </pre>
-<p>Lets plot the distribution used to get this median value.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Plot the distance distributions between particles 13 and 30 in all kept models</span>
-<span class="n">models</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Lets plot the distribution used to get this median value.
+.. code:: python</p>
+<blockquote>
+<div># Plot the distance distributions between particles 13 and 30 in all kept models
+models.median_3d_dist(15, 20, plot=True)</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_49_0.png" src="../_images/tutorial_6_modelling_and_analysis_49_0.png" />
-<p>We may also want to use only the 10 first models (lowest energy), or the models belonging to a cluster (example cluster 1).</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Plot the distance distributions between particles 13 and 30 in the top 100 models</span>
-<span class="n">models</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
-</pre></div>
-</div>
+<p>We may also want to use only the 10 first models (lowest energy), or the models belonging to a cluster (example cluster 1).
+.. code:: python</p>
+<blockquote>
+<div># Plot the distance distributions between particles 13 and 30 in the top 100 models
+models.median_3d_dist(13, 30, models=range(100))</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_51_0.png" src="../_images/tutorial_6_modelling_and_analysis_51_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Plot the distance distributions between particles 13 and 30 in the models from cluster 0</span>
 <span class="n">models</span><span class="o">.</span><span class="n">median_3d_dist</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">54</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -392,17 +397,17 @@ Total number of clusters: 12
 </div>
 <div class="section" id="save-and-load-models-and-analysis">
 <h2>Save and load models and analysis<a class="headerlink" href="#save-and-load-models-and-analysis" title="Permalink to this headline">¶</a></h2>
-<p>By saving your analysis, you won&#8217;t need to repeat some of the most expensive calculations.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Save your entire analysis and models</span>
-<span class="n">models</span><span class="o">.</span><span class="n">save_models</span><span class="p">(</span><span class="s">&#39;gm_01.models&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>And to load them:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Load the models</span>
-<span class="n">loaded_models</span> <span class="o">=</span> <span class="n">load_structuralmodels</span><span class="p">(</span><span class="s">&#39;gm_01.models&#39;</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">loaded_models</span>
-</pre></div>
-</div>
+<p>By saving your analysis, you won&#8217;t need to repeat some of the most expensive calculations.
+.. code:: python</p>
+<blockquote>
+<div># Save your entire analysis and models
+models.save_models(&#8216;gm_01.models&#8217;)</div></blockquote>
+<p>And to load them:
+.. code:: python</p>
+<blockquote>
+<div># Load the models
+loaded_models = load_structuralmodels(&#8216;gm_01.models&#8217;)
+print loaded_models</div></blockquote>
 <pre class="ansi-block literal-block">
 StructuralModels with 100 models of 101 particles
    (objective function range: 73269182 - 76546743)
@@ -445,10 +450,10 @@ StructuralModels with 100 models of 101 particles
 <p>Our group has been using the visualization tool Chimera from Ferrin&#8217;s Group at UCSF (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera/">http://www.cgl.ucsf.edu/chimera/</a>) to visualize the 3D models. Here we provide a couple of automatic ways of getting static and video images of selected models. A user can input the models using the generated CMM format in the previous step of this tutorial.</p>
 <p>** NOTE **
 To properly insert the images/videos in this tutorial, we need to import libraries from IPython. However, such libraries are not necessary for the modeling nor the analysis of the models.
-** NOTE **</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">models</span><span class="o">.</span><span class="n">view_models</span><span class="p">(</span><span class="n">stress</span><span class="o">=</span><span class="s">&#39;centroid&#39;</span><span class="p">,</span> <span class="n">tool</span><span class="o">=</span><span class="s">&#39;plot&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">azimuth</span><span class="o">=-</span><span class="mi">60</span><span class="p">,</span> <span class="n">elevation</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-</pre></div>
-</div>
+** NOTE **
+.. code:: python</p>
+<blockquote>
+<div>models.view_models(stress=&#8217;centroid&#8217;, tool=&#8217;plot&#8217;, figsize=(10,10), azimuth=-60, elevation=100)</div></blockquote>
 <img alt="../_images/tutorial_6_modelling_and_analysis_63_0.png" src="../_images/tutorial_6_modelling_and_analysis_63_0.png" />
 <p><em>Note that we represent with colors, only 1 model, the centromere. An
 easy way to get the centromere model is using the get_centromere
@@ -34566,6 +34571,7 @@ AAAAAA67jLOBALeH94EB8YIBdw==
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4_data_normalization.html">Hi-C data processing</a></li>
@@ -34621,7 +34627,7 @@ AAAAAA67jLOBALeH94EB8YIBdw==
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

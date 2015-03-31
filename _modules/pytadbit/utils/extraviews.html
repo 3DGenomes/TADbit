@@ -78,12 +78,12 @@
 <span class="sd">    writes resolution number for human beings.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span> <span class="o">%</span> <span class="mi">1000000000</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)[:</span><span class="o">-</span><span class="mi">9</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;Gb&#39;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)[:</span><span class="o">-</span><span class="mi">9</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; Gb&#39;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span> <span class="o">%</span> <span class="mi">1000000</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)[:</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;Mb&#39;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)[:</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; Mb&#39;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span> <span class="o">%</span> <span class="mi">1000</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;Kb&#39;</span>
-    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;b&#39;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; kb&#39;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; b&#39;</span>
 
 
 <span class="n">COLOR</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[31m&#39;</span><span class="p">,</span> <span class="c"># red</span>
@@ -954,7 +954,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

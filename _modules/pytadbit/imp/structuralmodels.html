@@ -49,8 +49,6 @@
   <h1>Source code for pytadbit.imp.structuralmodels</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">19 Jul 2013</span>
-
-
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">calc_consistency</span><span class="p">,</span> <span class="n">mass_center</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.three_dim_stats</span> <span class="kn">import</span> <span class="n">dihedral</span><span class="p">,</span> <span class="n">calc_eqv_rmsd</span>
@@ -80,6 +78,11 @@
 <span class="kn">from</span> <span class="nn">string</span>                         <span class="kn">import</span> <span class="n">uppercase</span> <span class="k">as</span> <span class="n">uc</span><span class="p">,</span> <span class="n">lowercase</span> <span class="k">as</span> <span class="n">lc</span>
 <span class="kn">from</span> <span class="nn">random</span>                         <span class="kn">import</span> <span class="n">random</span>
 <span class="kn">from</span> <span class="nn">os.path</span>                        <span class="kn">import</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">tad_coloring</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">tad_border_coloring</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">color_residues</span><span class="p">,</span> <span class="n">chimera_view</span>
+<span class="kn">from</span> <span class="nn">pytadbit</span>                       <span class="kn">import</span> <span class="n">get_dependencies_version</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
@@ -104,12 +107,14 @@
             <span class="n">nloci</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;nloci&#39;</span><span class="p">],</span> <span class="n">models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">],</span> <span class="n">bad_models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;bad_models&#39;</span><span class="p">],</span>
             <span class="n">resolution</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;resolution&#39;</span><span class="p">],</span> <span class="n">original_data</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;original_data&#39;</span><span class="p">],</span>
             <span class="n">clusters</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;clusters&#39;</span><span class="p">],</span> <span class="n">config</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">],</span> <span class="n">zscores</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zscore&#39;</span><span class="p">],</span>
-            <span class="n">zeros</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zeros&#39;</span><span class="p">])</span>
+            <span class="n">zeros</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zeros&#39;</span><span class="p">],</span> <span class="n">restraints</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;restraints&#39;</span><span class="p">],</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">svd</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;description&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="c"># old version</span>
         <span class="k">return</span> <span class="n">StructuralModels</span><span class="p">(</span>
             <span class="n">nloci</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;nloci&#39;</span><span class="p">],</span> <span class="n">models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">],</span> <span class="n">bad_models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;bad_models&#39;</span><span class="p">],</span>
             <span class="n">resolution</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;resolution&#39;</span><span class="p">],</span> <span class="n">original_data</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;original_data&#39;</span><span class="p">],</span>
-            <span class="n">clusters</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;clusters&#39;</span><span class="p">],</span> <span class="n">config</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">],</span> <span class="n">zscores</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zscore&#39;</span><span class="p">])</span>
+            <span class="n">clusters</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;clusters&#39;</span><span class="p">],</span> <span class="n">config</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">],</span> <span class="n">zscores</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zscore&#39;</span><span class="p">],</span>
+            <span class="n">restraints</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;restraints&#39;</span><span class="p">])</span>
 </div>
 <div class="viewcode-block" id="StructuralModels"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels">[docs]</a><span class="k">class</span> <span class="nc">StructuralModels</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -139,7 +144,8 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">bad_models</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span>
                  <span class="n">original_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">zscores</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clusters</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                 <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">restraints</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__models</span>       <span class="o">=</span> <span class="n">models</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bad_models</span>    <span class="o">=</span> <span class="n">bad_models</span>
@@ -151,7 +157,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span>         <span class="o">=</span> <span class="n">zeros</span> <span class="ow">or</span> <span class="p">{}</span>   <span class="c"># filtered out columns</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>        <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span>     <span class="o">=</span> <span class="n">experiment</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span>    <span class="o">=</span> <span class="n">restraints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span>    <span class="o">=</span> <span class="n">description</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nam</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nam</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1062,7 +1069,170 @@
             <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">show</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="StructuralModels.accessibility"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.accessibility">[docs]</a>    <span class="k">def</span> <span class="nf">accessibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                      <span class="n">superradius</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                      <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates a mesh surface around the model (distance equal to input</span>
+<span class="sd">        **radius**) and checks if each point of this mesh could be replaced by</span>
+<span class="sd">        an object (i.e. a protein) of a given **radius**</span>
 
+<span class="sd">        Outer part of the model can be excluded from the estimation of</span>
+<span class="sd">        accessible surface, as the occupancy outside the model is unkown (see</span>
+<span class="sd">        superradius option).</span>
+
+<span class="sd">        :param radius: radius of the object we want to fit in the model.</span>
+<span class="sd">        :param 100 nump: number of points to draw around a given particle. This</span>
+<span class="sd">           number also sets the number of points drawn around edges, as each</span>
+<span class="sd">           point occupies a given surface (see maths below). *Note that this</span>
+<span class="sd">           number is considerably lowered by the occupancy of edges, depending</span>
+<span class="sd">           of the angle formed by the edges surrounding a given particle, only</span>
+<span class="sd">           10% to 50% of the ``nump`` will be drawn in fact.*</span>
+<span class="sd">        :param True include_edges: if False, edges will not be included in the</span>
+<span class="sd">           calculation of the accessible surface, only particles. Note that</span>
+<span class="sd">           statistics on particles (like last item returned) will not change,</span>
+<span class="sd">           and computation time will be significantly decreased.</span>
+<span class="sd">        :param None savefig: path where to save chimera image</span>
+<span class="sd">        :param 200 superradius: radius of an object used to exclude outer</span>
+<span class="sd">           surface of the model. Superradius must be higher than radius.</span>
+
+<span class="sd">        This function will first define a mesh around the chromatin,</span>
+<span class="sd">        representing all possible position of the center of the object we want</span>
+<span class="sd">        to fit. This mesh will be at a distance of *radius* from the chromatin</span>
+<span class="sd">        strand. All dots in the mesh represents an equal area (*a*), the whole</span>
+<span class="sd">        surface of the chromatin strand being: :math:`A=n \\times a` (*n* being</span>
+<span class="sd">        the total number of dots in the mesh).</span>
+
+<span class="sd">        The mesh consists of spheres around particles of the model, and</span>
+<span class="sd">        cylinders around edges joining particles (no overlap is allowed between</span>
+<span class="sd">        sphere and cylinders or cylinder and cylinder when they are</span>
+<span class="sd">        consecutive).</span>
+<span class="sd">        </span>
+<span class="sd">        If we want that all dots of the mesh representing the surface of the</span>
+<span class="sd">        chromatin, corresponds to an equal area (:math:`a`)</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">          a = \\frac{4\pi r^2}{s} = \\frac{2\pi r N_{(d)}}{c}</span>
+
+<span class="sd">        with:</span>
+
+<span class="sd">        * :math:`r` radius of the object to fit (as the input parameter **radius**)</span>
+<span class="sd">        * :math:`s` number of points in sphere</span>
+<span class="sd">        * :math:`c` number of points in circle (as the input parameter **nump**)</span>
+<span class="sd">        * :math:`N_{(d)}` number of circles in an edge of length :math:`d`</span>
+
+<span class="sd">        According to this, when the distance between two particles is equal</span>
+<span class="sd">        to :math:`2r` (:math:`N=2r`), we would have :math:`s=c`.</span>
+
+<span class="sd">        As :</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">          2\pi r = \sqrt{4\pi r^2} \\times \sqrt{\pi}</span>
+<span class="sd">        </span>
+<span class="sd">        It is fair to state the number of dots represented along a circle as:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">          c = \sqrt{s} \\times \sqrt{\pi}</span>
+
+<span class="sd">        Thus the number of circles in an edge of length :math:`d` must be:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">          N_{(d)}=\\frac{s}{\sqrt{s}\sqrt{\pi}}\\times\\frac{d}{2r}</span>
+
+<span class="sd">        :returns: a list of *1-* the number of dots in the mesh that could be</span>
+<span class="sd">           occupied by an object of the given radius *2-* the total number of</span>
+<span class="sd">           dots in the mesh *3-* the estimated area of the mesh (in square</span>
+<span class="sd">           micrometers) *4-* the area of the mesh of a virtually straight strand</span>
+<span class="sd">           of chromatin defined as </span>
+<span class="sd">           :math:`contour\\times 2\pi r + 4\pi r^2` (also in</span>
+<span class="sd">           micrometers) *5-* a list of number of (accessibles, inaccessible) for</span>
+<span class="sd">           each particle (percentage burried can be infered afterwards by</span>
+<span class="sd">           accessible/(accessible+inaccessible) )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">models</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;index&#39;</span><span class="p">]</span>
+                      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">m</span><span class="p">[</span><span class="s">&#39;index&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">cluster</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">)][</span><span class="s">&#39;index&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">[</span><span class="n">cluster</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models</span><span class="p">]</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+            <span class="n">acc_vs_inacc</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">model</span><span class="p">]</span><span class="o">.</span><span class="n">accessible_surface</span><span class="p">(</span>
+                <span class="n">radius</span><span class="p">,</span> <span class="n">nump</span><span class="o">=</span><span class="n">nump</span><span class="p">,</span> <span class="n">superradius</span><span class="o">=</span><span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="o">=</span><span class="bp">False</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">acc_vs_inacc</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">acc</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="n">k</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                    <span class="n">acc</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">errorp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">errorn</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">accper</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">):</span>
+            <span class="n">accper</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np_mean</span><span class="p">(</span><span class="n">acc</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">errorp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accper</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np_std</span><span class="p">(</span><span class="n">acc</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">errorp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">errorp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">errorn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accper</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np_std</span><span class="p">(</span><span class="n">acc</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">errorn</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">errorn</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;#Particle</span><span class="se">\t</span><span class="s">accessibility</span><span class="se">\t</span><span class="s">2*stddev</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">):</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%.3f</span><span class="se">\t</span><span class="si">%.3f</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">accper</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np_std</span><span class="p">(</span><span class="n">acc</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">plot</span><span class="p">:</span>
+                <span class="k">return</span> <span class="c"># stop here, we do not want to display anything</span>
+        <span class="c"># plot</span>
+        <span class="k">if</span> <span class="n">axe</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">axe</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s">&#39;lightgrey&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&#39;major&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&#39;minor&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_axisbelow</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">minorticks_on</span><span class="p">()</span> <span class="c"># always on, not only for log</span>
+            <span class="c"># remove tick marks</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s">&#39;out&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">left</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s">&#39;out&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">left</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&#39;minor&#39;</span><span class="p">)</span>
+        <span class="n">plots</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">plots</span> <span class="o">+=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">accper</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">accper</span><span class="p">,</span>
+                         <span class="n">color</span><span class="o">=</span><span class="s">&#39;darkred&#39;</span><span class="p">,</span>
+                         <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">plots</span> <span class="o">+=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">errorp</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">errorp</span><span class="p">,</span>
+                             <span class="n">color</span><span class="o">=</span><span class="s">&#39;darkred&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s">&#39;--&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">errorp</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">errorn</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s">&#39;darkred&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s">&#39;--&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Accessibility to an object with a radius of </span><span class="si">%s</span><span class="s"> nm &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">radius</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;Particle number&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">plots</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;mean accessibility&#39;</span><span class="p">,</span> <span class="s">&#39;2*stddev of accessibility&#39;</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">,</span>
+                      <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s">&#39;center left&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">plots</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;mean accessibility&#39;</span><span class="p">,</span> <span class="s">&#39;2*stddev of accessibility&#39;</span><span class="p">],</span> 
+                      <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s">&#39;center left&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">&#39;Accesibility per particle&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.78</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+            <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">axe</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            
 </div>
 <div class="viewcode-block" id="StructuralModels.interactions"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.interactions">[docs]</a>    <span class="k">def</span> <span class="nf">interactions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                      <span class="n">steps</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">axe</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
@@ -2303,6 +2473,135 @@
                             <span class="n">model_num</span><span class="o">=</span><span class="n">model_num</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 </div>
+<div class="viewcode-block" id="StructuralModels.write_json"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.write_json">[docs]</a>    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save a model in the json format, read by TADkit.</span>
+
+<span class="sd">        **Note:** If none of model_num, models or cluster parameter are set,</span>
+<span class="sd">        ALL the models will be written.</span>
+
+<span class="sd">        :param directory: location where the file will be written (note: the</span>
+<span class="sd">           name of the file will be model_1.cmm if model number is 1)</span>
+<span class="sd">        :param None model_num: the number of the model to save</span>
+<span class="sd">        :param True rndname: If True, file names will be formatted as:</span>
+<span class="sd">           model.RND.cmm, where RND is the random number feed used by IMP to</span>
+<span class="sd">           generate the corresponding model. If False, the format will be:</span>
+<span class="sd">           model_NUM_RND.cmm where NUM is the rank of the model in terms of</span>
+<span class="sd">           objective function value</span>
+<span class="sd">        :param None filename: overide the default file name writing</span>
+<span class="sd">        :param &#39;index&#39; color: can be:</span>
+
+<span class="sd">             * a string as:</span>
+<span class="sd">                 * &#39;**index**&#39; to color particles according to their position in the</span>
+<span class="sd">                   model (:func:`pytadbit.utils.extraviews.color_residues`)</span>
+<span class="sd">                 * &#39;**tad**&#39; to color particles according to the TAD they belong to</span>
+<span class="sd">                   (:func:`pytadbit.utils.extraviews.tad_coloring`)</span>
+<span class="sd">                 * &#39;**border**&#39; to color particles marking borders. Color according to</span>
+<span class="sd">                   their score (:func:`pytadbit.utils.extraviews.tad_border_coloring`)</span>
+<span class="sd">                   coloring function like.</span>
+<span class="sd">             * a function, that takes as argument a model and any other parameter</span>
+<span class="sd">               passed through the kwargs.</span>
+<span class="sd">             * a list of (r, g, b) tuples (as long as the number of particles).</span>
+<span class="sd">               Each r, g, b between 0 and 1.</span>
+<span class="sd">        :param kwargs: any extra argument will be passed to the coloring</span>
+<span class="sd">           function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">color</span> <span class="o">==</span> <span class="s">&#39;index&#39;</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">color_residues</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">color</span> <span class="o">==</span> <span class="s">&#39;tad&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;tads&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: missing TADs</span><span class="se">\n</span><span class="s">   &#39;</span> <span class="o">+</span>
+                                    <span class="s">&#39;pass an Experiment.tads disctionary</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">tad_coloring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">color</span> <span class="o">==</span> <span class="s">&#39;border&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;tads&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: missing TADs</span><span class="se">\n</span><span class="s">   &#39;</span> <span class="o">+</span>
+                                    <span class="s">&#39;pass an Experiment.tads disctionary</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">tad_border_coloring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> type of coloring is not yet &#39;</span> <span class="o">+</span>
+                                           <span class="s">&#39;implemeted</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">color</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="s">&#39;__call__&#39;</span><span class="p">):</span> <span class="c"># it&#39;s a function</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;one of function, list or string is required</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;</span>
+<span class="s">{</span>
+<span class="s">	&quot;metadata&quot; : {</span>
+<span class="s">		&quot;version&quot;  : 1.0,</span>
+<span class="s">		&quot;type&quot;     : &quot;dataset&quot;,</span>
+<span class="s">                &quot;generator&quot;: &quot;TADbit&quot;,</span>
+<span class="s">                },</span>
+<span class="s">	&quot;object&quot;: {</span><span class="se">\n</span><span class="si">%(descr)s</span><span class="s"></span>
+<span class="s">		   &quot;uuid&quot;: &quot;</span><span class="si">%(sha)s</span><span class="s">&quot;,</span>
+<span class="s">		   &quot;title&quot;: &quot;</span><span class="si">%(title)s</span><span class="s">&quot;,</span>
+<span class="s">                   &quot;datatype&quot;: &quot;xyz&quot;,</span>
+<span class="s">                   &quot;components&quot;: 3,</span>
+<span class="s">                   &quot;source&quot;: &quot;local&quot;,</span>
+<span class="s">                   &quot;dependencies&quot;: </span><span class="si">%(dep)s</span><span class="s"></span>
+<span class="s">                  },</span>
+<span class="s">        &quot;models&quot;:</span>
+<span class="s">                 [</span><span class="se">\n</span><span class="si">%(xyz)s</span><span class="s"></span>
+<span class="s">                 ],</span>
+<span class="s">        &quot;clusters&quot;:[</span><span class="si">%(cluster)s</span><span class="s">],</span>
+<span class="s">        &quot;centroids&quot;:[</span><span class="si">%(centroid)s</span><span class="s">],</span>
+<span class="s">        &quot;restraints&quot;: [</span><span class="si">%(restr)s</span><span class="s">],</span>
+<span class="s">}</span>
+<span class="s">&#39;&#39;&#39;</span>
+        <span class="n">fil</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="n">title</span> <span class="ow">or</span> <span class="s">&quot;Sample TADbit data&quot;</span>
+        <span class="n">versions</span> <span class="o">=</span> <span class="n">get_dependencies_version</span><span class="p">(</span><span class="n">dico</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;dep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">versions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                               <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;  TADbit&#39;</span><span class="p">,</span> <span class="s">&#39;IMP&#39;</span><span class="p">,</span> <span class="s">&#39;MCL&#39;</span><span class="p">]]))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s">&#39;&quot;&#39;</span><span class="p">)</span>
+        <span class="n">ukw</span> <span class="o">=</span> <span class="s">&#39;UNKNOWN&#39;</span>
+        <span class="k">def</span> <span class="nf">tocamel</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([(</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">if</span> <span class="n">i</span> <span class="k">else</span> <span class="n">w</span>
+                           <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">))])</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([(</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">if</span> <span class="n">i</span> <span class="k">else</span> <span class="n">w</span>
+                           <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">))])</span>
+            <span class="k">return</span> <span class="n">key</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fil</span><span class="p">[</span><span class="s">&#39;descr&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="s">&#39;,</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+                <span class="p">(</span><span class="s">&#39; &#39;</span> <span class="o">*</span> <span class="mi">19</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot; : </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tocamel</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                                            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+            <span class="k">if</span> <span class="n">fil</span><span class="p">[</span><span class="s">&#39;descr&#39;</span><span class="p">]:</span>
+                <span class="n">fil</span><span class="p">[</span><span class="s">&#39;descr&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s">&#39;,&#39;</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">fil</span><span class="p">[</span><span class="s">&#39;descr&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="s">&#39;&quot;description&quot;: &quot;Just some models&quot;&#39;</span>
+        <span class="k">if</span> <span class="n">models</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;index&#39;</span><span class="p">]</span>
+                      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">m</span><span class="p">[</span><span class="s">&#39;index&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">cluster</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">)][</span><span class="s">&#39;index&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">[</span><span class="n">cluster</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models</span><span class="p">]</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
+            <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s">&#39; &#39;</span> <span class="o">*</span> <span class="mi">18</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="s">&#39;</span><span class="si">%.0f</span><span class="s">,</span><span class="si">%.0f</span><span class="s">,</span><span class="si">%.0f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                                     <span class="n">model</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]))])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span><span class="p">)</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;,</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">])</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;sha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span>
+            <span class="n">versions</span><span class="p">[</span><span class="s">&#39;  TADbit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;hex&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">32</span><span class="p">)),</span>
+                                    <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]))</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;restr&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;[</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,&quot;</span><span class="si">%s</span><span class="s">&quot;,</span><span class="si">%f</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+                                        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
+                                         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;centroid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_model</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="n">c</span><span class="p">)][</span><span class="s">&#39;rand_init&#39;</span><span class="p">]</span>
+             <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
+        <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">out_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">form</span> <span class="o">%</span> <span class="n">fil</span><span class="p">)</span>
+        <span class="n">out_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
 <div class="viewcode-block" id="StructuralModels.write_xyz"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.write_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">write_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">models</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                   <span class="n">get_path</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2374,16 +2673,18 @@
         <span class="k">if</span> <span class="n">minimal</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;log_objfun&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
-            <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models</span>
+            <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models</span>
+            <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models</span>
         <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;bad_models&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bad_models</span>
+        <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span>
         <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;nloci&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span>
         <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;clusters&#39;</span><span class="p">]</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span>
         <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;resolution&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
         <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;original_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_data</span>
         <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
         <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;zscore&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">minimal</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zscores</span>
+        <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;restraints&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">minimal</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span>
         <span class="n">to_save</span><span class="p">[</span><span class="s">&#39;zeros&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span>
 
         <span class="k">return</span> <span class="n">to_save</span>
@@ -2444,7 +2745,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

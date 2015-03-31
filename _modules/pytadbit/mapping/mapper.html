@@ -59,7 +59,7 @@
 <span class="kn">import</span> <span class="nn">gzip</span>
 <span class="kn">import</span> <span class="nn">pysam</span>
 <span class="kn">import</span> <span class="nn">gem</span>
-
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 
 <div class="viewcode-block" id="get_intersection"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.mapper.get_intersection">[docs]</a><span class="k">def</span> <span class="nf">get_intersection</span><span class="p">(</span><span class="n">fname1</span><span class="p">,</span> <span class="n">fname2</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -125,14 +125,38 @@
 <div class="viewcode-block" id="iterative_mapping"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.mapper.iterative_mapping">[docs]</a><span class="k">def</span> <span class="nf">iterative_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_sam_path</span><span class="p">,</span>
                       <span class="n">range_start</span><span class="p">,</span> <span class="n">range_stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param gem_index_path: path to index file created from a reference genome</span>
+<span class="sd">       using gem-index tool</span>
 <span class="sd">    :param fastq_path: 152 bases first 76 from one end, next 76 from the other</span>
 <span class="sd">       end. Both to be read from left to right.</span>
+<span class="sd">    :param out_sam_path: path to a directory where to store mapped reads in SAM/</span>
+<span class="sd">       BAM format (see option output_is_bam).</span>
+<span class="sd">    :param range_start: list of integers representing the start position of each</span>
+<span class="sd">       read fragment to be mapped.</span>
+<span class="sd">    :param range_stop: list of integers representing the end position of each</span>
+<span class="sd">       read fragment to be mapped.</span>
+<span class="sd">    :param False single_end: when FASTQ contains paired-ends flags</span>
+<span class="sd">    :param 4 nthreads: number of threads to use for mapping (number of CPUs)</span>
+<span class="sd">    :param 0.04 max_edit_distance: The maximum number of edit operations allowed</span>
+<span class="sd">       while verifying candidate matches by dynamic programming.</span>
+<span class="sd">    :param 0.04 mismatches: The maximum number of nucleotide substitutions</span>
+<span class="sd">       allowed while mapping each k-mer. It is always guaranteed that, however</span>
+<span class="sd">       other options are chosen, all the matches up to the specified number of</span>
+<span class="sd">       substitutions will be found by the program.</span>
+<span class="sd">    :param -1 max_reads_per_chunk: maximum number of reads to process at a time.</span>
+<span class="sd">       If -1, all reads will be processed in one run (more RAM memory needed).</span>
+<span class="sd">    :param False output_is_bam: Use binary (compressed) form of generated</span>
+<span class="sd">       out-files with mapped reads (recommended to save disk space).</span>
+<span class="sd">    :param /tmp temp_dir: important to change. Intermediate FASTQ files will be</span>
+<span class="sd">       written there.</span>
+
+<span class="sd">    :returns: a list of paths to generated outfiles. To be passed to </span>
+<span class="sd">       :func:`pytadbit.parsers.sam_parser.parse_sam`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gem_index_path</span>      <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">))</span>
     <span class="n">fastq_path</span>          <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">))</span>
     <span class="n">out_sam_path</span>        <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">out_sam_path</span><span class="p">))</span>
     <span class="n">single_end</span>          <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;single_end&#39;</span>          <span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-    <span class="n">nthreads</span>            <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;nthreads&#39;</span>            <span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
     <span class="n">max_edit_distance</span>   <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;max_edit_distance&#39;</span>   <span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
     <span class="n">mismatches</span>          <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;mismatches&#39;</span>          <span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
     <span class="n">nthreads</span>            <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;nthreads&#39;</span>            <span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
@@ -141,6 +165,19 @@
     <span class="n">output_is_bam</span>       <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;output_is_bam&#39;</span>       <span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
     <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;temp_dir&#39;</span><span class="p">,</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">())))</span>
+
+    <span class="c"># check kwargs</span>
+    <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kw</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;single_end&#39;</span><span class="p">,</span> <span class="s">&#39;nthreads&#39;</span><span class="p">,</span> <span class="s">&#39;max_edit_distance&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;mismatches&#39;</span><span class="p">,</span> <span class="s">&#39;max_reads_per_chunk&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;out_files&#39;</span><span class="p">,</span> <span class="s">&#39;output_is_bam&#39;</span><span class="p">,</span> <span class="s">&#39;temp_dir&#39;</span><span class="p">]:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: </span><span class="si">%s</span><span class="s"> not is usual keywords, misspelled?&#39;</span> <span class="o">%</span> <span class="n">kw</span><span class="p">)</span>
+    
+    <span class="c"># check windows:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">range_start</span><span class="p">,</span> <span class="n">range_stop</span><span class="p">))</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">range_start</span><span class="p">)</span> <span class="ow">or</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">range_start</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">range_stop</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: range_start and range_stop should have the &#39;</span> <span class="o">+</span>
+                        <span class="s">&#39;same sizes and windows should be uniques.&#39;</span><span class="p">)</span>
 
     <span class="c"># create directories</span>
     <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="p">[</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">out_sam_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]:</span>
@@ -380,7 +417,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

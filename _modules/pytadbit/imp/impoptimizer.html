@@ -91,7 +91,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span>       <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zeros</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: in optimization, bad number of particles</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-        <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Preparing to optimize </span><span class="si">%s</span><span class="s"> particles</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_models</span>    <span class="o">=</span> <span class="n">n_models</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_keep</span>      <span class="o">=</span> <span class="n">n_keep</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close_bins</span>  <span class="o">=</span> <span class="n">close_bins</span>
@@ -140,6 +139,8 @@
 <span class="sd">           and save it into a file named by this argument</span>
 <span class="sd">        :param True verbose: print the results to the standard output</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Optimizing </span><span class="si">%s</span><span class="s"> particles</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maxdist_range</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="n">maxdist_step</span> <span class="o">=</span> <span class="n">maxdist_range</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">maxdist_arange</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxdist_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -608,7 +609,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

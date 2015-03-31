@@ -1,6 +1,4 @@
-
 .. _getting_start:
-
 Getting started
 ===============
 
@@ -46,7 +44,6 @@ loaded as this *(note: this example loads human chromosome 19 from*
     /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
       warn('WARNING: non integer values')
 
-
 .. warning::
    TADbit assumes that Hi-C data matrices starts at chromosome position 1. If your matrix do not represents the full chromosome length, fill the missing columns and rows with zeros.
 
@@ -58,7 +55,6 @@ loaded as this *(note: this example loads human chromosome 19 from*
 
 .. note::
    Many optional descriptive arguments can be passed to the chromosome and to the experiments. This arguments may be used by TADbit when generating the output.
-
 Unrecognized data format
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -125,12 +121,8 @@ position in :class:``pytadbit.chromosome.ExperimentList`` :
     True
 
 
-
 Each Experiment is an independent object with a list of associated functions 
-(see :class:`pytadbit.experiment.Experiment`).
-
-.. _exp_operations:
-
+(see :class:`pytadbit.experiment.Experiment`)... _exp_operations:
 Basic manipulation of Experiments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -185,9 +177,7 @@ chromosome.
 
 Hi-C matric visualization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-
 To quickly view how does the interaction matrix look like, experiment objects have the :func:`pytadbit.experiment.Experiment.view` function
-
 .. code:: python
 
     exp.view()
@@ -221,25 +211,17 @@ the chromosome object.
 
 .. image:: ../nbpictures/tutorial_1_general_29_0.png
 
-
-Note how we pass the list of experiments to show to the :func:`pytadbit.chromosome.Chromosome.visualize` we ask to view 3 experiments, the first two being grouped in a single matrix. This view is useful to compare experiments, and do not suppose a lose of information as Hi-C matrices are symetric.
-
-.. _run_tadbit:
-
+Note how we pass the list of experiments to show to the :func:`pytadbit.chromosome.Chromosome.visualize` we ask to view 3 experiments, the first two being grouped in a single matrix. This view is useful to compare experiments, and do not suppose a lose of information as Hi-C matrices are symetric... _run_tadbit:
 Find Topologically Associating Domains
 --------------------------------------
-
 Once an experiment has been loaded, the location of Topologically Associating Domains (TADs) can be estimated as:
-
 .. code:: python
 
     my_chrom.find_tad('k562', n_cpus=8)
     my_chrom.find_tad('gm06690', n_cpus=8)
-
 :func:`pytadbit.chromosome.Chromosome.find_tad` is called from our Chromosome object but is applied to a 
 specific experiment. Therefore, TADs found by TADBbit will be associated to this specific experiment. 
 They can be accessed as following:
-
 .. code:: python
 
     exp = my_chrom.experiments["k562"]
@@ -384,9 +366,7 @@ use nrmalized data instead of the log2 of raw data:
 *Note that the width of the line is proportional to the score of the TAD
 border.*
 
-
 .. _density_plot:
-
 
 TADs in density plots
 ~~~~~~~~~~~~~~~~~~~~~
@@ -414,9 +394,7 @@ identification of the border.
 
 Finding TADs in related Hi-C experiments
 ----------------------------------------
-
 TADbit also allows to search for TADs in a chromosome using the information of several Hi-C experiments. To do this experiments do not need to be summed up (like in :ref:`exp_operations`), as the find_tad function has a batch_mode:
-
 .. code:: python
 
     my_chrom.find_tad(['k562', 'gm06690'], batch_mode=True, n_cpus=8)
@@ -427,24 +405,16 @@ TADbit also allows to search for TADs in a chromosome using the information of s
 
     [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: visibility), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: visibility)]
 
-
 .. note::
    In this case a new experiment is also created (e.g. "batch_gm06690_k562"), it contains the TADs detected when taking into account the two experiments "gm06690" and "k562".
-
-
 .. _forbidden_regions:
-
 Forbidden regions and centromeres
 ---------------------------------
-
 By default TADbit does not put limitation in sizes of TADs, owever it may make sense to set a maximum TAD size of 5 Mb in humans [Dekker2013]_. In this case we can set this cutoff when first defining the chromosome (see the option in :class:`pytadbit.Chromosome`), or just use the function :class:`pytadbit.Chromosome.set_max_tad_size`:
-
 .. code:: python
 
-    my_chrom.set_max_tad_size(3000000)
-Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, TADbit checks that they are not larger than a given value (5 Mb here). If a TAD is larger than this value, it will be marked with a 
+    my_chrom.set_max_tad_size(3000000)Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, TADbit checks that they are not larger than a given value (5 Mb here). If a TAD is larger than this value, it will be marked with a 
 **negative score**, and will be automatically excluded from the main TADbit functions.
-
 .. code:: python
 
     my_chrom.visualize('k562', paint_tads=True)
@@ -468,16 +438,12 @@ after.
 
 Saving and restoring data
 -------------------------
-
 In order to avoid having to calculate TAD positions each time, TADbit allows to save and load Chromosome 
 objects, with all the associated experiments. To save a Chromosome object:
-
 .. code:: python
 
     my_chrom.save_chromosome("some_path.tdb", force=True)
-
 And to load it:
-
 .. code:: python
 
     from pytadbit import load_chromosome
@@ -491,9 +457,7 @@ And to load it:
 
     [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: None)]
 
-
 *Note: while information about TADs can be saved, in order to save disk space, raw Hi-C data are not stored in this way but can be loaded again for each experiment:*
-
 .. code:: python
 
     expr = my_chrom.experiments["k562"]

@@ -47,23 +47,9 @@
             
   <h1>Source code for pytadbit</h1><div class="highlight"><pre>
 <span class="kn">from</span> <span class="nn">pytadbit._version</span> <span class="kn">import</span> <span class="n">__version__</span>
-<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span> <span class="kn">import</span> <span class="n">tadbit</span><span class="p">,</span> <span class="n">batch_tadbit</span>
-<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span> <span class="kn">import</span> <span class="n">Chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">load_experiment_from_reads</span>
-<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">StructuralModels</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">load_structuralmodels</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">load_impmodel_from_cmm</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">load_impmodel_from_xyz</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">IMPmodel</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span> <span class="kn">import</span> <span class="n">IMPoptimizer</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
-    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">get_dependencies_version</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">get_dependencies_version</span><span class="p">(</span><span class="n">dico</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <div class="viewcode-block" id="get_dependencies_version"><a class="viewcode-back" href="../reference/reference_utils.html#pytadbit.get_dependencies_version">[docs]</a><span class="sd">    Check versions of TADbit and all dependencies, as well and retieves system</span>
 <span class="sd">    info. May be used to ensure reproductibility.</span>
@@ -101,7 +87,7 @@
         <span class="n">versions</span><span class="p">[</span><span class="s">&#39;matplotlib&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
     <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">mcl</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;mcl&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="n">mcl</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;mcl&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
                          <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
         <span class="n">versions</span><span class="p">[</span><span class="s">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mcl</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">except</span><span class="p">:</span>
@@ -125,9 +111,29 @@
     <span class="k">except</span><span class="p">:</span>
         <span class="n">versions</span><span class="p">[</span><span class="s">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
 
-    <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%15s</span><span class="s"> : </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">versions</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
-                      <span class="nb">sorted</span><span class="p">(</span><span class="n">versions</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
-</pre></div></div>
+    <span class="k">if</span> <span class="n">dico</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">versions</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%15s</span><span class="s"> : </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">versions</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
+                          <span class="nb">sorted</span><span class="p">(</span><span class="n">versions</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+
+
+<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span> <span class="kn">import</span> <span class="n">tadbit</span><span class="p">,</span> <span class="n">batch_tadbit</span>
+<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span> <span class="kn">import</span> <span class="n">Chromosome</span></div>
+<span class="kn">from</span> <span class="nn">pytadbit.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">load_experiment_from_reads</span>
+<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">StructuralModels</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">load_structuralmodels</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">load_impmodel_from_cmm</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">load_impmodel_from_xyz</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">IMPmodel</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">read_matrix</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span> <span class="kn">import</span> <span class="n">IMPoptimizer</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</pre></div>
 
           </div>
         </div>
@@ -174,7 +180,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

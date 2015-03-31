@@ -1,0 +1,261 @@
+<!doctype html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Mapping paired-end reads from NGS experiment (with GEM) &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Tutorials" href="../tutorial.html" />
+    <link rel="next" title="Getting started" href="tutorial_1_general.html" />
+    <link rel="prev" title="Tutorials" href="../tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_1_general.html" title="Getting started"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../tutorial.html" title="Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../tutorial.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="mapping-paired-end-reads-from-ngs-experiment-with-gem">
+<h1>Mapping paired-end reads from NGS experiment (with GEM)<a class="headerlink" href="#mapping-paired-end-reads-from-ngs-experiment-with-gem" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="download-and-index-reference-genome">
+<h2>Download and index reference genome<a class="headerlink" href="#download-and-index-reference-genome" title="Permalink to this headline">¶</a></h2>
+<p>Download last human reference genome from ucsc:
+<a class="reference external" href="http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/">http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/</a> It&#8217;s better to
+download the file that contains each chromosome separately (like this we
+could only keep those which we are interested in): hg38.chromFa.tar.gz
+Uncompress the genome</p>
+<div class="highlight-python"><div class="highlight"><pre>tar -xzf hg38.chromFa.tar.gz
+</pre></div>
+</div>
+<p>Check the header of the fasta files (it&#8217;s important to know how
+chromosomes are called in these files):</p>
+<div class="highlight-python"><div class="highlight"><pre>head chr1.fa
+</pre></div>
+</div>
+<p>Create a single file with all chromosomes together:</p>
+<div class="highlight-python"><div class="highlight"><pre>cat chr1.fa chr2.fa chr3.fa chr4.fa chr5.fa chr6.fa chr7.fa chr8.fa chr9.fa chr10.fa chr11.fa chr12.fa chr13.fa chr14.fa  chr15.fa  chr16.fa  chr17.fa  chr18.fa  chr19.fa chr20.fa  chr21.fa  chr22.fa chrX.fa  chrY.fa chrM.fa &gt; hg38.fa
+</pre></div>
+</div>
+<p>Index reference genome:</p>
+<div class="highlight-python"><div class="highlight"><pre>gemtools index -i hg38.fa -t 8
+</pre></div>
+</div>
+<p>Creates a file hg38.gem that we will be used for the mapping.</p>
+</div>
+<div class="section" id="mapping">
+<h2>Mapping<a class="headerlink" href="#mapping" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="retrieving-hi-c-experiment-sra-format">
+<h3>Retrieving Hi-C experiment SRA format<a class="headerlink" href="#retrieving-hi-c-experiment-sra-format" title="Permalink to this headline">¶</a></h3>
+<p>Along this tutorial we are going to use the dataset from [Dixon2012]_
+that can be downloaded at:
+<a class="reference external" href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE35156">http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE35156</a></p>
+<p>For this part of the tutorial we are going to work with the experiments
+conducted on <em>Homo sapiens</em> IMR90 and ESC (replicate 1 in both cases).</p>
+<p>Each of this replica consists of severa SRA files:</p>
+<div class="code python highlight-python"><div class="highlight"><pre>! ls ~/db/FASTQs/hsap/dixon_2012/*/*/*.sra
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400260/SRR400260.sra
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400261/SRR400261.sra
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400262/SRR400262.sra
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400263/SRR400263.sra
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400264/SRR400264.sra
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400265/SRR400265.sra
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400266/SRR400266.sra
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400267/SRR400267.sra
+/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400268/SRR400268.sra
+</pre>
+</div>
+<div class="section" id="first-quality-check-on-the-data">
+<h3>First quality check on the data<a class="headerlink" href="#first-quality-check-on-the-data" title="Permalink to this headline">¶</a></h3>
+<p>First we need to convert SRA files in FASTQ format, as TADbit does not
+support reading directly from SRA. For this purpose we may want to use
+the SRA-toolkit from the NCBI (<a class="reference external" href="https://github.com/ncbi/sratoolkit">https://github.com/ncbi/sratoolkit</a>). We
+finally shall endup with a single FASTQ file per experimental replica,
+with commands like (can last for hours):</p>
+<p><tt class="docutils literal"><span class="pre">fastq-dump</span> <span class="pre">-A</span> <span class="pre">SRX116345</span> <span class="pre">--gzip</span> <span class="pre">SRX116345/*/*.sra</span></tt>
+<tt class="docutils literal"><span class="pre">fastq-dump</span> <span class="pre">-A</span> <span class="pre">SRX116344</span> <span class="pre">--gzip</span> <span class="pre">SRX116344/*/*.sra</span></tt></p>
+<p>the compressed FASTQ files should be:</p>
+<div class="code python highlight-python"><div class="highlight"><pre>! ls ~/db/FASTQs/hsap/dixon_2012/
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+SRX116344  SRX116345
+</pre>
+<p>Usig these files directly we can infer the quality of the Hi-C
+experiment with TADbit:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.utils.fastq_utils</span> <span class="kn">import</span> <span class="n">quality_plot</span>
+
+<span class="n">quality_plot</span><span class="p">(</span><span class="s">&#39;/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344.fastq.gz&#39;</span><span class="p">,</span>
+             <span class="n">nreads</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">paired</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_12_0.png" src="../_images/tutorial_0_mapping_12_0.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.utils.fastq_utils</span> <span class="kn">import</span> <span class="n">quality_plot</span>
+
+<span class="n">quality_plot</span><span class="p">(</span><span class="s">&#39;/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345.fastq.gz&#39;</span><span class="p">,</span>
+             <span class="n">nreads</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">paired</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_13_0.png" src="../_images/tutorial_0_mapping_13_0.png" />
+</div>
+<div class="section" id="iterative-mapping">
+<h3>Iterative mapping<a class="headerlink" href="#iterative-mapping" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.mapper</span> <span class="kn">import</span> <span class="n">iterative_mapping</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&#39;Mapping Read 1&#39;</span>
+
+<span class="n">name</span> <span class="o">=</span> <span class="s">&#39;SRX116344&#39;</span>
+
+<span class="n">sams1</span> <span class="o">=</span> <span class="n">iterative_mapping</span><span class="p">(</span>
+            <span class="n">gem_index_path</span>       <span class="o">=</span> <span class="s">&#39;ref_genome/hg38.gem&#39;</span><span class="p">,</span>
+            <span class="n">fastq_path</span>           <span class="o">=</span> <span class="s">&#39;/home/fransua/db/FASTQs/hsap/dixon_2012/</span><span class="si">%s</span><span class="s">.fastq.gz&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">out_sam_path</span>         <span class="o">=</span> <span class="s">&#39;mapped_reads/</span><span class="si">%s</span><span class="s">_r1.txt&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">temp_dir</span>             <span class="o">=</span> <span class="s">&#39;tmp_dir_</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">range_start</span>          <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">1</span> <span class="p">],</span> <span class="c"># starts with a flag sequence</span>
+            <span class="n">range_stop</span>           <span class="o">=</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">75</span><span class="p">],</span>
+            <span class="n">nthreads</span>             <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>  <span class="c"># number of CPUs to use</span>
+            <span class="n">max_reads_per_chunk</span>  <span class="o">=</span> <span class="mi">25000000</span><span class="p">,</span> <span class="c"># this is for computers with not too much RAM</span>
+            <span class="n">single_end</span>           <span class="o">=</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="n">output_is_bam</span>        <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&#39;  created thes SAM files:&#39;</span><span class="p">,</span> <span class="n">sams1</span>
+
+<span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Mapping Read 2&#39;</span>
+
+<span class="n">sams2</span> <span class="o">=</span> <span class="n">iterative_mapping</span><span class="p">(</span>
+            <span class="n">gem_index_path</span>       <span class="o">=</span> <span class="s">&#39;ref_genome/hg38.gem&#39;</span><span class="p">,</span>
+            <span class="n">fastq_path</span>           <span class="o">=</span> <span class="s">&#39;/home/fransua/db/FASTQs/hsap/dixon_2012/</span><span class="si">%s</span><span class="s">.fastq.gz&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">out_sam_path</span>         <span class="o">=</span> <span class="s">&#39;mapped_reads/</span><span class="si">%s</span><span class="s">_r2.txt&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">temp_dir</span>             <span class="o">=</span> <span class="s">&#39;tmp_dir_</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">range_start</span>          <span class="o">=</span> <span class="p">[</span><span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">102</span><span class="p">],</span>
+            <span class="n">range_stop</span>           <span class="o">=</span> <span class="p">[</span><span class="mi">121</span><span class="p">,</span> <span class="mi">126</span><span class="p">,</span> <span class="mi">131</span><span class="p">,</span> <span class="mi">136</span><span class="p">,</span> <span class="mi">141</span><span class="p">,</span> <span class="mi">146</span><span class="p">,</span> <span class="mi">151</span><span class="p">,</span> <span class="mi">156</span><span class="p">,</span> <span class="mi">161</span><span class="p">,</span> <span class="mi">166</span><span class="p">,</span> <span class="mi">171</span><span class="p">,</span> <span class="mi">176</span><span class="p">],</span>
+            <span class="n">nthreads</span>             <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+            <span class="n">max_reads_per_chunk</span>  <span class="o">=</span> <span class="mi">25000000</span><span class="p">,</span>
+            <span class="n">single_end</span>           <span class="o">=</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="n">output_is_bam</span>        <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s">&#39;  created thes SAM files:&#39;</span><span class="p">,</span> <span class="n">sams2</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+Mapping Read 1
+Split input file /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344.fastq.gz into chunks
+</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">Mapping paired-end reads from NGS experiment (with GEM)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../tutorial.html"
+                        title="previous chapter">Tutorials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_1_general.html"
+                        title="next chapter">Getting started</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_1_general.html" title="Getting started"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../tutorial.html" title="Tutorials"
+             >previous</a> |</li>
+        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li><a href="../tutorial.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Last updated on Mar 31, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

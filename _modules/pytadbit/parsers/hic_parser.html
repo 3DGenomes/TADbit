@@ -170,7 +170,7 @@
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">]),</span> <span class="n">ncol</span>
 
 
-<div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../../../reference/reference_parser.html#pytadbit.parsers.hic_parser.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">things</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hic</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../../../reference/reference_parser.html#pytadbit.parsers.hic_parser.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">things</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hic</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read and checks a matrix from a file (using</span>
 <span class="sd">    :func:`pytadbit.parser.hic_parser.autoreader`) or a list.</span>
@@ -199,6 +199,7 @@
 <span class="sd">       returns number or rows</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">one</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;one&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
     <span class="k">global</span> <span class="n">HIC_DATA</span>
     <span class="n">HIC_DATA</span> <span class="o">=</span> <span class="n">hic</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">parser</span> <span class="ow">or</span> <span class="n">autoreader</span>
@@ -253,9 +254,10 @@
                                       <span class="k">if</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">size</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Unable to read this file or whatever it is :)&#39;</span><span class="p">)</span>
-        
-    <span class="k">return</span> <span class="n">matrices</span>
-
+    <span class="k">if</span> <span class="n">one</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">matrices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">matrices</span>
 </div>
 <span class="k">def</span> <span class="nf">load_hic_data_from_reads</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">resolution</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -287,8 +289,8 @@
         <span class="n">_</span><span class="p">,</span> <span class="n">cr1</span><span class="p">,</span> <span class="n">ps1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cr2</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
         <span class="n">ps1</span> <span class="o">=</span> <span class="n">dict_sec</span><span class="p">[(</span><span class="n">cr1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps1</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)]</span>
         <span class="n">ps2</span> <span class="o">=</span> <span class="n">dict_sec</span><span class="p">[(</span><span class="n">cr2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps2</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)]</span>
-        <span class="n">imx</span><span class="p">[</span><span class="n">ps1</span> <span class="o">+</span> <span class="n">ps2</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">imx</span><span class="p">[</span><span class="n">ps2</span> <span class="o">+</span> <span class="n">ps1</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">imx</span><span class="p">[</span><span class="n">ps1</span><span class="p">,</span> <span class="n">ps2</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">imx</span><span class="p">[</span><span class="n">ps2</span><span class="p">,</span> <span class="n">ps1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
@@ -357,7 +359,6 @@
             <span class="nb">super</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">row_col</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 
 
-
 <div class="viewcode-block" id="HiC_data.cis_trans_ratio"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio">[docs]</a>    <span class="k">def</span> <span class="nf">cis_trans_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                         <span class="n">equals</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -385,18 +386,25 @@
             <span class="k">for</span> <span class="n">crm2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="n">i</span><span class="p">:]:</span>
                 <span class="k">if</span> <span class="n">crm1</span> <span class="ow">in</span> <span class="n">exclude</span> <span class="ow">or</span> <span class="n">crm2</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="k">if</span> <span class="n">equals</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">):</span>
-                    <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span>
-                        <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">),</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="n">diagonal</span><span class="p">)])</span>
+                <span class="k">if</span> <span class="n">crm1</span> <span class="o">==</span> <span class="n">crm2</span><span class="p">:</span>
+                    <span class="n">mtrx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span>
+                        <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">),</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="n">diagonal</span><span class="p">)</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">sum</span><span class="p">([</span><span class="n">mtrx</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mtrx</span><span class="p">))])</span>
+                               <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mtrx</span><span class="p">))])</span>
                     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                         <span class="k">print</span> <span class="s">&#39;INTRA&#39;</span><span class="p">,</span> <span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">,</span> <span class="n">val</span>
                     <span class="n">intra</span> <span class="o">+=</span> <span class="n">val</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span>
                         <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">),</span> <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="n">diagonal</span><span class="p">)])</span>
-                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="k">print</span> <span class="s">&#39;  INTER&#39;</span><span class="p">,</span> <span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">,</span> <span class="n">val</span>
-                    <span class="n">inter</span> <span class="o">+=</span> <span class="n">val</span>
+                    <span class="k">if</span> <span class="n">equals</span><span class="p">(</span><span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="k">print</span> <span class="s">&#39;  INTRA&#39;</span><span class="p">,</span> <span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">,</span> <span class="n">val</span>
+                        <span class="n">intra</span> <span class="o">+=</span> <span class="n">val</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="k">print</span> <span class="s">&#39;  INTER&#39;</span><span class="p">,</span> <span class="n">crm1</span><span class="p">,</span> <span class="n">crm2</span><span class="p">,</span> <span class="n">val</span>
+                        <span class="n">inter</span> <span class="o">+=</span> <span class="n">val</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">intra</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">intra</span> <span class="o">+</span> <span class="n">inter</span><span class="p">)</span>
     
 </div>
@@ -439,6 +447,12 @@
                       <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
                       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))])</span>
 
+<div class="viewcode-block" id="HiC_data.write_matrix"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">write_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        writes the matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
 <div class="viewcode-block" id="HiC_data.get_matrix"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get the matrix</span>
@@ -531,7 +545,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -61,11 +61,13 @@
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">tad_coloring</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>      <span class="kn">import</span> <span class="n">tad_border_coloring</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>        <span class="kn">import</span> <span class="n">newton_raphson</span>
+<span class="kn">from</span> <span class="nn">pytadbit</span>                       <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">version</span>
 <span class="kn">from</span> <span class="nn">scipy.interpolate</span>              <span class="kn">import</span> <span class="n">spline</span>
 <span class="kn">from</span> <span class="nn">numpy</span>                          <span class="kn">import</span> <span class="n">linspace</span>
 <span class="kn">from</span> <span class="nn">warnings</span>                       <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">re</span>                             <span class="kn">import</span> <span class="n">findall</span><span class="p">,</span> <span class="nb">compile</span> <span class="k">as</span> <span class="n">compil</span>
 <span class="kn">from</span> <span class="nn">math</span>                           <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span>
+<span class="kn">import</span> <span class="nn">sha</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
@@ -864,7 +866,7 @@
 
 </div>
 <div class="viewcode-block" id="IMPmodel.write_json"><a class="viewcode-back" href="../../../reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_json">[docs]</a>    <span class="k">def</span> <span class="nf">write_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="n">rndname</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                   <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                   <span class="n">model_num</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save a model in the json format, read by TADkit.</span>
 
@@ -917,24 +919,38 @@
             <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;one of function, list or string is required</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="s">&#39;&lt;marker_set name=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&gt;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])</span>
-        <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;marker id=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> x=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> y=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> z=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span>
-                <span class="s">&#39; r=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> g=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
-                <span class="s">&#39;radius=</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span> <span class="c">#str(30) +</span>
-                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;radius&#39;</span><span class="p">])</span> <span class="o">+</span>
-                <span class="s">&#39;</span><span class="se">\&quot;</span><span class="s"> note=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">])):</span>
-            <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                           <span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
-                           <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">form</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;&lt;link id1=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> id2=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> r=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s"> &#39;</span> <span class="o">+</span>
-                <span class="s">&#39;g=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s"> b=</span><span class="se">\&quot;</span><span class="s">1</span><span class="se">\&quot;</span><span class="s"> radius=</span><span class="se">\&quot;</span><span class="s">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span>
-                <span class="c"># str(self[&#39;radius&#39;]/2) +</span>
-                <span class="s">&#39;</span><span class="se">\&quot;</span><span class="s">/&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">])):</span>
-            <span class="n">out</span> <span class="o">+=</span> <span class="n">form</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">+=</span> <span class="s">&#39;&lt;/marker_set&gt;</span><span class="se">\n</span><span class="s">&#39;</span>
-
+        <span class="n">form</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;</span>
+<span class="s">{</span>
+<span class="s">	&quot;chromatin&quot; : {</span>
+<span class="s">		&quot;id&quot; : </span><span class="si">%(sha)s</span><span class="s">,</span>
+<span class="s">		&quot;title&quot; : &quot;</span><span class="si">%(title)s</span><span class="s">&quot;,</span>
+<span class="s">		&quot;source&quot; : &quot;TADbit </span><span class="si">%(version)s</span><span class="s">&quot;,</span>
+<span class="s">		&quot;metadata&quot;: {</span><span class="si">%(descr)s</span><span class="s">},</span>
+<span class="s">		&quot;type&quot; : &quot;tadbit&quot;,</span>
+<span class="s">	        &quot;data&quot;: {</span>
+<span class="s">		    &quot;models&quot;:     [</span>
+<span class="s">		        { </span><span class="si">%(xyz)s</span><span class="s"> },</span>
+<span class="s">		    ],</span>
+<span class="s">	            &quot;clusters&quot;:[</span><span class="si">%(cluster)s</span><span class="s">],</span>
+<span class="s">      	            &quot;centroid&quot;:[</span><span class="si">%(centroid)s</span><span class="s">],</span>
+<span class="s">	            &quot;restraints&quot;: [[][]],</span>
+<span class="s">		    &quot;chromatinColor&quot; : [ ]</span>
+<span class="s">		}    </span>
+<span class="s">	}</span>
+<span class="s">}</span>
+<span class="s">&#39;&#39;&#39;</span>
+        <span class="n">fil</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;sha&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="n">sha</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="n">title</span> <span class="ow">or</span> <span class="s">&quot;Sample TADbit data&quot;</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;descr&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;,</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+            <span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot; : </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]),</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;[</span><span class="si">%.4f</span><span class="s">,</span><span class="si">%.4f</span><span class="s">,</span><span class="si">%.4f</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                                                         <span class="bp">self</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]))])</span>
+        
+        
         <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
                 <span class="n">out_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1150,7 +1166,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

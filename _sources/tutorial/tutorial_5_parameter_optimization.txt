@@ -1,26 +1,18 @@
 
 Parameter optimization for IMP.
 ===============================
-
-*Recover data from previous section by loading the previously saved chromosome and its Hi-C data.*
-
-Import the necessary libraries.
-
+*Recover data from previous section by loading the previously saved chromosome and its Hi-C data.*Import the necessary libraries.
 .. code:: python
 
     # Libraries
     from pytadbit import load_chromosome # to load chromosomes
     from pytadbit.imp.impoptimizer import IMPoptimizer
-
 First, load the chromosome from previous tutorial (:ref:`run_tadbit`).
-
 .. code:: python
 
     # Load the chromosome
     my_chrom = load_chromosome('some_path.tdb')
-
 Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromosome objects because of their size):
-
 .. code:: python
 
     # Loop over experiments in chromosome and load Hi-C data.
@@ -68,9 +60,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
     /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
       warn('WARNING: non integer values')
 
-
 The log indicates that experiment "k562+gm06690" had no file. Such experiment was built ad-hoc in our previous tutorial and needs to be created again by summing the Hi-C matrices from the individual experiments.
-
 .. code:: python
 
     my_chrom.experiments['k562+gm06690'] = my_chrom.experiments['k562'] + my_chrom.experiments['gm06690']
@@ -114,11 +104,9 @@ first thing we need to do is to filter columns with low counts:
 
 Optimization of IMP 3D modeling parameters
 ------------------------------------------
-
 In the previous tutorial we found a specific TAD (region 406 to 448) that seemed quite conserved accross different cell types.
 
 Next, we will optimize the three IMP parameters for this TAD. The IMP parameters to optimize are maximal distance between two non-interacting particles (maxdist), Upper-bound Z-score (upfreq) and Lower-bound Z-score (lowfreq). For details see Bau & Marti-Renom. METHODS [Baù2012]_.
-
 .. code:: python
 
     optimizer = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=2000)
@@ -127,11 +115,9 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
     Preparing to optimize 101 particles
 
-
 ``cutoff`` value corresponds to the distance limit, in nanometers, to consider if two particles of a model are interacting or not. A wise choice corresponds to two time the resolution times the scale factor (0.01), which in this case is :math:`cutoff = 100Kb \times 2 \times scale = 100000 \times 2 \times 0.01 = 2000`
 
 *Note: Usually the number of models to generate and to keep, should be respectively 500 and 100.*
-
 .. code:: python
 
     # Optimize parameters. Be aware that this step is CPU intensive. If you want to se the progress, set verbose=True.
@@ -238,19 +224,15 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
        95  0.8 -0.2 3500 0.01 0.778091343506
        96  0.8 0 3500 0.01 0.778697968972
 
-
 .. note::
    The above warning is given when a small matrix is loaded. TADbit has a filtering function that is applied to all Hi-C matrices with the aim of removing entire rows with very low counts. Those rows/colums are treated then for modeling as "missing-data" points. This flitering function can only be applied for relatively large matrices.
 
 .. note::
    By default TADbit does not store the models generated during the optimization, however, in case they are needed, the option savedata may allow to store them.
 
-
 Optimizing from Experiment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 The exact same as above can be done from Experiment objects directly:
-
 .. code:: python
 
     #optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
@@ -273,9 +255,7 @@ Visualize the results
 
 .. image:: ../nbpictures/tutorial_5_parameter_optimization_23_0.png
 
-
 We can also ask to mark on the plot the best N combination of parameters with the "show_best" parameter.
-
 .. code:: python
 
     # Visualize the results of the optimization and mark the best 10 parameter sets
@@ -315,9 +295,7 @@ We can also ask to mark on the plot the best N combination of parameters with th
     [[0.01], [2000.0, 2500.0, 3000.0, 3500.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
     (0.79673255576921265, 0.01, 3000.0, 0.0, 0.8)
 
-
 One can also visualize the parameter optimization according to ne of the three optimization parameters.
-
 .. code:: python
 
     # Visualize the results of the optimization based on the lowfreq parameter.
@@ -336,9 +314,7 @@ One can also visualize the parameter optimization according to ne of the three o
 
 .. image:: ../nbpictures/tutorial_5_parameter_optimization_29_0.png
 
-
 TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
-
 .. code:: python
 
     # Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.
@@ -407,9 +383,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 Retrieve best parameters
 ------------------------
-
 Once done, best results can be returned as a dictionary to be used for modeling (see next section of the tutorial)
-
 .. code:: python
 
     config = optimizer.get_best_parameters_dict(reference='gm cell from Job Dekker 2009')

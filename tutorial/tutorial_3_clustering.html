@@ -72,7 +72,7 @@ in order to find group of TADs with specific characteristics.</p>
 <div class="section" id="compare-two-tads">
 <h2><a class="toc-backref" href="#id3">Compare two TADs</a><a class="headerlink" href="#compare-two-tads" title="Permalink to this headline">¶</a></h2>
 <p>To compare TADs, a Chromosome with defined TADs is needed. Thus, following with the example chromosome used
-in <a class="reference internal" href="tutorial_1_general.html#getting-start"><em>Getting started</em></a> (following the example up to <a class="reference internal" href="tutorial_1_general.html#run-tadbit"><em>Find Topologically Associating Domains</em></a>), these re the steps to follow:</p>
+in <em class="xref std std-ref">getting_start</em> (following the example up to <em class="xref std std-ref">run_tadbit</em>), these re the steps to follow:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">Chromosome</span>
 <span class="n">my_chrom</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;My first chromosome&#39;</span><span class="p">)</span>
 <span class="n">my_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s">&#39;First Hi-C experiment&#39;</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="s">&quot;../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt&quot;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
@@ -119,6 +119,7 @@ method used to align, and the p-value and rho value of the Spearman correlation 
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1_general.html">Getting started</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a></li>
@@ -173,7 +174,7 @@ method used to align, and the p-value and rho value of the Spearman correlation 
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

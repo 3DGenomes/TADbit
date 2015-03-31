@@ -55,7 +55,7 @@
             
   <dl class="function">
 <dt id="pytadbit.imp.imp_modelling.generate_3d_models">
-<tt class="descclassname">pytadbit.imp.imp_modelling.</tt><tt class="descname">generate_3d_models</tt><big>(</big><em>zscores</em>, <em>resolution</em>, <em>nloci</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.01}</em>, <em>values=None</em>, <em>experiment=None</em>, <em>coords=None</em>, <em>zeros=None</em>, <em>first=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.imp.imp_modelling.</tt><tt class="descname">generate_3d_models</tt><big>(</big><em>zscores</em>, <em>resolution</em>, <em>nloci</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config=None</em>, <em>values=None</em>, <em>experiment=None</em>, <em>coords=None</em>, <em>zeros=None</em>, <em>first=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates three-dimensional models starting from Hi-C data. 
 The final analysis will be performed on the n_keep top models.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -93,7 +93,7 @@ and Z-score between particles will be printed. If verbose is 0.5 than
 constraints will be printed only for the first model calculated.</li>
 <li><strong>values</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the normalized Hi-C data in a list of lists (equivalent 
 to a square matrix)</li>
-<li><strong>config</strong> (<em>CONFIG[&#8216;dmel_01&#8217;]</em>) &#8211; <p>a dictionary containing the standard 
+<li><strong>config</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a dictionary containing the standard 
 parameters used to generate the models. The dictionary should contain
 the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
 seen by doing:</p>
@@ -165,7 +165,7 @@ used inside TADbit)</li>
 
 <dl class="class">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels">
-<em class="property">class </em><tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">StructuralModels</tt><big>(</big><em>nloci</em>, <em>models</em>, <em>bad_models</em>, <em>resolution</em>, <em>original_data=None</em>, <em>zscores=None</em>, <em>clusters=None</em>, <em>config=None</em>, <em>experiment=None</em>, <em>zeros=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">StructuralModels</tt><big>(</big><em>nloci</em>, <em>models</em>, <em>bad_models</em>, <em>resolution</em>, <em>original_data=None</em>, <em>zscores=None</em>, <em>clusters=None</em>, <em>config=None</em>, <em>experiment=None</em>, <em>zeros=None</em>, <em>restraints=None</em>, <em>description=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class contains three-dimensional models generated from a single Hi-C
 data. They can be reached either by their index (integer representing their
 rank according to objective function value), or by their IMP random intial
@@ -196,6 +196,89 @@ generation of three dimensional models.</li>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.accessibility">
+<tt class="descname">accessibility</tt><big>(</big><em>radius</em>, <em>models=None</em>, <em>cluster=None</em>, <em>nump=100</em>, <em>superradius=200</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em>, <em>plot=True</em>, <em>error=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.accessibility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.accessibility" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a mesh surface around the model (distance equal to input
+<strong>radius</strong>) and checks if each point of this mesh could be replaced by
+an object (i.e. a protein) of a given <strong>radius</strong></p>
+<p>Outer part of the model can be excluded from the estimation of
+accessible surface, as the occupancy outside the model is unkown (see
+superradius option).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>radius</strong> &#8211; radius of the object we want to fit in the model.</li>
+<li><strong>nump</strong> (<em>100</em>) &#8211; number of points to draw around a given particle. This
+number also sets the number of points drawn around edges, as each
+point occupies a given surface (see maths below). <em>Note that this
+number is considerably lowered by the occupancy of edges, depending
+of the angle formed by the edges surrounding a given particle, only
+10% to 50% of the ``nump`` will be drawn in fact.</em></li>
+<li><strong>include_edges</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, edges will not be included in the
+calculation of the accessible surface, only particles. Note that
+statistics on particles (like last item returned) will not change,
+and computation time will be significantly decreased.</li>
+<li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to save chimera image</li>
+<li><strong>superradius</strong> (<em>200</em>) &#8211; radius of an object used to exclude outer
+surface of the model. Superradius must be higher than radius.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This function will first define a mesh around the chromatin,
+representing all possible position of the center of the object we want
+to fit. This mesh will be at a distance of <em>radius</em> from the chromatin
+strand. All dots in the mesh represents an equal area (<em>a</em>), the whole
+surface of the chromatin strand being: <span class="math">\(A=n \times a\)</span> (<em>n</em> being
+the total number of dots in the mesh).</p>
+<p>The mesh consists of spheres around particles of the model, and
+cylinders around edges joining particles (no overlap is allowed between
+sphere and cylinders or cylinder and cylinder when they are
+consecutive).</p>
+<p>If we want that all dots of the mesh representing the surface of the
+chromatin, corresponds to an equal area (<span class="math">\(a\)</span>)</p>
+<div class="math">
+\[a = \frac{4\pi r^2}{s} = \frac{2\pi r N_{(d)}}{c}\]</div>
+<p>with:</p>
+<ul class="simple">
+<li><span class="math">\(r\)</span> radius of the object to fit (as the input parameter <strong>radius</strong>)</li>
+<li><span class="math">\(s\)</span> number of points in sphere</li>
+<li><span class="math">\(c\)</span> number of points in circle (as the input parameter <strong>nump</strong>)</li>
+<li><span class="math">\(N_{(d)}\)</span> number of circles in an edge of length <span class="math">\(d\)</span></li>
+</ul>
+<p>According to this, when the distance between two particles is equal
+to <span class="math">\(2r\)</span> (<span class="math">\(N=2r\)</span>), we would have <span class="math">\(s=c\)</span>.</p>
+<p>As :</p>
+<div class="math">
+\[2\pi r = \sqrt{4\pi r^2} \times \sqrt{\pi}\]</div>
+<p>It is fair to state the number of dots represented along a circle as:</p>
+<div class="math">
+\[c = \sqrt{s} \times \sqrt{\pi}\]</div>
+<p>Thus the number of circles in an edge of length <span class="math">\(d\)</span> must be:</p>
+<div class="math">
+\[N_{(d)}=\frac{s}{\sqrt{s}\sqrt{\pi}}\times\frac{d}{2r}\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of <em>1-</em> the number of dots in the mesh that could be
+occupied by an object of the given radius <em>2-</em> the total number of
+dots in the mesh <em>3-</em> the estimated area of the mesh (in square
+micrometers) <em>4-</em> the area of the mesh of a virtually straight strand
+of chromatin defined as 
+<span class="math">\(contour\times 2\pi r + 4\pi r^2\)</span> (also in
+micrometers) <em>5-</em> a list of number of (accessibles, inaccessible) for
+each particle (percentage burried can be infered afterwards by
+accessible/(accessible+inaccessible) )</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.align_models">
 <tt class="descname">align_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>in_place=False</em>, <em>reference_model=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.align_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.align_models" title="Permalink to this definition">¶</a></dt>
@@ -1106,6 +1189,57 @@ function</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="pytadbit.imp.structuralmodels.StructuralModels.write_json">
+<tt class="descname">write_json</tt><big>(</big><em>filename</em>, <em>color='index'</em>, <em>models=None</em>, <em>cluster=None</em>, <em>title=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a model in the json format, read by TADkit.</p>
+<p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
+ALL the models will be written.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> &#8211; location where the file will be written (note: the
+name of the file will be model_1.cmm if model number is 1)</li>
+<li><strong>model_num</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; the number of the model to save</li>
+<li><strong>rndname</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; If True, file names will be formatted as:
+model.RND.cmm, where RND is the random number feed used by IMP to
+generate the corresponding model. If False, the format will be:
+model_NUM_RND.cmm where NUM is the rank of the model in terms of
+objective function value</li>
+<li><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; overide the default file name writing</li>
+<li><strong>color</strong> (<em>&#8216;index&#8217;</em>) &#8211; <p>can be:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>a string as:</dt>
+<dd><ul class="first last">
+<li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+<li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+<li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+coloring function like.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>a function, that takes as argument a model and any other parameter
+passed through the kwargs.</li>
+<li>a list of (r, g, b) tuples (as long as the number of particles).
+Each r, g, b between 0 and 1.</li>
+</ul>
+</li>
+<li><strong>kwargs</strong> &#8211; any extra argument will be passed to the coloring
+function</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.write_xyz">
 <tt class="descname">write_xyz</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>get_path=False</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a xyz file containing the 3D coordinates of each particle in the
@@ -1243,7 +1377,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

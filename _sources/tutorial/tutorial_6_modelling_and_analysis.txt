@@ -1,9 +1,7 @@
 
 Three-dimensional modeling of chromatine structure
 ==================================================
-
 Recover data from previous tutorial by loading the previously saved chromosome.
-
 .. code:: python
 
     # Libraries
@@ -13,9 +11,7 @@ Recover data from previous tutorial by loading the previously saved chromosome.
     
     # Load the chromosome
     my_chrom = load_chromosome('some_path.tdb')
-
 Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromosome objects because of their size):
-
 .. code:: python
 
     # Loop over experiments in chromosome and load Hi-C data.
@@ -68,11 +64,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
 
 Model the 3D structure of a selected TAD
 ----------------------------------------
-
-TADbit uses the Integrative Modeling Platform (IMP, http://www.integrativemodeling.org) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.
-
-All models are based on specific sets of experimental data for which TADbit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.
-
+TADbit uses the Integrative Modeling Platform (IMP, http://www.integrativemodeling.org) for modeling the 3D structure of genomes and genomic domains. Here we aim at modeling the 3D structure of the selected TAD in the first tutorial (#1. Detection of TADs) using the optimal parameters from the second tutorial (#2 Parameter optimization.All models are based on specific sets of experimental data for which TADbit modeling parameters need to be optimized (see tutorial #2). Optimizing the parameters takes significant CPU time and thus have created a python dictionary with sets of pre-optimized parameters for relaeased datasets. The specific parameters are stored in a python dictionary called CONFIG.
 .. code:: python
 
     # See pre-defined sets of parameters
@@ -90,13 +82,9 @@ All models are based on specific sets of experimental data for which TADbit mode
       'upfreq': 0.3}}
 
 
-
 .. note::
    Overtime, we will populate the CONFIG dictionary with more optimal sets of parameters for released Hi-C matrices.
-
-
 To set the values for the parameters, one can create an array and use it for moodeling (see config parameter for model_region function)
-
 .. code:: python
 
     # Set of optimal parameters from pervious tutorial #2
@@ -146,9 +134,7 @@ To set the values for the parameters, one can create an array and use it for moo
     Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility_factor:1)
 
 
-
 Once finished, the IMP generated models are stored in a dictionary which keys are numbered from smaller to larger based on the IMP Objective Function (that is, how well the model satifies the input restraints). One can select parts of the models or single models to get some information.
-
 .. code:: python
 
     # Select top 10 models
@@ -204,9 +190,7 @@ Once finished, the IMP generated models are stored in a dictionary which keys ar
        -11530  -5648  -5033
     
 
-
 One measure to check whether the IMP optimization has reached equilibrium is to plot the value of the IMP Objective Function as a function of the iteration during optimization. If the plot has a plateau, this means that the modeling exercise run properly.
-
 .. code:: python
 
     # Get the IMP OF of the stored model in "model"
@@ -216,9 +200,7 @@ One measure to check whether the IMP optimization has reached equilibrium is to 
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_16_0.png
 
-
 One important aspect is to identfy whether the set of models has a good correlation with the input HiC data. This can be done with a single function that affects the models.
-
 .. code:: python
 
     # Re-select again the top 1000 models
@@ -271,9 +253,7 @@ Model analysis
 
 Model clustering
 ~~~~~~~~~~~~~~~~
-
 First we are going to cluster the 3D models based on their structural similarity. Clusters are numbered from larger (more models) to smallest (less models).
-
 .. code:: python
 
     # Cluster models based on structural similarity
@@ -313,11 +293,7 @@ First we are going to cluster the 3D models based on their structural similarity
        Cluster #12 has 2 models [top model: 311]
     
 
-
-The output of this analysis is stored in a Python dictionary that contains the cluster number and the models within the cluster. The output shows that the models result in 39 clusters where cluster number 1 (named 0) contains 149 models and cluster number 2 (named 1) contains 136 models.
-
-Once a cluster is generated, one can plot it for easy visualization. The "y" axis of the plot shows the IMP Objective function. The width of the branch is proportional to the number of models in the cluster. One would expect that the largest cluster (the one numbered with a "0" and wider width branch) has the lowest IMP Objective Function. This is indicative that the optimization found most often the same solution, which corresponded to the lowest IMP Objective Function.
-
+The output of this analysis is stored in a Python dictionary that contains the cluster number and the models within the cluster. The output shows that the models result in 39 clusters where cluster number 1 (named 0) contains 149 models and cluster number 2 (named 1) contains 136 models.Once a cluster is generated, one can plot it for easy visualization. The "y" axis of the plot shows the IMP Objective function. The width of the branch is proportional to the number of models in the cluster. One would expect that the largest cluster (the one numbered with a "0" and wider width branch) has the lowest IMP Objective Function. This is indicative that the optimization found most often the same solution, which corresponded to the lowest IMP Objective Function.
 .. code:: python
 
     # Plot the resulting clusers
@@ -327,9 +303,7 @@ Once a cluster is generated, one can plot it for easy visualization. The "y" axi
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_27_0.png
 
-
 One can also show the similarity betwen clusters for a limited number of them (5 in this example)
-
 .. code:: python
 
     # Show de dendogram for only the 5 top clusters and no colors
@@ -342,9 +316,7 @@ One can also show the similarity betwen clusters for a limited number of them (5
 
 Models consistency
 ~~~~~~~~~~~~~~~~~~
-
 To assess how "deterministic" a cluster is, one can calculate for each particle the percentage of models (in the cluster) that superimpose a given particle within a given cut-off (pre-set cut-offs of 50, 100, 150 and 200 nm). The lower the consistency value (in %) the less deterministic the models within the selected cluster. This measure can be taken as a proxy of variability across the model. 
-
 .. code:: python
 
     # Calculate the consistency plot for all models in the first cluster (cluster 0)
@@ -354,14 +326,10 @@ To assess how "deterministic" a cluster is, one can calculate for each particle 
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_32_0.png
 
-
 Be aware that this measure makes sense using only models within a cluster and not models from different clusters.
-
 DNA density plots
 ~~~~~~~~~~~~~~~~~
-
 From the 3D models, the DNA density (or local compactness) can be calculated as the ratio of the bin size (in base pairs) and the distances between consequtive particles in the models. The higher the density the more compact DNA for the region. As this measure varies dramatically from particle to particle, one can calculate it using running averages.
-
 .. code:: python
 
     # Calculate a DNA density plot
@@ -399,16 +367,12 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
 Models contact map
 ~~~~~~~~~~~~~~~~~~
-
 Given a set of selected models (either from a cluster or a list) one can calculate the percentage of pairs of particles within a distance cut-off. This can then be represented as a heat-map which is equivalent to a Hi-C interaction matrix.
-
 .. code:: python
 
     # Get a contact map for the top 50 models at a distance cut-off of 300nm
     models.contact_map(models=range(5,10), cutoff=1200, savedata="contact.txt")
-
 The goal of TADbit is to find a 3D structure (or ensemble of structures) that best satisfies the original Hi-C matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix for parts of the models.
-
 .. code:: python
 
     # Correlate the contact map with the original input HiC matrix for cluster 1
@@ -440,9 +404,7 @@ The goal of TADbit is to find a 3D structure (or ensemble of structures) that be
 
 Calculating distances between particles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Sometimes is useful to get a distribution of distances between pairs of particles in the models (or sub-set of models). Next we show several ways of getting such representations.
-
 .. code:: python
 
     # Get the average distance between particles 13 and 30 in all kept models
@@ -455,9 +417,7 @@ Sometimes is useful to get a distribution of distances between pairs of particle
     1507.9106832517446
 
 
-
 Lets plot the distribution used to get this median value.
-
 .. code:: python
 
     # Plot the distance distributions between particles 13 and 30 in all kept models
@@ -466,9 +426,7 @@ Lets plot the distribution used to get this median value.
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_49_0.png
 
-
 We may also want to use only the 10 first models (lowest energy), or the models belonging to a cluster (example cluster 1).
-
 .. code:: python
 
     # Plot the distance distributions between particles 13 and 30 in the top 100 models
@@ -489,16 +447,12 @@ We may also want to use only the 10 first models (lowest energy), or the models 
 
 Save and load models and analysis
 ---------------------------------
-
 By saving your analysis, you won't need to repeat some of the most expensive calculations.
-
 .. code:: python
 
     # Save your entire analysis and models
     models.save_models('gm_01.models')
-
 And to load them:
-
 .. code:: python
 
     # Load the models
@@ -521,11 +475,9 @@ And to load them:
        - lowrdist    : 1000.0
       Models where clustered into 12 clusters
 
-
 Specific 3D models can be saved in two formats:
     - CMM format, which can be directly load into Chimera for visualization.
     - XYZ format, which is a simple format that can be useful for further analysis that require coordinates.
-
 .. code:: python
 
     # Write a CMM file for the top model
@@ -544,13 +496,11 @@ Related Software
 
 Chimera
 ~~~~~~~
-
 Our group has been using the visualization tool Chimera from Ferrin's Group at UCSF (http://www.cgl.ucsf.edu/chimera/) to visualize the 3D models. Here we provide a couple of automatic ways of getting static and video images of selected models. A user can input the models using the generated CMM format in the previous step of this tutorial.
 
 ** NOTE **
 To properly insert the images/videos in this tutorial, we need to import libraries from IPython. However, such libraries are not necessary for the modeling nor the analysis of the models.
 ** NOTE **
-
 .. code:: python
 
     models.view_models(stress='centroid', tool='plot', figsize=(10,10), azimuth=-60, elevation=100)

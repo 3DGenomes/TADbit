@@ -139,7 +139,6 @@
                       <span class="n">cell_type</span><span class="o">=</span><span class="n">cell_type</span><span class="p">,</span> <span class="n">enzyme</span><span class="o">=</span><span class="n">enzyme</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="n">exp_type</span><span class="p">,</span>
                       <span class="o">**</span><span class="n">kw_descr</span><span class="p">)</span>
 
-
 <div class="viewcode-block" id="Experiment"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment">[docs]</a><span class="k">class</span> <span class="nc">Experiment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Hi-C experiment.</span>
@@ -262,7 +261,7 @@
         <span class="k">return</span> <span class="n">outstr</span>
         
 
-    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        sum Hi-C data of experiments into a new one.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -274,9 +273,10 @@
             <span class="n">resolution</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">reso1</span><span class="p">,</span> <span class="n">reso2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span>
             <span class="n">other</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span>
-            <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: experiments of different resolution, &#39;</span> <span class="o">+</span>
-                         <span class="s">&#39;setting both resolution of </span><span class="si">%s</span><span class="s">, and normalizing at &#39;</span> <span class="o">+</span>
-                         <span class="s">&#39;this resolution</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resolution</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: experiments of different resolution, &#39;</span> <span class="o">+</span>
+                             <span class="s">&#39;setting both resolution of </span><span class="si">%s</span><span class="s">, and normalizing &#39;</span> <span class="o">+</span>
+                             <span class="s">&#39;at this resolution</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resolution</span><span class="p">))</span>
             <span class="n">norm1</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">)</span>
             <span class="n">norm2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">norm</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalization</span><span class="p">:</span>
@@ -317,17 +317,21 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">norm</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="p">{}:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: normalization differs between each &#39;</span> <span class="o">+</span>
-                                    <span class="s">&#39;experiment</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: normalization differs between&#39;</span> <span class="o">+</span>
+                                        <span class="s">&#39; each experiment</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: experiments should be normalized before &#39;</span> <span class="o">+</span>
-                                 <span class="s">&#39;being summed</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                        <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: experiments should be &#39;</span> <span class="o">+</span>
+                                     <span class="s">&#39;normalized before being summed</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: experiments should be normalized before &#39;</span> <span class="o">+</span>
-                             <span class="s">&#39;being summed</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                    <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: experiments should be normalized &#39;</span> <span class="o">+</span>
+                                 <span class="s">&#39;before being summed</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: experiments should be normalized before &#39;</span> <span class="o">+</span>
-                         <span class="s">&#39;being summed</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: experiments should be normalized &#39;</span> <span class="o">+</span>
+                             <span class="s">&#39;before being summed</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">changed_reso</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">reso1</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm1</span>
@@ -516,7 +520,7 @@
 <span class="sd">        :param False silent: does not warn for removed columns</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_size</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>       <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">data_resolution</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span>
         <span class="n">wanted_resolution</span> <span class="o">=</span> <span class="n">wanted_resolution</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
@@ -554,7 +558,7 @@
 <span class="sd">        :param False silent: does not warn for removed columns</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">norm_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">hic</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">norm_data</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">hic</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_size</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>       <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ori_resolution</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">:</span> <span class="c"># in case we do not have original Hi-C data</span>
@@ -770,7 +774,8 @@
                   <span class="s">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">}</span>
         <span class="n">zeros</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">zeros</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
         <span class="n">nloci</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Preparing to model </span><span class="si">%s</span><span class="s"> particles</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">nloci</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Preparing to model </span><span class="si">%s</span><span class="s"> particles</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">nloci</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">generate_3d_models</span><span class="p">(</span><span class="n">zscores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span>
                                   <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="n">n_models</span><span class="p">,</span>
                                   <span class="n">outfile</span><span class="o">=</span><span class="n">outfile</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span>
@@ -1411,7 +1416,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 09, 2015.
+      Last updated on Mar 31, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -1,0 +1,164 @@
+
+Mapping paired-end reads from NGS experiment (with GEM)
+=======================================================
+
+Download and index reference genome
+-----------------------------------
+
+Download last human reference genome from ucsc:
+http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/ It's better to
+download the file that contains each chromosome separately (like this we
+could only keep those which we are interested in): hg38.chromFa.tar.gz
+Uncompress the genome
+
+::
+
+    tar -xzf hg38.chromFa.tar.gz
+
+Check the header of the fasta files (it's important to know how
+chromosomes are called in these files):
+
+::
+
+    head chr1.fa
+
+Create a single file with all chromosomes together:
+
+::
+
+    cat chr1.fa chr2.fa chr3.fa chr4.fa chr5.fa chr6.fa chr7.fa chr8.fa chr9.fa chr10.fa chr11.fa chr12.fa chr13.fa chr14.fa  chr15.fa  chr16.fa  chr17.fa  chr18.fa  chr19.fa chr20.fa  chr21.fa  chr22.fa chrX.fa  chrY.fa chrM.fa > hg38.fa
+
+Index reference genome:
+
+::
+
+    gemtools index -i hg38.fa -t 8
+
+Creates a file hg38.gem that we will be used for the mapping.
+
+Mapping
+-------
+
+Retrieving Hi-C experiment SRA format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Along this tutorial we are going to use the dataset from [Dixon2012]\_
+that can be downloaded at:
+http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE35156
+
+For this part of the tutorial we are going to work with the experiments
+conducted on *Homo sapiens* IMR90 and ESC (replicate 1 in both cases).
+
+Each of this replica consists of severa SRA files:
+
+.. code:: python
+
+    ! ls ~/db/FASTQs/hsap/dixon_2012/*/*/*.sra
+
+.. ansi-block::
+
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400260/SRR400260.sra
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400261/SRR400261.sra
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400262/SRR400262.sra
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400263/SRR400263.sra
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400264/SRR400264.sra
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400265/SRR400265.sra
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400266/SRR400266.sra
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400267/SRR400267.sra
+    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400268/SRR400268.sra
+
+
+First quality check on the data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First we need to convert SRA files in FASTQ format, as TADbit does not
+support reading directly from SRA. For this purpose we may want to use
+the SRA-toolkit from the NCBI (https://github.com/ncbi/sratoolkit). We
+finally shall endup with a single FASTQ file per experimental replica,
+with commands like (can last for hours):
+
+``fastq-dump -A SRX116345 --gzip SRX116345/*/*.sra``
+``fastq-dump -A SRX116344 --gzip SRX116344/*/*.sra``
+
+the compressed FASTQ files should be:
+
+.. code:: python
+
+    ! ls ~/db/FASTQs/hsap/dixon_2012/
+
+.. ansi-block::
+
+    SRX116344  SRX116345
+
+
+Usig these files directly we can infer the quality of the Hi-C
+experiment with TADbit:
+
+.. code:: python
+
+    from pytadbit.utils.fastq_utils import quality_plot
+    
+    quality_plot('/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344.fastq.gz', 
+                 nreads=100000, r_enz='HindIII', paired=True)
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_12_0.png
+
+
+.. code:: python
+
+    from pytadbit.utils.fastq_utils import quality_plot
+    
+    quality_plot('/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345.fastq.gz', 
+                 nreads=100000, r_enz='HindIII', paired=True)
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_13_0.png
+
+
+Iterative mapping
+~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    from pytadbit.mapping.mapper import iterative_mapping
+.. code:: python
+
+    print 'Mapping Read 1'
+    
+    name = 'SRX116344'
+    
+    sams1 = iterative_mapping(
+                gem_index_path       = 'ref_genome/hg38.gem',
+                fastq_path           = '/home/fransua/db/FASTQs/hsap/dixon_2012/%s.fastq.gz' % name,
+                out_sam_path         = 'mapped_reads/%s_r1.txt' % name,
+                temp_dir             = 'tmp_dir_%s/' % name,
+                range_start          = [1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 ], # starts with a flag sequence
+                range_stop           = [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
+                nthreads             = 8,  # number of CPUs to use
+                max_reads_per_chunk  = 25000000, # this is for computers with not too much RAM
+                single_end           = True,
+                output_is_bam        = True)
+    print '  created thes SAM files:', sams1
+    
+    print '\nMapping Read 2'
+    
+    sams2 = iterative_mapping(
+                gem_index_path       = 'ref_genome/hg38.gem',
+                fastq_path           = '/home/fransua/db/FASTQs/hsap/dixon_2012/%s.fastq.gz' % name,
+                out_sam_path         = 'mapped_reads/%s_r2.txt' % name,
+                temp_dir             = 'tmp_dir_%s/' % name,
+                range_start          = [102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102],
+                range_stop           = [121, 126, 131, 136, 141, 146, 151, 156, 161, 166, 171, 176],
+                nthreads             = 8,
+                max_reads_per_chunk  = 25000000,
+                single_end           = True,
+                output_is_bam        = True)
+    
+    print '  created thes SAM files:', sams2
+
+.. ansi-block::
+
+    Mapping Read 1
+    Split input file /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344.fastq.gz into chunks
+
