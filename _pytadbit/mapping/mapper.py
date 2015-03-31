@@ -10,7 +10,7 @@ import tempfile
 import gzip
 import pysam
 import gem
-
+from warnings import warn
 
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
@@ -76,14 +76,38 @@ def trimming(raw_seq_len, seq_start, min_seq_len):
 def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
                       range_start, range_stop, **kwargs):
     """
+    :param gem_index_path: path to index file created from a reference genome
+       using gem-index tool
     :param fastq_path: 152 bases first 76 from one end, next 76 from the other
        end. Both to be read from left to right.
+    :param out_sam_path: path to a directory where to store mapped reads in SAM/
+       BAM format (see option output_is_bam).
+    :param range_start: list of integers representing the start position of each
+       read fragment to be mapped.
+    :param range_stop: list of integers representing the end position of each
+       read fragment to be mapped.
+    :param False single_end: when FASTQ contains paired-ends flags
+    :param 4 nthreads: number of threads to use for mapping (number of CPUs)
+    :param 0.04 max_edit_distance: The maximum number of edit operations allowed
+       while verifying candidate matches by dynamic programming.
+    :param 0.04 mismatches: The maximum number of nucleotide substitutions
+       allowed while mapping each k-mer. It is always guaranteed that, however
+       other options are chosen, all the matches up to the specified number of
+       substitutions will be found by the program.
+    :param -1 max_reads_per_chunk: maximum number of reads to process at a time.
+       If -1, all reads will be processed in one run (more RAM memory needed).
+    :param False output_is_bam: Use binary (compressed) form of generated
+       out-files with mapped reads (recommended to save disk space).
+    :param /tmp temp_dir: important to change. Intermediate FASTQ files will be
+       written there.
+
+    :returns: a list of paths to generated outfiles. To be passed to 
+       :func:`pytadbit.parsers.sam_parser.parse_sam`
     """
     gem_index_path      = os.path.abspath(os.path.expanduser(gem_index_path))
     fastq_path          = os.path.abspath(os.path.expanduser(fastq_path))
     out_sam_path        = os.path.abspath(os.path.expanduser(out_sam_path))
     single_end          = kwargs.get('single_end'          , False)
-    nthreads            = kwargs.get('nthreads'            , 4)
     max_edit_distance   = kwargs.get('max_edit_distance'   , 0.04)
     mismatches          = kwargs.get('mismatches'          , 0.04)
     nthreads            = kwargs.get('nthreads'            , 4)
@@ -93,6 +117,13 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', tempfile.gettempdir())))
 
+    # check kwargs
+    for kw in kwargs:
+        if not kw in ['single_end', 'nthreads', 'max_edit_distance',
+                      'mismatches', 'max_reads_per_chunk',
+                      'out_files', 'output_is_bam', 'temp_dir']:
+            warn('WARNING: %s not is usual keywords, misspelled?' % kw)
+    
     # check windows:
     if (len(zip(range_start, range_stop)) < len(range_start) or
         len(range_start) != len(range_stop)):

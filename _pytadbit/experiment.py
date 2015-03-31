@@ -16,6 +16,7 @@ from numpy                         import log2, array
 from pytadbit.imp.CONFIG           import CONFIG
 from copy                          import deepcopy as copy
 from sys                           import stderr
+from warnings                      import warn
 
 try:
     from pytadbit.imp.impoptimizer  import IMPoptimizer
@@ -1284,21 +1285,67 @@ class Experiment(object):
         return img
 
 
-    def write_tad_borders(self, savedata=None):
+    def write_tad_borders(self, density=False, savedata=None, normalized=False):
         """
         Print a table summarizing the TADs found by tadbit. This function outputs
         something similar to the R function.
 
+        :param False density: if True, adds a column with the relative
+           interaction frequency measured within each TAD (value of 1 means an
+           interaction frequency equal to the expectation in the experiment)
         :param None savedata: path to a file where to save the density data
            generated (1 column per step + 1 for particle number). If None, print
            a table.
+        :param False normalized: uses normalized data to calculate the density
         """
+        if normalized and self.norm:
+            norms = self.norm[0]
+        elif self.hic_data:
+            if normalized:
+                warn("WARNING: weights not available, using raw data")
+            norms = self.hic_data[0]
+        else:
+            warn("WARNING: raw Hi-C data not available, " +
+                 "TAD's height fixed to 1")
+            norms = None
+        zeros = self._zeros or {}
         table = ''
-        table += '%-8s%8s%8s%8s\n' % ('#', 'start', 'end', 'score')
-        for i in self.tads:
-            table += '%-8s%8s%8s%8s\n' % (i, int(self.tads[i]['start'] + 1),
-                                          int(self.tads[i]['end'] + 1),
-                                          abs(self.tads[i]['score']))
+        table += '%-8s%8s%8s%8s%s\n' % ('#', 'start', 'end', 'score',
+                                        '' if not density else 'density')
+        tads = self.tads
+        sp1 = self.size + 1
+        diags = []
+        if norms:
+            for k in xrange(1, self.size):
+                s_k = self.size * k
+                diags.append(sum([norms[i * sp1 + s_k]
+                                 if not (i in zeros
+                                         or (i + k) in zeros) else 0.
+                                  for i in xrange(
+                                      self.size - k)]) / (self.size - k))
+        for tad in tads:
+            start, end = (int(tads[tad]['start']) + 1,
+                          int(tads[tad]['end']) + 1)
+            if norms:
+                matrix = sum([norms[i + self.size * j]
+                             if not (i in zeros
+                                     or j in zeros) else 0.
+                              for i in xrange(start - 1, end - 1)
+                              for j in xrange(i + 1, end - 1)])
+            try:
+                if norms:
+                    height = float(matrix) / sum(
+                        [diags[i-1] * (end - start - i)
+                         for i in xrange(1, end - start)])
+                else:
+                    height = 1.
+            except ZeroDivisionError:
+                height = 0.
+            table += '%-8s%8s%8s%8s%s\n' % (tad, int(tads[tad]['start'] + 1),
+                                             int(tads[tad]['end'] + 1),
+                                             abs(tads[tad]['score']),
+                                             '' if not density else
+                                            '%8s' % (round(height, 3)))
         if not savedata:
             print table
             return
