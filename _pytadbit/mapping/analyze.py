@@ -110,7 +110,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
             out.close()
         if show or savefig:
             subdata = hic_data.get_matrix(focus=focus, normalized=normalized)
-            if focus:
+            if focus and masked:
                 # rescale masked
                 masked = dict([(m - focus[0], masked[m]) for m in masked])
             if masked:
