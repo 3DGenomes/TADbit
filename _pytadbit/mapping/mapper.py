@@ -169,6 +169,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
                 out_sam_path + '.%d' % (i + 1), range_start[:], range_stop[:],
                 **kwargs))
 
+        for i, fastq_chunk_path in enumerate(chunked_files):
             # Delete chunks only if the file was really chunked.
             if len(chunked_files) > 1:
                 print 'Remove the chunks: %s' % ' '.join(chunked_files)

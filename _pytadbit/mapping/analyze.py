@@ -3,18 +3,18 @@
 
 
 """
-from pytadbit.utils.extraviews import tadbit_savefig
-from pytadbit.utils.tadmaths import nozero_log_matrix as nozero_log
+from pytadbit.utils.extraviews   import tadbit_savefig
+from pytadbit.utils.tadmaths     import nozero_log_matrix as nozero_log
 from pytadbit.parsers.hic_parser import HiC_data
-from warnings import warn
-from collections import OrderedDict
-import numpy as np
+from warnings                    import warn
+from collections                 import OrderedDict
 from pytadbit.parsers.hic_parser import load_hic_data_from_reads
-from pytadbit.utils.extraviews import nicer
-from scipy.stats import norm as sc_norm, skew, kurtosis
-from scipy.stats import pearsonr, spearmanr, linregress
-from numpy.linalg import eigh
+from pytadbit.utils.extraviews   import nicer
+from scipy.stats                 import norm as sc_norm, skew, kurtosis
+from scipy.stats                 import pearsonr, spearmanr, linregress
+from numpy.linalg                import eigh
 import os
+import numpy as np
 
 try:
     from matplotlib import pyplot as plt
@@ -64,9 +64,14 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     :param False pdf: when using the bny_chrom option, to specify the format of
        the stored images
     :param Reds cmap: color map to be used for the heatmap
+    :param False get_sections: for very very high resolution, when the column
+       index does not fit in memory
     """
     if isinstance(data, str):
         data = load_hic_data_from_reads(data, resolution=resolution, **kwargs)
+        if kwargs.get('get_sections', False) and decay:
+            warn('WARNING: not decay not available when get_sections is off.')
+            decay = False
     hic_data = data
     if hic_data.bads and not masked:
         masked = hic_data.bads

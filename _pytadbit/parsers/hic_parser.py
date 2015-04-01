@@ -217,6 +217,8 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
        bases)
     :param genome_seq: a dictionary containing the genomic sequence by
        chromosome
+    :param False get_sections: for very very high resolution, when the column
+       index does not fit in memory
     """
     sections = []
     genome_seq = OrderedDict()
