@@ -210,7 +210,7 @@ def read_matrix(things, parser=None, hic=True, **kwargs):
     else:
         return matrices
 
-def load_hic_data_from_reads(fnam, resolution):
+def load_hic_data_from_reads(fnam, resolution, **kwargs):
     """
     :param fnam: tsv file with reads1 and reads2
     :param resolution: the resolution of the experiment (size of a bin in
@@ -222,24 +222,29 @@ def load_hic_data_from_reads(fnam, resolution):
     genome_seq = OrderedDict()
     fhandler = open(fnam)
     line = fhandler.next()
+    size = 0
     while line.startswith('#'):
         if line.startswith('# CRM '):
             crm, clen = line[6:].split()
             genome_seq[crm] = int(clen) / resolution + 1
+            size += genome_seq[crm]
         line = fhandler.next()
-    size = 0
     section_sizes = {}
-    for crm in genome_seq:
-        len_crm = genome_seq[crm]
-        section_sizes[(crm,)] = len_crm
-        size += len_crm
-        sections.extend([(crm, i) for i in xrange(len_crm)])
+    if kwargs.get('get_sections', False):
+        for crm in genome_seq:
+            len_crm = genome_seq[crm]
+            section_sizes[(crm,)] = len_crm
+            sections.extend([(crm, i) for i in xrange(len_crm)])
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
     imx = HiC_data((), size, genome_seq, dict_sec)
     while True:
         _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
-        ps1 = dict_sec[(cr1, int(ps1) / resolution)]
-        ps2 = dict_sec[(cr2, int(ps2) / resolution)]
+        try:
+            ps1 = dict_sec[(cr1, int(ps1) / resolution)]
+            ps2 = dict_sec[(cr2, int(ps2) / resolution)]
+        except KeyError:
+            ps1 = int(ps1) / resolution
+            ps2 = int(ps2) / resolution
         imx[ps1, ps2] += 1
         imx[ps2, ps1] += 1
         try:
