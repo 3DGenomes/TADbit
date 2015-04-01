@@ -66,7 +66,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     :param Reds cmap: color map to be used for the heatmap
     """
     if isinstance(data, str):
-        data = load_hic_data_from_reads(data, resolution=resolution, kwargs)
+        data = load_hic_data_from_reads(data, resolution=resolution, **kwargs)
     hic_data = data
     if hic_data.bads and not masked:
         masked = hic_data.bads
