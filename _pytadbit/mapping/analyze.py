@@ -171,8 +171,11 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
         prev_pos  = 0
         median = (np.median(vals) - mindata) / diff
         for prc in np.linspace(posI, median, cuts / 2, endpoint=False):
-            pos = (np.percentile(vals, prc * 100.) - mindata) / diff
-            prc = ((prc - posI) / (median - posI)) + 1. / cuts
+            try:
+                pos = (np.percentile(vals, prc * 100.) - mindata) / diff
+                prc = ((prc - posI) / (median - posI)) + 1. / cuts
+            except ValueError:
+                pos = prc = 0
             if prev_pos >= pos:
                 continue
             cdict['red'  ].append([pos, prc, prc])
@@ -180,8 +183,11 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
             cdict['blue' ].append([pos, 1, 1])
             prev_pos  = pos
         for prc in np.linspace(median + 1. / cuts, posF, cuts / 2, endpoint=False):
-            pos = (np.percentile(vals, prc * 100.) - mindata) / diff
-            prc = ((prc - median) / (posF - median))
+            try:
+                pos = (np.percentile(vals, prc * 100.) - mindata) / diff
+                prc = ((prc - median) / (posF - median))
+            except ValueError:
+                pos = prc = 0
             if prev_pos >= pos:
                 continue
             cdict['red'  ].append([pos, 1.0, 1.0])
