@@ -159,9 +159,9 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
     axb.set_ylabel('Number of "N" per position')
     try:
         axb.set_yscale('log')
+        axb.set_ylim((0, axb.get_ylim()[1] * 1000))
     except ValueError:
-        pass
-    axb.set_ylim((0, axb.get_ylim()[1] * 1000))
+        axb.set_ylim((0, 1))
     ax.set_ylim((0, ax.get_ylim()[1]))
     ax.set_xlim((0, len(line)))
 
