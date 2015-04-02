@@ -157,11 +157,11 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
     axb.yaxis.label.set_color('black')
     axb.tick_params(axis='y', colors='black', **tkw)
     axb.set_ylabel('Number of "N" per position')
-    try:
+    try: # no Ns found (yes... it happens)
         axb.set_yscale('log')
         axb.set_ylim((0, axb.get_ylim()[1] * 1000))
     except ValueError:
-        axb.set_ylim((0, 1))
+        axb.set_yscale('linear')
     ax.set_ylim((0, ax.get_ylim()[1]))
     ax.set_xlim((0, len(line)))
 

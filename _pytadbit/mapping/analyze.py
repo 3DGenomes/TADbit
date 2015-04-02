@@ -388,12 +388,19 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
         k = 1
         for i in xrange(3, ntries-2-k):
             v1 = i * len(x) / ntries
-            a1, b1, r21, _, _ = linregress(logx[ :v1], logy[ :v1])
+            try:
+                a1, b1, r21, _, _ = linregress(logx[ :v1], logy[ :v1])
+            except ValueError:
+                a1 = b1 = r21 = 0
             r21 *= r21
             for j in xrange(i + 1 + k, ntries - 2 - k):
                 v2 = j * len(x) / ntries
-                a2, b2, r22, _, _ = linregress(logx[v1+k:v2], logy[v1+k:v2])
-                a3, b3, r23, _, _ = linregress(logx[v2+k:  ], logy[v2+k: ])
+                try:
+                    a2, b2, r22, _, _ = linregress(logx[v1+k:v2], logy[v1+k:v2])
+                    a3, b3, r23, _, _ = linregress(logx[v2+k:  ], logy[v2+k: ])
+                except ValueError:
+                    a2 = b2 = r22 = 0
+                    a3 = b3 = r23 = 0
                 r2 = r21 + r22**2 + r23**2
                 if r2 > best[0]:
                     best = (r2, v1, v2, a1, a2, a3,
@@ -455,7 +462,10 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
     axe.set_xscale('log')
     axe.set_yscale('log')
     axe.set_xlim((min_diff, max_diff))
-    axe.set_ylim((0, max(y)))
+    try:
+        axe.set_ylim((0, max(y)))
+    except ValueError:
+        pass
     if savefig:
         tadbit_savefig(savefig)
     elif show==True:
