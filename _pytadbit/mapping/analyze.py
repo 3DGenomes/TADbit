@@ -69,7 +69,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     """
     if isinstance(data, str):
         data = load_hic_data_from_reads(data, resolution=resolution, **kwargs)
-        if kwargs.get('get_sections', False) and decay:
+        if not kwargs.get('get_sections', True) and decay:
             warn('WARNING: not decay not available when get_sections is off.')
             decay = False
     hic_data = data

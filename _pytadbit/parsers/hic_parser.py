@@ -232,7 +232,7 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
             size += genome_seq[crm]
         line = fhandler.next()
     section_sizes = {}
-    if kwargs.get('get_sections', False):
+    if kwargs.get('get_sections', True):
         for crm in genome_seq:
             len_crm = genome_seq[crm]
             section_sizes[(crm,)] = len_crm
