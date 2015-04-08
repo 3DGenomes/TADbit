@@ -55,7 +55,7 @@
             
   <dl class="function">
 <dt id="pytadbit.imp.imp_modelling.generate_3d_models">
-<tt class="descclassname">pytadbit.imp.imp_modelling.</tt><tt class="descname">generate_3d_models</tt><big>(</big><em>zscores</em>, <em>resolution</em>, <em>nloci</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config=None</em>, <em>values=None</em>, <em>experiment=None</em>, <em>coords=None</em>, <em>zeros=None</em>, <em>first=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytadbit.imp.imp_modelling.</tt><tt class="descname">generate_3d_models</tt><big>(</big><em>zscores</em>, <em>resolution</em>, <em>nloci</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config=None</em>, <em>values=None</em>, <em>experiment=None</em>, <em>coords=None</em>, <em>zeros=None</em>, <em>first=None</em>, <em>container=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates three-dimensional models starting from Hi-C data. 
 The final analysis will be performed on the n_keep top models.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -133,6 +133,14 @@ where CONFIG is a dictionary of dictionaries to be passed to this function:
 </li>
 <li><strong>first</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; particle number at which model should start (0 should be
 used inside TADbit)</li>
+<li><strong>container</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
+only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to 
+which are added hemispherical ends. This cylinder is defined by a radius, 
+its height (with a height of 0 the cylinder becomes a sphere) and the 
+force applied to the restraint. E.g. for modeling E. coli genome (2 
+micrometers length and 0.5 micrometer of width), these values could be 
+used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nuclei
+(6 micrometers diameter): [&#8216;cylinder&#8217;, 3000, 0, 50]</li>
 </ul>
 </td>
 </tr>
@@ -1377,7 +1385,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
+      Last updated on Apr 08, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

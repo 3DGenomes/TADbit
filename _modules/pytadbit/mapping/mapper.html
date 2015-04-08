@@ -218,6 +218,7 @@
                 <span class="n">out_sam_path</span> <span class="o">+</span> <span class="s">&#39;.</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">range_start</span><span class="p">[:],</span> <span class="n">range_stop</span><span class="p">[:],</span>
                 <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fastq_chunk_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunked_files</span><span class="p">):</span>
             <span class="c"># Delete chunks only if the file was really chunked.</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunked_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">print</span> <span class="s">&#39;Remove the chunks: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chunked_files</span><span class="p">)</span>
@@ -417,7 +418,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
+      Last updated on Apr 08, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

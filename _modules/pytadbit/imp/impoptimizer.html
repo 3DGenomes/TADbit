@@ -80,9 +80,17 @@
 <span class="sd">       neighbors (e.g. 1 means consecutive particles)</span>
 <span class="sd">    :param None cutoff: distance cutoff (nm) to define whether two particles</span>
 <span class="sd">       are in contact or not, default is 2 times resolution, times scale.</span>
+<span class="sd">    :param None container: restrains particle to be within a given object. Can </span>
+<span class="sd">       only be a &#39;cylinder&#39;, which is, in fact a cylinder of a given height to </span>
+<span class="sd">       which are added hemispherical ends. This cylinder is defined by a radius, </span>
+<span class="sd">       its height (with a height of 0 the cylinder becomes a sphere) and the </span>
+<span class="sd">       force applied to the restraint. E.g. for modeling E. coli genome (2 </span>
+<span class="sd">       micrometers length and 0.5 micrometer of width), these values could be </span>
+<span class="sd">       used: [&#39;cylinder&#39;, 250, 1500, 50], and for a typical mammalian nuclei</span>
+<span class="sd">       (6 micrometers diameter): [&#39;cylinder&#39;, 3000, 0, 50]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-                 <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                 <span class="n">n_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">close_bins</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">container</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">resolution</span>
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zscores</span><span class="p">,</span>
@@ -100,7 +108,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lowfreq_range</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">upfreq_range</span>  <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dcutoff_range</span> <span class="o">=</span> <span class="p">[]</span>
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">container</span>     <span class="o">=</span> <span class="n">container</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
 
 
@@ -248,7 +256,7 @@
                                 <span class="bp">self</span><span class="o">.</span><span class="n">nloci</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_models</span><span class="p">,</span>
                                 <span class="n">n_keep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">tmp</span><span class="p">,</span>
                                 <span class="n">n_cpus</span><span class="o">=</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                                <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">container</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="p">,</span>
                                 <span class="n">close_bins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">close_bins</span><span class="p">,</span> <span class="n">zeros</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">zeros</span><span class="p">)</span>
                             <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span>
                             <span class="n">cutoff</span> <span class="o">=</span> <span class="n">my_round</span><span class="p">(</span><span class="n">dcutoff_arange</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -609,7 +617,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
+      Last updated on Apr 08, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

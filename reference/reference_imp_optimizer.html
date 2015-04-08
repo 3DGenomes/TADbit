@@ -57,7 +57,7 @@
 <h1>IMPoptimizer class<a class="headerlink" href="#impoptimizer-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer">
-<em class="property">class </em><tt class="descclassname">pytadbit.imp.impoptimizer.</tt><tt class="descname">IMPoptimizer</tt><big>(</big><em>experiment</em>, <em>start</em>, <em>end</em>, <em>n_models=500</em>, <em>n_keep=100</em>, <em>close_bins=1</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytadbit.imp.impoptimizer.</tt><tt class="descname">IMPoptimizer</tt><big>(</big><em>experiment</em>, <em>start</em>, <em>end</em>, <em>n_models=500</em>, <em>n_keep=100</em>, <em>close_bins=1</em>, <em>container=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class optimizes a set of paramaters (scale, maxdist, lowfreq and
 upfreq) in order to maximize the correlation between the models generated 
 by IMP and the input data.</p>
@@ -78,6 +78,14 @@ difference) a particle pair must be in order to be considered as
 neighbors (e.g. 1 means consecutive particles)</li>
 <li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</li>
+<li><strong>container</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
+only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to 
+which are added hemispherical ends. This cylinder is defined by a radius, 
+its height (with a height of 0 the cylinder becomes a sphere) and the 
+force applied to the restraint. E.g. for modeling E. coli genome (2 
+micrometers length and 0.5 micrometer of width), these values could be 
+used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nuclei
+(6 micrometers diameter): [&#8216;cylinder&#8217;, 3000, 0, 50]</li>
 </ul>
 </td>
 </tr>
@@ -318,7 +326,7 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
+      Last updated on Apr 08, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

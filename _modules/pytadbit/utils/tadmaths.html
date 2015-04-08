@@ -135,7 +135,10 @@
         <span class="n">transform</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">minv</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="n">minv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">minv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">minv</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="c"># if minv &gt; 1:</span>
     <span class="c">#     warn(&#39;WARNING: probable problem with normalization, check.\n&#39;)</span>
     <span class="c">#     minv /= 2  # TODO: something better</span>
@@ -148,7 +151,10 @@
         <span class="n">transform</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">minv</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="n">minv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l</span> <span class="k">if</span> <span class="n">v</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">minv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l</span> <span class="k">if</span> <span class="n">v</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">minv</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">logminv</span> <span class="o">=</span> <span class="n">transformation</span><span class="p">(</span><span class="n">minv</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[[</span><span class="n">transformation</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="k">else</span> <span class="n">logminv</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
 
@@ -296,7 +302,7 @@
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
+      Last updated on Apr 08, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -307,7 +307,7 @@ documentation)</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.model_region">
-<tt class="descname">model_region</tt><big>(</big><em>start=1</em>, <em>end=None</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>n_cpus=1</em>, <em>verbose=0</em>, <em>keep_all=False</em>, <em>close_bins=1</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.01}</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.model_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.model_region" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">model_region</tt><big>(</big><em>start=1</em>, <em>end=None</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>n_cpus=1</em>, <em>verbose=0</em>, <em>keep_all=False</em>, <em>close_bins=1</em>, <em>outfile=None</em>, <em>config={'maxdist': 600</em>, <em>'upfreq': 0.3</em>, <em>'reference': 'victor corces dataset 2013'</em>, <em>'kforce': 5</em>, <em>'lowfreq': -0.7</em>, <em>'scale': 0.01}</em>, <em>container=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.model_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.model_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates of three-dimentional models using IMP, for a given segment of
 chromosome.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -410,7 +410,7 @@ per cell</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.optimal_imp_parameters">
-<tt class="descname">optimal_imp_parameters</tt><big>(</big><em>start=1, end=None, n_models=500, n_keep=100, n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1, lowfreq_range=(-1, 0, 0.1), scale_range=[0.01], maxdist_range=(400, 1400, 100), dcutoff_range=[2], outfile=None, verbose=True, corr='spearman', off_diag=1, savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.optimal_imp_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.optimal_imp_parameters" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">optimal_imp_parameters</tt><big>(</big><em>start=1, end=None, n_models=500, n_keep=100, n_cpus=1, upfreq_range=(0, 1, 0.1), close_bins=1, lowfreq_range=(-1, 0, 0.1), scale_range=[0.01], maxdist_range=(400, 1400, 100), dcutoff_range=[2], outfile=None, verbose=True, corr='spearman', off_diag=1, savedata=None, container=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.optimal_imp_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.optimal_imp_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the optimal set of parameters to be used for the 3D modeling in
 IMP.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -449,6 +449,14 @@ from which to consider 2 beads as being close). The last value of the
 input tuple is the incremental step for scale parameter values</li>
 <li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
 are in contact or not, default is 2 times resolution, times scale.</li>
+<li><strong>container</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; restrains particle to be within a given object. Can 
+only be a &#8216;cylinder&#8217;, which is, in fact a cylinder of a given height to 
+which are added hemispherical ends. This cylinder is defined by a radius, 
+its height (with a height of 0 the cylinder becomes a sphere) and the 
+force applied to the restraint. E.g. for modeling E. coli genome (2 
+micrometers length and 0.5 micrometer of width), these values could be 
+used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nuclei
+(6 micrometers diameter): [&#8216;cylinder&#8217;, 3000, 0, 50]</li>
 <li><strong>verbose</strong> &#8211; print the results to the standard output</li>
 </ul>
 </td>
@@ -611,16 +619,23 @@ passed to this parameter.</li>
 
 <dl class="method">
 <dt id="pytadbit.experiment.Experiment.write_tad_borders">
-<tt class="descname">write_tad_borders</tt><big>(</big><em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.write_tad_borders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.write_tad_borders" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_tad_borders</tt><big>(</big><em>density=False</em>, <em>savedata=None</em>, <em>normalized=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/experiment.html#Experiment.write_tad_borders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.experiment.Experiment.write_tad_borders" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a table summarizing the TADs found by tadbit. This function outputs
 something similar to the R function.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the density data
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>density</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, adds a column with the relative
+interaction frequency measured within each TAD (value of 1 means an
+interaction frequency equal to the expectation in the experiment)</li>
+<li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the density data
 generated (1 column per step + 1 for particle number). If None, print
-a table.</td>
+a table.</li>
+<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; uses normalized data to calculate the density</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -702,7 +717,7 @@ a table.</td>
     </div>
     <div class="footer">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
+      Last updated on Apr 08, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
