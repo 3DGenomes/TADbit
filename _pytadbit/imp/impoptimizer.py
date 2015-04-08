@@ -31,6 +31,14 @@ class IMPoptimizer(object):
        neighbors (e.g. 1 means consecutive particles)
     :param None cutoff: distance cutoff (nm) to define whether two particles
        are in contact or not, default is 2 times resolution, times scale.
+    :param None container: restrains particle to be within a given object. Can 
+       only be a 'cylinder', which is, in fact a cylinder of a given height to 
+       which are added hemispherical ends. This cylinder is defined by a radius, 
+       its height (with a height of 0 the cylinder becomes a sphere) and the 
+       force applied to the restraint. E.g. for modeling E. coli genome (2 
+       micrometers length and 0.5 micrometer of width), these values could be 
+       used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
+       (6 micrometers diameter): ['cylinder', 3000, 0, 50]
     """
     def __init__(self, experiment, start, end, n_models=500,
                  n_keep=100, close_bins=1, container=None):

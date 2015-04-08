@@ -31,7 +31,6 @@ except ImportError:
     stderr.write('matplotlib not found\n')
 
 
-
 def load_experiment_from_reads(name, fnam, genome_seq, resolution, 
                                conditions=None, identifier=None, cell_type=None,
                                enzyme=None, exp_type='Hi-C', **kw_descr):
@@ -676,6 +675,14 @@ class Experiment(object):
            objective function value the selected models (1), the objective
            function value of all the models (2), all the modeling 
            information (3)
+        :param None container: restrains particle to be within a given object. Can 
+           only be a 'cylinder', which is, in fact a cylinder of a given height to 
+           which are added hemispherical ends. This cylinder is defined by a radius, 
+           its height (with a height of 0 the cylinder becomes a sphere) and the 
+           force applied to the restraint. E.g. for modeling E. coli genome (2 
+           micrometers length and 0.5 micrometer of width), these values could be 
+           used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
+           (6 micrometers diameter): ['cylinder', 3000, 0, 50]
         :param CONFIG['dmel_01'] config: a dictionary containing the standard
            parameters used to generate the models. The dictionary should
            contain the keys kforce, maxdist, upfreq and lowfreq.
@@ -781,6 +788,14 @@ class Experiment(object):
            input tuple is the incremental step for scale parameter values
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
+        :param None container: restrains particle to be within a given object. Can 
+           only be a 'cylinder', which is, in fact a cylinder of a given height to 
+           which are added hemispherical ends. This cylinder is defined by a radius, 
+           its height (with a height of 0 the cylinder becomes a sphere) and the 
+           force applied to the restraint. E.g. for modeling E. coli genome (2 
+           micrometers length and 0.5 micrometer of width), these values could be 
+           used: ['cylinder', 250, 1500, 50], and for a typical mammalian nuclei
+           (6 micrometers diameter): ['cylinder', 3000, 0, 50]
         :param True verbose: print the results to the standard output
 
         .. note::
@@ -792,6 +807,7 @@ class Experiment(object):
              * scale_range=[0.001, 0.005, 0.006] will test these three values.
              * scale_range=(0.001, 0.005, 0.001) will test the values 0.001,
                0.002, 0.003, 0.004 and 0.005
+
 
         :returns: a tuple containing:
 
