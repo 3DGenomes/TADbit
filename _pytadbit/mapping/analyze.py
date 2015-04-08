@@ -79,7 +79,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     if by_chrom:
         if focus:
             raise Exception('Incompatible options focus and by_chrom\n')
-        os.system('mkdir -p ' + savedata)
+        os.system('mkdir -p ' + (savedata if savedata else savefig))
         for i, crm1 in enumerate(hic_data.chromosomes):
             for crm2 in hic_data.chromosomes.keys()[i:]:
                 if by_chrom == 'intra' and crm1 != crm2:
@@ -277,11 +277,17 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax4.hlines(0, 0, size, color='red')
     ax4.set_ylabel('E1')
     ax4.set_yticklabels([])
-    ax5.vlines(range(size), 0, evect[:,-2], color='k')
+    try:
+        ax5.vlines(range(size), 0, evect[:,-2], color='k')
+    except IndexError:
+        pass
     ax5.hlines(0, 0, size, color='red')
     ax5.set_ylabel('E2')
     ax5.set_yticklabels([])
-    ax6.vlines(range(size), 0, evect[:,-3], color='k')
+    try:
+        ax6.vlines(range(size), 0, evect[:,-3], color='k')
+    except IndexError:
+        pass
     ax6.hlines(0, 0, size, color='red')
     ax6.set_ylabel('E3')
     ax6.set_yticklabels([])
