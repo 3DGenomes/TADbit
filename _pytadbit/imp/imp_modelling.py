@@ -32,7 +32,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
                        n_keep=1000, close_bins=1, n_cpus=1, keep_all=False,
                        verbose=0, outfile=None, config=None,
                        values=None, experiment=None, coords=None, zeros=None,
-                       first=None):
+                       first=None, container=None):
     """
     This function generates three-dimensional models starting from Hi-C data. 
     The final analysis will be performed on the n_keep top models.
@@ -108,6 +108,10 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
           }
     :param None first: particle number at which model should start (0 should be
        used inside TADbit)
+    :param None radius: restrains particle to be within a given object. Can be
+       a 'cylinder'. defined by a radius, its height (with a height of 0 the
+       cylinder becomes a sphere) and the force applied to the restraint. E.g.
+       ['cylinder', 100, 500, 50]
 
     :returns: a StructuralModels object
 
@@ -117,7 +121,18 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     global CONFIG
     CONFIG = config or CONFIG['dmel_01']
     CONFIG['kforce'] = CONFIG.get('kforce', 5)
-    
+
+    # setup container
+    try:
+        CONFIG['container'] = {'shape' : container[0],
+                               'radius': container[1],
+                               'height': container[2],
+                               'cforce': container[3]}
+    except:
+        CONFIG['container'] = {'shape' : None,
+                               'radius': None,
+                               'height': None,
+                               'cforce': None}
     # Particles initial radius
     global RADIUS
     RADIUS = float(resolution * CONFIG['scale']) / 2
@@ -217,6 +232,25 @@ def _get_restraints():
     model['ps'] = ListSingletonContainer(IMP.core.create_xyzr_particles(
         model['model'], len(LOCI), RADIUS, 100000))
     model['ps'].set_name("")
+
+    # set container
+    model['container'] = CONFIG['container']
+    if model['container']['shape'] == 'cylinder':
+         # define a segment of a given size
+        segment = IMP.algebra.Segment3D(
+            IMP.algebra.Vector3D(0,0,0),
+            IMP.algebra.Vector3D(model['container']['height'],0,0))
+        bb = IMP.algebra.get_bounding_box(segment)
+        rb = IMP.container.SingletonsRestraint(
+            IMP.core.BoundingBox3DSingletonScore(
+                IMP.core.HarmonicUpperBound(model['container']['radius'],
+                                            model['container']['cforce']), bb),
+            model['ps'])
+        model['model'].add_restraint(rb)
+        rb.evaluate(False)
+    # elif model['container']['shape']:
+    #     raise noti
+    
     for i in range(0, len(LOCI)):
         p = model['ps'].get_particle(i)
         p.set_name(str(LOCI[i]))
@@ -225,6 +259,14 @@ def _get_restraints():
     for i in range(len(LOCI)):
         p1 = model['ps'].get_particle(i)
         x = p1.get_name()
+        if model['container']['shape'] == 'sphere':
+            ub  = IMP.core.HarmonicUpperBound(
+                model['container']['properties'][0], CONFIG['kforce'] * 10)
+            ss  = IMP.core.DistanceToSingletonScore(
+                ub, model['container']['center'])
+            rss = IMP.core.SingletonRestraint(ss, p1)
+            model['model'].add_restraint(rss)
+            rss.evaluate(False)
         for j in range(i+1, len(LOCI)):
             p2 = model['ps'].get_particle(j)
             y = p2.get_name()
@@ -243,6 +285,7 @@ def _get_restraints():
                 continue
             restraints[tuple(sorted((x, y)))] = typ[-1], dist, frc
     return restraints
+
 
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     """
@@ -318,6 +361,24 @@ def generate_IMPmodel(rand_init):
     if rand_init == 1 and verbose == 0.5:
         verbose = 1
         stdout.write("# Harmonic\tpart1\tpart2\tdist\tkforce\n")
+
+    # set container
+    model['container'] = CONFIG['container']
+    if model['container']['shape'] == 'cylinder':
+         # define a segment of a given size
+        segment = IMP.algebra.Segment3D(
+            IMP.algebra.Vector3D(0,0,0),
+            IMP.algebra.Vector3D(model['container']['height'],0,0))
+        bb = IMP.algebra.get_bounding_box(segment)
+        rb = IMP.container.SingletonsRestraint(
+            IMP.core.BoundingBox3DSingletonScore(
+                IMP.core.HarmonicUpperBound(model['container']['radius'],
+                                            model['container']['cforce']), bb),
+            model['ps'])
+        model['model'].add_restraint(rb)
+        rb.evaluate(False)
+    # elif model['container']['shape']:
+    #     raise noti
 
     addAllHarmonics(model)
 

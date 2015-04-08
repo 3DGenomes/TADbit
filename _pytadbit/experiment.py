@@ -653,7 +653,8 @@ class Experiment(object):
 
     def model_region(self, start=1, end=None, n_models=5000, n_keep=1000,
                      n_cpus=1, verbose=0, keep_all=False, close_bins=1,
-                     outfile=None, config=CONFIG['dmel_01']):
+                     outfile=None, config=CONFIG['dmel_01'],
+                     container=None):
         """
         Generates of three-dimentional models using IMP, for a given segment of
         chromosome.
@@ -732,7 +733,7 @@ class Experiment(object):
                                   values=values, n_models=n_models,
                                   outfile=outfile, n_keep=n_keep, n_cpus=n_cpus,
                                   verbose=verbose, keep_all=keep_all, first=0,
-                                  close_bins=close_bins, config=config,
+                                  close_bins=close_bins, config=config, container=container,
                                   experiment=self, coords=coords, zeros=zeros)
 
 
@@ -743,7 +744,8 @@ class Experiment(object):
                                maxdist_range=(400, 1400, 100),
                                dcutoff_range=[2][:],
                                outfile=None, verbose=True, corr='spearman',
-                               off_diag=1, savedata=None):
+                               off_diag=1, savedata=None,
+                               container=None):
         """
         Find the optimal set of parameters to be used for the 3D modeling in
         IMP.
@@ -806,7 +808,8 @@ class Experiment(object):
         if not end:
             end = self.size
         optimizer = IMPoptimizer(self, start, end, n_keep=n_keep,
-                                 n_models=n_models, close_bins=close_bins)
+                                 n_models=n_models, close_bins=close_bins,
+                                 container=container)
         optimizer.run_grid_search(maxdist_range=maxdist_range,
                                   upfreq_range=upfreq_range,
                                   lowfreq_range=lowfreq_range,

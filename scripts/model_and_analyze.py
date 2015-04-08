@@ -139,7 +139,7 @@ def load_optimal_imp_parameters(opts, name, exp):
     from pytadbit import IMPoptimizer
     results = IMPoptimizer(exp, opts.beg,
                            opts.end, n_models=opts.nmodels_opt,
-                           n_keep=opts.nkeep_opt)
+                           n_keep=opts.nkeep_opt, container=opts.container)
     # load from log files
     if not opts.optimize_only:
         for fnam in os.listdir(os.path.join(opts.outdir, name)):
@@ -310,7 +310,7 @@ models=  generate_3d_models(zscores, opts.res, nloci,
                             n_keep=opts.nkeep_mod,
                             n_cpus=opts.ncpus,
                             keep_all=True,
-                            first=0,
+                            first=0, container=opts.container,
                             config=optpar, verbose=0.5,
                             coords=coords, zeros=zeros)
 # Save models
@@ -1002,6 +1002,9 @@ def get_options():
     opts.nkeep_opt   = int(opts.nkeep_opt  )
     opts.ncpus       = int(opts.ncpus      )
     opts.res         = int(opts.res        )
+
+    # TODO: UNDER TEST
+    opts.container   = None #['cylinder', 1000, 5000, 100]
 
     # do the divisinon to bins
     if not opts.tad_only:

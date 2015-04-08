@@ -33,7 +33,7 @@ class IMPoptimizer(object):
        are in contact or not, default is 2 times resolution, times scale.
     """
     def __init__(self, experiment, start, end, n_models=500,
-                 n_keep=100, close_bins=1):
+                 n_keep=100, close_bins=1, container=None):
 
         self.resolution = experiment.resolution
         (self.zscores,
@@ -51,7 +51,7 @@ class IMPoptimizer(object):
         self.lowfreq_range = []
         self.upfreq_range  = []
         self.dcutoff_range = []
-        
+        self.container     = container
         self.results = {}
 
 
@@ -199,7 +199,7 @@ class IMPoptimizer(object):
                                 self.nloci, n_models=self.n_models,
                                 n_keep=self.n_keep, config=tmp,
                                 n_cpus=n_cpus, first=0,
-                                values=self.values,
+                                values=self.values, container=self.container,
                                 close_bins=self.close_bins, zeros=self.zeros)
                             result = 0
                             cutoff = my_round(dcutoff_arange[0])
