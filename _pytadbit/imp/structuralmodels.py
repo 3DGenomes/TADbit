@@ -2483,9 +2483,9 @@ class StructuralModels(object):
 	"metadata" : {
 		"version"  : 1.0,
 		"type"     : "dataset",
-                "generator": "TADbit",
+                "generator": "TADbit"
                 },
-	"object": {\n%(descr)s
+	"object": {\n%(descr)s,
 		   "uuid": "%(sha)s",
 		   "title": "%(title)s",
                    "datatype": "xyz",
@@ -2496,9 +2496,9 @@ class StructuralModels(object):
         "models":
                  [\n%(xyz)s
                  ],
-        "clusters":[%(cluster)s],
-        "centroids":[%(centroid)s],
-        "restraints": [%(restr)s],
+        "clusters":%(cluster)s,
+        "centroids":%(centroid)s,
+        "restraints": %(restr)s
 }
 '''
         fil = {}
