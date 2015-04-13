@@ -153,7 +153,8 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
     minoridata   = np.min(data)
     maxoridata   = np.max(data)
-    totaloridata = np.sum(data)
+    totaloridata = np.sum([data[i][j] for i in xrange(len(data))
+                           for j in xrange(i, len(data))])
     data = nozero_log(data, np.log2)
     vals = np.array([i for d in data for i in d])
     vals = vals[np.isfinite(vals)]
@@ -253,14 +254,14 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
             for t in ax1.yaxis.get_minor_ticks():
                 t.tick1On = False
                 t.tick2On = False
-        totaloridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j in enumerate(str(totaloridata)[::-1])])[::-1].strip(',')
-        minoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(minoridata)[::-1])])[::-1].strip(',')
-        maxoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(maxoridata)[::-1])])[::-1].strip(',')
-        plt.figtext(0.05,0.25, '\n'.join([
-            name,
-            'Number of interactions: %s' % str(totaloridata),
-            'Percentage of cis interactions: %.0f%%' % (cistrans*100),
-            'Min-max interactions: %s-%s' % (minoridata, maxoridata)]))
+    totaloridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j in enumerate(str(totaloridata)[::-1])])[::-1].strip(',')
+    minoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(minoridata)[::-1])])[::-1].strip(',')
+    maxoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(maxoridata)[::-1])])[::-1].strip(',')
+    plt.figtext(0.05,0.25, '\n'.join([
+        name,
+        'Number of interactions: %s' % str(totaloridata),
+        'Percentage of cis interactions: %.0f%%' % (cistrans*100),
+        'Min-max interactions: %s-%s' % (minoridata, maxoridata)]))
     ax2.set_xlim((np.nanmin(data), np.nanmax(data)))
     ax2.set_ylim((0, max(h[0])))
     ax1.set_xlim ((-0.5, size - .5))

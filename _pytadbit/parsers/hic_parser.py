@@ -340,6 +340,8 @@ class HiC_data(dict):
         if equals == None:
             equals = lambda x, y: x == y
         intra = inter = 0
+        if not self.chromosomes:
+            return float('nan')
         for i, crm1 in enumerate(self.chromosomes):
             for crm2 in self.chromosomes.keys()[i:]:
                 if crm1 in exclude or crm2 in exclude:
