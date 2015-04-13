@@ -122,7 +122,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                         raise Exception('Read mapped mostly outside ' +
                                         'chromosome\n')
                     next_re    = frag_piece[idx]
-                prev_re    = frag_piece[idx - 1]
+                prev_re    = frag_piece[idx - 1 if idx else 0]
                 name       = r.qname
 
                 reads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (

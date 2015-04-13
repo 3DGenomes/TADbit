@@ -58,14 +58,14 @@ def load_structuralmodels(path_f):
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
-            zeros=svd['zeros'], restraints=svd['restraints'],
+            zeros=svd['zeros'], restraints=svd.get('restraints', None),
             description=svd.get('description', None))
     except KeyError: # old version
         return StructuralModels(
             nloci=svd['nloci'], models=svd['models'], bad_models=svd['bad_models'],
             resolution=svd['resolution'], original_data=svd['original_data'],
             clusters=svd['clusters'], config=svd['config'], zscores=svd['zscore'],
-            restraints=svd['restraints'])
+            restraints=svd.get('restraints', None))
 
 class StructuralModels(object):
     """
@@ -2483,9 +2483,9 @@ class StructuralModels(object):
 	"metadata" : {
 		"version"  : 1.0,
 		"type"     : "dataset",
-                "generator": "TADbit",
+                "generator": "TADbit"
                 },
-	"object": {\n%(descr)s
+	"object": {\n%(descr)s,
 		   "uuid": "%(sha)s",
 		   "title": "%(title)s",
                    "datatype": "xyz",
@@ -2496,9 +2496,9 @@ class StructuralModels(object):
         "models":
                  [\n%(xyz)s
                  ],
-        "clusters":[%(cluster)s],
-        "centroids":[%(centroid)s],
-        "restraints": [%(restr)s],
+        "clusters":%(cluster)s,
+        "centroids":%(centroid)s,
+        "restraints": %(restr)s
 }
 '''
         fil = {}
@@ -2540,9 +2540,12 @@ class StructuralModels(object):
         fil['sha'] = str(uuid.uuid5(uuid.UUID(
             versions['  TADbit'].encode('hex').zfill(32)),
                                     fil['xyz']))
-        fil['restr']  = '[' + ','.join(['[%s,%s,"%s",%f]' % (
-            k[0], k[1], self._restraints[k][0], self._restraints[k][2])
-                                        for k in self._restraints]) + ']'
+        try:
+            fil['restr']  = '[' + ','.join(['[%s,%s,"%s",%f]' % (
+                k[0], k[1], self._restraints[k][0], self._restraints[k][2])
+                                            for k in self._restraints]) + ']'
+        except:
+            fil['restr'] = '[]'
         fil['cluster'] = '[' + ','.join(['[' + ','.join(self.clusters[c]) + ']'
                                          for c in self.clusters]) + ']'
         fil['centroid'] = '[' + ','.join(
