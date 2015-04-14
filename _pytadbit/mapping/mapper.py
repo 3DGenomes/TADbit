@@ -12,6 +12,9 @@ import pysam
 import gem
 from warnings import warn
 
+N_WINDOWS = 0
+
+
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
     Merges the two files corresponding to each reads sides. Reads found in both
@@ -83,7 +86,8 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     :param out_sam_path: path to a directory where to store mapped reads in SAM/
        BAM format (see option output_is_bam).
     :param range_start: list of integers representing the start position of each
-       read fragment to be mapped.
+       read fragment to be mapped. Starting at 5 means that the sequence to map
+       will start after the fifth nucleotide.
     :param range_stop: list of integers representing the end position of each
        read fragment to be mapped.
     :param False single_end: when FASTQ contains paired-ends flags
@@ -129,6 +133,9 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
         len(range_start) != len(range_stop)):
         raise Exception('ERROR: range_start and range_stop should have the ' +
                         'same sizes and windows should be uniques.')
+    if any([i >= j for i, j in zip(range_start, range_stop)]):
+        raise Exception('ERROR: start positions should always be lower than ' +
+                        'stop positions.')
 
     # create directories
     for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
@@ -152,6 +159,8 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     except StopIteration:
         raise IOError('ERROR: problem reading %s\n' % fastq_path)
 
+    if not  N_WINDOWS:
+        N_WINDOWS = len(range_start)
     # Split input files if required and apply iterative mapping to each
     # segment separately.
     if max_reads_per_chunk > 0:
@@ -163,6 +172,8 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
             max_reads_per_chunk * 4)
         print '%d chunks obtained' % len(chunked_files)
         for i, fastq_chunk_path in enumerate(chunked_files):
+            global N_WINDOWS
+            N_WINDOWS = 0
             print 'Run iterative_mapping recursively on %s' % fastq_chunk_path
             out_files.extend(iterative_mapping(
                 gem_index_path, fastq_chunk_path,
@@ -188,7 +199,8 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     trim_5, trim_3 = trimming(raw_seq_len, seq_beg, seq_len)
 
     # output
-    local_out_sam = out_sam_path + '.%d-%d' % (seq_beg, seq_end)
+    local_out_sam = out_sam_path + '.%d:%d-%d' % (
+        N_WINDOWS - len(range_stop), seq_beg, seq_end)
     out_files.append(local_out_sam)
     # input
     inputf = gem.files.open(fastq_path)
@@ -220,7 +232,8 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     if unmapped_fastq_path[-1].isdigit():
         unmapped_fastq_path = unmapped_fastq_path.rsplit('.', 1)[0]
     unmapped_fastq_path = os.path.join(
-        temp_dir, unmapped_fastq_path + '.%d-%d' % (seq_beg, seq_end))
+        temp_dir, unmapped_fastq_path + '.%d:%d-%d' % (
+            N_WINDOWS - len(range_stop), seq_beg, seq_end))
     _filter_unmapped_fastq(fastq_path, local_out_sam, unmapped_fastq_path)
 
     out_files.extend(iterative_mapping(gem_index_path, unmapped_fastq_path,

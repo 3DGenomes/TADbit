@@ -2532,10 +2532,10 @@ class StructuralModels(object):
         fil['xyz'] = []
         for m in models:
             model = self[m]
-            fil['xyz'].append((' ' * 18) + '[' + ','.join(
+            fil['xyz'].append((' ' * 18) + '{"ref": %s,"data": [' % m + ','.join(
                 ['%.0f,%.0f,%.0f' % (model['x'][i], model['y'][i],
                                      model['z'][i])
-                 for i in xrange(len(model['x']))]) + ']')
+                 for i in xrange(len(model['x']))]) + ']}')
         fil['xyz'] = ',\n'.join(fil['xyz'])
         fil['sha'] = str(uuid.uuid5(uuid.UUID(
             versions['  TADbit'].encode('hex').zfill(32)),

@@ -33,6 +33,8 @@ def count_re_fragments(fnam):
 def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     """
     map all restriction enzyme (RE) sites of a given enzyme in a genome.
+    Position of a RE site is defined as the genomic coordinate of the last
+    nucleotide left after a cut (genomic coordinate starts at 1).
 
     :param enzyme_name: name of the enzyme to map (upper/lower case are
        important)
@@ -49,7 +51,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     for crm in genome_seq:
         seq = genome_seq[crm]
         frags[crm] = dict([(i, []) for i in xrange(len(seq) / frag_chunk + 1)])
-        frags[crm][0] = [0]
+        frags[crm][0] = [1]
         for match in enz_pattern.finditer(seq):
             pos = match.start() + enz_cut
             frags[crm][pos / frag_chunk].append(pos)

@@ -66,12 +66,12 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
             print 'Loading read' + str(read + 1)
         reads    = []
         for fnam in fnames[read]:
-            if verbose:
-                print 'loading file:', fnam
             try:
                 fhandler = Samfile(fnam)
             except IOError:
                 continue
+            except ValueError:
+                raise Exception('ERROR: not a SAM/BAM file\n%s' % fnam)
             # guess mapper used
             if not mapper:
                 mapper = fhandler.header['PG'][0]['ID']
@@ -83,7 +83,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 warn('WARNING: unrecognized mapper used to generate file\n')
                 condition = lambda x: x[1][1] != 1
             if verbose:
-                print 'MAPPER:', mapper
+                print 'loading %s file: %s' % (mapper, fnam)
             # iteration over reads
             i = 0
             crm_dict = {}
@@ -101,15 +101,18 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 positive = not r.is_reverse
                 crm      = crm_dict[r.tid]
                 len_seq  = len(r.seq)
-                pos      = r.pos + (0 if positive else len_seq)
+                if positive:
+                    pos = r.pos + 1
+                else:
+                    pos = len_seq + 1
                 try:
                     frag_piece = frags[crm][pos / frag_chunk]
                 except KeyError:
                     # Chromosome not in hash
                     continue
-                idx        = bisect(frag_piece, pos)
+                idx = bisect(frag_piece, pos)
                 try:
-                    next_re    = frag_piece[idx]
+                    next_re = frag_piece[idx]
                 except IndexError:
                     # case where part of the read is mapped outside chromosome
                     count = 0
@@ -117,7 +120,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                         pos -= 1
                         count += 1
                         frag_piece = frags[crm][pos / frag_chunk]
-                        idx        = bisect(frag_piece, pos)
+                        idx = bisect(frag_piece, pos)
                     if count >= len_seq:
                         raise Exception('Read mapped mostly outside ' +
                                         'chromosome\n')
@@ -135,4 +138,4 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
             reads_fh.write('# CRM %s\t%d\n' % (crm, len(genome_seq[crm])))
         reads_fh.write(''.join(sorted(reads)))
         reads_fh.close()
-    del(reads)
+    del reads
