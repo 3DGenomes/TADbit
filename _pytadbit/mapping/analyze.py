@@ -503,22 +503,28 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
         fig=plt.figure()
         _ = fig.add_subplot(111)
     colors = ['olive', 'darkcyan']
+    iteration = False
     for i, fnam in enumerate([fnam1, fnam2]):
         fhandler = open(fnam)
         line = fhandler.next()
+        count_by_len[i] = {}
         while line.startswith('#'):
+            if line.startswith('# MAPPED '):
+                itr, num = line.split()[2:]
+                count_by_len[i][int(itr)] = int(num)
             line = fhandler.next()
-        try:
-            count_by_len[i] = {}
-            while True:
-                _, length, _, _ = line.rsplit('\t', 3)
-                try:
-                    count_by_len[i][int(length)] += 1
-                except KeyError:
-                    count_by_len[i][int(length)] = 1
-                line = fhandler.next()
-        except StopIteration:
-            pass
+        if not count_by_len[i]:
+            iteration = True
+            try:
+                while True:
+                    _, length, _, _ = line.rsplit('\t', 3)
+                    try:
+                        count_by_len[i][int(length)] += 1
+                    except KeyError:
+                        count_by_len[i][int(length)] = 1
+                    line = fhandler.next()
+            except StopIteration:
+                pass
         fhandler.close()
         lengths = sorted(count_by_len[i].keys())
         for k in lengths[::-1]:
@@ -527,7 +533,10 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
         plt.plot(lengths, [float(count_by_len[i][l]) / total_reads
                            for l in lengths],
                  label='read' + str(i + 1), linewidth=2, color=colors[i])
-    plt.xlabel('read length (bp)')
+    if iteration:
+        plt.xlabel('read length (bp)')
+    else:
+        plt.xlabel('Iteration number')
     if total_reads != 1:
         plt.ylabel('Proportion of mapped reads')
     else:
