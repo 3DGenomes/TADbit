@@ -135,7 +135,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     if any([i >= j for i, j in zip(range_start, range_stop)]):
         raise Exception('ERROR: start positions should always be lower than ' +
                         'stop positions.')
-    if any([i > 0 for i in range_start]):
+    if any([i <= 0 for i in range_start]):
         raise Exception('ERROR: start positions should be strictly positive.')
     # create directories
     for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
