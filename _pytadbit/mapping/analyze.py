@@ -26,7 +26,7 @@ except ImportError:
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
             focus=None, clim=None, cmap='tadbit', pdf=False, decay=True,
-            perc=10, name='NoName', **kwargs):
+            perc=10, name=None, **kwargs):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
@@ -153,14 +153,14 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
     minoridata   = np.min(data)
     maxoridata   = np.max(data)
-    totaloridata = np.sum([data[i][j] for i in xrange(len(data))
-                           for j in xrange(i, len(data))])
+    totaloridata = int(np.sum([data[i][j] for i in xrange(len(data))
+                               for j in xrange(i, len(data))]))
     data = nozero_log(data, np.log2)
     vals = np.array([i for d in data for i in d])
     vals = vals[np.isfinite(vals)]
 
-    mindata = np.min(vals)
-    maxdata = np.max(vals)
+    mindata = int(np.min(vals))
+    maxdata = int(np.max(vals))
     diff = maxdata - mindata
     posI = 0.01 if not clim else (float(clim[0]) / diff) if clim[0] != None else 0.01
     posF = 1.0  if not clim else (float(clim[1]) / diff) if clim[1] != None else 1.0
@@ -257,10 +257,11 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     totaloridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j in enumerate(str(totaloridata)[::-1])])[::-1].strip(',')
     minoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(minoridata)[::-1])])[::-1].strip(',')
     maxoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(maxoridata)[::-1])])[::-1].strip(',')
-    plt.figtext(0.05,0.25, '\n'.join([
-        name,
-        'Number of interactions: %s' % str(totaloridata),
-        'Percentage of cis interactions: %.0f%%' % (cistrans*100),
+    plt.figtext(0.05,0.25, ''.join([
+        (name + '\n') if name else '',
+        'Number of interactions: %s\n' % str(totaloridata),
+        ('' if np.isnan(cistrans) else
+         ('Percentage of cis interactions: %.0f%%\n' % (cistrans*100))),
         'Min-max interactions: %s-%s' % (minoridata, maxoridata)]))
     ax2.set_xlim((np.nanmin(data), np.nanmax(data)))
     ax2.set_ylim((0, max(h[0])))

@@ -71,7 +71,6 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     if verbose:
         print 'Found %d pair of reads mapping uniquely' % count
 
-
 def trimming(raw_seq_len, seq_start, min_seq_len):
     return seq_start, raw_seq_len - seq_start - min_seq_len
 
@@ -86,11 +85,11 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     :param out_sam_path: path to a directory where to store mapped reads in SAM/
        BAM format (see option output_is_bam).
     :param range_start: list of integers representing the start position of each
-       read fragment to be mapped. Starting at 5 means that the sequence to map
-       will start after the fifth nucleotide.
+       read fragment to be mapped (starting at 1 includes the first nucleotide
+       of the read).
     :param range_stop: list of integers representing the end position of each
        read fragment to be mapped.
-    :param False single_end: when FASTQ contains paired-ends flags
+    :param True single_end: when FASTQ contains paired-ends flags
     :param 4 nthreads: number of threads to use for mapping (number of CPUs)
     :param 0.04 max_edit_distance: The maximum number of edit operations allowed
        while verifying candidate matches by dynamic programming.
@@ -111,7 +110,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     gem_index_path      = os.path.abspath(os.path.expanduser(gem_index_path))
     fastq_path          = os.path.abspath(os.path.expanduser(fastq_path))
     out_sam_path        = os.path.abspath(os.path.expanduser(out_sam_path))
-    single_end          = kwargs.get('single_end'          , False)
+    single_end          = kwargs.get('single_end'          , True)
     max_edit_distance   = kwargs.get('max_edit_distance'   , 0.04)
     mismatches          = kwargs.get('mismatches'          , 0.04)
     nthreads            = kwargs.get('nthreads'            , 4)
@@ -136,7 +135,8 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     if any([i >= j for i, j in zip(range_start, range_stop)]):
         raise Exception('ERROR: start positions should always be lower than ' +
                         'stop positions.')
-
+    if any([i > 0 for i in range_start]):
+        raise Exception('ERROR: start positions should be strictly positive.')
     # create directories
     for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
         try:
@@ -188,6 +188,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
         return out_files
 
     # end position according to sequence in the file
+    # removes 1 in order to start at 1 instead of 0
     try:
         seq_end = range_stop.pop(0)
         seq_beg = range_start.pop(0)
@@ -196,7 +197,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
 
     # define what we trim
     seq_len = seq_end - seq_beg
-    trim_5, trim_3 = trimming(raw_seq_len, seq_beg, seq_len)
+    trim_5, trim_3 = trimming(raw_seq_len, seq_beg - 1, seq_len - 1)
 
     # output
     local_out_sam = out_sam_path + '.%d:%d-%d' % (
@@ -218,7 +219,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
                         output=temp_dir + '/test.map',
                         threads=nthreads)
 
-    # convert to sam
+    # convert to sam/bam
     if output_is_bam:
         sam = gem.gem2sam(mapped, index=gem_index_path, threads=nthreads,
                           single_end=single_end)

@@ -33,8 +33,18 @@ def count_re_fragments(fnam):
 def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     """
     map all restriction enzyme (RE) sites of a given enzyme in a genome.
-    Position of a RE site is defined as the genomic coordinate of the last
-    nucleotide left after a cut (genomic coordinate starts at 1).
+    Position of a RE site is defined as the genomic coordinate of the first
+    nucleotide after the first cut (genomic coordinate starts at 1).
+    In the case of HindIII the genomic coordinate is this one:
+
+    123456 789...
+           |
+           v
+    -----A|AGCT T--------------
+    -----T TCGA|A--------------
+
+    In this example the coordinate of the RE site would be 7.
+
 
     :param enzyme_name: name of the enzyme to map (upper/lower case are
        important)

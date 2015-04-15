@@ -64,14 +64,19 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
     for read in range(len(fnames)):
         if verbose:
             print 'Loading read' + str(read + 1)
+        windows = {}
         reads    = []
         for fnam in fnames[read]:
             try:
                 fhandler = Samfile(fnam)
             except IOError:
+                print 'WARNING: file "%s" not found' % fnam
                 continue
             except ValueError:
                 raise Exception('ERROR: not a SAM/BAM file\n%s' % fnam)
+            # get the iteration number of the iterative mapping
+            num = int(fnam.split('.')[-1].split(':')[0])
+            windows[num] = 0
             # guess mapper used
             if not mapper:
                 mapper = fhandler.header['PG'][0]['ID']
@@ -127,15 +132,18 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                     next_re    = frag_piece[idx]
                 prev_re    = frag_piece[idx - 1 if idx else 0]
                 name       = r.qname
-
                 reads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
                     name, crm, pos, positive, len_seq, prev_re, next_re))
+                windows[num] += 1
         reads_fh = open(outfiles[read], 'w')
         ## write file header
         # chromosome sizes (in order)
         reads_fh.write('## Chromosome lengths (order matters):\n')
         for crm in genome_seq:
             reads_fh.write('# CRM %s\t%d\n' % (crm, len(genome_seq[crm])))
+        reads_fh.write('## Number of mapped reads by iteration\n')
+        for size in windows:
+            reads_fh.write('# MAPPED %d %d\n' % (size, windows[size]))
         reads_fh.write(''.join(sorted(reads)))
         reads_fh.close()
     del reads

@@ -34,6 +34,8 @@ def nicer(res):
         return str(res)[:-6] + ' Mb'
     if not res % 1000:
         return str(res)[:-3] + ' kb'
+    if res == 1:
+        return 'bin'
     return str(res) + ' b'
 
 
