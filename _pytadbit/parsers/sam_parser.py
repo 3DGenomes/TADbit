@@ -109,7 +109,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 if positive:
                     pos = r.pos + 1
                 else:
-                    pos = len_seq + 1
+                    pos = r.pos + len_seq + 1
                 try:
                     frag_piece = frags[crm][pos / frag_chunk]
                 except KeyError:
