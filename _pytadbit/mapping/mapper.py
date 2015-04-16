@@ -32,7 +32,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     line1 = reads1.next()
     header1 = ''
     while line1.startswith('#'):
-        header1 += line1
+        if line1.startswith('# CRM'):
+            header1 += line1
         line1 = reads1.next()
     read1 = line1.split('\t', 1)[0]
 
@@ -40,7 +41,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     line2 = reads2.next()
     header2 = ''
     while line2.startswith('#'):
-        header2 += line2
+        if line2.startswith('# CRM'):
+            header2 += line2
         line2 = reads2.next()
     read2 = line2.split('\t', 1)[0]
     if header1 != header2:
