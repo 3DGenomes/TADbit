@@ -153,14 +153,14 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
     minoridata   = np.min(data)
     maxoridata   = np.max(data)
-    totaloridata = int(np.sum([data[i][j] for i in xrange(len(data))
-                               for j in xrange(i, len(data))]))
+    totaloridata = np.nansum([data[i][j] for i in xrange(len(data))
+                              for j in xrange(i, len(data))])
     data = nozero_log(data, np.log2)
     vals = np.array([i for d in data for i in d])
     vals = vals[np.isfinite(vals)]
 
-    mindata = int(np.min(vals))
-    maxdata = int(np.max(vals))
+    mindata = np.nanmin(vals)
+    maxdata = np.nanmax(vals)
     diff = maxdata - mindata
     posI = 0.01 if not clim else (float(clim[0]) / diff) if clim[0] != None else 0.01
     posF = 1.0  if not clim else (float(clim[1]) / diff) if clim[1] != None else 1.0
@@ -254,9 +254,9 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
             for t in ax1.yaxis.get_minor_ticks():
                 t.tick1On = False
                 t.tick2On = False
-    totaloridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j in enumerate(str(totaloridata)[::-1])])[::-1].strip(',')
-    minoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(minoridata)[::-1])])[::-1].strip(',')
-    maxoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(maxoridata)[::-1])])[::-1].strip(',')
+    # totaloridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j in enumerate(str(totaloridata)[::-1])])[::-1].strip(',')
+    # minoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(minoridata)[::-1])])[::-1].strip(',')
+    # maxoridata = ''.join([j + ('' if (i+1)%3 else ',') for i, j   in enumerate(str(maxoridata)[::-1])])[::-1].strip(',')
     plt.figtext(0.05,0.25, ''.join([
         (name + '\n') if name else '',
         'Number of interactions: %s\n' % str(totaloridata),
@@ -270,7 +270,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax2.set_xlabel('log interaction count')
     # we reduce the number of dots displayed.... we just want to see the shape
     subdata = np.array(list(set([float(int(d*100))/100 for d in data])))
-    normfit = sc_norm.pdf(subdata, np.mean(data), np.std(data))
+    normfit = sc_norm.pdf(subdata, np.nanmean(data), np.nanstd(data))
     ax2.plot(subdata, normfit, 'w.', markersize=2.5, alpha=.4)
     ax2.plot(subdata, normfit, 'k.', markersize=1.5, alpha=1)
     ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
