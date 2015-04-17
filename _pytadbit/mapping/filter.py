@@ -83,7 +83,8 @@ def filter_reads(fnam, max_molecule_length=500,
     frag_count = count_re_fragments(fnam)
     num_frags = len(frag_count)
     cut = int((1 - over_represented) * num_frags + 0.5)
-    cut = sorted([frag_count[crm] for crm in frag_count])[cut]
+    # use cut-1 because it represents the length of the list
+    cut = sorted([frag_count[crm] for crm in frag_count])[cut - 1]
 
     fhandler = open(fnam)
     line = fhandler.next()
