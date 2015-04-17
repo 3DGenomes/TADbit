@@ -262,7 +262,8 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
         'Number of interactions: %s\n' % str(totaloridata),
         ('' if np.isnan(cistrans) else
          ('Percentage of cis interactions: %.0f%%\n' % (cistrans*100))),
-        'Min-max interactions: %s-%s' % (minoridata, maxoridata)]))
+        'Min interactions: %s\n' % (minoridata),
+        'Max interactions: %s\n' % (maxoridata)]))
     ax2.set_xlim((np.nanmin(data), np.nanmax(data)))
     ax2.set_ylim((0, max(h[0])))
     ax1.set_xlim ((-0.5, size - .5))
