@@ -271,7 +271,10 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax2.set_xlabel('log interaction count')
     # we reduce the number of dots displayed.... we just want to see the shape
     subdata = np.array(list(set([float(int(d*100))/100 for d in data])))
-    normfit = sc_norm.pdf(subdata, np.nanmean(data), np.nanstd(data))
+    try:
+        normfit = sc_norm.pdf(subdata, np.nanmean(data), np.nanstd(data))
+    except AttributeError:
+        normfit = sc_norm.pdf(subdata, np.mean(data), np.std(data))
     ax2.plot(subdata, normfit, 'w.', markersize=2.5, alpha=.4)
     ax2.plot(subdata, normfit, 'k.', markersize=1.5, alpha=1)
     ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
