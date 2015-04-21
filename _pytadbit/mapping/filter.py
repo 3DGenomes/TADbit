@@ -6,7 +6,7 @@
 from pytadbit.mapping.restriction_enzymes import count_re_fragments
 
 
-def apply_filter(fnam, outfile, masked, filters=None):
+def apply_filter(fnam, outfile, masked, filters=None, reverse=False):
     """
     Create a new file with reads filtered
 
@@ -16,17 +16,32 @@ def apply_filter(fnam, outfile, masked, filters=None):
        :func:`pytadbit.mapping.filter.filter_reads`
     :param None filters: list of numbers corresponding to the filters we want
        to apply (numbers correspond to the keys in the masked dictionary)
-    
+    :param False reverse: if set, the resulting outfile will only contain the
+       reads filtered, not the valid pairs.
     """
     masked_reads = set()
     filters = filters or masked.keys()
     for filt in filters:
         masked_reads.update(masked[filt]['reads'])
     out = open(outfile, 'w')
-    for line in open(fnam):
-        read = line.split('\t', 1)[0]
-        if read not in masked_reads:
-            out.write(line)
+    fhandler = open(fnam)
+    while True:
+        line = next(fhandler)
+        if not line.startswith('#'):
+            break
+        out.write(line)
+    if reverse:
+        cond = lambda x, y: x in y
+    else:
+        cond = lambda x, y: x not in y
+    try:
+        while True:
+            read = line.split('\t', 1)[0]
+            if cond(read, masked_reads):
+                out.write(line)
+            line = next(fhandler)
+    except StopIteration:
+        pass
     out.close()
 
 
@@ -144,17 +159,17 @@ def filter_reads(fnam, max_molecule_length=500,
     except StopIteration:
         pass
     fhandler.close()
-    del(uniq_check)
-    bads = 0
     if verbose:
         for k in xrange(1, len(masked) + 1):
             print '%d- %-25s : %12d (%5.2f%%)' %(
                 k, masked[k]['name'], len(masked[k]['reads']),
                 float(len(masked[k]['reads'])) / total * 100)
-            bads += len(masked[k]['reads'])
-        print '\n   %-25s : %12d (%6.2f%%)' %('Valid-pairs', bads,
-                                              float(bads) / total * 100)
+        print '\n   %-25s : %12d (%6.2f%%)' %(
+            'Valid-pairs', len(uniq_check), float(len(uniq_check)) / (
+                total) * 100)
         print '-' * 55
-        print '   %-25s : %12d (100%%)' %('TOTAL mapped', total)
+        print '   %-25s : %12d (100%%)' % ('TOTAL mapped', total)
         
+    del(uniq_check)
+
     return masked
