@@ -88,11 +88,10 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                     continue
                 subdata = hic_data.get_matrix(focus=(crm1, crm2), normalized=normalized)
                 if savedata:
-                    out = open('%s/%s.mat' % (
-                        savedata, '_'.join(set((crm1, crm2)))), 'w')
-                    out.write('\n'.join(['\t'.join([str(i) for i in d])
-                                         for d in subdata]) + '\n')
-                    out.close()
+                    hic_data.write_matrix('%s/%s.mat' % (
+                        savedata, '_'.join(set((crm1, crm2)))),
+                                          focus=(crm1, crm2),
+                                          normalized=normalized)
                 if show or savefig:
                     draw_map(subdata, 
                              OrderedDict([(k, hic_data.chromosomes[k])
@@ -107,12 +106,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                              name=name, cistrans=float('NaN'))
     else:
         if savedata:
-            out = open(savedata, 'w')
-            out.write('\n'.join(
-                ['\t'.join([str(i) for i in line])
-                 for line in hic_data.get_matrix(
-                     focus=focus, normalized=normalized)]) + '\n')
-            out.close()
+            hic_data.write_matrix(savedata, focus=focus,
+                                  normalized=normalized)
         if show or savefig:
             subdata = hic_data.get_matrix(focus=focus, normalized=normalized)
             if focus and masked:
