@@ -84,10 +84,17 @@ def autoreader(f):
             header = True
             trim = ncol - nrow + 1
     # Remove header line if needed.
-    if header:
+    if header and not trim:
+        header = items.pop(0)
+        nrow -= 1
+    elif not trim:
+        header = range(1, nrow + 1)
+    elif not header:
+        header = [tuple([a for a in line[:trim]]) for line in items]
+    else:
         del(items[0])
         nrow -= 1
-
+        header = [tuple([a for a in line[:trim]]) for line in items]
     # Get the numeric values and remove extra columns
     what = int if HIC_DATA else float
     try:
@@ -112,16 +119,45 @@ def autoreader(f):
 
     # Check that the matrix is square.
     ncol -= trim
-    if ncol != nrow: raise AutoReadFail('ERROR: non square matrix')
+    if ncol != nrow:
+        raise AutoReadFail('ERROR: non square matrix')
 
     if is_asymmetric(items):
         warn('WARNING: input matrix not symmetric: symmetrizing')
         symmetrize(items)
+    return tuple([a for line in items for a in line]), ncol, header
 
-    return tuple([a for line in items for a in line]), ncol
+def _header_to_section(header, resolution):
+    """
+    converts row-names of the form 'chr12\t1000-2000' into sections, suitable
+    to create HiC_data objects. Also creates chromosomes, from the reads
+    """
+    chromosomes = OrderedDict()
+    sections = {}
+    sections = {}
+    chromosomes = None
+    if len(header[0]) > 1:
+        chromosomes = OrderedDict()
+        for i, h in enumerate(header):
+            if '-' in h[1]:
+                a, b = map(int, h[1].split('-'))
+                if resolution==1:
+                    resolution = abs(b - a)
+                elif resolution != abs(b - a):
+                    raise Exception('ERROR: found different resolution, ' +
+                                    'check headers')
+            else:
+                a = int(h[1])
+                if resolution==1 and i:
+                    resolution = abs(a - b)
+                elif resolution == 1:
+                    b = a
+            sections[(h[0], a / resolution)] = i
+            chromosomes.setdefault(h[0], 0)
+            chromosomes[h[0]] += 1
+    return chromosomes, sections, resolution
 
-
-def read_matrix(things, parser=None, hic=True, **kwargs):
+def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
     """
     Read and checks a matrix from a file (using
     :func:`pytadbit.parser.hic_parser.autoreader`) or a list.
@@ -143,7 +179,7 @@ def read_matrix(things, parser=None, hic=True, **kwargs):
        ``([629, 86, 159, 100, 164, 612, 216, 111, 88, 175, 437, 146, 105, 110,
        105, 278])``
 
-
+    :param 1 resolution: resolution of the matrix
     :param True hic: if False, TADbit assumes that files contains normalized
        data
     :returns: the corresponding matrix concatenated into a huge list, also
@@ -161,20 +197,29 @@ def read_matrix(things, parser=None, hic=True, **kwargs):
         if isinstance(thing, HiC_data):
             matrices.append(thing)
         elif isinstance(thing, file):
-            matrix, size = parser(thing)
+            matrix, size, header = parser(thing)
             thing.close()
+            chromosomes, sections, resolution = _header_to_section(header,
+                                                                   resolution)
             matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size))
+                                      if matrix[i]], size, dict_sec=sections,
+                                     chromosomes=chromosomes,
+                                     resolution=resolution))
         elif isinstance(thing, str):
             try:
-                matrix, size = parser(gzopen(thing))
+                matrix, size, header = parser(gzopen(thing))
             except IOError:
                 if len(thing.split('\n')) > 1:
-                    matrix, size = parser(thing.split('\n'))
+                    matrix, size, header = parser(thing.split('\n'))
                 else:
                     raise IOError('\n   ERROR: file %s not found\n' % thing)
+            sections = dict([(h, i) for i, h in enumerate(header)])
+            chromosomes, sections, resolution = _header_to_section(header,
+                                                                   resolution)
             matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
-                                      if matrix[i]], size))
+                                      if matrix[i]], size, dict_sec=sections,
+                                     chromosomes=chromosomes,
+                                     resolution=resolution))
         elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
                 matrix  = reduce(lambda x, y: x+y, thing)
@@ -238,7 +283,7 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
             section_sizes[(crm,)] = len_crm
             sections.extend([(crm, i) for i in xrange(len_crm)])
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
-    imx = HiC_data((), size, genome_seq, dict_sec)
+    imx = HiC_data((), size, genome_seq, dict_sec, resolution=resolution)
     while True:
         _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
         try:
@@ -260,7 +305,8 @@ class HiC_data(dict):
     """
     This may also hold the print/write-to-file matrix functions
     """
-    def __init__(self, items, size, chromosomes=None, dict_sec=None):
+    def __init__(self, items, size, chromosomes=None, dict_sec=None,
+                 resolution=1):
         super(HiC_data, self).__init__(items)
         self.__size = size
         self._size2 = size**2
@@ -269,6 +315,7 @@ class HiC_data(dict):
         self.chromosomes = chromosomes
         self.sections = dict_sec
         self.section_pos = {}
+        self.resolution = resolution
         if self.chromosomes:
             total = 0
             for crm in self.chromosomes:
@@ -407,15 +454,57 @@ class HiC_data(dict):
                       for j in xrange(len(self))
                       for i in xrange(len(self))])
 
-    def write_matrix(self, focus=None, diagonal=True, normalized=False):
+    def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
         """
-        writes the matrix
+        writes the matrix to a file
+        :param None focus: a tuple with the (start, end) position of the desired
+           window of data (start, starting at 1, and both start and end are
+           inclusive). Alternatively a chromosome name can be input or a tuple
+           of chromosome name, in order to retrieve a specific inter-chromosomal
+           region
+        :param True diagonal: if False, diagonal is replaced by zeroes
+        :param False normalized: get normalized data
         """
-        pass
+        if focus:
+            if isinstance(focus, tuple) and isinstance(focus[0], int):
+                start1, end1 = focus
+                start2, end2 = focus
+                start1 -= 1
+                start2 -= 1
+            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+                start1, end1 = self.section_pos[focus[0]]
+                start2, end2 = self.section_pos[focus[1]]
+            else:
+                start1, end1 = self.section_pos[focus]
+                start2, end2 = self.section_pos[focus]
+        else:
+            start1 = start2 = 0
+            end1   = end2   = len(self)
+        out = open(fname, 'w')
+        rownam = ['%s\t%d-%d' % (k[0],
+                                 k[1] * self.resolution,
+                                 (k[1] + 1) * self.resolution)
+                  for k in sorted(self.sections,
+                                  key=lambda x: self.sections[x])
+                  if start2 <= self.sections[k] < end2]
+        for line in self.yield_matrix(focus=focus, diagonal=diagonal,
+                                      normalized=normalized):
+            out.write(rownam.pop(0) + '\t' +
+                      '\t'.join([str(i) for i in line]) + '\n')
+        out.close()
 
     def get_matrix(self, focus=None, diagonal=True, normalized=False):
         """
-        get the matrix
+        returns a matrix
+        :param None focus: a tuple with the (start, end) position of the desired
+           window of data (start, starting at 1, and both start and end are
+           inclusive). Alternatively a chromosome name can be input or a tuple
+           of chromosome name, in order to retrieve a specific inter-chromosomal
+           region
+        :param True diagonal: if False, diagonal is replaced by zeroes
+        :param False normalized: get normalized data
+
+        :returns: matrix (a list of lists of values)
         """
         siz = len(self)
         if normalized and not self.bias:
@@ -424,6 +513,8 @@ class HiC_data(dict):
             if isinstance(focus, tuple) and isinstance(focus[0], int):
                 start1, end1 = focus
                 start2, end2 = focus
+                start1 -= 1
+                start2 -= 1
             elif isinstance(focus, tuple) and isinstance(focus[0], str):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
@@ -457,3 +548,60 @@ class HiC_data(dict):
                     for i in xrange(len(mtrx)):
                         mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx
+
+    def yield_matrix(self, focus=None, diagonal=True, normalized=False):
+        """
+        yields a matrix line by line
+        :param None focus: a tuple with the (start, end) position of the desired
+           window of data (start, starting at 1, and both start and end are
+           inclusive). Alternatively a chromosome name can be input or a tuple
+           of chromosome name, in order to retrieve a specific inter-chromosomal
+           region
+        :param True diagonal: if False, diagonal is replaced by zeroes
+        :param False normalized: get normalized data
+
+        :yields: matrix line by line (a line being a list of values)
+        """
+        siz = len(self)
+        if normalized and not self.bias:
+            raise Exception('ERROR: experiment not normalized yet')
+        if focus:
+            if isinstance(focus, tuple) and isinstance(focus[0], int):
+                start1, end1 = focus
+                start2, end2 = focus
+                start1 -= 1
+                start2 -= 1
+            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+                start1, end1 = self.section_pos[focus[0]]
+                start2, end2 = self.section_pos[focus[1]]
+            else:
+                start1, end1 = self.section_pos[focus]
+                start2, end2 = self.section_pos[focus]
+        else:
+            start1 = start2 = 0
+            end1   = end2   = siz
+        if normalized:
+            for i in xrange(start2, end2):
+                # if we want the diagonal, or we don't but are looking at a
+                # region that is not symmetric
+                if diagonal or start1 != start2:
+                    yield [self[i, j] / self.bias[i] / self.bias[j]
+                           for j in xrange(start1, end1)]
+                # diagonal replaced by zeroes
+                else:
+                    yield ([self[i, j] / self.bias[i] / self.bias[j]
+                            for j in xrange(start1, i)] +
+                           [0] + 
+                           [self[i, j] / self.bias[i] / self.bias[j]
+                            for j in xrange(i + 1, end1)])
+        else:
+            for i in xrange(start2, end2):
+                # if we want the diagonal, or we don't but are looking at a
+                # region that is not symmetric
+                if diagonal or start1 != start2:
+                    yield [self[i, j] for j in xrange(start1, end1)]
+                # diagonal replaced by zeroes
+                else:
+                    yield ([self[i, j] for j in xrange(start1, i)] +
+                           [0] + 
+                           [self[i, j] for j in xrange(i + 1, end1)])

@@ -78,6 +78,7 @@ from pytadbit.experiment import Experiment, load_experiment_from_reads
 from pytadbit.chromosome import load_chromosome
 from pytadbit.imp.structuralmodels import StructuralModels
 from pytadbit.imp.structuralmodels import load_structuralmodels
+from pytadbit.parsers.hic_parser import load_hic_data_from_reads
 from pytadbit.imp.impmodel import load_impmodel_from_cmm
 from pytadbit.imp.impmodel import load_impmodel_from_xyz
 from pytadbit.imp.impmodel import IMPmodel
