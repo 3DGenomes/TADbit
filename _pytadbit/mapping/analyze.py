@@ -64,8 +64,6 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     :param False pdf: when using the bny_chrom option, to specify the format of
        the stored images
     :param Reds cmap: color map to be used for the heatmap
-    :param False get_sections: for very very high resolution, when the column
-       index does not fit in memory
     """
     if isinstance(data, str):
         data = load_hic_data_from_reads(data, resolution=resolution, **kwargs)

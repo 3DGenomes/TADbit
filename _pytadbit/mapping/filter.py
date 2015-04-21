@@ -86,74 +86,75 @@ def filter_reads(fnam, max_molecule_length=500,
     # use cut-1 because it represents the length of the list
     cut = sorted([frag_count[crm] for crm in frag_count])[cut - 1]
 
+    total = 0
+    
     fhandler = open(fnam)
     line = fhandler.next()
     while line.startswith('#'):
         line = fhandler.next()
-    while True:
-        (read,
-         cr1, pos1, sd1, _, rs1, re1,
-         cr2, pos2, sd2, _, rs2, re2) = line.strip().split('\t')
-        (ps1, ps2, sd1, sd2,
-         re1, rs1, re2, rs2) = map(int, (pos1, pos2, sd1, sd2,
-                                         re1, rs1, re2, rs2))
-        if cr1 == cr2:
-            if re1 == re2:
-                if sd1 != sd2:
-                    if (ps2 > ps1) == sd2:
-                        # ----<===---===>---                       self-circles
-                        masked[1]["reads"].add(read)
+    try:
+        while True:
+            (read,
+             cr1, pos1, sd1, _, rs1, re1,
+             cr2, pos2, sd2, _, rs2, re2) = line.strip().split('\t')
+            (ps1, ps2, sd1, sd2,
+             re1, rs1, re2, rs2) = map(int, (pos1, pos2, sd1, sd2,
+                                             re1, rs1, re2, rs2))
+            total += 1
+            if cr1 == cr2:
+                if re1 == re2:
+                    if sd1 != sd2:
+                        if (ps2 > ps1) == sd2:
+                            # ----<===---===>---                   self-circles
+                            masked[1]["reads"].add(read)
+                        else:
+                            # ----===>---<===---                   dangling-ends
+                            masked[2]["reads"].add(read)
                     else:
-                        # ----===>---<===---                       dangling-ends
-                        masked[2]["reads"].add(read)
-                else:
-                    # --===>--===>-- or --<===--<===-- or same     errors
-                    masked[3]["reads"].add(read)
-                try:
+                        # --===>--===>-- or --<===--<===-- or same errors
+                        masked[3]["reads"].add(read)
                     line = fhandler.next()
-                except StopIteration:
-                    break
-                continue
-            elif (abs(ps1 - ps2) < max_molecule_length
-                  and sd2 != sd1
-                  and ps2 > ps1 != sd2):
-                # different fragments but facing and very close
-                masked[4]["reads"].add(read)
-                try:
+                    continue
+                elif (abs(ps1 - ps2) < max_molecule_length
+                      and sd2 != sd1
+                      and ps2 > ps1 != sd2):
+                    # different fragments but facing and very close
+                    masked[4]["reads"].add(read)
                     line = fhandler.next()
-                except StopIteration:
-                    break
-                continue
-        if ((abs(re1 - ps1) < re_proximity) or
-            (abs(rs1 - ps1) < re_proximity) or 
-            (abs(re2 - ps2) < re_proximity) or
-            (abs(rs2 - ps2) < re_proximity)):
-            masked[5]["reads"].add(read)
-        elif ((re1 - rs1) < min_frag_size) or ((re2 - rs2) < min_frag_size) :
-            masked[6]["reads"].add(read)
-        elif ((re1 - rs1) > max_frag_size) or ((re2 - rs2) > max_frag_size):
-            masked[7]["reads"].add(read)
-        elif (frag_count.get((cr1, rs1), 0) > cut or
-              frag_count.get((cr2, rs2), 0) > cut):
-            masked[8]["reads"].add(read)
-        else:
-            uniq_key = tuple(sorted((cr1 + pos1, cr2 + pos2)))
-            if uniq_key in uniq_check:
-                masked[9]["reads"].add(read)
-                # in case we want to forget about all reads (not keeping one)
-                # if not uniq_check[uniq_key] in masked[5]["reads"]:
-                #     masked[5]["reads"].add(uniq_check[uniq_key])
-                #     continue
+                    continue
+            if ((abs(re1 - ps1) < re_proximity) or
+                (abs(rs1 - ps1) < re_proximity) or 
+                (abs(re2 - ps2) < re_proximity) or
+                (abs(rs2 - ps2) < re_proximity)):
+                masked[5]["reads"].add(read)
+            elif ((re1 - rs1) < min_frag_size) or ((re2 - rs2) < min_frag_size):
+                masked[6]["reads"].add(read)
+            elif ((re1 - rs1) > max_frag_size) or ((re2 - rs2) > max_frag_size):
+                masked[7]["reads"].add(read)
+            elif (frag_count.get((cr1, rs1), 0) > cut or
+                  frag_count.get((cr2, rs2), 0) > cut):
+                masked[8]["reads"].add(read)
             else:
-                # uniq_check[uniq_key] = read
-                uniq_check.add(uniq_key)
-        try:
+                uniq_key = tuple(sorted((cr1 + pos1, cr2 + pos2)))
+                if uniq_key in uniq_check:
+                    masked[9]["reads"].add(read)
+                else:
+                    uniq_check.add(uniq_key)
             line = fhandler.next()
-        except StopIteration:
-            break
+    except StopIteration:
+        pass
     fhandler.close()
     del(uniq_check)
+    bads = 0
     if verbose:
         for k in xrange(1, len(masked) + 1):
-            print '%d- %-25s : %d' %(k, masked[k]['name'], len(masked[k]['reads']))
+            print '%d- %-25s : %12d (%5.2f%%)' %(
+                k, masked[k]['name'], len(masked[k]['reads']),
+                float(len(masked[k]['reads'])) / total * 100)
+            bads += len(masked[k]['reads'])
+        print '\n   %-25s : %12d (%6.2f%%)' %('Valid-pairs', bads,
+                                              float(bads) / total * 100)
+        print '-' * 55
+        print '   %-25s : %12d (100%%)' %('TOTAL mapped', total)
+        
     return masked
