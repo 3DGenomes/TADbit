@@ -49,7 +49,7 @@ def filter_reads(fnam, max_molecule_length=500,
                  over_represented=0.005, max_frag_size=100000,
                  min_frag_size=100, re_proximity=5, verbose=True):
     """
-    Apply different filters on pair of reads (in order of application):
+    Apply different filters on pair of reads:
        1- self-circle        : reads are comming from a single RE fragment and
           point to the outside (----<===---===>---)
        2- dangling-end       : reads are comming from a single RE fragment and
@@ -103,7 +103,7 @@ def filter_reads(fnam, max_molecule_length=500,
     # use cut-1 because it represents the length of the list
     cut = sorted([frag_count[crm] for crm in frag_count])[cut - 1]
 
-    total = 0
+    total = 1
     bads  = 0
     fhandler = open(fnam)
     line = fhandler.next()
@@ -117,7 +117,6 @@ def filter_reads(fnam, max_molecule_length=500,
             (ps1, ps2, sd1, sd2,
              re1, rs1, re2, rs2) = map(int, (pos1, pos2, sd1, sd2,
                                              re1, rs1, re2, rs2))
-            total += 1
             bad = False
             if cr1 == cr2:
                 if re1 == re2:
@@ -136,7 +135,7 @@ def filter_reads(fnam, max_molecule_length=500,
                         bad = True
                 elif (abs(ps1 - ps2) < max_molecule_length
                       and sd2 != sd1
-                      and ps2 > ps1 != sd2):
+                      and (ps2 > ps1) != sd2):
                     # different fragments but facing and very close
                     masked[4]["reads"].add(read)
                     bad = True
@@ -166,6 +165,7 @@ def filter_reads(fnam, max_molecule_length=500,
                 uniq_check.add(uniq_key)
             bads += bad
             line = fhandler.next()
+            total += 1
     except StopIteration:
         pass
     fhandler.close()
