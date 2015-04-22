@@ -139,20 +139,20 @@ def filter_reads(fnam, max_molecule_length=500,
                     # different fragments but facing and very close
                     masked[4]["reads"].add(read)
                     bad = True
-            if ((abs(re1 - ps1) < re_proximity) or
-                (abs(rs1 - ps1) < re_proximity) or 
-                (abs(re2 - ps2) < re_proximity) or
-                (abs(rs2 - ps2) < re_proximity)):
-                masked[5]["reads"].add(read)
-                bad = True
-            dif1 = re1 - rs1
-            dif2 = re2 - rs2
-            if (dif1 < min_frag_size) or (dif2 < min_frag_size):
-                masked[6]["reads"].add(read)
-                bad = True
-            if (dif1 > max_frag_size) or (dif2 > max_frag_size):
-                masked[7]["reads"].add(read)
-                bad = True
+                if ((abs(re1 - ps1) < re_proximity) or
+                    (abs(rs1 - ps1) < re_proximity) or 
+                    (abs(re2 - ps2) < re_proximity) or
+                    (abs(rs2 - ps2) < re_proximity)):
+                    masked[5]["reads"].add(read)
+                    bad = True
+                dif1 = re1 - rs1
+                dif2 = re2 - rs2
+                if (dif1 < min_frag_size) or (dif2 < min_frag_size):
+                    masked[6]["reads"].add(read)
+                    bad = True
+                if (dif1 > max_frag_size) or (dif2 > max_frag_size):
+                    masked[7]["reads"].add(read)
+                    bad = True
             if (frag_count.get((cr1, rs1), 0) > cut or
                   frag_count.get((cr2, rs2), 0) > cut):
                 masked[8]["reads"].add(read)
