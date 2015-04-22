@@ -136,7 +136,9 @@ def _header_to_section(header, resolution):
     sections = {}
     sections = {}
     chromosomes = None
-    if isinstance(header, list) and len(header[0]) > 1:
+    if (isinstance(header, list)
+        and isinstance(header[0], list)
+        and len(header[0]) > 1):
         chromosomes = OrderedDict()
         for i, h in enumerate(header):
             if '-' in h[1]:
