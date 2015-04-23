@@ -66,6 +66,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
             print 'Loading read' + str(read + 1)
         windows = {}
         reads    = []
+        num = 0
         for fnam in fnames[read]:
             try:
                 fhandler = Samfile(fnam)
@@ -75,7 +76,10 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
             except ValueError:
                 raise Exception('ERROR: not a SAM/BAM file\n%s' % fnam)
             # get the iteration number of the iterative mapping
-            num = int(fnam.split('.')[-1].split(':')[0])
+            try:
+                num = int(fnam.split('.')[-1].split(':')[0])
+            except:
+                num += 1
             windows[num] = 0
             # guess mapper used
             if not mapper:
