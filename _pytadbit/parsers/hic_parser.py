@@ -489,10 +489,15 @@ class HiC_data(dict):
                   for k in sorted(self.sections,
                                   key=lambda x: self.sections[x])
                   if start2 <= self.sections[k] < end2]
-        for line in self.yield_matrix(focus=focus, diagonal=diagonal,
-                                      normalized=normalized):
-            out.write(rownam.pop(0) + '\t' +
-                      '\t'.join([str(i) for i in line]) + '\n')
+        if rownam:
+            for line in self.yield_matrix(focus=focus, diagonal=diagonal,
+                                          normalized=normalized):
+                out.write(rownam.pop(0) + '\t' +
+                          '\t'.join([str(i) for i in line]) + '\n')
+        else:
+            for line in self.yield_matrix(focus=focus, diagonal=diagonal,
+                                          normalized=normalized):
+                out.write('\t'.join([str(i) for i in line]) + '\n')
         out.close()
 
     def get_matrix(self, focus=None, diagonal=True, normalized=False):
