@@ -9,8 +9,11 @@ import os
 import tempfile
 import gzip
 import pysam
-import gem
 from warnings import warn
+try:
+    import gem
+except ImportError:
+    warn('WARNING: GEMTOOLS not found')
 
 N_WINDOWS = 0
 

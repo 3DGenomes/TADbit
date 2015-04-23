@@ -73,16 +73,19 @@ for i in xrange(1000):
     # pick one fragment
     crm  = genome.keys()    [int(random() * len(genome))]
     frag = frags[crm].keys()[int(random() * len(frags[crm]))]
-    pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-               + frags[crm][frag][0])
-    pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-               + frags[crm][frag][0])
-    if pos2 > pos1:
-        sd1 = 66
-        sd2 = 82
-    else:
-        sd1 = 82
-        sd2 = 66
+    while True:
+        pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
+                   + frags[crm][frag][0])
+        pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
+                   + frags[crm][frag][0])
+        if pos2 > pos1:
+            sd1 = 66
+            sd2 = 82
+            break
+        elif pos2 < pos1:
+            sd1 = 82
+            sd2 = 66
+            break
     read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala.%012d' % (i)}
     read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala.%012d' % (i)}
     out1.write(read_str.format(**read1))
@@ -96,7 +99,7 @@ out2.close()
 from pytadbit.parsers.sam_parser import parse_sam
 
 parse_sam(['test_read1.sam'], ['test_read2.sam'],
-          'lala1', 'lala2', genome, re_name='DPNII')
+          'lala1', 'lala2', genome, re_name='DPNII', mapper='GEM')
 
 # GET INTERSECTION
 from pytadbit.mapping.mapper import get_intersection
