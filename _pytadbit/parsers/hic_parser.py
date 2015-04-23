@@ -391,14 +391,14 @@ class HiC_data(dict):
         intra = inter = 0
         if not self.chromosomes:
             return float('nan')
-        for i, crm1 in enumerate(self.chromosomes):
-            for crm2 in self.chromosomes.keys()[i:]:
+        for crm1 in self.chromosomes:
+            for crm2 in self.chromosomes:
                 if crm1 in exclude or crm2 in exclude:
                     continue
                 if crm1 == crm2:
                     mtrx = self.get_matrix(
                         focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)
-                    val = sum([sum([mtrx[i][j] for j in xrange(i + 1, len(mtrx))])
+                    val = sum([sum([mtrx[i][j] for j in xrange(len(mtrx))])
                                for i in xrange(len(mtrx))])
                     if verbose:
                         print 'INTRA', crm1, crm2, val

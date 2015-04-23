@@ -71,6 +71,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
             warn('WARNING: not decay not available when get_sections is off.')
             decay = False
     hic_data = data
+    resolution = data.resolution
     if hic_data.bads and not masked:
         masked = hic_data.bads
     # save and draw the data
@@ -670,35 +671,39 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
 
     :returns: matrix of correlations
     """
-    corr = []
-    ev1, evect1 = eigh(np.array([[hic_data1[i, j]
-                         for j in xrange(len(hic_data1))]
-                        for i in xrange(len(hic_data1))]))
-    ev2, evect2 = eigh(np.array([[hic_data2[i, j]
-                         for j in xrange(len(hic_data2))]
-                        for i in xrange(len(hic_data2))]))
+    data1 = hic_data1.get_matrix()
+    data2 = hic_data2.get_matrix()
+    # get the log
+    size = len(data1)
+    data1 = nozero_log(data1, np.log2)
+    data2 = nozero_log(data2, np.log2)
+    # get the eigenvectors
+    ev1, evect1 = eigh(data1)
+    ev2, evect2 = eigh(data2)
     corr = [[0 for _ in xrange(nvect)] for _ in xrange(nvect)]
-    
+    # sort eigenvectors according to their eigenvalues => first is last!!
     sort_perm = ev1.argsort()
     ev1.sort()
-    evect1 = evect1[sort_perm][::-1]
+    evect1 = evect1[sort_perm]
     sort_perm = ev2.argsort()
     ev2.sort()
-    evect2 = evect2[sort_perm][::-1]
-    
+    evect2 = evect2[sort_perm]
+    # calculate Pearson correlation
     for i in xrange(nvect):
         for j in xrange(nvect):
-            corr[i][j] = abs(pearsonr(evect1[:,i],
-                                      evect2[:,j])[0])
-
+            corr[i][j] = abs(pearsonr(evect1[:,-i-1],
+                                      evect2[:,-j-1])[0])
+    # plot
     axe    = plt.axes([0.1, 0.1, 0.6, 0.8])
     cbaxes = plt.axes([0.85, 0.1, 0.03, 0.8])
     if show or savefig:
         im = axe.imshow(corr, interpolation="nearest",origin='lower')
         axe.set_xlabel('Eigen Vectors exp. 1')
         axe.set_ylabel('Eigen Vectors exp. 2')
-        axe.set_xticklabels(range(nvect + 1), range(1, nvect + 2))
-        axe.set_yticklabels(range(nvect + 1), range(1, nvect + 2))
+        axe.set_xticks(range(nvect))
+        axe.set_yticks(range(nvect))
+        axe.set_xticklabels(range(1, nvect + 2))
+        axe.set_yticklabels(range(1, nvect + 2))
         axe.xaxis.set_tick_params(length=0, width=0)
         axe.yaxis.set_tick_params(length=0, width=0)
         
