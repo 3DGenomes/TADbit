@@ -54,10 +54,10 @@ def filter_reads(fnam, max_molecule_length=500,
           point to the outside (----<===---===>---)
        2- dangling-end       : reads are comming from a single RE fragment and
           point to the inside (----===>---<===---)
-       3- extra dangling-end : reads are comming from different RE fragment but
-          are close enough (< max_molecule length) and point to the inside
-       4- error              : reads are comming from a single RE fragment and
+       3- error              : reads are comming from a single RE fragment and
           point in the same direction
+       4- extra dangling-end : reads are comming from different RE fragment but
+          are close enough (< max_molecule length) and point to the inside
        5- too close from RE  : start position of one of the read is too close (
           5 bp by default) from RE cutting site. Non-canonical enzyme activity
           or random physical breakage of the chromatin.
@@ -139,10 +139,10 @@ def filter_reads(fnam, max_molecule_length=500,
                     # different fragments but facing and very close
                     masked[4]["reads"].add(read)
                     bad = True
-            if ((abs(re1 - ps1) < re_proximity) or
-                (abs(rs1 - ps1) < re_proximity) or 
-                (abs(re2 - ps2) < re_proximity) or
-                (abs(rs2 - ps2) < re_proximity)):
+            if (((re1 - ps1) < re_proximity) or
+                ((ps1 - rs1) < re_proximity) or 
+                ((re2 - ps2) < re_proximity) or
+                ((ps2 - rs2) < re_proximity)):
                 masked[5]["reads"].add(read)
                 bad = True
             dif1 = re1 - rs1
