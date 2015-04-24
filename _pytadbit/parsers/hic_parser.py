@@ -418,7 +418,7 @@ class HiC_data(dict):
         resolution = 1 if binned else self.resolution
         for crm, length in  enumerate(lengths):
             cnam = 'chr' + str(crm) if not chr_names else chr_names[crm]
-            genome_seq[cnam] = int(len(length)) / resolution + 1
+            genome_seq[cnam] = int(length) / resolution + 1
             size += genome_seq[crm]
         section_sizes = {}
         for crm in genome_seq:
