@@ -419,7 +419,7 @@ class HiC_data(dict):
         for crm, length in  enumerate(lengths):
             cnam = 'chr' + str(crm) if not chr_names else chr_names[crm]
             genome_seq[cnam] = int(length) / resolution + 1
-            size += genome_seq[crm]
+            size += genome_seq[cnam]
         section_sizes = {}
         for crm in genome_seq:
             len_crm = genome_seq[crm]
