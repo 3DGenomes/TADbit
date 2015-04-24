@@ -66,7 +66,8 @@ def autoreader(f):
     # Auto-detect the format, there are only 4 cases.
     if ncol == nrow:
         try:
-            _ = [float(item) for item in items[0]]
+            _ = [float(item) for item in items[0]
+                 if not item.lower() in ['na', 'nan']]
             # Case 1: pure number matrix.
             header = False
             trim = 0
@@ -74,15 +75,18 @@ def autoreader(f):
             # Case 2: matrix with row and column names.
             header = True
             trim = 1
+            warn('WARNING: found header')
     else:
         if len(items[0]) == len(items[1]):
             # Case 3: matrix with row information.
             header = False
             trim = ncol - nrow
+            warn('WARNING: found %d colum(s) of row names' % trim)
         else:
             # Case 4: matrix with header and row information.
             header = True
             trim = ncol - nrow + 1
+            warn('WARNING: found header and %d colum(s) of row names' % trim)
     # Remove header line if needed.
     if header and not trim:
         header = items.pop(0)

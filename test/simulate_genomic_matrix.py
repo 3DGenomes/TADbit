@@ -41,7 +41,7 @@ for crm in genome:
     frags[crm] = {}
     beg = 0
     for pos in re.finditer('GATC', genome[crm]):
-        end = pos.start()
+        end = pos.start() + 1
         if beg == end:
             continue
         frags[crm][beg] = [beg, end]
@@ -70,17 +70,42 @@ out2 = open('test_read2.sam', 'w')
 out2.write(sam_head)
 flags = [66, 82]
 for i in xrange(1000):
-    # pick one fragment
+    # SELF-CIRCLES
     crm  = genome.keys()    [int(random() * len(genome))]
     while True:
         frag = frags[crm].keys()[int(random() * len(frags[crm]))]
-        if (frags[crm][frag][1] - frags[crm][frag][0]) > 10:
+        if (frags[crm][frag][1] - frags[crm][frag][0]) > 3:
             break
     while True:
         pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                   + frags[crm][frag][0])
+                   + frags[crm][frag][0] + 1)
         pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                   + frags[crm][frag][0])
+                   + frags[crm][frag][0] + 1)
+        if pos2 > pos1:
+            sd1 = 82
+            sd2 = 66
+            pos1 -= 3
+            break
+        elif pos2 < pos1:
+            sd1 = 66
+            sd2 = 82
+            pos2 -= 3
+            break
+    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala01.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala01.%012d' % (i)}
+    out1.write(read_str.format(**read1))
+    out2.write(read_str.format(**read2))
+    # DANGLING-ENDS
+    crm  = genome.keys()    [int(random() * len(genome))]
+    while True:
+        frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+        if (frags[crm][frag][1] - frags[crm][frag][0]) > 3:
+            break
+    while True:
+        pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
+                   + frags[crm][frag][0] + 1)
+        pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
+                   + frags[crm][frag][0] + 1)
         if pos2 > pos1:
             sd1 = 66
             sd2 = 82
@@ -91,14 +116,62 @@ for i in xrange(1000):
             sd2 = 66
             pos1 -= 3
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala.%012d' % (i)}
+    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala02.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala02.%012d' % (i)}
+    out1.write(read_str.format(**read1))
+    out2.write(read_str.format(**read2))
+    # ERRORS
+    crm  = genome.keys()    [int(random() * len(genome))]
+    while True:
+        frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+        if (frags[crm][frag][1] - frags[crm][frag][0]) > 3:
+            break
+    while True:
+        pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
+                   + frags[crm][frag][0] + 1)
+        pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
+                   + frags[crm][frag][0] + 1)
+        sd1 = sd2 = flags[int(random()*2)]
+        if pos1 != pos2:
+            if sd1 == 82:
+                pos1 -= 3
+                pos2 -= 3
+            break
+    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala03.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala03.%012d' % (i)}
+    out1.write(read_str.format(**read1))
+    out2.write(read_str.format(**read2))
+    # EXTRA-DANGLING-ENDS
+    crm  = genome.keys()    [int(random() * len(genome))]
+    while True:
+        frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+        if (frags[crm][frag][1] - frags[crm][frag][0]) > 3:
+            break
+    while True:
+        pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
+                   + frags[crm][frag][0] + 1)
+        if frags[crm][frag][1] - pos1 < 490 or pos1 - frags[crm][frag][0] < 490:
+            continue
+        pos2 = int(random() * 1000) - 500 + pos1
+        if frags[crm][frag][0] < pos2 < frags[crm][frag][1]:
+            continue
+        if pos2 > pos1:
+            sd1 = 66
+            sd2 = 82
+            pos2 -= 3
+            break
+        elif pos2 < pos1:
+            sd1 = 82
+            sd2 = 66
+            pos1 -= 3
+            break
+    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala02.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala02.%012d' % (i)}
     out1.write(read_str.format(**read1))
     out2.write(read_str.format(**read2))
     
 out1.close()
 out2.close()
-
 
 # PARSE SAM
 from pytadbit.parsers.sam_parser import parse_sam
