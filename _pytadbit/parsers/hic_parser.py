@@ -402,7 +402,42 @@ class HiC_data(dict):
                  + 'should adjust the resolution')
         self.__size = size
         self._size2 = size**2
-        
+
+    def add_sections(self, lengths, binned=False):
+        """
+        Add genomic coordinate to HiC_data object by getting them from a fasta
+        file containing chromosome sequences
+
+        :param lengths: list of chromosome lengths
+        :param False binned: if True, leghths will not be divided by resolution
+        """
+        sections = []
+        genome_seq = OrderedDict()
+        size = 0
+        resolution = 1 if binned else self.resolution
+        corrector = 0 if binned else 1
+        for crm, length in  enumerate(lengths):
+            genome_seq['chr' + str(crm)] = int(len(length)) / resolution + corrector
+            size += genome_seq[crm]
+        section_sizes = {}
+        for crm in genome_seq:
+            len_crm = genome_seq[crm]
+            section_sizes[(crm,)] = len_crm
+            sections.extend([(crm, i) for i in xrange(len_crm)])
+        dict_sec = dict([(j, i) for i, j in enumerate(sections)])
+        self.chromosomes = genome_seq
+        self.sections = dict_sec
+        if self.chromosomes:
+            total = 0
+            for crm in self.chromosomes:
+                self.section_pos[crm] = (total, total + self.chromosomes[crm])
+                total += self.chromosomes[crm]
+        if size != self.__size:
+            warn('WARNING: different sizes (%d, now:%d), ' % (self.__size, size)
+                 + 'should adjust the resolution')
+        self.__size = size
+        self._size2 = size**2
+
     def cis_trans_ratio(self, normalized=False, exclude=None, diagonal=False,
                         equals=None, verbose=False):
         """
