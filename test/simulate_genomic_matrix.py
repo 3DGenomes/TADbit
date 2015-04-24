@@ -72,7 +72,10 @@ flags = [66, 82]
 for i in xrange(1000):
     # pick one fragment
     crm  = genome.keys()    [int(random() * len(genome))]
-    frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+    while True:
+        frag = frags[crm].keys()[int(random() * len(frags[crm]))]
+        if (frags[crm][frag][1] - frags[crm][frag][0]) > 10:
+            break
     while True:
         pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
                    + frags[crm][frag][0])
@@ -81,10 +84,12 @@ for i in xrange(1000):
         if pos2 > pos1:
             sd1 = 66
             sd2 = 82
+            pos2 -= 3
             break
         elif pos2 < pos1:
             sd1 = 82
             sd2 = 66
+            pos1 -= 3
             break
     read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala.%012d' % (i)}
     read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala.%012d' % (i)}
