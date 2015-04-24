@@ -21,12 +21,13 @@ def get_r2 (fun, X, Y, *args):
     return 1 - sserr/sstot
 
 
-def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
+def filter_by_mean(matrx, draw_hist=False, silent=False, perc_zero=0.3, savefig=None):
     """
     fits the distribution of Hi-C interaction count by column in the matrix to
     a polynomial. Then searches for the first possible 
     """
     nbins = 100
+    bads = {}
     # get sum of columns
     cols = []
     size = len(matrx)
@@ -66,93 +67,105 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
             xp = range(0, int(cols[-1]))
             if cnt > 10000:
                 raise ValueError
+        # find best polynomial fit in a given range
+        for order in range(6, 18):
+            z = np.polyfit(y, x, order)
+            zp = np.polyder(z, m=1)
+            roots = np.roots(np.polyder(z))
+            # check that we are concave down, otherwise take next root
+            pente = np.polyval(zp, abs(roots[-2] - roots[-1]) / 2 + roots[-1])
+            if pente > 0:
+                root = roots[-1]
+            else:
+                root = roots[-2]
+            # root must be higher than zero
+            if root <= 0:
+                continue
+            # and lower than the median
+            if root >= percentile:
+                continue
+            p  = np.poly1d(z)
+            R2 = get_r2(p, x, y)
+            # try to avoid very large orders by weigthing negatively their fit
+            if order > 13:
+                R2 -= float(order)/30
+            if best[0] < R2:
+                best = (R2, order, p, z, root)
+        try:
+            p, z, root = best[2:]
+            if draw_hist:
+                a = plt.plot(xp, p(xp), "--", color='k')
+                b = plt.vlines(root, 0, plt.ylim()[1], colors='r', linestyles='dashed')
+                # c = plt.vlines(median - mad * 1.5, 0, 110, colors='g',
+                #                linestyles='dashed')
+                try:
+                    plt.legend(a+[b], ['polyfit \n%s' % (
+                        ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
+                                     '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
+                                                       '{' + str(i) + '}'))
+                                 for i, j in enumerate(list(p)[::-1])])),
+                                           'first solution of polynomial derivation'],
+                               fontsize='x-small')
+                except TypeError:
+                    plt.legend(a+[b], ['polyfit \n%s' % (
+                        ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
+                                     '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
+                                                       '{' + str(i) + '}'))
+                                 for i, j in enumerate(list(p)[::-1])])),
+                                           'first solution of polynomial derivation'])
+                # plt.legend(a+[b]+[c], ['polyfit \n{}'.format (
+                #     ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
+                #                  '${}{:.1}x^{}$'.format ('+' if j>0 else '', j,
+                #                                         '{' + str(i) + '}'))
+                #              for i, j in enumerate(list(p)[::-1])])),
+                #                        'first solution of polynomial derivation',
+                #                        'median - (1.5 * median absolute deviation)'],
+                #            fontsize='x-small')
+                plt.ylim(0, plt.ylim()[1])
+                if savefig:
+                    tadbit_savefig(savefig)
+                else:
+                    plt.show()
+            # label as bad the columns with sums lower than the root
+            for i, col in enumerate([[matrx.get(i+j*size, 0)
+                                      for j in xrange(size)]
+                                     for i in xrange(size)]):
+                if sum(col) < root:
+                    bads[i] = sum(col)
+            # now stored in Experiment._zeros, used for getting more accurate z-scores
+            if bads and not silent:
+                stderr.write(('\nWARNING: removing columns having less than %s ' +
+                              'counts:\n %s\n') % (
+                                 round(root, 3), ' '.join(
+                                     ['%5s'%str(i + 1) + (''if (j + 1) % 20 else '\n')
+                                      for j, i in enumerate(sorted(bads.keys()))])))
+        except:
+            if not silent:
+                stderr.write('WARNING: Too many zeroes to filter columns.' +
+                             ' SKIPPING...\n')
     except ValueError:
         if not silent:
-            stderr.write('WARNING: Too few data to filter columns. ' +
-                         'SKIPPING...\n')
-        return {}
-    # find best polynomial fit in a given range
-    for order in range(6, 18):
-        z = np.polyfit(y, x, order)
-        zp = np.polyder(z, m=1)
-        roots = np.roots(np.polyder(z))
-        # check that we are concave down, otherwise take next root
-        pente = np.polyval(zp, abs(roots[-2] - roots[-1]) / 2 + roots[-1])
-        if pente > 0:
-            root = roots[-1]
-        else:
-            root = roots[-2]
-        # root must be higher than zero
-        if root <= 0:
-            continue
-        # and lower than the median
-        if root >= percentile:
-            continue
-        p  = np.poly1d(z)
-        R2 = get_r2(p, x, y)
-        # try to avoid very large orders by weigthing negatively their fit
-        if order > 13:
-            R2 -= float(order)/30
-        if best[0] < R2:
-            best = (R2, order, p, z, root)
-    try:
-        p, z, root = best[2:]
-    except:
-        if not silent:
-            stderr.write('WARNING: Too many zeroes to filter columns.' +
-                         ' SKIPPING...\n')
-        return {}
-    if draw_hist:
-        a = plt.plot(xp, p(xp), "--", color='k')
-        b = plt.vlines(root, 0, plt.ylim()[1], colors='r', linestyles='dashed')
-        # c = plt.vlines(median - mad * 1.5, 0, 110, colors='g',
-        #                linestyles='dashed')
-        try:
-            plt.legend(a+[b], ['polyfit \n%s' % (
-                ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
-                             '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
-                                               '{' + str(i) + '}'))
-                         for i, j in enumerate(list(p)[::-1])])),
-                                   'first solution of polynomial derivation'],
-                       fontsize='x-small')
-        except TypeError:
-            plt.legend(a+[b], ['polyfit \n%s' % (
-                ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
-                             '$%s%.1fx^%s$' % ('+' if j>0 else '', j,
-                                               '{' + str(i) + '}'))
-                         for i, j in enumerate(list(p)[::-1])])),
-                                   'first solution of polynomial derivation'])
-        # plt.legend(a+[b]+[c], ['polyfit \n{}'.format (
-        #     ''.join([sub('e([-+][0-9]+)', 'e^{\\1}',
-        #                  '${}{:.1}x^{}$'.format ('+' if j>0 else '', j,
-        #                                         '{' + str(i) + '}'))
-        #              for i, j in enumerate(list(p)[::-1])])),
-        #                        'first solution of polynomial derivation',
-        #                        'median - (1.5 * median absolute deviation)'],
-        #            fontsize='x-small')
-        plt.ylim(0, plt.ylim()[1])
-        if savefig:
-            tadbit_savefig(savefig)
-        else:
-            plt.show()
-    # label as bad the columns with sums lower than the root
-    bads = {}
+            stderr.write('WARNING: Too few data to filter columns based on ' +
+                         'mean value.\n')
+    min_val = int(size * float(perc_zero) / 100)
+    new_bads = []
     for i, col in enumerate([[matrx.get(i+j*size, 0)
                               for j in xrange(size)]
                              for i in xrange(size)]):
-        if sum(col) < root:
-            bads[i] = sum(col)
-    # now stored in Experiment._zeros, used for getting more accurate z-scores
-    if bads and not silent:
-        stderr.write(('\nWARNING: removing columns having less than %s ' +
-                      'counts:\n %s\n') % (
-                         round(root, 3), ' '.join(
+        if col.count(0) > min_val:
+            bads[i] = True
+            new_bads.append(i)
+    if new_bads and not silent:
+        stderr.write(('\nWARNING: removing columns having more than %s ' +
+                      'zeroes:\n %s\n') % (
+                         min_val, ' '.join(
                              ['%5s'%str(i + 1) + (''if (j + 1) % 20 else '\n')
-                              for j, i in enumerate(sorted(bads.keys()))])))
+                              for j, i in enumerate(sorted(new_bads))])))
+    plt.close('all')
     return bads
 
 
-def hic_filtering_for_modelling(matrx, method='mean', silent=False,
+def hic_filtering_for_modelling(matrx, silent=False, perc_zero=66, 
                                 draw_hist=False, savefig=None, diagonal=True):
     """
     Call filtering function, to remove artefactual columns in a given Hi-C
@@ -163,27 +176,18 @@ def hic_filtering_for_modelling(matrx, method='mean', silent=False,
     
     :param matrx: Hi-C matrix of a given experiment
     :param False silent: does not warn for removed columns
-    :param mean method: method to use for filtering Hi-C columns. Aims to
-       remove columns with abnormally low count of interactions
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
     :param True diagonal: remove row/columns with zero in the diagonal
+    :param 75 perc_zero: maximum percentage of cells with no interactions
+       allowed.
 
     :returns: the indexes of the columns not to be considered for the
        calculation of the z-score
     """
-    if method == 'mean':
-        bads = filter_by_mean(matrx, draw_hist=draw_hist, silent=silent,
-                              savefig=savefig)
-    elif method == 'zeros':
-        bads = filter_by_zero_count(matrx)
-    elif method == 'mad':
-        bads = filter_by_mad(matrx)
-    elif method == 'stdev':
-        bads = filter_by_stdev(matrx)
-    else:
-        raise Exception
+    bads = filter_by_mean(matrx, draw_hist=draw_hist, silent=silent,
+                          savefig=savefig, perc_zero=perc_zero)
     # also removes rows or columns containing a NaN
     has_nans = False
     for i in xrange(len(matrx)):

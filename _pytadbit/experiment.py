@@ -7,7 +7,7 @@
 from pytadbit.parsers.hic_parser   import read_matrix, HiC_data
 from pytadbit.utils.extraviews     import nicer
 from pytadbit.utils.extraviews     import tadbit_savefig
-from pytadbit.utils.tadmaths       import zscore
+from pytadbit.utils.tadmaths       import zscore, nozero_log_matrix
 from pytadbit.utils.normalize_hic  import iterative
 from pytadbit.utils.hic_filtering  import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser   import parse_tads
@@ -399,7 +399,7 @@ class Experiment(object):
 
 
     def filter_columns(self, silent=False, draw_hist=False, savefig=None,
-                       diagonal=True):
+                       diagonal=True, perc_zero=66):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -415,6 +415,8 @@ class Experiment(object):
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
         :param True diagonal: remove row/columns with zero in the diagonal
+        :param 66 perc_zero: maximum percentage of cells with no interactions
+           allowed.
 
         """
         try:
@@ -424,7 +426,7 @@ class Experiment(object):
             diagonal = True
         self._zeros, has_nans = hic_filtering_for_modelling(
             data, silent=silent, draw_hist=draw_hist, savefig=savefig,
-            diagonal=diagonal)
+            diagonal=diagonal, perc_zero=perc_zero)
         if has_nans: # to make it simple
             for i in xrange(self.hic_data[0]._size2):
                 if repr(self.hic_data[0][i]) == 'nan':
@@ -1224,15 +1226,18 @@ class Experiment(object):
             alphas = array([0, 0] + [1] * 256 + [0])
             jet._init()
             jet._lut[:,-1] = alphas
+
+        cmap = plt.get_cmap(cmap)
+        cmap.set_bad('darkgrey', 1)
         if relative:
-            img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
+            img = axe.imshow(nozero_log_matrix(matrix, fun), origin='lower', vmin=vmin, vmax=vmax,
                              interpolation="nearest", cmap=cmap,
                              extent=(int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5,
                                      int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5))
         else:
-            img = axe.imshow(fun(matrix), origin='lower',
+            img = axe.imshow(nozero_log_matrix(matrix, fun), origin='lower',
                              interpolation="nearest", cmap=cmap,
                              extent=(int(start or 1) - 0.5,
                                      int(start or 1) + len(matrix) - 0.5,

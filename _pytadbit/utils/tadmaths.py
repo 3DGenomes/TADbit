@@ -103,7 +103,8 @@ def nozero_log_matrix(values, transformation):
         minv = 0.
     except:
         try:
-            minv = float(min([v for l in values for v in l if v])) / 2
+            minv = float(min([v for l in values for v in l
+                              if v and not np.isnan(v)])) / 2
         except ValueError:
             minv = 1
     logminv = transformation(minv)
