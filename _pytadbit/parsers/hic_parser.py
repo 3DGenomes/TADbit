@@ -403,21 +403,22 @@ class HiC_data(dict):
         self.__size = size
         self._size2 = size**2
 
-    def add_sections(self, lengths, binned=False):
+    def add_sections(self, lengths, chr_names=None, binned=False):
         """
         Add genomic coordinate to HiC_data object by getting them from a fasta
-        file containing chromosome sequences
+        file containing chromosome sequences. Orders matters.
 
         :param lengths: list of chromosome lengths
+        :param None chr_names: list of corresponding chromosome names.
         :param False binned: if True, leghths will not be divided by resolution
         """
         sections = []
         genome_seq = OrderedDict()
         size = 0
         resolution = 1 if binned else self.resolution
-        corrector = 0 if binned else 1
         for crm, length in  enumerate(lengths):
-            genome_seq['chr' + str(crm)] = int(len(length)) / resolution + corrector
+            cnam = 'chr' + str(crm) if not chr_names else chr_names[crm]
+            genome_seq[cnam] = int(len(length)) / resolution + 1
             size += genome_seq[crm]
         section_sizes = {}
         for crm in genome_seq:
