@@ -9,6 +9,7 @@ from pytadbit.parsers.gzopen import gzopen
 from pytadbit.utils.hic_filtering   import filter_by_mean
 from collections import OrderedDict
 from pytadbit.utils.normalize_hic  import iterative
+from pytadbit.parsers.genome_parser import parse_fasta
 
 HIC_DATA = True
 
@@ -369,7 +370,39 @@ class HiC_data(dict):
                                                              self.__size))
             super(HiC_data, self).__setitem__(row_col, val)
 
+    def add_sections_from_fasta(self, fasta):
+        """
+        Add genomic coordinate to HiC_data object by getting them from a fasta
+        file containing chromosome sequences
 
+        :param fasta: path to a fasta file
+        """
+        genome = parse_fasta(fasta, verbose=False)
+        sections = []
+        genome_seq = OrderedDict()
+        size = 0
+        for crm in  genome:
+            genome_seq[crm] = int(len(genome[crm])) / self.resolution + 1
+            size += genome_seq[crm]
+        section_sizes = {}
+        for crm in genome_seq:
+            len_crm = genome_seq[crm]
+            section_sizes[(crm,)] = len_crm
+            sections.extend([(crm, i) for i in xrange(len_crm)])
+        dict_sec = dict([(j, i) for i, j in enumerate(sections)])
+        self.chromosomes = genome_seq
+        self.sections = dict_sec
+        if self.chromosomes:
+            total = 0
+            for crm in self.chromosomes:
+                self.section_pos[crm] = (total, total + self.chromosomes[crm])
+                total += self.chromosomes[crm]
+        if size != self.__size:
+            warn('WARNING: different sizes (%d, now:%d), ' % (self.__size, size)
+                 + 'should adjust the resolution')
+        self.__size = size
+        self._size2 = size**2
+        
     def cis_trans_ratio(self, normalized=False, exclude=None, diagonal=False,
                         equals=None, verbose=False):
         """

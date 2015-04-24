@@ -611,7 +611,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         plt.show()
 
 
-def correlate_matrices(hic_data1, hic_data2, max_dist=10,
+def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
                        savefig=None, show=False, savedata=None):
     """
     Compare the iteractions of two Hi-C matrices at a given distance,
@@ -623,20 +623,37 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10,
     :param 10 max_dist: maximum distance from diagonal (e.g. 10 mean we will
        not look further than 10 times the resolution)
     :param None savefig: path to save the plot
+    :param False intra: only takes into account intra-chromosomal contacts
     :param False show: displays the plot
 
     :returns: list of correlations and list of genomic distances
     """
     corr = []
     dist = []
-    for i in xrange(1, max_dist + 1):
-        diag1 = []
-        diag2 = []
-        for j in xrange(len(hic_data1) - i):
-            diag1.append(hic_data1[j, i + j])
-            diag2.append(hic_data2[j, i + j])
-        corr.append(spearmanr(diag1, diag2)[0])
-        dist.append(i)
+    if (intra and hic_data1.sections and hic_data2.sections and 
+        hic_data1.sections == hic_data2.sections):
+        for i in xrange(1, max_dist + 1):
+            diag1 = []
+            diag2 = []
+            for crm in hic_data1.section_pos:
+                for j in xrange(hic_data1.section_pos[crm][0],
+                                hic_data1.section_pos[crm][1] - i):
+                    diag1.append(hic_data1[j, i + j])
+                    diag2.append(hic_data2[j, i + j])
+            corr.append(spearmanr(diag1, diag2)[0])
+            dist.append(i)
+    else:
+        if intra:
+            warn('WARNING: hic_dta does not contain chromosome coordinates, ' +
+                 'intra set to False')
+        for i in xrange(1, max_dist + 1):
+            diag1 = []
+            diag2 = []
+            for j in xrange(len(hic_data1) - i):
+                diag1.append(hic_data1[j, i + j])
+                diag2.append(hic_data2[j, i + j])
+            corr.append(spearmanr(diag1, diag2)[0])
+            dist.append(i)
     if show or savefig:
         plt.plot(dist, corr, color='orange', linewidth=3, alpha=.8)
         plt.xlabel('Genomic distance in bins')
