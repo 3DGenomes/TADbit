@@ -7,7 +7,7 @@ from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from random import random
 import re
 
-# RANDOM GENOME
+# VARIABLES
 num_crms      = 40
 mean_crm_size = 1000000
 
@@ -23,11 +23,10 @@ re_seq = RESTRICTION_ENZYMES[r_enz].replace('|', '')
 enz_cut = RESTRICTION_ENZYMES[r_enz].index('|')
 
 
-
-
-
 nts = ('ATGC' * 100) +'N'
 
+
+# RANDOM GENOME GENERATION
 genome = {}
 for crm in xrange(1, num_crms + 1):
     crm_len = int(mean_crm_size * random())
@@ -79,7 +78,6 @@ sam_head = sam_head % crm_heads
 
 read_str = '{id}\t{flag}\t{crm}\t{pos}\t254\t3M\t*\t0\t0\tAAA\tHHH\tRG:Z:0\tNH:i:1\tNM:i:0\tXT:A:U\tmd:Z:3\n'
 
-# dangling ends
 out1 = open('test_read1.sam~', 'w')
 out1.write(sam_head)
 out2 = open('test_read2.sam~', 'w')
@@ -202,6 +200,7 @@ for i in xrange(extradangling):
     out1.write(read_str.format(**read1))
     out2.write(read_str.format(**read2))
     # TOO CLOSE FROM RE
+    
 
 out1.close()
 out2.close()

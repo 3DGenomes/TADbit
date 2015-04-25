@@ -161,7 +161,8 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, perc_zero=0.3, savefig=
                          min_val, ' '.join(
                              ['%5s'%str(i + 1) + (''if (j + 1) % 20 else '\n')
                               for j, i in enumerate(sorted(new_bads))])))
-    plt.close('all')
+    if draw_hist:
+        plt.close('all')
     return bads
 
 
