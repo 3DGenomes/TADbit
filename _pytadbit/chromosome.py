@@ -344,11 +344,10 @@ class Chromosome(object):
         out = open(out_f, 'w')
         dump(dico, out)
         out.close()
-        if not fast:
+        if not fast and divide:
             out = open(out_f + '_hic', 'w')
             dump(dicp, out)
             out.close()
-
 
     def align_experiments(self, names=None, verbose=False, randomize=False,
                           rnd_method='interpolate', rnd_num=1000,
