@@ -23,15 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Tutorials" href="../tutorial.html" />
     <link rel="next" title="Three-dimensional modeling of chromatine structure" href="tutorial_6_modelling_and_analysis.html" />
     <link rel="prev" title="Hi-C data processing" href="tutorial_4_data_normalization.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,52 +43,45 @@
         <li class="right" >
           <a href="tutorial_4_data_normalization.html" title="Hi-C data processing"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../tutorial.html" accesskey="U">Tutorials</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="parameter-optimization-for-imp">
 <h1>Parameter optimization for IMP.<a class="headerlink" href="#parameter-optimization-for-imp" title="Permalink to this headline">¶</a></h1>
-<p><a href="#id1"><span class="problematic" id="id2">*</span></a>Recover data from previous section by loading the previously saved chromosome and its Hi-C data.*Import the necessary libraries.
-.. code:: python</p>
-<blockquote>
-<div># Libraries
-from pytadbit import load_chromosome # to load chromosomes
-from pytadbit.imp.impoptimizer import IMPoptimizer</div></blockquote>
-<p>First, load the chromosome from previous tutorial (<em class="xref std std-ref">run_tadbit</em>).
-.. code:: python</p>
-<blockquote>
-<div># Load the chromosome
-my_chrom = load_chromosome(&#8216;some_path.tdb&#8217;)</div></blockquote>
-<p>Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromosome objects because of their size):
-.. code:: python</p>
-<blockquote>
-<div><p># Loop over experiments in chromosome and load Hi-C data.
-res = 100000</p>
-<dl class="docutils">
-<dt>for exp in my_chrom.experiments:</dt>
-<dd><dl class="first docutils">
-<dt>try:</dt>
-<dd><dl class="first docutils">
-<dt>exp.load_hic_data(&#8216;../../scripts/sample_data/HIC_{0}_{1}_{1}_{2}_obs.txt&#8217;.format(</dt>
-<dd>exp.name, my_chrom.name, res))</dd>
-</dl>
-<p class="last">exp.normalize_hic(factor=1)</p>
-</dd>
-<dt>except IOError:</dt>
-<dd>print &#8216;file not found for experiment: &#8216; + exp.name
-continue</dd>
-</dl>
-<p class="last">print exp</p>
-</dd>
-</dl>
-</div></blockquote>
+<p><em>Recover data from previous section by loading the previously saved chromosome and its Hi-C data.</em></p>
+<p>Import the necessary libraries.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Libraries</span>
+<span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">load_chromosome</span> <span class="c"># to load chromosomes</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span> <span class="kn">import</span> <span class="n">IMPoptimizer</span>
+</pre></div>
+</div>
+<p>First, load the chromosome from previous tutorial (<a class="reference internal" href="tutorial_1_general.html#run-tadbit"><span>Find Topologically Associating Domains</span></a>).</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Load the chromosome</span>
+<span class="n">my_chrom</span> <span class="o">=</span> <span class="n">load_chromosome</span><span class="p">(</span><span class="s">&#39;some_path.tdb&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromosome objects because of their size):</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Loop over experiments in chromosome and load Hi-C data.</span>
+<span class="n">res</span> <span class="o">=</span> <span class="mi">100000</span>
+
+<span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">exp</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">(</span><span class="s">&#39;../../scripts/sample_data/HIC_{0}_{1}_{1}_{2}_obs.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                          <span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
+        <span class="n">exp</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">factor</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;file not found for experiment: &#39;</span> <span class="o">+</span> <span class="n">exp</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">continue</span>
+    <span class="k">print</span> <span class="n">exp</span>
+</pre></div>
+</div>
 <pre class="ansi-block literal-block">
 Experiment k562:
    resolution        : 100Kb
@@ -117,10 +110,10 @@ file not found for experiment: batch_gm06690_k562
 /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
   warn('WARNING: non integer values')
 </pre>
-<p>The log indicates that experiment &#8220;k562+gm06690&#8221; had no file. Such experiment was built ad-hoc in our previous tutorial and needs to be created again by summing the Hi-C matrices from the individual experiments.
-.. code:: python</p>
-<blockquote>
-<div>my_chrom.experiments[&#8216;k562+gm06690&#8217;] = my_chrom.experiments[&#8216;k562&#8217;] + my_chrom.experiments[&#8216;gm06690&#8217;]</div></blockquote>
+<p>The log indicates that experiment &#8220;k562+gm06690&#8221; had no file. Such experiment was built ad-hoc in our previous tutorial and needs to be created again by summing the Hi-C matrices from the individual experiments.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&#39;k562+gm06690&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&#39;k562&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&#39;gm06690&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
 <p>We are now going to use the experiment &#8220;gm06690&#8221; for the modelling. The
 first thing we need to do is to filter columns with low counts:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">exp</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&#39;gm06690&#39;</span><span class="p">]</span>
@@ -150,22 +143,20 @@ WARNING: removing columns having less than 67.485 counts:
 <div class="section" id="optimization-of-imp-3d-modeling-parameters">
 <h2>Optimization of IMP 3D modeling parameters<a class="headerlink" href="#optimization-of-imp-3d-modeling-parameters" title="Permalink to this headline">¶</a></h2>
 <p>In the previous tutorial we found a specific TAD (region 406 to 448) that seemed quite conserved accross different cell types.</p>
-<p>Next, we will optimize the three IMP parameters for this TAD. The IMP parameters to optimize are maximal distance between two non-interacting particles (maxdist), Upper-bound Z-score (upfreq) and Lower-bound Z-score (lowfreq). For details see Bau &amp; Marti-Renom. METHODS <a class="reference internal" href="../biblio.html#bau2012" id="id3">[Baù2012]</a>.
-.. code:: python</p>
-<blockquote>
-<div>optimizer = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=2000)</div></blockquote>
+<p>Next, we will optimize the three IMP parameters for this TAD. The IMP parameters to optimize are maximal distance between two non-interacting particles (maxdist), Upper-bound Z-score (upfreq) and Lower-bound Z-score (lowfreq). For details see Bau &amp; Marti-Renom. METHODS <a class="reference internal" href="../biblio.html#bau2012" id="id1">[Baù2012]</a>.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span> <span class="o">=</span> <span class="n">IMPoptimizer</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">n_models</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">n_keep</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+</pre></div>
+</div>
 <pre class="ansi-block literal-block">
 Preparing to optimize 101 particles
 </pre>
-<p><tt class="docutils literal"><span class="pre">cutoff</span></tt> value corresponds to the distance limit, in nanometers, to consider if two particles of a model are interacting or not. A wise choice corresponds to two time the resolution times the scale factor (0.01), which in this case is <span class="math">\(cutoff = 100Kb \times 2 \times scale = 100000 \times 2 \times 0.01 = 2000\)</span></p>
-<p><em>Note: Usually the number of models to generate and to keep, should be respectively 500 and 100.</em>
-.. code:: python</p>
-<blockquote>
-<div><p># Optimize parameters. Be aware that this step is CPU intensive. If you want to se the progress, set verbose=True.
-optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2),</p>
-<blockquote>
-<div>maxdist_range=(2000, 3500, 500), verbose=True)</div></blockquote>
-</div></blockquote>
+<p><code class="docutils literal"><span class="pre">cutoff</span></code> value corresponds to the distance limit, in nanometers, to consider if two particles of a model are interacting or not. A wise choice corresponds to two time the resolution times the scale factor (0.01), which in this case is <span class="math">\(cutoff = 100Kb \times 2 \times scale = 100000 \times 2 \times 0.01 = 2000\)</span></p>
+<p><em>Note: Usually the number of models to generate and to keep, should be respectively 500 and 100.</em></p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Optimize parameters. Be aware that this step is CPU intensive. If you want to se the progress, set verbose=True.</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+                          <span class="n">maxdist_range</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">3500</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
 <pre class="ansi-block literal-block">
  1  0.2 -1 2000 0.01 0.767098689596
  2  0.2 -0.8 2000 0.01 0.767098689596
@@ -274,13 +265,13 @@ optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.
 </div>
 <div class="section" id="optimizing-from-experiment">
 <h3>Optimizing from Experiment<a class="headerlink" href="#optimizing-from-experiment" title="Permalink to this headline">¶</a></h3>
-<p>The exact same as above can be done from Experiment objects directly:
-.. code:: python</p>
-<blockquote>
-<div>#optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,
-#                                       lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2),
-#                                       maxdist_range=(2000, 3500, 500),
-#                                       verbose=False)</div></blockquote>
+<p>The exact same as above can be done from Experiment objects directly:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#optimizer = exp.optimal_imp_parameters(100, 200, n_cpus=8, n_models=50, n_keep=25, cutoff=1000,</span>
+<span class="c">#                                       lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2),</span>
+<span class="c">#                                       maxdist_range=(2000, 3500, 500),</span>
+<span class="c">#                                       verbose=False)</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="visualize-the-results">
@@ -293,11 +284,11 @@ optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.
 </pre></div>
 </div>
 <img alt="../_images/tutorial_5_parameter_optimization_23_0.png" src="../_images/tutorial_5_parameter_optimization_23_0.png" />
-<p>We can also ask to mark on the plot the best N combination of parameters with the &#8220;show_best&#8221; parameter.
-.. code:: python</p>
-<blockquote>
-<div># Visualize the results of the optimization and mark the best 10 parameter sets
-optimizer.plot_2d(show_best=20)</div></blockquote>
+<p>We can also ask to mark on the plot the best N combination of parameters with the &#8220;show_best&#8221; parameter.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization and mark the best 10 parameter sets</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
 <img alt="../_images/tutorial_5_parameter_optimization_25_0.png" src="../_images/tutorial_5_parameter_optimization_25_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">axes_range</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">scale_range</span><span class="p">],</span>
                     <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">],</span>
@@ -326,21 +317,21 @@ optimizer.plot_2d(show_best=20)</div></blockquote>
 [[0.01], [2000.0, 2500.0, 3000.0, 3500.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
 (0.79673255576921265, 0.01, 3000.0, 0.0, 0.8)
 </pre>
-<p>One can also visualize the parameter optimization according to ne of the three optimization parameters.
-.. code:: python</p>
-<blockquote>
-<div># Visualize the results of the optimization based on the lowfreq parameter.
-optimizer.plot_2d(axes=(&#8216;upfreq&#8217;, &#8216;lowfreq&#8217;, &#8216;maxdist&#8217;, &#8216;scale&#8217;),show_best=10)</div></blockquote>
+<p>One can also visualize the parameter optimization according to ne of the three optimization parameters.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization based on the lowfreq parameter.</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;scale&#39;</span><span class="p">),</span><span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
 <img alt="../_images/tutorial_5_parameter_optimization_28_0.png" src="../_images/tutorial_5_parameter_optimization_28_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;scale&quot;</span><span class="p">:</span><span class="mf">0.01</span><span class="p">},</span> <span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_5_parameter_optimization_29_0.png" src="../_images/tutorial_5_parameter_optimization_29_0.png" />
-<p>TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):
-.. code:: python</p>
-<blockquote>
-<div># Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.
-optimizer.plot_3d(axes=(&#8216;scale&#8217;, &#8216;maxdist&#8217;, &#8216;upfreq&#8217;, &#8216;lowfreq&#8217;))</div></blockquote>
+<p>TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">plot_3d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;scale&#39;</span><span class="p">,</span> <span class="s">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s">&#39;lowfreq&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
 <img alt="../_images/tutorial_5_parameter_optimization_31_0.png" src="../_images/tutorial_5_parameter_optimization_31_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                           <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">],</span> <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span><span class="mi">2250</span><span class="p">,</span><span class="mi">2500</span><span class="p">,</span><span class="mi">2750</span><span class="p">,</span><span class="mi">3000</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
@@ -379,12 +370,12 @@ Preparing to optimize 101 particles
 </div>
 <div class="section" id="retrieve-best-parameters">
 <h2>Retrieve best parameters<a class="headerlink" href="#retrieve-best-parameters" title="Permalink to this headline">¶</a></h2>
-<p>Once done, best results can be returned as a dictionary to be used for modeling (see next section of the tutorial)
-.. code:: python</p>
-<blockquote>
-<div><p>config = optimizer.get_best_parameters_dict(reference=&#8217;gm cell from Job Dekker 2009&#8217;)</p>
-<p>print config</p>
-</div></blockquote>
+<p>Once done, best results can be returned as a dictionary to be used for modeling (see next section of the tutorial)</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">config</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">get_best_parameters_dict</span><span class="p">(</span><span class="n">reference</span><span class="o">=</span><span class="s">&#39;gm cell from Job Dekker 2009&#39;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">config</span>
+</pre></div>
+</div>
 <pre class="ansi-block literal-block">
 {'maxdist': 2750.0, 'upfreq': 0.8, 'kforce': 5, 'reference': 'gm cell from Job Dekker 2009', 'lowfreq': 0.0, 'scale': 0.01}
 </pre>
@@ -395,7 +386,7 @@ Preparing to optimize 101 particles
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -404,7 +395,6 @@ Preparing to optimize 101 particles
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#three-dimentional-modelling">Three-dimentional modelling</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_4_data_normalization.html">Hi-C data processing</a></li>
@@ -425,7 +415,7 @@ Preparing to optimize 101 particles
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_6_modelling_and_analysis.html"
                         title="next chapter">Three-dimensional modeling of chromatine structure</a></p>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -442,7 +432,7 @@ Preparing to optimize 101 particles
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -454,14 +444,14 @@ Preparing to optimize 101 particles
         <li class="right" >
           <a href="tutorial_4_data_normalization.html" title="Hi-C data processing"
              >previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../tutorial.html" >Tutorials</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

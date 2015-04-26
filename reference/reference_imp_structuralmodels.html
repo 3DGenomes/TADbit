@@ -23,15 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="Utilities" href="reference_utils.html" />
     <link rel="prev" title="IMPmodel class" href="reference_imp_model.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,19 +43,19 @@
         <li class="right" >
           <a href="reference_imp_model.html" title="IMPmodel class"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <dl class="function">
 <dt id="pytadbit.imp.imp_modelling.generate_3d_models">
-<tt class="descclassname">pytadbit.imp.imp_modelling.</tt><tt class="descname">generate_3d_models</tt><big>(</big><em>zscores</em>, <em>resolution</em>, <em>nloci</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config=None</em>, <em>values=None</em>, <em>experiment=None</em>, <em>coords=None</em>, <em>zeros=None</em>, <em>first=None</em>, <em>container=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.imp.imp_modelling.</code><code class="descname">generate_3d_models</code><span class="sig-paren">(</span><em>zscores</em>, <em>resolution</em>, <em>nloci</em>, <em>start=1</em>, <em>n_models=5000</em>, <em>n_keep=1000</em>, <em>close_bins=1</em>, <em>n_cpus=1</em>, <em>keep_all=False</em>, <em>verbose=0</em>, <em>outfile=None</em>, <em>config=None</em>, <em>values=None</em>, <em>experiment=None</em>, <em>coords=None</em>, <em>zeros=None</em>, <em>first=None</em>, <em>container=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/imp_modelling.html#generate_3d_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.imp_modelling.generate_3d_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates three-dimensional models starting from Hi-C data. 
 The final analysis will be performed on the n_keep top models.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -155,17 +155,17 @@ used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nucle
 <h1>StructuralModels class<a class="headerlink" href="#structuralmodels-class" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pytadbit.imp.structuralmodels.load_structuralmodels">
-<tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">load_structuralmodels</tt><big>(</big><em>path_f</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#load_structuralmodels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.load_structuralmodels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads <a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels" title="pytadbit.imp.structuralmodels.StructuralModels"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels</span></tt></a> from a file
+<code class="descclassname">pytadbit.imp.structuralmodels.</code><code class="descname">load_structuralmodels</code><span class="sig-paren">(</span><em>path_f</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#load_structuralmodels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.load_structuralmodels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads <a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels" title="pytadbit.imp.structuralmodels.StructuralModels"><code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels</span></code></a> from a file
 (generated with
-<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.save_models" title="pytadbit.imp.structuralmodels.StructuralModels.save_models"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.save_models</span></tt></a>).</p>
+<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.save_models" title="pytadbit.imp.structuralmodels.StructuralModels.save_models"><code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.save_models</span></code></a>).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> &#8211; to the pickled StructuralModels object.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.imp_model.StructuralModels</span></tt>.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.imp_model.StructuralModels</span></code>.</td>
 </tr>
 </tbody>
 </table>
@@ -173,7 +173,7 @@ used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nucle
 
 <dl class="class">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels">
-<em class="property">class </em><tt class="descclassname">pytadbit.imp.structuralmodels.</tt><tt class="descname">StructuralModels</tt><big>(</big><em>nloci</em>, <em>models</em>, <em>bad_models</em>, <em>resolution</em>, <em>original_data=None</em>, <em>zscores=None</em>, <em>clusters=None</em>, <em>config=None</em>, <em>experiment=None</em>, <em>zeros=None</em>, <em>restraints=None</em>, <em>description=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pytadbit.imp.structuralmodels.</code><code class="descname">StructuralModels</code><span class="sig-paren">(</span><em>nloci</em>, <em>models</em>, <em>bad_models</em>, <em>resolution</em>, <em>original_data=None</em>, <em>zscores=None</em>, <em>clusters=None</em>, <em>config=None</em>, <em>experiment=None</em>, <em>zeros=None</em>, <em>restraints=None</em>, <em>description=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class contains three-dimensional models generated from a single Hi-C
 data. They can be reached either by their index (integer representing their
 rank according to objective function value), or by their IMP random intial
@@ -185,18 +185,18 @@ number (as string).</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>nloci</strong> &#8211; number of particles in the selected region</li>
 <li><strong>models</strong> &#8211; a dictionary containing the generated
-<a class="reference internal" href="reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></tt></a> to be used as &#8216;best models&#8217;</li>
-<li><strong>bad_models</strong> &#8211; a dictionary of <a class="reference internal" href="reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></tt></a>,
+<a class="reference internal" href="reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></a> to be used as &#8216;best models&#8217;</li>
+<li><strong>bad_models</strong> &#8211; a dictionary of <a class="reference internal" href="reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel" title="pytadbit.imp.impmodel.IMPmodel"><code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.impmodel.IMPmodel</span></code></a>,
 these model will not be used, just stored in case the set of
 &#8216;best models&#8217; needs to be extended later-on (
-<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.define_best_models" title="pytadbit.imp.structuralmodels.StructuralModels.define_best_models"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.define_best_models()</span></tt></a>
+<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.define_best_models" title="pytadbit.imp.structuralmodels.StructuralModels.define_best_models"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.define_best_models()</span></code></a>
 ).</li>
 <li><strong>resolution</strong> &#8211; number of nucleotides per Hi-C bin. This will be the
 number of nucleotides in each model&#8217;s particle.</li>
 <li><strong>original_data</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a list of list (equivalent to a square matrix) of
 the normalized Hi-C data, used to build this list of models.</li>
 <li><strong>clusters</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a dictionary of type
-<tt class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.ClusterOfModels</span></tt></li>
+<code class="xref py py-class docutils literal"><span class="pre">pytadbit.imp.structuralmodels.ClusterOfModels</span></code></li>
 <li><strong>config</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a dictionary containing the parameter to be used for the
 generation of three dimensional models.</li>
 </ul>
@@ -206,7 +206,7 @@ generation of three dimensional models.</li>
 </table>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.accessibility">
-<tt class="descname">accessibility</tt><big>(</big><em>radius</em>, <em>models=None</em>, <em>cluster=None</em>, <em>nump=100</em>, <em>superradius=200</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em>, <em>plot=True</em>, <em>error=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.accessibility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.accessibility" title="Permalink to this definition">¶</a></dt>
+<code class="descname">accessibility</code><span class="sig-paren">(</span><em>radius</em>, <em>models=None</em>, <em>cluster=None</em>, <em>nump=100</em>, <em>superradius=200</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em>, <em>plot=True</em>, <em>error=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.accessibility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.accessibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates a mesh surface around the model (distance equal to input
 <strong>radius</strong>) and checks if each point of this mesh could be replaced by
 an object (i.e. a protein) of a given <strong>radius</strong></p>
@@ -289,7 +289,7 @@ accessible/(accessible+inaccessible) )</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.align_models">
-<tt class="descname">align_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>in_place=False</em>, <em>reference_model=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.align_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.align_models" title="Permalink to this definition">¶</a></dt>
+<code class="descname">align_models</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>in_place=False</em>, <em>reference_model=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.align_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.align_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Three-dimensional aligner for structural models.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -314,7 +314,7 @@ each model</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles">
-<tt class="descname">angle_between_3_particles</tt><big>(</big><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>models=None</em>, <em>cluster=None</em>, <em>radian=False</em>, <em>all_angles=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.angle_between_3_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles" title="Permalink to this definition">¶</a></dt>
+<code class="descname">angle_between_3_particles</code><span class="sig-paren">(</span><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>models=None</em>, <em>cluster=None</em>, <em>radian=False</em>, <em>all_angles=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.angle_between_3_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the angle between 3 particles.</p>
 <p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
 <div class="highlight-python"><div class="highlight"><pre>      A
@@ -363,7 +363,7 @@ returns a list of the angle g, h, i (see picture above)</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.average_model">
-<tt class="descname">average_model</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.average_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.average_model" title="Permalink to this definition">¶</a></dt>
+<code class="descname">average_model</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.average_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.average_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds and returns an average model representing a given group of models</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -390,7 +390,7 @@ ARTIFICIAL model)</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.centroid_model">
-<tt class="descname">centroid_model</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.centroid_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.centroid_model" title="Permalink to this definition">¶</a></dt>
+<code class="descname">centroid_model</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.centroid_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.centroid_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimates and returns the centroid model of a given group of models.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -417,7 +417,7 @@ representative)</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.cluster_analysis_dendrogram">
-<tt class="descname">cluster_analysis_dendrogram</tt><big>(</big><em>n_best_clusters=None</em>, <em>color=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_analysis_dendrogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_analysis_dendrogram" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cluster_analysis_dendrogram</code><span class="sig-paren">(</span><em>n_best_clusters=None</em>, <em>color=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_analysis_dendrogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_analysis_dendrogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Representation of the clustering results. The length of the leaves if
 proportional to the final objective function value of each model. The
 branch widths are proportional to the number of models in a given
@@ -448,7 +448,7 @@ the plot.</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.cluster_models">
-<tt class="descname">cluster_models</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=None</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>external=False</em>, <em>what='score'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cluster_models</code><span class="sig-paren">(</span><em>fact=0.75</em>, <em>dcutoff=None</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>external=False</em>, <em>what='score'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.cluster_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>This function performs a clustering analysis of the generated models
 based on structural comparison. The result will be stored in
@@ -479,7 +479,7 @@ particles are in contact, default is 1.5 times resolution times scale</td>
 &#8216;mcl&#8217; or &#8216;ward&#8217;. MCL method is recommended. WARD method uses a scipy
 implementation of this hierarchical clustering, and selects the best
 number of clusters using the
-<a class="reference internal" href="reference_utils.html#pytadbit.utils.tadmaths.calinski_harabasz" title="pytadbit.utils.tadmaths.calinski_harabasz"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.tadmaths.calinski_harabasz()</span></tt></a> function.</td>
+<a class="reference internal" href="reference_utils.html#pytadbit.utils.tadmaths.calinski_harabasz" title="pytadbit.utils.tadmaths.calinski_harabasz"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.tadmaths.calinski_harabasz()</span></code></a> function.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">param &#8216;mcl&#8217; mcl_bin:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body">path to the mcl executable file, in case of the
@@ -512,7 +512,7 @@ storing it as StructuralModels.clusters</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.contact_map">
-<tt class="descname">contact_map</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.contact_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.contact_map" title="Permalink to this definition">¶</a></dt>
+<code class="descname">contact_map</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.contact_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.contact_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots a contact map representing the frequency of interaction (defined
 by a distance cutoff) between two particles.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -544,7 +544,7 @@ of models where these two particles are in contact)</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data">
-<tt class="descname">correlate_with_real_data</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>off_diag=1</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>corr='spearman'</em>, <em>midplot='hexbin'</em>, <em>log_corr=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
+<code class="descname">correlate_with_real_data</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>off_diag=1</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>corr='spearman'</em>, <em>midplot='hexbin'</em>, <em>log_corr=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the result of a correlation between a given group of models and
 original Hi-C data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -579,7 +579,7 @@ correlation</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.deconvolve">
-<tt class="descname">deconvolve</tt><big>(</big><em>fact=0.75</em>, <em>dcutoff=None</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>what='dRMSD'</em>, <em>n_best_clusters=10</em>, <em>savefig=None</em>, <em>represent_models=False</em>, <em>figsize=(11</em>, <em>11)</em>, <em>clusters=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.deconvolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.deconvolve" title="Permalink to this definition">¶</a></dt>
+<code class="descname">deconvolve</code><span class="sig-paren">(</span><em>fact=0.75</em>, <em>dcutoff=None</em>, <em>method='mcl'</em>, <em>mcl_bin='mcl'</em>, <em>tmp_file=None</em>, <em>verbose=True</em>, <em>n_cpus=1</em>, <em>mclargs=None</em>, <em>what='dRMSD'</em>, <em>n_best_clusters=10</em>, <em>savefig=None</em>, <em>represent_models=False</em>, <em>figsize=(11</em>, <em>11)</em>, <em>clusters=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.deconvolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.deconvolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function performs a deconvolution analysis of a given froup of models.
 It first clusters models based on structural comparison (dRMSD), and
 then, performs a differential contact map between each possible pair
@@ -587,7 +587,7 @@ of cluster.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Clusters defined here are different from the one defined when using
-<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="pytadbit.imp.structuralmodels.StructuralModels.cluster_models"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.cluster_models()</span></tt></a>.
+<a class="reference internal" href="#pytadbit.imp.structuralmodels.StructuralModels.cluster_models" title="pytadbit.imp.structuralmodels.StructuralModels.cluster_models"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.structuralmodels.StructuralModels.cluster_models()</span></code></a>.
 They are also not stored into StructuralModels.clusters</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -603,7 +603,7 @@ particles are in contact, default is 1.5 times resolution times scale</li>
 &#8216;mcl&#8217; or &#8216;ward&#8217;. MCL method is recommended. WARD method uses a scipy
 implementation of this hierarchical clustering, and selects the best
 number of clusters using the
-<a class="reference internal" href="reference_utils.html#pytadbit.utils.tadmaths.calinski_harabasz" title="pytadbit.utils.tadmaths.calinski_harabasz"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.tadmaths.calinski_harabasz()</span></tt></a> function.</li>
+<a class="reference internal" href="reference_utils.html#pytadbit.utils.tadmaths.calinski_harabasz" title="pytadbit.utils.tadmaths.calinski_harabasz"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.tadmaths.calinski_harabasz()</span></code></a> function.</li>
 <li><strong>mcl_bin</strong> (<em>&#8216;mcl&#8217;</em>) &#8211; path to the mcl executable file, in case of the
 &#8216;mcl is not in the PATH&#8217; warning message</li>
 <li><strong>tmp_file</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a temporary file created during
@@ -633,11 +633,11 @@ of the file name will determine the desired format).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.define_best_models">
-<tt class="descname">define_best_models</tt><big>(</big><em>nbest</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.define_best_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.define_best_models" title="Permalink to this definition">¶</a></dt>
+<code class="descname">define_best_models</code><span class="sig-paren">(</span><em>nbest</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.define_best_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.define_best_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defines the number of top models (based on the objective function) to
 keep. If keep_all is set to True in
-<tt class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.imp_model.generate_3d_models()</span></tt> or in
-<a class="reference internal" href="reference_experiment.html#pytadbit.experiment.Experiment.model_region" title="pytadbit.experiment.Experiment.model_region"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.model_region()</span></tt></a>, then the full set
+<code class="xref py py-func docutils literal"><span class="pre">pytadbit.imp.imp_model.generate_3d_models()</span></code> or in
+<a class="reference internal" href="reference_experiment.html#pytadbit.experiment.Experiment.model_region" title="pytadbit.experiment.Experiment.model_region"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.model_region()</span></code></a>, then the full set
 of models (n_models parameter) will be used, otherwise only the n_keep
 models will be available.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -653,7 +653,7 @@ generated models).</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.density_plot">
-<tt class="descname">density_plot</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>interval=1</em>, <em>mass_center=False</em>, <em>error=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>plot=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.density_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.density_plot" title="Permalink to this definition">¶</a></dt>
+<code class="descname">density_plot</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>interval=1</em>, <em>mass_center=False</em>, <em>error=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>plot=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.density_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.density_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the number of nucleotides per nm of chromatin vs the modeled
 region bins.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -692,7 +692,7 @@ generated (1 column per step + 1 for particle number).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle">
-<tt class="descname">dihedral_angle</tt><big>(</big><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>partd</em>, <em>models=None</em>, <em>cluster=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.dihedral_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dihedral_angle</code><span class="sig-paren">(</span><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>partd</em>, <em>models=None</em>, <em>cluster=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.dihedral_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the dihedral angle between 2 planes formed by 4 particles.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -713,7 +713,7 @@ cluster number &#8216;cluster&#8217;</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.fetch_model_by_rand_init">
-<tt class="descname">fetch_model_by_rand_init</tt><big>(</big><em>rand_init</em>, <em>all_models=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.fetch_model_by_rand_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.fetch_model_by_rand_init" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fetch_model_by_rand_init</code><span class="sig-paren">(</span><em>rand_init</em>, <em>all_models=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.fetch_model_by_rand_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.fetch_model_by_rand_init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Models are stored according to their objective function value (first
 best), but in order to reproduce a model, we need its initial random
 number. This method helps to fetch the model corresponding to a given
@@ -738,7 +738,7 @@ StructuralModels.models[N][&#8216;rand_init&#8217;].</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix">
-<tt class="descname">get_contact_matrix</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_contact_matrix</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a matrix with the number of interactions observed below a given
 cutoff distance.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -765,7 +765,7 @@ are in contact or not, default is 2 times resolution, times scale.</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.interactions">
-<tt class="descname">interactions</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>axe=None</em>, <em>error=False</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>average=True</em>, <em>plot=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.interactions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">interactions</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>steps=(1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5)</em>, <em>axe=None</em>, <em>error=False</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>average=True</em>, <em>plot=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.interactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots, for each particle, the number of interactions (particles closer
 than the guiven cut-off). The value given is the average for all models.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -803,7 +803,7 @@ otherwise, the median.</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.median_3d_dist">
-<tt class="descname">median_3d_dist</tt><big>(</big><em>part1</em>, <em>part2</em>, <em>models=None</em>, <em>cluster=None</em>, <em>plot=True</em>, <em>median=True</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.median_3d_dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.median_3d_dist" title="Permalink to this definition">¶</a></dt>
+<code class="descname">median_3d_dist</code><span class="sig-paren">(</span><em>part1</em>, <em>part2</em>, <em>models=None</em>, <em>cluster=None</em>, <em>plot=True</em>, <em>median=True</em>, <em>axe=None</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.median_3d_dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.median_3d_dist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the median distance between two particles over a set of models</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -842,7 +842,7 @@ list of distances.</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.model_consistency">
-<tt class="descname">model_consistency</tt><big>(</big><em>cutoffs=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>plot=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.model_consistency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.model_consistency" title="Permalink to this definition">¶</a></dt>
+<code class="descname">model_consistency</code><span class="sig-paren">(</span><em>cutoffs=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>plot=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.model_consistency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.model_consistency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the particle consistency, over a given set of models, vs the
 modeled region bins. The consistency is a measure of the variability
 (or stability) of the modeled region (the higher the consistency value,
@@ -882,7 +882,7 @@ generated (1 column per cutoff + 1 for particle number).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.objective_function_model">
-<tt class="descname">objective_function_model</tt><big>(</big><em>model</em>, <em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.objective_function_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.objective_function_model" title="Permalink to this definition">¶</a></dt>
+<code class="descname">objective_function_model</code><span class="sig-paren">(</span><em>model</em>, <em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.objective_function_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.objective_function_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function plots the objective function value per each Monte-Carlo
 step</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -905,7 +905,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.particle_coordinates">
-<tt class="descname">particle_coordinates</tt><big>(</big><em>part</em>, <em>models=None</em>, <em>cluster=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.particle_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.particle_coordinates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">particle_coordinates</code><span class="sig-paren">(</span><em>part</em>, <em>models=None</em>, <em>cluster=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.particle_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.particle_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the mean coordinate of a given particle in a group of models.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -927,7 +927,7 @@ cluster number &#8216;cluster&#8217;</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.save_models">
-<tt class="descname">save_models</tt><big>(</big><em>outfile</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.save_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.save_models" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_models</code><span class="sig-paren">(</span><em>outfile</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.save_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.save_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves all the models in pickle format (python object written to disk).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -941,7 +941,7 @@ cluster number &#8216;cluster&#8217;</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.view_centroid">
-<tt class="descname">view_centroid</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_centroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_centroid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">view_centroid</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_centroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_centroid" title="Permalink to this definition">¶</a></dt>
 <dd><p>shortcut for
 view_models(tool=&#8217;plot&#8217;, show=&#8217;highlighted&#8217;, highlight=&#8217;centroid&#8217;)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -957,7 +957,7 @@ view_centroid(azimuth=30, elevation=10, show_axe=True, label=True))</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.view_models">
-<tt class="descname">view_models</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>show='all'</em>, <em>highlight='centroid'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>color='index'</em>, <em>align=True</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
+<code class="descname">view_models</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>tool='chimera'</em>, <em>show='all'</em>, <em>highlight='centroid'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>color='index'</em>, <em>align=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.view_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.view_models" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize a selected model in the three dimensions (either with Chimera
 or through matplotlib).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -982,11 +982,11 @@ the default GUI.</li>
 <dt>a string as:</dt>
 <dd><ul class="first last">
 <li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
-model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
 <li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
-(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
 <li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
-their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
 coloring function like.</li>
 </ul>
 </dd>
@@ -1040,8 +1040,8 @@ movie encode output SAVEFIG
 modified the final image/movie).</p>
 </li>
 <li><strong>align</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; show aligned models</li>
-<li><strong>kwargs</strong> &#8211; see <a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.plot_3d_model" title="pytadbit.utils.extraviews.plot_3d_model"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.plot_3d_model()</span></tt></a> or
-<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.chimera_view" title="pytadbit.utils.extraviews.chimera_view"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.chimera_view()</span></tt></a> for other arguments
+<li><strong>kwargs</strong> &#8211; see <a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.plot_3d_model" title="pytadbit.utils.extraviews.plot_3d_model"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.plot_3d_model()</span></code></a> or
+<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.chimera_view" title="pytadbit.utils.extraviews.chimera_view"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.chimera_view()</span></code></a> for other arguments
 to pass to this function. See also coloring function</li>
 </ul>
 </td>
@@ -1052,7 +1052,7 @@ to pass to this function. See also coloring function</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.walking_angle">
-<tt class="descname">walking_angle</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>signed=True</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_angle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">walking_angle</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>signed=True</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the angle between successive loci in a given model or set of
 models. In order to limit the noise of the measure angle is calculated
 between 3 loci, between each are two other loci. E.g. in the scheme
@@ -1099,7 +1099,7 @@ generated (1 column per step + 1 for particle number).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral">
-<tt class="descname">walking_dihedral</tt><big>(</big><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>plot=True</em>, <em>savefig=None</em>, <em>axe=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral" title="Permalink to this definition">¶</a></dt>
+<code class="descname">walking_dihedral</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>plot=True</em>, <em>savefig=None</em>, <em>axe=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the dihedral angle between successive planes. A plane is formed by
 3 successive loci.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1144,7 +1144,7 @@ generated (1 column per step + 1 for particle number).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.write_cmm">
-<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>color='index'</em>, <em>rndname=True</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_cmm" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_cmm</code><span class="sig-paren">(</span><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>color='index'</em>, <em>rndname=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the cmm format, read by Chimera
 (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
@@ -1171,11 +1171,11 @@ objective function value</li>
 <dt>a string as:</dt>
 <dd><ul class="first last">
 <li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
-model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
 <li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
-(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
 <li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
-their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
 coloring function like.</li>
 </ul>
 </dd>
@@ -1198,7 +1198,7 @@ function</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.write_json">
-<tt class="descname">write_json</tt><big>(</big><em>filename</em>, <em>color='index'</em>, <em>models=None</em>, <em>cluster=None</em>, <em>title=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_json" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_json</code><span class="sig-paren">(</span><em>filename</em>, <em>color='index'</em>, <em>models=None</em>, <em>cluster=None</em>, <em>title=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_json" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the json format, read by TADkit.</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
 ALL the models will be written.</p>
@@ -1222,11 +1222,11 @@ objective function value</li>
 <dt>a string as:</dt>
 <dd><ul class="first last">
 <li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
-model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
 <li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
-(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
 <li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
-their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
 coloring function like.</li>
 </ul>
 </dd>
@@ -1249,7 +1249,7 @@ function</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.write_xyz">
-<tt class="descname">write_xyz</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>get_path=False</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_xyz</code><span class="sig-paren">(</span><em>directory</em>, <em>model_num=None</em>, <em>models=None</em>, <em>cluster=None</em>, <em>get_path=False</em>, <em>rndname=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.write_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a xyz file containing the 3D coordinates of each particle in the
 model.</p>
 <div class="admonition note">
@@ -1284,7 +1284,7 @@ the file has been written</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.zscore_plot">
-<tt class="descname">zscore_plot</tt><big>(</big><em>axe=None</em>, <em>savefig=None</em>, <em>do_normaltest=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.zscore_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.zscore_plot" title="Permalink to this definition">¶</a></dt>
+<code class="descname">zscore_plot</code><span class="sig-paren">(</span><em>axe=None</em>, <em>savefig=None</em>, <em>do_normaltest=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.zscore_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.zscore_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one
 of which is binary showing in red Z-scores higher than upper cut-off;
 and in blue Z-scores lower than lower cut-off. Last plot is an histogram
@@ -1317,7 +1317,7 @@ of the file name will determine the desired format).</li>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -1350,7 +1350,7 @@ of the file name will determine the desired format).</li>
   <h4>Next topic</h4>
   <p class="topless"><a href="reference_utils.html"
                         title="next chapter">Utilities</a></p>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -1367,7 +1367,7 @@ of the file name will determine the desired format).</li>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1379,14 +1379,14 @@ of the file name will determine the desired format).</li>
         <li class="right" >
           <a href="reference_imp_model.html" title="IMPmodel class"
              >previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 08, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

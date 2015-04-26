@@ -23,15 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Tutorials" href="../tutorial.html" />
     <link rel="next" title="Hi-C data processing" href="tutorial_4_data_normalization.html" />
     <link rel="prev" title="Alignment of TAD boundaries" href="tutorial_2_boundary_alignment.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,15 +43,15 @@
         <li class="right" >
           <a href="tutorial_2_boundary_alignment.html" title="Alignment of TAD boundaries"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../tutorial.html" accesskey="U">Tutorials</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="tad-clustering">
 <h1><a class="toc-backref" href="#id2">TAD clustering</a><a class="headerlink" href="#tad-clustering" title="Permalink to this headline">¶</a></h1>
@@ -66,13 +66,13 @@
 </div>
 <p>TADbit allows to compare the topology of TADs using directly a Hi-C matrix. This comparison is done using
 the same methodology used for protein structure comparison with contact map overlap (CMO) <a class="reference internal" href="../biblio.html#dilena2010" id="id1">[DiLena2010]</a>.</p>
-<p>The function that allows such comparison is <a class="reference internal" href="../reference/reference_clustering.html#pytadbit.tad_clustering.tad_cmo.optimal_cmo" title="pytadbit.tad_clustering.tad_cmo.optimal_cmo"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tad_clustering.tad_cmo.optimal_cmo()</span></tt></a>. The
+<p>The function that allows such comparison is <a class="reference internal" href="../reference/reference_clustering.html#pytadbit.tad_clustering.tad_cmo.optimal_cmo" title="pytadbit.tad_clustering.tad_cmo.optimal_cmo"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.tad_clustering.tad_cmo.optimal_cmo()</span></code></a>. The
 comparisons are pairwise; the main idea of using it is to pull together several of these pairwise comparisons
 in order to find group of TADs with specific characteristics.</p>
 <div class="section" id="compare-two-tads">
 <h2><a class="toc-backref" href="#id3">Compare two TADs</a><a class="headerlink" href="#compare-two-tads" title="Permalink to this headline">¶</a></h2>
 <p>To compare TADs, a Chromosome with defined TADs is needed. Thus, following with the example chromosome used
-in <em class="xref std std-ref">getting_start</em> (following the example up to <em class="xref std std-ref">run_tadbit</em>), these re the steps to follow:</p>
+in <a class="reference internal" href="tutorial_1_general.html#getting-start"><span>Getting started</span></a> (following the example up to <a class="reference internal" href="tutorial_1_general.html#run-tadbit"><span>Find Topologically Associating Domains</span></a>), these re the steps to follow:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">Chromosome</span>
 <span class="n">my_chrom</span> <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;My first chromosome&#39;</span><span class="p">)</span>
 <span class="n">my_chrom</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="s">&#39;First Hi-C experiment&#39;</span><span class="p">,</span> <span class="n">hic_data</span><span class="o">=</span><span class="s">&quot;../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt&quot;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
@@ -110,7 +110,7 @@ method used to align, and the p-value and rho value of the Spearman correlation 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -119,7 +119,6 @@ method used to align, and the p-value and rho value of the Spearman correlation 
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="tutorial_1_general.html">Getting started</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a></li>
@@ -139,7 +138,7 @@ method used to align, and the p-value and rho value of the Spearman correlation 
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_4_data_normalization.html"
                         title="next chapter">Hi-C data processing</a></p>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -156,7 +155,7 @@ method used to align, and the p-value and rho value of the Spearman correlation 
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -168,14 +167,14 @@ method used to align, and the p-value and rho value of the Spearman correlation 
         <li class="right" >
           <a href="tutorial_2_boundary_alignment.html" title="Alignment of TAD boundaries"
              >previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../tutorial.html" >Tutorials</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

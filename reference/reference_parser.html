@@ -23,15 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="Boundary Aligner" href="reference_aligner.html" />
     <link rel="prev" title="TAD clustering" href="reference_clustering.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,23 +43,23 @@
         <li class="right" >
           <a href="reference_clustering.html" title="TAD clustering"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="parsers">
 <h1>Parsers<a class="headerlink" href="#parsers" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pytadbit.parsers.hic_parser.read_matrix">
-<tt class="descclassname">pytadbit.parsers.hic_parser.</tt><tt class="descname">read_matrix</tt><big>(</big><em>things</em>, <em>parser=None</em>, <em>hic=True</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#read_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.read_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.parsers.hic_parser.</code><code class="descname">read_matrix</code><span class="sig-paren">(</span><em>things</em>, <em>parser=None</em>, <em>hic=True</em>, <em>resolution=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/hic_parser.html#read_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.hic_parser.read_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read and checks a matrix from a file (using
-<tt class="xref py py-func docutils literal"><span class="pre">pytadbit.parser.hic_parser.autoreader()</span></tt>) or a list.</p>
+<code class="xref py py-func docutils literal"><span class="pre">pytadbit.parser.hic_parser.autoreader()</span></code>) or a list.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -78,9 +78,10 @@ chrT_004       100     111     146     278
 </pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) might be:
-<tt class="docutils literal"><span class="pre">([629,</span> <span class="pre">86,</span> <span class="pre">159,</span> <span class="pre">100,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">216,</span> <span class="pre">111,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">146,</span> <span class="pre">105,</span> <span class="pre">110,</span>
-<span class="pre">105,</span> <span class="pre">278])</span></tt></p>
+<code class="docutils literal"><span class="pre">([629,</span> <span class="pre">86,</span> <span class="pre">159,</span> <span class="pre">100,</span> <span class="pre">164,</span> <span class="pre">612,</span> <span class="pre">216,</span> <span class="pre">111,</span> <span class="pre">88,</span> <span class="pre">175,</span> <span class="pre">437,</span> <span class="pre">146,</span> <span class="pre">105,</span> <span class="pre">110,</span>
+<span class="pre">105,</span> <span class="pre">278])</span></code></p>
 </li>
+<li><strong>resolution</strong> (<em>1</em>) &#8211; resolution of the matrix</li>
 <li><strong>hic</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; if False, TADbit assumes that files contains normalized
 data</li>
 </ul>
@@ -95,70 +96,11 @@ returns number or rows</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pytadbit.parsers.genome_parser.parse_fasta">
-<tt class="descclassname">pytadbit.parsers.genome_parser.</tt><tt class="descname">parse_fasta</tt><big>(</big><em>f_names</em>, <em>chr_names=None</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/genome_parser.html#parse_fasta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.genome_parser.parse_fasta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse a list of fasta files, or just one fasta.</p>
-<p>WARNING: The order is important</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>f_names</strong> &#8211; list of pathes to files, or just a single path</li>
-<li><strong>chr_names</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; pass list of chromosome names, or just one. If None
-are passed, then chromosome names will be inferred from fasta headers</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sorted dictionary with chromosome names as keys, and sequences
-as values (sequence in upper case)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.parsers.sam_parser.parse_sam">
-<tt class="descclassname">pytadbit.parsers.sam_parser.</tt><tt class="descname">parse_sam</tt><big>(</big><em>f_names1</em>, <em>f_names2=None</em>, <em>out_file1=None</em>, <em>out_file2=None</em>, <em>genome_seq=None</em>, <em>re_name=None</em>, <em>verbose=False</em>, <em>mapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/sam_parser.html#parse_sam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.sam_parser.parse_sam" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse sam/bam file using pysam tools.</p>
-<dl class="docutils">
-<dt>Keep a summary of the results into 2 tab-separated files that will contain 6</dt>
-<dd>columns: read ID, Chromosome, position, strand (either 0 or 1), mapped
-sequence lebgth, position of the closest upstream RE site, position of
-the closest downstream RE site</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>f_names1</strong> &#8211; a list of path to sam/bam files corresponding to the
-mapping of read1, can also  be just one file</li>
-<li><strong>f_names1</strong> &#8211; a list of path to sam/bam files corresponding to the
-mapping of read2, can also  be just one file</li>
-<li><strong>out_file1</strong> &#8211; path to outfile tab separated format containing mapped
-read1 information</li>
-<li><strong>out_file1</strong> &#8211; path to outfile tab separated format containing mapped
-read2 information</li>
-<li><strong>genome_seq</strong> &#8211; a dictionary generated by <tt class="xref py py-func docutils literal"><span class="pre">pyatdbit.parser.genome_parser.parse_fasta()</span></tt>.
-containing the genomic sequence</li>
-<li><strong>re_name</strong> &#8211; name of the restriction enzyme used</li>
-<li><strong>mapper</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; software used to map (supported are GEM and BOWTIE2).
-Guessed from file by default.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
 <dt id="pytadbit.parsers.tad_parser.parse_tads">
-<tt class="descclassname">pytadbit.parsers.tad_parser.</tt><tt class="descname">parse_tads</tt><big>(</big><em>handler</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/parsers/tad_parser.html#parse_tads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.tad_parser.parse_tads" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.parsers.tad_parser.</code><code class="descname">parse_tads</code><span class="sig-paren">(</span><em>handler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/parsers/tad_parser.html#parse_tads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.parsers.tad_parser.parse_tads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a tab separated value file that contains the list of TADs of a given
 experiment. This file might have been generated whith the
-<tt class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.print_result_R()</span></tt> or with the R binding for tadbit</p>
+<code class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.print_result_R()</span></code> or with the R binding for tadbit</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -188,7 +130,7 @@ experiment. This file might have been generated whith the
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -221,7 +163,7 @@ experiment. This file might have been generated whith the
   <h4>Next topic</h4>
   <p class="topless"><a href="reference_aligner.html"
                         title="next chapter">Boundary Aligner</a></p>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -238,7 +180,7 @@ experiment. This file might have been generated whith the
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -250,14 +192,14 @@ experiment. This file might have been generated whith the
         <li class="right" >
           <a href="reference_clustering.html" title="TAD clustering"
              >previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 08, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

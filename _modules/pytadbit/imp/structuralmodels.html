@@ -23,28 +23,28 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
     <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <h1>Source code for pytadbit.imp.structuralmodels</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -107,14 +107,14 @@
             <span class="n">nloci</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;nloci&#39;</span><span class="p">],</span> <span class="n">models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">],</span> <span class="n">bad_models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;bad_models&#39;</span><span class="p">],</span>
             <span class="n">resolution</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;resolution&#39;</span><span class="p">],</span> <span class="n">original_data</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;original_data&#39;</span><span class="p">],</span>
             <span class="n">clusters</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;clusters&#39;</span><span class="p">],</span> <span class="n">config</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">],</span> <span class="n">zscores</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zscore&#39;</span><span class="p">],</span>
-            <span class="n">zeros</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zeros&#39;</span><span class="p">],</span> <span class="n">restraints</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;restraints&#39;</span><span class="p">],</span>
+            <span class="n">zeros</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zeros&#39;</span><span class="p">],</span> <span class="n">restraints</span><span class="o">=</span><span class="n">svd</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;restraints&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
             <span class="n">description</span><span class="o">=</span><span class="n">svd</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;description&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="c"># old version</span>
         <span class="k">return</span> <span class="n">StructuralModels</span><span class="p">(</span>
             <span class="n">nloci</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;nloci&#39;</span><span class="p">],</span> <span class="n">models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;models&#39;</span><span class="p">],</span> <span class="n">bad_models</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;bad_models&#39;</span><span class="p">],</span>
             <span class="n">resolution</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;resolution&#39;</span><span class="p">],</span> <span class="n">original_data</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;original_data&#39;</span><span class="p">],</span>
             <span class="n">clusters</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;clusters&#39;</span><span class="p">],</span> <span class="n">config</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">],</span> <span class="n">zscores</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;zscore&#39;</span><span class="p">],</span>
-            <span class="n">restraints</span><span class="o">=</span><span class="n">svd</span><span class="p">[</span><span class="s">&#39;restraints&#39;</span><span class="p">])</span>
+            <span class="n">restraints</span><span class="o">=</span><span class="n">svd</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;restraints&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
 </div>
 <div class="viewcode-block" id="StructuralModels"><a class="viewcode-back" href="../../../reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels">[docs]</a><span class="k">class</span> <span class="nc">StructuralModels</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -2532,9 +2532,9 @@
 <span class="s">	&quot;metadata&quot; : {</span>
 <span class="s">		&quot;version&quot;  : 1.0,</span>
 <span class="s">		&quot;type&quot;     : &quot;dataset&quot;,</span>
-<span class="s">                &quot;generator&quot;: &quot;TADbit&quot;,</span>
+<span class="s">                &quot;generator&quot;: &quot;TADbit&quot;</span>
 <span class="s">                },</span>
-<span class="s">	&quot;object&quot;: {</span><span class="se">\n</span><span class="si">%(descr)s</span><span class="s"></span>
+<span class="s">	&quot;object&quot;: {</span><span class="se">\n</span><span class="si">%(descr)s</span><span class="s">,</span>
 <span class="s">		   &quot;uuid&quot;: &quot;</span><span class="si">%(sha)s</span><span class="s">&quot;,</span>
 <span class="s">		   &quot;title&quot;: &quot;</span><span class="si">%(title)s</span><span class="s">&quot;,</span>
 <span class="s">                   &quot;datatype&quot;: &quot;xyz&quot;,</span>
@@ -2545,9 +2545,9 @@
 <span class="s">        &quot;models&quot;:</span>
 <span class="s">                 [</span><span class="se">\n</span><span class="si">%(xyz)s</span><span class="s"></span>
 <span class="s">                 ],</span>
-<span class="s">        &quot;clusters&quot;:[</span><span class="si">%(cluster)s</span><span class="s">],</span>
-<span class="s">        &quot;centroids&quot;:[</span><span class="si">%(centroid)s</span><span class="s">],</span>
-<span class="s">        &quot;restraints&quot;: [</span><span class="si">%(restr)s</span><span class="s">],</span>
+<span class="s">        &quot;clusters&quot;:</span><span class="si">%(cluster)s</span><span class="s">,</span>
+<span class="s">        &quot;centroids&quot;:</span><span class="si">%(centroid)s</span><span class="s">,</span>
+<span class="s">        &quot;restraints&quot;: </span><span class="si">%(restr)s</span><span class="s"></span>
 <span class="s">}</span>
 <span class="s">&#39;&#39;&#39;</span>
         <span class="n">fil</span> <span class="o">=</span> <span class="p">{}</span>
@@ -2581,17 +2581,22 @@
         <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
-            <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s">&#39; &#39;</span> <span class="o">*</span> <span class="mi">18</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="p">[</span><span class="s">&#39;</span><span class="si">%.0f</span><span class="s">,</span><span class="si">%.0f</span><span class="s">,</span><span class="si">%.0f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
-                                     <span class="n">model</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
-                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]))])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span><span class="p">)</span>
+            <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s">&#39; &#39;</span> <span class="o">*</span> <span class="mi">18</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;{&quot;ref&quot;: </span><span class="si">%s</span><span class="s">,&quot;data&quot;: [&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">model</span><span class="p">[</span><span class="s">&#39;rand_init&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                                  <span class="p">[</span><span class="s">&#39;</span><span class="si">%.0f</span><span class="s">,</span><span class="si">%.0f</span><span class="s">,</span><span class="si">%.0f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                                                       <span class="n">model</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                                                       <span class="n">model</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]))])</span> <span class="o">+</span> <span class="s">&#39;]}&#39;</span><span class="p">)</span>
         <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;,</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">])</span>
         <span class="n">fil</span><span class="p">[</span><span class="s">&#39;sha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span>
             <span class="n">versions</span><span class="p">[</span><span class="s">&#39;  TADbit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;hex&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">32</span><span class="p">)),</span>
                                     <span class="n">fil</span><span class="p">[</span><span class="s">&#39;xyz&#39;</span><span class="p">]))</span>
-        <span class="n">fil</span><span class="p">[</span><span class="s">&#39;restr&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;[</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,&quot;</span><span class="si">%s</span><span class="s">&quot;,</span><span class="si">%f</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
-                                        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fil</span><span class="p">[</span><span class="s">&#39;restr&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;[</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,&quot;</span><span class="si">%s</span><span class="s">&quot;,</span><span class="si">%f</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+                                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restraints</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">fil</span><span class="p">[</span><span class="s">&#39;restr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;[]&#39;</span>
         <span class="n">fil</span><span class="p">[</span><span class="s">&#39;cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
                                          <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
         <span class="n">fil</span><span class="p">[</span><span class="s">&#39;centroid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -2702,7 +2707,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
               <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -2715,7 +2720,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
 </ul>
 
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" />
@@ -2732,21 +2737,21 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 08, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -23,15 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="StructuralModels class" href="reference_imp_structuralmodels.html" />
     <link rel="prev" title="IMPoptimizer class" href="reference_imp_optimizer.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,19 +43,19 @@
         <li class="right" >
           <a href="reference_imp_optimizer.html" title="IMPoptimizer class"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <dl class="function">
 <dt id="pytadbit.imp.impmodel.load_impmodel_from_cmm">
-<tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">load_impmodel_from_cmm</tt><big>(</big><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.imp.impmodel.</code><code class="descname">load_impmodel_from_cmm</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an cmm file of the form:</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;marker_set name=&quot;1&quot;&gt;
   &lt;marker id=&quot;1&quot; x=&quot;7347.50964739&quot; y=&quot;-7743.92836303&quot; z=&quot;-8283.39749204&quot; r=&quot;0.00990099009901&quot; g=&quot;0&quot; b=&quot;0.990099009901&quot; radius=&quot;500.0&quot; note=&quot;1&quot;/&gt;
@@ -83,7 +83,7 @@
 
 <dl class="function">
 <dt id="pytadbit.imp.impmodel.load_impmodel_from_xyz">
-<tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">load_impmodel_from_xyz</tt><big>(</big><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.imp.impmodel.</code><code class="descname">load_impmodel_from_xyz</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an xyz file of the form:</p>
 <div class="highlight-python"><div class="highlight"><pre># ID              : some identifier
 # SPECIES         : None
@@ -119,7 +119,7 @@
 <h1>IMPmodel class<a class="headerlink" href="#impmodel-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.imp.impmodel.IMPmodel">
-<em class="property">class </em><tt class="descclassname">pytadbit.imp.impmodel.</tt><tt class="descname">IMPmodel</tt><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pytadbit.imp.impmodel.</code><code class="descname">IMPmodel</code><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel" title="Permalink to this definition">¶</a></dt>
 <dd><p>A container for the IMP modeling results. The container is a dictionary
 with the following keys:</p>
 <ul class="simple">
@@ -130,7 +130,7 @@ with the following keys:</p>
 </ul>
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.accessible_surface">
-<tt class="descname">accessible_surface</tt><big>(</big><em>radius</em>, <em>nump=100</em>, <em>superradius=200</em>, <em>include_edges=True</em>, <em>view_mesh=False</em>, <em>savefig=None</em>, <em>write_cmm_file=None</em>, <em>verbose=False</em>, <em>chimera_bin='chimera'</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.accessible_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.accessible_surface" title="Permalink to this definition">¶</a></dt>
+<code class="descname">accessible_surface</code><span class="sig-paren">(</span><em>radius</em>, <em>nump=100</em>, <em>superradius=200</em>, <em>include_edges=True</em>, <em>view_mesh=False</em>, <em>savefig=None</em>, <em>write_cmm_file=None</em>, <em>verbose=False</em>, <em>chimera_bin='chimera'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.accessible_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.accessible_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates a mesh surface around the model (distance equal to input
 <strong>radius</strong>) and checks if each point of this mesh could be replaced by
 an object (i.e. a protein) of a given <strong>radius</strong></p>
@@ -219,7 +219,7 @@ accessible/(accessible+inaccessible) )</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.center_of_mass">
-<tt class="descname">center_of_mass</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.center_of_mass" title="Permalink to this definition">¶</a></dt>
+<code class="descname">center_of_mass</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.center_of_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gives the center of mass of a model</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -233,7 +233,7 @@ accessible/(accessible+inaccessible) )</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.contour">
-<tt class="descname">contour</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.contour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.contour" title="Permalink to this definition">¶</a></dt>
+<code class="descname">contour</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.contour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.contour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Total length of the model</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -247,7 +247,7 @@ accessible/(accessible+inaccessible) )</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.cube_side">
-<tt class="descname">cube_side</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.cube_side"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_side" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cube_side</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.cube_side"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_side" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the side of a cube containing the model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -261,7 +261,7 @@ accessible/(accessible+inaccessible) )</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.cube_volume">
-<tt class="descname">cube_volume</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.cube_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_volume" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cube_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.cube_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.cube_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the volume of a cube containing the model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -275,7 +275,7 @@ accessible/(accessible+inaccessible) )</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.distance">
-<tt class="descname">distance</tt><big>(</big><em>part1</em>, <em>part2</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.distance" title="Permalink to this definition">¶</a></dt>
+<code class="descname">distance</code><span class="sig-paren">(</span><em>part1</em>, <em>part2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the distance between one point of the model and an external
 coordinate</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -298,7 +298,7 @@ coordinate</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.inaccessible_particles">
-<tt class="descname">inaccessible_particles</tt><big>(</big><em>radius</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.inaccessible_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.inaccessible_particles" title="Permalink to this definition">¶</a></dt>
+<code class="descname">inaccessible_particles</code><span class="sig-paren">(</span><em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.inaccessible_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.inaccessible_particles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gives the number of loci/particles that are accessible to an object
 (i.e. a protein) of a given size.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -317,7 +317,7 @@ never be reached by the given object</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.longest_axe">
-<tt class="descname">longest_axe</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.longest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.longest_axe" title="Permalink to this definition">¶</a></dt>
+<code class="descname">longest_axe</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.longest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.longest_axe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gives the distance between most distant particles of the model</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -331,7 +331,7 @@ never be reached by the given object</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.min_max_by_axis">
-<tt class="descname">min_max_by_axis</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.min_max_by_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.min_max_by_axis" title="Permalink to this definition">¶</a></dt>
+<code class="descname">min_max_by_axis</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.min_max_by_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.min_max_by_axis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the minimum and maximum coordinates of the model</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -345,7 +345,7 @@ never be reached by the given object</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.objective_function">
-<tt class="descname">objective_function</tt><big>(</big><em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
+<code class="descname">objective_function</code><span class="sig-paren">(</span><em>log=False</em>, <em>smooth=True</em>, <em>axe=None</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.objective_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.objective_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function plots the objective function value per each Monte-Carlo
 step.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -369,7 +369,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.persistence_length">
-<tt class="descname">persistence_length</tt><big>(</big><em>start=1</em>, <em>end=None</em>, <em>return_guess=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.persistence_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.persistence_length" title="Permalink to this definition">¶</a></dt>
+<code class="descname">persistence_length</code><span class="sig-paren">(</span><em>start=1</em>, <em>end=None</em>, <em>return_guess=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.persistence_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.persistence_length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the persistence length (Lp) of given section of the model.
 Persistence length is calculated according to <a class="reference internal" href="../biblio.html#bystricky2004" id="id1">[Bystricky2004]</a> :</p>
 <div class="math">
@@ -400,7 +400,7 @@ approximation <span class="math">\(Lp=\frac{Lc}{Lp}\)</span></li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.radius_of_gyration">
-<tt class="descname">radius_of_gyration</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.radius_of_gyration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration" title="Permalink to this definition">¶</a></dt>
+<code class="descname">radius_of_gyration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.radius_of_gyration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.radius_of_gyration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the radius of gyration or gyradius of the model</p>
 <p>Defined as:</p>
 <div class="math">
@@ -422,7 +422,7 @@ approximation <span class="math">\(Lp=\frac{Lc}{Lp}\)</span></li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.shortest_axe">
-<tt class="descname">shortest_axe</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.shortest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.shortest_axe" title="Permalink to this definition">¶</a></dt>
+<code class="descname">shortest_axe</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.shortest_axe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.shortest_axe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimum distance between two particles in the model</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -436,7 +436,7 @@ approximation <span class="math">\(Lp=\frac{Lc}{Lp}\)</span></li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.view_model">
-<tt class="descname">view_model</tt><big>(</big><em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>center_of_mass=False</em>, <em>gyradius=False</em>, <em>color='index'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.view_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.view_model" title="Permalink to this definition">¶</a></dt>
+<code class="descname">view_model</code><span class="sig-paren">(</span><em>tool='chimera'</em>, <em>savefig=None</em>, <em>cmd=None</em>, <em>center_of_mass=False</em>, <em>gyradius=False</em>, <em>color='index'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.view_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.view_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize a selected model in the three dimensions. (either with Chimera
 or through matplotlib).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -457,11 +457,11 @@ the default GUI.</li>
 <dt>a string as:</dt>
 <dd><ul class="first last">
 <li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
-model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
 <li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
-(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
 <li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
-their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
 coloring function like.</li>
 </ul>
 </dd>
@@ -519,8 +519,8 @@ movie encode output SAVEFIG
 <p>will return the default image (other commands can be passed to
 modified the final image/movie).</p>
 </li>
-<li><strong>kwargs</strong> &#8211; see <a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.plot_3d_model" title="pytadbit.utils.extraviews.plot_3d_model"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.plot_3d_model()</span></tt></a> or
-<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.chimera_view" title="pytadbit.utils.extraviews.chimera_view"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.chimera_view()</span></tt></a> for other arguments
+<li><strong>kwargs</strong> &#8211; see <a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.plot_3d_model" title="pytadbit.utils.extraviews.plot_3d_model"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.plot_3d_model()</span></code></a> or
+<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.chimera_view" title="pytadbit.utils.extraviews.chimera_view"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.chimera_view()</span></code></a> for other arguments
 to pass to this function</li>
 </ul>
 </td>
@@ -531,7 +531,7 @@ to pass to this function</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.write_cmm">
-<tt class="descname">write_cmm</tt><big>(</big><em>directory</em>, <em>color='index'</em>, <em>rndname=True</em>, <em>model_num=None</em>, <em>filename=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_cmm</code><span class="sig-paren">(</span><em>directory</em>, <em>color='index'</em>, <em>rndname=True</em>, <em>model_num=None</em>, <em>filename=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the cmm format, read by Chimera
 (<a class="reference external" href="http://www.cgl.ucsf.edu/chimera">http://www.cgl.ucsf.edu/chimera</a>).</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
@@ -556,11 +556,11 @@ objective function value</li>
 <dt>a string as:</dt>
 <dd><ul class="first last">
 <li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
-model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
 <li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
-(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
 <li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
-their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
 coloring function like.</li>
 </ul>
 </dd>
@@ -583,7 +583,7 @@ function</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.write_json">
-<tt class="descname">write_json</tt><big>(</big><em>directory</em>, <em>color='index'</em>, <em>rndname=True</em>, <em>model_num=None</em>, <em>title=None</em>, <em>filename=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_json" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_json</code><span class="sig-paren">(</span><em>directory</em>, <em>color='index'</em>, <em>rndname=True</em>, <em>model_num=None</em>, <em>title=None</em>, <em>filename=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_json" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a model in the json format, read by TADkit.</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
 ALL the models will be written.</p>
@@ -607,11 +607,11 @@ objective function value</li>
 <dt>a string as:</dt>
 <dd><ul class="first last">
 <li>&#8216;<strong>index</strong>&#8216; to color particles according to their position in the
-model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></tt></a>)</li>
+model (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.color_residues" title="pytadbit.utils.extraviews.color_residues"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.color_residues()</span></code></a>)</li>
 <li>&#8216;<strong>tad</strong>&#8216; to color particles according to the TAD they belong to
-(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></tt></a>)</li>
+(<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_coloring" title="pytadbit.utils.extraviews.tad_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_coloring()</span></code></a>)</li>
 <li>&#8216;<strong>border</strong>&#8216; to color particles marking borders. Color according to
-their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></tt></a>)
+their score (<a class="reference internal" href="reference_utils.html#pytadbit.utils.extraviews.tad_border_coloring" title="pytadbit.utils.extraviews.tad_border_coloring"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.utils.extraviews.tad_border_coloring()</span></code></a>)
 coloring function like.</li>
 </ul>
 </dd>
@@ -634,7 +634,7 @@ function</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.write_xyz">
-<tt class="descname">write_xyz</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>get_path=False</em>, <em>rndname=True</em>, <em>filename=None</em>, <em>header=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_xyz</code><span class="sig-paren">(</span><em>directory</em>, <em>model_num=None</em>, <em>get_path=False</em>, <em>rndname=True</em>, <em>filename=None</em>, <em>header=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a xyz file containing the 3D coordinates of each particle in the
 model.
 Outfile is tab separated column with the bead number being the
@@ -668,7 +668,7 @@ the file has been written</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impmodel.IMPmodel.write_xyz_OLD">
-<tt class="descname">write_xyz_OLD</tt><big>(</big><em>directory</em>, <em>model_num=None</em>, <em>get_path=False</em>, <em>rndname=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_xyz_OLD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_xyz_OLD" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_xyz_OLD</code><span class="sig-paren">(</span><em>directory</em>, <em>model_num=None</em>, <em>get_path=False</em>, <em>rndname=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#IMPmodel.write_xyz_OLD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.IMPmodel.write_xyz_OLD" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a xyz file containing the 3D coordinates of each particle in the
 model.</p>
 <p><strong>Note:</strong> If none of model_num, models or cluster parameter are set,
@@ -703,7 +703,7 @@ the file has been written</li>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -736,7 +736,7 @@ the file has been written</li>
   <h4>Next topic</h4>
   <p class="topless"><a href="reference_imp_structuralmodels.html"
                         title="next chapter">StructuralModels class</a></p>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -753,7 +753,7 @@ the file has been written</li>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -765,14 +765,14 @@ the file has been written</li>
         <li class="right" >
           <a href="reference_imp_optimizer.html" title="IMPoptimizer class"
              >previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Mar 31, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -1,9 +1,11 @@
 
 Installing TADbit on GNU/Linux
 ==============================
+
 .. contents::
 
 *Note: at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
+
 
 **TADbit requires python >= 2.6 as well as several dependencies that are
 listed below.**
@@ -89,17 +91,11 @@ These lines should look like:
 
     PYTHONPATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
     export PYTHONPATH
+
 .. note:: Important note:
           Do not copy the lines above, copy them 
           from ``setup_environment.sh``, where *SOMETHING* 
           is replaced by your real path to IMP.
-GEM - mapping
-~~~~~~~~~~~~~
-
-Needed to map reads from next generation seqiencing data. GEM, can be
-downloaded from: https://github.com/gemtools/gemtools
-
-*GEM is only available for linux machines*
 
 MCL - clustering
 ~~~~~~~~~~~~~~~~
@@ -134,8 +130,10 @@ it from: http://hgdownload.cse.ucsc.edu/admin/exe/ ).
 
 This can be used to ease the conversion of genomic TAD coordinates
 (e.g.: to align human TADs with mouse TADs).
+
 .. note::
    A 'chain' file may also be downloaded. For example, to convert coordinates to hg19, the chain file needed may be found at: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/
+
 TADbit
 ------
 
@@ -148,6 +146,7 @@ downloaded, unpacked and installed as:
     unzip tadbit.zip
     cd tadbit-master
     sudo python setup.py install
+
 .. note:: IMP not found problem
 	  If you are under **debian/Ubuntu machines**, and you have
 	  followed the quick tutorial proposed here to install IMP,
@@ -155,6 +154,7 @@ downloaded, unpacked and installed as:
 	  not installed. This is because root user is not using the
 	  PYTHONPATH declared in your bashrc file. You can perfectly
 	  ignore the warning, or just proceed like this:
+
 ::
 
     sudo PYTHONPATH=$PYTHONPATH python setup.py install

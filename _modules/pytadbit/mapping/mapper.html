@@ -23,28 +23,28 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
     <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <h1>Source code for pytadbit.mapping.mapper</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -58,8 +58,14 @@
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">gzip</span>
 <span class="kn">import</span> <span class="nn">pysam</span>
-<span class="kn">import</span> <span class="nn">gem</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">gem</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: GEMTOOLS not found&#39;</span><span class="p">)</span>
+
+<span class="n">N_WINDOWS</span> <span class="o">=</span> <span class="mi">0</span>
+
 
 <div class="viewcode-block" id="get_intersection"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.mapper.get_intersection">[docs]</a><span class="k">def</span> <span class="nf">get_intersection</span><span class="p">(</span><span class="n">fname1</span><span class="p">,</span> <span class="n">fname2</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -78,7 +84,8 @@
     <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">header1</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="k">while</span> <span class="n">line1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
-        <span class="n">header1</span> <span class="o">+=</span> <span class="n">line1</span>
+        <span class="k">if</span> <span class="n">line1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;# CRM&#39;</span><span class="p">):</span>
+            <span class="n">header1</span> <span class="o">+=</span> <span class="n">line1</span>
         <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">read1</span> <span class="o">=</span> <span class="n">line1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -86,7 +93,8 @@
     <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">header2</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="k">while</span> <span class="n">line2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
-        <span class="n">header2</span> <span class="o">+=</span> <span class="n">line2</span>
+        <span class="k">if</span> <span class="n">line2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;# CRM&#39;</span><span class="p">):</span>
+            <span class="n">header2</span> <span class="o">+=</span> <span class="n">line2</span>
         <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">read2</span> <span class="o">=</span> <span class="n">line2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">header1</span> <span class="o">!=</span> <span class="n">header2</span><span class="p">:</span>
@@ -116,7 +124,6 @@
     <span class="n">reads_fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="k">print</span> <span class="s">&#39;Found </span><span class="si">%d</span><span class="s"> pair of reads mapping uniquely&#39;</span> <span class="o">%</span> <span class="n">count</span>
-
 </div>
 <span class="k">def</span> <span class="nf">trimming</span><span class="p">(</span><span class="n">raw_seq_len</span><span class="p">,</span> <span class="n">seq_start</span><span class="p">,</span> <span class="n">min_seq_len</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">seq_start</span><span class="p">,</span> <span class="n">raw_seq_len</span> <span class="o">-</span> <span class="n">seq_start</span> <span class="o">-</span> <span class="n">min_seq_len</span>
@@ -132,10 +139,11 @@
 <span class="sd">    :param out_sam_path: path to a directory where to store mapped reads in SAM/</span>
 <span class="sd">       BAM format (see option output_is_bam).</span>
 <span class="sd">    :param range_start: list of integers representing the start position of each</span>
-<span class="sd">       read fragment to be mapped.</span>
+<span class="sd">       read fragment to be mapped (starting at 1 includes the first nucleotide</span>
+<span class="sd">       of the read).</span>
 <span class="sd">    :param range_stop: list of integers representing the end position of each</span>
 <span class="sd">       read fragment to be mapped.</span>
-<span class="sd">    :param False single_end: when FASTQ contains paired-ends flags</span>
+<span class="sd">    :param True single_end: when FASTQ contains paired-ends flags</span>
 <span class="sd">    :param 4 nthreads: number of threads to use for mapping (number of CPUs)</span>
 <span class="sd">    :param 0.04 max_edit_distance: The maximum number of edit operations allowed</span>
 <span class="sd">       while verifying candidate matches by dynamic programming.</span>
@@ -156,7 +164,7 @@
     <span class="n">gem_index_path</span>      <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">))</span>
     <span class="n">fastq_path</span>          <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">))</span>
     <span class="n">out_sam_path</span>        <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">out_sam_path</span><span class="p">))</span>
-    <span class="n">single_end</span>          <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;single_end&#39;</span>          <span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">single_end</span>          <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;single_end&#39;</span>          <span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
     <span class="n">max_edit_distance</span>   <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;max_edit_distance&#39;</span>   <span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
     <span class="n">mismatches</span>          <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;mismatches&#39;</span>          <span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
     <span class="n">nthreads</span>            <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;nthreads&#39;</span>            <span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
@@ -178,7 +186,11 @@
         <span class="nb">len</span><span class="p">(</span><span class="n">range_start</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">range_stop</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: range_start and range_stop should have the &#39;</span> <span class="o">+</span>
                         <span class="s">&#39;same sizes and windows should be uniques.&#39;</span><span class="p">)</span>
-
+    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="o">&gt;=</span> <span class="n">j</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">range_start</span><span class="p">,</span> <span class="n">range_stop</span><span class="p">)]):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: start positions should always be lower than &#39;</span> <span class="o">+</span>
+                        <span class="s">&#39;stop positions.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">range_start</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: start positions should be strictly positive.&#39;</span><span class="p">)</span>
     <span class="c"># create directories</span>
     <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="p">[</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">out_sam_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]:</span>
         <span class="k">try</span><span class="p">:</span>
@@ -201,6 +213,8 @@
     <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;ERROR: problem reading </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">fastq_path</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="ow">not</span>  <span class="n">N_WINDOWS</span><span class="p">:</span>
+        <span class="n">N_WINDOWS</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">range_start</span><span class="p">)</span>
     <span class="c"># Split input files if required and apply iterative mapping to each</span>
     <span class="c"># segment separately.</span>
     <span class="k">if</span> <span class="n">max_reads_per_chunk</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -212,6 +226,8 @@
             <span class="n">max_reads_per_chunk</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
         <span class="k">print</span> <span class="s">&#39;</span><span class="si">%d</span><span class="s"> chunks obtained&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunked_files</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fastq_chunk_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunked_files</span><span class="p">):</span>
+            <span class="k">global</span> <span class="n">N_WINDOWS</span>
+            <span class="n">N_WINDOWS</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">print</span> <span class="s">&#39;Run iterative_mapping recursively on </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">fastq_chunk_path</span>
             <span class="n">out_files</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">iterative_mapping</span><span class="p">(</span>
                 <span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_chunk_path</span><span class="p">,</span>
@@ -226,6 +242,7 @@
         <span class="k">return</span> <span class="n">out_files</span>
 
     <span class="c"># end position according to sequence in the file</span>
+    <span class="c"># removes 1 in order to start at 1 instead of 0</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">seq_end</span> <span class="o">=</span> <span class="n">range_stop</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">seq_beg</span> <span class="o">=</span> <span class="n">range_start</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -234,10 +251,11 @@
 
     <span class="c"># define what we trim</span>
     <span class="n">seq_len</span> <span class="o">=</span> <span class="n">seq_end</span> <span class="o">-</span> <span class="n">seq_beg</span>
-    <span class="n">trim_5</span><span class="p">,</span> <span class="n">trim_3</span> <span class="o">=</span> <span class="n">trimming</span><span class="p">(</span><span class="n">raw_seq_len</span><span class="p">,</span> <span class="n">seq_beg</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">)</span>
+    <span class="n">trim_5</span><span class="p">,</span> <span class="n">trim_3</span> <span class="o">=</span> <span class="n">trimming</span><span class="p">(</span><span class="n">raw_seq_len</span><span class="p">,</span> <span class="n">seq_beg</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">seq_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="c"># output</span>
-    <span class="n">local_out_sam</span> <span class="o">=</span> <span class="n">out_sam_path</span> <span class="o">+</span> <span class="s">&#39;.</span><span class="si">%d</span><span class="s">-</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">seq_beg</span><span class="p">,</span> <span class="n">seq_end</span><span class="p">)</span>
+    <span class="n">local_out_sam</span> <span class="o">=</span> <span class="n">out_sam_path</span> <span class="o">+</span> <span class="s">&#39;.</span><span class="si">%d</span><span class="s">:</span><span class="si">%d</span><span class="s">-</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">N_WINDOWS</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">range_stop</span><span class="p">),</span> <span class="n">seq_beg</span><span class="p">,</span> <span class="n">seq_end</span><span class="p">)</span>
     <span class="n">out_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_out_sam</span><span class="p">)</span>
     <span class="c"># input</span>
     <span class="n">inputf</span> <span class="o">=</span> <span class="n">gem</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">)</span>
@@ -255,7 +273,7 @@
                         <span class="n">output</span><span class="o">=</span><span class="n">temp_dir</span> <span class="o">+</span> <span class="s">&#39;/test.map&#39;</span><span class="p">,</span>
                         <span class="n">threads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">)</span>
 
-    <span class="c"># convert to sam</span>
+    <span class="c"># convert to sam/bam</span>
     <span class="k">if</span> <span class="n">output_is_bam</span><span class="p">:</span>
         <span class="n">sam</span> <span class="o">=</span> <span class="n">gem</span><span class="o">.</span><span class="n">gem2sam</span><span class="p">(</span><span class="n">mapped</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">,</span>
                           <span class="n">single_end</span><span class="o">=</span><span class="n">single_end</span><span class="p">)</span>
@@ -269,7 +287,8 @@
     <span class="k">if</span> <span class="n">unmapped_fastq_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
         <span class="n">unmapped_fastq_path</span> <span class="o">=</span> <span class="n">unmapped_fastq_path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">unmapped_fastq_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-        <span class="n">temp_dir</span><span class="p">,</span> <span class="n">unmapped_fastq_path</span> <span class="o">+</span> <span class="s">&#39;.</span><span class="si">%d</span><span class="s">-</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">seq_beg</span><span class="p">,</span> <span class="n">seq_end</span><span class="p">))</span>
+        <span class="n">temp_dir</span><span class="p">,</span> <span class="n">unmapped_fastq_path</span> <span class="o">+</span> <span class="s">&#39;.</span><span class="si">%d</span><span class="s">:</span><span class="si">%d</span><span class="s">-</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">N_WINDOWS</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">range_stop</span><span class="p">),</span> <span class="n">seq_beg</span><span class="p">,</span> <span class="n">seq_end</span><span class="p">))</span>
     <span class="n">_filter_unmapped_fastq</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">,</span> <span class="n">local_out_sam</span><span class="p">,</span> <span class="n">unmapped_fastq_path</span><span class="p">)</span>
 
     <span class="n">out_files</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">iterative_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">unmapped_fastq_path</span><span class="p">,</span>
@@ -375,7 +394,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
               <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -388,7 +407,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
 </ul>
 
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" />
@@ -405,21 +424,21 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 08, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -23,28 +23,28 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
     <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <h1>Source code for pytadbit.mapping.filter</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -55,7 +55,7 @@
 <span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">count_re_fragments</span>
 
 
-<div class="viewcode-block" id="apply_filter"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.filter.apply_filter">[docs]</a><span class="k">def</span> <span class="nf">apply_filter</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="apply_filter"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.filter.apply_filter">[docs]</a><span class="k">def</span> <span class="nf">apply_filter</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new file with reads filtered</span>
 
@@ -65,17 +65,32 @@
 <span class="sd">       :func:`pytadbit.mapping.filter.filter_reads`</span>
 <span class="sd">    :param None filters: list of numbers corresponding to the filters we want</span>
 <span class="sd">       to apply (numbers correspond to the keys in the masked dictionary)</span>
-<span class="sd">    </span>
+<span class="sd">    :param False reverse: if set, the resulting outfile will only contain the</span>
+<span class="sd">       reads filtered, not the valid pairs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">masked_reads</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">filters</span> <span class="o">=</span> <span class="n">filters</span> <span class="ow">or</span> <span class="n">masked</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">filt</span> <span class="ow">in</span> <span class="n">filters</span><span class="p">:</span>
         <span class="n">masked_reads</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">filt</span><span class="p">][</span><span class="s">&#39;reads&#39;</span><span class="p">])</span>
     <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">):</span>
-        <span class="n">read</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">read</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">masked_reads</span><span class="p">:</span>
-            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">fhandler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">reverse</span><span class="p">:</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">y</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">y</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">read</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">cond</span><span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="n">masked_reads</span><span class="p">):</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+        <span class="k">pass</span>
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 </div>
@@ -83,15 +98,15 @@
                  <span class="n">over_represented</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
                  <span class="n">min_frag_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">re_proximity</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Apply different filters on pair of reads (in order of application):</span>
+<span class="sd">    Apply different filters on pair of reads:</span>
 <span class="sd">       1- self-circle        : reads are comming from a single RE fragment and</span>
 <span class="sd">          point to the outside (----&lt;===---===&gt;---)</span>
 <span class="sd">       2- dangling-end       : reads are comming from a single RE fragment and</span>
 <span class="sd">          point to the inside (----===&gt;---&lt;===---)</span>
-<span class="sd">       3- extra dangling-end : reads are comming from different RE fragment but</span>
-<span class="sd">          are close enough (&lt; max_molecule length) and point to the inside</span>
-<span class="sd">       4- error              : reads are comming from a single RE fragment and</span>
+<span class="sd">       3- error              : reads are comming from a single RE fragment and</span>
 <span class="sd">          point in the same direction</span>
+<span class="sd">       4- extra dangling-end : reads are comming from different RE fragment but</span>
+<span class="sd">          are close enough (&lt; max_molecule length) and point to the inside</span>
 <span class="sd">       5- too close from RE  : start position of one of the read is too close (</span>
 <span class="sd">          5 bp by default) from RE cutting site. Non-canonical enzyme activity</span>
 <span class="sd">          or random physical breakage of the chromatin.</span>
@@ -117,6 +132,8 @@
 
 <span class="sd">    :return: dicitonary with, as keys, the kind of filter applied, and as values</span>
 <span class="sd">       a set of read IDs to be removed</span>
+
+<span class="sd">    *Note: Filtering is not exclusive, one read can be filtered several times.*</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">masked</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;self-circle&#39;</span>       <span class="p">,</span> <span class="s">&#39;reads&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">()},</span> 
               <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;dangling-end&#39;</span>      <span class="p">,</span> <span class="s">&#39;reads&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">()},</span>
@@ -132,85 +149,94 @@
     <span class="n">frag_count</span> <span class="o">=</span> <span class="n">count_re_fragments</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
     <span class="n">num_frags</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">frag_count</span><span class="p">)</span>
     <span class="n">cut</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">over_represented</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_frags</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
-    <span class="n">cut</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">frag_count</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">frag_count</span><span class="p">])[</span><span class="n">cut</span><span class="p">]</span>
+    <span class="c"># use cut-1 because it represents the length of the list</span>
+    <span class="n">cut</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">frag_count</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">frag_count</span><span class="p">])[</span><span class="n">cut</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
 
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">bads</span>  <span class="o">=</span> <span class="mi">0</span>
     <span class="n">fhandler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
     <span class="n">line</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="k">while</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
         <span class="n">line</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-        <span class="p">(</span><span class="n">read</span><span class="p">,</span>
-         <span class="n">cr1</span><span class="p">,</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re1</span><span class="p">,</span>
-         <span class="n">cr2</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rs2</span><span class="p">,</span> <span class="n">re2</span><span class="p">)</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">ps1</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span>
-         <span class="n">re1</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re2</span><span class="p">,</span> <span class="n">rs2</span><span class="p">)</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span>
-                                         <span class="n">re1</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re2</span><span class="p">,</span> <span class="n">rs2</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">cr1</span> <span class="o">==</span> <span class="n">cr2</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">re1</span> <span class="o">==</span> <span class="n">re2</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">sd1</span> <span class="o">!=</span> <span class="n">sd2</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="n">ps2</span> <span class="o">&gt;</span> <span class="n">ps1</span><span class="p">)</span> <span class="o">==</span> <span class="n">sd2</span><span class="p">:</span>
-                        <span class="c"># ----&lt;===---===&gt;---                       self-circles</span>
-                        <span class="n">masked</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">read</span><span class="p">,</span>
+             <span class="n">cr1</span><span class="p">,</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re1</span><span class="p">,</span>
+             <span class="n">cr2</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rs2</span><span class="p">,</span> <span class="n">re2</span><span class="p">)</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">ps1</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span>
+             <span class="n">re1</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re2</span><span class="p">,</span> <span class="n">rs2</span><span class="p">)</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">sd1</span><span class="p">,</span> <span class="n">sd2</span><span class="p">,</span>
+                                             <span class="n">re1</span><span class="p">,</span> <span class="n">rs1</span><span class="p">,</span> <span class="n">re2</span><span class="p">,</span> <span class="n">rs2</span><span class="p">))</span>
+            <span class="n">bad</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">cr1</span> <span class="o">==</span> <span class="n">cr2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">re1</span> <span class="o">==</span> <span class="n">re2</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sd1</span> <span class="o">!=</span> <span class="n">sd2</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">ps2</span> <span class="o">&gt;</span> <span class="n">ps1</span><span class="p">)</span> <span class="o">==</span> <span class="n">sd2</span><span class="p">:</span>
+                            <span class="c"># ----&lt;===---===&gt;---                   self-circles</span>
+                            <span class="n">masked</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+                            <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c"># ----===&gt;---&lt;===---                   dangling-ends</span>
+                            <span class="n">masked</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+                            <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="c"># ----===&gt;---&lt;===---                       dangling-ends</span>
-                        <span class="n">masked</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c"># --===&gt;--===&gt;-- or --&lt;===--&lt;===-- or same     errors</span>
-                    <span class="n">masked</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-                    <span class="k">break</span>
-                <span class="k">continue</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">ps1</span> <span class="o">-</span> <span class="n">ps2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_molecule_length</span>
-                  <span class="ow">and</span> <span class="n">sd2</span> <span class="o">!=</span> <span class="n">sd1</span>
-                  <span class="ow">and</span> <span class="n">ps2</span> <span class="o">&gt;</span> <span class="n">ps1</span> <span class="o">!=</span> <span class="n">sd2</span><span class="p">):</span>
-                <span class="c"># different fragments but facing and very close</span>
-                <span class="n">masked</span><span class="p">[</span><span class="mi">4</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-                    <span class="k">break</span>
-                <span class="k">continue</span>
-        <span class="k">if</span> <span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">re1</span> <span class="o">-</span> <span class="n">ps1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)</span> <span class="ow">or</span>
-            <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rs1</span> <span class="o">-</span> <span class="n">ps1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)</span> <span class="ow">or</span> 
-            <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">re2</span> <span class="o">-</span> <span class="n">ps2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)</span> <span class="ow">or</span>
-            <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rs2</span> <span class="o">-</span> <span class="n">ps2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)):</span>
-            <span class="n">masked</span><span class="p">[</span><span class="mi">5</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="p">((</span><span class="n">re1</span> <span class="o">-</span> <span class="n">rs1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_frag_size</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">re2</span> <span class="o">-</span> <span class="n">rs2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_frag_size</span><span class="p">)</span> <span class="p">:</span>
-            <span class="n">masked</span><span class="p">[</span><span class="mi">6</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="p">((</span><span class="n">re1</span> <span class="o">-</span> <span class="n">rs1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_frag_size</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">re2</span> <span class="o">-</span> <span class="n">rs2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_frag_size</span><span class="p">):</span>
-            <span class="n">masked</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">frag_count</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">cr1</span><span class="p">,</span> <span class="n">rs1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">cut</span> <span class="ow">or</span>
-              <span class="n">frag_count</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">cr2</span><span class="p">,</span> <span class="n">rs2</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">cut</span><span class="p">):</span>
-            <span class="n">masked</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
+                        <span class="c"># --===&gt;--===&gt;-- or --&lt;===--&lt;===-- or same errors</span>
+                        <span class="n">masked</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+                        <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">ps1</span> <span class="o">-</span> <span class="n">ps2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_molecule_length</span>
+                      <span class="ow">and</span> <span class="n">sd2</span> <span class="o">!=</span> <span class="n">sd1</span>
+                      <span class="ow">and</span> <span class="p">(</span><span class="n">ps2</span> <span class="o">&gt;</span> <span class="n">ps1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">sd2</span><span class="p">):</span>
+                    <span class="c"># different fragments but facing and very close</span>
+                    <span class="n">masked</span><span class="p">[</span><span class="mi">4</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+                    <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="p">(((</span><span class="n">re1</span> <span class="o">-</span> <span class="n">ps1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">((</span><span class="n">ps1</span> <span class="o">-</span> <span class="n">rs1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)</span> <span class="ow">or</span> 
+                <span class="p">((</span><span class="n">re2</span> <span class="o">-</span> <span class="n">ps2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">((</span><span class="n">ps2</span> <span class="o">-</span> <span class="n">rs2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)):</span>
+                <span class="n">masked</span><span class="p">[</span><span class="mi">5</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+                <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">dif1</span> <span class="o">=</span> <span class="n">re1</span> <span class="o">-</span> <span class="n">rs1</span>
+            <span class="n">dif2</span> <span class="o">=</span> <span class="n">re2</span> <span class="o">-</span> <span class="n">rs2</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">dif1</span> <span class="o">&lt;</span> <span class="n">min_frag_size</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">dif2</span> <span class="o">&lt;</span> <span class="n">min_frag_size</span><span class="p">):</span>
+                <span class="n">masked</span><span class="p">[</span><span class="mi">6</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+                <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">dif1</span> <span class="o">&gt;</span> <span class="n">max_frag_size</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">dif2</span> <span class="o">&gt;</span> <span class="n">max_frag_size</span><span class="p">):</span>
+                <span class="n">masked</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+                <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">frag_count</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">cr1</span><span class="p">,</span> <span class="n">rs1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">cut</span> <span class="ow">or</span>
+                  <span class="n">frag_count</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">cr2</span><span class="p">,</span> <span class="n">rs2</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">cut</span><span class="p">):</span>
+                <span class="n">masked</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+                <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">uniq_key</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">((</span><span class="n">cr1</span> <span class="o">+</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">cr2</span> <span class="o">+</span> <span class="n">pos2</span><span class="p">)))</span>
             <span class="k">if</span> <span class="n">uniq_key</span> <span class="ow">in</span> <span class="n">uniq_check</span><span class="p">:</span>
                 <span class="n">masked</span><span class="p">[</span><span class="mi">9</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
-                <span class="c"># in case we want to forget about all reads (not keeping one)</span>
-                <span class="c"># if not uniq_check[uniq_key] in masked[5][&quot;reads&quot;]:</span>
-                <span class="c">#     masked[5][&quot;reads&quot;].add(uniq_check[uniq_key])</span>
-                <span class="c">#     continue</span>
+                <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c"># uniq_check[uniq_key] = read</span>
                 <span class="n">uniq_check</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">uniq_key</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
+            <span class="n">bads</span> <span class="o">+=</span> <span class="n">bad</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-            <span class="k">break</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+        <span class="k">pass</span>
     <span class="n">fhandler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">del</span><span class="p">(</span><span class="n">uniq_check</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;Filtered reads (and percentage of total):</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="k">print</span> <span class="s">&#39;     </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (100.00</span><span class="si">%%</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;TOTAL mapped&#39;</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;  &#39;</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">53</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s">&#39;</span><span class="si">%d</span><span class="s">- </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;reads&#39;</span><span class="p">]))</span>
+            <span class="k">print</span> <span class="s">&#39;  </span><span class="si">%d</span><span class="s">- </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (</span><span class="si">%6.2f%%</span><span class="s">)&#39;</span> <span class="o">%</span><span class="p">(</span>
+                <span class="n">k</span><span class="p">,</span> <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;reads&#39;</span><span class="p">]),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;reads&#39;</span><span class="p">]))</span> <span class="o">/</span> <span class="n">total</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">     </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (</span><span class="si">%6.2f%%</span><span class="s">)&#39;</span> <span class="o">%</span><span class="p">(</span>
+            <span class="s">&#39;Valid-pairs&#39;</span><span class="p">,</span> <span class="n">total</span> <span class="o">-</span> <span class="n">bads</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">total</span> <span class="o">-</span> <span class="n">bads</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="k">del</span><span class="p">(</span><span class="n">uniq_check</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">masked</span></div>
 </pre></div>
 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../../index.html">
               <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -223,7 +249,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
 </ul>
 
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" />
@@ -240,21 +266,21 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li>
-          <li><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 08, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -24,25 +24,25 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="#" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
 
 <h1 id="index">Index</h1>
@@ -68,6 +68,7 @@
  | <a href="#T"><strong>T</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
  | <a href="#Z"><strong>Z</strong></a>
  
 </div>
@@ -87,6 +88,14 @@
   </dt>
 
       
+  <dt><a href="reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections">add_sections() (pytadbit.parsers.hic_parser.HiC_data method)</a>
+  </dt>
+
+      
+  <dt><a href="reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta">add_sections_from_fasta() (pytadbit.parsers.hic_parser.HiC_data method)</a>
+  </dt>
+
+      
   <dt><a href="reference/reference_aligner.html#pytadbit.boundary_aligner.aligner.align">align() (in module pytadbit.boundary_aligner.aligner)</a>
   </dt>
 
@@ -94,12 +103,12 @@
   <dt><a href="reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.align_experiments">align_experiments() (pytadbit.chromosome.Chromosome method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.align_models">align_models() (pytadbit.imp.structuralmodels.StructuralModels method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment">Alignment (class in pytadbit.alignment)</a>
   </dt>
@@ -551,14 +560,6 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="reference/reference_parser.html#pytadbit.parsers.genome_parser.parse_fasta">parse_fasta() (in module pytadbit.parsers.genome_parser)</a>
-  </dt>
-
-      
-  <dt><a href="reference/reference_parser.html#pytadbit.parsers.sam_parser.parse_sam">parse_sam() (in module pytadbit.parsers.sam_parser)</a>
-  </dt>
-
-      
   <dt><a href="reference/reference_parser.html#pytadbit.parsers.tad_parser.parse_tads">parse_tads() (in module pytadbit.parsers.tad_parser)</a>
   </dt>
 
@@ -582,12 +583,12 @@
   <dt><a href="reference/reference_imp_optimizer.html#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d">plot_3d() (pytadbit.imp.impoptimizer.IMPoptimizer method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference/reference_utils.html#pytadbit.utils.extraviews.plot_3d_model">plot_3d_model() (in module pytadbit.utils.extraviews)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference/reference_utils.html#pytadbit.utils.extraviews.plot_3d_optimization_result">plot_3d_optimization_result() (in module pytadbit.utils.extraviews)</a>
   </dt>
@@ -819,6 +820,16 @@
   </dl></td>
 </tr></table>
 
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.yield_matrix">yield_matrix() (pytadbit.parsers.hic_parser.HiC_data method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
 <h2 id="Z">Z</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
@@ -834,7 +845,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/TADbit_logo_little.png" alt="Logo"/>
@@ -847,7 +858,7 @@
 <li class="toctree-l1"><a class="reference internal" href="biblio.html">Bibliography</a></li>
 </ul>
 
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -864,19 +875,19 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="#" title="General Index"
              >index</a></li>
-        <li><a href="index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tadbit 0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 08, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -23,15 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="IMPmodel class" href="reference_imp_model.html" />
     <link rel="prev" title="Alignment class" href="reference_boundary_alignment.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -43,21 +43,21 @@
         <li class="right" >
           <a href="reference_boundary_alignment.html" title="Alignment class"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="impoptimizer-class">
 <h1>IMPoptimizer class<a class="headerlink" href="#impoptimizer-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer">
-<em class="property">class </em><tt class="descclassname">pytadbit.imp.impoptimizer.</tt><tt class="descname">IMPoptimizer</tt><big>(</big><em>experiment</em>, <em>start</em>, <em>end</em>, <em>n_models=500</em>, <em>n_keep=100</em>, <em>close_bins=1</em>, <em>container=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pytadbit.imp.impoptimizer.</code><code class="descname">IMPoptimizer</code><span class="sig-paren">(</span><em>experiment</em>, <em>start</em>, <em>end</em>, <em>n_models=500</em>, <em>n_keep=100</em>, <em>close_bins=1</em>, <em>container=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class optimizes a set of paramaters (scale, maxdist, lowfreq and
 upfreq) in order to maximize the correlation between the models generated 
 by IMP and the input data.</p>
@@ -93,7 +93,7 @@ used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nucle
 </table>
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict">
-<tt class="descname">get_best_parameters_dict</tt><big>(</big><em>reference=None</em>, <em>with_corr=False</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.get_best_parameters_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_best_parameters_dict</code><span class="sig-paren">(</span><em>reference=None</em>, <em>with_corr=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.get_best_parameters_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.get_best_parameters_dict" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -105,7 +105,7 @@ used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nucle
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a dict that can be used for modelling, see config parameter in
-<a class="reference internal" href="reference_experiment.html#pytadbit.experiment.Experiment.model_region" title="pytadbit.experiment.Experiment.model_region"><tt class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.model_region()</span></tt></a></p>
+<a class="reference internal" href="reference_experiment.html#pytadbit.experiment.Experiment.model_region" title="pytadbit.experiment.Experiment.model_region"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.model_region()</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -114,7 +114,7 @@ used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nucle
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file">
-<tt class="descname">load_from_file</tt><big>(</big><em>f_name</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.load_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load_from_file</code><span class="sig-paren">(</span><em>f_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.load_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads the optimized parameters from a file generated with the function:
 pytadbit.imp.impoptimizer.IMPoptimizer.write_result.
 This function does not overwrite the parameters that were already 
@@ -131,7 +131,7 @@ loaded or calculated.</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search">
-<tt class="descname">load_grid_search</tt><big>(</big><em>filenames</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>verbose=True</em>, <em>n_cpus=1</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.load_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load_grid_search</code><span class="sig-paren">(</span><em>filenames</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>verbose=True</em>, <em>n_cpus=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.load_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.load_grid_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads one file or a list of files containing pre-calculated Structural
 Models (keep_models parameter used). And correlate each set of models
 with real data. Usefull to run different correlation on the same data
@@ -154,7 +154,7 @@ avoiding to re-calculate each time the models.</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d">
-<tt class="descname">plot_2d</tt><big>(</big><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_2d</code><span class="sig-paren">(</span><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em>, <em>show_best=0</em>, <em>skip=None</em>, <em>savefig=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>A grid of heatmaps representing the result of the optimization.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -180,7 +180,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d">
-<tt class="descname">plot_3d</tt><big>(</big><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_3d</code><span class="sig-paren">(</span><em>axes=('scale'</em>, <em>'maxdist'</em>, <em>'upfreq'</em>, <em>'lowfreq')</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.plot_3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.plot_3d" title="Permalink to this definition">¶</a></dt>
 <dd><p>A grid of heatmaps representing the result of the optimization.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -196,7 +196,7 @@ be placed on the x, y, z or w axe.</td>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search">
-<tt class="descname">run_grid_search</tt><big>(</big><em>upfreq_range=(0</em>, <em>1</em>, <em>0.1)</em>, <em>lowfreq_range=(-1</em>, <em>0</em>, <em>0.1)</em>, <em>maxdist_range=(400</em>, <em>1500</em>, <em>100)</em>, <em>scale_range=0.01</em>, <em>dcutoff_range=2</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>savedata=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run_grid_search</code><span class="sig-paren">(</span><em>upfreq_range=(0</em>, <em>1</em>, <em>0.1)</em>, <em>lowfreq_range=(-1</em>, <em>0</em>, <em>0.1)</em>, <em>maxdist_range=(400</em>, <em>1500</em>, <em>100)</em>, <em>scale_range=0.01</em>, <em>dcutoff_range=2</em>, <em>corr='spearman'</em>, <em>off_diag=1</em>, <em>savedata=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.run_grid_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.run_grid_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function calculates the correlation between the models generated 
 by IMP and the input data for the four main IMP parameters (scale, 
 maxdist, lowfreq and upfreq) in the given ranges of values.</p>
@@ -235,7 +235,7 @@ and save it into a file named by this argument</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.impoptimizer.IMPoptimizer.write_result">
-<tt class="descname">write_result</tt><big>(</big><em>f_name</em><big>)</big><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.write_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.write_result" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write_result</code><span class="sig-paren">(</span><em>f_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impoptimizer.html#IMPoptimizer.write_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impoptimizer.IMPoptimizer.write_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function writes a log file of all the values tested for each 
 parameter, and the resulting correlation value.</p>
 <p>This file can be used to load or merge data a posteriori using 
@@ -258,7 +258,7 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -291,7 +291,7 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="reference_imp_model.html"
                         title="next chapter">IMPmodel class</a></p>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -308,7 +308,7 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -320,14 +320,14 @@ the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file</p>
         <li class="right" >
           <a href="reference_boundary_alignment.html" title="Alignment class"
              >previous</a> |</li>
-        <li><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" >Reference Guide</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 08, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

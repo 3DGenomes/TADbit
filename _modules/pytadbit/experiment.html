@@ -23,28 +23,28 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../index.html" />
     <link rel="up" title="pytadbit" href="../pytadbit.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../index.html" >Module code</a> &raquo;</li>
-          <li><a href="../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <h1>Source code for pytadbit.experiment</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -56,7 +56,7 @@
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>   <span class="kn">import</span> <span class="n">read_matrix</span><span class="p">,</span> <span class="n">HiC_data</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>     <span class="kn">import</span> <span class="n">nicer</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.extraviews</span>     <span class="kn">import</span> <span class="n">tadbit_savefig</span>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>       <span class="kn">import</span> <span class="n">zscore</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.tadmaths</span>       <span class="kn">import</span> <span class="n">zscore</span><span class="p">,</span> <span class="n">nozero_log_matrix</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.normalize_hic</span>  <span class="kn">import</span> <span class="n">iterative</span>
 <span class="kn">from</span> <span class="nn">pytadbit.utils.hic_filtering</span>  <span class="kn">import</span> <span class="n">hic_filtering_for_modelling</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.tad_parser</span>   <span class="kn">import</span> <span class="n">parse_tads</span>
@@ -448,7 +448,7 @@
 
 </div>
 <div class="viewcode-block" id="Experiment.filter_columns"><a class="viewcode-back" href="../../reference/reference_experiment.html#pytadbit.experiment.Experiment.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                       <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+                       <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="mi">66</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Call filtering function, to remove artefactual columns in a given Hi-C</span>
 <span class="sd">        matrix. This function will detect columns with very low interaction</span>
@@ -464,6 +464,8 @@
 <span class="sd">           if None, the image will be shown using matplotlib GUI (the extension</span>
 <span class="sd">           of the file name will determine the desired format).</span>
 <span class="sd">        :param True diagonal: remove row/columns with zero in the diagonal</span>
+<span class="sd">        :param 66 perc_zero: maximum percentage of cells with no interactions</span>
+<span class="sd">           allowed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -473,7 +475,7 @@
             <span class="n">diagonal</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_zeros</span><span class="p">,</span> <span class="n">has_nans</span> <span class="o">=</span> <span class="n">hic_filtering_for_modelling</span><span class="p">(</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="n">draw_hist</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">,</span>
-            <span class="n">diagonal</span><span class="o">=</span><span class="n">diagonal</span><span class="p">)</span>
+            <span class="n">diagonal</span><span class="o">=</span><span class="n">diagonal</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="n">perc_zero</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">has_nans</span><span class="p">:</span> <span class="c"># to make it simple</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_size2</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="s">&#39;nan&#39;</span><span class="p">:</span>
@@ -724,6 +726,14 @@
 <span class="sd">           objective function value the selected models (1), the objective</span>
 <span class="sd">           function value of all the models (2), all the modeling </span>
 <span class="sd">           information (3)</span>
+<span class="sd">        :param None container: restrains particle to be within a given object. Can </span>
+<span class="sd">           only be a &#39;cylinder&#39;, which is, in fact a cylinder of a given height to </span>
+<span class="sd">           which are added hemispherical ends. This cylinder is defined by a radius, </span>
+<span class="sd">           its height (with a height of 0 the cylinder becomes a sphere) and the </span>
+<span class="sd">           force applied to the restraint. E.g. for modeling E. coli genome (2 </span>
+<span class="sd">           micrometers length and 0.5 micrometer of width), these values could be </span>
+<span class="sd">           used: [&#39;cylinder&#39;, 250, 1500, 50], and for a typical mammalian nuclei</span>
+<span class="sd">           (6 micrometers diameter): [&#39;cylinder&#39;, 3000, 0, 50]</span>
 <span class="sd">        :param CONFIG[&#39;dmel_01&#39;] config: a dictionary containing the standard</span>
 <span class="sd">           parameters used to generate the models. The dictionary should</span>
 <span class="sd">           contain the keys kforce, maxdist, upfreq and lowfreq.</span>
@@ -1265,15 +1275,18 @@
             <span class="n">alphas</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">jet</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span>
             <span class="n">jet</span><span class="o">.</span><span class="n">_lut</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">alphas</span>
+
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+        <span class="n">cmap</span><span class="o">.</span><span class="n">set_bad</span><span class="p">(</span><span class="s">&#39;darkgrey&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">relative</span><span class="p">:</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fun</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">nozero_log_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">fun</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
                              <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
                              <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fun</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">nozero_log_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">fun</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">,</span>
                              <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
                              <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
                                      <span class="nb">int</span><span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
@@ -1431,7 +1444,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../../index.html">
               <img class="logo" src="../../_static/TADbit_logo_little.png" alt="Logo"/>
@@ -1444,7 +1457,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../biblio.html">Bibliography</a></li>
 </ul>
 
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -1461,21 +1474,21 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
-          <li><a href="../index.html" >Module code</a> &raquo;</li>
-          <li><a href="../pytadbit.html" >pytadbit</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../pytadbit.html" >pytadbit</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 08, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on Apr 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
