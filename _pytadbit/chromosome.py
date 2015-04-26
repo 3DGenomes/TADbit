@@ -86,13 +86,19 @@ def load_chromosome(in_f, fast=2):
     if isinstance(dico['experiments'][name]['hi-c'], str) or fast != int(2):
         try:
             dicp = load(open(in_f + '_hic'))
+            for name in dico['experiments']:
+                crm.get_experiment(name).hic_data = dicp[name]['hi-c']
+                if fast != 1:
+                    crm.get_experiment(name).norm = dicp[name]['wght']
         except IOError:
-            raise Exception('ERROR: file %s not found\n' % (
-                dico['experiments'][name]['hi-c']))
-        for name in dico['experiments']:
-            crm.get_experiment(name).hic_data = dicp[name]['hi-c']
-            if fast != 1:
-                crm.get_experiment(name).norm = dicp[name]['wght']
+            try:
+                for name in dico['experiments']:
+                    crm.get_experiment(name).hic_data = dico['experiments'][name]['hi-c']
+                    if fast != 1:
+                        crm.get_experiment(name).norm = dico['experiments'][name]['wght']
+            except KeyError:
+                raise Exception('ERROR: file %s not found\n' % (
+                    dico['experiments'][name]['hi-c']))
     elif not fast:
         stderr.write('WARNING: data not saved correctly for fast loading.\n')
     return crm
