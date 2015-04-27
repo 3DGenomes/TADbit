@@ -263,7 +263,8 @@ class Alignment(object):
         if not self.__len:
             self.__len = len(scores)
         elif self.__len != len(scores):
-            raise AssertionError('ERROR: alignments of different lengths\n')
+            raise AssertionError('ERROR: alignments of different lengths ' +
+                                 '(%s != %s)\n' % (self.__len, len(scores)))
         self.__values.append(scores)
         self.__keys.append(name)
 

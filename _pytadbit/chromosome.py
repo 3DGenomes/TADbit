@@ -396,27 +396,20 @@ class Chromosome(object):
             if not xpr.tads:
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([xpr.tads[x]['brk'] * xpr.resolution for x in xpr.tads
-                         if xpr.tads[x]['score']])
-        # new
+                         if xpr.tads[x]['score'] >= 0])
         aligneds, score = align(tads, verbose=verbose, **kwargs)
         name = tuple(sorted([x.name for x in xpers]))
         ali = Alignment(name, aligneds, xpers, score=score)
         self.alignment[name] = ali
         if verbose:
             print self.alignment[name]
-        # old
-        # self.alignment[name] = {}
-        # for xpr, ali in zip(xpers, aligneds):
-        #     self.alignment[name][xpr.name] = ali
-        # if verbose:
-        #     self.print_alignment(xpers=xpers)
         if not randomize:
             # return self.get_alignment(name), score
             return ali
         p_value = randomization_test(xpers, score=score, rnd_method=rnd_method,
                                      verbose=verbose, r_size=self.r_size,
                                      num=rnd_num, **kwargs)
-        return score, p_value
+        return ali, (score, p_value)
 
 
     def add_experiment(self, name, resolution=None, tad_def=None,

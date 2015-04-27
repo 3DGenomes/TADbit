@@ -21,7 +21,7 @@ def get_r2 (fun, X, Y, *args):
     return 1 - sserr/sstot
 
 
-def filter_by_mean(matrx, draw_hist=False, silent=False, perc_zero=0.3, savefig=None):
+def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
     """
     fits the distribution of Hi-C interaction count by column in the matrix to
     a polynomial. Then searches for the first possible 
@@ -147,6 +147,18 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, perc_zero=0.3, savefig=
         if not silent:
             stderr.write('WARNING: Too few data to filter columns based on ' +
                          'mean value.\n')
+    if draw_hist:
+        plt.close('all')
+    return bads
+
+
+def filter_by_zero_count(matrx, perc_zero, silent=True):
+    """
+    :param matrx:
+    :param perc:
+    """
+    bads = {}
+    size = len(matrx)
     min_val = int(size * float(perc_zero) / 100)
     new_bads = []
     for i, col in enumerate([[matrx.get(i+j*size, 0)
@@ -161,12 +173,9 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, perc_zero=0.3, savefig=
                          min_val, ' '.join(
                              ['%5s'%str(i + 1) + (''if (j + 1) % 20 else '\n')
                               for j, i in enumerate(sorted(new_bads))])))
-    if draw_hist:
-        plt.close('all')
     return bads
 
-
-def hic_filtering_for_modelling(matrx, silent=False, perc_zero=66, 
+def hic_filtering_for_modelling(matrx, silent=False, perc_zero=90, auto=True,
                                 draw_hist=False, savefig=None, diagonal=True):
     """
     Call filtering function, to remove artefactual columns in a given Hi-C
@@ -181,14 +190,20 @@ def hic_filtering_for_modelling(matrx, silent=False, perc_zero=66,
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
     :param True diagonal: remove row/columns with zero in the diagonal
-    :param 75 perc_zero: maximum percentage of cells with no interactions
+    :param 90 perc_zero: maximum percentage of cells with no interactions
        allowed.
+    :param True auto: if False, only filters based on the given percentage
+       zeros
 
     :returns: the indexes of the columns not to be considered for the
        calculation of the z-score
     """
-    bads = filter_by_mean(matrx, draw_hist=draw_hist, silent=silent,
-                          savefig=savefig, perc_zero=perc_zero)
+    if auto:
+        bads = filter_by_mean(matrx, draw_hist=draw_hist, silent=silent,
+                              savefig=savefig)
+    else:
+        bads = {}
+    bads.update(filter_by_zero_count(matrx, perc_zero, silent=silent))
     # also removes rows or columns containing a NaN
     has_nans = False
     for i in xrange(len(matrx)):

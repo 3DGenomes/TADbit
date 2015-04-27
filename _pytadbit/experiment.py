@@ -399,7 +399,7 @@ class Experiment(object):
 
 
     def filter_columns(self, silent=False, draw_hist=False, savefig=None,
-                       diagonal=True, perc_zero=66):
+                       diagonal=True, perc_zero=90, auto=True):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -415,8 +415,10 @@ class Experiment(object):
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
         :param True diagonal: remove row/columns with zero in the diagonal
-        :param 66 perc_zero: maximum percentage of cells with no interactions
+        :param 90 perc_zero: maximum percentage of cells with no interactions
            allowed.
+        :param True auto: if False, only filters based on the given percentage
+           zeros
 
         """
         try:
@@ -426,7 +428,7 @@ class Experiment(object):
             diagonal = True
         self._zeros, has_nans = hic_filtering_for_modelling(
             data, silent=silent, draw_hist=draw_hist, savefig=savefig,
-            diagonal=diagonal, perc_zero=perc_zero)
+            diagonal=diagonal, perc_zero=perc_zero, auto=auto)
         if has_nans: # to make it simple
             for i in xrange(self.hic_data[0]._size2):
                 if repr(self.hic_data[0][i]) == 'nan':
