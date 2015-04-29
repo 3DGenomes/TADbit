@@ -52,3 +52,7 @@ Past editions
   <http://gtpb.igc.gulbenkian.pt/bicourses/2013/CSDM13/>`_ at the
   `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
   training programme Oeiras (Portugal)
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/3DGenomes/tadbit
+   :target: https://gitter.im/3DGenomes/tadbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
