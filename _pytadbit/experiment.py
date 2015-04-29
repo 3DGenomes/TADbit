@@ -813,13 +813,7 @@ class Experiment(object):
                0.002, 0.003, 0.004 and 0.005
 
 
-        :returns: a tuple containing:
-
-             - a 3D numpy array with the values of the correlations calculated
-             - the range of scale used
-             - the range of maxdist used
-             - the range of upfreq used
-             - the range of lowfreq used
+        :returns: an :class:`pytadbit.imp.impoptimizer.IMPoptimizer` object
 
         """
         if not self._normalization:
