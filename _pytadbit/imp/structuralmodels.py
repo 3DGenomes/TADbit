@@ -868,10 +868,6 @@ class StructuralModels(object):
            number is considerably lowered by the occupancy of edges, depending
            of the angle formed by the edges surrounding a given particle, only
            10% to 50% of the ``nump`` will be drawn in fact.*
-        :param True include_edges: if False, edges will not be included in the
-           calculation of the accessible surface, only particles. Note that
-           statistics on particles (like last item returned) will not change,
-           and computation time will be significantly decreased.
         :param None savefig: path where to save chimera image
         :param 200 superradius: radius of an object used to exclude outer
            surface of the model. Superradius must be higher than radius.
@@ -970,23 +966,7 @@ class StructuralModels(object):
             if not plot:
                 return # stop here, we do not want to display anything
         # plot
-        if axe:
-            ax = axe
-            fig = ax.get_figure()
-        else:
-            fig = plt.figure(figsize=(11, 5))
-            ax = fig.add_subplot(111)
-            ax.patch.set_facecolor('lightgrey')
-            ax.patch.set_alpha(0.4)
-            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-            ax.set_axisbelow(True)
-            ax.minorticks_on() # always on, not only for log
-            # remove tick marks
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False)
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False, which='minor')
+        ax = setup_plot(axe)
         plots = []
         plots += ax.plot(range(1, len(accper) + 1), accper,
                          color='darkred',
@@ -998,15 +978,24 @@ class StructuralModels(object):
                     color='darkred', ls='--')
         ax.set_ylabel('Accessibility to an object with a radius of %s nm ' % (radius))
         ax.set_xlabel('Particle number')
+        self._plot_polymer(ax)
+        scat1 = plt.Line2D((0,1),(0,0), color=(0.15,0.15,0.15), marker='o', linestyle='')
+        scat2 = plt.Line2D((0,1),(0,0), color=(0.7,0.7,0.7), marker='o', linestyle='')
+        
         try:
-            ax.legend(plots, ['mean accessibility', '2*stddev of accessibility'], fontsize='small',
+            ax.legend(plots + [scat1, scat2],
+                      ['mean accessibility', '2*stddev of accessibility'] + ['particles with restraints',
+                                                                             'particles without restraints'],
+                      fontsize='small',
                       bbox_to_anchor=(1, 0.5), loc='center left')
         except TypeError:
-            ax.legend(plots, ['mean accessibility', '2*stddev of accessibility'], 
+            ax.legend(plots + [scat1, scat2],
+                      ['mean accessibility', '2*stddev of accessibility'] + ['particles with restraints',
+                                                                             'particles without restraints'],
                       bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title('Accesibility per particle')
-        plt.subplots_adjust(left=0.1, right=0.78)
+        plt.subplots_adjust(left=0.1, right=0.77)
         if savefig:
             tadbit_savefig(savefig)
         elif not axe:
