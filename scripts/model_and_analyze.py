@@ -474,11 +474,6 @@ def main():
             savefig=os.path.join(opts.outdir, name,
                                  name + '_corre_real.pdf'),
             plot=True)
-        rho, pval = models.correlate_with_real_data(
-            cutoff=dcutoff,
-            savefig=os.path.join(opts.outdir, name,
-                                 name + '_corre_real_bis.pdf'),
-            plot=True, midplot='triple')
         logging.info("\t Correlation coefficient: %s [p-value: %s]" % (
             rho, pval))
 
