@@ -34,6 +34,14 @@ Documentation
 * `TADbit documentation <http://3dgenomes.github.io/tadbit/>`_
 * `Summary of TADbit classes and functions <https://github.com/3DGenomes/tadbit/blob/master/doc/summary.rst>`_
 
+Feedback
+--------
+If you have any question remaining, we would be happy to answer informally:
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/3DGenomes/tadbit
+   :target: https://gitter.im/3DGenomes/tadbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 TADbit training
 ***************
 
@@ -53,6 +61,3 @@ Past editions
   `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
   training programme Oeiras (Portugal)
 
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :alt: Join the chat at https://gitter.im/3DGenomes/tadbit
-   :target: https://gitter.im/3DGenomes/tadbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
