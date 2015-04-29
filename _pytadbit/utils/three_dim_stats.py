@@ -286,9 +286,9 @@ def angle_between_3_points(point1, point2, point3):
 def calc_consistency(models, nloci, zeros, dcutoff=200):
     combines = list(combinations(models, 2))
     parts = [0 for _ in xrange(nloci)]
-    for pm in consistency_wrapper([models[m]['x'] for m in models],
-                                  [models[m]['y'] for m in models],
-                                  [models[m]['z'] for m in models],
+    for pm in consistency_wrapper([model['x'] for model in models],
+                                  [model['y'] for model in models],
+                                  [model['z'] for model in models],
                                   zeros,
                                   nloci, dcutoff, range(len(models)),
                                   len(models)):

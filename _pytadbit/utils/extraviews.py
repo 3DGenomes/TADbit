@@ -16,6 +16,26 @@ except ImportError:
     warn('matplotlib not found\n')
 
 
+def setup_plot(axe):
+    if axe:
+        ax = axe
+        fig = ax.get_figure()
+    else:
+        fig = plt.figure(figsize=(11, 5))
+        ax = fig.add_subplot(111)
+        ax.patch.set_facecolor('lightgrey')
+        ax.patch.set_alpha(0.4)
+        ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
+        ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
+        ax.set_axisbelow(True)
+        ax.minorticks_on() # always on, not only for log
+        # remove tick marks
+        ax.tick_params(axis='both', direction='out', top=False, right=False,
+                       left=False, bottom=False)
+        ax.tick_params(axis='both', direction='out', top=False, right=False,
+                       left=False, bottom=False, which='minor')
+    return ax
+
 def tadbit_savefig(savefig):
     form = savefig[-4:].split('.')[1]
     if not form in ['png', 'pdf', 'ps', 'eps', 'svg']:

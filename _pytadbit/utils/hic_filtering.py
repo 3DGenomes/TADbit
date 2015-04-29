@@ -122,6 +122,8 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
                 #                        'median - (1.5 * median absolute deviation)'],
                 #            fontsize='x-small')
                 plt.ylim(0, plt.ylim()[1])
+                plt.xlabel('Sum of interactions')
+                plt.xlabel('Number of columns with a given value')
                 if savefig:
                     tadbit_savefig(savefig)
                 else:

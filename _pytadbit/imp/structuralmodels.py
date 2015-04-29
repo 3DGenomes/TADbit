@@ -6,7 +6,7 @@ from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
 from pytadbit.utils.three_dim_stats import get_center_of_mass, distance
 from pytadbit.utils.tadmaths        import calinski_harabasz, nozero_log_list
 from pytadbit.utils.tadmaths        import mean_none
-from pytadbit.utils.extraviews      import plot_3d_model
+from pytadbit.utils.extraviews      import plot_3d_model, setup_plot
 from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
 from pytadbit.imp.impmodel          import IMPmodel
@@ -518,178 +518,6 @@ class StructuralModels(object):
         return d
 
 
-    def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     interval=1, mass_center=False, error=False, axe=None,
-                     savefig=None, savedata=None, plot=True):
-        """
-        Plots the number of nucleotides per nm of chromatin vs the modeled
-        region bins.
-
-        :param None models: if None (default) the density plot will be computed
-           using all the models. A list of numbers corresponding to a given set
-           of models can be passed
-        :param None cluster: compute the density plot only for the models in the
-           cluster number 'cluster'
-        :param (1, 2, 3, 4, 5) steps: how many particles to group for the
-           estimation. By default 5 curves are drawn
-        :param False error: represent the error of the estimates
-        :param None axe: a matplotlib.axes.Axes object to define the plot
-           appearance
-        :param 1 interval: distance are measure with this given interval
-           between two bins.
-        :param False mass_center: if interval is higher than one, calculates the
-           distance between the center of mass of the particles *n* to
-           *n+interval* and the center of mass of the particles *n+interval* and
-           *n+2interval*
-        :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI (the extension
-           of the file name will determine the desired format).
-        :param None savedata: path to a file where to save the density data
-           generated (1 column per step + 1 for particle number).
-        :param True plot: e.g. only saves data. No plotting done
-
-        """
-        if isinstance(steps, int):
-            steps = (steps, )
-        if len(steps) > 6:
-            raise Exception('Sorry not enough colors to do this :)')
-        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
-                  'darkred'][-len(steps):]
-        dists = []
-        if models:
-            models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
-        elif cluster > -1:
-            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
-        else:
-            models = [m for m in self.__models]
-        for i, (part1, part2) in enumerate(zip(range(self.nloci - interval),
-                                          range(interval, self.nloci))):
-            if not self._zeros[i] or not self._zeros[i + interval]:
-                dists.append([None] * len(models))
-                continue
-            if mass_center:
-                subdists = []
-                for m in models:
-                    coord1 = get_center_of_mass(
-                        self[m]['x'][part1:part1+interval],
-                        self[m]['y'][part1:part1+interval],
-                        self[m]['z'][part1:part1+interval])
-                    coord2 = get_center_of_mass(
-                        self[m]['x'][part2:part2+interval],
-                        self[m]['y'][part2:part2+interval],
-                        self[m]['z'][part2:part2+interval])
-                    subdists.append(distance(coord1, coord2))
-                dists.append(subdists)
-            else:
-                dists.append(self.median_3d_dist(
-                    part1 + 1, part2 + 1, models,
-                    cluster, plot=False, median=False))
-        lmodels = len(dists[0])
-        distsk = {1: [None for _ in range(interval/2)] + dists}
-        for k in (steps[1:] if steps[0] == 1 else steps):
-            distsk[k] = [None for _ in range(k/2+interval/2)]
-            for i in range(self.nloci - k - interval + 1):
-                distsk[k].append(reduce(lambda x, y: x + y,
-                                        [dists[i+j] for j in range(k)]))
-                if k == 1:
-                    continue
-                # calculate the mean for steps larger than 1
-                distsk[k][-1] = [mean_none([distsk[k][-1][i+lmodels*j]
-                                                  for j in xrange(k)])
-                                 for i in xrange(lmodels)]
-        new_distsk = {}
-        errorp     = {}
-        errorn     = {}
-        for k, dists in distsk.iteritems():
-            new_distsk[k] = []
-            errorp[k] = []
-            errorn[k] = []
-            for i, part in enumerate(dists):
-                if not part:
-                    new_distsk[k].append(None)
-                    errorp[k].append(None)
-                    errorn[k].append(None)
-                    continue
-                part = [interval * self.resolution / p  if p != None
-                        else float('nan') for p in part]
-                new_distsk[k].append(np_median(part))
-                try:
-                    errorn[k].append(new_distsk[k][-1] - 2 * np_std(part))
-                    errorn[k][-1] = errorn[k][-1] if isnan(errorn[k][-1]) or errorn[k][-1] > 0 else 0.0
-                    errorp[k].append(new_distsk[k][-1] + 2 * np_std(part))
-                    errorp[k][-1] = errorp[k][-1] if isnan(errorp[k][-1]) or errorp[k][-1] > 0 else 0.0
-                except TypeError:
-                    errorn[k].append(None)
-                    errorp[k].append(None)
-        distsk = new_distsk
-        # write consistencies to file
-        if savedata:      
-            out = open(savedata, 'w')
-            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
-            '2*stddev(%d)' % c for c in steps])))
-            for part in xrange(self.nloci):
-                out.write('%s\t%s\n' % (part + 1, '\t'.join(
-                    ['nan\tnan' if part >= len(distsk[c]) else
-                    (str(round(distsk[c][part], 3)) + '\t' +
-                     str(round(errorp[c][part], 3)))
-                     if distsk[c][part] else 'nan\tnan'
-                     for c in steps])))
-            out.close()
-        if not plot:
-            return
-        # plot
-        if axe:
-            ax = axe
-            fig = ax.get_figure()
-        else:
-            fig = plt.figure(figsize=(11, 5))
-            ax = fig.add_subplot(111)
-            ax.patch.set_facecolor('lightgrey')
-            ax.patch.set_alpha(0.4)
-            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-            ax.set_axisbelow(True)
-            ax.minorticks_on() # always on, not only for log
-            # remove tick marks
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False)
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False, which='minor')
-        plots = []
-        for k in steps:
-            plots += ax.plot(range(1, len(distsk[k]) + 1), distsk[k],
-                             color=colors[steps.index(k)],
-                             lw=steps.index(k) + 1, alpha=0.5)
-        if error:
-            for k in steps:
-                plots += ax.plot(range(1, len(errorp[k]) + 1), errorp[k],
-                                 color=colors[steps.index(k)], ls='--')
-                ax.plot(range(1, len(errorp[k]) + 1), errorn[k],
-                        color=colors[steps.index(k)], ls='--')
-        ax.set_ylabel('Density (bp / nm)')
-        ax.set_xlabel('Particle number')
-        try:
-            ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
-                              for k in steps] + (
-                          ['+/- 2 standard deviations'
-                           for k in steps] if error else []), fontsize='small',
-                      bbox_to_anchor=(1, 0.5), loc='center left')
-        except TypeError:
-            ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
-                              for k in steps] + (
-                          ['+/- 2 standard deviations'
-                           for k in steps] if error else []), 
-                      bbox_to_anchor=(1, 0.5), loc='center left')
-        ax.set_xlim((1, self.nloci))
-        ax.set_title('Chromatin density')
-        plt.subplots_adjust(left=0.1, right=0.78)
-        if savefig:
-            tadbit_savefig(savefig)
-        elif not axe:
-            plt.show()
-
-
     def get_contact_matrix(self, models=None, cluster=None, cutoff=None):
         """
         Returns a matrix with the number of interactions observed below a given
@@ -1185,6 +1013,111 @@ class StructuralModels(object):
             plt.show()
             
 
+    def _get_density(self, models, interval, mass_center):
+        dists = []
+        for i, (part1, part2) in enumerate(zip(range(self.nloci - interval),
+                                          range(interval, self.nloci))):
+            if mass_center:
+                subdists = []
+                for m in models:
+                    coord1 = get_center_of_mass(
+                        self[m]['x'][part1:part1+interval],
+                        self[m]['y'][part1:part1+interval],
+                        self[m]['z'][part1:part1+interval],
+                        self._zeros)
+                    coord2 = get_center_of_mass(
+                        self[m]['x'][part2:part2+interval],
+                        self[m]['y'][part2:part2+interval],
+                        self[m]['z'][part2:part2+interval],
+                        self._zeros)
+                    subdists.append(distance(coord1, coord2))
+                dists.append([float(interval * self.resolution) / d for d in subdists])
+            else:
+                dists.append([float(interval * self.resolution) / d for d in
+                              self.median_3d_dist(
+                                  part1 + 1, part2 + 1, models,
+                                  plot=False, median=False)])
+        return dists
+
+    def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
+                     interval=1, mass_center=False, error=False, axe=None,
+                     savefig=None, savedata=None, plot=True):
+        """
+        Plots the number of nucleotides per nm of chromatin vs the modeled
+        region bins.
+
+        :param None models: if None (default) the density plot will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the density plot only for the models in the
+           cluster number 'cluster'
+        :param (1, 2, 3, 4, 5) steps: how many particles to group for the
+           estimation. By default 5 curves are drawn
+        :param False error: represent the error of the estimates
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param 1 interval: distance are measure with this given interval
+           between two bins.
+        :param False mass_center: if interval is higher than one, calculates the
+           distance between the center of mass of the particles *n* to
+           *n+interval* and the center of mass of the particles *n+interval* and
+           *n+2interval*
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        :param None savedata: path to a file where to save the density data
+           generated (1 column per step + 1 for particle number).
+        :param True plot: e.g. only saves data. No plotting done
+
+        """
+        if isinstance(steps, int):
+            steps = (steps, )
+
+        models = self._get_models(models, cluster)
+
+        dists = self._get_density(models, interval, mass_center)
+
+        distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
+                                                 average=False)
+
+        # write consistencies to file
+        if savedata:      
+            out = open(savedata, 'w')
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
+            '2*stddev(%d)' % c for c in steps])))
+            for part in xrange(self.nloci):
+                out.write('%s\t%s\n' % (part + 1, '\t'.join(
+                    ['nan\tnan' if part >= len(distsk[c]) else
+                    (str(round(distsk[c][part], 3)) + '\t' +
+                     str(round(errorp[c][part], 3)))
+                     if distsk[c][part] else 'nan\tnan'
+                     for c in steps])))
+            out.close()
+        if plot:
+            xlabel = 'Particle number'
+            ylabel = 'Density (bp / nm)'
+            title  = 'Chromatin density'
+            # self._generic_per_particle_plot(steps, distsk, error, errorp, errorn,
+            #                                 xlabel=xlabel, ylabel=ylabel, title=title)
+            self._generic_per_particle_plot(steps, distsk, error, errorp, errorn,
+                                            savefig, axe, xlabel=xlabel, ylabel=ylabel, title=title)
+
+    def _get_interactions(self, models, cutoff):
+        interactions = [[] for _ in xrange(self.nloci)]
+        if not cutoff:
+            cutoff = int(2 * self.resolution * self._config['scale'])
+        cutoff2 = cutoff**2
+        for i in xrange(self.nloci):
+            for m in models:
+                val = 0
+                for j in xrange(self.nloci):
+                    if i == j:
+                        continue
+                    val += self.__square_3d_dist(i + 1, j + 1,
+                                                 models=[m])[0] < cutoff2
+                interactions[i].append(val)
+        return interactions
+
     def interactions(self, models=None, cluster=None, cutoff=None,
                      steps=(1, 2, 3, 4, 5), axe=None, error=False,
                      savefig=None, savedata=None, average=True, plot=True):
@@ -1217,70 +1150,13 @@ class StructuralModels(object):
         """
         if isinstance(steps, int):
             steps = (steps, )
-        if len(steps) > 6:
-            raise Exception('Sorry not enough colors to do this.\n')
-        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
-                  'darkred'][-len(steps):]
-        if models:
-            models = [m if isinstance(m, int) else self[m]['index']
-                      if isinstance(m, str) else m['index'] for m in models]
-        elif cluster > -1:
-            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
-        else:
-            models = [m for m in self.__models]
-        interactions = [[] for _ in xrange(self.nloci)]
-        if not cutoff:
-            cutoff = int(2 * self.resolution * self._config['scale'])
-        cutoff2 = cutoff**2
-        for i in xrange(self.nloci):
-            if not self._zeros[i]:
-                interactions[i].extend([float('nan')] * len(models))
-                continue
-            for m in models:
-                val = 0
-                for j in xrange(self.nloci):
-                    if i == j:
-                        continue
-                    val += self.__square_3d_dist(i + 1, j + 1,
-                                                 models=[m])[0] < cutoff2
-                interactions[i].append(val)
-        distsk = {1: interactions}
-        for k in (steps[1:] if steps[0]==1 else steps):
-            distsk[k] = [None for _ in range(k/2)]
-            for i in range(self.nloci - k + 1):
-                distsk[k].append(reduce(lambda x, y: x + y,
-                                        [interactions[i+j] for j in range(k)]))
-                if k == 1:
-                    continue
-        new_distsk = {}
-        errorp     = {}
-        errorn     = {}
-        for k, dists in distsk.iteritems():
-            new_distsk[k] = []
-            errorp[k] = []
-            errorn[k] = []
-            for part in dists:
-                if not part:
-                    new_distsk[k].append(None)
-                    errorp[k].append(None)
-                    errorn[k].append(None)
-                    continue
-                mean_part = (np_mean([p for p in part if p != None]) if average
-                             else np_median([p for p in part if p != None]))
-                new_distsk[k].append(mean_part)
-                try:
-                    errorn[k].append(new_distsk[k][-1] - 2 *
-                    np_std([p for p in part if p != None]))
-                    if errorn[k][-1] < 0:
-                        errorn[k][-1] =  0.0
-                    errorp[k].append(new_distsk[k][-1] + 2 *
-                    np_std([p for p in part if p != None]))
-                    if errorp[k][-1] < 0:
-                        errorp[k][-1] = 0.0
-                except TypeError:
-                    errorn[-1].append(None)
-                    errorp[-1].append(None)
-        distsk = new_distsk
+        
+        models = self._get_models(models, cluster)
+
+        interactions = self._get_interactions(models, cutoff)
+
+        distsk, errorn, errorp = self._windowize(interactions, steps,
+                                                 average=average)
         if savedata:
             out = open(savedata, 'w')
             out.write('#Particle\t%s\n' % (
@@ -1295,59 +1171,295 @@ class StructuralModels(object):
                               or distsk[k][i] is None)
                     else round(errorp[k][i] - distsk[k][i], 2)))) for k in steps])))
             out.close()
-            if not plot:
-                return # stop here, we do not want to display anything
+        if plot:
+            ylabel = 'Number of particles closer than %s nm' % (cutoff)
+            xlabel = 'Particle number'
+            title = 'Interactions per particle'
+            self._generic_per_particle_plot(steps, distsk, error, errorp,
+                                            errorn, savefig, axe, xlabel=xlabel,
+                                            ylabel=ylabel, title=title)
+
+
+    def model_consistency(self, cutoffs=None, models=None,
+                          cluster=None, axe=None, savefig=None, savedata=None,
+                          plot=True):
+        """
+        Plots the particle consistency, over a given set of models, vs the
+        modeled region bins. The consistency is a measure of the variability
+        (or stability) of the modeled region (the higher the consistency value,
+        the higher stability).
+
+        :param None cutoffs: list of distance cutoffs (nm) used to compute the
+           consistency. Two particle are considered consistent if their distance
+           is less than the given cutoff, default is a tuple of 0.5, 1, 1.5 and
+           2 times resolution, times scale.
+        :param None models:  if None (default) the consistency will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the consistency only for the models in the
+           cluster number 'cluster'
+        :param '/tmp/tmp_cons' tmp_path: location of the input files for
+           TM-score program
+        :param '' tmsc: path to the TMscore_consistency script (assumed to be
+           installed by default)
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        :param None savedata: path to a file where to save the consistency data
+           generated (1 column per cutoff + 1 for particle number).
+        :param True plot: e.g. only saves data. No plotting done
+
+        """
+        models = self._get_models(models, cluster)
+        models = [self.__models[m] for m in models]
+        
+        if not cutoffs:
+            cutoffs = (int(0.5 * self.resolution * self._config['scale']),
+                       int(1.0 * self.resolution * self._config['scale']),
+                       int(1.5 * self.resolution * self._config['scale']),
+                       int(2.0 * self.resolution * self._config['scale']))
+        consistencies = {}
+        for cut in cutoffs:
+            consistencies[cut] = calc_consistency(models, self.nloci,
+                                                  self._zeros, cut)
+        # write consistencies to file
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in cutoffs])))
+            for part in xrange(self.nloci):
+                out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
+                    [str(round(consistencies[c][part], 3)) for c in cutoffs])))
+            out.close()
+        if not plot:
+            return
         # plot
-        if axe:
-            ax = axe
-            fig = ax.get_figure()
+        show = False if axe else True
+        axe = setup_plot(axe)
+        plots = []
+        self._plot_polymer(axe)
+        scat1 = plt.Line2D((0,1),(0,0), color=(0.15,0.15,0.15), marker='o', linestyle='')
+        scat2 = plt.Line2D((0,1),(0,0), color=(0.7,0.7,0.7), marker='o', linestyle='')
+        for i, cut in enumerate(cutoffs[::-1]):
+            plots += axe.plot(range(1, self.nloci + 1),
+                              consistencies[cut], color='darkred',
+                              alpha= 1 - i / float(len(cutoffs)))
+        try:
+            axe.legend(plots + [scat1, scat2],
+                       ['%s nm' % (k) for k in cutoffs[::-1]] + ['particles with restraints',
+                                                                'particles without restraints'],
+                       fontsize='small', loc='center left',
+                       bbox_to_anchor=(1, 0.5))
+        except TypeError:
+            axe.legend(plots + [scat1, scat2],
+                       ['%s nm' % (k) for k in cutoffs[::-1]] + ['particles with restraints',
+                                                                'particles without restraints'],
+                       loc='center left',
+                       bbox_to_anchor=(1, 0.5))
+        axe.set_xlim((1, self.nloci))
+        axe.set_ylim((0, 100))
+        axe.set_xlabel('Particle')
+        axe.set_ylabel('Consistency (%)')
+        if cluster:
+            axe.set_title('Cluster %s' % (cluster))
+        elif len(models) == len(self):
+            axe.set_title('All clusters')
         else:
-            fig = plt.figure(figsize=(11, 5))
-            ax = fig.add_subplot(111)
-            ax.patch.set_facecolor('lightgrey')
-            ax.patch.set_alpha(0.4)
-            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-            ax.set_axisbelow(True)
-            ax.minorticks_on() # always on, not only for log
-            # remove tick marks
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False)
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False, which='minor')
+            axe.set_title('Selected models')
+        plt.subplots_adjust(left=0.1, right=0.77)
+        if savefig:
+            tadbit_savefig(savefig)
+        elif show:
+            plt.show()
+
+    def walking_dihedral(self, models=None, cluster=None, steps=(1,3),
+                         plot=True, savefig=None, axe=None):
+        """
+        Plots the dihedral angle between successive planes. A plane is formed by
+        3 successive loci.
+
+        :param None models: if None (default) the dihedral angle will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the dihedral angle only for the models in the
+           cluster number 'cluster'
+        :param (1, 3) steps: how many particles to group for the estimation.
+           By default 2 curves are drawn
+        :param True signed: whether to compute the sign of the angle according
+           to a normal plane, or not.
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        :param None savedata: path to a file where to save the angle data
+           generated (1 column per step + 1 for particle number).                
+
+
+        ::
+
+                                C..........D
+                             ...            ...
+                          ...                 ...
+                       ...                       ...
+            A..........B                            .E
+           ..                                        .
+          .                                          .
+                                                     .                 .
+                                                     .                .
+                                                     F...............G
+
+
+        """
+        # plot
+        ax = setup_plot(axe)
+        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
+                  'darkred'][-len(steps):]
+        #
+        rads = {}
+        rads[1] = []
+        for res in xrange(self.nloci - 6):
+            rads[1].append(self.dihedral_angle(res + 1, res + 4,
+                                               res + 5, res + 7,
+                                               models=models, cluster=cluster))
+        lmodels = len(rads[1])
+        for k in (steps[1:] if steps[0]==1 else steps):
+            rads[k] = [None for _ in range(k/2)]
+            for i in range(1, self.nloci - k - 5):
+                rads[k].append(reduce(lambda x, y: x + y,
+                                      [rads[1][i+j] for j in range(k)]) / k)
+                if k == 1:
+                    continue
         plots = []
         for k in steps:
-            plots += ax.plot(range(1, len(distsk[k]) + 1), distsk[k],
+            plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
                              color=colors[steps.index(k)],
                              lw=steps.index(k) + 1, alpha=0.5)
-        if error:
-            for k in steps:
-                plots += ax.plot(range(1, len(errorp[k]) + 1), errorp[k],
-                                 color=colors[steps.index(k)], ls='--')
-                ax.plot(range(1, len(errorp[k]) + 1), errorn[k],
-                        color=colors[steps.index(k)], ls='--')
-        ax.set_ylabel('Number of particles closer than %s nm' % (cutoff))
-        ax.set_xlabel('Particle number')
-        try:
-            ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
-                              for k in steps] + (
-                          ['+/- 2 standard deviations'
-                           for k in steps] if error else []), fontsize='small',
-                      bbox_to_anchor=(1, 0.5), loc='center left')
-        except TypeError:
-            ax.legend(plots, ['Average for %s particle%s' % (k, 's' if k else '')
-                              for k in steps] + (
-                          ['+/- 2 standard deviations'
-                           for k in steps] if error else []), 
-                      bbox_to_anchor=(1, 0.5), loc='center left')
-        ax.set_xlim((1, self.nloci))
-        ax.set_title('Interactions per particle')
-        plt.subplots_adjust(left=0.1, right=0.78)
+        
         if savefig:
             tadbit_savefig(savefig)
         elif not axe:
             plt.show()
 
+
+    def walking_angle(self, models=None, cluster=None, steps=(1,3), signed=True,
+                      savefig=None, savedata=None, axe=None):
+        """
+        Plots the angle between successive loci in a given model or set of
+        models. In order to limit the noise of the measure angle is calculated
+        between 3 loci, between each are two other loci. E.g. in the scheme
+        bellow, angle are calculated between loci A, D and G.
+
+        :param None models: if None (default) all models will be used for
+           computation. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the angle only for the models in the
+           cluster number 'cluster'
+        :param (1, 3) steps: how many particles to group for the estimation.
+           By default 2 curves are drawn
+        :param True signed: whether to compute the sign of the angle according
+           to a normal plane, or not.
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        :param None savedata: path to a file where to save the angle data
+           generated (1 column per step + 1 for particle number).                
+
+
+        ::
+
+                                C..........D
+                             ...            ...
+                          ...                 ...
+                       ...                       ...
+            A..........B                            .E
+           ..                                        .
+          .                                          .
+                                                     .                 .
+                                                     .                .
+                                                     F...............G
+
+
+        """
+        # plot
+        ax = setup_plot(axe)
+        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
+                  'darkred'][-len(steps):]
+        #
+        if not isinstance(steps, tuple):
+            steps = (steps,)
+        rads = {}
+        rads[1] = []
+        sign = 1
+        for res in xrange(self.nloci - 6):
+            rads[1].append(self.angle_between_3_particles(res + 1, res + 4,
+                                                          res + 7,
+                                                          models=models,
+                                                          cluster=cluster))
+            if signed:
+                res1 = self.particle_coordinates(res+1)
+                res2 = self.particle_coordinates(res+4)
+                res3 = self.particle_coordinates(res+7)
+                vec1 = array(res1) - array(res2) / norm(array(res1) - array(res2))
+                vec2 = array(res1) - array(res3) / norm(array(res1) - array(res3))
+                sign = dot(array([1.,1.,1.]), cross(vec1, vec2))
+                sign = -1 if sign < 0 else 1
+            rads[1][-1] *= sign
+        for k in (steps[1:] if steps[0]==1 else steps):
+            rads[k] = [None for _ in range(k/2)]
+            for i in range(1, self.nloci - k - 5):
+                rads[k].append(reduce(lambda x, y: x + y,
+                                      [rads[1][i+j] for j in range(k)]) / k)
+                if k == 1:
+                    continue
+        plots = []
+        for k in steps:
+            plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
+                             color=colors[steps.index(k)],
+                             lw=steps.index(k) + 1, alpha=0.5)
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#Particle\t' +
+                      '\t'.join(['angle(step:%s)' % (s) for s in steps]) + '\n')
+            for p in xrange(len(rads[1])):
+                out.write(str(p+1))
+                for s in steps:
+                    try:
+                        out.write('\t%s' % rads[s][p])
+                    except IndexError:
+                        out.write('\tNone')
+                out.write('\n')
+            out.close()
+
+        ax.set_ylabel('Angle in degrees')
+        ax.set_xlabel('Particle number')
+        self._plot_polymer(ax)
+        scat1 = plt.Line2D((0,1),(0,0), color=(0.15,0.15,0.15), marker='o', linestyle='')
+        scat2 = plt.Line2D((0,1),(0,0), color=(0.7,0.7,0.7), marker='o', linestyle='')
+        try:
+            ax.legend(plots + [scat1, scat2],
+                      ['Average for %s angle%s' % (k, 's' if k else '')
+                       for k in steps] + ['particles with restraints',
+                                          'particles without restraints'],
+                      fontsize='small',
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        except TypeError:
+            ax.legend(plots + [scat1, scat2],
+                      ['Average for %s angle%s' % (k, 's' if k else '')
+                       for k in steps] + ['particles with restraints',
+                                          'particles without restraints'],
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        ax.set_xlim((1, self.nloci))
+        ax.set_title('Angle between consecutive loci')
+        plt.subplots_adjust(left=0.1, right=0.8)
+
+        if savefig:
+            tadbit_savefig(savefig)
+        elif not axe:
+            plt.show()
 
 
     def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
@@ -1640,115 +1752,6 @@ class StructuralModels(object):
         elif not axe:
             plt.show()
         return corr
-
-
-    def model_consistency(self, cutoffs=None, models=None,
-                          cluster=None, axe=None, savefig=None, savedata=None,
-                          plot=True):
-        """
-        Plots the particle consistency, over a given set of models, vs the
-        modeled region bins. The consistency is a measure of the variability
-        (or stability) of the modeled region (the higher the consistency value,
-        the higher stability).
-
-        :param None cutoffs: list of distance cutoffs (nm) used to compute the
-           consistency. Two particle are considered consistent if their distance
-           is less than the given cutoff, default is a tuple of 0.5, 1, 1.5 and
-           2 times resolution, times scale.
-        :param None models:  if None (default) the consistency will be computed
-           using all the models. A list of numbers corresponding to a given set
-           of models can be passed
-        :param None cluster: compute the consistency only for the models in the
-           cluster number 'cluster'
-        :param '/tmp/tmp_cons' tmp_path: location of the input files for
-           TM-score program
-        :param '' tmsc: path to the TMscore_consistency script (assumed to be
-           installed by default)
-        :param None axe: a matplotlib.axes.Axes object to define the plot
-           appearance
-        :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI (the extension
-           of the file name will determine the desired format).
-        :param None savedata: path to a file where to save the consistency data
-           generated (1 column per cutoff + 1 for particle number).
-        :param True plot: e.g. only saves data. No plotting done
-
-        """
-        if models:
-            models = dict([(i, self[m]) for i, m in enumerate(models)])
-        elif cluster > -1:
-            models = dict([(i, self[str(m)]) for i, m in
-                           enumerate(self.clusters[cluster])])
-        else:
-            models = self.__models  # Here it's different
-        consistencies = {}
-        if not cutoffs:
-            cutoffs = (int(0.5 * self.resolution * self._config['scale']),
-                       int(1.0 * self.resolution * self._config['scale']),
-                       int(1.5 * self.resolution * self._config['scale']),
-                       int(2.0 * self.resolution * self._config['scale']))
-        for cut in cutoffs:
-            consistencies[cut] = calc_consistency(models, self.nloci,
-                                                  self._zeros, cut)
-        # write consistencies to file
-        if savedata:
-            out = open(savedata, 'w')
-            out.write('#Particle\t%s\n' % ('\t'.join([str(c) for c in cutoffs])))
-            for part in xrange(self.nloci):
-                out.write('%s\t%s\n' % (str(part + 1), '\t'.join(
-                    [str(round(consistencies[c][part], 3)) for c in cutoffs])))
-            out.close()
-        if not plot:
-            return
-        # plot
-        show = False
-        if not axe:
-            fig = plt.figure(figsize=(11, 5))
-            axe = fig.add_subplot(111)
-            show=True
-            axe.patch.set_facecolor('lightgrey')
-            axe.patch.set_alpha(0.4)
-            axe.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-            axe.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-            axe.set_axisbelow(True)
-            axe.minorticks_on() # always on, not only for log
-            # remove tick marks
-            axe.tick_params(axis='both', direction='out', top=False,
-                            right=False, left=False, bottom=False)
-            axe.tick_params(axis='both', direction='out', top=False,
-                            right=False, left=False, bottom=False,
-                            which='minor')
-        else:
-            fig = axe.get_figure()
-        # plot!
-        # colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange', 'darkred'][-len(cutoffs):]
-        plots = []
-        for i, cut in enumerate(cutoffs[::-1]):
-            plots += axe.plot(range(1, self.nloci + 1),
-                              consistencies[cut], color='darkred',
-                              alpha= 1 - i / float(len(cutoffs)))
-        try:
-            axe.legend(plots, ['%s nm' % (k) for k in cutoffs[::-1]],
-                       fontsize='small', loc='center left',
-                       bbox_to_anchor=(1, 0.5))
-        except TypeError:
-            axe.legend(plots, ['%s nm' % (k) for k in cutoffs[::-1]],
-                       loc='center left',
-                       bbox_to_anchor=(1, 0.5))            
-        axe.set_xlim((1, self.nloci))
-        axe.set_ylim((0, 100))
-        axe.set_xlabel('Particle')
-        axe.set_ylabel('Consistency (%)')
-        if cluster:
-            axe.set_title('Cluster %s' % (cluster))
-        elif len(models) == len(self):
-            axe.set_title('All clusters')
-        else:
-            axe.set_title('Selected models')
-        if savefig:
-            tadbit_savefig(savefig)
-        elif show:
-            plt.show()
 
 
     def view_centroid(self, **kwargs):
@@ -2072,219 +2075,6 @@ class StructuralModels(object):
         partc = array(self.particle_coordinates(partc, models, cluster))
         partd = array(self.particle_coordinates(partd, models, cluster))
         return dihedral(parta, partb, partc, partd)
-
-
-    def walking_dihedral(self, models=None, cluster=None, steps=(1,3),
-                         plot=True, savefig=None, axe=None):
-        """
-        Plots the dihedral angle between successive planes. A plane is formed by
-        3 successive loci.
-
-        :param None models: if None (default) the dihedral angle will be computed
-           using all the models. A list of numbers corresponding to a given set
-           of models can be passed
-        :param None cluster: compute the dihedral angle only for the models in the
-           cluster number 'cluster'
-        :param (1, 3) steps: how many particles to group for the estimation.
-           By default 2 curves are drawn
-        :param True signed: whether to compute the sign of the angle according
-           to a normal plane, or not.
-        :param None axe: a matplotlib.axes.Axes object to define the plot
-           appearance
-        :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI (the extension
-           of the file name will determine the desired format).
-        :param None savedata: path to a file where to save the angle data
-           generated (1 column per step + 1 for particle number).                
-
-
-        ::
-
-                                C..........D
-                             ...            ...
-                          ...                 ...
-                       ...                       ...
-            A..........B                            .E
-           ..                                        .
-          .                                          .
-                                                     .                 .
-                                                     .                .
-                                                     F...............G
-
-
-        """
-        # plot
-        if axe:
-            ax = axe
-            fig = ax.get_figure()
-        else:
-            fig = plt.figure(figsize=(11, 5))
-            ax = fig.add_subplot(111)
-            ax.patch.set_facecolor('lightgrey')
-            ax.patch.set_alpha(0.4)
-            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-            ax.set_axisbelow(True)
-            ax.minorticks_on() # always on, not only for log
-            # remove tick marks
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False)
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False, which='minor')
-        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
-                  'darkred'][-len(steps):]
-        #
-        rads = {}
-        rads[1] = []
-        for res in xrange(self.nloci - 6):
-            rads[1].append(self.dihedral_angle(res + 1, res + 4,
-                                               res + 5, res + 7,
-                                               models=models, cluster=cluster))
-        lmodels = len(rads[1])
-        for k in (steps[1:] if steps[0]==1 else steps):
-            rads[k] = [None for _ in range(k/2)]
-            for i in range(1, self.nloci - k - 5):
-                rads[k].append(reduce(lambda x, y: x + y,
-                                      [rads[1][i+j] for j in range(k)]) / k)
-                if k == 1:
-                    continue
-        plots = []
-        for k in steps:
-            plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
-                             color=colors[steps.index(k)],
-                             lw=steps.index(k) + 1, alpha=0.5)
-
-        if savefig:
-            tadbit_savefig(savefig)
-        elif not axe:
-            plt.show()
-
-
-    def walking_angle(self, models=None, cluster=None, steps=(1,3), signed=True,
-                      savefig=None, savedata=None, axe=None):
-        """
-        Plots the angle between successive loci in a given model or set of
-        models. In order to limit the noise of the measure angle is calculated
-        between 3 loci, between each are two other loci. E.g. in the scheme
-        bellow, angle are calculated between loci A, D and G.
-
-        :param None models: if None (default) all models will be used for
-           computation. A list of numbers corresponding to a given set
-           of models can be passed
-        :param None cluster: compute the angle only for the models in the
-           cluster number 'cluster'
-        :param (1, 3) steps: how many particles to group for the estimation.
-           By default 2 curves are drawn
-        :param True signed: whether to compute the sign of the angle according
-           to a normal plane, or not.
-        :param None axe: a matplotlib.axes.Axes object to define the plot
-           appearance
-        :param None savefig: path to a file where to save the image generated;
-           if None, the image will be shown using matplotlib GUI (the extension
-           of the file name will determine the desired format).
-        :param None savedata: path to a file where to save the angle data
-           generated (1 column per step + 1 for particle number).                
-
-
-        ::
-
-                                C..........D
-                             ...            ...
-                          ...                 ...
-                       ...                       ...
-            A..........B                            .E
-           ..                                        .
-          .                                          .
-                                                     .                 .
-                                                     .                .
-                                                     F...............G
-
-
-        """
-        # plot
-        if axe:
-            ax = axe
-            fig = ax.get_figure()
-        else:
-            fig = plt.figure(figsize=(11, 5))
-            ax = fig.add_subplot(111)
-            ax.patch.set_facecolor('lightgrey')
-            ax.patch.set_alpha(0.4)
-            ax.grid(ls='-', color='w', lw=1.5, alpha=0.6, which='major')
-            ax.grid(ls='-', color='w', lw=1, alpha=0.3, which='minor')
-            ax.set_axisbelow(True)
-            ax.minorticks_on() # always on, not only for log
-            # remove tick marks
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False)
-            ax.tick_params(axis='both', direction='out', top=False, right=False,
-                           left=False, bottom=False, which='minor')
-        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
-                  'darkred'][-len(steps):]
-        #
-        if not isinstance(steps, tuple):
-            steps = (steps,)
-        rads = {}
-        rads[1] = []
-        sign = 1
-        for res in xrange(self.nloci - 6):
-            rads[1].append(self.angle_between_3_particles(res + 1, res + 4,
-                                                          res + 7,
-                                                          models=models,
-                                                          cluster=cluster))
-            if signed:
-                res1 = self.particle_coordinates(res+1)
-                res2 = self.particle_coordinates(res+4)
-                res3 = self.particle_coordinates(res+7)
-                vec1 = array(res1) - array(res2) / norm(array(res1) - array(res2))
-                vec2 = array(res1) - array(res3) / norm(array(res1) - array(res3))
-                sign = dot(array([1.,1.,1.]), cross(vec1, vec2))
-                sign = -1 if sign < 0 else 1
-            rads[1][-1] *= sign
-        for k in (steps[1:] if steps[0]==1 else steps):
-            rads[k] = [None for _ in range(k/2)]
-            for i in range(1, self.nloci - k - 5):
-                rads[k].append(reduce(lambda x, y: x + y,
-                                      [rads[1][i+j] for j in range(k)]) / k)
-                if k == 1:
-                    continue
-        plots = []
-        for k in steps:
-            plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
-                             color=colors[steps.index(k)],
-                             lw=steps.index(k) + 1, alpha=0.5)
-        if savedata:
-            out = open(savedata, 'w')
-            out.write('#Particle\t' +
-                      '\t'.join(['angle(step:%s)' % (s) for s in steps]) + '\n')
-            for p in xrange(len(rads[1])):
-                out.write(str(p+1))
-                for s in steps:
-                    try:
-                        out.write('\t%s' % rads[s][p])
-                    except IndexError:
-                        out.write('\tNone')
-                out.write('\n')
-            out.close()
-
-        ax.set_ylabel('Angle in degrees')
-        ax.set_xlabel('Particle number')
-        try:
-            ax.legend(plots, ['Average for %s angle%s' % (k, 's' if k else '')
-                              for k in steps], fontsize='small',
-                      bbox_to_anchor=(1, 0.5), loc='center left')
-        except TypeError:
-            ax.legend(plots, ['Average for %s angle%s' % (k, 's' if k else '')
-                              for k in steps],
-                      bbox_to_anchor=(1, 0.5), loc='center left')
-        ax.set_xlim((1, self.nloci))
-        ax.set_title('Angle between consecutive loci')
-        plt.subplots_adjust(left=0.1, right=0.8)
-
-        if savefig:
-            tadbit_savefig(savefig)
-        elif not axe:
-            plt.show()
 
 
     def median_3d_dist(self, part1, part2, models=None, cluster=None,
@@ -2644,6 +2434,122 @@ class StructuralModels(object):
         to_save['zeros']         = self._zeros
 
         return to_save
+
+    def _get_models(self, models, cluster):
+        """
+        Internal function to transform cluster name, model name, or model list
+        into proper list of models processable by StructuralModels functions
+        """
+        if models:
+            models = [m if isinstance(m, int) else self[m]['index']
+                      if isinstance(m, str) else m['index'] for m in models]
+        elif cluster > -1:
+            models = [self[str(m)]['index'] for m in self.clusters[cluster]]
+        else:
+            models = [m for m in self.__models]
+        return models
+
+    def _windowize(self, dists, steps, average=True, interval=0):
+        lmodels = len(dists[0])
+        distsk = {1: [None for _ in range(interval/2)] + dists}
+        for k in steps[1:] if steps[0] == 1 else steps:
+            distsk[k] = [None for _ in range(k/2+interval/2)]
+            for i in range(self.nloci - k - interval + 1):
+                distsk[k].append(reduce(lambda x, y: x + y,
+                                        [dists[i+j] for j in range(k)]))
+                if k == 1:
+                    continue
+                # calculate the mean for steps larger than 1
+                distsk[k][-1] = [mean_none([distsk[k][-1][i+lmodels*j]
+                                            for j in xrange(k)])
+                                 for i in xrange(lmodels)]
+        new_distsk = {}
+        errorp     = {}
+        errorn     = {}
+        for k, dists in distsk.iteritems():
+            new_distsk[k] = []
+            errorp[k] = []
+            errorn[k] = []
+            for part in dists:
+                if not part:
+                    new_distsk[k].append(None)
+                    errorp[k].append(None)
+                    errorn[k].append(None)
+                    continue
+                mean_part = (np_mean([p for p in part if p != None]) if average
+                             else np_median([p for p in part if p != None]))
+                new_distsk[k].append(mean_part)
+                try:
+                    errorn[k].append(mean_part - 2 * np_std(
+                        [p for p in part if p != None]))
+                    if errorn[k][-1] < 0:
+                        errorn[k][-1] =  0.0
+                    errorp[k].append(mean_part + 2 * np_std(
+                        [p for p in part if p != None]))
+                    if errorp[k][-1] < 0:
+                        errorp[k][-1] = 0.0
+                except TypeError:
+                    errorn[k].append(None)
+                    errorp[k].append(None)
+        return new_distsk, errorn, errorp
+
+
+    def _plot_polymer(self, axe):
+        where = axe.get_ylim()[0]
+        axe.scatter(range(1, self.nloci + 1), [where]*self.nloci,
+                    s=40,
+                    color=[(0.15,0.15,0.15) if i else (0.7,0.7,0.7)
+                           for i in self._zeros], clip_on=False,
+                    zorder=100, edgecolor='k')
+        axe.set_ylim((where, axe.get_ylim()[1]))
+
+
+    def _generic_per_particle_plot(self, steps, distsk, error, errorp, errorn,
+                                   savefig, axe, xlabel='', ylabel='', title='',
+                                   colors=None):
+        if not colors:
+            colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
+                      'darkred'][-len(steps):]
+        if len(steps) > 6:
+            raise Exception('Sorry not enough colors to do this :)')
+        ax = setup_plot(axe)
+        plots = []
+        for k in steps:
+            plots += ax.plot(range(1, len(distsk[k]) + 1), distsk[k],
+                             color=colors[steps.index(k)],
+                             lw=steps.index(k) + 1, alpha=0.5)
+        if error:
+            for k in steps:
+                plots += ax.plot(range(1, len(errorp[k]) + 1), errorp[k],
+                                 color=colors[steps.index(k)], ls='--')
+                ax.plot(range(1, len(errorp[k]) + 1), errorn[k],
+                        color=colors[steps.index(k)], ls='--')
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+        self._plot_polymer(ax)
+        scat1 = plt.Line2D((0,1),(0,0), color=(0.15,0.15,0.15), marker='o', linestyle='')
+        scat2 = plt.Line2D((0,1),(0,0), color=(0.7,0.7,0.7), marker='o', linestyle='')
+        try:
+            ax.legend(plots + [scat1, scat2], ['Average for %s particle%s' % (k, 's' if k else '')
+                              for k in steps] + (
+                          ['+/- 2 standard deviations'
+                           for k in steps] if error else []) + ['particles with restraints',
+                                                                'particles without restraints'], fontsize='small',
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        except TypeError:
+            ax.legend(plots + [scat1, scat2], ['Average for %s particle%s' % (k, 's' if k else '')
+                              for k in steps] + (
+                          ['+/- 2 standard deviations'
+                           for k in steps] if error else [] + ['particles with restraints',
+                                                               'particles without restraints']), 
+                      bbox_to_anchor=(1, 0.5), loc='center left')
+        ax.set_xlim((1, self.nloci))
+        ax.set_title(title)
+        plt.subplots_adjust(left=0.1, right=0.77)
+        if savefig:
+            tadbit_savefig(savefig)
+        elif not axe:
+            plt.show()
 
 
 class ClusterOfModels(dict):
