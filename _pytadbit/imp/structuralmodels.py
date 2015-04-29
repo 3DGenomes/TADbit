@@ -986,13 +986,13 @@ class StructuralModels(object):
             ax.legend(plots + [scat1, scat2],
                       ['mean accessibility', '2*stddev of accessibility'] + ['particles with restraints',
                                                                              'particles without restraints'],
-                      fontsize='small',
+                      fontsize='small', numpoints=1,
                       bbox_to_anchor=(1, 0.5), loc='center left')
         except TypeError:
             ax.legend(plots + [scat1, scat2],
                       ['mean accessibility', '2*stddev of accessibility'] + ['particles with restraints',
                                                                              'particles without restraints'],
-                      bbox_to_anchor=(1, 0.5), loc='center left')
+                      numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title('Accesibility per particle')
         plt.subplots_adjust(left=0.1, right=0.77)
@@ -1238,13 +1238,13 @@ class StructuralModels(object):
             axe.legend(plots + [scat1, scat2],
                        ['%s nm' % (k) for k in cutoffs[::-1]] + ['particles with restraints',
                                                                 'particles without restraints'],
-                       fontsize='small', loc='center left',
+                       numpoints=1, fontsize='small', loc='center left',
                        bbox_to_anchor=(1, 0.5))
         except TypeError:
             axe.legend(plots + [scat1, scat2],
                        ['%s nm' % (k) for k in cutoffs[::-1]] + ['particles with restraints',
                                                                 'particles without restraints'],
-                       loc='center left',
+                       numpoints=1, loc='center left',
                        bbox_to_anchor=(1, 0.5))
         axe.set_xlim((1, self.nloci))
         axe.set_ylim((0, 100))
@@ -1433,14 +1433,14 @@ class StructuralModels(object):
                       ['Average for %s angle%s' % (k, 's' if k else '')
                        for k in steps] + ['particles with restraints',
                                           'particles without restraints'],
-                      fontsize='small',
+                      numpoints=1, fontsize='small',
                       bbox_to_anchor=(1, 0.5), loc='center left')
         except TypeError:
             ax.legend(plots + [scat1, scat2],
                       ['Average for %s angle%s' % (k, 's' if k else '')
                        for k in steps] + ['particles with restraints',
                                           'particles without restraints'],
-                      bbox_to_anchor=(1, 0.5), loc='center left')
+                      numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title('Angle between consecutive loci')
         plt.subplots_adjust(left=0.1, right=0.8)
@@ -2524,14 +2524,14 @@ class StructuralModels(object):
                           ['+/- 2 standard deviations'
                            for k in steps] if error else []) + ['particles with restraints',
                                                                 'particles without restraints'], fontsize='small',
-                      bbox_to_anchor=(1, 0.5), loc='center left')
+                      numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
         except TypeError:
             ax.legend(plots + [scat1, scat2], ['Average for %s particle%s' % (k, 's' if k else '')
                               for k in steps] + (
                           ['+/- 2 standard deviations'
                            for k in steps] if error else [] + ['particles with restraints',
                                                                'particles without restraints']), 
-                      bbox_to_anchor=(1, 0.5), loc='center left')
+                      numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title(title)
         plt.subplots_adjust(left=0.1, right=0.77)
