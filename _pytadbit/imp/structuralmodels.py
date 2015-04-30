@@ -1669,11 +1669,14 @@ class StructuralModels(object):
         ax = fig.add_subplot(131)
         self.contact_map(models, cluster, cutoff, axe=ax)
         ax = fig.add_subplot(132)
-        if log_corr:
-            minmoddata = float(min([m for m in moddata if m]))
-            minoridata = float(min([m for m in oridata if m]))
-            moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
-                                log2([m if m else minoridata / 2 for m in oridata]))
+        try:
+            if log_corr:
+                minmoddata = float(min([m for m in moddata if m]))
+                minoridata = float(min([m for m in oridata if m]))
+                moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
+                                    log2([m if m else minoridata / 2 for m in oridata]))
+        except:
+            warn('WARNING: unable to log for correlation with real data...')
         slope, intercept, r_value, p_value, _ = linregress(moddata, oridata)
         #slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)
         if midplot == 'classic':
