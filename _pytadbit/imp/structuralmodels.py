@@ -549,7 +549,7 @@ class StructuralModels(object):
             if not self._zeros[i]:
                 continue
             for j in xrange(i + 1, self.nloci):
-                if not self._zeros[i]:
+                if not self._zeros[j]:
                     continue
                 val = len([k for k in self.__square_3d_dist(
                     i + 1, j + 1, models=models)
@@ -833,8 +833,10 @@ class StructuralModels(object):
             show=True
         else:
             fig = axe.get_figure()
+        cmap = plt.get_cmap('jet')
+        cmap.set_bad('darkgrey', 1)
         ims = axe.imshow(matrix, origin='lower', interpolation="nearest",
-                         vmin=0, vmax=1,
+                         vmin=0, vmax=1, cmap=cmap,
                          extent=(0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         axe.set_ylabel('Particle')
         axe.set_xlabel('Particle')
@@ -999,7 +1001,7 @@ class StructuralModels(object):
             tadbit_savefig(savefig)
         elif not axe:
             plt.show()
-            
+        plt.close('all')
 
     def _get_density(self, models, interval, mass_center):
         dists = [[None] * len(models)] * (interval)
@@ -1667,11 +1669,11 @@ class StructuralModels(object):
         ax = fig.add_subplot(131)
         self.contact_map(models, cluster, cutoff, axe=ax)
         ax = fig.add_subplot(132)
-        # if log_corr:
-        #     minmoddata = float(min([m for m in moddata if m]))
-        #     minoridata = float(min([m for m in oridata if m]))
-        #     moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
-        #                         log2([m if m else minoridata / 2 for m in oridata]))
+        if log_corr:
+            minmoddata = float(min([m for m in moddata if m]))
+            minoridata = float(min([m for m in oridata if m]))
+            moddata, oridata = (log2([(m if m else minmoddata / 2) * 100 for m in moddata]),
+                                log2([m if m else minoridata / 2 for m in oridata]))
         slope, intercept, r_value, p_value, _ = linregress(moddata, oridata)
         #slope, intercept, r_value, p_value, std_err = linregress(moddata, oridata)
         if midplot == 'classic':
@@ -1734,8 +1736,10 @@ class StructuralModels(object):
             # axmidl.patch.set_visible(False)
         ax.set_title('Real versus modelled data')
         ax = fig.add_subplot(133)
+        cmap = plt.get_cmap('jet')
+        cmap.set_bad('darkgrey', 1)
         ims = ax.imshow(log2(self._original_data), origin='lower',
-                        interpolation="nearest",
+                        interpolation="nearest", cmap=cmap,
                         extent = (0.5, self.nloci + 0.5, 0.5, self.nloci + 0.5))
         ax.set_ylabel('Particles')
         ax.set_xlabel('Particles')
