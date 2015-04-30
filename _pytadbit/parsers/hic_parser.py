@@ -6,7 +6,7 @@ November 7, 2013.
 from warnings import warn
 from math import sqrt, isnan
 from pytadbit.parsers.gzopen import gzopen
-from pytadbit.utils.hic_filtering   import filter_by_mean
+from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
 from collections import OrderedDict
 from pytadbit.utils.normalize_hic  import iterative
 from pytadbit.parsers.genome_parser import parse_fasta
@@ -490,7 +490,7 @@ class HiC_data(dict):
         return float(intra) / (intra + inter)
     
 
-    def filter_columns(self, draw_hist=False, savefig=None):
+    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -504,9 +504,12 @@ class HiC_data(dict):
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param 75 perc_zero: maximum percentage of cells with no interactions
+           allowed.
 
         """
         self.bads = filter_by_mean(self, draw_hist=draw_hist, savefig=savefig)
+        self.bads.update(filter_by_zero_count(self, perc_zero, silent=False))
 
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False):
         """

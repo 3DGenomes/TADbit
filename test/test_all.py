@@ -450,9 +450,9 @@ class TestTadbit(unittest.TestCase):
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i), 1) if i != 'nan' else i for i in lines[1].split('\t')[:3]],
-                         [1.0, 100.0, 100.0])
+                         [1.0, 'nan', 'nan'])
         self.assertEqual([round(float(i), 1) for i in lines[15].split('\t')[:3]],
-                         [15, 99.9, 100.0])
+                         [15, 100.0, 100.0])
         # contacts
         cmap = models.get_contact_matrix(cutoff=300)
         self.assertEqual(round(

@@ -490,7 +490,7 @@ def main():
     clcutoff = dcutoff - 50 # RMSD cut-off to consider two models equivalent(nm)
     for ffact in [0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]:
         logging.info('   fact = ' + str(ffact))
-        for clcutoff in range(dcutoff - 50, (dcutoff - 50) * 4, 50):
+        for clcutoff in [dcutoff / 2 , dcutoff, dcutoff * 1.5]:
             try:
                 logging.info('      cutoff = ' + str(clcutoff))
                 models.cluster_models(fact=ffact, dcutoff=clcutoff,
@@ -662,26 +662,37 @@ def main():
                      'length for model %s' % model["rand_init"])
 
     if "accessibility" in opts.analyze:
-        # Get accessibility of all models
+        # Calculate a DNA density plot
+        logging.info("\tGetting accessibility data...")
         radius = 75   # Radius of an object to calculate accessibility
         nump   = 30   # number of particles (resolution)
         logging.info("\tGetting accessibility data (this can take long)...")
-        if not os.path.exists(
-            os.path.join(opts.outdir, name, 'models', 'asa')):
-            os.makedirs(os.path.join(opts.outdir, name, 'models', 'asa'))
-        for model in models:
-            by_part = model.accessible_surface(radius, nump=nump,
-                                               include_edges=False)[4]
-            asafile = os.path.join(opts.outdir, name, 'models',
-                                   'asa', 'model_{}.asa'.format(model['rand_init']))
-            out = open(asafile, 'w')
-            for part, acc, ina in by_part:
-                try:
-                    out.write('%s\t%.2f\n' % (part,
-                                              100*float(acc) / (acc + ina)))
-                except ZeroDivisionError:
-                    out.write('%s\t%s\n' % (part, 'nan'))
-            out.close()
+        models.accessibility(radius, nump=nump,
+            error=True, 
+            savefig =os.path.join(opts.outdir, name, name + '_accessibility.pdf'),
+            savedata=os.path.join(opts.outdir, name, name + '_accessibility.dat'))
+
+    # if "accessibility" in opts.analyze:
+    #     # Get accessibility of all models
+    #     radius = 75   # Radius of an object to calculate accessibility
+    #     nump   = 30   # number of particles (resolution)
+    #     logging.info("\tGetting accessibility data (this can take long)...")
+    #     if not os.path.exists(
+    #         os.path.join(opts.outdir, name, 'models', 'asa')):
+    #         os.makedirs(os.path.join(opts.outdir, name, 'models', 'asa'))
+    #     for model in models:
+    #         by_part = model.accessible_surface(radius, nump=nump,
+    #                                            include_edges=False)[4]
+    #         asafile = os.path.join(opts.outdir, name, 'models',
+    #                                'asa', 'model_{}.asa'.format(model['rand_init']))
+    #         out = open(asafile, 'w')
+    #         for part, acc, ina in by_part:
+    #             try:
+    #                 out.write('%s\t%.2f\n' % (part,
+    #                                           100*float(acc) / (acc + ina)))
+    #             except ZeroDivisionError:
+    #                 out.write('%s\t%s\n' % (part, 'nan'))
+    #         out.close()
 
     if "interaction" in opts.analyze:
         # Get interaction data of all models at 200 nm cut-off

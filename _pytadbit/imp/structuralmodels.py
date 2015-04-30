@@ -792,7 +792,6 @@ class StructuralModels(object):
         else:
             plt.show()
 
-
     def contact_map(self, models=None, cluster=None, cutoff=None, axe=None,
                     savefig=None, savedata=None):
         """
@@ -1003,9 +1002,12 @@ class StructuralModels(object):
             
 
     def _get_density(self, models, interval, mass_center):
-        dists = []
-        for i, (part1, part2) in enumerate(zip(range(self.nloci - interval),
-                                          range(interval, self.nloci))):
+        dists = [[None] * len(models)] * (interval)
+        # for i, (part1, part2, part3) in enumerate(zip([None] + range(self.nloci - interval),
+        #                                               range(self.nloci - interval),
+        #                                               range(interval, self.nloci))):
+        for i, p in enumerate(range(interval, self.nloci - interval)):
+            part1, part2, part3 = p - interval, p, p + interval
             if mass_center:
                 subdists = []
                 for m in models:
@@ -1022,10 +1024,13 @@ class StructuralModels(object):
                     subdists.append(distance(coord1, coord2))
                 dists.append([float(interval * self.resolution) / d for d in subdists])
             else:
-                dists.append([float(interval * self.resolution) / d for d in
-                              self.median_3d_dist(
-                                  part1 + 1, part2 + 1, models,
-                                  plot=False, median=False)])
+                dist1 = self.median_3d_dist(part1 + 1, part2 + 1, models,
+                                            plot=False, median=False)
+                dist2 = self.median_3d_dist(part3 + 1, part2 + 1, models,
+                                            plot=False, median=False)
+                dist = [(d1 + d2) for d1, d2 in zip(dist1, dist2)]
+                dists.append([float(interval * self.resolution * 2) / d
+                              for d in dist])
         return dists
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
@@ -1063,9 +1068,7 @@ class StructuralModels(object):
             steps = (steps, )
 
         models = self._get_models(models, cluster)
-
         dists = self._get_density(models, interval, mass_center)
-
         distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
                                                  average=False)
 
@@ -1088,8 +1091,9 @@ class StructuralModels(object):
             title  = 'Chromatin density'
             # self._generic_per_particle_plot(steps, distsk, error, errorp, errorn,
             #                                 xlabel=xlabel, ylabel=ylabel, title=title)
-            self._generic_per_particle_plot(steps, distsk, error, errorp, errorn,
-                                            savefig, axe, xlabel=xlabel, ylabel=ylabel, title=title)
+            self._generic_per_particle_plot(steps, distsk, error, errorp,
+                                            errorn, savefig, axe, xlabel=xlabel,
+                                            ylabel=ylabel, title=title)
 
     def _get_interactions(self, models, cutoff):
         interactions = [[] for _ in xrange(self.nloci)]
@@ -1261,6 +1265,7 @@ class StructuralModels(object):
             tadbit_savefig(savefig)
         elif show:
             plt.show()
+        plt.close('all')
 
     def walking_dihedral(self, models=None, cluster=None, steps=(1,3),
                          plot=True, savefig=None, axe=None):
@@ -1330,7 +1335,7 @@ class StructuralModels(object):
             tadbit_savefig(savefig)
         elif not axe:
             plt.show()
-
+        plt.close('all')
 
     def walking_angle(self, models=None, cluster=None, steps=(1,3), signed=True,
                       savefig=None, savedata=None, axe=None):
@@ -1449,7 +1454,7 @@ class StructuralModels(object):
             tadbit_savefig(savefig)
         elif not axe:
             plt.show()
-
+        plt.close('all')
 
     def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
         """
@@ -1596,6 +1601,7 @@ class StructuralModels(object):
             tadbit_savefig(savefig)
         elif not axe:
             plt.show()
+        plt.close('all')
 
 
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=None, off_diag=1,
@@ -1616,6 +1622,7 @@ class StructuralModels(object):
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
         :param False plot: to display the plot
+        :param True log_corr: log plot for correlation
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
 
@@ -1636,7 +1643,6 @@ class StructuralModels(object):
                     continue
                 oridata.append(self._original_data[i][j])
                 moddata.append(model_matrix[i][j])
-        # corr = spearmanr(model_matrix, self._original_data, axis=None)
         if corr == 'spearman':
             corr = spearmanr(moddata, oridata)
         elif corr == 'pearson':
@@ -1740,6 +1746,7 @@ class StructuralModels(object):
             tadbit_savefig(savefig)
         elif not axe:
             plt.show()
+        plt.close('all')
         return corr
 
 
@@ -2440,10 +2447,10 @@ class StructuralModels(object):
 
     def _windowize(self, dists, steps, average=True, interval=0):
         lmodels = len(dists[0])
-        distsk = {1: [None for _ in range(interval/2)] + dists}
+        distsk = {1: dists}
         for k in steps[1:] if steps[0] == 1 else steps:
-            distsk[k] = [None for _ in range(k/2+interval/2)]
-            for i in range(self.nloci - k - interval + 1):
+            distsk[k] = [None for _ in range(k / 2 + interval)]
+            for i in range(interval, self.nloci - k - interval + 1):
                 distsk[k].append(reduce(lambda x, y: x + y,
                                         [dists[i+j] for j in range(k)]))
                 if k == 1:
@@ -2504,13 +2511,13 @@ class StructuralModels(object):
         ax = setup_plot(axe)
         plots = []
         for k in steps:
-            plots += ax.plot(range(1, len(distsk[k]) + 1), distsk[k],
-                             color=colors[steps.index(k)],
+            plots += ax.plot(range(1, len(distsk[k])+1),
+                             distsk[k], color=colors[steps.index(k)],
                              lw=steps.index(k) + 1, alpha=0.5)
         if error:
             for k in steps:
-                plots += ax.plot(range(1, len(errorp[k]) + 1), errorp[k],
-                                 color=colors[steps.index(k)], ls='--')
+                plots += ax.plot(range(1, len(errorp[k])+1),
+                                 errorp[k], color=colors[steps.index(k)], ls='--')
                 ax.plot(range(1, len(errorp[k]) + 1), errorn[k],
                         color=colors[steps.index(k)], ls='--')
         ax.set_ylabel(ylabel)
@@ -2539,6 +2546,7 @@ class StructuralModels(object):
             tadbit_savefig(savefig)
         elif not axe:
             plt.show()
+        plt.close('all')
 
 
 class ClusterOfModels(dict):
