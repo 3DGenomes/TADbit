@@ -547,11 +547,79 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
     return count_by_len
 
 
+def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None):
+    """
+    Plots the distribution of dangling-ends/self-circles lengths
+    :param fnam: input file name
+    :param None savefig: path where to store the output images.
+    :param 99.9 max_size: top percentage of distances to consider, within the
+       top 0.01% are usually found very long outliers.
+    """
+    distr = {}
+    genome_seq = OrderedDict()
+    fhandler = open(fnam)
+    line = fhandler.next()
+    while line.startswith('#'):
+        if line.startswith('# CRM '):
+            crm, clen = line[6:].split()
+            genome_seq[crm] = int(clen)
+        line = fhandler.next()
+    dists = []
+    try:
+        while True:
+            (crm1, pos1, dir1, _, re1, _,
+             crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
+            if re1==re2 and crm1 == crm2 and dir1 != dir2:
+                dist = abs(int(pos1) - int(pos2))
+                dists.append(dist)
+                if len(dists) == nreads:
+                    break
+            line = fhandler.next()
+    except StopIteration:
+        pass
+    fhandler.close()
+    ax = setup_plot(axe, figsize=(8, 5))
+    max_perc = np.percentile(dists, max_size)
+    perc95 = np.percentile(dists, 95)
+    perc05 = np.percentile(dists, 5)
+    perc99 = np.percentile(dists, 99)
+    perc01 = np.percentile(dists, 1)
+    ax.hist(dists, bins=100, range=(0, max_perc),
+            alpha=0.8, color='darkred')
+    ylims = ax.get_ylim()
+    plots = []
+    plots.append(ax.vlines([perc01], ylims[0], ylims[1],
+                      linestyle='--', color='darkgreen',
+                      alpha=0.7, linewidth=2))
+    plots.append(ax.vlines([perc05], ylims[0], ylims[1],
+                      linestyle='--', color='palegreen',
+                      alpha=0.7, linewidth=2))
+    plots.append(ax.vlines([perc95], ylims[0], ylims[1],
+                      linestyle='--', color='orange',
+                      alpha=0.7, linewidth=2))
+    plots.append(ax.vlines([perc99], ylims[0], ylims[1],
+                      linestyle='--', color='orangered',
+                      alpha=0.7, linewidth=2))
+    ax.set_xlabel('Genomic distance between reads')
+    ax.set_ylabel('Count')
+    ax.set_title('Distribution of self-circles/dangling-ends ' +
+                 'lenghts\n(top %.1f%%, up to %0.f nts)' % (max_size, max_perc))
+    plt.subplots_adjust(left=0.1, right=0.75)
+    ax.legend(plots, ['1%% (%.0f nts)' % perc01, '5%% (%.0f nts)' % perc05,
+                        '95%% (%.0f nts)' % perc95, '99%% (%.0f nts)' % perc99],
+              bbox_to_anchor=(1.4, 1), frameon=False)
+    if savefig:
+        tadbit_savefig(savefig)
+    elif not axe:
+        plt.show()
+    plt.close('all')
+    
+
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               axe=None, ylim=None, savefig=None):
     """
     :param fnam: input file name
-    :param True first_read: map first read.
+    :param True first_read: uses first read.
     :param 100 resolution: group reads that are closer than this resolution
        parameter
     :param None axe: a matplotlib.axes.Axes object to define the plot
@@ -609,6 +677,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         tadbit_savefig(savefig)
     elif not axe:
         plt.show()
+    plt.close()
 
 
 def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,

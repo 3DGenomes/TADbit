@@ -16,12 +16,12 @@ except ImportError:
     warn('matplotlib not found\n')
 
 
-def setup_plot(axe):
+def setup_plot(axe, figsize=None):
     if axe:
         ax = axe
         fig = ax.get_figure()
     else:
-        fig = plt.figure(figsize=(11, 5))
+        fig = plt.figure(figsize=(11, 5) if not figsize else figsize)
         ax = fig.add_subplot(111)
         ax.patch.set_facecolor('lightgrey')
         ax.patch.set_alpha(0.4)
