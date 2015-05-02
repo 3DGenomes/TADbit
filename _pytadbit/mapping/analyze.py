@@ -3,7 +3,7 @@
 
 
 """
-from pytadbit.utils.extraviews   import tadbit_savefig
+from pytadbit.utils.extraviews   import tadbit_savefig, setup_plot
 from pytadbit.utils.tadmaths     import nozero_log_matrix as nozero_log
 from pytadbit.parsers.hic_parser import HiC_data
 from warnings                    import warn
