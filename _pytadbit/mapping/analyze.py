@@ -547,9 +547,9 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
     return count_by_len
 
 
-def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.5, axe=None):
+def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None):
     """
-    Plots the distribution of dangling-ends/self-circles lengths
+    Plots the distribution of dangling-ends lengths
     :param fnam: input file name
     :param None savefig: path where to store the output images.
     :param 99.9 max_size: top percentage of distances to consider, within the
@@ -565,7 +565,6 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.5, axe=None):
             genome_seq[crm] = int(clen)
         line = fhandler.next()
     des = []
-    scs = []
     if nreads:
         nreads /= 2
     try:
@@ -575,9 +574,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.5, axe=None):
             if re1==re2 and crm1 == crm2 and dir1 != dir2:
                 pos1, pos2 = int(pos1), int(pos2)
                 dist = abs(int(pos1) - int(pos2))
-                if dir1 == '1' and pos1 > pos2 or dir1 == '0' and pos1 < pos2:
-                    scs.append(dist)
-                else:
+                if dir1 == '1' and pos1 < pos2 or dir1 == '0' and pos1 > pos2:
                     des.append(dist)
                 if len(des) == nreads:
                     break
@@ -597,18 +594,15 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.5, axe=None):
                          label='5-95%% DEs\n(%.0f-%.0f nts)' % (perc05, perc95))
     deshist = ax.hist(des, bins=100, range=(0, max_perc),
                       alpha=1, color='darkred', label='Dangling-ends')
-    scshist = ax.hist(scs, bins=100, range=(0, max_perc),
-                      alpha=1, color='blue', label='Self-circles')
     ylims = ax.get_ylim()
     plots = []
     ax.set_xlabel('Genomic distance between reads')
     ax.set_ylabel('Count')
-    ax.set_title('Distribution of self-circles/dangling-ends ' +
+    ax.set_title('Distribution of dangling-ends ' +
                  'lenghts\n(top %.1f%%, up to %0.f nts)' % (max_size, max_perc))
     ax.set_xscale('log')
-    ax.set_xlim((np.percentile(des, 0.1), max_perc))
+    ax.set_xlim((50, max_perc))
     plt.subplots_adjust(left=0.1, right=0.75)
-    print [desapan, deshist, scshist]
     ax.legend(bbox_to_anchor=(1.4, 1), frameon=False)
     if savefig:
         tadbit_savefig(savefig)
