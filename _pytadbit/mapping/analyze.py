@@ -547,7 +547,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
     return count_by_len
 
 
-def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None):
+def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.5, axe=None):
     """
     Plots the distribution of dangling-ends/self-circles lengths
     :param fnam: input file name
@@ -564,50 +564,52 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None):
             crm, clen = line[6:].split()
             genome_seq[crm] = int(clen)
         line = fhandler.next()
-    dists = []
+    des = []
+    scs = []
+    if nreads:
+        nreads /= 2
     try:
         while True:
             (crm1, pos1, dir1, _, re1, _,
              crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
             if re1==re2 and crm1 == crm2 and dir1 != dir2:
+                pos1, pos2 = int(pos1), int(pos2)
                 dist = abs(int(pos1) - int(pos2))
-                dists.append(dist)
-                if len(dists) == nreads:
+                if dir1 == '1' and pos1 > pos2 or dir1 == '0' and pos1 < pos2:
+                    scs.append(dist)
+                else:
+                    des.append(dist)
+                if len(des) == nreads:
                     break
             line = fhandler.next()
     except StopIteration:
         pass
     fhandler.close()
-    ax = setup_plot(axe, figsize=(8, 5))
-    max_perc = np.percentile(dists, max_size)
-    perc95 = np.percentile(dists, 95)
-    perc05 = np.percentile(dists, 5)
-    perc99 = np.percentile(dists, 99)
-    perc01 = np.percentile(dists, 1)
-    ax.hist(dists, bins=100, range=(0, max_perc),
-            alpha=0.8, color='darkred')
+    ax = setup_plot(axe, figsize=(10, 5.5))
+    max_perc = np.percentile(des, max_size)
+    perc99 = np.percentile(des, 99)
+    perc01 = np.percentile(des, 1)
+    desapan = ax.axvspan(perc01, perc99, facecolor='darkolivegreen', alpha=1,
+                         label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
+    perc95 = np.percentile(des, 95)
+    perc05 = np.percentile(des, 5)
+    desapan = ax.axvspan(perc05, perc95, facecolor='darkseagreen', alpha=1,
+                         label='5-95%% DEs\n(%.0f-%.0f nts)' % (perc05, perc95))
+    deshist = ax.hist(des, bins=100, range=(0, max_perc),
+                      alpha=1, color='darkred', label='Dangling-ends')
+    scshist = ax.hist(scs, bins=100, range=(0, max_perc),
+                      alpha=1, color='blue', label='Self-circles')
     ylims = ax.get_ylim()
     plots = []
-    plots.append(ax.vlines([perc01], ylims[0], ylims[1],
-                      linestyle='--', color='darkgreen',
-                      alpha=0.7, linewidth=2))
-    plots.append(ax.vlines([perc05], ylims[0], ylims[1],
-                      linestyle='--', color='palegreen',
-                      alpha=0.7, linewidth=2))
-    plots.append(ax.vlines([perc95], ylims[0], ylims[1],
-                      linestyle='--', color='orange',
-                      alpha=0.7, linewidth=2))
-    plots.append(ax.vlines([perc99], ylims[0], ylims[1],
-                      linestyle='--', color='orangered',
-                      alpha=0.7, linewidth=2))
     ax.set_xlabel('Genomic distance between reads')
     ax.set_ylabel('Count')
     ax.set_title('Distribution of self-circles/dangling-ends ' +
                  'lenghts\n(top %.1f%%, up to %0.f nts)' % (max_size, max_perc))
+    ax.set_xscale('log')
+    ax.set_xlim((np.percentile(des, 0.1), max_perc))
     plt.subplots_adjust(left=0.1, right=0.75)
-    ax.legend(plots, ['1%% (%.0f nts)' % perc01, '5%% (%.0f nts)' % perc05,
-                        '95%% (%.0f nts)' % perc95, '99%% (%.0f nts)' % perc99],
-              bbox_to_anchor=(1.4, 1), frameon=False)
+    print [desapan, deshist, scshist]
+    ax.legend(bbox_to_anchor=(1.4, 1), frameon=False)
     if savefig:
         tadbit_savefig(savefig)
     elif not axe:
