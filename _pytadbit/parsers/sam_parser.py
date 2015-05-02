@@ -80,7 +80,7 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 num = int(fnam.split('.')[-1].split(':')[0])
             except:
                 num += 1
-            windows[num] = 0
+            windows.setdefault(num, 0)
             # guess mapper used
             if not mapper:
                 mapper = fhandler.header['PG'][0]['ID']
