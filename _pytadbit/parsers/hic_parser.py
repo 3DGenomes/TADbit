@@ -508,8 +508,9 @@ class HiC_data(dict):
            allowed.
 
         """
-        self.bads = filter_by_mean(self, draw_hist=draw_hist, savefig=savefig)
-        self.bads.update(filter_by_zero_count(self, perc_zero, silent=False))
+        self.bads = filter_by_zero_count(self, perc_zero, silent=False)
+        self.bads.update(filter_by_mean(self, draw_hist=draw_hist,
+                                        savefig=savefig, bads=self.bads))
 
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False):
         """

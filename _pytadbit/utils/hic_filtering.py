@@ -21,18 +21,19 @@ def get_r2 (fun, X, Y, *args):
     return 1 - sserr/sstot
 
 
-def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
+def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None):
     """
     fits the distribution of Hi-C interaction count by column in the matrix to
     a polynomial. Then searches for the first possible 
     """
     nbins = 100
-    bads = {}
+    if not bads:
+        bads = {}
     # get sum of columns
     cols = []
     size = len(matrx)
-    for c in sorted([[matrx.get(i+j*size, 0) for j in xrange(size)]
-                     for i in xrange(size)], key=sum):
+    for c in sorted([[matrx.get(i+j*size, 0) for j in xrange(size) if not j in bads]
+                     for i in xrange(size) if not i in bads], key=sum):
         cols.append(sum(c))
     cols = np.array(cols)
     if draw_hist:
@@ -145,6 +146,13 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, savefig=None):
             if not silent:
                 stderr.write('WARNING: Too many zeroes to filter columns.' +
                              ' SKIPPING...\n')
+            if draw_hist:
+                plt.xlabel('Sum of interactions')
+                plt.xlabel('Number of columns with a given value')
+                if savefig:
+                    tadbit_savefig(savefig)
+                else:
+                    plt.show()
     except ValueError:
         if not silent:
             stderr.write('WARNING: Too few data to filter columns based on ' +
@@ -177,6 +185,7 @@ def filter_by_zero_count(matrx, perc_zero, silent=True):
                               for j, i in enumerate(sorted(new_bads))])))
     return bads
 
+
 def hic_filtering_for_modelling(matrx, silent=False, perc_zero=90, auto=True,
                                 draw_hist=False, savefig=None, diagonal=True):
     """
@@ -200,12 +209,10 @@ def hic_filtering_for_modelling(matrx, silent=False, perc_zero=90, auto=True,
     :returns: the indexes of the columns not to be considered for the
        calculation of the z-score
     """
+    bads = filter_by_zero_count(matrx, perc_zero, silent=silent)
     if auto:
-        bads = filter_by_mean(matrx, draw_hist=draw_hist, silent=silent,
-                              savefig=savefig)
-    else:
-        bads = {}
-    bads.update(filter_by_zero_count(matrx, perc_zero, silent=silent))
+        bads.update(filter_by_mean(matrx, draw_hist=draw_hist, silent=silent,
+                                   savefig=savefig, bads=bads))
     # also removes rows or columns containing a NaN
     has_nans = False
     for i in xrange(len(matrx)):
