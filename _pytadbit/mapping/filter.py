@@ -45,9 +45,9 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False):
     out.close()
 
 
-def filter_reads(fnam, max_molecule_length=500,
-                 over_represented=0.005, max_frag_size=100000,
-                 min_frag_size=100, re_proximity=5, verbose=True):
+def filter_reads(fnam, max_molecule_length=500, over_represented=0.005,
+                 max_frag_size=100000, min_frag_size=100, re_proximity=5,
+                 verbose=True, savedata=None):
     """
     Apply different filters on pair of reads:
        1- self-circle        : reads are comming from a single RE fragment and
@@ -80,6 +80,8 @@ def filter_reads(fnam, max_molecule_length=500,
     :param 100000 max_frag_size:
     :param 100 min_frag_size:
     :param 5 re_proximity:
+    :param None savedata: PATH where to write the number of reads retained by
+       each filter
 
     :return: dicitonary with, as keys, the kind of filter applied, and as values
        a set of read IDs to be removed
@@ -169,6 +171,13 @@ def filter_reads(fnam, max_molecule_length=500,
     except StopIteration:
         pass
     fhandler.close()
+    if savedata:
+        out = open(savedata, 'w')
+        out.write('TOTAL\t%d\n' % total)
+        for k in xrange(1, len(masked) + 1):
+            out.write('%s\t%d\n' % (masked[k]['name'], len(masked[k]['reads'])))
+        out.write('Valid pairs\t%d\n' % (total - bads))
+        out.close()
     if verbose:
         print 'Filtered reads (and percentage of total):\n'
         print '     %-25s : %12d (100.00%%)' % ('TOTAL mapped', total)
