@@ -1004,97 +1004,96 @@ class StructuralModels(object):
         plt.close('all')
 
 
+    def _get_density(self, models, interval, mass_center):
+        dists = [[None] * len(models)] * (interval)
+        for p in range(interval, self.nloci - interval):
+            part1, part2, part3 = p - interval, p, p + interval
+            if mass_center:
+                subdists = []
+                for m in models:
+                    coord1 = get_center_of_mass(
+                        self[m]['x'][part1:part2],
+                        self[m]['y'][part1:part2],
+                        self[m]['z'][part1:part2],
+                        self._zeros)
+                    coord2 = get_center_of_mass(
+                        self[m]['x'][part2:part3],
+                        self[m]['y'][part2:part3],
+                        self[m]['z'][part2:part3],
+                        self._zeros)
+                    subdists.append(distance(coord1, coord2))
+                dists.append([float(interval * self.resolution) / d for d in subdists])
+            else:
+                dist1 = self.median_3d_dist(part1 + 1, part2 + 1, models,
+                                            plot=False, median=False)
+                dist2 = self.median_3d_dist(part2 + 1, part3 + 1, models,
+                                            plot=False, median=False)
+                dist = [(d1 + d2) for d1, d2 in zip(dist1, dist2)]
+                dists.append([float(interval * self.resolution * 2) / d
+                              for d in dist])
+        return dists
 
-def _get_density(self, models, interval, mass_center):
-    dists = [[None] * len(models)] * (interval)
-    for p in range(interval, self.nloci - interval):
-        part1, part2, part3 = p - interval, p, p + interval
-        if mass_center:
-            subdists = []
-            for m in models:
-                coord1 = get_center_of_mass(
-                    self[m]['x'][part1:part2],
-                    self[m]['y'][part1:part2],
-                    self[m]['z'][part1:part2],
-                    self._zeros)
-                coord2 = get_center_of_mass(
-                    self[m]['x'][part2:part3],
-                    self[m]['y'][part2:part3],
-                    self[m]['z'][part2:part3],
-                    self._zeros)
-                subdists.append(distance(coord1, coord2))
-            dists.append([float(interval * self.resolution) / d for d in subdists])
-        else:
-            dist1 = self.median_3d_dist(part1 + 1, part2 + 1, models,
-                                        plot=False, median=False)
-            dist2 = self.median_3d_dist(part2 + 1, part3 + 1, models,
-                                        plot=False, median=False)
-            dist = [(d1 + d2) for d1, d2 in zip(dist1, dist2)]
-            dists.append([float(interval * self.resolution * 2) / d
-                          for d in dist])
-    return dists
+    def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
+                     interval=1, mass_center=False, error=False, axe=None,
+                     savefig=None, savedata=None, plot=True):
+        """
+        Plots the number of nucleotides per nm of chromatin vs the modeled
+        region bins.
 
-def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                 interval=1, mass_center=False, error=False, axe=None,
-                 savefig=None, savedata=None, plot=True):
-    """
-    Plots the number of nucleotides per nm of chromatin vs the modeled
-    region bins.
+        :param None models: if None (default) the density plot will be computed
+           using all the models. A list of numbers corresponding to a given set
+           of models can be passed
+        :param None cluster: compute the density plot only for the models in the
+           cluster number 'cluster'
+        :param (1, 2, 3, 4, 5) steps: how many particles to group for the
+           estimation. By default 5 curves are drawn
+        :param False error: represent the error of the estimates
+        :param None axe: a matplotlib.axes.Axes object to define the plot
+           appearance
+        :param 1 interval: distance are measure with this given interval
+           between two bins.
+        :param False mass_center: if interval is higher than one, calculates the
+           distance between the center of mass of the particles *n* to
+           *n+interval* and the center of mass of the particles *n+interval* and
+           *n+2interval*
+        :param None savefig: path to a file where to save the image generated;
+           if None, the image will be shown using matplotlib GUI (the extension
+           of the file name will determine the desired format).
+        :param None savedata: path to a file where to save the density data
+           generated (1 column per step + 1 for particle number).
+        :param True plot: e.g. only saves data. No plotting done
 
-    :param None models: if None (default) the density plot will be computed
-       using all the models. A list of numbers corresponding to a given set
-       of models can be passed
-    :param None cluster: compute the density plot only for the models in the
-       cluster number 'cluster'
-    :param (1, 2, 3, 4, 5) steps: how many particles to group for the
-       estimation. By default 5 curves are drawn
-    :param False error: represent the error of the estimates
-    :param None axe: a matplotlib.axes.Axes object to define the plot
-       appearance
-    :param 1 interval: distance are measure with this given interval
-       between two bins.
-    :param False mass_center: if interval is higher than one, calculates the
-       distance between the center of mass of the particles *n* to
-       *n+interval* and the center of mass of the particles *n+interval* and
-       *n+2interval*
-    :param None savefig: path to a file where to save the image generated;
-       if None, the image will be shown using matplotlib GUI (the extension
-       of the file name will determine the desired format).
-    :param None savedata: path to a file where to save the density data
-       generated (1 column per step + 1 for particle number).
-    :param True plot: e.g. only saves data. No plotting done
+        """
+        if isinstance(steps, int):
+            steps = (steps, )
 
-    """
-    if isinstance(steps, int):
-        steps = (steps, )
+        models = self._get_models(models, cluster)
+        dists = self._get_density(models, interval, mass_center)
+        distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
+                                                 average=False)
 
-    models = self._get_models(models, cluster)
-    dists = _get_density(self, models, interval, mass_center)
-    distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
-                                             average=False)
-
-    # write consistencies to file
-    if savedata:      
-        out = open(savedata, 'w')
-        out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
-        '2*stddev(%d)' % c for c in steps])))
-        for part in xrange(self.nloci):
-            out.write('%s\t%s\n' % (part + 1, '\t'.join(
-                ['nan\tnan' if part >= len(distsk[c]) else
-                (str(round(distsk[c][part], 3)) + '\t' +
-                 str(round(errorp[c][part], 3)))
-                 if distsk[c][part] else 'nan\tnan'
-                 for c in steps])))
-        out.close()
-    if plot:
-        xlabel = 'Particle number'
-        ylabel = 'Density (bp / nm)'
-        title  = 'Chromatin density'
-        # self._generic_per_particle_plot(steps, distsk, error, errorp, errorn,
-        #                                 xlabel=xlabel, ylabel=ylabel, title=title)
-        self._generic_per_particle_plot(steps, distsk, error, errorp,
-                                        errorn, savefig, axe, xlabel=xlabel,
-                                        ylabel=ylabel, title=title)
+        # write consistencies to file
+        if savedata:      
+            out = open(savedata, 'w')
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
+            '2*stddev(%d)' % c for c in steps])))
+            for part in xrange(self.nloci):
+                out.write('%s\t%s\n' % (part + 1, '\t'.join(
+                    ['nan\tnan' if part >= len(distsk[c]) else
+                    (str(round(distsk[c][part], 3)) + '\t' +
+                     str(round(errorp[c][part], 3)))
+                     if distsk[c][part] else 'nan\tnan'
+                     for c in steps])))
+            out.close()
+        if plot:
+            xlabel = 'Particle number'
+            ylabel = 'Density (bp / nm)'
+            title  = 'Chromatin density'
+            # self._generic_per_particle_plot(steps, distsk, error, errorp, errorn,
+            #                                 xlabel=xlabel, ylabel=ylabel, title=title)
+            self._generic_per_particle_plot(steps, distsk, error, errorp,
+                                            errorn, savefig, axe, xlabel=xlabel,
+                                            ylabel=ylabel, title=title)
 
     def _get_interactions(self, models, cutoff):
         interactions = [[] for _ in xrange(self.nloci)]
@@ -1604,10 +1603,10 @@ def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
             plt.show()
         plt.close('all')
 
-
-    def correlate_with_real_data(self, models=None, cluster=None, cutoff=None, off_diag=1,
-                                 plot=False, axe=None, savefig=None, corr='spearman',
-                                 midplot='hexbin', log_corr=True):
+    def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
+                                 off_diag=1, plot=False, axe=None, savefig=None,
+                                 corr='spearman', midplot='hexbin',
+                                 log_corr=True):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
