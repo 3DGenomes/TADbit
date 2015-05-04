@@ -137,8 +137,9 @@ def load_optimal_imp_parameters(opts, name, exp):
                      os.path.join(opts.outdir, name)))
 
     from pytadbit import IMPoptimizer
-    results = IMPoptimizer(exp, opts.beg,
-                           opts.end, n_models=opts.nmodels_opt,
+    beg = opts.beg or 1
+    end = opts.end or exp.size
+    results = IMPoptimizer(exp, beg, end, n_models=opts.nmodels_opt,
                            n_keep=opts.nkeep_opt, container=opts.container)
     # load from log files
     if not opts.optimize_only:
@@ -405,7 +406,7 @@ def main():
 
     if  not opts.tad_only and not opts.analyze_only:
         exp.filter_columns(draw_hist="column filtering" in opts.analyze,
-                           savefig=os.path.join(
+                           perc_zero=opts.filt, savefig=os.path.join(
                                opts.outdir, name ,
                                name + '_column_filtering.pdf'),
                            diagonal=not opts.nodiag)
@@ -784,6 +785,9 @@ def get_options():
     glopts.add_argument('--nodiag', dest='nodiag', action='store_true',
                         help='''If the matrix does not contain self interacting
                         bins (only zeroes in the diagonal)''')
+    glopts.add_argument('--filt', dest='filt', metavar='INT', default=90,
+                        help='''Filter out column with more than a given
+                        percentage of zeroes''')
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
@@ -963,12 +967,6 @@ def get_options():
     if not opts.crm:
         sys.stderr.write('MISSING crm NAME')
         exit(parser.print_help())
-    if not opts.beg and not opts.tad_only:
-        sys.stderr.write('MISSING beg COORDINATE')
-        exit(parser.print_help())
-    if not opts.end and not opts.tad_only:
-        sys.stderr.write('MISSING end COORDINATE')
-        exit(parser.print_help())
     if not opts.res:
         sys.stderr.write('MISSING resolution')
         exit(parser.print_help())
@@ -982,6 +980,11 @@ def get_options():
         if not opts.upfreq:
             sys.stderr.write('MISSING upfreq')
             exit(parser.print_help())
+
+    if not opts.beg and not opts.tad_only:
+        sys.stderr.write('WARNING: no begin coordinate given all')
+    if not opts.end and not opts.tad_only:
+        sys.stderr.write('WARNING: no begin coordinate given all')
 
     # groups for TAD detection
     if not opts.data:
@@ -1012,13 +1015,16 @@ def get_options():
     # TODO: UNDER TEST
     opts.container   = None #['cylinder', 1000, 5000, 100]
 
-    # do the divisinon to bins
+    # do the division to bins
     if not opts.tad_only:
-        opts.beg = int(float(opts.beg) / opts.res)
-        opts.end = int(float(opts.end) / opts.res)
-        if opts.end - opts.beg <= 2:
-            raise Exception('"beg" and "end" parameter should be given in ' +
-                            'genomic coordinates, not bin')
+        try:
+            opts.beg = int(float(opts.beg) / opts.res)
+            opts.end = int(float(opts.end) / opts.res)
+            if opts.end - opts.beg <= 2:
+                raise Exception('"beg" and "end" parameter should be given in ' +
+                                'genomic coordinates, not bin')
+        except TypeError:
+            pass
 
     # Create out-directory
     name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)

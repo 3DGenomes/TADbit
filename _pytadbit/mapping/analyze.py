@@ -119,7 +119,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                       for j in xrange(len(subdata))]
                     for j in xrange(len(subdata)):
                         if j in masked:
-                            subdata[i][j] = float('nan') 
+                            subdata[i][j] = float('nan')
             draw_map(subdata,
                      {} if focus else hic_data.chromosomes,
                      hic_data.section_pos, savefig, show,
