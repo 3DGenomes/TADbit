@@ -547,13 +547,15 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
     return count_by_len
 
 
-def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None):
+def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
+                 xlog=False):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
     :param None savefig: path where to store the output images.
     :param 99.9 max_size: top percentage of distances to consider, within the
        top 0.01% are usually found very long outliers.
+    :param False xlog: represent x axis in logarithmic scale
     """
     distr = {}
     genome_seq = OrderedDict()
@@ -600,7 +602,8 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None):
     ax.set_ylabel('Count')
     ax.set_title('Distribution of dangling-ends ' +
                  'lenghts\n(top %.1f%%, up to %0.f nts)' % (max_size, max_perc))
-    ax.set_xscale('log')
+    if xlog:
+    	    ax.set_xscale('log')
     ax.set_xlim((50, max_perc))
     plt.subplots_adjust(left=0.1, right=0.75)
     ax.legend(bbox_to_anchor=(1.4, 1), frameon=False)
