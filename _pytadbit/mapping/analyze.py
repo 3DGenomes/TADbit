@@ -588,14 +588,15 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     max_perc = np.percentile(des, max_size)
     perc99 = np.percentile(des, 99)
     perc01 = np.percentile(des, 1)
-    desapan = ax.axvspan(perc01, perc99, facecolor='darkolivegreen', alpha=1,
-                         label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
     perc95 = np.percentile(des, 95)
     perc05 = np.percentile(des, 5)
-    desapan = ax.axvspan(perc05, perc95, facecolor='darkseagreen', alpha=1,
+    desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
+                         label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
+    ax.axvspan(perc01, perc05, facecolor='darkolivegreen', alpha=.3)
+    desapan = ax.axvspan(perc05, perc95, facecolor='darkseagreen', alpha=.3,
                          label='5-95%% DEs\n(%.0f-%.0f nts)' % (perc05, perc95))
     deshist = ax.hist(des, bins=100, range=(0, max_perc),
-                      alpha=1, color='darkred', label='Dangling-ends')
+                      alpha=.7, color='darkred', label='Dangling-ends')
     ylims = ax.get_ylim()
     plots = []
     ax.set_xlabel('Genomic distance between reads')
