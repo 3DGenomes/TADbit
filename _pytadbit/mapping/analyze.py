@@ -547,13 +547,15 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
     return count_by_len
 
 
-def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None):
+def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
+                 xlog=False):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
     :param None savefig: path where to store the output images.
     :param 99.9 max_size: top percentage of distances to consider, within the
        top 0.01% are usually found very long outliers.
+    :param False xlog: represent x axis in logarithmic scale
     """
     distr = {}
     genome_seq = OrderedDict()
@@ -586,21 +588,23 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None):
     max_perc = np.percentile(des, max_size)
     perc99 = np.percentile(des, 99)
     perc01 = np.percentile(des, 1)
-    desapan = ax.axvspan(perc01, perc99, facecolor='darkolivegreen', alpha=1,
-                         label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
     perc95 = np.percentile(des, 95)
     perc05 = np.percentile(des, 5)
-    desapan = ax.axvspan(perc05, perc95, facecolor='darkseagreen', alpha=1,
+    desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
+                         label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
+    ax.axvspan(perc01, perc05, facecolor='darkolivegreen', alpha=.3)
+    desapan = ax.axvspan(perc05, perc95, facecolor='darkseagreen', alpha=.3,
                          label='5-95%% DEs\n(%.0f-%.0f nts)' % (perc05, perc95))
     deshist = ax.hist(des, bins=100, range=(0, max_perc),
-                      alpha=1, color='darkred', label='Dangling-ends')
+                      alpha=.7, color='darkred', label='Dangling-ends')
     ylims = ax.get_ylim()
     plots = []
     ax.set_xlabel('Genomic distance between reads')
     ax.set_ylabel('Count')
     ax.set_title('Distribution of dangling-ends ' +
                  'lenghts\n(top %.1f%%, up to %0.f nts)' % (max_size, max_perc))
-    ax.set_xscale('log')
+    if xlog:
+    	    ax.set_xscale('log')
     ax.set_xlim((50, max_perc))
     plt.subplots_adjust(left=0.1, right=0.75)
     ax.legend(bbox_to_anchor=(1.4, 1), frameon=False)
