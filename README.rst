@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       |
-| Current version: 0.1_alpha.303      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
+| Current version: 0.1_alpha.305      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
 |                                     |                                                                           |
 +-------------------------------------+---------------------------------------------------------------------------+
 
