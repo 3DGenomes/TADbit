@@ -128,7 +128,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      name=name, cistrans=float('NaN') if focus else
                      hic_data.cis_trans_ratio(kwargs.get('normalized', False),
                                               kwargs.get('exclude', None),
-                                              kwargs.get('diagonal', False),
+                                              kwargs.get('diagonal', True),
                                               kwargs.get('equals', None),
                                               kwargs.get('verbose', False)))
 

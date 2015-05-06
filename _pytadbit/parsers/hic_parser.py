@@ -439,7 +439,7 @@ class HiC_data(dict):
         self.__size = size
         self._size2 = size**2
 
-    def cis_trans_ratio(self, normalized=False, exclude=None, diagonal=False,
+    def cis_trans_ratio(self, normalized=False, exclude=None, diagonal=True,
                         equals=None, verbose=False):
         """
         Counts the number of interactions occuring within chromosomes (cis) with
