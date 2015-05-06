@@ -637,7 +637,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     line = fhandler.next()
     while line.startswith('#'):
         if line.startswith('# CRM '):
-            crm, clen = line[6:].split()
+            crm, clen = line[6:].split('\t')
             genome_seq[crm] = int(clen)
         line = fhandler.next()
     try:

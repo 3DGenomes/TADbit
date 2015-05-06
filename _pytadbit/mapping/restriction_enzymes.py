@@ -17,13 +17,13 @@ def count_re_fragments(fnam):
         while True:
             _, cr1, _, _, _, rs1, _, cr2, _, _, _, rs2, _ = line.split()
             try:
-                frag_count[(cr1, int(rs1))] += 1
+                frag_count[(cr1, rs1)] += 1
             except KeyError:
-                frag_count[(cr1, int(rs1))] = 1
+                frag_count[(cr1, rs1)] = 1
             try:
-                frag_count[(cr2, int(rs2))] += 1
+                frag_count[(cr2, rs2)] += 1
             except KeyError:
-                frag_count[(cr2, int(rs2))] = 1
+                frag_count[(cr2, rs2)] = 1
             line = fhandler.next()
     except StopIteration:
         pass

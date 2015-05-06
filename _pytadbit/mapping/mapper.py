@@ -85,8 +85,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     """
     :param gem_index_path: path to index file created from a reference genome
        using gem-index tool
-    :param fastq_path: 152 bases first 76 from one end, next 76 from the other
-       end. Both to be read from left to right.
+    :param fastq_path: PATH to fastq file, either compressed or not.
     :param out_sam_path: path to a directory where to store mapped reads in SAM/
        BAM format (see option output_is_bam).
     :param range_start: list of integers representing the start position of each
