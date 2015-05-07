@@ -70,18 +70,19 @@
     <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">sserr</span><span class="o">/</span><span class="n">sstot</span>
 
 
-<span class="k">def</span> <span class="nf">filter_by_mean</span><span class="p">(</span><span class="n">matrx</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">filter_by_mean</span><span class="p">(</span><span class="n">matrx</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">bads</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    fits the distribution of Hi-C interaction count by column in the matrix to</span>
 <span class="sd">    a polynomial. Then searches for the first possible </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">nbins</span> <span class="o">=</span> <span class="mi">100</span>
-    <span class="n">bads</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">bads</span><span class="p">:</span>
+        <span class="n">bads</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="c"># get sum of columns</span>
     <span class="n">cols</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrx</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">([[</span><span class="n">matrx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="o">*</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
-                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)],</span> <span class="n">key</span><span class="o">=</span><span class="nb">sum</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">([[</span><span class="n">matrx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="o">*</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">bads</span><span class="p">]</span>
+                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bads</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="nb">sum</span><span class="p">):</span>
         <span class="n">cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
     <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">draw_hist</span><span class="p">:</span>
@@ -171,6 +172,8 @@
                 <span class="c">#                        &#39;median - (1.5 * median absolute deviation)&#39;],</span>
                 <span class="c">#            fontsize=&#39;x-small&#39;)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Sum of interactions&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Number of columns with a given value&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
                     <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -192,10 +195,29 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
                 <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: Too many zeroes to filter columns.&#39;</span> <span class="o">+</span>
                              <span class="s">&#39; SKIPPING...</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">draw_hist</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Sum of interactions&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Number of columns with a given value&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
+                    <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
             <span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;WARNING: Too few data to filter columns based on &#39;</span> <span class="o">+</span>
                          <span class="s">&#39;mean value.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">draw_hist</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s">&#39;all&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bads</span>
+
+
+<span class="k">def</span> <span class="nf">filter_by_zero_count</span><span class="p">(</span><span class="n">matrx</span><span class="p">,</span> <span class="n">perc_zero</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param matrx:</span>
+<span class="sd">    :param perc:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bads</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrx</span><span class="p">)</span>
     <span class="n">min_val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">perc_zero</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
     <span class="n">new_bads</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([[</span><span class="n">matrx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="o">*</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -210,12 +232,10 @@
                          <span class="n">min_val</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                              <span class="p">[</span><span class="s">&#39;</span><span class="si">%5s</span><span class="s">&#39;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39;&#39;</span><span class="k">if</span> <span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">20</span> <span class="k">else</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
                               <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">new_bads</span><span class="p">))])))</span>
-    <span class="k">if</span> <span class="n">draw_hist</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s">&#39;all&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">bads</span>
 
 
-<div class="viewcode-block" id="hic_filtering_for_modelling"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.hic_filtering.hic_filtering_for_modelling">[docs]</a><span class="k">def</span> <span class="nf">hic_filtering_for_modelling</span><span class="p">(</span><span class="n">matrx</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="mi">66</span><span class="p">,</span> 
+<div class="viewcode-block" id="hic_filtering_for_modelling"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.hic_filtering.hic_filtering_for_modelling">[docs]</a><span class="k">def</span> <span class="nf">hic_filtering_for_modelling</span><span class="p">(</span><span class="n">matrx</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">auto</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                                 <span class="n">draw_hist</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">savefig</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Call filtering function, to remove artefactual columns in a given Hi-C</span>
@@ -230,14 +250,18 @@
 <span class="sd">       if None, the image will be shown using matplotlib GUI (the extension</span>
 <span class="sd">       of the file name will determine the desired format).</span>
 <span class="sd">    :param True diagonal: remove row/columns with zero in the diagonal</span>
-<span class="sd">    :param 75 perc_zero: maximum percentage of cells with no interactions</span>
+<span class="sd">    :param 90 perc_zero: maximum percentage of cells with no interactions</span>
 <span class="sd">       allowed.</span>
+<span class="sd">    :param True auto: if False, only filters based on the given percentage</span>
+<span class="sd">       zeros</span>
 
 <span class="sd">    :returns: the indexes of the columns not to be considered for the</span>
 <span class="sd">       calculation of the z-score</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">bads</span> <span class="o">=</span> <span class="n">filter_by_mean</span><span class="p">(</span><span class="n">matrx</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="n">draw_hist</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span>
-                          <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">,</span> <span class="n">perc_zero</span><span class="o">=</span><span class="n">perc_zero</span><span class="p">)</span>
+    <span class="n">bads</span> <span class="o">=</span> <span class="n">filter_by_zero_count</span><span class="p">(</span><span class="n">matrx</span><span class="p">,</span> <span class="n">perc_zero</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">auto</span><span class="p">:</span>
+        <span class="n">bads</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filter_by_mean</span><span class="p">(</span><span class="n">matrx</span><span class="p">,</span> <span class="n">draw_hist</span><span class="o">=</span><span class="n">draw_hist</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span>
+                                   <span class="n">savefig</span><span class="o">=</span><span class="n">savefig</span><span class="p">,</span> <span class="n">bads</span><span class="o">=</span><span class="n">bads</span><span class="p">))</span>
     <span class="c"># also removes rows or columns containing a NaN</span>
     <span class="n">has_nans</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">matrx</span><span class="p">)):</span>
@@ -298,7 +322,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 27, 2015.
+      Last updated on May 07, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
