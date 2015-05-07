@@ -43,7 +43,8 @@ def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
 
 class Interpolate(object):
     """
-    simple linear interpolation
+    Simple linear interpolation, to be used when the one from scipy is not
+    avaiable
     """
     def __init__(self, x_list, y_list):
         for i, (x, y) in enumerate(zip(x_list, x_list[1:])):

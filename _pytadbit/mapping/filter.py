@@ -50,6 +50,7 @@ def filter_reads_OLD(fnam, max_molecule_length=500, over_represented=0.005,
                  verbose=True, savedata=None, min_dist_to_re=750):
     """
     Apply different filters on pair of reads:
+
        1- self-circle        : reads are comming from a single RE fragment and
           point to the outside (----<===---===>---)
        2- dangling-end       : reads are comming from a single RE fragment and
@@ -215,7 +216,10 @@ def filter_reads(fnam, max_molecule_length=500, over_represented=0.005,
                  max_frag_size=100000, min_frag_size=100, re_proximity=5,
                  verbose=True, savedata=None, min_dist_to_re=750):
     """
-    Apply different filters on pair of reads:
+    Filter mapped pair of reads in order to remove experimental artifacts (e.g.
+    dangling-ends, self-circle, PCR artifacts...)
+    
+    Applied filters are:    
        1- self-circle        : reads are comming from a single RE fragment and
           point to the outside (----<===---===>---)
        2- dangling-end       : reads are comming from a single RE fragment and

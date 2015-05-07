@@ -6,6 +6,10 @@
 
 import inspect
 import pytadbit
+from pytadbit.mapping import mapper
+from pytadbit.mapping import filter
+from pytadbit.mapping import analyze
+from pytadbit.mapping import restriction_enzymes
 from pytadbit.tad_clustering import tad_cmo
 from string import uppercase
 import re
@@ -111,6 +115,10 @@ def main():
     all_members = get_all(pytadbit)
     get_all(pytadbit.utils, all_members)
     get_all(tad_cmo, all_members)
+    get_all(mapper, all_members)
+    get_all(restriction_enzymes, all_members)
+    get_all(analyze, all_members)
+    get_all(filter, all_members)
     modules = set([all_members[m]['son'].__module__ for m in all_members])
 
     global LINKS

@@ -83,6 +83,8 @@ def trimming(raw_seq_len, seq_start, min_seq_len):
 def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
                       range_start, range_stop, **kwargs):
     """
+    Map iteratively a given FASTQ file to a reference genome.
+    
     :param gem_index_path: path to index file created from a reference genome
        using gem-index tool
     :param fastq_path: PATH to fastq file, either compressed or not.

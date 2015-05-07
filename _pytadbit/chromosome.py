@@ -976,7 +976,8 @@ class AlignmentDict(dict):
 
 class ChromosomeSize(int):
     """
-    Chromosome size in base pairs
+    Simple class inheriting from interger designed to hold chromosome size in
+    base pairs
     """
     def __init__(self, thing):
         super(ChromosomeSize, self).__init__(thing)

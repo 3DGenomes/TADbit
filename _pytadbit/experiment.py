@@ -35,6 +35,9 @@ def load_experiment_from_reads(name, fnam, genome_seq, resolution,
                                conditions=None, identifier=None, cell_type=None,
                                enzyme=None, exp_type='Hi-C', **kw_descr):
     """
+    Loads an experiment object from TADbit-generated read files, that are lists
+    of pairs of reads mapped to a reference genome.
+    
     :param fnam: tsv file with reads1 and reads2
     :param name: name of the experiment
     :param resolution: the resolution of the experiment (size of a bin in

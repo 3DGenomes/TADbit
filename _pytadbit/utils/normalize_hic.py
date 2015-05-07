@@ -80,6 +80,8 @@ def _update_W(W, DB):
 def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
               verbose=False):
     """
+    Implementation of iterative correction Imakaev 2012
+    
     :param hic_data: dictionary containing the interaction data
     :param None remove: columns not to consider
     :param 0 iterations: number of iterations to do (99 if a fully smoothed

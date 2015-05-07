@@ -73,7 +73,8 @@ Chromosome module
 
 ChromosomeSize class
 ++++++++++++++++++++
-                      Chromosome size in base pairs
+                      Simple class inheriting from interger designed to hold chromosome size in
+                      base pairs
 
 ExperimentList class
 ++++++++++++++++++++
@@ -130,6 +131,8 @@ Chromosome class
 
 Experiment module
 -----------------
+
+   - load_experiment_from_reads:             Loads an experiment object from TADbit-generated read files, that are lists                                             of pairs of reads mapped to a reference genome.
 
 Experiment class
 ++++++++++++++++
@@ -209,7 +212,9 @@ IMPmodel class
 
       - `write_cmm <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_cmm>`_ [#second]_: Save a model in the cmm format, read by Chimera                                             (http://www.cgl.ucsf.edu/chimera).                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
 
-      - `write_xyz <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz>`_ [#second]_: Writes a xyz file containing the 3D coordinates of each particle in the                                             model.                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
+      - `write_json <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_json>`_ [#second]_: Save a model in the json format, read by TADkit.                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
+
+      - `write_xyz <http://3dgenomes.github.io/tadbit/reference/reference_imp_model.html#pytadbit.imp.impmodel.IMPmodel.write_xyz>`_ [#second]_: Writes a xyz file containing the 3D coordinates of each particle in the                                             model.                                             Outfile is tab separated column with the bead number being the                                             first column, then the genomic coordinate and finaly the 3                                             coordinates X, Y and Z                                                                                          **Note:** If none of model_num, models or cluster parameter are set,                                             ALL the models will be written.
 
 Imp impoptimizer module
 -----------------------
@@ -245,6 +250,8 @@ StructuralModels class
     data. They can be reached either by their index (integer representing their
     rank according to objective function value), or by their IMP random intial
     number (as string).
+
+      - `accessibility <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.accessibility>`_ [#first]_ [#second]_: Calculates a mesh surface around the model (distance equal to input                                             **radius**) and checks if each point of this mesh could be replaced by                                             an object (i.e. a protein) of a given **radius**                                                                                          Outer part of the model can be excluded from the estimation of                                             accessible surface, as the occupancy outside the model is unkown (see                                             superradius option).
 
       - `align_models <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.align_models>`_: Three-dimensional aligner for structural models.
 
@@ -296,12 +303,80 @@ StructuralModels class
 
       - `zscore_plot <http://3dgenomes.github.io/tadbit/reference/reference_imp_structuralmodels.html#pytadbit.imp.structuralmodels.StructuralModels.zscore_plot>`_ [#first]_: Generate 3 plots. Two heatmaps of the Z-scores used for modeling, one                                             of which is binary showing in red Z-scores higher than upper cut-off;                                             and in blue Z-scores lower than lower cut-off. Last plot is an histogram                                             of the distribution of Z-scores, showing selected regions. Histogram                                             also shows the fit to normal distribution.
 
+Mapping analyze module
+----------------------
+
+   - `eig_correlate_matrices <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.analyze.eig_correlate_matrices>`_ [#first]_ [#second]_: Compare the iteractions of two Hi-C matrices using their 6 first                                             eigenvectors, with spearman rank correlation
+
+   - `plot_genomic_distribution <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_genomic_distribution>`_ [#first]_: 
+
+   - `hic_map <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.analyze.hic_map>`_ [#first]_ [#second]_: function to retrieve data from HiC-data object. Data can be stored as                                             a square matrix, or drawn using matplotlib
+
+   - `plot_iterative_mapping <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_iterative_mapping>`_ [#first]_: 
+
+   - `plot_distance_vs_interactions <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.analyze.plot_distance_vs_interactions>`_ [#first]_: 
+
+   - `correlate_matrices <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.analyze.correlate_matrices>`_ [#first]_ [#second]_: Compare the iteractions of two Hi-C matrices at a given distance,                                             with spearman rank correlation
+
+   - insert_sizes [#first]_:                 Plots the distribution of dangling-ends lengths
+
+Mapping filter module
+---------------------
+
+   - `apply_filter <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.filter.apply_filter>`_ [#second]_: Create a new file with reads filtered
+
+   - `filter_reads <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.filter.filter_reads>`_ [#second]_: Filter mapped pair of reads in order to remove experimental artifacts (e.g.                                             dangling-ends, self-circle, PCR artifacts
+
+Mapping mapper module
+---------------------
+
+   - `get_intersection <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.mapper.get_intersection>`_: Merges the two files corresponding to each reads sides. Reads found in both                                             files are merged and written in an output file.
+
+   - `iterative_mapping <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.mapper.iterative_mapping>`_: Map iteratively a given FASTQ file to a reference genome.
+
+Mapping restriction_enzymes module
+----------------------------------
+
+   - `repaired <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.repaired>`_: returns the resulting sequence after reparation of two digested and repaired                                             ends, marking dangling ends.
+
+   - `map_re_sites <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.map_re_sites>`_: map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                             In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
+
+   - `religated <http://3dgenomes.github.io/tadbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.religated>`_: returns the resulting sequence after religation of two digested and repaired                                             ends.
+
+Parsers module
+--------------
+
+   - magic_open:                             To read uncompressed zip gzip bzip2 or tar.xx files
+
+Parsers genome_parser module
+----------------------------
+
+   - `parse_fasta <http://3dgenomes.github.io/tadbit/reference/reference_parser.html#pytadbit.parsers.genome_parser.parse_fasta>`_: Parse a list of fasta files, or just one fasta.                                                                                          WARNING: The order is important
+
 Parsers hic_parser module
 -------------------------
 
    - autoreader:                             Auto-detect matrix format of HiC data file.
 
    - `read_matrix <http://3dgenomes.github.io/tadbit/reference/reference_parser.html#pytadbit.parsers.hic_parser.read_matrix>`_: Read and checks a matrix from a file (using                                             autoreader) or a list.
+
+   - load_hic_data_from_reads:               
+
+HiC_data class
+++++++++++++++
+    This may also hold the print/write-to-file matrix functions
+
+      - `add_sections <http://3dgenomes.github.io/tadbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections>`_: Add genomic coordinate to HiC_data object by getting them from a fasta                                             file containing chromosome sequences. Orders matters.
+
+      - `add_sections_from_fasta <http://3dgenomes.github.io/tadbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.add_sections_from_fasta>`_: Add genomic coordinate to HiC_data object by getting them from a fasta                                             file containing chromosome sequences
+
+      - `cis_trans_ratio <http://3dgenomes.github.io/tadbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio>`_: Counts the number of interactions occuring within chromosomes (cis) with                                             respect to the total number of interactions
+
+      - `get_matrix <http://3dgenomes.github.io/tadbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix>`_: returns a matrix
+
+      - `write_matrix <http://3dgenomes.github.io/tadbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_matrix>`_: writes the matrix to a file
+
+      - `yield_matrix <http://3dgenomes.github.io/tadbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.yield_matrix>`_: yields a matrix line by line
 
 Parsers tad_parser module
 -------------------------
@@ -324,7 +399,7 @@ Tadbit module
 
    - `tadbit <http://3dgenomes.github.io/tadbit/reference/reference_tadbit.html#pytadbit.tadbit.tadbit>`_: The TADbit algorithm works on raw chromosome interaction count data.                                             The normalization is neither necessary nor recommended,                                             since the data is assumed to be discrete counts.                                                                                          TADbit is a breakpoint detection algorithm that returns the optimal                                             segmentation of the chromosome under BIC-penalized likelihood. The                                             model assumes that counts have a Poisson distribution and that the                                             expected value of the counts decreases like a power-law with the                                             linear distance on the chromosome. This expected value of the counts                                             at position (i,j) is corrected by the counts at diagonal positions                                             (i,i) and (j,j). This normalizes for different restriction enzynme                                             site densities and 'mappability' of the reads in case a bin contains                                             repeated regions.
 
-   - `batch_tadbit <http://3dgenomes.github.io/tadbit/reference/reference_tadbit.html#pytadbit.tadbit.batch_tadbit>`_ [#second]_: Use tadbit on directories of data files.                                             All files in the specified directory will be considered data file. The                                             presence of non data files will cause the function to either crash or                                             produce aberrant results.                                                                                          Each file has to contain the data for a single unit/chromosome. The                                             files can be separated in sub-directories corresponding to single                                             experiments or any other organization. Data files that should be                                             considered replicates have to start with the same characters, until                                             the character sep. For instance, all replicates of the unit                                             'chr1' should start with 'chr1\_', using the default value of sep.                                                                                          The data files are read through read.delim. You can pass options                                             to read.delim through the list read_options. For instance                                             if the files have no header, use read_options=list(header=FALSE) and if                                             they also have row names, read_options=list(header=FALSE, row.names=1).                                                                                          Other arguments such as max_size, n_CPU and verbose are passed to                                             tadbit.
+   - `batch_tadbit <http://3dgenomes.github.io/tadbit/reference/reference_tadbit.html#pytadbit.tadbit.batch_tadbit>`_ [#second]_: Use tadbit on directories of data files.                                             All files in the specified directory will be considered data file. The                                             presence of non data files will cause the function to either crash or                                             produce aberrant results.                                                                                          Each file has to contain the data for a single unit/chromosome. The                                             files can be separated in sub-directories corresponding to single                                             experiments or any other organization. Data files that should be                                             considered replicates have to start with the same characters, until                                             the character sep. For instance, all replicates of the unit                                             'chr1' should start with 'chr1\_', using the default value of sep.                                                                                          The data files are read through read.delim. You can pass options                                             to read.delim through the list read_options. For instance                                             if the files have no header, use read_options=list(header=FALSE) and if                                             they also have row names, read_options=list(header=FALSE, row.names=1).                                                                                          Other arguments such as max_size, n_CPU and verbose are passed to                                             tadbit.                                                                                          NOTE: only used externally, not from Chromosome
 
 Utils extraviews module
 -----------------------
@@ -358,7 +433,12 @@ Utils hic_filtering module
 
    - `hic_filtering_for_modelling <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.hic_filtering.hic_filtering_for_modelling>`_ [#first]_: Call filtering function, to remove artefactual columns in a given Hi-C                                             matrix. This function will detect columns with very low interaction                                             counts; and columns with NaN values (in this case NaN will be replaced                                             by zero in the original Hi-C data matrix). Filtered out columns will be                                             stored in the dictionary Experiment._zeros.
 
-   - filter_by_zero_count [#first]_:         fits the distribution of Hi-C interaction count by column in the matrix to                                             a polynomial. Then searches for the first possible
+   - filter_by_zero_count:                   
+
+Utils normalize_hic module
+--------------------------
+
+   - iterative:                              Implementation of iterative correction Imakaev 2012
 
 Utils tadmaths module
 ---------------------
@@ -373,7 +453,8 @@ Utils tadmaths module
 
 Interpolate class
 +++++++++++++++++
-                      simple linear interpolation
+                      Simple linear interpolation, to be used when the one from scipy is not
+                      avaiable
 
 Utils three_dim_stats module
 ----------------------------
@@ -384,23 +465,23 @@ Utils three_dim_stats module
 
    - `generate_circle_points <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points>`_: Returns list of 3d coordinates of points on a circle using the                                             Rodrigues rotation formula.                                                                                          see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*                                             for details
 
-   - mass_center:                            Transforms coordinates according to the center of mass
+   - `mass_center <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.mass_center>`_: Transforms coordinates according to the center of mass
 
-   - rotate_among_y_axis:                    Rotate and object with a list of x, y, z coordinates among its center of                                             mass
+   - `rotate_among_y_axis <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.rotate_among_y_axis>`_: Rotate and object with a list of x, y, z coordinates among its center of                                             mass
 
    - `calc_eqv_rmsd <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd>`_: Calculates the RMSD, dRMSD, the number of equivalent positions and a score                                             combining these three measures. The measure are done between a group of                                             models in a one against all manner.
 
-   - get_center_of_mass:                     get the center of mass of a given object with list of x, y, z coordinates
+   - `get_center_of_mass <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.get_center_of_mass>`_: get the center of mass of a given object with list of x, y, z coordinates
 
-   - find_angle_rotation_improve_x:          Finds the rotation angle needed to face the longest edge of the molecule
+   - `find_angle_rotation_improve_x <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x>`_: Finds the rotation angle needed to face the longest edge of the molecule
 
    - fast_square_distance:                   Calculates the square distance between two coordinates.
 
    - `angle_between_3_points <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.angle_between_3_points>`_: Calculates the angle between 3 particles                                                                                          Given three particles A, B and C, the angle g (angle ACB, shown below):
 
-   - generate_sphere_points:                 Returns list of 3d coordinates of points on a sphere using the                                             Golden Section Spiral algorithm.
+   - `generate_sphere_points <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_sphere_points>`_: Returns list of 3d coordinates of points on a sphere using the                                             Golden Section Spiral algorithm.
 
-   - build_mesh:                             Main function for the calculation of the accessibility of a model.
+   - `build_mesh <http://3dgenomes.github.io/tadbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.build_mesh>`_: Main function for the calculation of the accessibility of a model.
 
 
 .. [#first] functions generating plots
