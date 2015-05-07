@@ -546,10 +546,15 @@ class HiC_data(dict):
         """
         if focus:
             if isinstance(focus, tuple) and isinstance(focus[0], int):
-                start1, end1 = focus
-                start2, end2 = focus
-                start1 -= 1
-                start2 -= 1
+                if len(focus) == 2:
+                    start1, end1 = focus
+                    start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+                else:
+                    start1, end1, start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
             elif isinstance(focus, tuple) and isinstance(focus[0], str):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
@@ -595,10 +600,15 @@ class HiC_data(dict):
             raise Exception('ERROR: experiment not normalized yet')
         if focus:
             if isinstance(focus, tuple) and isinstance(focus[0], int):
-                start1, end1 = focus
-                start2, end2 = focus
-                start1 -= 1
-                start2 -= 1
+                if len(focus) == 2:
+                    start1, end1 = focus
+                    start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+                else:
+                    start1, end1, start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
             elif isinstance(focus, tuple) and isinstance(focus[0], str):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
@@ -651,10 +661,15 @@ class HiC_data(dict):
             raise Exception('ERROR: experiment not normalized yet')
         if focus:
             if isinstance(focus, tuple) and isinstance(focus[0], int):
-                start1, end1 = focus
-                start2, end2 = focus
-                start1 -= 1
-                start2 -= 1
+                if len(focus) == 2:
+                    start1, end1 = focus
+                    start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+                else:
+                    start1, end1, start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
             elif isinstance(focus, tuple) and isinstance(focus[0], str):
                 start1, end1 = self.section_pos[focus[0]]
                 start2, end2 = self.section_pos[focus[1]]
