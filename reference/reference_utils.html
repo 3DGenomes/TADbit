@@ -508,6 +508,66 @@ for details</p>
 </dl>
 </dd></dl>
 
+<dl class="function">
+<dt id="pytadbit.utils.three_dim_stats.mass_center">
+<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">mass_center</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>zeros</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#mass_center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.mass_center" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms coordinates according to the center of mass</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> &#8211; list of x coordinates</li>
+<li><strong>y</strong> &#8211; list of y coordinates</li>
+<li><strong>z</strong> &#8211; list of z coordinates</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.utils.three_dim_stats.rotate_among_y_axis">
+<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">rotate_among_y_axis</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>angle</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#rotate_among_y_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.rotate_among_y_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate and object with a list of x, y, z coordinates among its center of
+mass</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.utils.three_dim_stats.get_center_of_mass">
+<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">get_center_of_mass</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>zeros</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#get_center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the center of mass of a given object with list of x, y, z coordinates</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x">
+<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">find_angle_rotation_improve_x</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>center_of_mass</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#find_angle_rotation_improve_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the rotation angle needed to face the longest edge of the molecule</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.utils.three_dim_stats.generate_sphere_points">
+<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">generate_sphere_points</code><span class="sig-paren">(</span><em>n=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#generate_sphere_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.generate_sphere_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of 3d coordinates of points on a sphere using the
+Golden Section Spiral algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> &#8211; number of points in the sphere</td>
+</tr>
+</tbody>
+</table>
+<p>:returns a sphere of radius 1, centered in the origin</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.utils.three_dim_stats.build_mesh">
+<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">build_mesh</code><span class="sig-paren">(</span><em>xis</em>, <em>yis</em>, <em>zis</em>, <em>nloci</em>, <em>nump</em>, <em>radius</em>, <em>superradius</em>, <em>include_edges</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#build_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.build_mesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main function for the calculation of the accessibility of a model.</p>
+</dd></dl>
+
 </div>
 
 

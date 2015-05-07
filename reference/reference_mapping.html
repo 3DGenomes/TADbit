@@ -85,7 +85,8 @@ the inputs</li>
 <dl class="function">
 <dt id="pytadbit.mapping.mapper.iterative_mapping">
 <code class="descclassname">pytadbit.mapping.mapper.</code><code class="descname">iterative_mapping</code><span class="sig-paren">(</span><em>gem_index_path</em>, <em>fastq_path</em>, <em>out_sam_path</em>, <em>range_start</em>, <em>range_stop</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/mapper.html#iterative_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.mapper.iterative_mapping" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Map iteratively a given FASTQ file to a reference genome.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -430,6 +431,56 @@ reads filtered, not the valid pairs.</li>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.mapping.restriction_enzymes.repaired">
+<code class="descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="descname">repaired</code><span class="sig-paren">(</span><em>r_enz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#repaired"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.repaired" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the resulting sequence after reparation of two digested and repaired
+ends, marking dangling ends.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.mapping.restriction_enzymes.map_re_sites">
+<code class="descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="descname">map_re_sites</code><span class="sig-paren">(</span><em>enzyme_name</em>, <em>genome_seq</em>, <em>frag_chunk=100000</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#map_re_sites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.map_re_sites" title="Permalink to this definition">¶</a></dt>
+<dd><p>map all restriction enzyme (RE) sites of a given enzyme in a genome.
+Position of a RE site is defined as the genomic coordinate of the first
+nucleotide after the first cut (genomic coordinate starts at 1).
+In the case of HindIII the genomic coordinate is this one:</p>
+<dl class="docutils">
+<dt>123456 789...</dt>
+<dd><div class="first line-block">
+<div class="line"><br /></div>
+</div>
+<p class="last">v</p>
+</dd>
+</dl>
+<p>&#8212;&#8211;A|AGCT T&#8212;&#8212;&#8212;&#8212;&#8211;
+&#8212;&#8211;T TCGA|A&#8212;&#8212;&#8212;&#8212;&#8211;</p>
+<p>In this example the coordinate of the RE site would be 7.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>enzyme_name</strong> &#8211; name of the enzyme to map (upper/lower case are
+important)</li>
+<li><strong>genome_seq</strong> &#8211; a dictionary containing the genomic sequence by
+chromosome</li>
+<li><strong>frag_chunk</strong> (<em>100000</em>) &#8211; in order to optimize the search for nearby RE
+sites, each chromosome is splitted into chunks.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytadbit.mapping.restriction_enzymes.religated">
+<code class="descclassname">pytadbit.mapping.restriction_enzymes.</code><code class="descname">religated</code><span class="sig-paren">(</span><em>r_enz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/restriction_enzymes.html#religated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.restriction_enzymes.religated" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the resulting sequence after religation of two digested and repaired
+ends.</p>
 </dd></dl>
 
 </div>

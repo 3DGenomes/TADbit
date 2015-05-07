@@ -46,3 +46,10 @@ Filtering
 
 .. autofunction:: apply_filter
 
+.. currentmodule:: pytadbit.mapping.restriction_enzymes
+
+.. autofunction:: repaired
+
+.. autofunction:: map_re_sites
+
+.. autofunction:: religated

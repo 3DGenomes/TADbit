@@ -47,3 +47,16 @@ Utilities
 .. autofunction:: dihedral
 
 .. autofunction:: generate_circle_points
+
+.. autofunction:: mass_center
+
+.. autofunction:: rotate_among_y_axis
+
+.. autofunction:: get_center_of_mass
+
+.. autofunction:: find_angle_rotation_improve_x
+
+.. autofunction:: generate_sphere_points
+
+.. autofunction:: build_mesh
+

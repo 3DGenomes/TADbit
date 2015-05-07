@@ -60,7 +60,7 @@
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">acos</span>
 
 
-<span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_sphere_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_sphere_points">[docs]</a><span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns list of 3d coordinates of points on a sphere using the</span>
 <span class="sd">    Golden Section Spiral algorithm.</span>
@@ -80,8 +80,8 @@
         <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">points</span>
 
-
-<span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="get_center_of_mass"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.get_center_of_mass">[docs]</a><span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get the center of mass of a given object with list of x, y, z coordinates</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -100,8 +100,8 @@
     <span class="n">zm</span> <span class="o">/=</span> <span class="n">subsize</span>
     <span class="k">return</span> <span class="n">xm</span><span class="p">,</span> <span class="n">ym</span><span class="p">,</span> <span class="n">zm</span>
 
-
-<span class="k">def</span> <span class="nf">mass_center</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="mass_center"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.mass_center">[docs]</a><span class="k">def</span> <span class="nf">mass_center</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms coordinates according to the center of mass</span>
 
@@ -166,8 +166,8 @@
 <span class="c">#                       )</span>
 <span class="c">#     return points</span>
 
-
-<span class="k">def</span> <span class="nf">rotate_among_y_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="rotate_among_y_axis"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.rotate_among_y_axis">[docs]</a><span class="k">def</span> <span class="nf">rotate_among_y_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rotate and object with a list of x, y, z coordinates among its center of</span>
 <span class="sd">    mass</span>
@@ -182,8 +182,8 @@
         <span class="n">zj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xi</span><span class="o">*-</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span><span class="o">+</span><span class="n">zi</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="n">yj</span><span class="p">,</span> <span class="n">zj</span>
 
-
-<span class="k">def</span> <span class="nf">find_angle_rotation_improve_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="find_angle_rotation_improve_x"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x">[docs]</a><span class="k">def</span> <span class="nf">find_angle_rotation_improve_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Finds the rotation angle needed to face the longest edge of the molecule</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -195,7 +195,7 @@
                  <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dist</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">angle</span>
 
-
+</div>
 <div class="viewcode-block" id="generate_circle_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points">[docs]</a><span class="k">def</span> <span class="nf">generate_circle_points</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns list of 3d coordinates of points on a circle using the</span>
@@ -423,7 +423,7 @@
         <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">build_mesh</span><span class="p">(</span><span class="n">xis</span><span class="p">,</span> <span class="n">yis</span><span class="p">,</span> <span class="n">zis</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">nump</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="p">):</span>
+<div class="viewcode-block" id="build_mesh"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.build_mesh">[docs]</a><span class="k">def</span> <span class="nf">build_mesh</span><span class="p">(</span><span class="n">xis</span><span class="p">,</span> <span class="n">yis</span><span class="p">,</span> <span class="n">zis</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">nump</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main function for the calculation of the accessibility of a model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -589,7 +589,7 @@
         <span class="n">positions</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">subpoints</span><span class="p">,</span> <span class="n">supersubpoints</span><span class="p">,</span> <span class="n">positions</span>
-</pre></div>
+</pre></div></div>
 
           </div>
         </div>
