@@ -258,6 +258,9 @@ tmp.close()
         results.plot_2d(show_best=20,
                         savefig="%s/%s_optimal_params.pdf" % (
                             os.path.join(opts.outdir, name), name))
+    if opts.optimize_only:
+        logging.info('Optimization done.')
+        exit()
     # Optimal parameters
     kf = 5 # IMP penalty for connectivity between two consecutive particles.
            # This needs to be large enough to ensure connectivity.
@@ -266,7 +269,6 @@ tmp.close()
                           # like this
     return optpar
 
-
 def model_region(exp, optpar, opts, name):
     """
     generate structural models
@@ -274,8 +276,7 @@ def model_region(exp, optpar, opts, name):
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg, opts.end)
 
     tmp_name = ''.join([letters[int(random()*52)]for _ in xrange(50)])
-    
-    
+
     tmp = open('_tmp_zscore_' + tmp_name, 'w')
     dump([zscores, values, zeros, optpar], tmp)
     tmp.close()
