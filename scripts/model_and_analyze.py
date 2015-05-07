@@ -234,7 +234,7 @@ tmp.close()
     os.system('rm -f _tmp_optim_%s.py' % (tmp_name))
     os.system('rm -f _tmp_opts_%s' % (tmp_name))
     results.write_result(logpath)
-    if opts.optimize_only:
+    if opts.optimize_only and opts.optimize_from_scratch:
         logging.info('Optimization done.')
         exit()
 
@@ -253,6 +253,7 @@ tmp.close()
                   ).format(sc, md, uf, lf, dc, cc))
     results.write_result(os.path.join(
         opts.outdir, name, '%s_optimal_params.tsv' % (name)))
+    print opts.analyze
     if "optimization plot" in opts.analyze:
         results.plot_2d(show_best=20,
                         savefig="%s/%s_optimal_params.pdf" % (
