@@ -192,7 +192,23 @@ class IMPoptimizer(object):
             for maxdist in [my_round(i) for i in maxdist_arange]:
                 for upfreq in [my_round(i) for i in upfreq_arange]:
                     for lowfreq in [my_round(i) for i in lowfreq_arange]:
-                        if (scale, maxdist, upfreq, lowfreq) in self.results:
+                        # check if this optimization has been already done
+                        if (scale, maxdist, upfreq, lowfreq) in [
+                            tuple(k[:4]) for k in self.results]:
+                            k = [k for k in self.results
+                                 if (scale, maxdist, upfreq,
+                                     lowfreq) == tuple(k[:4])][0]
+                            result = self.results[(scale, maxdist, upfreq,
+                                                   lowfreq, k[-1])]
+                            if verbose:
+                                verb = '%5s %6s %7s %7s %6s %7s  ' % (
+                                    'xx', upfreq, lowfreq, maxdist,
+                                    scale, k[-1])
+                                if verbose == 2:
+                                    stderr.write(verb + str(round(result, 4))
+                                                 + '\n')
+                                else:
+                                    print verb + str(round(result, 4))
                             continue
                         tmp = {'kforce'   : 5,
                                'lowrdist' : 100,

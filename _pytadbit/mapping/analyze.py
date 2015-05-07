@@ -145,8 +145,13 @@ def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
     ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
     ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
-    minoridata   = np.min(data)
-    maxoridata   = np.max(data)
+    try:
+        minoridata   = np.nanmin(data)
+        maxoridata   = np.nanmax(data)
+    except AttributeError:
+        vals = [i for d in data for i in d if not np.isnan(i)]
+        minoridata   = np.min(vals)
+        maxoridata   = np.max(vals)
     totaloridata = np.nansum([data[i][j] for i in xrange(len(data))
                               for j in xrange(i, len(data))])
     data = nozero_log(data, np.log2)

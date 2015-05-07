@@ -142,7 +142,7 @@ def load_optimal_imp_parameters(opts, name, exp):
     results = IMPoptimizer(exp, beg, end, n_models=opts.nmodels_opt,
                            n_keep=opts.nkeep_opt, container=opts.container)
     # load from log files
-    if not opts.optimize_only:
+    if not opts.optimize_from_scratch:
         for fnam in os.listdir(os.path.join(opts.outdir, name)):
             if fnam.endswith('.tsv') and '_optimal_params' in fnam:
                 results.load_from_file(os.path.join(opts.outdir, name, fnam))
@@ -444,12 +444,17 @@ def main():
     ############################################################################
 
     # if models are already calculated and we just want to load them
-    if (os.path.exists(os.path.join(opts.outdir, name, name + '.models'))
-        and opts.analyze_only):
+    if opts.analyze_only:
         ########################################################################
         # function for loading models
-        models = load_structuralmodels(
-            os.path.join(opts.outdir, name, name + '.models'))
+        try:
+            models = load_structuralmodels(
+                os.path.join(opts.outdir, name, name + '.models'))
+            dcutoff = int(models._config['dcutoff'] *
+                          models._config['scale']   *
+                          models.resolution)
+        except IOError:
+            pass
         ########################################################################
     else:
         # Build 3D models based on the HiC data.
@@ -462,9 +467,6 @@ def main():
     ############################################################################
     ##############################  ANALYZE MODELS #############################
     ############################################################################
-    dcutoff = int(models._config['dcutoff'] *
-                  models._config['scale']   *
-                  models.resolution)
     
     if "correlation real/models" in opts.analyze:
         # Calculate the correlation coefficient between a set of kept models and
@@ -860,6 +862,11 @@ def get_options():
                         default='100', type=int,
                         help='[%(default)s] number of models to keep for ' +
                         'optimization')
+    optimo.add_argument('--force_opt', dest='optimize_from_scratch',
+                        action="store_true", default=False,
+                        help='''[%(default)s] do not take into account previous
+                        optimizations. Usefull for running in parallel in a
+                        cluster for example.''')
 
     #########################################
     # DESCRIPTION
