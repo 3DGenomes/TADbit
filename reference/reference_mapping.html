@@ -347,8 +347,10 @@ of the file name will determine the desired format).</li>
 <dl class="function">
 <dt id="pytadbit.mapping.filter.filter_reads">
 <code class="descclassname">pytadbit.mapping.filter.</code><code class="descname">filter_reads</code><span class="sig-paren">(</span><em>fnam</em>, <em>max_molecule_length=500</em>, <em>over_represented=0.005</em>, <em>max_frag_size=100000</em>, <em>min_frag_size=100</em>, <em>re_proximity=5</em>, <em>verbose=True</em>, <em>savedata=None</em>, <em>min_dist_to_re=750</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/filter.html#filter_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.filter.filter_reads" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Apply different filters on pair of reads:</dt>
+<dd><p>Filter mapped pair of reads in order to remove experimental artifacts (e.g.
+dangling-ends, self-circle, PCR artifacts...)</p>
+<dl class="docutils">
+<dt>Applied filters are:    </dt>
 <dd><dl class="first last docutils">
 <dt>1- self-circle <span class="classifier-delimiter">:</span> <span class="classifier">reads are comming from a single RE fragment and</span></dt>
 <dd>point to the outside (&#8212;-&lt;===&#8212;===&gt;&#8212;)</dd>
