@@ -309,7 +309,7 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
                                   genome_seq=None, resolution=None, axe=None,
                                   savefig=None):
     """
-    :param fnam: input file name
+    :param data: input file name, or HiC_data object or list of lists
     :param 10 min_diff: lower limit (in number of bins)
     :param 1000 max_diff: upper limit (in number of bins) to look for
     :param 100 resolution: group reads that are closer than this resolution
@@ -665,8 +665,9 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
 
     max_y = max([max(distr[c].values()) for c in distr])
     max_x = max([len(distr[c].values()) for c in distr])
+    ncrms = len(genome_seq if genome_seq else distr)
     for i, crm in enumerate(genome_seq if genome_seq else distr):
-        plt.subplot(len(distr.keys()), 1, i + 1)
+        plt.subplot(ncrms, 1, i + 1)
         plt.plot(range(max(distr[crm])),
                  [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))],
                  color='red', lw=1.5, alpha=0.7)
