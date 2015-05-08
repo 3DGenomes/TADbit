@@ -55,6 +55,7 @@ Each of this replica consists of severa SRA files:
 
     ! ls ~/db/FASTQs/hsap/dixon_2012/*/*/*.sra
 
+
 .. ansi-block::
 
     /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400260/SRR400260.sra
@@ -86,6 +87,7 @@ the compressed FASTQ files should be:
 
     ! ls ~/db/FASTQs/hsap/dixon_2012/
 
+
 .. ansi-block::
 
     SRX116344  SRX116345
@@ -102,6 +104,7 @@ experiment with TADbit:
                  nreads=100000, r_enz='HindIII', paired=True)
 
 
+
 .. image:: ../nbpictures/tutorial_0_mapping_12_0.png
 
 
@@ -113,6 +116,7 @@ experiment with TADbit:
                  nreads=100000, r_enz='HindIII', paired=True)
 
 
+
 .. image:: ../nbpictures/tutorial_0_mapping_13_0.png
 
 
@@ -122,43 +126,261 @@ Iterative mapping
 .. code:: python
 
     from pytadbit.mapping.mapper import iterative_mapping
+    
+    name = 'SRX116344_200'
+
 .. code:: python
 
     print 'Mapping Read 1'
     
-    name = 'SRX116344'
-    
     sams1 = iterative_mapping(
                 gem_index_path       = 'ref_genome/hg38.gem',
-                fastq_path           = '/home/fransua/db/FASTQs/hsap/dixon_2012/%s.fastq.gz' % name,
-                out_sam_path         = 'mapped_reads/%s_r1.txt' % name,
-                temp_dir             = 'tmp_dir_%s/' % name,
+                fastq_path           = '/scratch/db/FASTQs/hsap/dixon_2012/%s.fastq' % name,
+                out_sam_path         = '/scratch/mapped_reads/%s_r1.sam' % name,
+                temp_dir             = '/scratch/tmp_dir_%s/' % name,
                 range_start          = [1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 ], # starts with a flag sequence
                 range_stop           = [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
                 nthreads             = 8,  # number of CPUs to use
-                max_reads_per_chunk  = 25000000, # this is for computers with not too much RAM
-                single_end           = True,
-                output_is_bam        = True)
-    print '  created thes SAM files:', sams1
-    
-    print '\nMapping Read 2'
-    
-    sams2 = iterative_mapping(
-                gem_index_path       = 'ref_genome/hg38.gem',
-                fastq_path           = '/home/fransua/db/FASTQs/hsap/dixon_2012/%s.fastq.gz' % name,
-                out_sam_path         = 'mapped_reads/%s_r2.txt' % name,
-                temp_dir             = 'tmp_dir_%s/' % name,
-                range_start          = [102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102],
-                range_stop           = [121, 126, 131, 136, 141, 146, 151, 156, 161, 166, 171, 176],
-                nthreads             = 8,
-                max_reads_per_chunk  = 25000000,
-                single_end           = True,
-                output_is_bam        = True)
-    
-    print '  created thes SAM files:', sams2
+                max_reads_per_chunk  = 40000000, # this is for computers with not too much RAM
+                single_end           = True)
+    print '  created %s SAM files:' % len(sams1)
+
 
 .. ansi-block::
 
     Mapping Read 1
-    Split input file /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344.fastq.gz into chunks
+    Split input file /scratch/db/FASTQs/hsap/dixon_2012/SRX116344_200.fastq into chunks
+    2 chunks obtained
+    Run iterative_mapping recursively on /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1
+    Run iterative_mapping recursively on /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
+    Remove the chunks: /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1 /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
+    Remove the chunks: /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1 /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
+      created 24 SAM files:
+
+
+.. code:: python
+
+    print '\nMapping Read 2'
+    
+    sams2 = iterative_mapping(
+                gem_index_path       = 'ref_genome/hg38.gem',
+                fastq_path           = '/scratch/db/FASTQs/hsap/dixon_2012/%s.fastq' % name,
+                out_sam_path         = '/scratch/mapped_reads/%s_r2.sam' % name,
+                temp_dir             = '/scratch/tmp_dir_%s/' % name,
+                range_start          = [102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102],
+                range_stop           = [121, 126, 131, 136, 141, 146, 151, 156, 161, 166, 171, 176],
+                nthreads             = 8,
+                max_reads_per_chunk  = 40000000,
+                single_end           = True)
+    
+    print '  created %s SAM files:' % len(sams2)
+
+
+.. ansi-block::
+
+    
+    Mapping Read 2
+    Split input file /scratch/db/FASTQs/hsap/dixon_2012/SRX116344_200.fastq into chunks
+    2 chunks obtained
+    Run iterative_mapping recursively on /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1
+    Run iterative_mapping recursively on /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
+    Remove the chunks: /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1 /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
+    Remove the chunks: /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.1 /scratch/tmp_dir_SRX116344_200/SRX116344_200.fastq.2
+      created 24 SAM files:
+
+
+Map parsing
+~~~~~~~~~~~
+
+In case we lost the sams1/sams2 lists of paths we can "reload" them like
+this:
+
+.. code:: python
+
+    import os
+    
+    sams1 = []
+    sams2 = []
+    for sam in os.listdir('/scratch/mapped_reads/'):
+        if '_r1.sam' in sam:
+            sams1.append('/scratch/mapped_reads/' + sam)
+        else:
+            sams2.append('/scratch/mapped_reads/' + sam)
+    print sams1
+    print sams2
+
+
+.. ansi-block::
+
+    ['/scratch/mapped_reads/SRX116344_200_r1.sam.1.3:1-30', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.6:1-45', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.7:1-50', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.8:1-55', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.12:1-75', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.12:1-75', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.6:1-45', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.1:1-20', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.1:1-20', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.9:1-60', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.4:1-35', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.10:1-65', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.4:1-35', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.9:1-60', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.5:1-40', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.2:1-25', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.8:1-55', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.7:1-50', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.11:1-70', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.2:1-25', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.3:1-30', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.5:1-40', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.11:1-70', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.10:1-65']
+    ['/scratch/mapped_reads/SRX116344_200_r2.sam.1.11:102-171', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.2:102-126', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.9:102-161', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.12:102-176', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.5:102-141', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.2:102-126', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.8:102-156', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.10:102-166', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.5:102-141', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.9:102-161', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.7:102-151', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.6:102-146', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.4:102-136', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.1:102-121', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.11:102-171', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.4:102-136', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.7:102-151', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.6:102-146', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.3:102-131', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.8:102-156', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.10:102-166', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.3:102-131', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.1:102-121', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.12:102-176']
+
+
+Mapping analysis
+^^^^^^^^^^^^^^^^
+
+We collect mapped reads at all window sizes into a single file (a single
+file for read1, and a single file for read2). These 2 files also contain
+the placement of the restriction enzyme sites in the genome.
+
+.. code:: python
+
+    from pytadbit.parsers.sam_parser    import parse_sam
+    from pytadbit.parsers.genome_parser import parse_fasta
+
+.. code:: python
+
+    # loads the genome
+    genome_seq = parse_fasta('/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.fa', 
+                             chr_names=['chr' + str(c) for c in range(1, 23) + ['X', 'Y', 'MT']])
+
+
+.. ansi-block::
+
+    Parsing 1 as chr1
+    Parsing 2 as chr2
+    Parsing 3 as chr3
+    Parsing 4 as chr4
+    Parsing 5 as chr5
+    Parsing 6 as chr6
+    Parsing 7 as chr7
+    Parsing 8 as chr8
+    Parsing 9 as chr9
+    Parsing 10 as chr10
+    Parsing 11 as chr11
+    Parsing 12 as chr12
+    Parsing 13 as chr13
+    Parsing 14 as chr14
+    Parsing 15 as chr15
+    Parsing 16 as chr16
+    Parsing 17 as chr17
+    Parsing 18 as chr18
+    Parsing 19 as chr19
+    Parsing 20 as chr20
+    Parsing 21 as chr21
+    Parsing 22 as chr22
+    Parsing X as chrX
+    Parsing Y as chrY
+    Parsing MT as chrMT
+
+
+.. code:: python
+
+    reads1 = '/scratch/results/%s_r1_map.tsv' % name # new file with info of each "read1" and its placement with respect to RE sites
+    reads2 = '/scratch/results/%s_r2_map.tsv' % name # new file with info of each "read2" and its placement with respect to RE sites
+
+.. code:: python
+
+    print 'Parse SAM files...'
+    parse_sam(sams1, sams2, reads1, reads2, genome_seq, 'HindIII', verbose=True, ncpus=8)
+
+
+.. ansi-block::
+
+    Parse SAM files...
+    Searching and mapping RE sites to the reference genome
+    Found 859855 RE sites
+    Loading read1
+    Loading read2
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.3:1-30
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.6:1-45
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.7:1-50
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.8:1-55
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.12:1-75
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.12:1-75
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.6:1-45
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.1:1-20
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.2:1-25
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.9:1-60
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.10:1-65
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.1:1-20
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.4:1-35
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.4:1-35
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.9:1-60
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.2:1-25
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.3:1-30
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.11:1-70
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.8:1-55
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.11:1-70
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.5:1-40
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.7:1-50
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.2.10:1-65
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r1.sam.1.5:1-40
+    Sorting reads
+    Removing temporary files...loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.11:102-171
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.2:102-126
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.9:102-161
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.12:102-176
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.5:102-141
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.2:102-126
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.10:102-166
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.8:102-156
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.11:102-171
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.6:102-146
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.5:102-141
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.9:102-161
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.7:102-151
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.1:102-121
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.4:102-136
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.6:102-146
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.4:102-136
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.3:102-131
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.7:102-151
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.8:102-156
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.3:102-131
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.10:102-166
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.1.12:102-176
+    loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.1:102-121
+    
+
+
+Plot iterative mapping
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    from pytadbit.mapping.analyze import plot_iterative_mapping
+    
+    lengths = plot_iterative_mapping(reads1, reads2, total_reads=51493359)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_28_0.png
+
+
+Merging mapped "read1" and "read2"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We create a new file that will contain only the reads mapped in both
+ends ("read1" and "read2" uniquely mapped)
+
+.. code:: python
+
+    from pytadbit.mapping.mapper import get_intersection
+
+.. code:: python
+
+    reads  = '/scratch/results/%s_both_map.tsv' % name
+    
+    get_intersection(reads1, reads2, reads, verbose=True)
+
+
+.. ansi-block::
+
+    Found 41123290 pair of reads mapping uniquely
+
+
+Stats on intersection
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code:: python
+
+    from pytadbit.mapping.analyze import insert_sizes
+    
+    insert_sizes(reads)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_34_0.png
+
 

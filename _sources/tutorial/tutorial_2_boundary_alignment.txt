@@ -1,13 +1,17 @@
 
 Alignment of TAD boundaries
 ===========================
+
 .. contents::
    :depth: 3
+
+
 TADbit allows to use the information from different Hi-C experiments and to put it together in order to 
 decide whether some TAD boundaries are conserved or not.
 
 Following with the example in the previous section (:ref:`getting_start`), we will load one extra experiment 
 (from the same works of [Lieberman-Aiden2009]_):
+
 .. code:: python
 
     from pytadbit import Chromosome
@@ -30,6 +34,7 @@ Following with the example in the previous section (:ref:`getting_start`), we wi
     my_chrom.find_tad('Second Hi-C experiment', ncpus=4)
        
     print my_chrom.experiments
+
 
 
 .. ansi-block::
@@ -96,9 +101,12 @@ Following with the example in the previous section (:ref:`getting_start`), we wi
     [6.0, 4.0, 4.0, 3.0, 8.0, 4.0, 3.0, 3.0, 10.0, 3.0, 4.0, 4.0, 4.0, 6.0, 4.0, 3.0, 3.0, 4.0, 4.0, 4.0, 7.0, 3.0, 5.0, 2.0, 9.0, 4.0, 2.0, 3.0, 10.0, 8.0, 6.0, 6.0, 5.0, 2.0, 2.0, 2.0, 8.0, 5.0, 4.0, 5.0, 5.0, 5.0, 3.0, 2.0, 5.0, 2.0, 10.0, 7.0, 5.0, 3.0, 4.0, 5.0, 8.0, 1.0, 7.0, 3.0]
     [Experiment First Hi-C experiment (resolution: 100Kb, TADs: 63, Hi-C rows: 639, normalized: visibility_factor:1), Experiment Second Hi-C experiment (resolution: 100Kb, TADs: 58, Hi-C rows: 639, normalized: visibility_factor:1)]
 
+
 We now have loaded two Hi-C experiments, both at 100 Kb resolution, and have predicted the location of TADs in each of them (42 TADs detected in the first experiment and 31 in the second).
+
 Aligning boundaries
 -------------------
+
 To align TAD boundaries several algorithms have been implemented 
 (see :func:`pytadbit.chromosome.Chromosome.align_experiments`); our recommendation, however, is to use 
 the default "reciprocal" method (:func:`pytadbit.boundary_aligner.reciprocally.reciprocal`). 
@@ -107,23 +115,29 @@ the default "reciprocal" method (:func:`pytadbit.boundary_aligner.reciprocally.r
 
 Continuing with the example, the two loaded experiments are aligned as follow:
 
+
 .. code:: python
 
     my_chrom.align_experiments(names=["First Hi-C experiment", "Second Hi-C experiment"])
     
     print my_chrom.alignment
 
+
 .. ansi-block::
 
     {('First Hi-C experiment', 'Second Hi-C experiment'): Alignment of boundaries (length: 95, number of experiments: 2)}
+
 
 All the alignments done between the experiments belonging to the same chromosome are stored under the 
 alignment dictionary attached to the Chromosome object. Each alignment is an object itself 
 (see :class:`pytadbit.alignment.Alignment`)
 
+
 Check alignment consistency through randomization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 In order to check that the alignment makes sense and that it does not correspond to a random association of boundaries, the “randomize” parameter can be set to True when aligning:
+
 .. code:: python
 
     score, pval = my_chrom.align_experiments(randomize=True, rnd_method="interpolate",
@@ -131,6 +145,7 @@ In order to check that the alignment makes sense and that it does not correspond
     
     print 'score:', score
     print 'p-value:', pval
+
 
 .. ansi-block::
 
@@ -143,13 +158,16 @@ Alignment objects
 
 Visualization
 ~~~~~~~~~~~~~
+
 The first function to call to check the quality of the generated alignments is the 
 :func:`pytadbit.alignment.Alignment.write_alignment`:
+
 .. code:: python
 
     ali = my_chrom.alignment[('First Hi-C experiment', 'Second Hi-C experiment')]
     
     print ali
+
 
 .. ansi-block::
 
@@ -158,12 +176,15 @@ The first function to call to check the quality of the generated alignments is t
     Second Hi-C experiment:|     [33m7[0m|    [0m19[0m|    [0m25[0m|    [36m30[0m| ---- |    [35m40[0m| ---- |    [0m48[0m| ---- |    [36m53[0m|    [36m58[0m| ---- |    [31m72[0m| ---- |    [36m82[0m| ---- |    [0m92[0m|    [0m98[0m| ---- |   [0m105[0m|   [33m111[0m| ---- |   [0m123[0m| ---- | ---- | ---- |   [36m139[0m|   [36m144[0m|   [0m150[0m| ---- |   [0m163[0m|   [0m168[0m|   [33m174[0m|   [36m179[0m|   [1m188[0m|   [34m193[0m| ---- | ---- |   [35m210[0m|   [0m227[0m|   [34m234[0m|   [36m239[0m|   [31m244[0m|   [35m246[0m| ---- | ---- | ---- | ---- | ---- | ---- |   [35m380[0m| ---- | ---- |   [33m404[0m|   [33m410[0m|   [1m415[0m| ---- |   [34m420[0m|   [34m426[0m|   [34m431[0m| ---- |   [35m440[0m| ---- | ---- |   [1m456[0m| ---- |   [0m465[0m|   [1m471[0m|   [1m477[0m|   [1m486[0m|   [36m493[0m|   [34m498[0m| ---- | ---- |   [1m509[0m| ---- | ---- | ---- |   [34m528[0m| ---- |   [31m537[0m| ---- |   [33m556[0m| ---- |   [1m568[0m|   [36m576[0m|   [0m588[0m|   [1m593[0m|   [35m600[0m| ---- |   [34m615[0m| ---- |   [33m624[0m|   [36m633[0m|   [31m639[0m
     
 
+
 The different colors, corresponding to the TADbit confidence in detecting the boundaries, show how conserved the boundaries are between (in this case) cell types.
 
 Alignment can also be viewed using matplotlib (already mention in :ref:`density_plot`):
+
 .. code:: python
 
     ali.draw()
+
 
 
 .. image:: ../nbpictures/tutorial_2_boundary_alignment_17_0.png
@@ -176,6 +197,7 @@ Alignment can also be viewed using matplotlib (already mention in :ref:`density_
     ali.draw(focus=(1, 250))
 
 
+
 .. image:: ../nbpictures/tutorial_2_boundary_alignment_19_0.png
 
 
@@ -185,14 +207,17 @@ Alignment can also be viewed using matplotlib (already mention in :ref:`density_
     my_chrom.tad_density_plot(0, focus=(1, 300))
 
 
+
 .. image:: ../nbpictures/tutorial_2_boundary_alignment_20_0.png
 
 
 The get\_column function
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
 The :func:`pytadbit.alignment.Alignment.get_column` function allows to select specific columns of an alignment. 
 
 To select, for example, the third column of an alignment:
+
 
 .. code:: python
 
@@ -200,9 +225,11 @@ To select, for example, the third column of an alignment:
 
 
 
+
 .. ansi-block::
 
     [(2, [>2300<, >2400<])]
+
 
 
 The first element of the tuple is the column index, while the two values of the second element of the tuple 
@@ -214,10 +241,14 @@ order to select a column (or several) depending on a specific condition. For exa
 boundaries with a score higher than 7:
 
 
+
 .. code:: python
 
     cond1 = lambda x: x['score'] > 7
+
+
 and to the get the selected columns:
+
 .. code:: python
 
     ali.get_column(cond1=cond1)
@@ -225,12 +256,17 @@ and to the get the selected columns:
 
 
 
+
 .. ansi-block::
 
     [(94, [>63800<, >63800<])]
 
 
-resulting, in the selection of these 3 columns.To add a second condition, e.g. to select only the columns after the 50th column of the alignment:
+
+resulting, in the selection of these 3 columns.
+
+To add a second condition, e.g. to select only the columns after the 50th column of the alignment:
+
 .. code:: python
 
     cond2 = lambda x: x['pos'] > 50
@@ -238,15 +274,19 @@ resulting, in the selection of these 3 columns.To add a second condition, e.g. t
 
 
 
+
 .. ansi-block::
 
     [(94, [>63800<, >63800<])]
 
 
+
 Finally, to be more flexible, this conditions can be applied to only a given number of experiments (in this example of a pairwise alignment, it does not make a lot of sense):
+
 .. code:: python
 
     ali.get_column(cond1=cond1, cond2=cond2, min_num=1)
+
 
 
 

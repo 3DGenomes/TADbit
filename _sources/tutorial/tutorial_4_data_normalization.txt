@@ -31,6 +31,7 @@ human's 19th chromosome:
     
 
 
+
 .. ansi-block::
 
     /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
@@ -93,10 +94,13 @@ further steps.
 
 Data normalization
 ------------------
+
 Hi-C data stored in :class:`pytadbit.experiment.Experiment` might be normalized in order to be used by IMP.
 This normalization is achieve in two steps, first we generate weight for each pair of interactions, depending on the interaction count in the corresponding row/column, second we calculate the `z-score <http://en.wikipedia.org/wiki/Standard_score#Calculation_from_raw_score>`_ of each of these interaction pairs.
+
 Calculation of weights
 ~~~~~~~~~~~~~~~~~~~~~~
+
 Weights are calculated according to this formula (see :func:`pytadbit.experiment.Experiment.normalize_hic`):
 
 .. math::
@@ -117,8 +121,10 @@ There is one extra step of the normalization that consists in making the normali
 .. note::
 
   When modelling a portion of a chromosome values used are taken from the normalization of the whole chromosome, **no local normalization is done**.
+
 Calculation of the z-score
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Z-scores are computed according to classical formula (:math:`\frac{x-\mu}{\sigma}`), over the decimal logarithm values of the normalized data (see above). Ending in this formula:
 
 .. math::
@@ -126,8 +132,10 @@ Z-scores are computed according to classical formula (:math:`\frac{x-\mu}{\sigma
   zscore(I, J) = \frac{log_{10}(weight(I, J) \times matrix(I, J)) - mean(log_{10}(weight \times matrix))}{stddev(log_{10}(weight \times matrix))}
 
 **Important: values on the diagonal are not taken into account for this calculus.**
+
 Dealing with zeros
 ^^^^^^^^^^^^^^^^^^
+
 A zero in an Hi-C interaction matrix, means that the given two fragments of DNA were never found close enough to be crosslinked together. However such values are also highly suspicious to be artifacts. 
 
 Right now we assume that :math:`log_{10}(0) = 0`, in the calculation of the mean and stddev, and equal to -1 in the calculation of the z-score itself.
