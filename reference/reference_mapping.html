@@ -315,6 +315,25 @@ of the file name will determine the desired format).</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="pytadbit.mapping.analyze.insert_sizes">
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">insert_sizes</code><span class="sig-paren">(</span><em>fnam</em>, <em>savefig=None</em>, <em>nreads=None</em>, <em>max_size=99.9</em>, <em>axe=None</em>, <em>xlog=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#insert_sizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.insert_sizes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the distribution of dangling-ends lengths
+:param fnam: input file name
+:param None savefig: path where to store the output images.
+:param 99.9 max_size: top percentage of distances to consider, within the</p>
+<blockquote>
+<div>top 0.01% are usually found very long outliers.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xlog</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; represent x axis in logarithmic scale</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pytadbit.utils.fastq_utils.quality_plot">
 <code class="descclassname">pytadbit.utils.fastq_utils.</code><code class="descname">quality_plot</code><span class="sig-paren">(</span><em>fnam</em>, <em>r_enz=None</em>, <em>nreads=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>paired=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/fastq_utils.html#quality_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.fastq_utils.quality_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the sequencing quality of a given FASTQ file. If a restrinction enzyme
@@ -565,7 +584,7 @@ ends.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on May 07, 2015.
+      Last updated on May 08, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

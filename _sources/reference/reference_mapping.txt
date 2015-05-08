@@ -30,7 +30,7 @@ Quality check and plotting
 
 .. autofunction:: plot_genomic_distribution
 
-
+.. autofunction:: insert_sizes
 
 .. currentmodule:: pytadbit.utils.fastq_utils
 

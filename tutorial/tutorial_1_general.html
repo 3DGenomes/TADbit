@@ -28,7 +28,7 @@
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Tutorials" href="../tutorial.html" />
     <link rel="next" title="Alignment of TAD boundaries" href="tutorial_2_boundary_alignment.html" />
-    <link rel="prev" title="Tutorials" href="../tutorial.html" /> 
+    <link rel="prev" title="Mapping paired-end reads from NGS experiment (with GEM)" href="tutorial_0_mapping.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -41,7 +41,7 @@
           <a href="tutorial_2_boundary_alignment.html" title="Alignment of TAD boundaries"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../tutorial.html" title="Tutorials"
+          <a href="tutorial_0_mapping.html" title="Mapping paired-end reads from NGS experiment (with GEM)"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" accesskey="U">Tutorials</a> &raquo;</li> 
@@ -54,7 +54,7 @@
           <div class="body" role="main">
             
   <div class="section" id="getting-started">
-<span id="getting-start"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="hi-c-data-format">
 <h2>Hi-C data format<a class="headerlink" href="#hi-c-data-format" title="Permalink to this headline">¶</a></h2>
 <p>Hi-C data are usually represented as symmetric matrices in a tab
@@ -96,7 +96,7 @@ loaded as this <em>(note: this example loads human chromosome 19 from</em>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">by default TADbit will not search for centromeres, however, as, in this example, we know that we are working with chromosome 19, we can ask TADbit search for it as explained in <a class="reference internal" href="#forbidden-regions"><span>Forbidden regions and centromeres</span></a></p>
+<p class="last">by default TADbit will not search for centromeres, however, as, in this example, we know that we are working with chromosome 19, we can ask TADbit search for it as explained in <span class="xref std std-ref">forbidden_regions</span></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -156,9 +156,9 @@ position in :class:<code class="docutils literal"><span class="pre">pytadbit.chr
 True
 </pre>
 <p>Each Experiment is an independent object with a list of associated functions
-(see <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment" title="pytadbit.experiment.Experiment"><code class="xref py py-class docutils literal"><span class="pre">pytadbit.experiment.Experiment</span></code></a>).</p>
-<div class="section" id="basic-manipulation-of-experiments">
-<span id="exp-operations"></span><h3>Basic manipulation of Experiments<a class="headerlink" href="#basic-manipulation-of-experiments" title="Permalink to this headline">¶</a></h3>
+(see <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment" title="pytadbit.experiment.Experiment"><code class="xref py py-class docutils literal"><span class="pre">pytadbit.experiment.Experiment</span></code></a>)... _exp_operations:
+Basic manipulation of Experiments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</p>
 <p>Two Hi-C experiments can be summed up easily, resulting in a new Hi-c
 experiment contatining the sum of the interaction counts of the summed
 experiments:</p>
@@ -194,13 +194,12 @@ chromosome.</p>
 <pre class="ansi-block literal-block">
 [Experiment k562 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None)]
 </pre>
-</div>
 <div class="section" id="hi-c-matric-visualization">
 <h3>Hi-C matric visualization<a class="headerlink" href="#hi-c-matric-visualization" title="Permalink to this headline">¶</a></h3>
-<p>To quickly view how does the interaction matrix look like, experiment objects have the <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment.view" title="pytadbit.experiment.Experiment.view"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.view()</span></code></a> function</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">exp</span><span class="o">.</span><span class="n">view</span><span class="p">()</span>
-</pre></div>
-</div>
+<p>To quickly view how does the interaction matrix look like, experiment objects have the <a class="reference internal" href="../reference/reference_experiment.html#pytadbit.experiment.Experiment.view" title="pytadbit.experiment.Experiment.view"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.experiment.Experiment.view()</span></code></a> function
+.. code:: python</p>
+<blockquote>
+<div>exp.view()</div></blockquote>
 <pre class="ansi-block literal-block">
 /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:1090: RuntimeWarning: divide by zero encountered in log2
   img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
@@ -216,23 +215,21 @@ the chromosome object.</p>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_1_general_29_0.png" src="../_images/tutorial_1_general_29_0.png" />
-<p>Note how we pass the list of experiments to show to the <a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize" title="pytadbit.chromosome.Chromosome.visualize"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.visualize()</span></code></a> we ask to view 3 experiments, the first two being grouped in a single matrix. This view is useful to compare experiments, and do not suppose a lose of information as Hi-C matrices are symetric.</p>
-</div>
-</div>
-<div class="section" id="find-topologically-associating-domains">
-<span id="run-tadbit"></span><h2>Find Topologically Associating Domains<a class="headerlink" href="#find-topologically-associating-domains" title="Permalink to this headline">¶</a></h2>
-<p>Once an experiment has been loaded, the location of Topologically Associating Domains (TADs) can be estimated as:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">find_tad</span><span class="p">(</span><span class="s">&#39;k562&#39;</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">my_chrom</span><span class="o">.</span><span class="n">find_tad</span><span class="p">(</span><span class="s">&#39;gm06690&#39;</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Note how we pass the list of experiments to show to the <a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize" title="pytadbit.chromosome.Chromosome.visualize"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.visualize()</span></code></a> we ask to view 3 experiments, the first two being grouped in a single matrix. This view is useful to compare experiments, and do not suppose a lose of information as Hi-C matrices are symetric... _run_tadbit:
+Find Topologically Associating Domains
+&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;
+Once an experiment has been loaded, the location of Topologically Associating Domains (TADs) can be estimated as:
+.. code:: python</p>
+<blockquote>
+<div>my_chrom.find_tad(&#8216;k562&#8217;, n_cpus=8)
+my_chrom.find_tad(&#8216;gm06690&#8217;, n_cpus=8)</div></blockquote>
 <p><a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.find_tad" title="pytadbit.chromosome.Chromosome.find_tad"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.find_tad()</span></code></a> is called from our Chromosome object but is applied to a
 specific experiment. Therefore, TADs found by TADBbit will be associated to this specific experiment.
-They can be accessed as following:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">exp</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&quot;k562&quot;</span><span class="p">]</span>
-<span class="n">exp</span><span class="o">.</span><span class="n">tads</span>
-</pre></div>
-</div>
+They can be accessed as following:
+.. code:: python</p>
+<blockquote>
+<div>exp = my_chrom.experiments[&#8220;k562&#8221;]
+exp.tads</div></blockquote>
 <pre class="ansi-block literal-block">
 {1: {'brk': 5.0, 'end': 5.0, 'score': 2.0, 'start': 0.0},
  2: {'brk': 5.0, 'end': 5.0, 'score': 2.0, 'start': 0.0},
@@ -280,6 +277,7 @@ positions of the given TAD in the chromosome (note that this numbers
 have to be multiplied by the resolution of the experiment,
 &#8220;exp.resolution&#8221;). The &#8220;brk&#8221; key corresponds to the value of &#8220;end&#8221;, all
 &#8220;brk&#8221; together corresponds to all TAD&#8217;s boundaries.</p>
+</div>
 <div class="section" id="tads-to-text">
 <h3>TADs to text<a class="headerlink" href="#tads-to-text" title="Permalink to this headline">¶</a></h3>
 <p>TADs can also be seen or saved to a file using this write function:</p>
@@ -367,11 +365,11 @@ identification of the border.</p>
 </div>
 <div class="section" id="finding-tads-in-related-hi-c-experiments">
 <h2>Finding TADs in related Hi-C experiments<a class="headerlink" href="#finding-tads-in-related-hi-c-experiments" title="Permalink to this headline">¶</a></h2>
-<p>TADbit also allows to search for TADs in a chromosome using the information of several Hi-C experiments. To do this experiments do not need to be summed up (like in <a class="reference internal" href="#exp-operations"><span>Basic manipulation of Experiments</span></a>), as the find_tad function has a batch_mode:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">find_tad</span><span class="p">([</span><span class="s">&#39;k562&#39;</span><span class="p">,</span> <span class="s">&#39;gm06690&#39;</span><span class="p">],</span> <span class="n">batch_mode</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span>
-</pre></div>
-</div>
+<p>TADbit also allows to search for TADs in a chromosome using the information of several Hi-C experiments. To do this experiments do not need to be summed up (like in <span class="xref std std-ref">exp_operations</span>), as the find_tad function has a batch_mode:
+.. code:: python</p>
+<blockquote>
+<div>my_chrom.find_tad([&#8216;k562&#8217;, &#8216;gm06690&#8217;], batch_mode=True, n_cpus=8)
+print my_chrom.experiments</div></blockquote>
 <pre class="ansi-block literal-block">
 [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: visibility), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: visibility)]
 </pre>
@@ -381,16 +379,15 @@ identification of the border.</p>
 </div>
 </div>
 <div class="section" id="forbidden-regions-and-centromeres">
-<span id="forbidden-regions"></span><h2>Forbidden regions and centromeres<a class="headerlink" href="#forbidden-regions-and-centromeres" title="Permalink to this headline">¶</a></h2>
-<p>By default TADbit does not put limitation in sizes of TADs, owever it may make sense to set a maximum TAD size of 5 Mb in humans <a class="reference internal" href="../biblio.html#dekker2013" id="id1">[Dekker2013]</a>. In this case we can set this cutoff when first defining the chromosome (see the option in <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Chromosome</span></code>), or just use the function <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Chromosome.set_max_tad_size</span></code>:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">set_max_tad_size</span><span class="p">(</span><span class="mi">3000000</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Once TADs are detected by the core <a class="reference internal" href="../reference/reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></code></a> function, TADbit checks that they are not larger than a given value (5 Mb here). If a TAD is larger than this value, it will be marked with a
-<strong>negative score</strong>, and will be automatically excluded from the main TADbit functions.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s">&#39;k562&#39;</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre></div>
-</div>
+<h2>Forbidden regions and centromeres<a class="headerlink" href="#forbidden-regions-and-centromeres" title="Permalink to this headline">¶</a></h2>
+<p>By default TADbit does not put limitation in sizes of TADs, owever it may make sense to set a maximum TAD size of 5 Mb in humans <a class="reference internal" href="../biblio.html#dekker2013" id="id1">[Dekker2013]</a>. In this case we can set this cutoff when first defining the chromosome (see the option in <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Chromosome</span></code>), or just use the function <code class="xref py py-class docutils literal"><span class="pre">pytadbit.Chromosome.set_max_tad_size</span></code>:
+.. code:: python</p>
+<blockquote>
+<div>my_chrom.set_max_tad_size(3000000)Once TADs are detected by the core <a class="reference internal" href="../reference/reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></code></a> function, TADbit checks that they are not larger than a given value (5 Mb here). If a TAD is larger than this value, it will be marked with a</div></blockquote>
+<p><strong>negative score</strong>, and will be automatically excluded from the main TADbit functions.
+.. code:: python</p>
+<blockquote>
+<div>my_chrom.visualize(&#8216;k562&#8217;, paint_tads=True)</div></blockquote>
 <img alt="../_images/tutorial_1_general_61_0.png" src="../_images/tutorial_1_general_61_0.png" />
 <p>Another optional inspection performed by TADbit is the presence of
 centromeric regions. TADbit assumes that the larger gap found in a Hi-C
@@ -407,27 +404,26 @@ after.</p>
 <div class="section" id="saving-and-restoring-data">
 <h2>Saving and restoring data<a class="headerlink" href="#saving-and-restoring-data" title="Permalink to this headline">¶</a></h2>
 <p>In order to avoid having to calculate TAD positions each time, TADbit allows to save and load Chromosome
-objects, with all the associated experiments. To save a Chromosome object:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">save_chromosome</span><span class="p">(</span><span class="s">&quot;some_path.tdb&quot;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>And to load it:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
-
-<span class="n">my_chrom</span> <span class="o">=</span> <span class="n">load_chromosome</span><span class="p">(</span><span class="s">&quot;some_path.tdb&quot;</span><span class="p">)</span>
-
-<span class="k">print</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span>
-</pre></div>
-</div>
+objects, with all the associated experiments. To save a Chromosome object:
+.. code:: python</p>
+<blockquote>
+<div>my_chrom.save_chromosome(&#8220;some_path.tdb&#8221;, force=True)</div></blockquote>
+<p>And to load it:
+.. code:: python</p>
+<blockquote>
+<div><p>from pytadbit import load_chromosome</p>
+<p>my_chrom = load_chromosome(&#8220;some_path.tdb&#8221;)</p>
+<p>print my_chrom.experiments</p>
+</div></blockquote>
 <pre class="ansi-block literal-block">
 [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: None)]
 </pre>
-<p><em>Note: while information about TADs can be saved, in order to save disk space, raw Hi-C data are not stored in this way but can be loaded again for each experiment:</em></p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">expr</span> <span class="o">=</span> <span class="n">my_chrom</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="s">&quot;k562&quot;</span><span class="p">]</span>
-
-<span class="n">expr</span><span class="o">.</span><span class="n">load_hic_data</span><span class="p">(</span><span class="s">&quot;../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
+<p><em>Note: while information about TADs can be saved, in order to save disk space, raw Hi-C data are not stored in this way but can be loaded again for each experiment:</em>
+.. code:: python</p>
+<blockquote>
+<div><p>expr = my_chrom.experiments[&#8220;k562&#8221;]</p>
+<p>expr.load_hic_data(&#8221;../../scripts/sample_data/HIC_k562_chr19_chr19_100000_obs.txt&#8221;)</p>
+</div></blockquote>
 </div>
 </div>
 
@@ -444,6 +440,7 @@ objects, with all the associated experiments. To save a Chromosome object:</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="">Getting started</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a></li>
@@ -458,8 +455,8 @@ objects, with all the associated experiments. To save a Chromosome object:</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../tutorial.html"
-                        title="previous chapter">Tutorials</a></p>
+  <p class="topless"><a href="tutorial_0_mapping.html"
+                        title="previous chapter">Mapping paired-end reads from NGS experiment (with GEM)</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="tutorial_2_boundary_alignment.html"
                         title="next chapter">Alignment of TAD boundaries</a></p>
@@ -490,7 +487,7 @@ objects, with all the associated experiments. To save a Chromosome object:</p>
           <a href="tutorial_2_boundary_alignment.html" title="Alignment of TAD boundaries"
              >next</a> |</li>
         <li class="right" >
-          <a href="../tutorial.html" title="Tutorials"
+          <a href="tutorial_0_mapping.html" title="Mapping paired-end reads from NGS experiment (with GEM)"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../tutorial.html" >Tutorials</a> &raquo;</li> 
@@ -498,7 +495,7 @@ objects, with all the associated experiments. To save a Chromosome object:</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 27, 2015.
+      Last updated on May 08, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
