@@ -8,6 +8,8 @@ from pysam import Samfile
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 from warnings import warn
 import multiprocessing as mu
+import os
+from subprocess import Popen
 
 def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, mapper=None,
@@ -62,27 +64,27 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         fnames = (f_names1,)
         outfiles = (out_file1, )
 
+    sorting = []
     for read in range(len(fnames)):
         if verbose:
-            print 'Loading read' + str(read + 1)
+            print 'Loading read' + str(read + 1) + '\n',
         pool = mu.Pool(ncpus)
         jobs = []
         num = 0
         for fnam in fnames[read]:
             num += 1
-            jobs.append(pool.apply(_read_one_sam,
-                                   args=(fnam, mapper, verbose, frags,
-                                         frag_chunk, num)))
+            jobs.append(pool.apply_async(_read_one_sam,
+                                         args=(fnam, mapper, verbose, frags,
+                                               frag_chunk, num)))
         pool.close()
         pool.join()
         windows = {}
-        reads    = []
-        cnt = 0
-        for w, r in jobs:
-            windows.update(w)
-            reads.extend(r)
-            cnt += 1
-            
+        for w in jobs:
+            w = w.get()
+            for k in w:
+                windows.setdefault(k, 0)
+                windows[k] += w[k]
+
         reads_fh = open(outfiles[read], 'w')
         ## write file header
         # chromosome sizes (in order)
@@ -92,14 +94,28 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         reads_fh.write('## Number of mapped reads by iteration\n')
         for size in windows:
             reads_fh.write('# MAPPED %d %d\n' % (size, windows[size]))
-        reads_fh.write(''.join(sorted(reads)))
         reads_fh.close()
-    del reads
+
+        # write the rest of the file using bash to concatenate and sort
+        # done asynchromeously
+        list_tsv = ' '.join([fnam + '.tsv' for fnam in fnames[read]])
+        sort = ('sort -k1,1 %s ' % list_tsv)
+        sorting.append(Popen(sort + '>> ' + outfiles[read], shell=True))
+    if verbose:
+        print 'Sorting reads'
+    for s in sorting:
+        if s.wait() > 0:
+            raise Exception('ERROR: problem sorting file\n')
+    if verbose:
+        print 'Removing temporary files...'
+    for read in range(len(fnames)):
+        list_tsv = ' '.join([fnam + '.tsv' for fnam in fnames[read]])
+        os.system('rm -f %s' % list_tsv)
 
 
 def _read_one_sam(fnam, mapper, verbose, frags, frag_chunk, num):
+    out = open(fnam + '.tsv', 'w')
     lwindows = {}
-    lreads = []
     try:
         fhandler = Samfile(fnam)
     except IOError:
@@ -121,7 +137,7 @@ def _read_one_sam(fnam, mapper, verbose, frags, frag_chunk, num):
         warn('WARNING: unrecognized mapper used to generate file\n')
         condition = lambda x: x[1][1] != 1
     if verbose:
-        print 'loading %s file: %s' % (mapper, fnam)
+        print 'loading %s file: %s\n' % (mapper, fnam),
     # iteration over lreads
     i = 0
     crm_dict = {}
@@ -165,7 +181,8 @@ def _read_one_sam(fnam, mapper, verbose, frags, frag_chunk, num):
             next_re    = frag_piece[idx]
         prev_re    = frag_piece[idx - 1 if idx else 0]
         name       = r.qname
-        lreads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
+        out.write('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
             name, crm, pos, positive, len_seq, prev_re, next_re))
         lwindows[num] += 1
-    return lwindows, lreads
+    out.close()
+    return lwindows
