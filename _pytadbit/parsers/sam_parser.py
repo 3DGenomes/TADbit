@@ -7,10 +7,11 @@ from bisect import bisect_left as bisect
 from pysam import Samfile
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 from warnings import warn
+import multiprocessing as mu
 
 def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, mapper=None,
-              **kwargs):
+              ncpus=1, **kwargs):
     """
     Parse sam/bam file using pysam tools.
 
@@ -64,81 +65,24 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
     for read in range(len(fnames)):
         if verbose:
             print 'Loading read' + str(read + 1)
-        windows = {}
-        reads    = []
+        pool = mu.Pool(ncpus)
+        jobs = []
         num = 0
         for fnam in fnames[read]:
-            try:
-                fhandler = Samfile(fnam)
-            except IOError:
-                print 'WARNING: file "%s" not found' % fnam
-                continue
-            except ValueError:
-                raise Exception('ERROR: not a SAM/BAM file\n%s' % fnam)
-            # get the iteration number of the iterative mapping
-            try:
-                num = int(fnam.split('.')[-1].split(':')[0])
-            except:
-                num += 1
-            windows.setdefault(num, 0)
-            # guess mapper used
-            if not mapper:
-                mapper = fhandler.header['PG'][0]['ID']
-            if mapper.lower()=='gem':
-                condition = lambda x: x[1][1] != 1
-            elif mapper.lower() in ['bowtie', 'bowtie2']:
-                condition = lambda x: 'XS' in dict(x)
-            else:
-                warn('WARNING: unrecognized mapper used to generate file\n')
-                condition = lambda x: x[1][1] != 1
-            if verbose:
-                print 'loading %s file: %s' % (mapper, fnam)
-            # iteration over reads
-            i = 0
-            crm_dict = {}
-            while True:
-                try:
-                    crm_dict[i] = fhandler.getrname(i)
-                    i += 1
-                except ValueError:
-                    break
-            for r in fhandler:
-                if r.is_unmapped:
-                    continue
-                if condition(r.tags):
-                    continue
-                positive = not r.is_reverse
-                crm      = crm_dict[r.tid]
-                len_seq  = len(r.seq)
-                if positive:
-                    pos = r.pos + 1
-                else:
-                    pos = r.pos + len_seq + 1
-                try:
-                    frag_piece = frags[crm][pos / frag_chunk]
-                except KeyError:
-                    # Chromosome not in hash
-                    continue
-                idx = bisect(frag_piece, pos)
-                try:
-                    next_re = frag_piece[idx]
-                except IndexError:
-                    # case where part of the read is mapped outside chromosome
-                    count = 0
-                    while idx >= len(frag_piece) and count < len_seq:
-                        pos -= 1
-                        count += 1
-                        frag_piece = frags[crm][pos / frag_chunk]
-                        idx = bisect(frag_piece, pos)
-                    if count >= len_seq:
-                        raise Exception('Read mapped mostly outside ' +
-                                        'chromosome\n')
-                    next_re    = frag_piece[idx]
-                prev_re    = frag_piece[idx - 1 if idx else 0]
-                name       = r.qname
-                reads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
-                    name, crm, pos, positive, len_seq, prev_re, next_re))
-                windows[num] += 1
+            num += 1
+            jobs.append(pool.apply(_read_one_sam,
+                                   args=(fnam, mapper, verbose, frags,
+                                         frag_chunk, num)))
+        pool.close()
+        pool.join()
+        windows = {}
+        reads    = []
+        cnt = 0
+        for w, r in jobs:
+            windows.update(w)
+            reads.extend(r)
+            cnt += 1
+            
         reads_fh = open(outfiles[read], 'w')
         ## write file header
         # chromosome sizes (in order)
@@ -151,3 +95,77 @@ def parse_sam(f_names1, f_names2=None, out_file1=None, out_file2=None,
         reads_fh.write(''.join(sorted(reads)))
         reads_fh.close()
     del reads
+
+
+def _read_one_sam(fnam, mapper, verbose, frags, frag_chunk, num):
+    lwindows = {}
+    lreads = []
+    try:
+        fhandler = Samfile(fnam)
+    except IOError:
+        print 'WARNING: file "%s" not found' % fnam
+        return {}, []
+    except ValueError:
+        raise Exception('ERROR: not a SAM/BAM file\n%s' % fnam)
+    # get the iteration number of the iterative mapping
+    num = int(fnam.split('.')[-1].split(':')[0])
+    lwindows.setdefault(num, 0)
+    # guess mapper used
+    if not mapper:
+        mapper = fhandler.header['PG'][0]['ID']
+    if mapper.lower()=='gem':
+        condition = lambda x: x[1][1] != 1
+    elif mapper.lower() in ['bowtie', 'bowtie2']:
+        condition = lambda x: 'XS' in dict(x)
+    else:
+        warn('WARNING: unrecognized mapper used to generate file\n')
+        condition = lambda x: x[1][1] != 1
+    if verbose:
+        print 'loading %s file: %s' % (mapper, fnam)
+    # iteration over lreads
+    i = 0
+    crm_dict = {}
+    while True:
+        try:
+            crm_dict[i] = fhandler.getrname(i)
+            i += 1
+        except ValueError:
+            break
+    for r in fhandler:
+        if r.is_unmapped:
+            continue
+        if condition(r.tags):
+            continue
+        positive = not r.is_reverse
+        crm      = crm_dict[r.tid]
+        len_seq  = len(r.seq)
+        if positive:
+            pos = r.pos + 1
+        else:
+            pos = r.pos + len_seq + 1
+        try:
+            frag_piece = frags[crm][pos / frag_chunk]
+        except KeyError:
+            # Chromosome not in hash
+            continue
+        idx = bisect(frag_piece, pos)
+        try:
+            next_re = frag_piece[idx]
+        except IndexError:
+            # case where part of the read is mapped outside chromosome
+            count = 0
+            while idx >= len(frag_piece) and count < len_seq:
+                pos -= 1
+                count += 1
+                frag_piece = frags[crm][pos / frag_chunk]
+                idx = bisect(frag_piece, pos)
+            if count >= len_seq:
+                raise Exception('Read mapped mostly outside ' +
+                                'chromosome\n')
+            next_re    = frag_piece[idx]
+        prev_re    = frag_piece[idx - 1 if idx else 0]
+        name       = r.qname
+        lreads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
+            name, crm, pos, positive, len_seq, prev_re, next_re))
+        lwindows[num] += 1
+    return lwindows, lreads
