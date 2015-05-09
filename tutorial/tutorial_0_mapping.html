@@ -259,8 +259,10 @@ Parsing X as chrX
 Parsing Y as chrY
 Parsing MT as chrMT
 </pre>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">reads1</span> <span class="o">=</span> <span class="s">&#39;/scratch/results/</span><span class="si">%s</span><span class="s">_r1_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span> <span class="c"># new file with info of each &quot;read1&quot; and its placement with respect to RE sites</span>
-<span class="n">reads2</span> <span class="o">=</span> <span class="s">&#39;/scratch/results/</span><span class="si">%s</span><span class="s">_r2_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span> <span class="c"># new file with info of each &quot;read2&quot; and its placement with respect to RE sites</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># new file with info of each &quot;read1&quot; and its placement with respect to RE sites</span>
+<span class="n">reads1</span> <span class="o">=</span> <span class="s">&#39;/scratch/results/</span><span class="si">%s</span><span class="s">_r1_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
+<span class="c"># new file with info of each &quot;read2&quot; and its placement with respect to RE sites</span>
+<span class="n">reads2</span> <span class="o">=</span> <span class="s">&#39;/scratch/results/</span><span class="si">%s</span><span class="s">_r2_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="s">&#39;Parse SAM files...&#39;</span>
@@ -364,24 +366,53 @@ Found 41123290 pair of reads mapping uniquely
 <h3>Simple descriptive stats<a class="headerlink" href="#simple-descriptive-stats" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="how-the-count-in-interaction-falls-as-the-genomic-distance-is-larger">
 <h4>How the count in interaction falls as the genomic distance is larger<a class="headerlink" href="#how-the-count-in-interaction-falls-as-the-genomic-distance-is-larger" title="Permalink to this headline">¶</a></h4>
+<p>Here we want to see how the interaction between to two genomic region
+decays as the distance between these two loci is larger. Theexpectation
+is that at distances between 700 kb and 10 Mb the decay in logarithm
+scale is -1.</p>
+<p>In the example below are represented the interactions in between genomic
+regions that, each, spans over 10 kb (resolution parameter).</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">plot_distance_vs_interactions</span>
 
 <span class="n">plot_distance_vs_interactions</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_diff</span><span class="o">=</span><span class="mi">50000000</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_38_0.png" src="../_images/tutorial_0_mapping_38_0.png" />
+<img alt="../_images/tutorial_0_mapping_39_0.png" src="../_images/tutorial_0_mapping_39_0.png" />
 </div>
 <div class="section" id="genomic-coverage-of-our-reads">
 <h4>Genomic coverage of our reads<a class="headerlink" href="#genomic-coverage-of-our-reads" title="Permalink to this headline">¶</a></h4>
+<p>In the plot above we want to see the distribution of the reads mapped in
+the genome (regardless of their interactions). Here, te expecation is to
+see a minimum number of reads mapping in all positions of the genome
+with falls around centromeres and telomeres.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">plot_genomic_distribution</span>
-
-<span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_40_0.png" src="../_images/tutorial_0_mapping_40_0.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_43_0.png" src="../_images/tutorial_0_mapping_43_0.png" />
+<p><em>The picks in the plot correspond to PCR artifact that we will remove in
+the filtering step (see bellow)</em></p>
+<p>This plot can be zoomed in the y axis in order to avoid depending on
+these artifacts. The plot can also be generated only for a given number
+of chromosomes</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+                          <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;chr8&#39;</span><span class="p">],</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_46_0.png" src="../_images/tutorial_0_mapping_46_0.png" />
 </div>
 <div class="section" id="interaction-matrix">
 <h4>Interaction matrix<a class="headerlink" href="#interaction-matrix" title="Permalink to this headline">¶</a></h4>
+<p>The plot above is probablythe most informative, in order to infer the
+qualtity of an Hi-C experiment. This plot represents the matrix of
+interaction, the distribution of these interaction as an histogram or as
+a function of genomic distance. Some statistics on the specificity of
+these interaction, like the cis-to-trans ratio (expected to be between
+40 and 60%), and the 3 first eigen vectors of the matrix highlighting
+the principal structural features of the matrix (in non-normalized
+matrices eigen-vectors are not very informative however).</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">hic_map</span>
 
 <span class="n">hic_map</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -393,18 +424,98 @@ Found 41123290 pair of reads mapping uniquely
 /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
   ret = ret.dtype.type(ret / rcount)
 </pre>
-<img alt="../_images/tutorial_0_mapping_42_1.png" src="../_images/tutorial_0_mapping_42_1.png" />
+<img alt="../_images/tutorial_0_mapping_49_1.png" src="../_images/tutorial_0_mapping_49_1.png" />
 </div>
 </div>
 <div class="section" id="filter-reads">
 <h3>Filter reads<a class="headerlink" href="#filter-reads" title="Permalink to this headline">¶</a></h3>
+<p>In order to remove interactions between reads that are experimental
+artifacts, or just uninoformative, a series of adjustable filters can be
+applied: 1. self-circle : reads are comming from a single RE fragment
+and point to the outside (—-&lt;===—===&gt;—) 2. dangling-end : reads are
+comming from a single RE fragment and point to the inside (—-===&gt;—&lt;===—)
+3. error : reads are comming from a single RE fragment and point in the
+same direction 4. extra dangling-end : reads are comming from different
+RE fragment but are close enough (&lt; max_molecule length) and point to
+the inside 5. too close from RES : semi-dangling-end filter, start
+position of one of the read is too close (5 bp by default) from RE
+cutting site. 6. too short : remove reads comming from small restriction
+less than 100 bp (default) because they are comparable to the read
+length 7. too large : remove reads comming from large restriction
+fragments (default: 100 Kb, P &lt; 10-5 to occur in a randomized genome) as
+they likely represent poorly assembled or repeated regions 8.
+over-represented : reads coming from the top 0.5% most frequently
+detected restriction fragments, they may be prone to PCR artifacts or
+represent fragile regions of the genome or genome assembly errors 9.
+duplicated : the combination of the start positions of the reads is
+repeated -&gt; PCR artifact (only keep one copy) 10. random breaks : start
+position of one of the read is too far (more than min_dist_to_re)
+from RE cutting site. Non-canonical enzyme activity or random physical
+breakage of the chromatin.</p>
+<p>The function <code class="docutils literal"><span class="pre">filter_reads</span></code> works in parallel (4 threads), and creates
+one file per filter (10 files, which path are an extension of the input
+file containing the reads).</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="kn">import</span> <span class="n">filter_reads</span>
 
-<span class="n">masked</span> <span class="o">=</span> <span class="n">filter_reads</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span>
-                      <span class="n">over_represented</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
-                      <span class="n">min_frag_size</span><span class="o">=</span><span class="mi">76</span><span class="p">,</span> <span class="n">re_proximity</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">masked</span> <span class="o">=</span> <span class="n">filter_reads</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="o">=</span><span class="mi">505</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="o">=</span><span class="mi">760</span><span class="p">,</span>
+                      <span class="n">over_represented</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                      <span class="n">min_frag_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">re_proximity</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
+<pre class="ansi-block literal-block">
+Filtered reads (and percentage of total):
+
+     TOTAL mapped              :     41123290 (100.00%)
+  -----------------------------------------------------
+   1- self-circle               :       653029 (  1.59%)
+   2- dangling-end              :     17054088 ( 41.47%)
+   3- error                     :       250158 (  0.61%)
+   4- extra dangling-end        :      4115590 ( 10.01%)
+   5- too close from RES        :      5761851 ( 14.01%)
+   6- too short                 :       307169 (  0.75%)
+   7- too large                 :        63151 (  0.15%)
+   8- over-represented          :      1334209 (  3.24%)
+   9- duplicated                :      9132048 ( 22.21%)
+  10- random breaks             :     18282481 ( 44.46%)
+</pre>
+<p>Previous function creates one file per filter. Each containing the list
+of IDs of the reads falling into the corresponding filter. In order to
+apply filter, the function <code class="docutils literal"><span class="pre">apply_filter</span></code> will create a new file
+without the reads contained in the files. By default all filters are
+applied.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="kn">import</span> <span class="n">apply_filter</span>
+<span class="n">filt_reads</span>  <span class="o">=</span> <span class="s">&#39;/scratch/results/</span><span class="si">%s</span><span class="s">_filtered_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">filt_reads</span><span class="p">,</span> <span class="n">masked</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+9403143 reads written to file
+</pre>
+<p>An example to apply only the 9 first filters:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">filt_reads</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">])</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+13666735 reads written to file
+</pre>
+<p>Filters can also be applied in a &#8220;reverse&#8221; way in order to select only
+&#8220;bad&#8221; reads.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">sc_de</span>  <span class="o">=</span> <span class="s">&#39;/scratch/results/</span><span class="si">%s</span><span class="s">_self_circles_and_dangling-ends.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
+
+<span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">sc_de</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+17707117 reads written to file
+</pre>
+<p>This can be used for example to analyze the distribution of
+dangling-ends and self-circle along the genome</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">sc_de</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;chr8&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_62_0.png" src="../_images/tutorial_0_mapping_62_0.png" />
 </div>
 </div>
 </div>

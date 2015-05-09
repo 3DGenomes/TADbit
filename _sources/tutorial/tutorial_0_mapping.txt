@@ -266,8 +266,10 @@ the placement of the restriction enzyme sites in the genome.
 
 .. code:: python
 
-    reads1 = '/scratch/results/%s_r1_map.tsv' % name # new file with info of each "read1" and its placement with respect to RE sites
-    reads2 = '/scratch/results/%s_r2_map.tsv' % name # new file with info of each "read2" and its placement with respect to RE sites
+    # new file with info of each "read1" and its placement with respect to RE sites
+    reads1 = '/scratch/results/%s_r1_map.tsv' % name
+    # new file with info of each "read2" and its placement with respect to RE sites
+    reads2 = '/scratch/results/%s_r2_map.tsv' % name
 
 .. code:: python
 
@@ -392,6 +394,14 @@ Simple descriptive stats
 How the count in interaction falls as the genomic distance is larger
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Here we want to see how the interaction between to two genomic region
+decays as the distance between these two loci is larger. Theexpectation
+is that at distances between 700 kb and 10 Mb the decay in logarithm
+scale is -1.
+
+In the example below are represented the interactions in between genomic
+regions that, each, spans over 10 kb (resolution parameter).
+
 .. code:: python
 
     from pytadbit.mapping.analyze import plot_distance_vs_interactions
@@ -400,25 +410,58 @@ How the count in interaction falls as the genomic distance is larger
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_38_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_39_0.png
 
 
 Genomic coverage of our reads
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+In the plot above we want to see the distribution of the reads mapped in
+the genome (regardless of their interactions). Here, te expecation is to
+see a minimum number of reads mapping in all positions of the genome
+with falls around centromeres and telomeres.
+
 .. code:: python
 
     from pytadbit.mapping.analyze import plot_genomic_distribution
-    
-    plot_genomic_distribution(reads, resolution=50000)
+
+.. code:: python
+
+    plot_genomic_distribution(reads, resolution=50000, first_read=True)
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_40_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_43_0.png
+
+
+*The picks in the plot correspond to PCR artifact that we will remove in
+the filtering step (see bellow)*
+
+This plot can be zoomed in the y axis in order to avoid depending on
+these artifacts. The plot can also be generated only for a given number
+of chromosomes
+
+.. code:: python
+
+    plot_genomic_distribution(reads, resolution=50000, first_read=True, ylim=(1, 100), 
+                              chr_names=['chr8'], nreads=1000000)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_46_0.png
 
 
 Interaction matrix
 ^^^^^^^^^^^^^^^^^^
+
+The plot above is probablythe most informative, in order to infer the
+qualtity of an Hi-C experiment. This plot represents the matrix of
+interaction, the distribution of these interaction as an histogram or as
+a function of genomic distance. Some statistics on the specificity of
+these interaction, like the cis-to-trans ratio (expected to be between
+40 and 60%), and the 3 first eigen vectors of the matrix highlighting
+the principal structural features of the matrix (in non-normalized
+matrices eigen-vectors are not very informative however).
 
 .. code:: python
 
@@ -436,17 +479,124 @@ Interaction matrix
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_42_1.png
+.. image:: ../nbpictures/tutorial_0_mapping_49_1.png
 
 
 Filter reads
 ~~~~~~~~~~~~
 
+In order to remove interactions between reads that are experimental
+artifacts, or just uninoformative, a series of adjustable filters can be
+applied: 1. self-circle : reads are comming from a single RE fragment
+and point to the outside (—-<===—===>—) 2. dangling-end : reads are
+comming from a single RE fragment and point to the inside (—-===>—<===—)
+3. error : reads are comming from a single RE fragment and point in the
+same direction 4. extra dangling-end : reads are comming from different
+RE fragment but are close enough (< max\_molecule length) and point to
+the inside 5. too close from RES : semi-dangling-end filter, start
+position of one of the read is too close (5 bp by default) from RE
+cutting site. 6. too short : remove reads comming from small restriction
+less than 100 bp (default) because they are comparable to the read
+length 7. too large : remove reads comming from large restriction
+fragments (default: 100 Kb, P < 10-5 to occur in a randomized genome) as
+they likely represent poorly assembled or repeated regions 8.
+over-represented : reads coming from the top 0.5% most frequently
+detected restriction fragments, they may be prone to PCR artifacts or
+represent fragile regions of the genome or genome assembly errors 9.
+duplicated : the combination of the start positions of the reads is
+repeated -> PCR artifact (only keep one copy) 10. random breaks : start
+position of one of the read is too far (more than min\_dist\_to\_re)
+from RE cutting site. Non-canonical enzyme activity or random physical
+breakage of the chromatin.
+
+The function ``filter_reads`` works in parallel (4 threads), and creates
+one file per filter (10 files, which path are an extension of the input
+file containing the reads).
+
 .. code:: python
 
     from pytadbit.mapping.filter import filter_reads
     
-    masked = filter_reads(reads, max_molecule_length=500, min_dist_to_re=750,
-                          over_represented=0.005, max_frag_size=10000,
-                          min_frag_size=76, re_proximity=4)
+    masked = filter_reads(reads, max_molecule_length=505, min_dist_to_re=760,
+                          over_represented=0.005, max_frag_size=100000,
+                          min_frag_size=100, re_proximity=5)
+
+
+.. ansi-block::
+
+    Filtered reads (and percentage of total):
+    
+         TOTAL mapped              :     41123290 (100.00%)
+      -----------------------------------------------------
+       1- self-circle               :       653029 (  1.59%)
+       2- dangling-end              :     17054088 ( 41.47%)
+       3- error                     :       250158 (  0.61%)
+       4- extra dangling-end        :      4115590 ( 10.01%)
+       5- too close from RES        :      5761851 ( 14.01%)
+       6- too short                 :       307169 (  0.75%)
+       7- too large                 :        63151 (  0.15%)
+       8- over-represented          :      1334209 (  3.24%)
+       9- duplicated                :      9132048 ( 22.21%)
+      10- random breaks             :     18282481 ( 44.46%)
+
+
+Previous function creates one file per filter. Each containing the list
+of IDs of the reads falling into the corresponding filter. In order to
+apply filter, the function ``apply_filter`` will create a new file
+without the reads contained in the files. By default all filters are
+applied.
+
+.. code:: python
+
+    from pytadbit.mapping.filter import apply_filter
+    filt_reads  = '/scratch/results/%s_filtered_map.tsv' % name
+
+.. code:: python
+
+    apply_filter(reads, filt_reads, masked)
+
+
+.. ansi-block::
+
+       9403143 reads written to file
+
+
+An example to apply only the 9 first filters:
+
+.. code:: python
+
+    apply_filter(reads, filt_reads, masked, filters=[1,2,3,4,5,6,7,8,9])
+
+
+.. ansi-block::
+
+       13666735 reads written to file
+
+
+Filters can also be applied in a "reverse" way in order to select only
+"bad" reads.
+
+.. code:: python
+
+    sc_de  = '/scratch/results/%s_self_circles_and_dangling-ends.tsv' % name
+    
+    apply_filter(reads, sc_de, masked, filters=[1,2], reverse=True)
+
+
+.. ansi-block::
+
+       17707117 reads written to file
+
+
+This can be used for example to analyze the distribution of
+dangling-ends and self-circle along the genome
+
+.. code:: python
+
+    plot_genomic_distribution(sc_de, resolution=50000, first_read=True, chr_names=['chr8'])
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_62_0.png
+
 
