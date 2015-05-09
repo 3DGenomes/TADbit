@@ -466,7 +466,9 @@ matrices eigen-vectors are not very informative however).
 .. code:: python
 
     from pytadbit.mapping.analyze import hic_map
-    
+
+.. code:: python
+
     hic_map(reads, resolution=1000000, show=True)
 
 
@@ -479,7 +481,7 @@ matrices eigen-vectors are not very informative however).
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_49_1.png
+.. image:: ../nbpictures/tutorial_0_mapping_50_1.png
 
 
 Filter reads
@@ -602,6 +604,45 @@ dangling-ends and self-circle along the genome
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_62_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_63_0.png
+
+
+Once filtered the peaks previously seen should disapeear:
+
+.. code:: python
+
+    plot_genomic_distribution(reads, resolution=50000, first_read=True, chr_names=['chr8'],
+                             nreads=1000000, ylim=(0,250))
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_65_0.png
+
+
+.. code:: python
+
+    plot_genomic_distribution(filt_reads, resolution=50000, first_read=True, chr_names=['chr8'],
+                             nreads=1000000, ylim=(0,250))
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_66_0.png
+
+
+.. code:: python
+
+    hic_map(filt_reads, resolution=1000000, show=True)
+
+
+.. ansi-block::
+
+    /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:55: RuntimeWarning: Mean of empty slice.
+      warnings.warn("Mean of empty slice.", RuntimeWarning)
+    /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
+      ret = ret.dtype.type(ret / rcount)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_67_1.png
 
 
