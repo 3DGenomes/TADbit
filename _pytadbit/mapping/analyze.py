@@ -25,8 +25,8 @@ except ImportError:
 
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
-            focus=None, clim=None, cmap='tadbit', pdf=False, decay=True,
-            perc=10, name=None, **kwargs):
+            focus=None, clim=None, cmap='jet', pdf=False, decay=True,
+            perc=10, name=None, decay_resolution=10000, **kwargs):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
@@ -64,6 +64,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     :param False pdf: when using the bny_chrom option, to specify the format of
        the stored images
     :param Reds cmap: color map to be used for the heatmap
+    :param 10000 decay_resolution: chromatin fragment size to consider when
+       calculating decay of the number of interactions with genomic distance
     """
     if isinstance(data, str):
         data = load_hic_data_from_reads(data, resolution=resolution, **kwargs)
@@ -101,7 +103,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                            '_'.join(set((crm1, crm2))),
                                            'pdf' if pdf else 'png'),
                              show, one=True, clim=clim, cmap=cmap,
-                             resolution=resolution, perc=perc,
+                             decay_resolution=decay_resolution, perc=perc,
                              name=name, cistrans=float('NaN'))
     else:
         if savedata:
@@ -124,7 +126,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      {} if focus else hic_data.chromosomes,
                      hic_data.section_pos, savefig, show,
                      one = True if focus else False, decay=decay,
-                     clim=clim, cmap=cmap, resolution=resolution, perc=perc,
+                     clim=clim, cmap=cmap, decay_resolution=decay_resolution,
+                     perc=perc,
                      name=name, cistrans=float('NaN') if focus else
                      hic_data.cis_trans_ratio(kwargs.get('normalized', False),
                                               kwargs.get('exclude', None),
@@ -133,15 +136,16 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                               kwargs.get('verbose', False)))
 
 
-def draw_map(data, genome_seq, cumcs, savefig, show, resolution=None, one=False,
-             clim=None, cmap='tadbit', decay=False, perc=10, name=None, cistrans=None):
+def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
+             cmap='jet', decay=False, perc=10, name=None, cistrans=None,
+             decay_resolution=10000):
     _ = plt.figure(figsize=(15.,12.5))
     ax1 = plt.axes([0.34, 0.08, 0.6, 0.7205])
     ax2 = plt.axes([0.07, 0.65, 0.21, 0.15])
     if decay:
         ax3 = plt.axes([0.07, 0.42, 0.21, 0.15])
         plot_distance_vs_interactions(data, genome_seq=genome_seq, axe=ax3,
-                                      resolution=resolution)
+                                      resolution=decay_resolution)
     ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
     ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
@@ -485,9 +489,10 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
         pass
     if savefig:
         tadbit_savefig(savefig)
+        plt.close('all')
     elif show==True:
         plt.show()
-
+        plt.close('all')
 
 def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=None):
     """
@@ -549,6 +554,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
         tadbit_savefig(savefig)
     elif not axe:
         plt.show()
+    plt.close('all')
     return count_by_len
 
 
@@ -621,7 +627,8 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
-                              axe=None, ylim=None, savefig=None):
+                              axe=None, ylim=None, savefig=None,
+                              chr_names=None, nreads=None):
     """
     :param fnam: input file name
     :param True first_read: uses first read.
@@ -632,6 +639,8 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
+    :param None chr_names: can pass a list of chromosome names in case only some
+       them the need to be plotted (this option may last even more than default)
     
     """
 
@@ -640,6 +649,17 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     genome_seq = OrderedDict()
     fhandler = open(fnam)
     line = fhandler.next()
+    if chr_names:
+        chr_names = set(chr_names)
+        cond1 = lambda x: x not in chr_names
+    else:
+        cond1 = lambda x: False
+    if nreads:
+        cond2 = lambda x: x >= nreads
+    else:
+        cond2 = lambda x: False
+    cond = lambda x, y: cond1(x) and cond2(y)
+    count = 0
     while line.startswith('#'):
         if line.startswith('# CRM '):
             crm, clen = line[6:].split('\t')
@@ -648,6 +668,12 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     try:
         while True:
             crm, pos = line.strip().split('\t')[idx1:idx2]
+            count += 1
+            if cond(crm, count):
+                line = fhandler.next()
+                if cond2(count):
+                    break
+                continue
             pos = int(pos) / resolution
             try:
                 distr[crm][pos] += 1
@@ -661,12 +687,13 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         pass
     fhandler.close()
     if not axe:
-        _ = plt.figure(figsize=(15, 3 * len(distr.keys())))
+        _ = plt.figure(figsize=(15, 3 + 3 * len(distr.keys())))
 
     max_y = max([max(distr[c].values()) for c in distr])
     max_x = max([len(distr[c].values()) for c in distr])
     ncrms = len(genome_seq if genome_seq else distr)
-    for i, crm in enumerate(genome_seq if genome_seq else distr):
+    for i, crm in enumerate(chr_names if chr_names else genome_seq
+                            if genome_seq else distr):
         plt.subplot(ncrms, 1, i + 1)
         try:
             plt.plot(range(max(distr[crm])),
@@ -686,7 +713,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         tadbit_savefig(savefig)
     elif not axe:
         plt.show()
-    plt.close()
+    plt.close('all')
 
 
 def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
@@ -748,7 +775,6 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
         for i in xrange(len(corr)):
             out.write('%s\t%s\n' % (dist[i], corr[i]))
         out.close()
-
     return corr, dist
 
 

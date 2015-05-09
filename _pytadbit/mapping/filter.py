@@ -28,7 +28,8 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
             masked_reads.update(masked[filt]['reads'])
     else:
         for k in masked:
-            masked_reads.update(open(masked[k]['fnam']).read().split())
+            if k in filters:
+                masked_reads.update(open(masked[k]['fnam']).read().split())
     out = open(outfile, 'w')
     fhandler = open(fnam)
     while True:
