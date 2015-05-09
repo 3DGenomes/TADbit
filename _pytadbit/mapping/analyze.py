@@ -668,9 +668,12 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     ncrms = len(genome_seq if genome_seq else distr)
     for i, crm in enumerate(genome_seq if genome_seq else distr):
         plt.subplot(ncrms, 1, i + 1)
-        plt.plot(range(max(distr[crm])),
-                 [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))],
-                 color='red', lw=1.5, alpha=0.7)
+        try:
+            plt.plot(range(max(distr[crm])),
+                     [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))],
+                     color='red', lw=1.5, alpha=0.7)
+        except KeyError:
+            pass
         if ylim:
             plt.vlines(genome_seq[crm] / resolution, ylim[0], ylim[1])
         else:
