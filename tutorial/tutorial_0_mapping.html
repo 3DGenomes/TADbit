@@ -432,27 +432,33 @@ matrices eigen-vectors are not very informative however).</p>
 <h2>Filter reads<a class="headerlink" href="#filter-reads" title="Permalink to this headline">¶</a></h2>
 <p>In order to remove interactions between reads that are experimental
 artifacts, or just uninoformative, a series of adjustable filters can be
-applied: 1. self-circle : reads are comming from a single RE fragment
-and point to the outside (—-&lt;===—===&gt;—) 2. dangling-end : reads are
-comming from a single RE fragment and point to the inside (—-===&gt;—&lt;===—)
-3. error : reads are comming from a single RE fragment and point in the
-same direction 4. extra dangling-end : reads are comming from different
-RE fragment but are close enough (&lt; max_molecule length) and point to
-the inside 5. too close from RES : semi-dangling-end filter, start
-position of one of the read is too close (5 bp by default) from RE
-cutting site. 6. too short : remove reads comming from small restriction
-less than 100 bp (default) because they are comparable to the read
-length 7. too large : remove reads comming from large restriction
-fragments (default: 100 Kb, P &lt; 10-5 to occur in a randomized genome) as
-they likely represent poorly assembled or repeated regions 8.
-over-represented : reads coming from the top 0.5% most frequently
-detected restriction fragments, they may be prone to PCR artifacts or
-represent fragile regions of the genome or genome assembly errors 9.
-duplicated : the combination of the start positions of the reads is
-repeated -&gt; PCR artifact (only keep one copy) 10. random breaks : start
-position of one of the read is too far (more than min_dist_to_re)
-from RE cutting site. Non-canonical enzyme activity or random physical
-breakage of the chromatin.</p>
+applied:</p>
+<ol class="arabic simple">
+<li>self-circle : reads are comming from a single RE fragment and point
+to the outside (—-&lt;===—===&gt;—)</li>
+<li>dangling-end : reads are comming from a single RE fragment and point
+to the inside (—-===&gt;—&lt;===—)</li>
+<li>error : reads are comming from a single RE fragment and point in the
+same direction</li>
+<li>extra dangling-end : reads are comming from different RE fragment
+but are close enough (&lt; max_molecule length) and point to the
+inside</li>
+<li>too close from RES : semi-dangling-end filter, start position of one
+of the read is too close (5 bp by default) from RE cutting site.</li>
+<li>too short : remove reads comming from small restriction less than
+100 bp (default) because they are comparable to the read length</li>
+<li>too large : remove reads comming from large restriction fragments
+(default: 100 Kb, P &lt; 10-5 to occur in a randomized genome) as they
+likely represent poorly assembled or repeated regions</li>
+<li>over-represented : reads coming from the top 0.5% most frequently
+detected restriction fragments, they may be prone to PCR artifacts
+or represent fragile regions of the genome or genome assembly errors</li>
+<li>duplicated : the combination of the start positions of the reads is
+repeated -&gt; PCR artifact (only keep one copy)</li>
+<li>random breaks : start position of one of the read is too far (more
+than min_dist_to_re) from RE cutting site. Non-canonical enzyme
+activity or random physical breakage of the chromatin.</li>
+</ol>
 <p>The function <code class="docutils literal"><span class="pre">filter_reads</span></code> works in parallel (4 threads), and creates
 one file per filter (10 files, which path are an extension of the input
 file containing the reads).</p>
