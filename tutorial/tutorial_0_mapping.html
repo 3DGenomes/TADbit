@@ -342,8 +342,9 @@ ends (&#8220;read1&#8221; and &#8220;read2&#8221; uniquely mapped)</p>
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">reads</span>  <span class="o">=</span> <span class="s">&#39;/scratch/results/</span><span class="si">%s</span><span class="s">_both_map.tsv&#39;</span> <span class="o">%</span> <span class="n">name</span>
-
-<span class="n">get_intersection</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">reads</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">get_intersection</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">reads</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
@@ -356,7 +357,53 @@ Found 41123290 pair of reads mapping uniquely
 <span class="n">insert_sizes</span><span class="p">(</span><span class="n">reads</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_34_0.png" src="../_images/tutorial_0_mapping_34_0.png" />
+<img alt="../_images/tutorial_0_mapping_35_0.png" src="../_images/tutorial_0_mapping_35_0.png" />
+</div>
+</div>
+<div class="section" id="simple-descriptive-stats">
+<h3>Simple descriptive stats<a class="headerlink" href="#simple-descriptive-stats" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="how-the-count-in-interaction-falls-as-the-genomic-distance-is-larger">
+<h4>How the count in interaction falls as the genomic distance is larger<a class="headerlink" href="#how-the-count-in-interaction-falls-as-the-genomic-distance-is-larger" title="Permalink to this headline">¶</a></h4>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">plot_distance_vs_interactions</span>
+
+<span class="n">plot_distance_vs_interactions</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_diff</span><span class="o">=</span><span class="mi">50000000</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_38_0.png" src="../_images/tutorial_0_mapping_38_0.png" />
+</div>
+<div class="section" id="genomic-coverage-of-our-reads">
+<h4>Genomic coverage of our reads<a class="headerlink" href="#genomic-coverage-of-our-reads" title="Permalink to this headline">¶</a></h4>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">plot_genomic_distribution</span>
+
+<span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_40_0.png" src="../_images/tutorial_0_mapping_40_0.png" />
+</div>
+<div class="section" id="interaction-matrix">
+<h4>Interaction matrix<a class="headerlink" href="#interaction-matrix" title="Permalink to this headline">¶</a></h4>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.analyze</span> <span class="kn">import</span> <span class="n">hic_map</span>
+
+<span class="n">hic_map</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+/usr/lib/python2.7/dist-packages/numpy/core/_methods.py:55: RuntimeWarning: Mean of empty slice.
+  warnings.warn(&quot;Mean of empty slice.&quot;, RuntimeWarning)
+/usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
+  ret = ret.dtype.type(ret / rcount)
+</pre>
+<img alt="../_images/tutorial_0_mapping_42_1.png" src="../_images/tutorial_0_mapping_42_1.png" />
+</div>
+</div>
+<div class="section" id="filter-reads">
+<h3>Filter reads<a class="headerlink" href="#filter-reads" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="kn">import</span> <span class="n">filter_reads</span>
+
+<span class="n">masked</span> <span class="o">=</span> <span class="n">filter_reads</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span>
+                      <span class="n">over_represented</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+                      <span class="n">min_frag_size</span><span class="o">=</span><span class="mi">76</span><span class="p">,</span> <span class="n">re_proximity</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
 </div>
 </div>
 </div>

@@ -361,7 +361,9 @@ ends ("read1" and "read2" uniquely mapped)
 .. code:: python
 
     reads  = '/scratch/results/%s_both_map.tsv' % name
-    
+
+.. code:: python
+
     get_intersection(reads1, reads2, reads, verbose=True)
 
 
@@ -381,6 +383,70 @@ Stats on intersection
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_34_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_35_0.png
 
+
+Simple descriptive stats
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+How the count in interaction falls as the genomic distance is larger
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code:: python
+
+    from pytadbit.mapping.analyze import plot_distance_vs_interactions
+    
+    plot_distance_vs_interactions(reads, max_diff=50000000, resolution=10000)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_38_0.png
+
+
+Genomic coverage of our reads
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code:: python
+
+    from pytadbit.mapping.analyze import plot_genomic_distribution
+    
+    plot_genomic_distribution(reads, resolution=50000)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_40_0.png
+
+
+Interaction matrix
+^^^^^^^^^^^^^^^^^^
+
+.. code:: python
+
+    from pytadbit.mapping.analyze import hic_map
+    
+    hic_map(reads, resolution=1000000, show=True)
+
+
+.. ansi-block::
+
+    /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:55: RuntimeWarning: Mean of empty slice.
+      warnings.warn("Mean of empty slice.", RuntimeWarning)
+    /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
+      ret = ret.dtype.type(ret / rcount)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_42_1.png
+
+
+Filter reads
+~~~~~~~~~~~~
+
+.. code:: python
+
+    from pytadbit.mapping.filter import filter_reads
+    
+    masked = filter_reads(reads, max_molecule_length=500, min_dist_to_re=750,
+                          over_represented=0.005, max_frag_size=10000,
+                          min_frag_size=76, re_proximity=4)
 
