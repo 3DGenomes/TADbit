@@ -483,7 +483,7 @@ matrices eigen-vectors are not very informative however).
 
 
 Filter reads
-~~~~~~~~~~~~
+------------
 
 In order to remove interactions between reads that are experimental
 artifacts, or just uninoformative, a series of adjustable filters can be
