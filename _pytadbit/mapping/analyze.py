@@ -145,7 +145,8 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     if decay:
         ax3 = plt.axes([0.07, 0.42, 0.21, 0.15])
         plot_distance_vs_interactions(data, genome_seq=genome_seq, axe=ax3,
-                                      resolution=decay_resolution)
+                                      resolution=decay_resolution,
+                                      max_diff=len(data))
     ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
     ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
