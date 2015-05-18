@@ -183,7 +183,10 @@ def _equal(a, b, cut_off=1e-9):
 def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                 method='frobenius', long_nw=True, long_dist=True):
     """
-    Calculates the optimal contact map overlap between 2 matrices 
+    Calculates the optimal contact map overlap between 2 matrices
+
+    TODO: make the selection of number of eigen vectors automatic or relying on
+          the summed contribution (e.g. select the EVs that sum 80% of the info)
 
     .. note::
 
@@ -256,7 +259,6 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                     best_pen = penalty
             except IndexError as e:
                 print e
-                pass
     try:
         align1, align2 = best_alis
     except ValueError:
@@ -400,7 +402,7 @@ def matrix2binnary_contacts(tad1, tad2):
 def _run_aleigen(contacts1, contacts2, num_v):
     """
 
-        - c1, c2 = number of contacts of the first and seconf contact map
+        - c1, c2 = number of contacts of the first and second contact map
                    (after removing non-matching columns/rows)
         - cmo = total number of matching contacts (above the first diagonal)
           of the computed overlap
