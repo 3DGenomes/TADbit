@@ -2305,10 +2305,30 @@ class StructuralModels(object):
                            for i, w in enumerate(key.split(' '))])
             return key
         try:
+            my_descr = dict(self.description)
+            my_descr['chrom'] = ["%s" % (my_descr['chromosome'])]
+            del my_descr['chromosome']
+            if not 'chrom_start' in my_descr:
+                warn("WARNING: chrom_start variable wasn't set, setting it to" +
+                     " the position in the experiment matrix " +
+                     " times the resolution (%d*%d)" % (
+                         my_descr['start'], my_descr['resolution']))
+                my_descr['chrom_start'] = [my_descr['start'] *
+                                           my_descr['resolution']]
+            if not 'chrom_end' in my_descr:
+                warn("WARNING: chrom_end variable wasn't set, setting it to" +
+                     " the position in the experiment matrix " +
+                     " times the resolution (%d*%d)" % (
+                         my_descr['end'], my_descr['resolution']))
+                my_descr['chrom_end'] = [my_descr['end'] *
+                                         my_descr['resolution']]
             fil['descr']   = ',\n'.join([
-                (' ' * 19) + '"%s" : %s' % (tocamel(k), ('"%s"' % (v))
-                                            if not isinstance(v, int) else v)
-                for k, v in self.description.items()])
+                (' ' * 19) + '"%s" : %s' % (tocamel(k),
+                                            ('"%s"' % (v))
+                                            if not (isinstance(v, int)
+                                                    or isinstance(v, list))
+                                            else str(v).replace("'", '"'))
+                for k, v in my_descr.items()])
             if fil['descr']:
                 fil['descr'] += ','
         except AttributeError:
