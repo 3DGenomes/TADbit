@@ -780,7 +780,7 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
 
 
 def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
-                           savefig=None, show=False, savedata=None):
+                           savefig=None, show=False, savedata=None, **kwargs):
     """
     Compare the iteractions of two Hi-C matrices using their 6 first
     eigenvectors, with spearman rank correlation
@@ -790,6 +790,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
     :param 6 nvect: number of eigenvectors to compare
     :param None savefig: path to save the plot
     :param False show: displays the plot
+    :param kwargs: any argument to pass to matplotlib imshow function
 
     :returns: matrix of correlations
     """
@@ -819,7 +820,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
     axe    = plt.axes([0.1, 0.1, 0.6, 0.8])
     cbaxes = plt.axes([0.85, 0.1, 0.03, 0.8])
     if show or savefig:
-        im = axe.imshow(corr, interpolation="nearest",origin='lower')
+        im = axe.imshow(corr, interpolation="nearest",origin='lower', **kwargs)
         axe.set_xlabel('Eigen Vectors exp. 1')
         axe.set_ylabel('Eigen Vectors exp. 2')
         axe.set_xticks(range(nvect))
