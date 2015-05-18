@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 # from scipy.stats import zscore
 import multiprocessing as mu
 from pytadbit import Experiment
-from pytadbit.utils import zscore
+from pytadbit.utils.tadmaths import zscore
 
 
 inf = open('tad_distr.pik')
@@ -270,7 +270,7 @@ def main():
     main function
     """
 
-    out = open('/home/fransua/Projects/tad-ledily/scripts/lala.pik')
+    out = open('lala.pik')
     tad1m = load(out)
     out.close()
     
@@ -281,9 +281,9 @@ def main():
                'nw-sam frob-ext': [],
                'nw-sam frob-sam': [],
                'binary frob'    : []}
-    pool = mu.Pool(7)
+    pool = mu.Pool(4)
     jobs = {}
-    for II in xrange(100):
+    for II in xrange(10):
         
         size   = len(tad1m) if use_real else 21
         ext    = 1 + int(random()*4)
@@ -333,11 +333,11 @@ def main():
     pool.close()
     pool.join()
     
-    for II in xrange(100):
+    for II in xrange(10):
         print II, '=' * 80
         indels = jobs[II][0]
-        print 'inserted/deleted', [str(i-1) if i>0 else '-' + str((abs(i)-1)) \
-                                   for i in indels]
+        print 'inserted/deleted', II, [str(i-1) if i>0 else '-' + str((abs(i)-1)) \
+                                       for i in indels]
         align1, align2 = get_original(size, indels, verbose=True)
         del(jobs[II][0])
         #aliF1, aliF2, aliF3, aliF4 = [jobs[II][j].get() for j in jobs[II]]
