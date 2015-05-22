@@ -2276,7 +2276,7 @@ class StructuralModels(object):
 		"type"     : "dataset",
                 "generator": "TADbit"
                 },
-	"object": {\n%(descr)s,
+	"object": {\n%(descr)s
 		   "uuid": "%(sha)s",
 		   "title": "%(title)s",
                    "datatype": "xyz",
@@ -2299,9 +2299,9 @@ class StructuralModels(object):
                                if k in ['  TADbit', 'IMP', 'MCL']])).replace("'", '"')
         ukw = 'UNKNOWN'
         def tocamel(key):
-            key = ''.join([(w[0].upper()+w[1:]) if i else w
+            key = ''.join([(w[0].upper() + w[1:]) if i else w
                            for i, w in enumerate(key.split('_'))])
-            key = ''.join([(w[0].upper()+w[1:]) if i else w
+            key = ''.join([(w[0].upper() + w[1:]) if i else w
                            for i, w in enumerate(key.split(' '))])
             return key
         try:
@@ -2310,7 +2310,7 @@ class StructuralModels(object):
             except TypeError:
                 my_descr = {'start'     : 0,
                             'end'       : self.nloci}
-            my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'None'))]
+            my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'Chromosome'))]
             if 'chromosome' in my_descr:
                 del my_descr['chromosome']
             if not 'chrom_start' in my_descr:
@@ -2331,7 +2331,8 @@ class StructuralModels(object):
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),
                                             ('"%s"' % (v))
                                             if not (isinstance(v, int)
-                                                    or isinstance(v, list))
+                                                    or isinstance(v, list)
+                                                    or isinstance(v, float))
                                             else str(v).replace("'", '"'))
                 for k, v in my_descr.items()])
             if fil['descr']:

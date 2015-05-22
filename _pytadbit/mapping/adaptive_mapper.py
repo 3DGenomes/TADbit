@@ -102,21 +102,18 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None,
         yield out_name
 
 
-def gem_mapping(gem_index_path, fastq_path, out_sam_path, **kwargs):
+def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
     """
     :param None focus: trims the sequence in the input FASTQ file according to a
        (start, end) position, or the name of a restriction enzyme. By default it
        uses the full sequence.
     """
-    gem_index_path      = os.path.abspath(os.path.expanduser(gem_index_path))
-    fastq_path          = os.path.abspath(os.path.expanduser(fastq_path))
-    out_sam_path        = os.path.abspath(os.path.expanduser(out_sam_path))
-    nthreads            = kwargs.get('nthreads'            , 4)
-    max_edit_distance   = kwargs.get('max_edit_distance'   , 0.04)
-    mismatches          = kwargs.get('mismatches'          , 0.04)
-    max_reads_per_chunk = kwargs.get('max_reads_per_chunk' , -1)
-    temp_dir = os.path.abspath(os.path.expanduser(
-        kwargs.get('temp_dir', tempfile.gettempdir())))
+    gem_index_path    = os.path.abspath(os.path.expanduser(gem_index_path))
+    fastq_path        = os.path.abspath(os.path.expanduser(fastq_path))
+    out_map_path      = os.path.abspath(os.path.expanduser(out_map_path))
+    nthreads          = kwargs.get('nthreads'            , 4)
+    max_edit_distance = kwargs.get('max_edit_distance'   , 0.04)
+    mismatches        = kwargs.get('mismatches'          , 0.04)
 
     # check kwargs
     for kw in kwargs:
@@ -124,29 +121,17 @@ def gem_mapping(gem_index_path, fastq_path, out_sam_path, **kwargs):
                       'mismatches', 'max_reads_per_chunk',
                       'out_files', 'temp_dir']:
             warn('WARNING: %s not is usual keywords, misspelled?' % kw)
-    
-    # create directories
-    for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
-        try:
-            os.mkdir(rep)
-        except OSError, error:
-            if error.strerror != 'File exists':
-                raise error
 
     # input
     inputf = gem.files.open(fastq_path)
 
     # mapping
-    mapped = gem.mapper(trimmed, gem_index_path, min_decoded_strata=0,
-                        max_decoded_matches=2, unique_mapping=False,
-                        max_edit_distance=max_edit_distance,
-                        mismatches=mismatches,
-                        output=temp_dir + '/test.map',
-                        threads=nthreads)
-
-
-    # prepare the FASTQ
-    
+    return gem.mapper(inputf, gem_index_path, min_decoded_strata=0,
+                      max_decoded_matches=2, unique_mapping=False,
+                      max_edit_distance=max_edit_distance,
+                      mismatches=mismatches,
+                      output=out_map_path,
+                      threads=nthreads)
 
 def adaptive_mapping(gem_index_path, fastq_path, out_sam_path, r_enz, trim=None,
                      max_reads_per_chunk=None, min_seq_len=20, **kwargs):
@@ -158,7 +143,14 @@ def adaptive_mapping(gem_index_path, fastq_path, out_sam_path, r_enz, trim=None,
     # check space
     if get_free_space_mb(temp_dir, div=3) < 50:
         warn('WARNING: less than 50 Gb left on tmp_dir: %s\n' % temp_dir)
-    # Prepare the file
+    # create directories
+    for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
+        try:
+            os.mkdir(rep)
+        except OSError, error:
+            if error.strerror != 'File exists':
+                raise error
+    # Prepare the FASTQ file and iterate over them
     for fastq in transform_fastq(fastq_path, temp_dir, trim=trim,
                                  max_reads_per_chunk=max_reads_per_chunk):
     
