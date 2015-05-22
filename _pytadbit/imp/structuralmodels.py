@@ -2312,7 +2312,8 @@ class StructuralModels(object):
                             'start'     : 0,
                             'end'       : self.nloci}
             my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'None'))]
-            del my_descr['chromosome']
+            if 'chromosome' in my_descr:
+                del my_descr['chromosome']
             if not 'chrom_start' in my_descr:
                 warn("WARNING: chrom_start variable wasn't set, setting it to" +
                      " the position in the experiment matrix " +

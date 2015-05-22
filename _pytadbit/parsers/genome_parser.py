@@ -5,7 +5,7 @@ convert a bunch of fasta files, or a single multi fasta file, into a dictionary
 """
 
 from collections import OrderedDict
-from pytadbit.parsers import magic_open
+from pytadbit.utils.file_handling import magic_open
 
 
 def parse_fasta(f_names, chr_names=None, verbose=True):

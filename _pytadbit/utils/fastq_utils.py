@@ -7,6 +7,9 @@ from gzip import open as gopen
 import numpy as np
 from pytadbit.utils.extraviews import tadbit_savefig
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated, repaired
+from os import SEEK_END
+from numpy import std, mean
+from random import random
 import re
 
 try:
@@ -241,3 +244,68 @@ def make_patch_spines_invisible(ax):
     ax.patch.set_visible(False)
     for sp in ax.spines.itervalues():
         sp.set_visible(False)
+
+
+def count_reads(fnam):
+    """
+    Count the number of reads in a FASTQ file (can be slow on big files, try
+    count_reads_approx)
+
+    :param fnam: path to file
+
+    :returns: the number of reads (number of lines divided by four)
+    """
+    nlines = sum(1 for _ in open(fnam))
+    if nlines % 4:
+        raise IOError('ERROR: Number of lines not multiple of four\n')
+    return nlines / 4
+
+
+def count_reads_approx(fnam, samples=1000, verbose=True):
+    """
+    Get the approximate number of reads in a FASTQ file. By averaging the sizes
+    of a given sample od randomly selected reads, and relating this mean to the
+    size of the file.
+
+    :param fnam: path to FASTQ file
+    :param 1000 samples: number of reads to sample. 1000 generally gives an
+       accuracy bellow 0.1%
+    :param True verbose: prints Number of reads and accuracy (based on standard
+       error of the mean)
+
+    :returns: number of reads estimated
+    """
+    fhandler = open(fnam)
+    fhandler.seek(0, SEEK_END)
+    flen = fhandler.tell()
+    values = []
+    def _read_size(rnd):
+        fhandler.seek(rnd)
+        while True:
+            line = fhandler.next()
+            if line.startswith('@'):
+                line2 = fhandler.next()
+                if not line2.startswith('@'):
+                    break
+        return len(line) + 2 * len(line2) +  len(fhandler.next())
+    for _ in xrange(samples):
+        rnd = int(random() * flen)
+        try:
+            values.append(_read_size(rnd))
+        except StopIteration:
+            samples-=1
+    mean_len = float(mean(values))
+    nreads = flen / mean_len
+    
+    if verbose:
+        dev = std(values) / samples**.5 * 2
+        nreads_sup = flen / (mean_len - dev)
+        nreads_bel = flen / (mean_len + dev)
+        # print nreads_sup > 186168911 > nreads_bel, ':',
+        print ' %d reads -- 95%% between %d and %d (%f %% accuracy)' % (
+            int(nreads), int(nreads_sup), int(nreads_bel),
+            (nreads_sup - nreads_bel) / nreads * 100)
+        # print nreads, '- 186168911 = ',
+        # print int(nreads) - 186168911, '(',
+        # print abs(nreads - 186168911.00000) / nreads * 100, '% )'
+    return int(nreads)
