@@ -133,6 +133,17 @@ def gem_mapping(gem_index_path, fastq_path, out_sam_path, **kwargs):
             if error.strerror != 'File exists':
                 raise error
 
+    # input
+    inputf = gem.files.open(fastq_path)
+
+    # mapping
+    mapped = gem.mapper(trimmed, gem_index_path, min_decoded_strata=0,
+                        max_decoded_matches=2, unique_mapping=False,
+                        max_edit_distance=max_edit_distance,
+                        mismatches=mismatches,
+                        output=temp_dir + '/test.map',
+                        threads=nthreads)
+
 
     # prepare the FASTQ
     

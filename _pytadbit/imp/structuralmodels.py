@@ -2308,8 +2308,7 @@ class StructuralModels(object):
             try:
                 my_descr = dict(self.description)
             except TypeError:
-                my_descr = {'resolution': self.resolution,
-                            'start'     : 0,
+                my_descr = {'start'     : 0,
                             'end'       : self.nloci}
             my_descr['chrom'] = ["%s" % (my_descr.get('chromosome', 'None'))]
             if 'chromosome' in my_descr:
@@ -2320,14 +2319,14 @@ class StructuralModels(object):
                      " times the resolution (%d*%d)" % (
                          my_descr['start'], self.resolution))
                 my_descr['chrom_start'] = [my_descr['start'] *
-                                           my_descr['resolution'] + 1]
+                                           self.resolution + 1]
             if not 'chrom_end' in my_descr:
                 warn("WARNING: chrom_end variable wasn't set, setting it to" +
                      " the position in the experiment matrix " +
                      " times the resolution (%d*%d)" % (
-                         my_descr['end'], my_descr['resolution']))
+                         my_descr['end'], self.resolution))
                 my_descr['chrom_end'] = [(1 + my_descr['end']) *
-                                         my_descr['resolution']]
+                                         self.resolution]
             fil['descr']   = ',\n'.join([
                 (' ' * 19) + '"%s" : %s' % (tocamel(k),
                                             ('"%s"' % (v))
