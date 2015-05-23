@@ -2271,14 +2271,14 @@ class StructuralModels(object):
             raise TypeError('one of function, list or string is required\n')
         form = '''
 {
-	"metadata" : {
-		"version"  : 1.0,
-		"type"     : "dataset",
+        "metadata" : {
+                "version"  : 1.0,
+                "type"     : "dataset",
                 "generator": "TADbit"
                 },
-	"object": {\n%(descr)s
-		   "uuid": "%(sha)s",
-		   "title": "%(title)s",
+        "object": {\n%(descr)s
+                   "uuid": "%(sha)s",
+                   "title": "%(title)s",
                    "datatype": "xyz",
                    "components": 3,
                    "source": "local",
