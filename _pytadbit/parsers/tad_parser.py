@@ -30,19 +30,28 @@ def parse_tads(handler):
     if isinstance(handler, tuple):
         handler, weights = handler
     if isinstance(handler, dict):
-        for pos in xrange(len(handler['end'])):
-            start = float(handler['start'][pos])
-            end   = float(handler['end'][pos])
-            try:
-                score = float(handler['score'][pos])
-            except KeyError: # missing
-                score = 10.0
-            except TypeError: # last one
-                score = 10.0
-            tads[pos + 1] = {'start': start,
-                             'end'  : end,
-                             'brk'  : end,
-                             'score': score}
+        try:
+            for pos in xrange(len(handler['end'])):
+                start = float(handler['start'][pos])
+                end   = float(handler['end'][pos])
+                try:
+                    score = float(handler['score'][pos])
+                except KeyError: # missing
+                    score = 10.0
+                except TypeError: # last one
+                    score = 10.0
+                tads[pos + 1] = {'start': start,
+                                 'end'  : end,
+                                 'brk'  : end,
+                                 'score': score}
+        except KeyError: # the other dict format
+            for pos in handler:
+                if not ('start' in handler[pos]
+                        or not 'end' in handler[pos]
+                        or not 'brk' in handler[pos]
+                        or not 'score' in handler[pos]):
+                    raise Exception('ERROR: bad format\n')
+            tads = handler
     elif isfile(handler):
         for line in open(handler):
             if line.startswith('#'): continue
