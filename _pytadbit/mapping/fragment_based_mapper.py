@@ -227,13 +227,19 @@ def fragment_based_mapping(gem_index_path, fastq_path, out_map_dir, r_enz,
 
     
 def main():
-
-    fastq = '/scratch/test/sample_dataset/FASTQs/sample_hsap_HindIII.fastq'
+    fastq = '/scratch/db/FASTQs/hsap/dixon_2012/dixon-2012_200bp.fastq'
+    # fastq = '/scratch/test/sample_dataset/FASTQs/sample_hsap_HindIII.fastq'
     gem_index_path = '/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.gem'
-    out_map_dir = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp/'
-    temp_dir = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp/'
-    fragment_based_mapping(gem_index_path, fastq, out_map_dir, 'HindIII',
-                           temp_dir=temp_dir, trim=(0,100))
+    out_map_dir1 = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/'
+    out_map_dir2 = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/'
+    temp_dir1 = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp1/'
+    temp_dir2 = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp2/'
+    print 'read 1'
+    fragment_based_mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
+                           temp_dir=temp_dir1, trim=(0,100))
+    print 'read 2'
+    fragment_based_mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
+                           temp_dir=temp_dir2, trim=(100, 200))
 
 
 if __name__ == "__main__":
