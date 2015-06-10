@@ -1,6 +1,7 @@
 """
-18 may 2015
+09 Jun 2015
 """
+
 import os
 from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
@@ -22,13 +23,20 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None,
     def _get_fastq_read(rlines):
         """
         returns header and sequence of 1 FASTQ entry
+        Note: header also contains the sequence
         """
         rlines = rlines.rstrip('\n')
         line = fhandler.next()
         _ = fhandler.next()  # lose qualities but not needed
         _ = fhandler.next()  # lose qualities but not needed
-        return rlines, line.strip()
+        # header now also contains original read
+        return rlines + ' ' + line.strip(), line.strip()
 
+    def _get_map_read(line):
+        header = line.split('\t', 1)[0]
+        seq    = header.rsplit(' ', 1)[-1]
+        return header, seq
+        
     def _split_read_re(x, max_seq_len=None):
         """
         Recursive generator that splits reads according to the
@@ -71,7 +79,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None,
         split_read = lambda x, y: (yield x)
 
     # function to yield reads from input file
-    get_seq = _get_fastq_read if fastq else lambda x: x.split('\t', 2)[:2]
+    get_seq = _get_fastq_read if fastq else _get_map_read
 
     ## Start processing the input file
     if verbose:
@@ -120,7 +128,7 @@ def _gem_filter(fnam, unmap_out, map_out):
     """
     fhandler = magic_open(fnam) if isinstance(fnam, str) else fnam
     unmap_out = open(unmap_out, 'w')
-    map_out = open(map_out, 'w')
+    map_out   = open(map_out  , 'w')
     for line in fhandler:
         matches = line.rsplit('\t', 2)[1]
         bad = False
@@ -175,8 +183,8 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
                       threads=nthreads)
 
 
-def fragment_based_mapping(gem_index_path, fastq_path, out_map_dir, r_enz,
-                           trim=None, min_seq_len=20, **kwargs):
+def mapping(gem_index_path, fastq_path, out_map_dir, r_enz,
+            min_seq_len=20, windows=((None, None),), **kwargs):
     """
     Do the mapping
     """
@@ -194,28 +202,38 @@ def fragment_based_mapping(gem_index_path, fastq_path, out_map_dir, r_enz,
     # check space
     if get_free_space_mb(temp_dir, div=3) < 50:
         warn('WARNING: less than 50 Gb left on tmp_dir: %s\n' % temp_dir)
+
+    # iterative mapping
     base_name = os.path.split(fastq_path)[-1].replace('.gz', '')
     base_name = base_name.replace('.fastq', '')
-    # Prepare the FASTQ file and iterate over them
-    full_map = transform_fastq(fastq_path,
-                               mkstemp(prefix='fastq_', dir=temp_dir)[1],
-                               min_seq_len=min_seq_len, trim=trim)
-    # First mapping, full length
-    out_map_path = full_map + '_full.map'
-    print 'Mapping full reads...'
-    map_file = gem_mapping(gem_index_path, full_map, out_map_path, **kwargs)
-    map_file.close()
+    input_reads = fastq_path
+    for beg, end in windows:
+        # Prepare the FASTQ file and iterate over them
+        curr_map = transform_fastq(input_reads, 
+                                   mkstemp(prefix='fastq_', dir=temp_dir)[1],
+                                   fastq=input_reads.endswith('.fastq'),
+                                   min_seq_len=min_seq_len, trim=(beg, end))
+        # First mapping, full length
+        out_map_path = curr_map + '_full_%s-%s.map' % (beg, end)
+        if end:
+            print 'Mapping reads in window %s-%s...' % (beg, end)
+        else:
+            print 'Mapping full reads...', curr_map
+        map_file = gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
+        map_file.close()
 
-    # parse map file to extract not uniquely mapped reads
-    print 'Parsing result...'
-    _gem_filter(out_map_path, full_map + '_filt.map',
-                out_map_dir + base_name + '_full.map')
+        # parse map file to extract not uniquely mapped reads
+        print 'Parsing result...'
+        _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
+                    out_map_dir + base_name + '_full_%s-%s.map' % (beg, end))
+        # for next round, we will use remaining unmapped reads
+        input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
 
     # map again splitting unmapped reads into RE fragments
     # (no need to trim this time)
-    frag_map = transform_fastq(out_map_path,
+    frag_map = transform_fastq(input_reads,
                                mkstemp(prefix='fastq_', dir=temp_dir)[1],
-                               min_seq_len=min_seq_len,
+                               min_seq_len=min_seq_len, trim=(beg, end),
                                fastq=False, r_enz=r_enz)
     out_map_path = frag_map + '_frag.map'
     print 'Mapping fragments of remaining reads...'
@@ -223,41 +241,34 @@ def fragment_based_mapping(gem_index_path, fastq_path, out_map_dir, r_enz,
                            **kwargs)
     map_file.close()
     print 'Parsing result...'
-    _gem_filter(out_map_path, full_map + '_fail.map',
+    _gem_filter(out_map_path, curr_map + '_fail.map',
                 out_map_dir + base_name + '_frag.map')
 
     
 def main():
     fastq          = '/scratch/db/FASTQs/hsap/dixon_2012/dixon-2012_200bp.fastq'
+    fastq          = 'short_dixon-2012_200bp.fastq'
     # fastq        = '/scratch/test/sample_dataset/FASTQs/sample_hsap_HindIII.fastq'
     gem_index_path = '/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.gem'
     out_map_dir1   = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/'
     out_map_dir2   = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/'
     temp_dir1      = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp1/'
     temp_dir2      = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp2/'
+    # print 'read 1'
+    # mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
+    #         temp_dir=temp_dir1, windows=((0,100),))
+    # print 'read 2'
+    # mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
+    #         temp_dir=temp_dir2, windows=((100, 200),))
     print 'read 1'
-    fragment_based_mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
-                           temp_dir=temp_dir1, trim=(0,100))
+    mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
+            temp_dir=temp_dir1, windows=(zip(*([0] * len(range(25, 105, 5)),
+                                               range(25,105,5)))))
     print 'read 2'
-    fragment_based_mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
-                           temp_dir=temp_dir2, trim=(100, 200))
+    mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
+            temp_dir=temp_dir2, windows=(zip(*([100] * len(range(125, 205, 5)),
+                                               range(125,205,5)))))
 
 
 if __name__ == "__main__":
     exit(main())
-
-# from pytadbit.parsers.genome_parser import parse_fasta
-
-# genome_seq = parse_fasta('/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.fa')
-
-# frag_seq = {}
-
-# for crm in genome_seq:
-#     for i in xrange(0, len(genome_seq[crm])):
-#         if genome_seq[crm][i:i+4] == 'GATC':
-#             frag_seq[crm+'_'+str(i)] = genome_seq[crm][max(0, i-500):i+504]
-
-# out = open('frag_based_genome.fa', 'w')
-# for frag in frag_seq:
-#     out.write('>%s\n%s\n' % (frag, frag_seq[frag]))
-# out.close()
