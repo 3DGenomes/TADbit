@@ -213,14 +213,14 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
     # mapping
     print 'TO GEM', fastq_path
     return gem.mapper(inputf, gem_index_path, min_decoded_strata=0,
-                      max_decoded_matches=2, unique_mapping=False,
+                      max_decoded_matches=1, unique_mapping=False,
                       max_edit_distance=max_edit_distance,
                       mismatches=mismatches, quality=quality,
                       output=out_map_path,
                       threads=nthreads)
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
-            min_seq_len=15, windows=((None, None),), add_site=True, **kwargs):
+                 min_seq_len=15, windows=((None, None),), add_site=True, **kwargs):
     """
     Do the mapping
 
