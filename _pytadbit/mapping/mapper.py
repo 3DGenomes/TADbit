@@ -10,6 +10,8 @@ import tempfile
 import gzip
 import pysam
 from warnings import warn
+from itertools import combinations
+from re import findall, compile as recompile
 try:
     import gem
 except ImportError:
@@ -50,6 +52,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     read2 = line2.split('\t', 1)[0]
     if header1 != header2:
         raise Exception('seems to be mapped onover different chromosomes\n')
+    # setup REGEX to split reads in a single line
+    # readex = recompile('((?:[^\t]+\t){6}[^\t]+)')
     # writes header in output
     reads_fh.write(header1)
     # writes common reads
@@ -58,8 +62,36 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
         while True:
             if read1 == read2:
                 count += 1
-                reads_fh.write(line1.strip() + '\t' + 
-                               line2.split('\t', 1)[1])
+                # case we have potential multicontacts
+                if '|||' in line1 or '|||' in line2:
+                    elts1 = {}
+                    for read in line1.split('|||'):
+                        nam, crm, pos, strd, nts, beg, end = read.strip().split('\t')
+                        elts1[(crm, beg, end)] = (nam, crm, pos, strd, nts, beg, end)
+                    elts2 = {}
+                    for read in line2.split('|||'):
+                        nam, crm, pos, strd, nts, beg, end = read.strip().split('\t')
+                        elts2[(crm, beg, end)] = (nam, crm, pos, strd, nts, beg, end)
+                    # write contacts by pairs
+                    elts = {}
+                    elts.update(elts1)
+                    elts.update(elts2)
+                    contacts = len(elts) - 1
+                    if contacts > 1:
+                        for i, (r1, r2) in enumerate(combinations(elts.values(), 2)):
+                            reads_fh.write(r1[0] + (
+                                '#%d/%d' % (i + 1, contacts * (contacts + 1) / 2)) +
+                                           '\t' + '\t'.join(r1[1:]) + '\t' + 
+                                           '\t'.join(r2[1:]) + '\n')
+                    elif contacts == 1:
+                        reads_fh.write('\t'.join(elts.values()[0]) + '\t' + 
+                                       '\t'.join(elts.values()[1][1:]) + '\n')
+                    else:
+                        reads_fh.write('\t'.join(elts1.values()[0]) + '\t' + 
+                                       '\t'.join(elts2.values()[0][1:]) + '\n')
+                else:
+                    reads_fh.write(line1.strip() + '\t' + 
+                                   line2.split('\t', 1)[1])
                 line1 = reads1.next()
                 read1 = line1.split('\t', 1)[0]
                 line2 = reads2.next()
@@ -71,7 +103,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
                 line1 = reads1.next()
                 read1 = line1.split('\t', 1)[0]
     except StopIteration:
-        pass
+        reads1.close()
+        reads2.close()
     reads_fh.close()
     if verbose:
         print 'Found %d pair of reads mapping uniquely' % count

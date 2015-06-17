@@ -15,7 +15,7 @@ def count_re_fragments(fnam):
         line = fhandler.next()
     try:
         while True:
-            _, cr1, _, _, _, rs1, _, cr2, _, _, _, rs2, _ = line.split()
+            _, cr1, _, _, _, rs1, _, cr2, _, _, _, rs2, _ = line.split('\t')
             try:
                 frag_count[(cr1, rs1)] += 1
             except KeyError:

@@ -12,12 +12,16 @@ try:
 except ImportError:
     warn('WARNING: GEMTOOLS not found')
 
-def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None,
-                    min_seq_len=20, fastq=True, verbose=True):
+def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
+                    min_seq_len=15, fastq=True, verbose=True):
     """
     Given a FASTQ file it can split it into chunks of a given number of reads,
     trim each read according to a start/end positions or split them into
     restriction enzyme fragments
+
+    :param True add_site: when splitting the sequence by ligated sites found,
+       removes the ligation site, and put back the original RE site.
+
     """
     ## define local funcitons to process reads and sequences
     def _get_fastq_read(rlines):
@@ -25,19 +29,20 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None,
         returns header and sequence of 1 FASTQ entry
         Note: header also contains the sequence
         """
-        rlines = rlines.rstrip('\n')
-        line = fhandler.next()
-        _ = fhandler.next()  # lose qualities but not needed
-        _ = fhandler.next()  # lose qualities but not needed
+        rlines = rlines.rstrip('\n').split()[0][1:]
+        seq = fhandler.next()
+        _   = fhandler.next()  # lose qualities header but not needed
+        qal = fhandler.next()  # lose qualities but not needed
         # header now also contains original read
-        return rlines + ' ' + line.strip(), line.strip()
+        return (rlines + ' ' + seq.strip() + ' ' + qal.strip(),
+                seq.strip(), qal.strip())
 
     def _get_map_read(line):
         header = line.split('\t', 1)[0]
-        seq    = header.rsplit(' ', 1)[-1]
-        return header, seq
+        seq, qal    = header.rsplit(' ', 2)[-2:]
+        return header, seq, qal
         
-    def _split_read_re(x, max_seq_len=None):
+    def _split_read_re(seq, qal, pattern, max_seq_len=None, site=''):
         """
         Recursive generator that splits reads according to the
         predefined restriction enzyme.
@@ -46,22 +51,27 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None,
         The RE site before the fragment is added outside this function
         """
         try:
-            pos = x.index(enz_pattern)
+            pos = seq.index(pattern)
             if pos < min_seq_len:
-                split_read(x[pos + len_relg:], max_seq_len)
+                split_read(seq[pos + len_relg:], qal[pos + len_relg:],
+                           pattern, max_seq_len)
             else:
-                yield x[:pos] + enzyme
-            for x in split_read(x[pos + len_relg:], max_seq_len):
-                yield x
+                yield seq[:pos] + site, qal[:pos] + ('H' * len(site))
+            for subseq, subqal in split_read(seq[pos + len_relg:],
+                                             qal[pos + len_relg:],
+                                             pattern,
+                                             max_seq_len):
+                yield subseq, subqal
         except ValueError:
-            if len(x) > min_seq_len:
-                if len(x) == max_seq_len:
-                    raise StopIteration
-                yield x
+            if len(seq) == max_seq_len:
+                raise ValueError
+            if len(seq) > min_seq_len:
+                yield seq, qal
 
     # Define function for stripping lines according to ficus
     if isinstance(trim, tuple):
         beg, end = trim
+        beg -= 1
         strip_line = lambda x: x[beg:end]
     else:
         strip_line = lambda x: x
@@ -70,13 +80,15 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None,
     if isinstance(r_enz, str):
         enzyme = RESTRICTION_ENZYMES[r_enz].replace('|', '')
         enz_pattern = religated(r_enz)
+        sub_enz_pattern = enz_pattern[:len(enz_pattern) / 2]
         len_relg = len(enz_pattern)
         print '  - splitting into restriction enzyme (RE) fragments using ligation sites'
         print '  - ligation sites are replaced by RE sites to match the reference genome'
         print '    * enzyme: %s, ligation site: %s, RE site: %s' % (r_enz, enz_pattern, enzyme)
         split_read = _split_read_re
     else:
-        split_read = lambda x, y: (yield x)
+        enz_pattern = ''
+        split_read = lambda x, y, z, after_z, after_after_z: (yield x, y)
 
     # function to yield reads from input file
     get_seq = _get_fastq_read if fastq else _get_map_read
@@ -88,34 +100,52 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None,
             print '  - conversion to MAP format'
         if trim:
             print '  - triming reads %d-%d' % tuple(trim)
-
-
+            
     # open input file
     fhandler = magic_open(fastq_path)
     # create output file
     out_name = out_fastq
     out = open(out_fastq, 'w')
     # iterate over reads and strip them
+    site = '' if add_site else enzyme
     for header in fhandler:
-        header, line = get_seq(header)
+        header, seq, qal = get_seq(header)
         # trim on wanted region of the read
-        line = strip_line(line)
+        seq = strip_line(seq)
+        qal = strip_line(qal)
         # get the generator of restriction enzyme fragments
-        iter_frags = split_read(line, len(line))
+        iter_frags = split_read(seq, qal, enz_pattern, len(seq), site)
         # the first fragment should not be preceded by the RE site
         try:
-            frag = iter_frags.next()
+            seq, qal = iter_frags.next()
         except StopIteration:
             # read full of ligation events, fragments not reaching minimum
             continue
-        out.write('\t'.join((header, frag, 'H' * len(frag), '0', '-\n')))
+        except ValueError:
+            # or not ligation site found, in which case we try with half
+            # ligation site in case there was a sequencing error (half ligation
+            # site is a RE site or nearly, and thus should not be found anyway)
+            iter_frags = split_read(seq, qal, sub_enz_pattern, len(seq), site)
+            try:
+                seq, qal = iter_frags.next()
+            except ValueError:
+                continue
+            except StopIteration:
+                continue
+        out.write(_map2fastq('\t'.join((header, seq, qal, '0', '-\n'))))
         # the next fragments should be preceded by the RE site
-        for frag in  iter_frags:
-            out.write('\t'.join((header, frag + enzyme,
-                                 'H' * (len(frag) + len(enzyme)), '0', '-\n')))
+        # continue
+        for seq, qal in  iter_frags:
+            out.write(_map2fastq('\t'.join((header, seq + site,
+                                            qal + 'H' * (len(site)),
+                                            '0', '-\n'))))
     out.close()
     return out_name
         
+
+def _map2fastq(read):
+    return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
+
 
 def _gem_filter(fnam, unmap_out, map_out):
     """
@@ -129,6 +159,12 @@ def _gem_filter(fnam, unmap_out, map_out):
     fhandler = magic_open(fnam) if isinstance(fnam, str) else fnam
     unmap_out = open(unmap_out, 'w')
     map_out   = open(map_out  , 'w')
+    def _strip_read_name(line):
+        """
+        remove original sequence from read name when read is mapped uniquely
+        """
+        header, line = line.split('\t', 1)
+        return '\t'.join((header.rsplit(' ', 2)[0], line))
     for line in fhandler:
         matches = line.rsplit('\t', 2)[1]
         bad = False
@@ -145,7 +181,7 @@ def _gem_filter(fnam, unmap_out, map_out):
                 bad = True
                 unmap_out.write(line)
         if not bad:
-            map_out.write(line)
+            map_out.write(_strip_read_name(line))
     unmap_out.close()
 
 
@@ -175,19 +211,23 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
     inputf = gem.files.open(fastq_path)
 
     # mapping
+    print 'TO GEM', fastq_path
     return gem.mapper(inputf, gem_index_path, min_decoded_strata=0,
-                      max_decoded_matches=1, unique_mapping=False,
+                      max_decoded_matches=2, unique_mapping=False,
                       max_edit_distance=max_edit_distance,
                       mismatches=mismatches, quality=quality,
                       output=out_map_path,
                       threads=nthreads)
 
-
-def mapping(gem_index_path, fastq_path, out_map_dir, r_enz,
-            min_seq_len=20, windows=((None, None),), **kwargs):
+def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
+            min_seq_len=15, windows=((None, None),), add_site=True, **kwargs):
     """
     Do the mapping
+
+    :param True add_site: when splitting the sequence by ligated sites found,
+       removes the ligation site, and put back the original RE site.
     """
+    outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', gettempdir())))
     # create directories
@@ -228,24 +268,28 @@ def mapping(gem_index_path, fastq_path, out_map_dir, r_enz,
                     out_map_dir + base_name + '_full_%s-%s.map' % (beg, end))
         # for next round, we will use remaining unmapped reads
         input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
+        outfiles.append(out_map_dir + base_name + '_full_%s-%s.map' % (beg, end))
 
     # map again splitting unmapped reads into RE fragments
     # (no need to trim this time)
-    frag_map = transform_fastq(input_reads,
-                               mkstemp(prefix='fastq_', dir=temp_dir)[1],
-                               min_seq_len=min_seq_len, trim=(beg, end),
-                               fastq=False, r_enz=r_enz)
-    out_map_path = frag_map + '_frag.map'
-    print 'Mapping fragments of remaining reads...'
-    map_file = gem_mapping(gem_index_path, frag_map, out_map_path,
-                           **kwargs)
-    map_file.close()
-    print 'Parsing result...'
-    _gem_filter(out_map_path, curr_map + '_fail.map',
-                out_map_dir + base_name + '_frag.map')
+    if frag_map:
+        frag_map = transform_fastq(input_reads,
+                                   mkstemp(prefix='fastq_', dir=temp_dir)[1],
+                                   min_seq_len=min_seq_len, trim=(beg, end),
+                                   fastq=False, r_enz=r_enz, add_site=add_site)
+        out_map_path = frag_map + '_frag.map'
+        print 'Mapping fragments of remaining reads...'
+        map_file = gem_mapping(gem_index_path, frag_map, out_map_path,
+                               **kwargs)
+        map_file.close()
+        print 'Parsing result...'
+        _gem_filter(out_map_path, curr_map + '_fail.map',
+                    out_map_dir + base_name + '_frag.map')
+        outfiles.append(out_map_dir + base_name + '_frag.map')
+    return outfiles
 
-    
 def main():
+
     fastq          = '/scratch/db/FASTQs/hsap/dixon_2012/dixon-2012_200bp.fastq'
     fastq          = 'short_dixon-2012_200bp.fastq'
     # fastq        = '/scratch/test/sample_dataset/FASTQs/sample_hsap_HindIII.fastq'
@@ -254,21 +298,84 @@ def main():
     out_map_dir2   = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/'
     temp_dir1      = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp1/'
     temp_dir2      = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp2/'
-    # print 'read 1'
-    # mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
-    #         temp_dir=temp_dir1, windows=((0,100),))
-    # print 'read 2'
-    # mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
-    #         temp_dir=temp_dir2, windows=((100, 200),))
-    print 'read 1'
-    mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
-            temp_dir=temp_dir1, windows=(zip(*([0] * len(range(25, 105, 5)),
-                                               range(25,105,5)))))
-    print 'read 2'
-    mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
-            temp_dir=temp_dir2, windows=(zip(*([100] * len(range(125, 205, 5)),
-                                               range(125,205,5)))))
 
+    print 'read 1'
+    outfiles1 = full_mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
+                             temp_dir=temp_dir1, windows=((1,100),), add_site=True)
+    print 'read 2'
+    outfiles2 = full_mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
+                             temp_dir=temp_dir2, windows=((101, 200),), add_site=True)
+    # print 'read 1'
+    # outfiles1 = mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
+    #                     temp_dir=temp_dir1,
+    #                     windows=(zip(*([0] * len(range(25, 105, 5)),
+    #                                    range(25,105,5)))))
+    # print 'read 2'
+    # outfiles2 = mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
+    #                     temp_dir=temp_dir2,
+    #                     windows=(zip(*([100] * len(range(125, 205, 5)),
+    #                                            range(125,205,5)))))
+    
+    print outfiles1
+    print 'xcmvnkljnv'
+    print outfiles2
+    
+    from pytadbit.parsers.map_parser import parse_map
+    from pytadbit.parsers.genome_parser import parse_fasta
+    from pytadbit.mapping.mapper import get_intersection
+    from pytadbit.mapping.filter import filter_reads, apply_filter
+    
+    read1, read2 = 'read1.tsv', 'read2.tsv',
+    parse_map(outfiles1, outfiles2, out_file1=read1, out_file2=read2,
+              genome_seq=parse_fasta('/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.fa'),
+              re_name='HindIII', verbose=True)
+
+    reads = 'both_reads.tsv'
+    get_intersection(read1, read2, reads)
+
+    masked = filter_reads(reads)
+    freads = 'filtered_reads.tsv'
+    apply_filter(reads, freads, masked)
 
 if __name__ == "__main__":
     exit(main())
+
+
+"""
+outfiles1 = ['/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-25.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-30.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-35.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-40.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-45.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-50.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-55.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-60.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-65.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-70.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-75.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-80.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-85.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-90.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-95.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-100.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_frag.map']
+outfiles2 = ['/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-125.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-130.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-135.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-140.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-145.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-150.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-155.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-160.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-165.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-170.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-175.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-180.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-185.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-190.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-195.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-200.map',
+             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_frag.map']
+"""
+
+

@@ -282,9 +282,17 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     *Note: Filtering is not exclusive, one read can be filtered several times.*
     """
 
-    pool = mu.Pool(4)
     if not output:
         output = fnam
+
+    # a = _filter_same_frag(fnam, max_molecule_length, output)
+    # b = _filter_from_res(fnam, max_frag_size, min_dist_to_re,
+    #                      re_proximity, min_frag_size, output)
+    # c = _filter_over_represented(fnam, over_represented, output)
+    # d = _filter_duplicates(fnam,output)
+
+    pool = mu.Pool(4)
+
     a = pool.apply_async(_filter_same_frag,
                          args=(fnam, max_molecule_length, output))
     b = pool.apply_async(_filter_from_res,
