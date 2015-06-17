@@ -251,7 +251,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
         # Prepare the FASTQ file and iterate over them
         curr_map = transform_fastq(input_reads, 
                                    mkstemp(prefix='fastq_', dir=temp_dir)[1],
-                                   fastq=input_reads.endswith('.fastq'),
+                                   fastq=(input_reads.endswith('.fastq')
+                                          or input_reads.endswith('.fastq.gz')),
                                    min_seq_len=min_seq_len, trim=(beg, end))
         # First mapping, full length
         out_map_path = curr_map + '_full_%s-%s.map' % (beg, end)
