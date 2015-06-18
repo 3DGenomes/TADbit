@@ -583,13 +583,13 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
         nreads /= 2
     try:
         while True:
-            (crm1, pos1, dir1, _, re1, _,
-             crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
+            (crm1, pos1, dir1, len1, re1, _,
+             crm2, pos2, dir2, len2, re2) = line.strip().split('\t')[1:12]
             if re1==re2 and crm1 == crm2 and dir1 != dir2:
                 pos1, pos2 = int(pos1), int(pos2)
                 dist = abs(int(pos1) - int(pos2))
                 if dir1 == '1' and pos1 < pos2 or dir1 == '0' and pos1 > pos2:
-                    des.append(dist)
+                    des.append(dist + (len2 if pos1 < pos2 else len1))
                 if len(des) == nreads:
                     break
             line = fhandler.next()
@@ -598,10 +598,10 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     fhandler.close()
     ax = setup_plot(axe, figsize=(10, 5.5))
     max_perc = np.percentile(des, max_size)
-    perc99 = np.percentile(des, 99)
-    perc01 = np.percentile(des, 1)
-    perc95 = np.percentile(des, 95)
-    perc05 = np.percentile(des, 5)
+    perc99  = np.percentile(des, 99)
+    perc01  = np.percentile(des, 1)
+    perc95  = np.percentile(des, 95)
+    perc05  = np.percentile(des, 5)
     desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
                          label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
     ax.axvspan(perc01, perc05, facecolor='darkolivegreen', alpha=.3)
