@@ -348,15 +348,14 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
         fhandler.close()
     elif isinstance(data, HiC_data):
         if normalized:
-            get_data = lambda x, y: data[x, x + y] / data.bias[x] / data.bias[x + y]
+            get_data = lambda x, y: data[x, y] / data.bias[x] / data.bias[y]
         else:
-            get_data = lambda x, y: data[x, x + y]
+            get_data = lambda x, y: data[x, y]
         max_diff = min(len(data), max_diff)
         if data.section_pos:
             for crm in data.section_pos:
                 for diff in xrange(min_diff, min(
-                    (max_diff,
-                     1 + data.section_pos[crm][1] - data.section_pos[crm][0]))):
+                    (max_diff, 1 + data.chromosomes[crm]))):
                     for i in xrange(data.section_pos[crm][0],
                                     data.section_pos[crm][1] - diff):
                         dist_intr[diff] += get_data(i, i + diff)
@@ -364,7 +363,7 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
             for diff in xrange(min_diff, max_diff):
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i, i + diff]):
-                        dist_intr[diff] += get_data(i,i + diff)
+                        dist_intr[diff] += get_data(i, diff)
     else:
         if genome_seq:
             max_diff = min(max(genome_seq.values()), max_diff)
