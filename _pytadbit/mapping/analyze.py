@@ -127,7 +127,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      hic_data.section_pos, savefig, show,
                      one = True if focus else False, decay=decay,
                      clim=clim, cmap=cmap, decay_resolution=decay_resolution,
-                     perc=perc,
+                     perc=perc, normalized=normalized,
                      name=name, cistrans=float('NaN') if focus else
                      hic_data.cis_trans_ratio(kwargs.get('normalized', False),
                                               kwargs.get('exclude', None),
@@ -138,7 +138,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
 
 def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
              cmap='jet', decay=False, perc=10, name=None, cistrans=None,
-             decay_resolution=10000):
+             decay_resolution=10000, normalized=False):
     _ = plt.figure(figsize=(15.,12.5))
     ax1 = plt.axes([0.34, 0.08, 0.6, 0.7205])
     ax2 = plt.axes([0.07, 0.65, 0.21, 0.15])
@@ -146,7 +146,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
         ax3 = plt.axes([0.07, 0.42, 0.21, 0.15])
         plot_distance_vs_interactions(data, genome_seq=genome_seq, axe=ax3,
                                       resolution=decay_resolution,
-                                      max_diff=len(data))
+                                      max_diff=len(data), normalized=normalized)
     ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
     ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
@@ -312,7 +312,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
 
 def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
                                   genome_seq=None, resolution=None, axe=None,
-                                  savefig=None):
+                                  savefig=None, normalized=False):
     """
     :param data: input file name, or HiC_data object or list of lists
     :param 10 min_diff: lower limit (in number of bins)
@@ -347,6 +347,10 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
             pass
         fhandler.close()
     elif isinstance(data, HiC_data):
+        if normalized:
+            get_data = lambda x, y: data[x, x + y] / data.bias[x] / data.bias[x + y]
+        else:
+            get_data = lambda x, y: data[x, x + y]
         max_diff = min(len(data), max_diff)
         if data.section_pos:
             for crm in data.section_pos:
@@ -355,12 +359,12 @@ def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
                      1 + data.section_pos[crm][1] - data.section_pos[crm][0]))):
                     for i in xrange(data.section_pos[crm][0],
                                     data.section_pos[crm][1] - diff):
-                        dist_intr[diff] += data[i, i + diff]
+                        dist_intr[diff] += get_data(i, i + diff)
         else:
             for diff in xrange(min_diff, max_diff):
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i, i + diff]):
-                        dist_intr[diff] += data[i,i + diff]
+                        dist_intr[diff] += get_data(i,i + diff)
     else:
         if genome_seq:
             max_diff = min(max(genome_seq.values()), max_diff)
@@ -583,13 +587,12 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
         nreads /= 2
     try:
         while True:
-            (crm1, pos1, dir1, len1, re1, _,
-             crm2, pos2, dir2, len2, re2) = line.strip().split('\t')[1:12]
+            (crm1, pos1, dir1, _, re1, _,
+             crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
             if re1==re2 and crm1 == crm2 and dir1 != dir2:
                 pos1, pos2 = int(pos1), int(pos2)
-                dist = abs(int(pos1) - int(pos2))
-                if dir1 == '1' and pos1 < pos2 or dir1 == '0' and pos1 > pos2:
-                    des.append(dist + (len2 if pos1 < pos2 else len1))
+                if (pos2 > pos1) == int(dir1):
+                    des.append(abs(pos2 - pos1))
                 if len(des) == nreads:
                     break
             line = fhandler.next()
@@ -609,14 +612,14 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
                          label='5-95%% DEs\n(%.0f-%.0f nts)' % (perc05, perc95))
     deshist = ax.hist(des, bins=100, range=(0, max_perc),
                       alpha=.7, color='darkred', label='Dangling-ends')
-    ylims = ax.get_ylim()
-    plots = []
+    ylims   = ax.get_ylim()
+    plots   = []
     ax.set_xlabel('Genomic distance between reads')
     ax.set_ylabel('Count')
     ax.set_title('Distribution of dangling-ends ' +
                  'lenghts\n(top %.1f%%, up to %0.f nts)' % (max_size, max_perc))
     if xlog:
-    	    ax.set_xscale('log')
+        ax.set_xscale('log')
     ax.set_xlim((50, max_perc))
     plt.subplots_adjust(left=0.1, right=0.75)
     ax.legend(bbox_to_anchor=(1.4, 1), frameon=False)
