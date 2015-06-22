@@ -310,7 +310,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     plt.close('all')
 
 
-def plot_distance_vs_interactions(data, min_diff=10, max_diff=1000, show=False,
+def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                                   genome_seq=None, resolution=None, axe=None,
                                   savefig=None, normalized=False):
     """
