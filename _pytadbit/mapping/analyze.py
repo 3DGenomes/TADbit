@@ -26,7 +26,7 @@ except ImportError:
 def hic_map(data, resolution=None, normalized=False, masked=None,
             by_chrom=False, savefig=None, show=False, savedata=None,
             focus=None, clim=None, cmap='jet', pdf=False, decay=True,
-            perc=10, name=None, decay_resolution=10000, **kwargs):
+            perc=10, name=None, decay_resolution=None, **kwargs):
     """
     function to retrieve data from HiC-data object. Data can be stored as
     a square matrix, or drawn using matplotlib
@@ -64,8 +64,9 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     :param False pdf: when using the bny_chrom option, to specify the format of
        the stored images
     :param Reds cmap: color map to be used for the heatmap
-    :param 10000 decay_resolution: chromatin fragment size to consider when
-       calculating decay of the number of interactions with genomic distance
+    :param None decay_resolution: chromatin fragment size to consider when
+       calculating decay of the number of interactions with genomic distance.
+       Default is equal to resolution of the matrix.
     """
     if isinstance(data, str):
         data = load_hic_data_from_reads(data, resolution=resolution, **kwargs)
@@ -74,6 +75,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
             decay = False
     hic_data = data
     resolution = data.resolution
+    if not decay_resolution:
+        decay_resolution = resolution
     if hic_data.bads and not masked:
         masked = hic_data.bads
     # save and draw the data
@@ -128,6 +131,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      one = True if focus else False, decay=decay,
                      clim=clim, cmap=cmap, decay_resolution=decay_resolution,
                      perc=perc, normalized=normalized,
+                     max_diff=kwargs.get('max_diff', None),
                      name=name, cistrans=float('NaN') if focus else
                      hic_data.cis_trans_ratio(kwargs.get('normalized', False),
                                               kwargs.get('exclude', None),
@@ -138,15 +142,17 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
 
 def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
              cmap='jet', decay=False, perc=10, name=None, cistrans=None,
-             decay_resolution=10000, normalized=False):
+             decay_resolution=10000, normalized=False, max_diff=None):
     _ = plt.figure(figsize=(15.,12.5))
+    if not max_diff:
+        max_diff = len(data)
     ax1 = plt.axes([0.34, 0.08, 0.6, 0.7205])
     ax2 = plt.axes([0.07, 0.65, 0.21, 0.15])
     if decay:
         ax3 = plt.axes([0.07, 0.42, 0.21, 0.15])
         plot_distance_vs_interactions(data, genome_seq=genome_seq, axe=ax3,
                                       resolution=decay_resolution,
-                                      max_diff=len(data), normalized=normalized)
+                                      max_diff=max_diff, normalized=normalized)
     ax4 = plt.axes([0.34, 0.805, 0.6, 0.04], sharex=ax1)
     ax5 = plt.axes([0.34, 0.845, 0.6, 0.04], sharex=ax1)
     ax6 = plt.axes([0.34, 0.885, 0.6, 0.04], sharex=ax1)
