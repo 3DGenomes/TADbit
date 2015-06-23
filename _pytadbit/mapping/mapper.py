@@ -249,7 +249,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
     trimmed = gem.filter.run_filter(
         inputf, ['--hard-trim', '%d,%d' % (trim_5, trim_3)],
         threads=nthreads, paired=not single_end)
-    
+
     # mapping
     mapped = gem.mapper(trimmed, gem_index_path, min_decoded_strata=0,
                         max_decoded_matches=2, unique_mapping=False,
