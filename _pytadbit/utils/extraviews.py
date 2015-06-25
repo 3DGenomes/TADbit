@@ -587,23 +587,18 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
     """
-
     from mpl_toolkits.axes_grid1 import AxesGrid
     import matplotlib.patches as patches
     from matplotlib.cm import jet
-
     ori_axes, axes_range, result = result
     trans = [ori_axes.index(a) for a in axes]
     axes_range = [axes_range[i] for i in trans]
-
     # transpose results
     result = result.transpose(trans)
-
     # set NaNs
     result = np.ma.array(result, mask=np.isnan(result))
     cmap = jet
     cmap.set_bad('w', 1.)
-
     # defines axes
     vmin = result.min()
     vmax = result.max()
@@ -611,8 +606,6 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
     zax = [my_round(i, 3) for i in axes_range[1]]
     xax = [my_round(i, 3) for i in axes_range[3]]
     yax = [my_round(i, 3) for i in axes_range[2]]
-
-
     # get best correlations
     sort_result =  sorted([(result[i, j, k, l],
                             wax[i], zax[j], xax[l], yax[k])
@@ -623,7 +616,6 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
                            if str(result[i, j, k, l]) != '--'],
                           key=lambda x: x[0],
                           reverse=True)[:show_best+1]
-
     # skip axes?
     wax_range = range(len(wax))[::-1]
     zax_range = range(len(zax))
@@ -642,17 +634,18 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
     # best number of rows/columns
     ncols  = len(zax_range)
     nrows  = len(wax_range)
-    fig = plt.figure(figsize=(max(6, float(ncols) * len(xax) / 3),
-                              max(6, float(nrows) * len(yax) / 3)))
-    grid = AxesGrid(fig, [.1,.1,.9,.75],
-                    nrows_ncols = (nrows+1, ncols+1),
+    width  = max(4, (float(ncols) * len(xax)) / 3)
+    height = max(3, (float(nrows) * len(yax)) / 3)
+    fig = plt.figure(figsize=(width, height))
+    grid = AxesGrid(fig, [.2, .2, .6, .5],
+                    nrows_ncols = (nrows + 1, ncols + 1),
                     axes_pad = 0.0,
                     label_mode = "1",
                     share_all = False,
                     cbar_location="right",
                     cbar_mode="single",
-                    cbar_size="%s%%" % (7./(float(ncols) * len(xax) / 4)),
-                    cbar_pad="10%",
+                    # cbar_size="%s%%" % (20./ width),
+                    cbar_pad="15%",
                     )
     cell = ncols
     used = []
@@ -668,25 +661,25 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
             for j, best  in enumerate(sort_result[:-1]):
                 if best[2] == zax[i] and best[1] == wax[ii]:
                     grid[cell].text(xax.index(best[3]), yax.index(best[4]), str(j),
-                                    {'ha':'center', 'va':'center'})
+                                    {'ha':'center', 'va':'center'}, size=8)
             if ii == wax_range[0]:
                 rect = patches.Rectangle((-0.5, len(yax)-0.5), len(xax), 1.5,
                                          facecolor='grey', alpha=0.5)
                 rect.set_clip_on(False)
                 grid[cell].add_patch(rect)
-                grid[cell].text(len(xax) / 2 - 0.5,
+                grid[cell].text(len(xax) / 2. - 0.5,
                                 len(yax),
                                 axes[1] + ' ' + str(my_round(zax[i], 3)),
-                                {'ha':'center', 'va':'center'})
+                                {'ha':'center', 'va':'center'}, size=8)
             cell += 1
         rect = patches.Rectangle((len(xax)-.5, -0.5), 1.5, len(yax),
                                  facecolor='grey', alpha=0.5)
         rect.set_clip_on(False)
         grid[cell-1].add_patch(rect)
-        grid[cell-1].text(len(xax)+.5, len(yax)/2-.5, 
+        grid[cell-1].text(len(xax)+.5, len(yax)/2.-.5, 
                           axes[0] + ' ' + str(my_round(wax[ii], 3)),
-                          {'ha':'right', 'va':'center'}, 
-                          rotation=90)
+                          {'ha':'center', 'va':'center'}, 
+                          rotation=90, size=8)
     for i in range(cell+1):
         if not i in used:
             grid[i].set_visible(False)
@@ -694,18 +687,19 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
     # grid.axes_llc.set_ylim(-0.5, len(yax)+1)
     grid.axes_llc.set_xticks(range(0, len(xax), 2))
     grid.axes_llc.set_yticks(range(0, len(yax), 2))
-    grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2])
-    grid.axes_llc.set_yticklabels([my_round(i, 3) for i in yax][::2])
-    grid.axes_llc.set_ylabel(axes[2])
-    grid.axes_llc.set_xlabel(axes[3])
+    grid.axes_llc.set_xticklabels([my_round(i, 3) for i in xax][::2], size=9)
+    grid.axes_llc.set_yticklabels([my_round(i, 3) for i in yax][::2], size=9)
+    grid.axes_llc.set_ylabel(axes[2], size=9)
+    grid.axes_llc.set_xlabel(axes[3], size=9)
     grid.cbar_axes[0].colorbar(im)
-    grid.cbar_axes[0].set_ylabel('Correlation value')
+    grid.cbar_axes[0].set_ylabel('Correlation value', size=9)
+    grid.cbar_axes[0].tick_params(labelsize=9)
     tit = 'Optimal IMP parameters\n'
-    tit += 'Best: %s=%%s, %s=%%s, %s=%%s, %s=%%s %s=%%s' % (
+    tit += 'Best: %s=%%s, %s=%%s,\n%s=%%s, %s=%%s %s=%%s' % (
         axes[0], axes[1], axes[3], axes[2], 'dcutoff')
     fig.suptitle(tit % tuple([my_round(i, 3) for i in sort_result[0][1:]] +
                              [str(dcutoff)]),
-                 size='large')
+                 size=12)
     if savefig:
         tadbit_savefig(savefig)
     else:

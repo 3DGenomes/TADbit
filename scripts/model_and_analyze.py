@@ -452,9 +452,6 @@ def main():
         try:
             models = load_structuralmodels(
                 os.path.join(opts.outdir, name, name + '.models'))
-            dcutoff = int(models._config['dcutoff'] *
-                          models._config['scale']   *
-                          models.resolution)
         except IOError:
             pass
         ########################################################################
@@ -466,6 +463,9 @@ def main():
             logging.info(line)
 
 
+    dcutoff = int(models._config['dcutoff'] *
+                  models._config['scale']   *
+                  models.resolution)
     ############################################################################
     ##############################  ANALYZE MODELS #############################
     ############################################################################

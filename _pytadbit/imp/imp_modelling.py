@@ -427,7 +427,7 @@ def generate_IMPmodel(rand_init):
     # IMP.fivec.simulatedannealing.partial_rounds(m, o, nrounds, steps)
     endLoopCount = 0
     stopCount = 10
-    endLoopValue = 0.001
+    endLoopValue = 0.00001
     # alpha is a parameter that takes into account the number of particles in
     # the model (len(LOCI)).
     # The multiplier (in this case is 1.0) is used to give a different weight
