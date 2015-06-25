@@ -86,7 +86,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 if positive:
                     pos = int(pos)
                 else:
-                    pos = int(pos) + len_seq
+                    pos = int(pos) + len_seq - 1 # remove 1 because all inclusive
                 try:
                     frag_piece = frags[crm][pos / frag_chunk]
                 except KeyError:
