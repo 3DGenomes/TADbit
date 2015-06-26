@@ -273,12 +273,13 @@ def model_region(exp, optpar, opts, name):
     """
     generate structural models
     """
-    zscores, values, zeros = exp._sub_experiment_zscore(opts.beg, opts.end)
+    beg, end = opts.beg or 1, opts.end or exp.size
+    zscores, values, zeros = exp._sub_experiment_zscore(beg, end)
 
     tmp_name = ''.join([letters[int(random()*52)]for _ in xrange(50)])
 
     tmp = open('_tmp_zscore_' + tmp_name, 'w')
-    dump([zscores, values, zeros, optpar], tmp)
+    dump([zscores, values, zeros, optpar, beg, end], tmp)
     tmp.close()
 
     tmp = open('_tmp_opts_' + tmp_name, 'w')
@@ -294,19 +295,19 @@ import os
 tmp_name = "%s"
 
 zscore_file = open("_tmp_zscore_" + tmp_name)
-zscores, values, zeros, optpar = load(zscore_file)
+zscores, values, zeros, optpar, beg, end = load(zscore_file)
 zscore_file.close()
 
 opts_file = open("_tmp_opts_" + tmp_name)
 opts = load(opts_file)
 opts_file.close()
 
-nloci = opts.end - opts.beg + 1
+nloci = end - beg + 1
 coords = {"crm"  : opts.crm,
           "start": opts.beg,
           "end"  : opts.end}
 
-zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg + 1)])
+zeros = tuple([i not in zeros for i in xrange(end - beg + 1)])
 
 models=  generate_3d_models(zscores, opts.res, nloci,
                             values=values, n_models=opts.nmodels_mod,

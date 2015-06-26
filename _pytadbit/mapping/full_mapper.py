@@ -250,7 +250,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
     for beg, end in windows:
         # Prepare the FASTQ file and iterate over them
         curr_map = transform_fastq(input_reads, 
-                                   mkstemp(prefix='fastq_', dir=temp_dir)[1],
+                                   mkstemp(prefix=base_name + '_',
+                                           dir=temp_dir)[1],
                                    fastq=(input_reads.endswith('.fastq')
                                           or input_reads.endswith('.fastq.gz')),
                                    min_seq_len=min_seq_len, trim=(beg, end))
@@ -275,7 +276,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
     # (no need to trim this time)
     if frag_map:
         frag_map = transform_fastq(input_reads,
-                                   mkstemp(prefix='fastq_', dir=temp_dir)[1],
+                                   mkstemp(prefix=base_name + '_',
+                                           dir=temp_dir)[1],
                                    min_seq_len=min_seq_len, trim=(beg, end),
                                    fastq=False, r_enz=r_enz, add_site=add_site)
         out_map_path = frag_map + '_frag.map'
