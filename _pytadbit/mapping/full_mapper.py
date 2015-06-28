@@ -277,6 +277,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
         # clean
         if clean:
             print '   x removing GEM input %s' % curr_map
+            os.system('rm -f %s' % (curr_map))
             print '   x removing map %s' % out_map_path
             os.system('rm -f %s' % (out_map_path))
         # for next round, we will use remaining unmapped reads
