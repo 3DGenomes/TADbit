@@ -220,12 +220,14 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
                       threads=nthreads)
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
-                 min_seq_len=15, windows=((None, None),), add_site=True, **kwargs):
+                 min_seq_len=15, windows=((None, None),), add_site=True, clean=False,
+                 **kwargs):
     """
     Do the mapping
 
     :param True add_site: when splitting the sequence by ligated sites found,
        removes the ligation site, and put back the original RE site.
+    :param False clean: remove intermedite files created in temp_dir
     """
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
@@ -255,6 +257,9 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
                                    fastq=(input_reads.endswith('.fastq')
                                           or input_reads.endswith('.fastq.gz')),
                                    min_seq_len=min_seq_len, trim=(beg, end))
+        # clean
+        if input_reads != fastq_path and clean:
+            os.system('rm -f %s' % (input_reads))
         # First mapping, full length
         out_map_path = curr_map + '_full_%s-%s.map' % (beg, end)
         if end:
@@ -268,6 +273,9 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
         print 'Parsing result...'
         _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
                     out_map_dir + base_name + '_full_%s-%s.map' % (beg, end))
+        # clean
+        if clean:
+            os.system('rm -f %s' % (out_map_path))
         # for next round, we will use remaining unmapped reads
         input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
         outfiles.append(out_map_dir + base_name + '_full_%s-%s.map' % (beg, end))
