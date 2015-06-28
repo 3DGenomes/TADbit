@@ -259,6 +259,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
                                    min_seq_len=min_seq_len, trim=(beg, end))
         # clean
         if input_reads != fastq_path and clean:
+            print 'removing input %s' % input_reads
             os.system('rm -f %s' % (input_reads))
         # First mapping, full length
         out_map_path = curr_map + '_full_%s-%s.map' % (beg, end)
@@ -275,6 +276,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
                     out_map_dir + base_name + '_full_%s-%s.map' % (beg, end))
         # clean
         if clean:
+            print 'removing map %s' % out_map_path
             os.system('rm -f %s' % (out_map_path))
         # for next round, we will use remaining unmapped reads
         input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
