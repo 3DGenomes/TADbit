@@ -959,8 +959,8 @@ class IMPmodel(dict):
                 i + 1,
                 '%s:%s-%s' % (
                     self['description']['chromosome'],
-                    int(self['description']['start']) + int(self['description']['resolution']) * i + 1,
-                    int(self['description']['start']) + int(self['description']['resolution']) * (i + 1)),
+                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * i + 1,
+                    int(self['description']['start'] or 1) + int(self['description']['resolution']) * (i + 1)),
                 round(self['x'][i], 3),
                 round(self['y'][i], 3), round(self['z'][i], 3))
         out_f = open(path_f, 'w')

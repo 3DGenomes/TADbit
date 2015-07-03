@@ -344,8 +344,8 @@ models.save_models(
     crm = exp.crm
     description = {'identifier'     : exp.identifier,
                    'chromosome'     : coords['crm'],
-                   'start'          : exp.resolution * coords['start'],
-                   'end'            : exp.resolution * coords['end'],
+                   'start'          : (exp.resolution * coords['start']) if coords['start'] else None,
+                   'end'            : (exp.resolution * coords['end'])   if coords['end'  ] else None,
                    'species'        : crm.species,
                    'cell type'      : exp.cell_type,
                    'experiment type': exp.exp_type,
