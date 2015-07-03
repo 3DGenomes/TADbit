@@ -167,6 +167,21 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
             warn('WARNING: %s not is usual keywords, misspelled?' % kw)
     
     # check windows:
+    if not isinstance(range_start, list) or not isinstance(range_stop, list):
+        if (not isinstance(range_start, tuple) or
+            not isinstance(range_stop, tuple)):
+            raise Exception('ERROR: range_start and range_stop should be lists')
+        range_start = list(range_start)
+        range_stop  = list(range_stop)
+    if (not all(isinstance(i, int) for i in range_start) or
+        not all(isinstance(i, int) for i in range_stop)):
+        try:
+            range_start = map(int, range_start)
+            range_stop  = map(int, range_stop)            
+            warn('WARNING: range_start and range_stop converted to integers')
+        except ValueError:
+            raise Exception('ERROR: range_start and range_stop should contain' +
+                            ' integers only')
     if (len(zip(range_start, range_stop)) < len(range_start) or
         len(range_start) != len(range_stop)):
         raise Exception('ERROR: range_start and range_stop should have the ' +
@@ -176,6 +191,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
                         'stop positions.')
     if any([i <= 0 for i in range_start]):
         raise Exception('ERROR: start positions should be strictly positive.')
+
     # create directories
     for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
         try:
