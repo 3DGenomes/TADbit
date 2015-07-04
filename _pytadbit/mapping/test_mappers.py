@@ -36,7 +36,7 @@ elif win == 5:
 fastq          = '/scratch/db/FASTQs/hsap/dixon_2012/dixon-2012_200bp.fastq'
 fastq          = 'mid_dixon-2012_200bp.fastq'
 # fastq          = 'short_dixon-2012_200bp.fastq'
-# fastq        = '/scratch/test/sample_dataset/FASTQs/sample_hsap_HindIII.fastq'
+fastq        = '/scratch/test/sample_dataset/FASTQs/sample_hsap_HindIII.fastq'
 gem_index_path = '/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.gem'
 out_map_dir1   = 'read1_%s-%s/' % (mapper, win)
 out_map_dir2   = 'read2_%s-%s/' % (mapper, win)
