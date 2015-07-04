@@ -5,6 +5,7 @@
 from pytadbit.utils.file_handling import magic_open
 from bisect import bisect_left as bisect
 from pytadbit.mapping.restriction_enzymes import map_re_sites
+from subprocess import Popen, PIPE
 from warnings import warn
 
 def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
@@ -61,7 +62,9 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         if verbose:
             print 'Loading read' + str(read + 1)
         windows = {}
-        reads    = []
+        tmp_reads_fh = open('tmp_' + outfiles[read], 'w')
+        sorter = Popen(['sort', '-k', '1,1', '-s', '-t', '\t'], stdin=PIPE,
+                       stdout=tmp_reads_fh)
         num = 0
         for fnam in fnames[read]:
             try:
@@ -108,22 +111,33 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
                                         'chromosome\n')
                     next_re    = frag_piece[idx]
                 prev_re    = frag_piece[idx - 1 if idx else 0]
-                reads.append('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
+                sorter.stdin.write('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
                     name, crm, pos, positive, len_seq, prev_re, next_re))
                 windows[num] += 1
+        
+        if verbose:
+            print 'finishing to sort'
+        sorter.communicate()
+        tmp_reads_fh.close()
+
+        if verbose:
+            print 'Getting Multiple contacts'
         reads_fh = open(outfiles[read], 'w')
-        ## write file header
+        ## Also pipe file header
         # chromosome sizes (in order)
-        reads_fh.write('## Chromosome lengths (order matters):\n')
+        reads_fh.write('# Chromosome lengths (order matters):\n')
         for crm in genome_seq:
             reads_fh.write('# CRM %s\t%d\n' % (crm, len(genome_seq[crm])))
-        reads_fh.write('## Number of mapped reads by iteration\n')
+        reads_fh.write('# Mapped\treads count by iteration\n')
         for size in windows:
             reads_fh.write('# MAPPED %d %d\n' % (size, windows[size]))
-        reads.sort()
-        prev_head = reads[0].split('\t', 1)[0]
-        prev_read = reads[0].strip()
-        for read in reads[1:]:
+
+        ## Multicontacts
+        tmp_reads_fh = open('tmp_' + outfiles[read])
+        read = tmp_reads_fh.next()
+        prev_head = read.split('\t', 1)[0]
+        prev_read = read.strip()
+        for read in tmp_reads_fh:
             head = read.split('\t', 1)[0]
             if head == prev_head:
                 prev_read += '|||' + read.strip()
@@ -133,5 +147,4 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
             prev_head = head
         reads_fh.write(prev_read + '\n')
         reads_fh.close()
-    del reads
 
