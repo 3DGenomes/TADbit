@@ -62,7 +62,8 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         if verbose:
             print 'Loading read' + str(read + 1)
         windows = {}
-        tmp_reads_fh = open('tmp_' + outfiles[read], 'w')
+        tmp_name = '/'.join(outfiles[read].split('/')[:-1]) + '/tmp_' + outfiles[read].split('/')[-1]
+        tmp_reads_fh = open(tmp_name, 'w')
         sorter = Popen(['sort', '-k', '1,1', '-s', '-t', '\t'], stdin=PIPE,
                        stdout=tmp_reads_fh)
         num = 0
