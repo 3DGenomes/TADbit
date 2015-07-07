@@ -134,7 +134,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
             reads_fh.write('# MAPPED %d %d\n' % (size, windows[size]))
 
         ## Multicontacts
-        tmp_reads_fh = open('tmp_' + outfiles[read])
+        tmp_reads_fh = open(tmp_name)
         read = tmp_reads_fh.next()
         prev_head = read.split('\t', 1)[0]
         prev_read = read.strip()
