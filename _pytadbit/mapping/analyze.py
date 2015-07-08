@@ -1,8 +1,7 @@
 """
 18 Nov 2014
-
-
 """
+
 from pytadbit.utils.extraviews   import tadbit_savefig, setup_plot
 from pytadbit.utils.tadmaths     import nozero_log_matrix as nozero_log
 from pytadbit.parsers.hic_parser import HiC_data
@@ -577,6 +576,8 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     :param 99.9 max_size: top percentage of distances to consider, within the
        top 0.01% are usually found very long outliers.
     :param False xlog: represent x axis in logarithmic scale
+
+    :returns: the median value and the percentile inputed as max_size.
     """
     distr = {}
     genome_seq = OrderedDict()
@@ -606,10 +607,11 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     fhandler.close()
     ax = setup_plot(axe, figsize=(10, 5.5))
     max_perc = np.percentile(des, max_size)
-    perc99  = np.percentile(des, 99)
-    perc01  = np.percentile(des, 1)
-    perc95  = np.percentile(des, 95)
-    perc05  = np.percentile(des, 5)
+    perc99   = np.percentile(des, 99)
+    perc01   = np.percentile(des, 1)
+    perc50   = np.percentile(des, 50)
+    perc95   = np.percentile(des, 95)
+    perc05   = np.percentile(des, 5)
     desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
                          label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
     ax.axvspan(perc01, perc05, facecolor='darkolivegreen', alpha=.3)
@@ -622,7 +624,8 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     ax.set_xlabel('Genomic distance between reads')
     ax.set_ylabel('Count')
     ax.set_title('Distribution of dangling-ends ' +
-                 'lenghts\n(top %.1f%%, up to %0.f nts)' % (max_size, max_perc))
+                 'lenghts\n(median: %s, top %.1f%%, up to %0.f nts)' % (
+                     perc50, max_size, max_perc))
     if xlog:
         ax.set_xscale('log')
     ax.set_xlim((50, max_perc))
@@ -633,7 +636,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     elif not axe:
         plt.show()
     plt.close('all')
-    
+    return perc50, max_perc
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               axe=None, ylim=None, savefig=None,
