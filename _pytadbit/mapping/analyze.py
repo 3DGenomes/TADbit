@@ -729,7 +729,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
 
 
 def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
-                       savefig=None, show=False, savedata=None):
+                       savefig=None, show=False, savedata=None, axe=None):
     """
     Compare the iteractions of two Hi-C matrices at a given distance,
     with spearman rank correlation
@@ -771,16 +771,23 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
                 diag2.append(hic_data2[j, i + j])
             corr.append(spearmanr(diag1, diag2)[0])
             dist.append(i)
-    if show or savefig:
-        plt.plot(dist, corr, color='orange', linewidth=3, alpha=.8)
-        plt.xlabel('Genomic distance in bins')
-        plt.ylabel('Spearman rank correlation')
-        plt.xlim((0, dist[-1]))
+    if show or savefig or axe:
+        if not axe:
+            fig = plt.figure()
+            axe = fig.add_subplot(111)
+            given_axe = False
+        else:
+            given_axe = True
+        axe.plot(dist, corr, color='orange', linewidth=3, alpha=.8)
+        axe.set_xlabel('Genomic distance in bins')
+        axe.set_ylabel('Spearman rank correlation')
+        axe.set_xlim((0, dist[-1]))
         if savefig:
             tadbit_savefig(savefig)
         if show:
             plt.show()
-        plt.close('all')
+        if not given_axe:
+            plt.close('all')
     if savedata:
         out = open(savedata, 'w')
         out.write('# genomic distance\tSpearman rank correlation\n')
