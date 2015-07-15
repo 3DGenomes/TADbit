@@ -420,13 +420,32 @@ def build_mesh(xis, yis, zis, nloci, nump, radius, superradius, include_edges):
         difx = modelx - modelx1
         dify = modely - modely1
         difz = modelz - modelz1
-        # orthox = 1.
-        # orthoy = 1.
-        orthoz = -(difx + dify) / difz
-        #normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius
-        normer = sqrt(2. + orthoz**2)# / radius
-        orthox = 1. / normer
-        orthoy = 1. / normer
+        try:
+            orthox = 1.
+            orthoy = 1.
+            orthoz = -(difx + dify) / difz
+            #normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius
+            normer = sqrt(2. + orthoz**2)# / radius
+        except ZeroDivisionError:
+            try:
+                orthox = 1.
+                orthoy = -(difx + difz) / dify
+                orthoz = 1.
+                #normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius
+                normer = sqrt(2. + orthoz**2)# / radius
+            except ZeroDivisionError:
+                try:
+                    orthox = 1.
+                    orthoy = -(difx + difz) / dify
+                    orthoz = 1.
+                    #normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius
+                    normer = sqrt(2. + orthoz**2)# / radius
+                except ZeroDivisionError:
+                    orthox = 1.
+                    orthoy = 1.
+                    orthoz = 1.
+        orthox /= normer
+        orthoy /= normer
         orthoz /= normer
         # define the number of circle to draw in this section
         between = int(fact * adj1 + 0.5)
