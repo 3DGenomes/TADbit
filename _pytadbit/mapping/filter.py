@@ -227,7 +227,7 @@ def filter_reads_OLD(fnam, max_molecule_length=500, over_represented=0.005,
 def filter_reads(fnam, output=None, max_molecule_length=500,
                  over_represented=0.005, max_frag_size=100000,
                  min_frag_size=100, re_proximity=5, verbose=True,
-                 savedata=None, min_dist_to_re=750):
+                 savedata=None, min_dist_to_re=750, fast=True):
     """
     Filter mapped pair of reads in order to remove experimental artifacts (e.g.
     dangling-ends, self-circle, PCR artifacts...)
@@ -275,6 +275,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
        from a RE site (usually 1.5 times the insert size). Applied in filter 10
     :param None savedata: PATH where to write the number of reads retained by
        each filter
+    :param True fast: parallel version, requires 4 CPUs and more RAM memory
 
     :return: dicitonary with, as keys, the kind of filter applied, and as values
        a set of read IDs to be removed
@@ -285,30 +286,29 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     if not output:
         output = fnam
 
-    # a = _filter_same_frag(fnam, max_molecule_length, output)
-    # b = _filter_from_res(fnam, max_frag_size, min_dist_to_re,
-    #                      re_proximity, min_frag_size, output)
-    # c = _filter_over_represented(fnam, over_represented, output)
-    # d = _filter_duplicates(fnam,output)
-
-    pool = mu.Pool(4)
-
-    a = pool.apply_async(_filter_same_frag,
-                         args=(fnam, max_molecule_length, output))
-    b = pool.apply_async(_filter_from_res,
-                         args=(fnam, max_frag_size, min_dist_to_re,
-                               re_proximity, min_frag_size, output))
-    c = pool.apply_async(_filter_over_represented,
-                         args=(fnam, over_represented, output))
-    d = pool.apply_async(_filter_duplicates,
-                         args=(fnam,output))
-    pool.close()
-    pool.join()
-
-    masked, total = d.get()
-    masked.update(b.get())
-    masked.update(c.get())
-    masked.update(a.get())
+    if not fast:
+        masked, total = _filter_same_frag(fnam, max_molecule_length, output)
+        masked.update(_filter_from_res(fnam, max_frag_size, min_dist_to_re,
+                                       re_proximity, min_frag_size, output))
+        masked.update(_filter_over_represented(fnam, over_represented, output))
+        masked.update(_filter_duplicates(fnam,output))
+    else:
+        pool = mu.Pool(4)
+        a = pool.apply_async(_filter_same_frag,
+                             args=(fnam, max_molecule_length, output))
+        b = pool.apply_async(_filter_from_res,
+                             args=(fnam, max_frag_size, min_dist_to_re,
+                                   re_proximity, min_frag_size, output))
+        c = pool.apply_async(_filter_over_represented,
+                             args=(fnam, over_represented, output))
+        d = pool.apply_async(_filter_duplicates,
+                             args=(fnam,output))
+        pool.close()
+        pool.join()
+        masked, total = d.get()
+        masked.update(b.get())
+        masked.update(c.get())
+        masked.update(a.get())
 
     # if savedata or verbose:
     #     bads = len(frozenset().union(*[masked[k]['reads'] for k in masked]))
