@@ -287,11 +287,15 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
         output = fnam
 
     if not fast:
-        masked, total = _filter_same_frag(fnam, max_molecule_length, output)
+        print 'filtering duplicates'
+        masked, total = _filter_duplicates(fnam,output)
+        print 'filtering same fragments'
+        masked.update(_filter_same_frag(fnam, max_molecule_length, output))
+        print 'filtering fro RE'
         masked.update(_filter_from_res(fnam, max_frag_size, min_dist_to_re,
                                        re_proximity, min_frag_size, output))
+        print 'filtering over representeds'
         masked.update(_filter_over_represented(fnam, over_represented, output))
-        masked.update(_filter_duplicates(fnam,output))
     else:
         pool = mu.Pool(4)
         a = pool.apply_async(_filter_same_frag,
