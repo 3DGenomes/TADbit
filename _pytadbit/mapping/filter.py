@@ -286,7 +286,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     if not output:
         output = fnam
 
-    if not fast:
+    if not fast: # mainly for debugging
         print 'filtering duplicates'
         masked, total = _filter_duplicates(fnam,output)
         print 'filtering same fragments'

@@ -42,6 +42,11 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     :param out_path: path to an outfile. It will written in a similar format as
        the inputs
     """
+    # make sure that we are comparing strings in the same way as the bash sort
+    # command
+    import locale
+    locale.setlocale(locale.LC_ALL, "C")
+
     reads_fh = open(out_path, 'w')
     reads1 = open(fname1)
     line1 = reads1.next()
@@ -129,7 +134,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
                 read1 = line1.split('\t', 1)[0]
                 line2 = reads2.next()
                 read2 = line2.split('\t', 1)[0]
-            elif line1 > line2:
+            # if first element of line1 is greater than the one of line2:
+            elif locale.strcoll(read1, read2)==-1:
                 line2 = reads2.next()
                 read2 = line2.split('\t', 1)[0]
             else:
