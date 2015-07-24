@@ -329,7 +329,8 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
-    
+
+    :returns: slope, intercept and R square of each of the 3 correlations
     """
     resolution = resolution or 1
     dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
@@ -502,6 +503,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     elif show==True:
         plt.show()
         plt.close('all')
+    return (a1, b1, r21), (a2, b2, r22), (a3, b3, r23)
 
 def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=None):
     """
