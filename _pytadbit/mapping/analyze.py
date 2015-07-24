@@ -89,24 +89,28 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                     continue
                 if by_chrom == 'inter' and crm1 == crm2:
                     continue
-                subdata = hic_data.get_matrix(focus=(crm1, crm2), normalized=normalized)
-                if savedata:
-                    hic_data.write_matrix('%s/%s.mat' % (
-                        savedata, '_'.join(set((crm1, crm2)))),
-                                          focus=(crm1, crm2),
-                                          normalized=normalized)
-                if show or savefig:
-                    draw_map(subdata, 
-                             OrderedDict([(k, hic_data.chromosomes[k])
-                                          for k in hic_data.chromosomes.keys()
-                                          if k in [crm1, crm2]]),
-                             hic_data.section_pos,
-                             '%s/%s.%s' % (savefig,
-                                           '_'.join(set((crm1, crm2))),
-                                           'pdf' if pdf else 'png'),
-                             show, one=True, clim=clim, cmap=cmap,
-                             decay_resolution=decay_resolution, perc=perc,
-                             name=name, cistrans=float('NaN'))
+                try:
+                    subdata = hic_data.get_matrix(focus=(crm1, crm2), normalized=normalized)
+                    if savedata:
+                        hic_data.write_matrix('%s/%s.mat' % (
+                            savedata, '_'.join(set((crm1, crm2)))),
+                                              focus=(crm1, crm2),
+                                              normalized=normalized)
+                    if show or savefig:
+                        draw_map(subdata, 
+                                 OrderedDict([(k, hic_data.chromosomes[k])
+                                              for k in hic_data.chromosomes.keys()
+                                              if k in [crm1, crm2]]),
+                                 hic_data.section_pos,
+                                 '%s/%s.%s' % (savefig,
+                                               '_'.join(set((crm1, crm2))),
+                                               'pdf' if pdf else 'png'),
+                                 show, one=True, clim=clim, cmap=cmap,
+                                 decay_resolution=decay_resolution, perc=perc,
+                                 name=name, cistrans=float('NaN'))
+                except ValueError, e:
+                    print 'ERROR: problem with chromosome %s' % crm1
+                    print str(e)
     else:
         if savedata:
             hic_data.write_matrix(savedata, focus=focus,

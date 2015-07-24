@@ -204,14 +204,14 @@ def filter_reads_OLD(fnam, max_molecule_length=500, over_represented=0.005,
     fhandler.close()
     if savedata:
         out = open(savedata, 'w')
-        out.write('TOTAL\t%d\n' % total)
+        out.write('Mapped both\t%d\n' % total)
         for k in xrange(1, len(masked) + 1):
             out.write('%s\t%d\n' % (masked[k]['name'], len(masked[k]['reads'])))
         out.write('Valid pairs\t%d\n' % (total - bads))
         out.close()
     if verbose:
         print 'Filtered reads (and percentage of total):\n'
-        print '     %-25s : %12d (100.00%%)' % ('TOTAL mapped', total)
+        print '     %-25s : %12d (100.00%%)' % ('Mapped both', total)
         print '  ' + '-' * 53
         for k in xrange(1, len(masked) + 1):
             print '  %2d- %-25s : %12d (%6.2f%%)' %(
@@ -318,14 +318,14 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     #     bads = len(frozenset().union(*[masked[k]['reads'] for k in masked]))
     if savedata:
         out = open(savedata, 'w')
-        out.write('TOTAL\t%d\n' % total)
+        out.write('Mapped both\t%d\n' % total)
         for k in xrange(1, len(masked) + 1):
             out.write('%s\t%d\n' % (masked[k]['name'], masked[k]['reads']))
         # out.write('Valid pairs\t%d\n' % (total - bads))
         out.close()
     if verbose:
         print 'Filtered reads (and percentage of total):\n'
-        print '     %-25s : %12d (100.00%%)' % ('TOTAL mapped', total)
+        print '     %-25s : %12d (100.00%%)' % ('Mapped both', total)
         print '  ' + '-' * 53
         for k in xrange(1, len(masked) + 1):
             print '  %2d- %-25s : %12d (%6.2f%%)' %(
