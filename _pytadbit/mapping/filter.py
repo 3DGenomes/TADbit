@@ -242,7 +242,9 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
        4- extra dangling-end : reads are comming from different RE fragment but
           are close enough (< max_molecule length) and point to the inside
        5- too close from RES : semi-dangling-end filter, start position of one
-          of the read is too close (5 bp by default) from RE cutting site.
+          of the read is too close (5 bp by default) from RE cutting site. This
+          filter is skipped in case read is involved in multi-contact. This
+          filter may be too conservative for 4bp cutter REs.
        6- too short          : remove reads comming from small restriction less
           than 100 bp (default) because they are comparable to the read length
        7- too large          : remove reads comming from large restriction
@@ -450,8 +452,11 @@ def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
                 (diff12 < re_proximity) or 
                 (diff21 < re_proximity) or
                 (diff22 < re_proximity)):
-                masked[5]["reads"] += 1
-                outfil[5].write(read + '\n')
+                # multicontacts excluded if fragment is internal (not the first)
+                # TODO: remove first condition in future versions
+                if not '~' in read or '~1~' in read:
+                    masked[5]["reads"] += 1
+                    outfil[5].write(read + '\n')
             if (((diff11 > min_dist_to_re) and
                  (diff12 > min_dist_to_re)) or 
                 ((diff21 > min_dist_to_re) and

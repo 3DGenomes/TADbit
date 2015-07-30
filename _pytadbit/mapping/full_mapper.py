@@ -42,7 +42,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         seq, qal    = header.rsplit(' ', 2)[-2:]
         return header, seq, qal
         
-    def _split_read_re(seq, qal, pattern, max_seq_len=None, site=''):
+    def _split_read_re(seq, qal, pattern, max_seq_len=None, site='', cnt=0):
         """
         Recursive generator that splits reads according to the
         predefined restriction enzyme.
@@ -51,22 +51,23 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         The RE site before the fragment is added outside this function
         """
         try:
+            cnt += 1
             pos = seq.index(pattern)
             if pos < min_seq_len:
                 split_read(seq[pos + len_relg:], qal[pos + len_relg:],
-                           pattern, max_seq_len)
+                           pattern, max_seq_len, cnt)
             else:
-                yield seq[:pos] + site, qal[:pos] + ('H' * len(site))
+                yield seq[:pos] + site, qal[:pos] + ('H' * len(site)), cnt
             for subseq, subqal in split_read(seq[pos + len_relg:],
                                              qal[pos + len_relg:],
                                              pattern,
-                                             max_seq_len):
-                yield subseq, subqal
+                                             max_seq_len, cnt):
+                yield subseq, subqal, cnt
         except ValueError:
             if len(seq) == max_seq_len:
                 raise ValueError
             if len(seq) > min_seq_len:
-                yield seq, qal
+                yield seq, qal, cnt
 
     # Define function for stripping lines according to ficus
     if isinstance(trim, tuple):
@@ -88,7 +89,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         split_read = _split_read_re
     else:
         enz_pattern = ''
-        split_read = lambda x, y, z, after_z, after_after_z: (yield x, y)
+        split_read = lambda x, y, z, after_z, after_after_z: (yield x, y , 1)
 
     # function to yield reads from input file
     get_seq = _get_fastq_read if fastq else _get_map_read
@@ -117,7 +118,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         iter_frags = split_read(seq, qal, enz_pattern, len(seq), site)
         # the first fragment should not be preceded by the RE site
         try:
-            seq, qal = iter_frags.next()
+            seq, qal, cnt = iter_frags.next()
         except StopIteration:
             # read full of ligation events, fragments not reaching minimum
             continue
@@ -127,17 +128,18 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             # site is a RE site or nearly, and thus should not be found anyway)
             iter_frags = split_read(seq, qal, sub_enz_pattern, len(seq), site)
             try:
-                seq, qal = iter_frags.next()
+                seq, qal, cnt = iter_frags.next()
             except ValueError:
                 continue
             except StopIteration:
                 continue
-        out.write(_map2fastq('\t'.join((header, seq, qal, '0', '-\n'))))
+        out.write(_map2fastq('\t'.join((header + '~' + str(cnt) + '~',
+                                        seq, qal, '0', '-\n'))))
         # the next fragments should be preceded by the RE site
         # continue
-        for seq, qal in  iter_frags:
-            out.write(_map2fastq('\t'.join((header, seq + site,
-                                            qal + 'H' * (len(site)),
+        for seq, qal, cnt in  iter_frags:
+            out.write(_map2fastq('\t'.join((header + '~' + str(cnt) + '~',
+                                            seq + site, qal + 'H' * (len(site)),
                                             '0', '-\n'))))
     out.close()
     return out_name
