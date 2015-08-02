@@ -55,13 +55,13 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             pos = seq.index(pattern)
             if pos < min_seq_len:
                 split_read(seq[pos + len_relg:], qal[pos + len_relg:],
-                           pattern, max_seq_len, cnt)
+                           pattern, max_seq_len, cnt=cnt)
             else:
                 yield seq[:pos] + site, qal[:pos] + ('H' * len(site)), cnt
-            for subseq, subqal in split_read(seq[pos + len_relg:],
+            for subseq, subqal, cnt in split_read(seq[pos + len_relg:],
                                              qal[pos + len_relg:],
                                              pattern,
-                                             max_seq_len, cnt):
+                                             max_seq_len, cnt=cnt):
                 yield subseq, subqal, cnt
         except ValueError:
             if len(seq) == max_seq_len:
