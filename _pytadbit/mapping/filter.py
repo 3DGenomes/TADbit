@@ -406,7 +406,7 @@ def _filter_duplicates(fnam, output):
             (read,
              cr1, pos1, _, _, _, _,
              cr2, pos2, _, _, _, _) = line.split('\t')
-            uniq_key = tuple(sorted((cr1 + pos1, cr2 + pos2)))
+            uniq_key = ','.join(sorted((cr1 + pos1, cr2 + pos2)))
             if uniq_key in uniq_check:
                 masked[9]["reads"] += 1
                 outfil[9].write(read + '\n')
@@ -453,7 +453,6 @@ def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
                 (diff21 < re_proximity) or
                 (diff22 < re_proximity)):
                 # multicontacts excluded if fragment is internal (not the first)
-                # TODO: remove first condition in future versions
                 if not '~' in read:
                     masked[5]["reads"] += 1
                     outfil[5].write(read + '\n')
