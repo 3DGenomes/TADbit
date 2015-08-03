@@ -454,7 +454,7 @@ def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
                 (diff22 < re_proximity)):
                 # multicontacts excluded if fragment is internal (not the first)
                 # TODO: remove first condition in future versions
-                if not '~' in read or '~1~' in read:
+                if not '~' in read:
                     masked[5]["reads"] += 1
                     outfil[5].write(read + '\n')
             if (((diff11 > min_dist_to_re) and

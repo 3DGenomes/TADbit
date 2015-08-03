@@ -31,7 +31,7 @@ their own programs using TADbit as a complementary library.
 Documentation
 *************
 
-* `TADbit documentation <http://3dgenomes.github.io/tadbit/>`_
+* `TADbit documentation <http://3dgenomes.github.io/TADbit/>`_
 * `Summary of TADbit classes and functions <https://github.com/3DGenomes/tadbit/blob/master/doc/summary.rst>`_
 
 Feedback

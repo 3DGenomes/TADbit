@@ -133,17 +133,22 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                 continue
             except StopIteration:
                 continue
-        out.write(_map2fastq('\t'.join((header + '~' + str(cnt) + '~',
+        out.write(_map2fastq('\t'.join((insert_mark(header, cnt),
                                         seq, qal, '0', '-\n'))))
         # the next fragments should be preceded by the RE site
         # continue
         for seq, qal, cnt in  iter_frags:
-            out.write(_map2fastq('\t'.join((header + '~' + str(cnt) + '~',
+            out.write(_map2fastq('\t'.join((insert_mark(header, cnt),
                                             seq + site, qal + 'H' * (len(site)),
                                             '0', '-\n'))))
     out.close()
     return out_name
-        
+
+def insert_mark(header, num):
+    if num == 1 :
+        return header
+    h, s, q = header.rsplit(' ', 2)
+    return '%s~%d~ %s %s' % (h, num, s, q)
 
 def _map2fastq(read):
     return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
