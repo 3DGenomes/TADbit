@@ -253,14 +253,14 @@
     <span class="n">fhandler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;TOTAL</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">total</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Mapped both</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">total</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;reads&#39;</span><span class="p">])))</span>
         <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Valid pairs</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">total</span> <span class="o">-</span> <span class="n">bads</span><span class="p">))</span>
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="k">print</span> <span class="s">&#39;Filtered reads (and percentage of total):</span><span class="se">\n</span><span class="s">&#39;</span>
-        <span class="k">print</span> <span class="s">&#39;     </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (100.00</span><span class="si">%%</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;TOTAL mapped&#39;</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;     </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (100.00</span><span class="si">%%</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;Mapped both&#39;</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
         <span class="k">print</span> <span class="s">&#39;  &#39;</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">53</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">print</span> <span class="s">&#39;  </span><span class="si">%2d</span><span class="s">- </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (</span><span class="si">%6.2f%%</span><span class="s">)&#39;</span> <span class="o">%</span><span class="p">(</span>
@@ -276,7 +276,7 @@
 <div class="viewcode-block" id="filter_reads"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.filter.filter_reads">[docs]</a><span class="k">def</span> <span class="nf">filter_reads</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
                  <span class="n">over_represented</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
                  <span class="n">min_frag_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">re_proximity</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="o">=</span><span class="mi">750</span><span class="p">):</span>
+                 <span class="n">savedata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Filter mapped pair of reads in order to remove experimental artifacts (e.g.</span>
 <span class="sd">    dangling-ends, self-circle, PCR artifacts...)</span>
@@ -291,7 +291,9 @@
 <span class="sd">       4- extra dangling-end : reads are comming from different RE fragment but</span>
 <span class="sd">          are close enough (&lt; max_molecule length) and point to the inside</span>
 <span class="sd">       5- too close from RES : semi-dangling-end filter, start position of one</span>
-<span class="sd">          of the read is too close (5 bp by default) from RE cutting site.</span>
+<span class="sd">          of the read is too close (5 bp by default) from RE cutting site. This</span>
+<span class="sd">          filter is skipped in case read is involved in multi-contact. This</span>
+<span class="sd">          filter may be too conservative for 4bp cutter REs.</span>
 <span class="sd">       6- too short          : remove reads comming from small restriction less</span>
 <span class="sd">          than 100 bp (default) because they are comparable to the read length</span>
 <span class="sd">       7- too large          : remove reads comming from large restriction</span>
@@ -324,6 +326,7 @@
 <span class="sd">       from a RE site (usually 1.5 times the insert size). Applied in filter 10</span>
 <span class="sd">    :param None savedata: PATH where to write the number of reads retained by</span>
 <span class="sd">       each filter</span>
+<span class="sd">    :param True fast: parallel version, requires 4 CPUs and more RAM memory</span>
 
 <span class="sd">    :return: dicitonary with, as keys, the kind of filter applied, and as values</span>
 <span class="sd">       a set of read IDs to be removed</span>
@@ -331,38 +334,49 @@
 <span class="sd">    *Note: Filtering is not exclusive, one read can be filtered several times.*</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">output</span><span class="p">:</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">fnam</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_filter_same_frag</span><span class="p">,</span>
-                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_filter_from_res</span><span class="p">,</span>
-                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="p">,</span>
-                               <span class="n">re_proximity</span><span class="p">,</span> <span class="n">min_frag_size</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_filter_over_represented</span><span class="p">,</span>
-                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">over_represented</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_filter_duplicates</span><span class="p">,</span>
-                         <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span><span class="n">output</span><span class="p">))</span>
-    <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 
-    <span class="n">masked</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-    <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-    <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
-    <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fast</span><span class="p">:</span> <span class="c"># mainly for debugging</span>
+        <span class="k">print</span> <span class="s">&#39;filtering duplicates&#39;</span>
+        <span class="n">masked</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">_filter_duplicates</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;filtering same fragments&#39;</span>
+        <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_filter_same_frag</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&#39;filtering fro RE&#39;</span>
+        <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_filter_from_res</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="p">,</span>
+                                       <span class="n">re_proximity</span><span class="p">,</span> <span class="n">min_frag_size</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&#39;filtering over representeds&#39;</span>
+        <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_filter_over_represented</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">over_represented</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_filter_same_frag</span><span class="p">,</span>
+                             <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_filter_from_res</span><span class="p">,</span>
+                             <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="p">,</span>
+                                   <span class="n">re_proximity</span><span class="p">,</span> <span class="n">min_frag_size</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_filter_over_represented</span><span class="p">,</span>
+                             <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">over_represented</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_filter_duplicates</span><span class="p">,</span>
+                             <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span><span class="n">output</span><span class="p">))</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="n">masked</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+        <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+        <span class="n">masked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
 
     <span class="c"># if savedata or verbose:</span>
     <span class="c">#     bads = len(frozenset().union(*[masked[k][&#39;reads&#39;] for k in masked]))</span>
     <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">savedata</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;TOTAL</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">total</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Mapped both</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">total</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;reads&#39;</span><span class="p">]))</span>
         <span class="c"># out.write(&#39;Valid pairs\t%d\n&#39; % (total - bads))</span>
         <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="k">print</span> <span class="s">&#39;Filtered reads (and percentage of total):</span><span class="se">\n</span><span class="s">&#39;</span>
-        <span class="k">print</span> <span class="s">&#39;     </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (100.00</span><span class="si">%%</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;TOTAL mapped&#39;</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;     </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (100.00</span><span class="si">%%</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;Mapped both&#39;</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
         <span class="k">print</span> <span class="s">&#39;  &#39;</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">53</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">print</span> <span class="s">&#39;  </span><span class="si">%2d</span><span class="s">- </span><span class="si">%-25s</span><span class="s"> : </span><span class="si">%12d</span><span class="s"> (</span><span class="si">%6.2f%%</span><span class="s">)&#39;</span> <span class="o">%</span><span class="p">(</span>
@@ -487,8 +501,11 @@
                 <span class="p">(</span><span class="n">diff12</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)</span> <span class="ow">or</span> 
                 <span class="p">(</span><span class="n">diff21</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)</span> <span class="ow">or</span>
                 <span class="p">(</span><span class="n">diff22</span> <span class="o">&lt;</span> <span class="n">re_proximity</span><span class="p">)):</span>
-                <span class="n">masked</span><span class="p">[</span><span class="mi">5</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">outfil</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="c"># multicontacts excluded if fragment is internal (not the first)</span>
+                <span class="c"># TODO: remove first condition in future versions</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;~&#39;</span> <span class="ow">in</span> <span class="n">read</span> <span class="ow">or</span> <span class="s">&#39;~1~&#39;</span> <span class="ow">in</span> <span class="n">read</span><span class="p">:</span>
+                    <span class="n">masked</span><span class="p">[</span><span class="mi">5</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">outfil</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(((</span><span class="n">diff11</span> <span class="o">&gt;</span> <span class="n">min_dist_to_re</span><span class="p">)</span> <span class="ow">and</span>
                  <span class="p">(</span><span class="n">diff12</span> <span class="o">&gt;</span> <span class="n">min_dist_to_re</span><span class="p">))</span> <span class="ow">or</span> 
                 <span class="p">((</span><span class="n">diff21</span> <span class="o">&gt;</span> <span class="n">min_dist_to_re</span><span class="p">)</span> <span class="ow">and</span>
@@ -591,7 +608,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on May 09, 2015.
+      Last updated on Aug 03, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

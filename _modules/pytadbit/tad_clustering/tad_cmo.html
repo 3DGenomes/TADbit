@@ -232,7 +232,10 @@
 <div class="viewcode-block" id="optimal_cmo"><a class="viewcode-back" href="../../../reference/reference_clustering.html#pytadbit.tad_clustering.tad_cmo.optimal_cmo">[docs]</a><span class="k">def</span> <span class="nf">optimal_cmo</span><span class="p">(</span><span class="n">hic1</span><span class="p">,</span> <span class="n">hic2</span><span class="p">,</span> <span class="n">num_v</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_num_v</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                 <span class="n">method</span><span class="o">=</span><span class="s">&#39;frobenius&#39;</span><span class="p">,</span> <span class="n">long_nw</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">long_dist</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates the optimal contact map overlap between 2 matrices </span>
+<span class="sd">    Calculates the optimal contact map overlap between 2 matrices</span>
+
+<span class="sd">    TODO: make the selection of number of eigen vectors automatic or relying on</span>
+<span class="sd">          the summed contribution (e.g. select the EVs that sum 80% of the info)</span>
 
 <span class="sd">    .. note::</span>
 
@@ -305,7 +308,6 @@
                     <span class="n">best_pen</span> <span class="o">=</span> <span class="n">penalty</span>
             <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">print</span> <span class="n">e</span>
-                <span class="k">pass</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">align1</span><span class="p">,</span> <span class="n">align2</span> <span class="o">=</span> <span class="n">best_alis</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -449,7 +451,7 @@
 <span class="k">def</span> <span class="nf">_run_aleigen</span><span class="p">(</span><span class="n">contacts1</span><span class="p">,</span> <span class="n">contacts2</span><span class="p">,</span> <span class="n">num_v</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="sd">        - c1, c2 = number of contacts of the first and seconf contact map</span>
+<span class="sd">        - c1, c2 = number of contacts of the first and second contact map</span>
 <span class="sd">                   (after removing non-matching columns/rows)</span>
 <span class="sd">        - cmo = total number of matching contacts (above the first diagonal)</span>
 <span class="sd">          of the computed overlap</span>
@@ -578,7 +580,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on May 09, 2015.
+      Last updated on Aug 03, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
