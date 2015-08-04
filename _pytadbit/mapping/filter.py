@@ -396,7 +396,7 @@ def _filter_duplicates(fnam, output):
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k] = open(masked[k]['fnam'], 'w')
-    uniq_check = set()
+    uniq_check = set() # huge set
     fhandler = open(fnam)
     line = fhandler.next()
     while line.startswith('#'):
@@ -406,7 +406,7 @@ def _filter_duplicates(fnam, output):
             (read,
              cr1, pos1, _, _, _, _,
              cr2, pos2, _, _, _, _) = line.split('\t')
-            uniq_key = ','.join(sorted((cr1 + pos1, cr2 + pos2)))
+            uniq_key = '_'.join(sorted((cr1 + pos1, cr2 + pos2)))
             if uniq_key in uniq_check:
                 masked[9]["reads"] += 1
                 outfil[9].write(read + '\n')
