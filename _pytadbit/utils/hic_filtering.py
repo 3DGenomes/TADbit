@@ -65,8 +65,6 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
             if draw_hist:
                 plt.clf()
                 hist = plt.hist(cols, bins=100, alpha=.3, color='grey')
-                xlims = plt.xlim()
-                ylims = plt.ylim()
             xp = range(0, int(cols[-1]))
             if cnt > 10000:
                 raise ValueError
@@ -97,6 +95,8 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
         try:
             p, z, root = best[2:]
             if draw_hist:
+                xlims = plt.xlim()
+                ylims = plt.ylim()
                 a = plt.plot(xp, p(xp), "--", color='k')
                 b = plt.vlines(root, 0, plt.ylim()[1], colors='r', linestyles='dashed')
                 # c = plt.vlines(median - mad * 1.5, 0, 110, colors='g',
@@ -124,7 +124,7 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
                 #                        'first solution of polynomial derivation',
                 #                        'median - (1.5 * median absolute deviation)'],
                 #            fontsize='x-small')
-                plt.ylim(0, ylims[1])
+                plt.ylim([0, ylims[1]])
                 plt.xlim(xlims)
                 plt.xlabel('Sum of interactions')
                 plt.xlabel('Number of columns with a given value')
