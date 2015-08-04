@@ -123,6 +123,8 @@ experiment with TADbit:
 Iterative mapping
 ~~~~~~~~~~~~~~~~~
 
+TADbit implements the iterative mapping as proposed by [Imakaev2012]\_
+
 .. code:: python
 
     from pytadbit.mapping.mapper import iterative_mapping
@@ -347,7 +349,7 @@ Plot iterative mapping
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_28_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_29_0.png
 
 
 Merging mapped "read1" and "read2"
@@ -374,8 +376,14 @@ ends ("read1" and "read2" uniquely mapped)
     Found 41123290 pair of reads mapping uniquely
 
 
-Stats on intersection
-^^^^^^^^^^^^^^^^^^^^^
+Descriptive statistics
+^^^^^^^^^^^^^^^^^^^^^^
+
+In order to confirm the size of the inserts fed to the sequencer, we can
+look at the distribution of genomic distances between the mapped read1
+and read2 of dangling-ends. From this analysis we can extract the
+maximum insert size, that is an important value to classify reads during
+the filtering process.
 
 .. code:: python
 
@@ -385,7 +393,7 @@ Stats on intersection
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_35_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_37_0.png
 
 
 Simple descriptive stats
@@ -406,11 +414,11 @@ regions that, each, spans over 10 kb (resolution parameter).
 
     from pytadbit.mapping.analyze import plot_distance_vs_interactions
     
-    plot_distance_vs_interactions(reads, max_diff=50000000, resolution=10000)
+    plot_distance_vs_interactions(reads, max_diff=10000, resolution=10000)
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_39_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_41_0.png
 
 
 Genomic coverage of our reads
@@ -431,7 +439,7 @@ with falls around centromeres and telomeres.
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_43_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_45_0.png
 
 
 *The picks in the plot correspond to PCR artifact that we will remove in
@@ -448,7 +456,7 @@ of chromosomes
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_46_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_48_0.png
 
 
 Interaction matrix
@@ -481,7 +489,7 @@ matrices eigen-vectors are not very informative however).
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_50_1.png
+.. image:: ../nbpictures/tutorial_0_mapping_52_1.png
 
 
 Filter reads
@@ -604,7 +612,7 @@ dangling-ends and self-circle along the genome
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_63_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_65_0.png
 
 
 Once filtered the peaks previously seen should disapeear:
@@ -616,7 +624,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_65_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_67_0.png
 
 
 .. code:: python
@@ -626,12 +634,143 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_66_0.png
+.. image:: ../nbpictures/tutorial_0_mapping_68_0.png
 
 
 .. code:: python
 
     hic_map(filt_reads, resolution=1000000, show=True)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_69_0.png
+
+
+These maps can be zoomed to a given region, like first chromosome:
+
+.. code:: python
+
+    hic_map(filt_reads, resolution=1000000, show=True, focus=(1, 250))
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_71_0.png
+
+
+Same as above, calling the focus using directly chromosome name and
+using a smaller resolution (100 kb):
+
+.. code:: python
+
+    hic_map(filt_reads, resolution=100000, show=True, focus='chr1')
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_73_0.png
+
+
+Filtering and normalization
+---------------------------
+
+Removal of columns having to few data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Depending on the normalization method, the presence of columns with high
+proportion of zeros can prevent to converge into a satisfactory result.
+
+For this part of the processing of the data we will start to work on
+full matrices. This step is critical in the sense that **we have to
+decide at which resolution we are going to analyze the data**. For this
+tutorial we will use a resolution of 1 Mb.
+
+*Note* : as all previous steps ended in the generation of a single file,
+we just need to load the name of the saved file with the filtered reads:
+
+.. code:: python
+
+    name = 'SRX116344_200'
+    filt_reads  = '/scratch/results/%s_filtered_map.tsv' % name
+
+.. code:: python
+
+    from pytadbit import load_hic_data_from_reads
+    
+    hic_data = load_hic_data_from_reads(filt_reads, resolution=1000000)
+
+We can visualize the matrix using the same function as before, with the
+file of reads:
+
+.. code:: python
+
+    from pytadbit.mapping.analyze import hic_map
+    
+    hic_map(hic_data, show=True)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_81_0.png
+
+
+.. code:: python
+
+    hic_data.filter_columns(draw_hist=True)
+
+
+.. ansi-block::
+
+    
+    WARNING: removing columns having more than 2327 zeroes:
+       123   124   125   126   127   128   129   130   131   132   133   134   135   136   137   138   139   140   141   142
+       143   145   340   492   585   742   882   930   931   932   953  1124  1294  1295  1296  1440  1441  1541  1585  1586
+      1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1603  1607  1680  1721
+      1866  1867  1868  1950  1986  2085  2086  2087  2088  2089  2090  2091  2092  2093  2094  2095  2096  2097  2098  2099
+      2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210  2211  2212  2213  2214  2215  2216
+      2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318  2319  2320  2321  2322  2323  2324
+      2325  2326  2327  2329  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455  2500  2525  2601  2602  2603  2604
+      2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801  2802  2837  2838  2839  2840  2841  2842
+      2843  2844  2845  2846  2847  2850  2851  2852  2888  2889  2890  2947  2948  2949  3044  3045  3046  3055  3067  3068
+      3069  3070  3071  3072  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082  3083  3084  3085  3086  3087  3088
+      3089  3090  3091  3092  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102  3103
+    /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
+      return array(a, dtype, copy=False, order=order)
+
+
+.. ansi-block::
+
+    (0.0, 120.0) (0.0, 14000.0)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_82_2.png
+
+
+.. ansi-block::
+
+    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:146: ComplexWarning: Casting complex values to real discards the imaginary part
+      round(root, 3), ' '.join(
+    
+    WARNING: removing columns having less than 1381.618 counts:
+       123   124   125   126   127   128   129   130   131   132   133   134   135   136   137   138   139   140   141   142
+       143   144   145   340   492   585   691   742   882   930   931   932   953  1124  1294  1295  1296  1440  1441  1541
+      1585  1586  1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1603  1604
+      1607  1609  1680  1721  1866  1867  1868  1950  1986  2085  2086  2087  2088  2089  2090  2091  2092  2093  2094  2095
+      2096  2097  2098  2099  2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210  2211  2212
+      2213  2214  2215  2216  2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318  2319  2320
+      2321  2322  2323  2324  2325  2326  2327  2329  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455  2500  2525
+      2584  2601  2602  2603  2604  2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801  2802  2837
+      2838  2839  2840  2841  2842  2843  2844  2845  2846  2847  2850  2851  2852  2888  2889  2890  2947  2948  2949  3044
+      3045  3046  3047  3055  3067  3068  3069  3070  3071  3072  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082
+      3083  3084  3085  3086  3087  3088  3089  3090  3091  3092  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102
+      3103
+
+
+Filtered columns (to high count of zeroes, or to low mean value) will be
+skipped in most of analysis available and are now shaded in the matrix
+representation:
+
+.. code:: python
+
+    hic_map(hic_data, show=True)
 
 
 .. ansi-block::
@@ -643,6 +782,16 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures/tutorial_0_mapping_67_1.png
+.. image:: ../nbpictures/tutorial_0_mapping_84_1.png
 
+
+Normalization
+~~~~~~~~~~~~~
+
+TADbit implements ICE normalization strategy [Imakaev2012]\_ which
+basically consists constructing a new in dividing each cell
+
+.. code:: python
+
+    hic_data.normalize_hic(iterations=10, max_dev=0.1)
 

@@ -144,6 +144,8 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">p</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">root</span> <span class="o">=</span> <span class="n">best</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
             <span class="k">if</span> <span class="n">draw_hist</span><span class="p">:</span>
+                <span class="n">xlims</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">()</span>
+                <span class="n">ylims</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">()</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span> <span class="n">p</span><span class="p">(</span><span class="n">xp</span><span class="p">),</span> <span class="s">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
                 <span class="n">b</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">()[</span><span class="mi">1</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="s">&#39;dashed&#39;</span><span class="p">)</span>
                 <span class="c"># c = plt.vlines(median - mad * 1.5, 0, 110, colors=&#39;g&#39;,</span>
@@ -171,7 +173,8 @@
                 <span class="c">#                        &#39;first solution of polynomial derivation&#39;,</span>
                 <span class="c">#                        &#39;median - (1.5 * median absolute deviation)&#39;],</span>
                 <span class="c">#            fontsize=&#39;x-small&#39;)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">ylims</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xlims</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Sum of interactions&#39;</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Number of columns with a given value&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
@@ -322,7 +325,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Aug 03, 2015.
+      Last updated on Aug 04, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

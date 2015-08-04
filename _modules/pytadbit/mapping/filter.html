@@ -445,7 +445,7 @@
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">masked</span><span class="p">:</span>
         <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;fnam&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.tsv&#39;</span>
         <span class="n">outfil</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;fnam&#39;</span><span class="p">],</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
-    <span class="n">uniq_check</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">uniq_check</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="c"># huge set</span>
     <span class="n">fhandler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
     <span class="n">line</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="k">while</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
@@ -455,7 +455,7 @@
             <span class="p">(</span><span class="n">read</span><span class="p">,</span>
              <span class="n">cr1</span><span class="p">,</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span>
              <span class="n">cr2</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
-            <span class="n">uniq_key</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">((</span><span class="n">cr1</span> <span class="o">+</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">cr2</span> <span class="o">+</span> <span class="n">pos2</span><span class="p">)))</span>
+            <span class="n">uniq_key</span> <span class="o">=</span> <span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">((</span><span class="n">cr1</span> <span class="o">+</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">cr2</span> <span class="o">+</span> <span class="n">pos2</span><span class="p">)))</span>
             <span class="k">if</span> <span class="n">uniq_key</span> <span class="ow">in</span> <span class="n">uniq_check</span><span class="p">:</span>
                 <span class="n">masked</span><span class="p">[</span><span class="mi">9</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">outfil</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
@@ -607,7 +607,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Aug 03, 2015.
+      Last updated on Aug 04, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
