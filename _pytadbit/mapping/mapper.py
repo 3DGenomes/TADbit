@@ -20,6 +20,12 @@ except ImportError:
 N_WINDOWS = 0
 
 
+def eq_reads(rd1, rd2):
+    """
+    Compare reads accounting for multicontacts
+    """
+    return rd1.split('~', 1)[0] == rd2.split('~', 1)[0]
+
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
     Merges the two files corresponding to each reads sides. Reads found in both
@@ -75,7 +81,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     count = 0
     try:
         while True:
-            if read1 == read2:
+            if eq_reads(read1, read2):
                 count += 1
                 # case we have potential multicontacts
                 if '|||' in line1 or '|||' in line2:
@@ -150,7 +156,6 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
 
 def trimming(raw_seq_len, seq_start, min_seq_len):
     return seq_start, raw_seq_len - seq_start - min_seq_len
-
 
 def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
                       range_start, range_stop, **kwargs):
