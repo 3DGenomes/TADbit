@@ -19,13 +19,10 @@ error         = 1000
 extradangling = 1000
 duplicates    = 1000
 
-
 re_seq = RESTRICTION_ENZYMES[r_enz].replace('|', '')
 enz_cut = RESTRICTION_ENZYMES[r_enz].index('|')
 
-
 nts = ('ATGC' * 100) +'N'
-
 
 # RANDOM GENOME GENERATION
 genome = {}
@@ -65,7 +62,7 @@ for crm in genome:
     if beg != end:
         frags[crm][beg] = [beg, len(genome[crm])]
 
-# RANDOM READS
+# Prepare files
 sam_crm = '@SQ\tSN:%s\tLN:%d\n'
 sam_head = """@HD\tVN:1.3
 %s@RG\tID:0\tPG:GEM\tPL:ILLUMINA\tSM:0
@@ -77,13 +74,20 @@ for crm in genome:
 
 sam_head = sam_head % crm_heads
 
-read_str = '{id}\t{flag}\t{crm}\t{pos}\t254\t3M\t*\t0\t0\tAAA\tHHH\tRG:Z:0\tNH:i:1\tNM:i:0\tXT:A:U\tmd:Z:3\n'
+sam_read = '{id}\t{flag}\t{crm}\t{pos}\t254\t3M\t*\t0\t0\tAAA\tHHH\tRG:Z:0\tNH:i:1\tNM:i:0\tXT:A:U\tmd:Z:3\n'
+map_read = "{id}\tAAA\tHHH\t1\t{crm}:{flag}:{pos}:3\n"
 
 out1 = open('test_read1.sam~', 'w')
 out1.write(sam_head)
 out2 = open('test_read2.sam~', 'w')
 out2.write(sam_head)
-flags = [66, 82]
+
+out11 = open('test_read1.map~', 'w')
+out22 = open('test_read2.map~', 'w')
+
+map_flags = ['+', '-']
+sam_flags = [66 , 82 ]
+
 # SELF-CIRCLES
 for i in xrange(selfcircle):
     crm  = genome.keys()    [int(random() * len(genome))]
@@ -99,19 +103,23 @@ for i in xrange(selfcircle):
         if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
             continue
         if pos2 > pos1:
-            sd1 = 82
-            sd2 = 66
-            pos1 -= 3
+            sd1 = 1
+            sd2 = 0
+            pos1 -= 2
             break
         elif pos2 < pos1:
-            sd1 = 66
-            sd2 = 82
-            pos2 -= 3
+            sd1 = 0
+            sd2 = 1
+            pos2 -= 2
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala01.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala01.%012d' % (i)}
-    out1.write(read_str.format(**read1))
-    out2.write(read_str.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala01.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala01.%012d' % (i)}
+    out1.write(sam_read.format(**read1))
+    out2.write(sam_read.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala01.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala01.%012d' % (i)}
+    out11.write(map_read.format(**read1))
+    out22.write(map_read.format(**read2))
 
 # DANGLING-ENDS
 for i in xrange(dangling):
@@ -128,19 +136,23 @@ for i in xrange(dangling):
         if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
             continue
         if pos2 > pos1:
-            sd1 = 66
-            sd2 = 82
-            pos2 -= 3
+            sd1 = 0
+            sd2 = 1
+            pos2 -= 2
             break
         elif pos2 < pos1:
-            sd1 = 82
-            sd2 = 66
-            pos1 -= 3
+            sd1 = 1
+            sd2 = 0
+            pos1 -= 2
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala02.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala02.%012d' % (i)}
-    out1.write(read_str.format(**read1))
-    out2.write(read_str.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala02.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala02.%012d' % (i)}
+    out1.write(sam_read.format(**read1))
+    out2.write(sam_read.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala02.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala02.%012d' % (i)}
+    out11.write(map_read.format(**read1))
+    out22.write(map_read.format(**read2))
 
 # ERRORS
 for i in xrange(error):
@@ -154,18 +166,22 @@ for i in xrange(error):
                    + frags[crm][frag][0] + 1)
         pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
                    + frags[crm][frag][0] + 1)
-        sd1 = sd2 = flags[int(random()*2)]
+        sd1 = sd2 = int(random()*2)
         if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
             continue
         if pos1 != pos2:
-            if sd1 == 82:
-                pos1 -= 3
-                pos2 -= 3
+            if sd1 == 1:
+                pos1 -= 2
+                pos2 -= 2
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala03.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala03.%012d' % (i)}
-    out1.write(read_str.format(**read1))
-    out2.write(read_str.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala03.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala03.%012d' % (i)}
+    out1.write(sam_read.format(**read1))
+    out2.write(sam_read.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala03.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala03.%012d' % (i)}
+    out11.write(map_read.format(**read1))
+    out22.write(map_read.format(**read2))
 
 # EXTRA-DANGLING-ENDS
 for i in xrange(extradangling):
@@ -187,19 +203,24 @@ for i in xrange(extradangling):
         if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
             continue
         if pos2 > pos1:
-            sd1 = 66
-            sd2 = 82
-            pos2 -= 3
+            sd1 = 0
+            sd2 = 1
+            pos2 -= 2
             break
         elif pos2 < pos1:
-            sd1 = 82
-            sd2 = 66
-            pos1 -= 3
+            sd1 = 1
+            sd2 = 0
+            pos1 -= 2
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sd1, 'id': 'lala04.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala04.%012d' % (i)}
-    out1.write(read_str.format(**read1))
-    out2.write(read_str.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala04.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala04.%012d' % (i)}
+    out1.write(sam_read.format(**read1))
+    out2.write(sam_read.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala04.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala04.%012d' % (i)}
+    out11.write(map_read.format(**read1))
+    out22.write(map_read.format(**read2))
+
 # TOO CLOSE FROM RE
 
 # VAID PAIRS
@@ -227,48 +248,69 @@ while i < duplicates * 2:
             continue
         break
     if pos2 > pos1:
-        sd1 = 66
-        sd2 = 82
-        pos2 -= 3
+        sd1 = 0
+        sd2 = 1
+        pos2 -= 2
     elif pos2 < pos1:
-        sd1 = 82
-        sd2 = 66
-        pos1 -= 3
-    read1 = {'crm': crm1, 'pos': pos1, 'flag': sd1, 'id': 'lala05.%012d' % (i)}
-    read2 = {'crm': crm2, 'pos': pos2, 'flag': sd2, 'id': 'lala05.%012d' % (i)}
-    out1.write(read_str.format(**read1))
-    out2.write(read_str.format(**read2))
+        sd1 = 1
+        sd2 = 0
+        pos1 -= 2
+    read1 = {'crm': crm1, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala05.%012d' % (i)}
+    read2 = {'crm': crm2, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala05.%012d' % (i)}
+    out1.write(sam_read.format(**read1))
+    out2.write(sam_read.format(**read2))
+    read1 = {'crm': crm1, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala05.%012d' % (i)}
+    read2 = {'crm': crm2, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala05.%012d' % (i)}
+    out11.write(map_read.format(**read1))
+    out22.write(map_read.format(**read2))
     i += 1
-    if random() > 0.1:
-        read2 = {'crm': crm1, 'pos': pos1, 'flag': sd1, 'id': 'lala05.1%011d' % (i)}
-        read1 = {'crm': crm2, 'pos': pos2, 'flag': sd2, 'id': 'lala05.2%011d' % (i)}
-        out1.write(read_str.format(**read1))
-        out2.write(read_str.format(**read2))
+    if random() > 0.5:
+        read2 = {'crm': crm1, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala05.1%011d' % (i)}
+        read1 = {'crm': crm2, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala05.1%011d' % (i)}
+        out1.write(sam_read.format(**read1))
+        out2.write(sam_read.format(**read2))
+        read2 = {'crm': crm1, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala05.1%011d' % (i)}
+        read1 = {'crm': crm2, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala05.1%011d' % (i)}
+        out11.write(map_read.format(**read1))
+        out22.write(map_read.format(**read2))
     else:
-        read1 = {'crm': crm1, 'pos': pos1, 'flag': sd1, 'id': 'lala05.%012d' % (i)}
-        read2 = {'crm': crm2, 'pos': pos2, 'flag': sd2, 'id': 'lala05.%012d' % (i)}
-        out1.write(read_str.format(**read1))
-        out2.write(read_str.format(**read2))
+        read2 = {'crm': crm1, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala05.1%011d' % (i)}
+        read1 = {'crm': crm2, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala05.1%011d' % (i)}
+        out1.write(sam_read.format(**read1))
+        out2.write(sam_read.format(**read2))
+        read2 = {'crm': crm1, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala05.1%011d' % (i)}
+        read1 = {'crm': crm2, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala05.1%011d' % (i)}
+        out11.write(map_read.format(**read1))
+        out22.write(map_read.format(**read2))
     i += 1
-    
+
 out1.close()
 out2.close()
+out11.close()
+out22.close()
 
 # PARSE SAM
+from pytadbit.parsers.map_parser import parse_map
 from pytadbit.parsers.sam_parser import parse_sam
 
+parse_map(['test_read1.map~'], ['test_read2.map~'],
+          './lala1-map~', './lala2-map~', genome, re_name='DPNII', mapper='GEM')
+
 parse_sam(['test_read1.sam~'], ['test_read2.sam~'],
-          'lala1~', 'lala2~', genome, re_name='DPNII', mapper='GEM')
+          './lala1-sam~', './lala2-sam~', genome, re_name='DPNII', mapper='GEM')
+
 
 # GET INTERSECTION
 from pytadbit.mapping.mapper import get_intersection
 
-get_intersection('lala1~', 'lala2~', 'lala~')
+get_intersection('lala1-map~', 'lala2-map~', 'lala-map~')
+get_intersection('lala1-sam~', 'lala2-sam~', 'lala-sam~')
 
 # FILTER
-from pytadbit.mapping.filter import filter_reads, filter_reads_OLD
+from pytadbit.mapping.filter import filter_reads
 
-masked1 = filter_reads('lala~')
-masked2 = filter_reads_OLD('lala~')
+masked1 = filter_reads('lala-map~')
+
+masked2 = filter_reads('lala-sam~')
 
 
