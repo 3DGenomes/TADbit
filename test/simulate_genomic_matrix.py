@@ -8,7 +8,7 @@ from random import random
 import re
 
 # VARIABLES
-num_crms      = 40
+num_crms      = 9
 mean_crm_size = 1000000
 
 r_enz         = 'DpnII'
@@ -17,6 +17,7 @@ selfcircle    = 1000
 dangling      = 1000
 error         = 1000
 extradangling = 1000
+duplicates    = 1000
 
 
 re_seq = RESTRICTION_ENZYMES[r_enz].replace('|', '')
@@ -199,9 +200,57 @@ for i in xrange(extradangling):
     read2 = {'crm': crm, 'pos': pos2, 'flag': sd2, 'id': 'lala04.%012d' % (i)}
     out1.write(read_str.format(**read1))
     out2.write(read_str.format(**read2))
-    # TOO CLOSE FROM RE
-    
+# TOO CLOSE FROM RE
 
+# VAID PAIRS
+
+# DUPPLICATES
+i = 0
+while i < duplicates * 2:
+    crm1  = genome.keys()    [int(random() * len(genome))]
+    crm2  = genome.keys()    [int(random() * len(genome))]
+    while True:
+        frag1 = frags[crm1].keys()[int(random() * len(frags[crm1]))]
+        frag2 = frags[crm2].keys()[int(random() * len(frags[crm2]))]
+        if frags[crm2][frag2][1] - frags[crm2][frag2][0] < 6:
+            continue
+        if frags[crm1][frag1][1] - frags[crm1][frag1][0] < 6:
+            continue
+        if frag1 != frag2:
+            break
+    while True:
+        pos1 = int(random() * (frags[crm1][frag1][1] - frags[crm1][frag1][0])
+                   + frags[crm1][frag1][0])
+        pos2 = int(random() * (frags[crm2][frag2][1] - frags[crm2][frag2][0])
+                   + frags[crm2][frag2][0])
+        if not (3 < pos1 < (len(genome[crm1]) - 3) and 3 < pos2 < (len(genome[crm2]) - 3)):
+            continue
+        break
+    if pos2 > pos1:
+        sd1 = 66
+        sd2 = 82
+        pos2 -= 3
+    elif pos2 < pos1:
+        sd1 = 82
+        sd2 = 66
+        pos1 -= 3
+    read1 = {'crm': crm1, 'pos': pos1, 'flag': sd1, 'id': 'lala05.%012d' % (i)}
+    read2 = {'crm': crm2, 'pos': pos2, 'flag': sd2, 'id': 'lala05.%012d' % (i)}
+    out1.write(read_str.format(**read1))
+    out2.write(read_str.format(**read2))
+    i += 1
+    if random() > 0.1:
+        read2 = {'crm': crm1, 'pos': pos1, 'flag': sd1, 'id': 'lala05.1%011d' % (i)}
+        read1 = {'crm': crm2, 'pos': pos2, 'flag': sd2, 'id': 'lala05.2%011d' % (i)}
+        out1.write(read_str.format(**read1))
+        out2.write(read_str.format(**read2))
+    else:
+        read1 = {'crm': crm1, 'pos': pos1, 'flag': sd1, 'id': 'lala05.%012d' % (i)}
+        read2 = {'crm': crm2, 'pos': pos2, 'flag': sd2, 'id': 'lala05.%012d' % (i)}
+        out1.write(read_str.format(**read1))
+        out2.write(read_str.format(**read2))
+    i += 1
+    
 out1.close()
 out2.close()
 
@@ -217,10 +266,9 @@ from pytadbit.mapping.mapper import get_intersection
 get_intersection('lala1~', 'lala2~', 'lala~')
 
 # FILTER
-from pytadbit.mapping.filter import filter_reads
+from pytadbit.mapping.filter import filter_reads, filter_reads_OLD
 
-masked = filter_reads('lala~')
-
-
+masked1 = filter_reads('lala~')
+masked2 = filter_reads_OLD('lala~')
 
 

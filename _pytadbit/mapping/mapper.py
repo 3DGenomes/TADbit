@@ -123,19 +123,26 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
                     contacts = len(elts) - 1
                     if contacts > 1:
                         for i, (r1, r2) in enumerate(combinations(elts.values(), 2)):
+                            r1, r2 = sorted((r1, r2), key=lambda x: x[1:2])
                             reads_fh.write(r1[0] + (
                                 '#%d/%d' % (i + 1, contacts * (contacts + 1) / 2)) +
                                            '\t' + '\t'.join(r1[1:]) + '\t' + 
                                            '\t'.join(r2[1:]) + '\n')
                     elif contacts == 1:
-                        reads_fh.write('\t'.join(elts.values()[0]) + '\t' + 
-                                       '\t'.join(elts.values()[1][1:]) + '\n')
+                        r1, r2 = sorted((elts.values()[0], elts.values()[1]),
+                                        key=lambda x: x[1:2])
+                        reads_fh.write('\t'.join(r1) + '\t' + 
+                                       '\t'.join(r2[1:]) + '\n')
                     else:
-                        reads_fh.write('\t'.join(elts1.values()[0]) + '\t' + 
-                                       '\t'.join(elts2.values()[0][1:]) + '\n')
+                        r1, r2 = sorted((elts1.values()[0], elts2.values()[0]),
+                                        key=lambda x: x[1:2])
+                        reads_fh.write('\t'.join(r1) + '\t' + 
+                                       '\t'.join(r2[1:]) + '\n')
                 else:
-                    reads_fh.write(line1.strip() + '\t' + 
-                                   line2.split('\t', 1)[1])
+                    r1, r2 = sorted((line1.split(), line2.split()),
+                                    key=lambda x: x[1:2])
+                    reads_fh.write('\t'.join(r1) + '\t' +
+                                   '\t'.join(r2[1:]) + '\n')
                 line1 = reads1.next()
                 read1 = line1.split('\t', 1)[0]
                 line2 = reads2.next()

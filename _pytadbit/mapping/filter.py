@@ -5,6 +5,7 @@
 """
 from pytadbit.mapping.restriction_enzymes import count_re_fragments
 import multiprocessing as mu
+from subprocess import Popen, PIPE
 
 def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
                  verbose=True):
@@ -233,21 +234,21 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
     dangling-ends, self-circle, PCR artifacts...)
     
     Applied filters are:    
-       1- self-circle        : reads are comming from a single RE fragment and
+       1- self-circle        : reads are coming from a single RE fragment and
           point to the outside (----<===---===>---)
-       2- dangling-end       : reads are comming from a single RE fragment and
+       2- dangling-end       : reads are coming from a single RE fragment and
           point to the inside (----===>---<===---)
-       3- error              : reads are comming from a single RE fragment and
+       3- error              : reads are coming from a single RE fragment and
           point in the same direction
-       4- extra dangling-end : reads are comming from different RE fragment but
+       4- extra dangling-end : reads are coming from different RE fragment but
           are close enough (< max_molecule length) and point to the inside
        5- too close from RES : semi-dangling-end filter, start position of one
           of the read is too close (5 bp by default) from RE cutting site. This
           filter is skipped in case read is involved in multi-contact. This
           filter may be too conservative for 4bp cutter REs.
-       6- too short          : remove reads comming from small restriction less
+       6- too short          : remove reads coming from small restriction less
           than 100 bp (default) because they are comparable to the read length
-       7- too large          : remove reads comming from large restriction
+       7- too large          : remove reads coming from large restriction
           fragments (default: 100 Kb, P < 10-5 to occur in a randomized genome)
           as they likely represent poorly assembled or repeated regions
        8- over-represented   : reads coming from the top 0.5% most frequently
@@ -389,7 +390,6 @@ def _filter_same_frag(fnam, max_molecule_length, output):
     return masked
 
 def _filter_duplicates(fnam, output):
-    # t0 = time()
     total = 0
     masked = {9 : {'name': 'duplicated'        , 'reads': 0}}
     outfil = {}
@@ -422,6 +422,41 @@ def _filter_duplicates(fnam, output):
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k].close()
     return masked, total
+
+
+def _filter_duplicates_DEV(fnam, output):
+    # TODO: use mkfifo to create a named pipe that wold hold reads sorted by
+    #       columns 2,3 and 8,9. Check redundancy on this file by reading it.
+    # t0 = time()
+    total = 0
+    masked = {9 : {'name': 'duplicated'        , 'reads': 0}}
+    outfil = {}
+    for k in masked:
+        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
+        outfil[k] = open(masked[k]['fnam'], 'w')
+
+    proc = Popen(["sort", "-k", "2,9", "-t", "\t", fnam], stdout=PIPE)
+    previous = (None, None)
+    for line in proc.stdout:
+        try:
+            (read,
+             cr1, pos1, _, _, _, _,
+             cr2, pos2, _, _, _, _) = line.split('\t')
+        except ValueError:
+            continue
+        current = sorted((cr1 + pos1, cr2 + pos2))
+        if current == previous:
+            masked[9]["reads"] += 1
+            outfil[9].write(read + '\n')
+        previous = current
+        total += 1
+    proc.wait()
+    # print 'done 4', time() - t0
+    for k in masked:
+        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
+        outfil[k].close()
+    return masked, total
+
 
 def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
                      re_proximity, min_frag_size, output):
