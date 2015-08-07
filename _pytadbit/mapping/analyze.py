@@ -234,9 +234,12 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
                 data[i][j] = 0
                 data[j][i] = 0
             #data[j][i] = data[i][j]
-    evals, evect = eigh(data)
-    sort_perm = evals.argsort()
-    evect = evect[sort_perm]
+    try:
+        evals, evect = eigh(data)
+        sort_perm = evals.argsort()
+        evect = evect[sort_perm]
+    except:
+        evals, evect = None, None
     data = [i for d in data for i in d if not np.isnan(i)]
     gradient = np.linspace(np.nanmin(data),
                            np.nanmax(data), size)
@@ -295,20 +298,23 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     ax2.plot(subdata, normfit, 'k.', markersize=1.5, alpha=1)
     ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
                                                    kurtosis(data)))
-    ax4.vlines(range(size), 0, evect[:,-1], color='k')
+    try: 
+        ax4.vlines(range(size), 0, evect[:,-1], color='k')
+    except (TypeError, IndexError):
+        pass
     ax4.hlines(0, 0, size, color='red')
     ax4.set_ylabel('E1')
     ax4.set_yticklabels([])
     try:
         ax5.vlines(range(size), 0, evect[:,-2], color='k')
-    except IndexError:
+    except (TypeError, IndexError):
         pass
     ax5.hlines(0, 0, size, color='red')
     ax5.set_ylabel('E2')
     ax5.set_yticklabels([])
     try:
         ax6.vlines(range(size), 0, evect[:,-3], color='k')
-    except IndexError:
+    except (TypeError, IndexError):
         pass
     ax6.hlines(0, 0, size, color='red')
     ax6.set_ylabel('E3')
