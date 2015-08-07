@@ -11,6 +11,7 @@ import gzip
 import pysam
 from warnings import warn
 from itertools import combinations
+import locale
 try:
     import gem
 except ImportError:
