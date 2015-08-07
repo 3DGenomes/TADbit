@@ -142,7 +142,7 @@ def _header_to_section(header, resolution):
     sections = {}
     chromosomes = None
     if (isinstance(header, list)
-        and isinstance(header[0], list)
+        and isinstance(header[0], tuple)
         and len(header[0]) > 1):
         chromosomes = OrderedDict()
         for i, h in enumerate(header):
