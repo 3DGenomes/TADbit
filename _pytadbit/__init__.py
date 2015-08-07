@@ -1,6 +1,15 @@
 
-
 from pytadbit._version import __version__
+from os import environ
+import locale
+
+# make sure that we are comparing strings in the same way as the bash sort
+# command used in mapping
+try:
+    locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
+except:
+    environ["LANG"] = "en_US.UTF-8"
+    locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
 
 
 def get_dependencies_version(dico=False):

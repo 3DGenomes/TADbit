@@ -11,7 +11,6 @@ import gzip
 import pysam
 from warnings import warn
 from itertools import combinations
-from re import findall, compile as recompile
 try:
     import gem
 except ImportError:
@@ -48,14 +47,6 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     :param out_path: path to an outfile. It will written in a similar format as
        the inputs
     """
-    # make sure that we are comparing strings in the same way as the bash sort
-    # command
-    import locale
-    try:
-        locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
-    except ValueError:
-        locale.setlocale(locale.LC_ALL, '.'.join(('en_US', locale.getdefaultlocale())))
-
     reads_fh = open(out_path, 'w')
     reads1 = open(fname1)
     line1 = reads1.next()
