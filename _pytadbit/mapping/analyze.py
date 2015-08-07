@@ -170,7 +170,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
         minoridata   = np.min(vals)
         maxoridata   = np.max(vals)
     totaloridata = np.nansum([data[i][j] for i in xrange(len(data))
-                              for j in xrange(i, len(data))])
+                              for j in xrange(i, len(data[i]))]) # may not be square
     data = nozero_log(data, np.log2)
     vals = np.array([i for d in data for i in d])
     vals = vals[np.isfinite(vals)]
