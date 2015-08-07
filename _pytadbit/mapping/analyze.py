@@ -109,7 +109,10 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                  decay_resolution=decay_resolution, perc=perc,
                                  name=name, cistrans=float('NaN'))
                 except ValueError, e:
-                    print 'ERROR: problem with chromosome %s' % crm1
+                    print 'Value ERROR: problem with chromosome %s' % crm1
+                    print str(e)
+                except IndexError, e:
+                    print 'Index ERROR: problem with chromosome %s' % crm1
                     print str(e)
     else:
         if savedata:
