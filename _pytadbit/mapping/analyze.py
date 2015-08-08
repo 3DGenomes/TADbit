@@ -82,7 +82,10 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
     if by_chrom:
         if focus:
             raise Exception('Incompatible options focus and by_chrom\n')
-        os.system('mkdir -p ' + (savedata if savedata else savefig))
+        if savedata:
+            os.system('mkdir -p ' + savedata)
+        if savefig:
+            os.system('mkdir -p ' + savefig)
         for i, crm1 in enumerate(hic_data.chromosomes):
             for crm2 in hic_data.chromosomes.keys()[i:]:
                 if by_chrom == 'intra' and crm1 != crm2:
