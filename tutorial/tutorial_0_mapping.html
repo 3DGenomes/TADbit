@@ -605,12 +605,9 @@ WARNING: removing columns having more than 2327 zeroes:
 /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
   return array(a, dtype, copy=False, order=order)
 </pre>
+<img alt="../_images/tutorial_0_mapping_82_1.png" src="../_images/tutorial_0_mapping_82_1.png" />
 <pre class="ansi-block literal-block">
-(0.0, 120.0) (0.0, 14000.0)
-</pre>
-<img alt="../_images/tutorial_0_mapping_82_2.png" src="../_images/tutorial_0_mapping_82_2.png" />
-<pre class="ansi-block literal-block">
-/usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:146: ComplexWarning: Casting complex values to real discards the imaginary part
+/usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:145: ComplexWarning: Casting complex values to real discards the imaginary part
   round(root, 3), ' '.join(
 
 WARNING: removing columns having less than 1381.618 counts:
@@ -648,6 +645,18 @@ basically consists constructing a new in dividing each cell</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_data</span><span class="o">.</span><span class="n">normalize_hic</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
+<pre class="ansi-block literal-block">
+iterative correction
+          1392.000        9454.176       13609.000    0   0.85276
+          8583.102        9678.681       18479.813    1   0.90933
+          7057.620        9725.242       10177.855    2   0.27430
+          9531.512        9733.579       11274.686    3   0.15833
+          9076.352        9735.375        9827.806    4   0.06769
+</pre>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_88_0.png" src="../_images/tutorial_0_mapping_88_0.png" />
 </div>
 </div>
 </div>
@@ -718,7 +727,7 @@ basically consists constructing a new in dividing each cell</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Aug 04, 2015.
+      Last updated on Aug 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

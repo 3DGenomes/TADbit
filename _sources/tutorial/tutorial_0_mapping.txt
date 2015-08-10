@@ -735,18 +735,13 @@ file of reads:
       return array(a, dtype, copy=False, order=order)
 
 
-.. ansi-block::
 
-    (0.0, 120.0) (0.0, 14000.0)
-
-
-
-.. image:: ../nbpictures/tutorial_0_mapping_82_2.png
+.. image:: ../nbpictures/tutorial_0_mapping_82_1.png
 
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:146: ComplexWarning: Casting complex values to real discards the imaginary part
+    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:145: ComplexWarning: Casting complex values to real discards the imaginary part
       round(root, 3), ' '.join(
     
     WARNING: removing columns having less than 1381.618 counts:
@@ -794,4 +789,24 @@ basically consists constructing a new in dividing each cell
 .. code:: python
 
     hic_data.normalize_hic(iterations=10, max_dev=0.1)
+
+
+.. ansi-block::
+
+    iterative correction
+              1392.000        9454.176       13609.000    0   0.85276
+              8583.102        9678.681       18479.813    1   0.90933
+              7057.620        9725.242       10177.855    2   0.27430
+              9531.512        9733.579       11274.686    3   0.15833
+              9076.352        9735.375        9827.806    4   0.06769
+
+
+.. code:: python
+
+    hic_map(hic_data, show=True, normalized=True)
+
+
+
+.. image:: ../nbpictures/tutorial_0_mapping_88_0.png
+
 

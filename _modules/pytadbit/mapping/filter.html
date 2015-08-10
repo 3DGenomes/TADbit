@@ -54,6 +54,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">count_re_fragments</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="kn">as</span> <span class="nn">mu</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
 
 <div class="viewcode-block" id="apply_filter"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.filter.apply_filter">[docs]</a><span class="k">def</span> <span class="nf">apply_filter</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">old</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -282,21 +283,21 @@
 <span class="sd">    dangling-ends, self-circle, PCR artifacts...)</span>
 <span class="sd">    </span>
 <span class="sd">    Applied filters are:    </span>
-<span class="sd">       1- self-circle        : reads are comming from a single RE fragment and</span>
+<span class="sd">       1- self-circle        : reads are coming from a single RE fragment and</span>
 <span class="sd">          point to the outside (----&lt;===---===&gt;---)</span>
-<span class="sd">       2- dangling-end       : reads are comming from a single RE fragment and</span>
+<span class="sd">       2- dangling-end       : reads are coming from a single RE fragment and</span>
 <span class="sd">          point to the inside (----===&gt;---&lt;===---)</span>
-<span class="sd">       3- error              : reads are comming from a single RE fragment and</span>
+<span class="sd">       3- error              : reads are coming from a single RE fragment and</span>
 <span class="sd">          point in the same direction</span>
-<span class="sd">       4- extra dangling-end : reads are comming from different RE fragment but</span>
+<span class="sd">       4- extra dangling-end : reads are coming from different RE fragment but</span>
 <span class="sd">          are close enough (&lt; max_molecule length) and point to the inside</span>
 <span class="sd">       5- too close from RES : semi-dangling-end filter, start position of one</span>
 <span class="sd">          of the read is too close (5 bp by default) from RE cutting site. This</span>
 <span class="sd">          filter is skipped in case read is involved in multi-contact. This</span>
 <span class="sd">          filter may be too conservative for 4bp cutter REs.</span>
-<span class="sd">       6- too short          : remove reads comming from small restriction less</span>
+<span class="sd">       6- too short          : remove reads coming from small restriction less</span>
 <span class="sd">          than 100 bp (default) because they are comparable to the read length</span>
-<span class="sd">       7- too large          : remove reads comming from large restriction</span>
+<span class="sd">       7- too large          : remove reads coming from large restriction</span>
 <span class="sd">          fragments (default: 100 Kb, P &lt; 10-5 to occur in a randomized genome)</span>
 <span class="sd">          as they likely represent poorly assembled or repeated regions</span>
 <span class="sd">       8- over-represented   : reads coming from the top 0.5% most frequently</span>
@@ -438,7 +439,6 @@
     <span class="k">return</span> <span class="n">masked</span>
 
 <span class="k">def</span> <span class="nf">_filter_duplicates</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
-    <span class="c"># t0 = time()</span>
     <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">masked</span> <span class="o">=</span> <span class="p">{</span><span class="mi">9</span> <span class="p">:</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;duplicated&#39;</span>        <span class="p">,</span> <span class="s">&#39;reads&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}}</span>
     <span class="n">outfil</span> <span class="o">=</span> <span class="p">{}</span>
@@ -471,6 +471,41 @@
         <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;fnam&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.tsv&#39;</span>
         <span class="n">outfil</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">masked</span><span class="p">,</span> <span class="n">total</span>
+
+
+<span class="k">def</span> <span class="nf">_filter_duplicates_DEV</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+    <span class="c"># TODO: use mkfifo to create a named pipe that wold hold reads sorted by</span>
+    <span class="c">#       columns 2,3 and 8,9. Check redundancy on this file by reading it.</span>
+    <span class="c"># t0 = time()</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">masked</span> <span class="o">=</span> <span class="p">{</span><span class="mi">9</span> <span class="p">:</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;duplicated&#39;</span>        <span class="p">,</span> <span class="s">&#39;reads&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}}</span>
+    <span class="n">outfil</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">masked</span><span class="p">:</span>
+        <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;fnam&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.tsv&#39;</span>
+        <span class="n">outfil</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;fnam&#39;</span><span class="p">],</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+
+    <span class="n">proc</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&quot;sort&quot;</span><span class="p">,</span> <span class="s">&quot;-k&quot;</span><span class="p">,</span> <span class="s">&quot;2,9&quot;</span><span class="p">,</span> <span class="s">&quot;-t&quot;</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">fnam</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="n">previous</span> <span class="o">=</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">read</span><span class="p">,</span>
+             <span class="n">cr1</span><span class="p">,</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span>
+             <span class="n">cr2</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">cr1</span> <span class="o">+</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">cr2</span> <span class="o">+</span> <span class="n">pos2</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">current</span> <span class="o">==</span> <span class="n">previous</span><span class="p">:</span>
+            <span class="n">masked</span><span class="p">[</span><span class="mi">9</span><span class="p">][</span><span class="s">&quot;reads&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">outfil</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="n">current</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">proc</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+    <span class="c"># print &#39;done 4&#39;, time() - t0</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">masked</span><span class="p">:</span>
+        <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;fnam&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">masked</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.tsv&#39;</span>
+        <span class="n">outfil</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">masked</span><span class="p">,</span> <span class="n">total</span>
+
 
 <span class="k">def</span> <span class="nf">_filter_from_res</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="p">,</span> <span class="n">min_dist_to_re</span><span class="p">,</span>
                      <span class="n">re_proximity</span><span class="p">,</span> <span class="n">min_frag_size</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
@@ -607,7 +642,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Aug 04, 2015.
+      Last updated on Aug 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

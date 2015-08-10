@@ -400,21 +400,21 @@ dangling-ends, self-circle, PCR artifacts...)</p>
 <dl class="docutils">
 <dt>Applied filters are:    </dt>
 <dd><dl class="first last docutils">
-<dt>1- self-circle <span class="classifier-delimiter">:</span> <span class="classifier">reads are comming from a single RE fragment and</span></dt>
+<dt>1- self-circle <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
 <dd>point to the outside (&#8212;-&lt;===&#8212;===&gt;&#8212;)</dd>
-<dt>2- dangling-end <span class="classifier-delimiter">:</span> <span class="classifier">reads are comming from a single RE fragment and</span></dt>
+<dt>2- dangling-end <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
 <dd>point to the inside (&#8212;-===&gt;&#8212;&lt;===&#8212;)</dd>
-<dt>3- error <span class="classifier-delimiter">:</span> <span class="classifier">reads are comming from a single RE fragment and</span></dt>
+<dt>3- error <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
 <dd>point in the same direction</dd>
-<dt>4- extra dangling-end <span class="classifier-delimiter">:</span> <span class="classifier">reads are comming from different RE fragment but</span></dt>
+<dt>4- extra dangling-end <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from different RE fragment but</span></dt>
 <dd>are close enough (&lt; max_molecule length) and point to the inside</dd>
 <dt>5- too close from RES <span class="classifier-delimiter">:</span> <span class="classifier">semi-dangling-end filter, start position of one</span></dt>
 <dd>of the read is too close (5 bp by default) from RE cutting site. This
 filter is skipped in case read is involved in multi-contact. This
 filter may be too conservative for 4bp cutter REs.</dd>
-<dt>6- too short <span class="classifier-delimiter">:</span> <span class="classifier">remove reads comming from small restriction less</span></dt>
+<dt>6- too short <span class="classifier-delimiter">:</span> <span class="classifier">remove reads coming from small restriction less</span></dt>
 <dd>than 100 bp (default) because they are comparable to the read length</dd>
-<dt>7- too large <span class="classifier-delimiter">:</span> <span class="classifier">remove reads comming from large restriction</span></dt>
+<dt>7- too large <span class="classifier-delimiter">:</span> <span class="classifier">remove reads coming from large restriction</span></dt>
 <dd>fragments (default: 100 Kb, P &lt; 10-5 to occur in a randomized genome)
 as they likely represent poorly assembled or repeated regions</dd>
 <dt>8- over-represented <span class="classifier-delimiter">:</span> <span class="classifier">reads coming from the top 0.5% most frequently</span></dt>
@@ -619,7 +619,7 @@ ends.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Aug 04, 2015.
+      Last updated on Aug 10, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
