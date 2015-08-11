@@ -3,9 +3,22 @@
 
 This script generates a false genome for testing purposes
 """
+
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
-from random import random
-import re
+from random import random, seed
+import re, sys
+
+try:
+    ali = sys.argv[1]
+except IndexError:
+    ali = 'map'
+
+try:
+    seed(int(sys.argv[2]))
+except IndexError:
+    pass
+
+print ali
 
 # VARIABLES
 num_crms      = 9
@@ -74,19 +87,18 @@ for crm in genome:
 
 sam_head = sam_head % crm_heads
 
-sam_read = '{id}\t{flag}\t{crm}\t{pos}\t254\t3M\t*\t0\t0\tAAA\tHHH\tRG:Z:0\tNH:i:1\tNM:i:0\tXT:A:U\tmd:Z:3\n'
-map_read = "{id}\tAAA\tHHH\t1\t{crm}:{flag}:{pos}:3\n"
+if ali=='sam':
+    read = '{id}\t{flag}\t{crm}\t{pos}\t254\t3M\t*\t0\t0\tAAA\tHHH\tRG:Z:0\tNH:i:1\tNM:i:0\tXT:A:U\tmd:Z:3\n'
+else:
+    read = "{id}\tAAA\tHHH\t1\t{crm}:{flag}:{pos}:3\n"
 
-out1 = open('test_read1.sam~', 'w')
-out1.write(sam_head)
-out2 = open('test_read2.sam~', 'w')
-out2.write(sam_head)
+out1 = open('test_read1.%s~' % (ali), 'w')
+out2 = open('test_read2.%s~' % (ali), 'w')
+if ali == 'sam':
+    out1.write(sam_head)
+    out2.write(sam_head)
 
-out11 = open('test_read1.map~', 'w')
-out22 = open('test_read2.map~', 'w')
-
-map_flags = ['+', '-']
-sam_flags = [66 , 82 ]
+flags = ['+', '-'] if ali=='map' else [66 , 82 ]
 
 # SELF-CIRCLES
 for i in xrange(selfcircle):
@@ -105,21 +117,17 @@ for i in xrange(selfcircle):
         if pos2 > pos1:
             sd1 = 1
             sd2 = 0
-            pos1 -= 2
+            pos1 -= 2 if ali=='map' else 3
             break
         elif pos2 < pos1:
             sd1 = 0
             sd2 = 1
-            pos2 -= 2
+            pos2 -= 2 if ali=='map' else 3
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala01.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala01.%012d' % (i)}
-    out1.write(sam_read.format(**read1))
-    out2.write(sam_read.format(**read2))
-    read1 = {'crm': crm, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala01.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala01.%012d' % (i)}
-    out11.write(map_read.format(**read1))
-    out22.write(map_read.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala01.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala01.%012d' % (i)}
+    out1.write(read.format(**read1))
+    out2.write(read.format(**read2))
 
 # DANGLING-ENDS
 for i in xrange(dangling):
@@ -138,21 +146,17 @@ for i in xrange(dangling):
         if pos2 > pos1:
             sd1 = 0
             sd2 = 1
-            pos2 -= 2
+            pos2 -= 2 if ali=='map' else 3
             break
         elif pos2 < pos1:
             sd1 = 1
             sd2 = 0
-            pos1 -= 2
+            pos1 -= 2 if ali=='map' else 3
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala02.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala02.%012d' % (i)}
-    out1.write(sam_read.format(**read1))
-    out2.write(sam_read.format(**read2))
-    read1 = {'crm': crm, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala02.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala02.%012d' % (i)}
-    out11.write(map_read.format(**read1))
-    out22.write(map_read.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala02.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala02.%012d' % (i)}
+    out1.write(read.format(**read1))
+    out2.write(read.format(**read2))
 
 # ERRORS
 for i in xrange(error):
@@ -171,17 +175,13 @@ for i in xrange(error):
             continue
         if pos1 != pos2:
             if sd1 == 1:
-                pos1 -= 2
-                pos2 -= 2
+                pos1 -= 2 if ali=='map' else 3
+                pos2 -= 2 if ali=='map' else 3
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala03.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala03.%012d' % (i)}
-    out1.write(sam_read.format(**read1))
-    out2.write(sam_read.format(**read2))
-    read1 = {'crm': crm, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala03.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala03.%012d' % (i)}
-    out11.write(map_read.format(**read1))
-    out22.write(map_read.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala03.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala03.%012d' % (i)}
+    out1.write(read.format(**read1))
+    out2.write(read.format(**read2))
 
 # EXTRA-DANGLING-ENDS
 for i in xrange(extradangling):
@@ -205,21 +205,17 @@ for i in xrange(extradangling):
         if pos2 > pos1:
             sd1 = 0
             sd2 = 1
-            pos2 -= 2
+            pos2 -= 2 if ali=='map' else 3
             break
         elif pos2 < pos1:
             sd1 = 1
             sd2 = 0
-            pos1 -= 2
+            pos1 -= 2 if ali=='map' else 3
             break
-    read1 = {'crm': crm, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala04.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala04.%012d' % (i)}
-    out1.write(sam_read.format(**read1))
-    out2.write(sam_read.format(**read2))
-    read1 = {'crm': crm, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala04.%012d' % (i)}
-    read2 = {'crm': crm, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala04.%012d' % (i)}
-    out11.write(map_read.format(**read1))
-    out22.write(map_read.format(**read2))
+    read1 = {'crm': crm, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala04.%012d' % (i)}
+    read2 = {'crm': crm, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala04.%012d' % (i)}
+    out1.write(read.format(**read1))
+    out2.write(read.format(**read2))
 
 # TOO CLOSE FROM RE
 
@@ -250,67 +246,48 @@ while i < duplicates * 2:
     if pos2 > pos1:
         sd1 = 0
         sd2 = 1
-        pos2 -= 2
+        pos2 -= 2 if ali=='map' else 3
     elif pos2 < pos1:
         sd1 = 1
         sd2 = 0
-        pos1 -= 2
-    read1 = {'crm': crm1, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala05.%012d' % (i)}
-    read2 = {'crm': crm2, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala05.%012d' % (i)}
-    out1.write(sam_read.format(**read1))
-    out2.write(sam_read.format(**read2))
-    read1 = {'crm': crm1, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala05.%012d' % (i)}
-    read2 = {'crm': crm2, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala05.%012d' % (i)}
-    out11.write(map_read.format(**read1))
-    out22.write(map_read.format(**read2))
+        pos1 -= 2 if ali=='map' else 3
+    read1 = {'crm': crm1, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala05.%012d' % (i)}
+    read2 = {'crm': crm2, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala05.%012d' % (i)}
+    out1.write(read.format(**read1))
+    out2.write(read.format(**read2))
     i += 1
     if random() > 0.5:
-        read2 = {'crm': crm1, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala05.1%011d' % (i)}
-        read1 = {'crm': crm2, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala05.1%011d' % (i)}
-        out1.write(sam_read.format(**read1))
-        out2.write(sam_read.format(**read2))
-        read2 = {'crm': crm1, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala05.1%011d' % (i)}
-        read1 = {'crm': crm2, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala05.1%011d' % (i)}
-        out11.write(map_read.format(**read1))
-        out22.write(map_read.format(**read2))
+        read2 = {'crm': crm1, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala05.1%011d' % (i)}
+        read1 = {'crm': crm2, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala05.1%011d' % (i)}
+        out1.write(read.format(**read1))
+        out2.write(read.format(**read2))
     else:
-        read2 = {'crm': crm1, 'pos': pos1, 'flag': sam_flags[sd1], 'id': 'lala05.1%011d' % (i)}
-        read1 = {'crm': crm2, 'pos': pos2, 'flag': sam_flags[sd2], 'id': 'lala05.1%011d' % (i)}
-        out1.write(sam_read.format(**read1))
-        out2.write(sam_read.format(**read2))
-        read2 = {'crm': crm1, 'pos': pos1, 'flag': map_flags[sd1], 'id': 'lala05.1%011d' % (i)}
-        read1 = {'crm': crm2, 'pos': pos2, 'flag': map_flags[sd2], 'id': 'lala05.1%011d' % (i)}
-        out11.write(map_read.format(**read1))
-        out22.write(map_read.format(**read2))
+        read2 = {'crm': crm1, 'pos': pos1, 'flag': flags[sd1], 'id': 'lala05.1%011d' % (i)}
+        read1 = {'crm': crm2, 'pos': pos2, 'flag': flags[sd2], 'id': 'lala05.1%011d' % (i)}
+        out1.write(read.format(**read1))
+        out2.write(read.format(**read2))
     i += 1
 
 out1.close()
 out2.close()
-out11.close()
-out22.close()
 
 # PARSE SAM
-from pytadbit.parsers.map_parser import parse_map
-from pytadbit.parsers.sam_parser import parse_sam
+if ali == 'map':
+    from pytadbit.parsers.map_parser import parse_map as parser
+else:
+    from pytadbit.parsers.sam_parser import parse_sam as parser
 
-parse_map(['test_read1.map~'], ['test_read2.map~'],
-          './lala1-map~', './lala2-map~', genome, re_name='DPNII', mapper='GEM')
-
-parse_sam(['test_read1.sam~'], ['test_read2.sam~'],
-          './lala1-sam~', './lala2-sam~', genome, re_name='DPNII', mapper='GEM')
-
+parser(['test_read1.%s~' % (ali)], ['test_read2.%s~' % (ali)],
+       './lala1-%s~' % (ali), './lala2-%s~' % (ali), genome,
+       re_name='DPNII', mapper='GEM')
 
 # GET INTERSECTION
 from pytadbit.mapping.mapper import get_intersection
 
-get_intersection('lala1-map~', 'lala2-map~', 'lala-map~')
-get_intersection('lala1-sam~', 'lala2-sam~', 'lala-sam~')
+get_intersection('lala1-%s~' % (ali), 'lala2-%s~' % (ali), 'lala-%s~' % (ali))
 
 # FILTER
 from pytadbit.mapping.filter import filter_reads
 
-masked1 = filter_reads('lala-map~')
-
-masked2 = filter_reads('lala-sam~')
-
+masked = filter_reads('lala-%s~' % (ali))
 

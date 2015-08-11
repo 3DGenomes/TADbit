@@ -584,7 +584,8 @@ class HiC_data(dict):
 
     def get_matrix(self, focus=None, diagonal=True, normalized=False):
         """
-        returns a matrix
+        returns a matrix.
+        
         :param None focus: a tuple with the (start, end) position of the desired
            window of data (start, starting at 1, and both start and end are
            inclusive). Alternatively a chromosome name can be input or a tuple
@@ -645,7 +646,9 @@ class HiC_data(dict):
 
     def yield_matrix(self, focus=None, diagonal=True, normalized=False):
         """
-        yields a matrix line by line
+        Yields a matrix line by line.
+        Bad row/columns are returned as null row/columns.
+        
         :param None focus: a tuple with the (start, end) position of the desired
            window of data (start, starting at 1, and both start and end are
            inclusive). Alternatively a chromosome name can be input or a tuple
@@ -681,23 +684,29 @@ class HiC_data(dict):
             end1   = end2   = siz
         if normalized:
             for i in xrange(start2, end2):
+                # if bad column:
+                if i in self.bads:
+                    yield [0.0 for j in xrange(start1, end1)]
                 # if we want the diagonal, or we don't but are looking at a
                 # region that is not symmetric
-                if diagonal or start1 != start2:
+                elif diagonal or start1 != start2:
                     yield [self[i, j] / self.bias[i] / self.bias[j]
                            for j in xrange(start1, end1)]
                 # diagonal replaced by zeroes
                 else:
                     yield ([self[i, j] / self.bias[i] / self.bias[j]
                             for j in xrange(start1, i)] +
-                           [0] + 
+                           [0.0] + 
                            [self[i, j] / self.bias[i] / self.bias[j]
                             for j in xrange(i + 1, end1)])
         else:
             for i in xrange(start2, end2):
+                # if bad column:
+                if i in self.bads:
+                    yield [0 for j in xrange(start1, end1)]
                 # if we want the diagonal, or we don't but are looking at a
                 # region that is not symmetric
-                if diagonal or start1 != start2:
+                elif diagonal or start1 != start2:
                     yield [self[i, j] for j in xrange(start1, end1)]
                 # diagonal replaced by zeroes
                 else:

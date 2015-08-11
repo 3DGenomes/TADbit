@@ -566,8 +566,10 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(len(frags['chr2L'][230]), 3)
         self.assertEqual(frags['chr4'][10][5], 1017223)
 
+    def test_18_filter_reads(self):
+        pass
 
-    def test_18_tadbit_c(self):
+    def test_19_tadbit_c(self):
         """
         Runs tests written in c, around the detection of TADs
         """
