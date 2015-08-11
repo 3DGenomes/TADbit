@@ -627,8 +627,11 @@ class TestTadbit(unittest.TestCase):
         hic_data2 = read_matrix('lala-map.tsv~', resolution=10000)
         self.assertEqual(hic_data1, hic_data2)
         vals = plot_distance_vs_interactions(hic_data1)
-        self.assertEqual([round(i, 2) for i in reduce(lambda x, y: x + y, vals)],
+        
+        self.assertEqual([round(i, 2) if str(i)!='nan' else 0.0 for i in
+                          reduce(lambda x, y: x + y, vals)],
                          [-2.26, 4.18, 0.61, -2.22, 6.06, 0.0, -0.6, 3.25, 0.0])
+        
         a, b = insert_sizes('lala-map~')
         self.assertEqual([int(a),int(b)], [43, 1033])
 
