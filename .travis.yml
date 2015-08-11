@@ -11,12 +11,16 @@ before_install:
 
 install:
   - yes | python setup.py install
+  - pip install coveralls
 
 before_script:
   - python --version
 
 # command to run tests, e.g. python setup.py test
-script: cd test; python test_all.py
+script: cd test; coverage run --source=pytadbit test_all.py
+
+after_success:
+    coveralls
 
 branches:
   only:
