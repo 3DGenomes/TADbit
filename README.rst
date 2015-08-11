@@ -3,11 +3,14 @@
    :height: 50
    :width: 240
 
-+-------------------------------------+---------------------------------------------------------------------------+
-|                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       |
-| Current version: 0.1_alpha.406      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |
-|                                     |                                                                           |
-+-------------------------------------+---------------------------------------------------------------------------+
++-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
+|                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       | .. image:: https://coveralls.io/repos/3DGenomes/tadbit/badge.svg?branch=master&service=github |
+| Current version: 0.1_alpha.406      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                         |
+|                                     |                                                                           |                                                                                               |
++-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
+
+
+
 
 TADbit is a complete Python library to deal with all steps to analyze,
 model and explore 3C-based data. With TADbit the user can map FASTQ
