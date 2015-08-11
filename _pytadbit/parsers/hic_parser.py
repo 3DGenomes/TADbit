@@ -318,7 +318,7 @@ class HiC_data(dict):
         self.__size = size
         self._size2 = size**2
         self.bias = None
-        self.bads = None
+        self.bads = {}
         self.chromosomes = chromosomes
         self.sections = dict_sec
         self.section_pos = {}

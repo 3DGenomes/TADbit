@@ -4,6 +4,8 @@
 unittest for pytadbit functions
 """
 
+import matplotlib
+matplotlib.use('Agg')
 import unittest
 from pytadbit                             import Chromosome, load_chromosome
 from pytadbit                             import tadbit, batch_tadbit
@@ -13,6 +15,10 @@ from pytadbit.imp.impmodel                import load_impmodel_from_cmm
 from pytadbit.eqv_rms_drms                import rmsdRMSD_wrapper
 from pytadbit.parsers.genome_parser       import parse_fasta
 from pytadbit.mapping.restriction_enzymes import map_re_sites, RESTRICTION_ENZYMES
+from pytadbit.parsers.hic_parser          import load_hic_data_from_reads, read_matrix
+from pytadbit.mapping.analyze             import hic_map, plot_distance_vs_interactions
+from pytadbit.mapping.analyze             import insert_sizes
+from pytadbit.mapping.analyze             import correlate_matrices, eig_correlate_matrices
 
 from random                               import random, seed
 from os                                   import system, path, chdir
@@ -615,7 +621,35 @@ class TestTadbit(unittest.TestCase):
                 self.assertTrue (masked[5]['reads'] > 1000)
             self.assertEqual(masked[9]['reads'], 1000)
 
-    def test_19_tadbit_c(self):
+    def test_19_matrix_manip(self):
+        hic_data1 = load_hic_data_from_reads('lala-map~', resolution=10000)
+        hic_map(hic_data1, savedata='lala-map.tsv~')
+        hic_data2 = read_matrix('lala-map.tsv~', resolution=10000)
+        self.assertEqual(hic_data1, hic_data2)
+        vals = plot_distance_vs_interactions(hic_data1)
+        self.assertEqual([round(i, 2) for i in reduce(lambda x, y: x + y, vals)],
+                         [-2.26, 4.18, 0.61, -2.22, 6.06, 0.0, -0.6, 3.25, 0.0])
+        a, b = insert_sizes('lala-map~')
+        self.assertEqual([int(a),int(b)], [43, 1033])
+
+        hic_data1 = read_matrix('20Kb/chrT/chrT_A.tsv', resolution=20000)
+        hic_data2 = read_matrix('20Kb/chrT/chrT_B.tsv', resolution=20000)
+        
+        corr = correlate_matrices(hic_data1, hic_data2)
+        corr =  [round(i,3) for i in corr[0]]
+        self.assertEqual(corr, [0.755, 0.729, 0.804, 0.761, 0.789, 0.776, 0.828,
+                                0.757, 0.797, 0.832])
+        
+        ecorr = eig_correlate_matrices(hic_data1, hic_data2)
+        ecorr = [round(i,3) for i in reduce(lambda x, y:x+y, ecorr)]
+        self.assertEqual(ecorr, [0.997, 0.322, 0.442, 0.017, 0.243, 0.014,
+                                 0.321, 0.999, 0.01, 0.006, 0.0, 0.007, 0.451,
+                                 0.012, 0.996, 0.031, 0.013, 0.004, 0.002,
+                                 0.006, 0.029, 0.974, 0.076, 0.03, 0.219, 0.013,
+                                 0.031, 0.08, 0.974, 0.018, 0.028, 0.004, 0.0,
+                                 0.028, 0.034, 0.89])
+
+    def test_20_tadbit_c(self):
         """
         Runs tests written in c, around the detection of TADs
         """
