@@ -514,6 +514,10 @@ class TestTadbit(unittest.TestCase):
         vals = [l.split() for l in open('models.acc').readlines()[1:]]
         self.assertEqual(vals[0][1:3], ['0.640', '0.960'])
         self.assertEqual(vals[20][1:3], ['0.960', '0.392'])
+        # interactions
+        models.interactions(plot=False, savedata='models.inter')
+        vals = [[float(i) for i in l.split()] for l in open('models.inter').readlines()[1:]]
+        self.assertEqual(vals[2], [3.0, 4.88, 1.03, 3.9, 0.49, 4.72, 0.64, 4.01, 0.52, 4.8, 0.42])
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))

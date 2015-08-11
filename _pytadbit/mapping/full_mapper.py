@@ -126,7 +126,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             # or not ligation site found, in which case we try with half
             # ligation site in case there was a sequencing error (half ligation
             # site is a RE site or nearly, and thus should not be found anyway)
-            iter_frags = split_read(seq, qal, sub_enz_pattern, len(seq), site)
+            iter_frags = split_read(seq, qal, sub_enz_pattern, len(seq), '')
             try:
                 seq, qal, cnt = iter_frags.next()
             except ValueError:
