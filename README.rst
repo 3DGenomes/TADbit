@@ -3,13 +3,14 @@
    :height: 50
    :width: 240
 
-+-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
-|                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       | .. image:: https://coveralls.io/repos/3DGenomes/tadbit/badge.svg?branch=master&service=github |
-| Current version: 0.1_alpha.411      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                         |
-|                                     |                                                                           |                                                                                               |
-+-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
+.. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master
+  :target: https://travis-ci.org/3DGenomes/tadbit
 
-
+.. image:: https://coveralls.io/repos/3DGenomes/tadbit/badge.svg?branch=master&service=github
+  :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master
++---------------------------------+
+| Current version: 0.1_alpha.411  |
++---------------------------------+
 
 
 TADbit is a complete Python library to deal with all steps to analyze,
