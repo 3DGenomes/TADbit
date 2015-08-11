@@ -496,12 +496,12 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(models.angle_between_3_particles(15,14,11)/5, 0),
                          13)
         # coordinates
-        # self.assertEqual([round(x, 3) for x in models.particle_coordinates(15)],
-        #                  [2372.253, -1193.602, -1145.397])
+        self.assertEqual([round(x, 2) for x in models.particle_coordinates(15)],
+                         [-1060.85, -3046.43, 4247.42])
         # dihedral_angle
-        # self.assertTrue(round(models.dihedral_angle(2,8,15, 16), 3), -13.443)
-        # self.assertEqual(round(models.dihedral_angle(15,19,20,21), 3), 79.439)
-        # self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 3), 8.136)
+        self.assertTrue (round(models.dihedral_angle(2,8,15, 16)  , 2), -13.44)
+        self.assertEqual(round(models.dihedral_angle(15,19,20,21) , 2), 14.76 )
+        self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 2), 5.93  )
         # median distance
         self.assertEqual(round(models.median_3d_dist(3, 20, plot=False)/100, 0),
                          15)
@@ -509,6 +509,11 @@ class TestTadbit(unittest.TestCase):
                                                      plot=False)/200, 0), 8)
         self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5),
                                                      plot=False), 0), 250)
+        # accessibility
+        models.accessibility(radius=75, nump=10, plot=False, savedata='models.acc')
+        vals = [l.split() for l in open('models.acc').readlines()[1:]]
+        self.assertEqual(vals[0][1:3], ['0.640', '0.960'])
+        self.assertEqual(vals[20][1:3], ['0.960', '0.392'])
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -517,6 +522,10 @@ class TestTadbit(unittest.TestCase):
         models.write_xyz('.', model_num=2)
         models.write_xyz('.', models=range(5))
         models.write_xyz('.', cluster=2)
+        # write json
+        models.write_json('model.json', model_num=2)
+        models.write_json('model.json', models=range(5))
+        models.write_json('model.json', cluster=2)
         # clean
         system('rm -f model.*')
         system('rm -f lala')
