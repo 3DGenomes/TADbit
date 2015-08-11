@@ -584,7 +584,11 @@ class TestTadbit(unittest.TestCase):
             if ali == 'map':
                 from pytadbit.parsers.map_parser import parse_map as parser
             else:
-                from pytadbit.parsers.sam_parser import parse_sam as parser
+                try:
+                    from pytadbit.parsers.sam_parser import parse_sam as parser
+                except ImportError:
+                    print 'ERROR: PYSAM not found, skipping test\n'
+                    continue
 
             parser(['test_read1.%s~' % (ali)], ['test_read2.%s~' % (ali)],
                    './lala1-%s~' % (ali), './lala2-%s~' % (ali), genome,

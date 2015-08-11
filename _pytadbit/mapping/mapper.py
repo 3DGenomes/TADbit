@@ -8,10 +8,13 @@ iterative mapping copied from hiclib
 import os
 import tempfile
 import gzip
-import pysam
 from warnings import warn
 from itertools import combinations
 import locale
+try:
+    import pysam
+except ImportError:
+    warn('WARNING: PYSAM not found')
 try:
     import gem
 except ImportError:

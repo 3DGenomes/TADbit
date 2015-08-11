@@ -11,6 +11,7 @@ before_install:
 
 install:
   - yes | python setup.py install
+  - pip install pysam
   - pip install coveralls
 
 before_script:
