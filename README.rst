@@ -4,8 +4,8 @@
    :width: 240
 
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
-|                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       | .. image:: https://coveralls.io/repos/3DGenomes/tadbit/badge.svg?branch=master&service=github |
-| Current version: 0.1_alpha.420      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                         |
+|                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/3DGenomes/TADbit/badge.svg?branch=master&service=github |
+| Current version: 0.1_alpha.422      |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/TADbit?branch=master                         |
 |                                     |                                                                           |                                                                                               |
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
 
