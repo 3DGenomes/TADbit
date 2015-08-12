@@ -18,7 +18,7 @@ from sys import stderr
 from lxml.html import parse
 
 
-def parse_doc_index(url_base='http://3dgenomes.github.io/tadbit/'):
+def parse_doc_index(url_base='http://3dgenomes.github.io/TADbit/'):
     """
     Goes to documentation index page and stores the links to all functions in
     there.
