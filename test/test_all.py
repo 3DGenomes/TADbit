@@ -17,8 +17,9 @@ from pytadbit.parsers.genome_parser       import parse_fasta
 from pytadbit.mapping.restriction_enzymes import map_re_sites, RESTRICTION_ENZYMES
 from pytadbit.parsers.hic_parser          import load_hic_data_from_reads, read_matrix
 from pytadbit.mapping.analyze             import hic_map, plot_distance_vs_interactions
-from pytadbit.mapping.analyze             import insert_sizes
+from pytadbit.mapping.analyze             import insert_sizes, plot_iterative_mapping
 from pytadbit.mapping.analyze             import correlate_matrices, eig_correlate_matrices
+from pytadbit.mapping.filter              import filter_reads, apply_filter
 
 from random                               import random, seed
 from os                                   import system, path, chdir
@@ -442,6 +443,20 @@ class TestTadbit(unittest.TestCase):
             self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
         models.cluster_models(method='ward', verbose=False, dcutoff=200)
         self.assertTrue(2 <= len(models.clusters.keys()) <= 3)
+        d = models.cluster_analysis_dendrogram()
+        self.assertEqual(d['icoord'], [[5., 5., 15., 15.]])
+        # align models
+        m1, m2 = models.align_models(models=[1,2])
+        nrmsd = (sum([((m1[0][i] - m2[0][i])**2 + (m1[1][i] - m2[1][i])**2 + (m1[2][i] - m2[2][i])**2)**.5
+                      for i in xrange(len(m1[0]))]) / (len(m1[0])))
+        self.assertTrue(nrmsd < 150)
+        # fetching models
+        models.define_best_models(5)
+        m = models.fetch_model_by_rand_init('1', all_models=True)
+        self.assertEqual(m, 5)
+        models.define_best_models(25)
+        m = models.fetch_model_by_rand_init('1', all_models=False)
+        self.assertEqual(m, 5)
         if CHKTIME:
             print '14', time() - t0
 
@@ -514,10 +529,23 @@ class TestTadbit(unittest.TestCase):
         vals = [l.split() for l in open('models.acc').readlines()[1:]]
         self.assertEqual(vals[0][1:3], ['0.640', '0.960'])
         self.assertEqual(vals[20][1:3], ['0.960', '0.392'])
+        # contact map
+        models.contact_map(savedata='models.contacts')
+        vals = [l.split() for l in open('models.contacts').readlines()[1:]]
+        self.assertEqual(vals[0], ['0', '1', '1.0'])
+        self.assertEqual(vals[1], ['0', '2', '0.88'])
+        self.assertEqual(vals[192], ['14', '18', '0.16'])
         # interactions
         models.interactions(plot=False, savedata='models.inter')
         vals = [[float(i) for i in l.split()] for l in open('models.inter').readlines()[1:]]
         self.assertEqual(vals[2], [3.0, 4.88, 1.03, 3.9, 0.49, 4.72, 0.64, 4.01, 0.52, 4.8, 0.42])
+        # walking angle
+        models.walking_angle(savedata='models.walkang')
+        vals = [[round(float(i), 2) if i != 'None' else i for i in l.split()] for l in open('models.walkang').readlines()[1:]]
+        self.assertEqual(vals[0], [1.0, -131.53, 'None'],)
+        self.assertEqual(vals[14], [15.0, 50.01, 'None'],)
+        self.assertEqual(vals[13], [14.0, 90.84, 'None'])
+        self.assertEqual(vals[12], [13.0, -151.24, -3.46])
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -576,6 +604,8 @@ class TestTadbit(unittest.TestCase):
         """
         test fasta parsing and mapping re sites
         """
+        if CHKTIME:
+            t0 = time()
         ref_genome = parse_fasta(PATH + '/ref_genome/chr2L_chr4_dm3.bz2',
                                  verbose=False)
         self.assertEqual(len(ref_genome['chr4']), 1351857)
@@ -587,8 +617,13 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(len(frags['chr2L']), 231)
         self.assertEqual(len(frags['chr2L'][230]), 3)
         self.assertEqual(frags['chr4'][10][5], 1017223)
+        if CHKTIME:
+            self.assertEqual(True, True)
+            print '17', time() - t0
 
     def test_18_filter_reads(self):
+        if CHKTIME:
+            t0 = time()
         for ali in ['map', 'sam']:
             seed(1)
             if 13436 == int(random()*100000):
@@ -617,9 +652,7 @@ class TestTadbit(unittest.TestCase):
             from pytadbit.mapping.mapper import get_intersection
             get_intersection('lala1-%s~' % (ali), 'lala2-%s~' % (ali), 'lala-%s~' % (ali))
             # FILTER
-            from pytadbit.mapping.filter import filter_reads
-
-            masked = filter_reads('lala-%s~' % (ali), verbose=False)
+            masked = filter_reads('lala-%s~' % (ali), verbose=False, fast=(ali=='map'))
             self.assertEqual(masked[1]['reads'], 1000)
             self.assertEqual(masked[2]['reads'], 1000)
             self.assertEqual(masked[3]['reads'], 1000)
@@ -633,10 +666,23 @@ class TestTadbit(unittest.TestCase):
             else:
                 self.assertTrue (masked[5]['reads'] > 1000)
             self.assertEqual(masked[9]['reads'], 1000)
+        apply_filter('lala-map~', 'lala-map-filt~', masked, filters=[1], reverse=True)
+        self.assertEqual(len([True for l in open('lala-map-filt~') if not l.startswith('#')]),
+                         1000)
+        d = plot_iterative_mapping('lala1-map~', 'lala2-map~')
+        self.assertEqual(d[0][1], 6000)
+
+        if CHKTIME:
+            self.assertEqual(True, True)
+            print '18', time() - t0
 
     def test_19_matrix_manip(self):
+        if CHKTIME:
+            t0 = time()
         hic_data1 = load_hic_data_from_reads('lala-map~', resolution=10000)
         hic_map(hic_data1, savedata='lala-map.tsv~')
+        hic_map(hic_data1, by_chrom='intra', savedata='lala-maps~')
+        hic_map(hic_data1, by_chrom='inter', savedata='lala-maps~')
         hic_data2 = read_matrix('lala-map.tsv~', resolution=10000)
         self.assertEqual(hic_data1, hic_data2)
         vals = plot_distance_vs_interactions(hic_data1)
@@ -664,6 +710,9 @@ class TestTadbit(unittest.TestCase):
                                  0.006, 0.029, 0.974, 0.076, 0.03, 0.219, 0.013,
                                  0.031, 0.08, 0.974, 0.018, 0.028, 0.004, 0.0,
                                  0.028, 0.034, 0.89])
+        if CHKTIME:
+            self.assertEqual(True, True)
+            print '19', time() - t0
 
     def test_20_tadbit_c(self):
         """
@@ -684,7 +733,7 @@ class TestTadbit(unittest.TestCase):
             print 'ERROR problem with C test'
         if CHKTIME:
             self.assertEqual(True, True)
-            print '17', time() - t0
+            print '20', time() - t0
 
 
 def generate_random_ali(ali='map'):
