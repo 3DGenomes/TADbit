@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/tadbit.png?branch=master       | .. image:: https://coveralls.io/repos/3DGenomes/tadbit/badge.svg?branch=master&service=github |
-| Current version: 0.1_alpha.416      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                         |
+| Current version: 0.1_alpha.417      |   :target: https://travis-ci.org/3DGenomes/tadbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                         |
 |                                     |                                                                           |                                                                                               |
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
 
@@ -32,7 +32,7 @@ their own programs using TADbit as a complementary library.
 Documentation
 *************
 
-* `TADbit documentation <http://3dgenomes.github.io/tadbit/>`_
+* `TADbit documentation <http://3dgenomes.github.io/TADbit/>`_
 * `Summary of TADbit classes and functions <https://github.com/3DGenomes/tadbit/blob/master/doc/summary.rst>`_
 
 Feedback
