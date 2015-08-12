@@ -367,7 +367,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__size</span> <span class="o">=</span> <span class="n">size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_size2</span> <span class="o">=</span> <span class="n">size</span><span class="o">**</span><span class="mi">2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bads</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bads</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chromosomes</span> <span class="o">=</span> <span class="n">chromosomes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sections</span> <span class="o">=</span> <span class="n">dict_sec</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">section_pos</span> <span class="o">=</span> <span class="p">{}</span>
@@ -633,7 +633,8 @@
 </div>
 <div class="viewcode-block" id="HiC_data.get_matrix"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">get_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        returns a matrix</span>
+<span class="sd">        returns a matrix.</span>
+<span class="sd">        </span>
 <span class="sd">        :param None focus: a tuple with the (start, end) position of the desired</span>
 <span class="sd">           window of data (start, starting at 1, and both start and end are</span>
 <span class="sd">           inclusive). Alternatively a chromosome name can be input or a tuple</span>
@@ -694,7 +695,9 @@
 </div>
 <div class="viewcode-block" id="HiC_data.yield_matrix"><a class="viewcode-back" href="../../../reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.yield_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">yield_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        yields a matrix line by line</span>
+<span class="sd">        Yields a matrix line by line.</span>
+<span class="sd">        Bad row/columns are returned as null row/columns.</span>
+<span class="sd">        </span>
 <span class="sd">        :param None focus: a tuple with the (start, end) position of the desired</span>
 <span class="sd">           window of data (start, starting at 1, and both start and end are</span>
 <span class="sd">           inclusive). Alternatively a chromosome name can be input or a tuple</span>
@@ -730,23 +733,29 @@
             <span class="n">end1</span>   <span class="o">=</span> <span class="n">end2</span>   <span class="o">=</span> <span class="n">siz</span>
         <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start2</span><span class="p">,</span> <span class="n">end2</span><span class="p">):</span>
+                <span class="c"># if bad column:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bads</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="p">[</span><span class="mf">0.0</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">)]</span>
                 <span class="c"># if we want the diagonal, or we don&#39;t but are looking at a</span>
                 <span class="c"># region that is not symmetric</span>
-                <span class="k">if</span> <span class="n">diagonal</span> <span class="ow">or</span> <span class="n">start1</span> <span class="o">!=</span> <span class="n">start2</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">diagonal</span> <span class="ow">or</span> <span class="n">start1</span> <span class="o">!=</span> <span class="n">start2</span><span class="p">:</span>
                     <span class="k">yield</span> <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">)]</span>
                 <span class="c"># diagonal replaced by zeroes</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">yield</span> <span class="p">([</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">i</span><span class="p">)]</span> <span class="o">+</span>
-                           <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> 
+                           <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">+</span> 
                            <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end1</span><span class="p">)])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start2</span><span class="p">,</span> <span class="n">end2</span><span class="p">):</span>
+                <span class="c"># if bad column:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bads</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">)]</span>
                 <span class="c"># if we want the diagonal, or we don&#39;t but are looking at a</span>
                 <span class="c"># region that is not symmetric</span>
-                <span class="k">if</span> <span class="n">diagonal</span> <span class="ow">or</span> <span class="n">start1</span> <span class="o">!=</span> <span class="n">start2</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">diagonal</span> <span class="ow">or</span> <span class="n">start1</span> <span class="o">!=</span> <span class="n">start2</span><span class="p">:</span>
                     <span class="k">yield</span> <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">)]</span>
                 <span class="c"># diagonal replaced by zeroes</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -801,7 +810,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Aug 10, 2015.
+      Last updated on Aug 12, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -2,14 +2,6 @@
 Tutorials
 =========
 
-From FASTQ files to interaction matrices
-----------------------------------------
-
-.. toctree::
-   :maxdepth: 2
-
-   tutorial/tutorial_0_mapping
-
 Identification and Analysis of TADs
 -----------------------------------
 
