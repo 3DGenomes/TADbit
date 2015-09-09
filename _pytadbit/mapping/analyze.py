@@ -142,7 +142,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      perc=perc, normalized=normalized,
                      max_diff=kwargs.get('max_diff', None),
                      name=name, cistrans=float('NaN') if focus else
-                     hic_data.cis_trans_ratio(kwargs.get('normalized', False),
+                     hic_data.cis_trans_ratio(normalized,
                                               kwargs.get('exclude', None),
                                               kwargs.get('diagonal', True),
                                               kwargs.get('equals', None),
@@ -230,12 +230,19 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
 
     ax1.imshow(data, interpolation='none',
                cmap=cmap, vmin=clim[0] if clim else None, vmax=clim[1] if clim else None)
-    size = len(data)
-    for i in xrange(size):
-        for j in xrange(i, size):
-            if np.isnan(data[i][j]):
-                data[i][j] = 0
-                data[j][i] = 0
+    size1 = len(data)
+    size2 = len(data[0])
+    if size1 == size2:
+        for i in xrange(size1):
+            for j in xrange(i, size2):
+                if np.isnan(data[i][j]):
+                    data[i][j] = 0
+                    data[j][i] = 0
+    else:
+        for i in xrange(size1):
+            for j in xrange(size2):
+                if np.isnan(data[i][j]):
+                    data[i][j] = 0
             #data[j][i] = data[i][j]
     try:
         evals, evect = eigh(data)
@@ -245,7 +252,7 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
         evals, evect = None, None
     data = [i for d in data for i in d if not np.isnan(i)]
     gradient = np.linspace(np.nanmin(data),
-                           np.nanmax(data), size)
+                           np.nanmax(data), max(size1, size2))
     gradient = np.vstack((gradient, gradient))
     h  = ax2.hist(data, color='darkgrey', linewidth=2,
                   bins=20, histtype='step', normed=True)
@@ -288,8 +295,8 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
         'Max interactions: %s\n' % (maxoridata)]))
     ax2.set_xlim((np.nanmin(data), np.nanmax(data)))
     ax2.set_ylim((0, max(h[0])))
-    ax1.set_xlim ((-0.5, size - .5))
-    ax1.set_ylim ((-0.5, size - .5))
+    ax1.set_xlim ((-0.5, size1 - .5))
+    ax1.set_ylim ((-0.5, size2 - .5))
     ax2.set_xlabel('log interaction count')
     # we reduce the number of dots displayed.... we just want to see the shape
     subdata = np.array(list(set([float(int(d*100))/100 for d in data])))
@@ -302,24 +309,24 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
     ax2.set_title('skew: %.3f, kurtosis: %.3f' % (skew(data),
                                                    kurtosis(data)))
     try: 
-        ax4.vlines(range(size), 0, evect[:,-1], color='k')
+        ax4.vlines(range(size1), 0, evect[:,-1], color='k')
     except (TypeError, IndexError):
         pass
-    ax4.hlines(0, 0, size, color='red')
+    ax4.hlines(0, 0, size2, color='red')
     ax4.set_ylabel('E1')
     ax4.set_yticklabels([])
     try:
-        ax5.vlines(range(size), 0, evect[:,-2], color='k')
+        ax5.vlines(range(size1), 0, evect[:,-2], color='k')
     except (TypeError, IndexError):
         pass
-    ax5.hlines(0, 0, size, color='red')
+    ax5.hlines(0, 0, size2, color='red')
     ax5.set_ylabel('E2')
     ax5.set_yticklabels([])
     try:
-        ax6.vlines(range(size), 0, evect[:,-3], color='k')
+        ax6.vlines(range(size1), 0, evect[:,-3], color='k')
     except (TypeError, IndexError):
         pass
-    ax6.hlines(0, 0, size, color='red')
+    ax6.hlines(0, 0, size2, color='red')
     ax6.set_ylabel('E3')
     ax6.set_yticklabels([])
     xticklabels = ax4.get_xticklabels() + ax5.get_xticklabels() + ax6.get_xticklabels()
