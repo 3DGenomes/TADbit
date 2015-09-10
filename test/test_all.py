@@ -525,23 +525,23 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(models.median_3d_dist(7, 10, models=range(5),
                                                      plot=False), 0), 250)
         # accessibility
-        models.accessibility(radius=75, nump=10, plot=False, savedata='models.acc')
-        vals = [l.split() for l in open('models.acc').readlines()[1:]]
+        models.accessibility(radius=75, nump=10, plot=False, savedata='model.acc')
+        vals = [l.split() for l in open('model.acc').readlines()[1:]]
         self.assertEqual(vals[0][1:3], ['0.640', '0.960'])
         self.assertEqual(vals[20][1:3], ['0.960', '0.392'])
         # contact map
-        models.contact_map(savedata='models.contacts')
-        vals = [l.split() for l in open('models.contacts').readlines()[1:]]
+        models.contact_map(savedata='model.contacts')
+        vals = [l.split() for l in open('model.contacts').readlines()[1:]]
         self.assertEqual(vals[0], ['0', '1', '1.0'])
         self.assertEqual(vals[1], ['0', '2', '0.88'])
         self.assertEqual(vals[192], ['14', '18', '0.16'])
         # interactions
-        models.interactions(plot=False, savedata='models.inter')
-        vals = [[float(i) for i in l.split()] for l in open('models.inter').readlines()[1:]]
+        models.interactions(plot=False, savedata='model.inter')
+        vals = [[float(i) for i in l.split()] for l in open('model.inter').readlines()[1:]]
         self.assertEqual(vals[2], [3.0, 4.88, 1.03, 3.9, 0.49, 4.72, 0.64, 4.01, 0.52, 4.8, 0.42])
         # walking angle
-        models.walking_angle(savedata='models.walkang')
-        vals = [[round(float(i), 2) if i != 'None' else i for i in l.split()] for l in open('models.walkang').readlines()[1:]]
+        models.walking_angle(savedata='model.walkang')
+        vals = [[round(float(i), 2) if i != 'None' else i for i in l.split()] for l in open('model.walkang').readlines()[1:]]
         self.assertEqual(vals[0], [1.0, -131.53, 'None'],)
         self.assertEqual(vals[14], [15.0, 50.01, 'None'],)
         self.assertEqual(vals[13], [14.0, 90.84, 'None'])
@@ -560,7 +560,7 @@ class TestTadbit(unittest.TestCase):
         models.write_json('model.json', cluster=2)
         # clean
         system('rm -f model.*')
-        system('rm -f lala')
+        system('rm -rf lala*')
         if CHKTIME:
             print '15', time() - t0
 
@@ -710,6 +710,7 @@ class TestTadbit(unittest.TestCase):
                                  0.006, 0.029, 0.974, 0.076, 0.03, 0.219, 0.013,
                                  0.031, 0.08, 0.974, 0.018, 0.028, 0.004, 0.0,
                                  0.028, 0.034, 0.89])
+        system('rm -rf lala*')
         if CHKTIME:
             self.assertEqual(True, True)
             print '19', time() - t0
