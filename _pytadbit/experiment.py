@@ -483,7 +483,9 @@ class Experiment(object):
         self._ori_resolution = self.resolution = data_resolution or self._ori_resolution
         wanted_resolution = wanted_resolution or self.resolution
         self.set_resolution(wanted_resolution, keep_original=False)
-
+        if self.hic_data[0].bads:
+            self._zeros = self.hic_data[0].bads
+            self._filtered_cols = True
 
     def load_norm_data(self, norm_data, parser=None, resolution=None,
                        normalization='visibility', **kwargs):
@@ -530,6 +532,9 @@ class Experiment(object):
             if isnan(self.norm[0][i]):
                 del(self.norm[0][i])
         self._normalization = normalization
+        if self.norm[0].bads:
+            self._zeros = self.norm[0].bads
+            self._filtered_cols = True
 
 
     def load_tad_def(self, tad_def, weights=None):

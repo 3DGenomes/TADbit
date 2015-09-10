@@ -228,7 +228,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                                                                    resolution)
             matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
                                       if matrix[i]], size, dict_sec=sections,
-                                     chromosomes=chromosomes,
+                                     chromosomes=chromosomes, masked=masked,
                                      resolution=resolution))
         elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
@@ -568,7 +568,7 @@ class HiC_data(dict):
             start1 = start2 = 0
             end1   = end2   = len(self)
         out = open(fname, 'w')
-        out.write('# MASKED %s\n' % (' '.join(self.bads.keys())))
+        out.write('# MASKED %s\n' % (' '.join([str(k) for k in self.bads.keys()])))
         rownam = ['%s\t%d-%d' % (k[0],
                                  k[1] * self.resolution,
                                  (k[1] + 1) * self.resolution)

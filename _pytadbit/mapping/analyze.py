@@ -96,13 +96,15 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                     subdata = hic_data.get_matrix(focus=(crm1, crm2), normalized=normalized)
                     start1, _ = hic_data.section_pos[crm1]
                     start2, _ = hic_data.section_pos[crm2]
+                    masked1 = {}
+                    masked2 = {}
                     if focus and hic_data.bads:
                         # rescale masked
                         masked1 = dict([(m - start1, hic_data.bads[m])
                                         for m in hic_data.bads])
                         masked2 = dict([(m - start2, hic_data.bads[m])
                                         for m in hic_data.bads])
-                    if hic_data.bads:
+                    if masked1 or masked2:
                         for i in xrange(len(subdata)):
                             if i in masked1:
                                 subdata[i] = [float('nan')
