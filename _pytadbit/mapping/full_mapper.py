@@ -280,7 +280,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
         # parse map file to extract not uniquely mapped reads
         print 'Parsing result...'
         _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
-                    out_map_dir + base_name + '_full_%s-%s.map' % (beg, end))
+                    os.path.join(out_map_dir,
+                                 base_name + '_full_%s-%s.map' % (beg, end)))
         # clean
         if clean:
             print '   x removing GEM input %s' % curr_map
@@ -289,7 +290,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
             os.system('rm -f %s' % (out_map_path))
         # for next round, we will use remaining unmapped reads
         input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
-        outfiles.append(out_map_dir + base_name + '_full_%s-%s.map' % (beg, end))
+        outfiles.append(os.path.join(out_map_dir,
+                                     base_name + '_full_%s-%s.map' % (beg, end)))
 
     # map again splitting unmapped reads into RE fragments
     # (no need to trim this time)
@@ -306,8 +308,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
         map_file.close()
         print 'Parsing result...'
         _gem_filter(out_map_path, curr_map + '_fail.map',
-                    out_map_dir + base_name + '_frag.map')
-        outfiles.append(out_map_dir + base_name + '_frag.map')
+                    os.path.join(out_map_dir, base_name + '_frag.map'))
+        outfiles.append(os.path.join(out_map_dir, base_name + '_frag.map'))
     return outfiles
 
 def main():
