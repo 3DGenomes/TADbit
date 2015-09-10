@@ -100,7 +100,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         if fastq:
             print '  - conversion to MAP format'
         if trim:
-            print '  - triming reads %d-%d' % tuple(trim)
+            print '  - trimming reads %d-%d' % tuple(trim)
             
     # open input file
     fhandler = magic_open(fastq_path)
@@ -226,7 +226,7 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
                       output=out_map_path,
                       threads=nthreads)
 
-def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
+def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=((None, None),), add_site=True, clean=False,
                  **kwargs):
     """
@@ -296,6 +296,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz, frag_map=True,
     # map again splitting unmapped reads into RE fragments
     # (no need to trim this time)
     if frag_map:
+        if not r_enz:
+            raise Exception('ERROR: need enzyme name to fragment.')
         frag_map = transform_fastq(input_reads,
                                    mkstemp(prefix=base_name + '_',
                                            dir=temp_dir)[1],
