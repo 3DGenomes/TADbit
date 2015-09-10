@@ -115,8 +115,8 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
                     if count >= len_seq:
                         raise Exception('Read mapped mostly outside ' +
                                         'chromosome\n')
-                    next_re    = frag_piece[idx]
-                prev_re    = frag_piece[idx - 1 if idx else 0]
+                    next_re = frag_piece[idx]
+                prev_re = frag_piece[idx - 1 if idx else 0]
                 sorter.stdin.write('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
                     name, crm, pos, positive, len_seq, prev_re, next_re))
                 windows[num] += 1

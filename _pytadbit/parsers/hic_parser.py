@@ -48,9 +48,12 @@ def autoreader(f):
 
     # Skip initial comment lines and read in the whole file
     # as a list of lists.
+    masked = {}
     for line in f:
         if line[0] != '#':
             break
+        if line.startswith('# MASKED'):
+            masked = dict([(int(n), True) for n in line.split()[2:]])
     items = [line.split()] + [line.split() for line in f]
 
     # Count the number of elements per line after the first.
@@ -130,7 +133,7 @@ def autoreader(f):
     if is_asymmetric(items):
         warn('WARNING: input matrix not symmetric: symmetrizing')
         symmetrize(items)
-    return tuple([a for line in items for a in line]), ncol, header
+    return tuple([a for line in items for a in line]), ncol, header, masked
 
 def _header_to_section(header, resolution):
     """
@@ -214,10 +217,10 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                                      resolution=resolution))
         elif isinstance(thing, str):
             try:
-                matrix, size, header = parser(gzopen(thing))
+                matrix, size, header, masked = parser(gzopen(thing))
             except IOError:
                 if len(thing.split('\n')) > 1:
-                    matrix, size, header = parser(thing.split('\n'))
+                    matrix, size, header, masked = parser(thing.split('\n'))
                 else:
                     raise IOError('\n   ERROR: file %s not found\n' % thing)
             sections = dict([(h, i) for i, h in enumerate(header)])
@@ -313,12 +316,12 @@ class HiC_data(dict):
     This may also hold the print/write-to-file matrix functions
     """
     def __init__(self, items, size, chromosomes=None, dict_sec=None,
-                 resolution=1):
+                 resolution=1, masked=None):
         super(HiC_data, self).__init__(items)
         self.__size = size
         self._size2 = size**2
         self.bias = None
-        self.bads = {}
+        self.bads = masked or {}
         self.chromosomes = chromosomes
         self.sections = dict_sec
         self.section_pos = {}
@@ -565,6 +568,7 @@ class HiC_data(dict):
             start1 = start2 = 0
             end1   = end2   = len(self)
         out = open(fname, 'w')
+        out.write('# MASKED %s\n' % (' '.join(self.bads.keys())))
         rownam = ['%s\t%d-%d' % (k[0],
                                  k[1] * self.resolution,
                                  (k[1] + 1) * self.resolution)

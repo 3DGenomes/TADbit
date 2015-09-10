@@ -94,6 +94,22 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                     continue
                 try:
                     subdata = hic_data.get_matrix(focus=(crm1, crm2), normalized=normalized)
+                    start1, _ = hic_data.section_pos[crm1]
+                    start2, _ = hic_data.section_pos[crm2]
+                    if focus and hic_data.bads:
+                        # rescale masked
+                        masked1 = dict([(m - start1, hic_data.bads[m])
+                                        for m in hic_data.bads])
+                        masked2 = dict([(m - start2, hic_data.bads[m])
+                                        for m in hic_data.bads])
+                    if hic_data.bads:
+                        for i in xrange(len(subdata)):
+                            if i in masked1:
+                                subdata[i] = [float('nan')
+                                              for j in xrange(len(subdata))]
+                            for j in xrange(len(subdata)):
+                                if j in masked2:
+                                    subdata[i][j] = float('nan')
                     if savedata:
                         hic_data.write_matrix('%s/%s.mat' % (
                             savedata, '_'.join(set((crm1, crm2)))),
