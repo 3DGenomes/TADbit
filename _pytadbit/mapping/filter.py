@@ -24,6 +24,7 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
     """
     masked_reads = set()
     filters = filters or masked.keys()
+    filter_names = []
     if old:
         for filt in filters:
             masked_reads.update(masked[filt]['reads'])
@@ -31,6 +32,7 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
         for k in masked:
             if k in filters:
                 masked_reads.update(open(masked[k]['fnam']).read().split())
+                filter_names.append(masked[k]['name'])
     out = open(outfile, 'w')
     fhandler = open(fnam)
     while True:
@@ -53,7 +55,8 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
     except StopIteration:
         pass
     if verbose:
-        print '   %d reads written to file' % count
+        print '    saving to file %d reads %s %s.' % (
+            count, 'with' if reverse else 'without', ', '.join(filter_names))
     out.close()
 
 
@@ -164,7 +167,7 @@ def filter_reads(fnam, output=None, max_molecule_length=500,
         out.close()
     if verbose:
         print 'Filtered reads (and percentage of total):\n'
-        print '     %-25s : %12d (100.00%%)' % ('Mapped both', total)
+        print '     %-25s  : %12d (100.00%%)' % ('Mapped both', total)
         print '  ' + '-' * 53
         for k in xrange(1, len(masked) + 1):
             print '  %2d- %-25s : %12d (%6.2f%%)' %(

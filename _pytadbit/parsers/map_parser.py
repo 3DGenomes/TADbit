@@ -68,6 +68,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         windows = {}
         tmp_name = os.path.join(*outfiles[read].split('/')[:-1] +
                                 ['tmp_' + outfiles[read].split('/')[-1]])
+        tmp_name = ('/' * outfiles[read].startswith('/')) + tmp_name
         tmp_reads_fh = open(tmp_name, 'w')
         sorter = Popen(['sort', '-k', '1,1', '-s', '-t', '\t'], stdin=PIPE,
                        stdout=tmp_reads_fh)
