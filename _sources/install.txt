@@ -97,6 +97,14 @@ These lines should look like:
           from ``setup_environment.sh``, where *SOMETHING* 
           is replaced by your real path to IMP.
 
+GEM - mapping
+~~~~~~~~~~~~~
+
+Needed to map reads from next generation seqiencing data. GEM, can be
+downloaded from: https://github.com/gemtools/gemtools
+
+*GEM is only available for linux machines*
+
 MCL - clustering
 ~~~~~~~~~~~~~~~~
 
