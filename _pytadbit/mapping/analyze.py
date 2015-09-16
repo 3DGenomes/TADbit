@@ -13,6 +13,7 @@ from scipy.stats                 import norm as sc_norm, skew, kurtosis
 from scipy.stats                 import pearsonr, spearmanr, linregress
 from numpy.linalg                import eigh
 import os
+import errno
 import numpy as np
 
 try:
@@ -83,9 +84,21 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
         if focus:
             raise Exception('Incompatible options focus and by_chrom\n')
         if savedata:
-            os.system('mkdir -p ' + savedata)
+            try:
+                os.mkdir(savedata)
+            except OSError as exc:
+                if exc.errno == errno.EEXIST and os.path.isdir(savedata):
+                    pass
+                else:
+                    raise
         if savefig:
-            os.system('mkdir -p ' + savefig)
+            try:
+                os.mkdir(savefig)
+            except OSError as exc:
+                if exc.errno == errno.EEXIST and os.path.isdir(savedata):
+                    pass
+                else:
+                    raise
         for i, crm1 in enumerate(hic_data.chromosomes):
             for crm2 in hic_data.chromosomes.keys()[i:]:
                 if by_chrom == 'intra' and crm1 != crm2:
