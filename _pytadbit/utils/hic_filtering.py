@@ -38,7 +38,11 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
     cols = np.array(cols)
     if draw_hist:
         plt.figure(figsize=(9, 9))
-    percentile = np.percentile(cols, 5)
+    try:
+        percentile = np.percentile(cols, 5)
+    except IndexError:
+        warn('WARNING: no columns to filter out')
+        return bads
     # mad = np.median([abs(median - c ) for c in cols])
     best =(None, None, None, None)
     # bin the sum of columns
