@@ -21,6 +21,8 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
     :param False reverse: if set, the resulting outfile will only contain the
        reads filtered, not the valid pairs.
     :param False verbose:
+
+    :returns: number of reads kept
     """
     masked_reads = set()
     filters = filters or masked.keys()
@@ -58,6 +60,7 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
         print '    saving to file %d reads %s %s.' % (
             count, 'with' if reverse else 'without', ', '.join(filter_names))
     out.close()
+    return count
 
 
 def filter_reads(fnam, output=None, max_molecule_length=500,

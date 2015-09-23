@@ -108,6 +108,8 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
             if hic_data[i, j]:
                 W[i][j] = hic_data[i, j]
     B = dict([(b, 1.) for b in W])
+    if len(W) == 0:
+        raise ZeroDivisionError('ERROR: normalization failed, all bad columns')
     for it in xrange(iterations + 1):
         S, meanS = _update_S(W)
         DB = _updateDB(S, meanS, B)
