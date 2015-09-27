@@ -12,6 +12,9 @@ Mapping
 
 .. autofunction:: iterative_mapping
 
+.. currentmodule:: pytadbit.mapping.full_mapper
+
+.. autofunction:: full_mapping
 
 Quality check and plotting
 --------------------------

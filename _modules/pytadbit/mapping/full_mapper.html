@@ -1,0 +1,535 @@
+<!doctype html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytadbit.mapping.full_mapper &mdash; Tadbit 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/black-on-white.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
+    <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pytadbit.mapping.full_mapper</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">09 Jun 2015</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="kn">import</span> <span class="n">magic_open</span><span class="p">,</span> <span class="n">get_free_space_mb</span>
+<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">RESTRICTION_ENZYMES</span><span class="p">,</span> <span class="n">religated</span>
+<span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">gettempdir</span><span class="p">,</span> <span class="n">mkstemp</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">gem</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: GEMTOOLS not found&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">transform_fastq</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_fastq</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">add_site</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">min_seq_len</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fastq</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a FASTQ file it can split it into chunks of a given number of reads,</span>
+<span class="sd">    trim each read according to a start/end positions or split them into</span>
+<span class="sd">    restriction enzyme fragments</span>
+
+<span class="sd">    :param True add_site: when splitting the sequence by ligated sites found,</span>
+<span class="sd">       removes the ligation site, and put back the original RE site.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">## define local funcitons to process reads and sequences</span>
+    <span class="k">def</span> <span class="nf">_get_fastq_read</span><span class="p">(</span><span class="n">rlines</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns header and sequence of 1 FASTQ entry</span>
+<span class="sd">        Note: header also contains the sequence</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rlines</span> <span class="o">=</span> <span class="n">rlines</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">_</span>   <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c"># lose qualities header but not needed</span>
+        <span class="n">qal</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c"># lose qualities but not needed</span>
+        <span class="c"># header now also contains original read</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">rlines</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+                <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_get_map_read</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span>    <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">header</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span>
+        
+    <span class="k">def</span> <span class="nf">_split_read_re</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">max_seq_len</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">cnt</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recursive generator that splits reads according to the</span>
+<span class="sd">        predefined restriction enzyme.</span>
+<span class="sd">        RE fragments yielded are followed by the RE site if a ligation</span>
+<span class="sd">        site was found after the fragment.</span>
+<span class="sd">        The RE site before the fragment is added outside this function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="n">min_seq_len</span><span class="p">:</span>
+                <span class="n">split_read</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="n">len_relg</span><span class="p">:],</span> <span class="n">qal</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="n">len_relg</span><span class="p">:],</span>
+                           <span class="n">pattern</span><span class="p">,</span> <span class="n">max_seq_len</span><span class="p">,</span> <span class="n">cnt</span><span class="o">=</span><span class="n">cnt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">seq</span><span class="p">[:</span><span class="n">pos</span><span class="p">]</span> <span class="o">+</span> <span class="n">site</span><span class="p">,</span> <span class="n">qal</span><span class="p">[:</span><span class="n">pos</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39;H&#39;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">site</span><span class="p">)),</span> <span class="n">cnt</span>
+            <span class="k">for</span> <span class="n">subseq</span><span class="p">,</span> <span class="n">subqal</span><span class="p">,</span> <span class="n">cnt</span> <span class="ow">in</span> <span class="n">split_read</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="n">len_relg</span><span class="p">:],</span>
+                                             <span class="n">qal</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="n">len_relg</span><span class="p">:],</span>
+                                             <span class="n">pattern</span><span class="p">,</span>
+                                             <span class="n">max_seq_len</span><span class="p">,</span> <span class="n">cnt</span><span class="o">=</span><span class="n">cnt</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">subseq</span><span class="p">,</span> <span class="n">subqal</span><span class="p">,</span> <span class="n">cnt</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_seq_len</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">min_seq_len</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">cnt</span>
+
+    <span class="c"># Define function for stripping lines according to ficus</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trim</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">trim</span>
+        <span class="n">beg</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">strip_line</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">beg</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">strip_line</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+
+    <span class="c"># define function to split reads according to restriction enzyme sites</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_enz</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">enzyme</span> <span class="o">=</span> <span class="n">RESTRICTION_ENZYMES</span><span class="p">[</span><span class="n">r_enz</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;|&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">enz_pattern</span> <span class="o">=</span> <span class="n">religated</span><span class="p">(</span><span class="n">r_enz</span><span class="p">)</span>
+        <span class="n">sub_enz_pattern</span> <span class="o">=</span> <span class="n">enz_pattern</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">enz_pattern</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">len_relg</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">enz_pattern</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;  - splitting into restriction enzyme (RE) fragments using ligation sites&#39;</span>
+        <span class="k">print</span> <span class="s">&#39;  - ligation sites are replaced by RE sites to match the reference genome&#39;</span>
+        <span class="k">print</span> <span class="s">&#39;    * enzyme: </span><span class="si">%s</span><span class="s">, ligation site: </span><span class="si">%s</span><span class="s">, RE site: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">enz_pattern</span><span class="p">,</span> <span class="n">enzyme</span><span class="p">)</span>
+        <span class="n">split_read</span> <span class="o">=</span> <span class="n">_split_read_re</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">enz_pattern</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">split_read</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">after_z</span><span class="p">,</span> <span class="n">after_after_z</span><span class="p">:</span> <span class="p">(</span><span class="k">yield</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># function to yield reads from input file</span>
+    <span class="n">get_seq</span> <span class="o">=</span> <span class="n">_get_fastq_read</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="n">_get_map_read</span>
+
+    <span class="c">## Start processing the input file</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;Preparing </span><span class="si">%s</span><span class="s"> file&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;FASTQ&#39;</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="s">&#39;MAP&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fastq</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;  - conversion to MAP format&#39;</span>
+        <span class="k">if</span> <span class="n">trim</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;  - trimming reads </span><span class="si">%d</span><span class="s">-</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">trim</span><span class="p">)</span>
+            
+    <span class="c"># open input file</span>
+    <span class="n">fhandler</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">)</span>
+    <span class="c"># create output file</span>
+    <span class="n">out_name</span> <span class="o">=</span> <span class="n">out_fastq</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_fastq</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="c"># iterate over reads and strip them</span>
+    <span class="n">site</span> <span class="o">=</span> <span class="s">&#39;&#39;</span> <span class="k">if</span> <span class="n">add_site</span> <span class="k">else</span> <span class="n">enzyme</span>
+    <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="n">fhandler</span><span class="p">:</span>
+        <span class="n">header</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span> <span class="o">=</span> <span class="n">get_seq</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+        <span class="c"># trim on wanted region of the read</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">strip_line</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+        <span class="n">qal</span> <span class="o">=</span> <span class="n">strip_line</span><span class="p">(</span><span class="n">qal</span><span class="p">)</span>
+        <span class="c"># get the generator of restriction enzyme fragments</span>
+        <span class="n">iter_frags</span> <span class="o">=</span> <span class="n">split_read</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">enz_pattern</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">),</span> <span class="n">site</span><span class="p">)</span>
+        <span class="c"># the first fragment should not be preceded by the RE site</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="n">iter_frags</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="c"># read full of ligation events, fragments not reaching minimum</span>
+            <span class="k">continue</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="c"># or not ligation site found, in which case we try with half</span>
+            <span class="c"># ligation site in case there was a sequencing error (half ligation</span>
+            <span class="c"># site is a RE site or nearly, and thus should not be found anyway)</span>
+            <span class="n">iter_frags</span> <span class="o">=</span> <span class="n">split_read</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">sub_enz_pattern</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">),</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="n">iter_frags</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_map2fastq</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">insert_mark</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">cnt</span><span class="p">),</span>
+                                        <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="s">&#39;-</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))))</span>
+        <span class="c"># the next fragments should be preceded by the RE site</span>
+        <span class="c"># continue</span>
+        <span class="k">for</span> <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">cnt</span> <span class="ow">in</span>  <span class="n">iter_frags</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_map2fastq</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">insert_mark</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">cnt</span><span class="p">),</span>
+                                            <span class="n">seq</span> <span class="o">+</span> <span class="n">site</span><span class="p">,</span> <span class="n">qal</span> <span class="o">+</span> <span class="s">&#39;H&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">site</span><span class="p">)),</span>
+                                            <span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="s">&#39;-</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))))</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">out_name</span>
+
+<span class="k">def</span> <span class="nf">insert_mark</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">num</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="n">header</span>
+    <span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">~</span><span class="si">%d</span><span class="s">~ </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_map2fastq</span><span class="p">(</span><span class="n">read</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&#39;@{0}</span><span class="se">\n</span><span class="s">{1}</span><span class="se">\n</span><span class="s">+</span><span class="se">\n</span><span class="s">{2}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">read</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_gem_filter</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">unmap_out</span><span class="p">,</span> <span class="n">map_out</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Divides reads in a map file in two categories: uniquely mapped, and not.</span>
+<span class="sd">    Writes them in two files</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">       - GEM unique-maps can not be used as it gets rid of reads like 1:0:0:5</span>
+<span class="sd">       - not feasible with gt.filter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fhandler</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">fnam</span>
+    <span class="n">unmap_out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">unmap_out</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">map_out</span>   <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">map_out</span>  <span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_strip_read_name</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        remove original sequence from read name when read is mapped uniquely</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">header</span><span class="p">,</span> <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">header</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">line</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fhandler</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">bad</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">matches</span> <span class="o">!=</span> <span class="s">&#39;1&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matches</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="s">&#39;0&#39;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span>  <span class="n">m</span> <span class="o">!=</span> <span class="s">&#39;1&#39;</span><span class="p">:</span>
+                    <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">unmap_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bad</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">unmap_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bad</span><span class="p">:</span>
+            <span class="n">map_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_strip_read_name</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+    <span class="n">unmap_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param None focus: trims the sequence in the input FASTQ file according to a</span>
+<span class="sd">       (start, end) position, or the name of a restriction enzyme. By default it</span>
+<span class="sd">       uses the full sequence.</span>
+<span class="sd">    :param 33 quality: set it to &#39;ignore&#39; in order to speed-up the mapping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gem_index_path</span>    <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">))</span>
+    <span class="n">fastq_path</span>        <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">))</span>
+    <span class="n">out_map_path</span>      <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">))</span>
+    <span class="n">nthreads</span>          <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;nthreads&#39;</span>            <span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">max_edit_distance</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;max_edit_distance&#39;</span>   <span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
+    <span class="n">mismatches</span>        <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;mismatches&#39;</span>          <span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
+    <span class="n">quality</span>           <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;quality&#39;</span>             <span class="p">,</span> <span class="mi">33</span><span class="p">)</span>
+
+    <span class="c"># check kwargs</span>
+    <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kw</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;nthreads&#39;</span><span class="p">,</span> <span class="s">&#39;max_edit_distance&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;mismatches&#39;</span><span class="p">,</span> <span class="s">&#39;max_reads_per_chunk&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;out_files&#39;</span><span class="p">,</span> <span class="s">&#39;temp_dir&#39;</span><span class="p">]:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: </span><span class="si">%s</span><span class="s"> not is usual keywords, misspelled?&#39;</span> <span class="o">%</span> <span class="n">kw</span><span class="p">)</span>
+
+    <span class="c"># input</span>
+    <span class="n">inputf</span> <span class="o">=</span> <span class="n">gem</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">)</span>
+
+    <span class="c"># mapping</span>
+    <span class="k">print</span> <span class="s">&#39;TO GEM&#39;</span><span class="p">,</span> <span class="n">fastq_path</span>
+    <span class="k">return</span> <span class="n">gem</span><span class="o">.</span><span class="n">mapper</span><span class="p">(</span><span class="n">inputf</span><span class="p">,</span> <span class="n">gem_index_path</span><span class="p">,</span> <span class="n">min_decoded_strata</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                      <span class="n">max_decoded_matches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unique_mapping</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                      <span class="n">max_edit_distance</span><span class="o">=</span><span class="n">max_edit_distance</span><span class="p">,</span>
+                      <span class="n">mismatches</span><span class="o">=</span><span class="n">mismatches</span><span class="p">,</span> <span class="n">quality</span><span class="o">=</span><span class="n">quality</span><span class="p">,</span>
+                      <span class="n">output</span><span class="o">=</span><span class="n">out_map_path</span><span class="p">,</span>
+                      <span class="n">threads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">)</span>
+
+<div class="viewcode-block" id="full_mapping"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.full_mapper.full_mapping">[docs]</a><span class="k">def</span> <span class="nf">full_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_map_dir</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frag_map</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">min_seq_len</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">windows</span><span class="o">=</span><span class="p">((</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">),),</span> <span class="n">add_site</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Do the mapping</span>
+
+<span class="sd">    :param gem_index_path: path to index file created from a reference genome</span>
+<span class="sd">       using gem-index tool</span>
+<span class="sd">    :param fastq_path: PATH to fastq file, either compressed or not.</span>
+<span class="sd">    :param out_map_dir: path to a directory where to store mapped reads in MAP</span>
+<span class="sd">       format .</span>
+<span class="sd">    :param None r_enz: name of the restriction enzyme used in the experiment e.g.</span>
+<span class="sd">       HindIII. This is optional if frag_map option is False</span>
+<span class="sd">    :param True frag_map: two step mapper, first full length is mapped, then</span>
+<span class="sd">       remaining, unmapped reads, are divided into restriction-enzyme fragments</span>
+<span class="sd">       andeach is mapped.</span>
+<span class="sd">    :param True add_site: when splitting the sequence by ligated sites found,</span>
+<span class="sd">       removes the ligation site, and put back the original RE site.</span>
+<span class="sd">    :param 15 min_seq_len: minimum size of a fragment to map</span>
+<span class="sd">    :param ((None, None),) windows: tuple of ranges for begining and end of the</span>
+<span class="sd">       mapping. This parameter allows to do classical iterative mapping.</span>
+<span class="sd">    :param False clean: remove intermedite files created in temp_dir</span>
+<span class="sd">    :param 4 nthreads: number of threads to use for mapping (number of CPUs)</span>
+<span class="sd">    :param 0.04 max_edit_distance: The maximum number of edit operations allowed</span>
+<span class="sd">       while verifying candidate matches by dynamic programming.</span>
+<span class="sd">    :param 0.04 mismatches: The maximum number of nucleotide substitutions</span>
+<span class="sd">       allowed while mapping each k-mer. It is always guaranteed that, however</span>
+<span class="sd">       other options are chosen, all the matches up to the specified number of</span>
+<span class="sd">       substitutions will be found by the program.</span>
+<span class="sd">    :param /tmp temp_dir: important to change. Intermediate FASTQ files will be</span>
+<span class="sd">       written there.</span>
+
+<span class="sd">    :returns: a list of paths to generated outfiles. To be passed to </span>
+<span class="sd">       :func:`pytadbit.parsers.map_parser.parse_map`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">outfiles</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;temp_dir&#39;</span><span class="p">,</span> <span class="n">gettempdir</span><span class="p">())))</span>
+    <span class="c"># create directories</span>
+    <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="p">[</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">out_map_dir</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">error</span><span class="o">.</span><span class="n">strerror</span> <span class="o">!=</span> <span class="s">&#39;File exists&#39;</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s">&#39;ERROR: problem loading file, probable problem with the &#39;</span> <span class="o">+</span>
+                     <span class="s">&#39;use of relative path&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">error</span>
+    <span class="c"># check space</span>
+    <span class="k">if</span> <span class="n">get_free_space_mb</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">div</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&#39;WARNING: less than 50 Gb left on tmp_dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">temp_dir</span><span class="p">)</span>
+
+    <span class="c"># iterative mapping</span>
+    <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;.gz&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">base_name</span> <span class="o">=</span> <span class="n">base_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;.fastq&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">input_reads</span> <span class="o">=</span> <span class="n">fastq_path</span>
+    <span class="k">for</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">windows</span><span class="p">:</span>
+        <span class="c"># Prepare the FASTQ file and iterate over them</span>
+        <span class="n">curr_map</span> <span class="o">=</span> <span class="n">transform_fastq</span><span class="p">(</span><span class="n">input_reads</span><span class="p">,</span> 
+                                   <span class="n">mkstemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">base_name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="p">,</span>
+                                           <span class="nb">dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                                   <span class="n">fastq</span><span class="o">=</span><span class="p">(</span><span class="n">input_reads</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.fastq&#39;</span><span class="p">)</span>
+                                          <span class="ow">or</span> <span class="n">input_reads</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.fastq.gz&#39;</span><span class="p">)),</span>
+                                   <span class="n">min_seq_len</span><span class="o">=</span><span class="n">min_seq_len</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span>
+        <span class="c"># clean</span>
+        <span class="k">if</span> <span class="n">input_reads</span> <span class="o">!=</span> <span class="n">fastq_path</span> <span class="ow">and</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;   x removing original input </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">input_reads</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;rm -f </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_reads</span><span class="p">))</span>
+        <span class="c"># First mapping, full length</span>
+        <span class="n">out_map_path</span> <span class="o">=</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s">&#39;_full_</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">end</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;Mapping reads in window </span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">...&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;Mapping full reads...&#39;</span><span class="p">,</span> <span class="n">curr_map</span>
+        <span class="n">map_file</span> <span class="o">=</span> <span class="n">gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">map_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c"># parse map file to extract not uniquely mapped reads</span>
+        <span class="k">print</span> <span class="s">&#39;Parsing result...&#39;</span>
+        <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s">&#39;_filt_</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
+                                 <span class="n">base_name</span> <span class="o">+</span> <span class="s">&#39;_full_</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)))</span>
+        <span class="c"># clean</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;   x removing GEM input </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">curr_map</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;rm -f </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">curr_map</span><span class="p">))</span>
+            <span class="k">print</span> <span class="s">&#39;   x removing map </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">out_map_path</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;rm -f </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">))</span>
+        <span class="c"># for next round, we will use remaining unmapped reads</span>
+        <span class="n">input_reads</span> <span class="o">=</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s">&#39;_filt_</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="n">outfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
+                                     <span class="n">base_name</span> <span class="o">+</span> <span class="s">&#39;_full_</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)))</span>
+
+    <span class="c"># map again splitting unmapped reads into RE fragments</span>
+    <span class="c"># (no need to trim this time)</span>
+    <span class="k">if</span> <span class="n">frag_map</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r_enz</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: need enzyme name to fragment.&#39;</span><span class="p">)</span>
+        <span class="n">frag_map</span> <span class="o">=</span> <span class="n">transform_fastq</span><span class="p">(</span><span class="n">input_reads</span><span class="p">,</span>
+                                   <span class="n">mkstemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">base_name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="p">,</span>
+                                           <span class="nb">dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                                   <span class="n">min_seq_len</span><span class="o">=</span><span class="n">min_seq_len</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span>
+                                   <span class="n">fastq</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="n">r_enz</span><span class="p">,</span> <span class="n">add_site</span><span class="o">=</span><span class="n">add_site</span><span class="p">)</span>
+        <span class="n">out_map_path</span> <span class="o">=</span> <span class="n">frag_map</span> <span class="o">+</span> <span class="s">&#39;_frag.map&#39;</span>
+        <span class="k">print</span> <span class="s">&#39;Mapping fragments of remaining reads...&#39;</span>
+        <span class="n">map_file</span> <span class="o">=</span> <span class="n">gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">frag_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span>
+                               <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">map_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&#39;Parsing result...&#39;</span>
+        <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s">&#39;_fail.map&#39;</span><span class="p">,</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span> <span class="n">base_name</span> <span class="o">+</span> <span class="s">&#39;_frag.map&#39;</span><span class="p">))</span>
+        <span class="n">outfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span> <span class="n">base_name</span> <span class="o">+</span> <span class="s">&#39;_frag.map&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">outfiles</span>
+</div>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+    <span class="n">fastq</span>          <span class="o">=</span> <span class="s">&#39;/scratch/db/FASTQs/hsap/dixon_2012/dixon-2012_200bp.fastq&#39;</span>
+    <span class="n">fastq</span>          <span class="o">=</span> <span class="s">&#39;short_dixon-2012_200bp.fastq&#39;</span>
+    <span class="c"># fastq        = &#39;/scratch/test/sample_dataset/FASTQs/sample_hsap_HindIII.fastq&#39;</span>
+    <span class="n">gem_index_path</span> <span class="o">=</span> <span class="s">&#39;/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.gem&#39;</span>
+    <span class="n">out_map_dir1</span>   <span class="o">=</span> <span class="s">&#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/&#39;</span>
+    <span class="n">out_map_dir2</span>   <span class="o">=</span> <span class="s">&#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/&#39;</span>
+    <span class="n">temp_dir1</span>      <span class="o">=</span> <span class="s">&#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp1/&#39;</span>
+    <span class="n">temp_dir2</span>      <span class="o">=</span> <span class="s">&#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp2/&#39;</span>
+
+    <span class="k">print</span> <span class="s">&#39;read 1&#39;</span>
+    <span class="n">outfiles1</span> <span class="o">=</span> <span class="n">full_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq</span><span class="p">,</span> <span class="n">out_map_dir1</span><span class="p">,</span> <span class="s">&#39;HindIII&#39;</span><span class="p">,</span>
+                             <span class="n">temp_dir</span><span class="o">=</span><span class="n">temp_dir1</span><span class="p">,</span> <span class="n">windows</span><span class="o">=</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">),),</span> <span class="n">add_site</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;read 2&#39;</span>
+    <span class="n">outfiles2</span> <span class="o">=</span> <span class="n">full_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">fastq</span><span class="p">,</span> <span class="n">out_map_dir2</span><span class="p">,</span> <span class="s">&#39;HindIII&#39;</span><span class="p">,</span>
+                             <span class="n">temp_dir</span><span class="o">=</span><span class="n">temp_dir2</span><span class="p">,</span> <span class="n">windows</span><span class="o">=</span><span class="p">((</span><span class="mi">101</span><span class="p">,</span> <span class="mi">200</span><span class="p">),),</span> <span class="n">add_site</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="c"># print &#39;read 1&#39;</span>
+    <span class="c"># outfiles1 = mapping(gem_index_path, fastq, out_map_dir1, &#39;HindIII&#39;,</span>
+    <span class="c">#                     temp_dir=temp_dir1,</span>
+    <span class="c">#                     windows=(zip(*([0] * len(range(25, 105, 5)),</span>
+    <span class="c">#                                    range(25,105,5)))))</span>
+    <span class="c"># print &#39;read 2&#39;</span>
+    <span class="c"># outfiles2 = mapping(gem_index_path, fastq, out_map_dir2, &#39;HindIII&#39;,</span>
+    <span class="c">#                     temp_dir=temp_dir2,</span>
+    <span class="c">#                     windows=(zip(*([100] * len(range(125, 205, 5)),</span>
+    <span class="c">#                                            range(125,205,5)))))</span>
+    
+    <span class="k">print</span> <span class="n">outfiles1</span>
+    <span class="k">print</span> <span class="s">&#39;xcmvnkljnv&#39;</span>
+    <span class="k">print</span> <span class="n">outfiles2</span>
+    
+    <span class="kn">from</span> <span class="nn">pytadbit.parsers.map_parser</span> <span class="kn">import</span> <span class="n">parse_map</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.parsers.genome_parser</span> <span class="kn">import</span> <span class="n">parse_fasta</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.mapping.mapper</span> <span class="kn">import</span> <span class="n">get_intersection</span>
+    <span class="kn">from</span> <span class="nn">pytadbit.mapping.filter</span> <span class="kn">import</span> <span class="n">filter_reads</span><span class="p">,</span> <span class="n">apply_filter</span>
+    
+    <span class="n">read1</span><span class="p">,</span> <span class="n">read2</span> <span class="o">=</span> <span class="s">&#39;read1.tsv&#39;</span><span class="p">,</span> <span class="s">&#39;read2.tsv&#39;</span><span class="p">,</span>
+    <span class="n">parse_map</span><span class="p">(</span><span class="n">outfiles1</span><span class="p">,</span> <span class="n">outfiles2</span><span class="p">,</span> <span class="n">out_file1</span><span class="o">=</span><span class="n">read1</span><span class="p">,</span> <span class="n">out_file2</span><span class="o">=</span><span class="n">read2</span><span class="p">,</span>
+              <span class="n">genome_seq</span><span class="o">=</span><span class="n">parse_fasta</span><span class="p">(</span><span class="s">&#39;/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.fa&#39;</span><span class="p">),</span>
+              <span class="n">re_name</span><span class="o">=</span><span class="s">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">reads</span> <span class="o">=</span> <span class="s">&#39;both_reads.tsv&#39;</span>
+    <span class="n">get_intersection</span><span class="p">(</span><span class="n">read1</span><span class="p">,</span> <span class="n">read2</span><span class="p">,</span> <span class="n">reads</span><span class="p">)</span>
+
+    <span class="n">masked</span> <span class="o">=</span> <span class="n">filter_reads</span><span class="p">(</span><span class="n">reads</span><span class="p">)</span>
+    <span class="n">freads</span> <span class="o">=</span> <span class="s">&#39;filtered_reads.tsv&#39;</span>
+    <span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">freads</span><span class="p">,</span> <span class="n">masked</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="nb">exit</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">outfiles1 = [&#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-25.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-30.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-35.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-40.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-45.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-50.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-55.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-60.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-65.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-70.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-75.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-80.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-85.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-90.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-95.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-100.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_frag.map&#39;]</span>
+<span class="sd">outfiles2 = [&#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-125.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-130.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-135.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-140.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-145.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-150.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-155.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-160.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-165.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-170.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-175.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-180.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-185.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-190.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-195.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-200.map&#39;,</span>
+<span class="sd">             &#39;/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_frag.map&#39;]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/TADbit_logo_little.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installing TADbit on GNU/Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright .
+      Last updated on Sep 27, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>

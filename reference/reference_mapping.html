@@ -144,6 +144,51 @@ written there.</li>
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="pytadbit.mapping.full_mapper.full_mapping">
+<code class="descclassname">pytadbit.mapping.full_mapper.</code><code class="descname">full_mapping</code><span class="sig-paren">(</span><em>gem_index_path</em>, <em>fastq_path</em>, <em>out_map_dir</em>, <em>r_enz=None</em>, <em>frag_map=True</em>, <em>min_seq_len=15</em>, <em>windows=((None</em>, <em>None)</em>, <em>)</em>, <em>add_site=True</em>, <em>clean=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/full_mapper.html#full_mapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.full_mapper.full_mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the mapping</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gem_index_path</strong> &#8211; path to index file created from a reference genome
+using gem-index tool</li>
+<li><strong>fastq_path</strong> &#8211; PATH to fastq file, either compressed or not.</li>
+<li><strong>out_map_dir</strong> &#8211; path to a directory where to store mapped reads in MAP
+format .</li>
+<li><strong>r_enz</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; name of the restriction enzyme used in the experiment e.g.
+HindIII. This is optional if frag_map option is False</li>
+<li><strong>frag_map</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; two step mapper, first full length is mapped, then
+remaining, unmapped reads, are divided into restriction-enzyme fragments
+andeach is mapped.</li>
+<li><strong>add_site</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; when splitting the sequence by ligated sites found,
+removes the ligation site, and put back the original RE site.</li>
+<li><strong>min_seq_len</strong> (<em>15</em>) &#8211; minimum size of a fragment to map</li>
+<li><strong>None),) windows</strong> (<em>((None,</em>) &#8211; tuple of ranges for begining and end of the
+mapping. This parameter allows to do classical iterative mapping.</li>
+<li><strong>clean</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; remove intermedite files created in temp_dir</li>
+<li><strong>nthreads</strong> (<em>4</em>) &#8211; number of threads to use for mapping (number of CPUs)</li>
+<li><strong>max_edit_distance</strong> (<em>0.04</em>) &#8211; The maximum number of edit operations allowed
+while verifying candidate matches by dynamic programming.</li>
+<li><strong>mismatches</strong> (<em>0.04</em>) &#8211; The maximum number of nucleotide substitutions
+allowed while mapping each k-mer. It is always guaranteed that, however
+other options are chosen, all the matches up to the specified number of
+substitutions will be found by the program.</li>
+<li><strong>temp_dir</strong> (<em>/tmp</em>) &#8211; important to change. Intermediate FASTQ files will be
+written there.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of paths to generated outfiles. To be passed to 
+<code class="xref py py-func docutils literal"><span class="pre">pytadbit.parsers.map_parser.parse_map()</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="quality-check-and-plotting">
 <h2>Quality check and plotting<a class="headerlink" href="#quality-check-and-plotting" title="Permalink to this headline">¶</a></h2>
@@ -375,7 +420,7 @@ the number of reads).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>fnam</strong> &#8211; path to FASTQ file</li>
 <li><strong>nreads</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; max number of reads to read, not necesary to read all</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
@@ -383,6 +428,10 @@ if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 <li><strong>paired</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; is input FASTQ contains both ends</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the percentage of dangling-ends (sensu stricto) and percentage of
+ligation sites.</p>
 </td>
 </tr>
 </tbody>
