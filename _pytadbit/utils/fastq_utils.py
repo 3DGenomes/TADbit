@@ -34,6 +34,9 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
     :param False paired: is input FASTQ contains both ends
+
+    :returns: the percentage of dangling-ends (sensu stricto) and percentage of
+       ligation sites.
     """
     phred = dict([(c, i) for i, c in enumerate(
         '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~')])
@@ -222,21 +225,22 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
         ax2.set_xlim((0, len(line)))
         lig_cnt = (np.nansum(liges) - liges[0] - liges[len(line) / 2])
         sit_cnt = (np.nansum(sites) - sites[0] - sites[len(line) / 2])
-        plt.title(('Proportion of digested sites: %.0f%%\n' +
-                   'Proportion of dangling-ends: %.0f%%') %(
-                      (100. * lig_cnt) / (lig_cnt + sit_cnt),
-                      ((100. * (fixes[0] + (fixes[(len(line) / 2)]
+        des = ((100. * (fixes[0] + (fixes[(len(line) / 2)]
                                             if paired else 0)))
-                       / nreads)
-                      if any([f > 0 for f in fixes])
-                      else (100. * (sites[0] + (sites[(len(line) / 2)]
-                                                if paired else 0))) / nreads))
+                       / nreads) if any([f > 0 for f in fixes]) else (
+            100. * (sites[0] + (sites[(len(line) / 2)] if paired else 0))) / nreads
+        plt.title(('Proportion of digested sites: %.0f%%\n' +
+                   'Proportion of dangling-ends: %.0f%%, of ligation sites: %.0f%%') %(
+                      (100. * lig_cnt) / (lig_cnt + sit_cnt),
+                      des,
+                      (np.nansum(liges) * 100.) / nreads))
         plt.subplots_adjust(right=0.85)
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
     elif not axe:
         plt.show()
+    return des, (np.nansum(liges) * 100.) / nreads
 
 
 def make_patch_spines_invisible(ax):
