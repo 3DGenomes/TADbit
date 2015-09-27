@@ -232,9 +232,34 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     """
     Do the mapping
 
+    :param gem_index_path: path to index file created from a reference genome
+       using gem-index tool
+    :param fastq_path: PATH to fastq file, either compressed or not.
+    :param out_map_dir: path to a directory where to store mapped reads in MAP
+       format .
+    :param None r_enz: name of the restriction enzyme used in the experiment e.g.
+       HindIII. This is optional if frag_map option is False
+    :param True frag_map: two step mapper, first full length is mapped, then
+       remaining, unmapped reads, are divided into restriction-enzyme fragments
+       andeach is mapped.
     :param True add_site: when splitting the sequence by ligated sites found,
        removes the ligation site, and put back the original RE site.
+    :param 15 min_seq_len: minimum size of a fragment to map
+    :param ((None, None),) windows: tuple of ranges for begining and end of the
+       mapping. This parameter allows to do classical iterative mapping.
     :param False clean: remove intermedite files created in temp_dir
+    :param 4 nthreads: number of threads to use for mapping (number of CPUs)
+    :param 0.04 max_edit_distance: The maximum number of edit operations allowed
+       while verifying candidate matches by dynamic programming.
+    :param 0.04 mismatches: The maximum number of nucleotide substitutions
+       allowed while mapping each k-mer. It is always guaranteed that, however
+       other options are chosen, all the matches up to the specified number of
+       substitutions will be found by the program.
+    :param /tmp temp_dir: important to change. Intermediate FASTQ files will be
+       written there.
+
+    :returns: a list of paths to generated outfiles. To be passed to 
+       :func:`pytadbit.parsers.map_parser.parse_map`
     """
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
