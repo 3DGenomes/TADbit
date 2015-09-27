@@ -62,6 +62,7 @@
 <span class="kn">from</span> <span class="nn">scipy.stats</span>                 <span class="kn">import</span> <span class="n">pearsonr</span><span class="p">,</span> <span class="n">spearmanr</span><span class="p">,</span> <span class="n">linregress</span>
 <span class="kn">from</span> <span class="nn">numpy.linalg</span>                <span class="kn">import</span> <span class="n">eigh</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">errno</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="k">try</span><span class="p">:</span>
@@ -132,9 +133,21 @@
         <span class="k">if</span> <span class="n">focus</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Incompatible options focus and by_chrom</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">savedata</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;mkdir -p &#39;</span> <span class="o">+</span> <span class="n">savedata</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">savedata</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">savedata</span><span class="p">):</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span>
         <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;mkdir -p &#39;</span> <span class="o">+</span> <span class="n">savefig</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">savedata</span><span class="p">):</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crm1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hic_data</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">crm2</span> <span class="ow">in</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">chromosomes</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="n">i</span><span class="p">:]:</span>
                 <span class="k">if</span> <span class="n">by_chrom</span> <span class="o">==</span> <span class="s">&#39;intra&#39;</span> <span class="ow">and</span> <span class="n">crm1</span> <span class="o">!=</span> <span class="n">crm2</span><span class="p">:</span>
@@ -1024,7 +1037,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Sep 16, 2015.
+      Last updated on Sep 27, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

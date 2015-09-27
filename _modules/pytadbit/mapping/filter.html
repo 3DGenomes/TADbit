@@ -70,6 +70,8 @@
 <span class="sd">    :param False reverse: if set, the resulting outfile will only contain the</span>
 <span class="sd">       reads filtered, not the valid pairs.</span>
 <span class="sd">    :param False verbose:</span>
+
+<span class="sd">    :returns: number of reads kept</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">masked_reads</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">filters</span> <span class="o">=</span> <span class="n">filters</span> <span class="ow">or</span> <span class="n">masked</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -107,6 +109,7 @@
         <span class="k">print</span> <span class="s">&#39;    saving to file </span><span class="si">%d</span><span class="s"> reads </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span>
             <span class="n">count</span><span class="p">,</span> <span class="s">&#39;with&#39;</span> <span class="k">if</span> <span class="n">reverse</span> <span class="k">else</span> <span class="s">&#39;without&#39;</span><span class="p">,</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filter_names</span><span class="p">))</span>
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">count</span>
 
 </div>
 <div class="viewcode-block" id="filter_reads"><a class="viewcode-back" href="../../../reference/reference_mapping.html#pytadbit.mapping.filter.filter_reads">[docs]</a><span class="k">def</span> <span class="nf">filter_reads</span><span class="p">(</span><span class="n">fnam</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_molecule_length</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
@@ -481,7 +484,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Sep 16, 2015.
+      Last updated on Sep 27, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
