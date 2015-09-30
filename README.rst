@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/3DGenomes/tadbit/badge.svg?branch=master&service=github |
-| Current version: 0.1_alpha.438      |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                         |
+| Current version: 0.1_alpha.439      |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                         |
 |                                     |                                                                           |                                                                                               |
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+
 
@@ -46,10 +46,22 @@ If you have any question remaining, we would be happy to answer informally:
 TADbit training
 ***************
 
+Next editions
+-------------
+
+* **November 15th to November 24th 2015**: `CSDM 2015
+  <http://gtpb.igc.gulbenkian.pt/bicourses/CSDM15/>`_ at the
+  `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
+  training programme Oeiras (Portugal)
+
 Past editions
 -------------
 
-* November 25th to November 28th 2013: `CSDM 2014
+* September 28th to October 2nd 2015: `Chromosomal Conformation course
+  <http://gtpb.igc.gulbenkian.pt/bicourses/2014/CSDM14/>`_ at the
+  `CRG <http://www.crg.eu/en/content/training/>`_
+  training programme Bracelona (Spain)
+* November 25th to November 28th 2014: `CSDM 2014
   <http://gtpb.igc.gulbenkian.pt/bicourses/2014/CSDM14/>`_ at the
   `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
   training programme Oeiras (Portugal)
