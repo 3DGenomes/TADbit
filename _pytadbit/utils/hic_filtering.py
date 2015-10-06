@@ -171,25 +171,27 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
 
 def filter_by_zero_count(matrx, perc_zero, silent=True):
     """
-    :param matrx:
-    :param perc:
+    :param matrx: Hi-C matrix of a given experiment
+    :param perc: percentage of cells with no count allowed to consider a column
+       as valid.
+
+    :returns: a dicitionary, which has as keys the index of the filtered out
+       columns.
     """
     bads = {}
     size = len(matrx)
+    size2 = size**2
     min_val = int(size * float(perc_zero) / 100)
-    new_bads = []
-    for i, col in enumerate([[matrx.get(i+j*size, 0)
-                              for j in xrange(size)]
+    for i, col in enumerate([[matrx.get(i+j, 0) for j in xrange(0, size2, size)]
                              for i in xrange(size)]):
         if col.count(0) > min_val:
             bads[i] = True
-            new_bads.append(i)
-    if new_bads and not silent:
+    if bads and not silent:
         stderr.write(('\nWARNING: removing columns having more than %s ' +
                       'zeroes:\n %s\n') % (
                          min_val, ' '.join(
                              ['%5s'%str(i + 1) + (''if (j + 1) % 20 else '\n')
-                              for j, i in enumerate(sorted(new_bads))])))
+                              for j, i in enumerate(sorted(bads.values()))])))
     return bads
 
 
