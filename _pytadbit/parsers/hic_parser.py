@@ -32,7 +32,7 @@ def is_asymmetric(matrix):
 def symmetrize(matrix):
     maxn = len(matrix)
     for i in range(maxn):
-        for j in range(i+1, maxn):
+        for j in range(i, maxn):
             matrix[i][j] = matrix[j][i] = matrix[i][j] + matrix[j][i]
 
 
@@ -131,7 +131,7 @@ def autoreader(f):
         raise AutoReadFail('ERROR: non square matrix')
 
     if is_asymmetric(items):
-        warn('WARNING: input matrix not symmetric: symmetrizing')
+        warn('WARNING: matrix not symmetric: summing cell_ij with cell_ji')
         symmetrize(items)
     return tuple([a for line in items for a in line]), ncol, header, masked
 
