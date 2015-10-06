@@ -493,7 +493,8 @@ class HiC_data(dict):
         return float(intra) / (intra + inter)
     
 
-    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75):
+    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
+                       by_mean=True):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -509,11 +510,14 @@ class HiC_data(dict):
            of the file name will determine the desired format).
         :param 75 perc_zero: maximum percentage of cells with no interactions
            allowed.
+        :param True by_mean: filter columns by mean column value using
+           :func:`pytadbit.utils.hic_filtering.filter_by_mean` function
 
         """
         self.bads = filter_by_zero_count(self, perc_zero, silent=False)
-        self.bads.update(filter_by_mean(self, draw_hist=draw_hist,
-                                        savefig=savefig, bads=self.bads))
+        if by_mean:
+            self.bads.update(filter_by_mean(self, draw_hist=draw_hist,
+                                            savefig=savefig, bads=self.bads))
 
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False):
         """
