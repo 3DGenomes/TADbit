@@ -83,6 +83,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     Implementation of iterative correction Imakaev 2012
     
     :param hic_data: dictionary containing the interaction data
+    :param None bads: dictionary with column not to be considered
     :param None remove: columns not to consider
     :param 0 iterations: number of iterations to do (99 if a fully smoothed
        matrix with no visibility differences between columns is desired)
@@ -128,3 +129,35 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
             B[i] = 1.
     return B
 
+
+def expected(hic_data, bads=None, signal_to_noise=0.05, verbose=False):
+    """
+    Computes the expected values by averaging observed interactions at a given
+    distance in a given HiC matrix.
+    
+    :param hic_data: dictionary containing the interaction data
+    :param None bads: dictionary with column not to be considered
+    :param 0.05 signal_to_noise:
+    
+    :returns: a vector of biases (length equal to the size of the matrix)
+    """
+    min_n = signal_to_noise ** -2. # equals 400 when default
+
+    size = len(hic_data)
+
+    expc = {}
+    dist = 1
+    while dist < size:
+        new_dist, val = _meandiag(hic_data, dist, [], min_n)
+        for dist in range(dist, new_dist + 1):
+            expc[dist] = val
+
+def _meandiag(hic_data, dist, diag, min_n):
+    for crm in hic_data.section_pos:
+        for i in xrange(hic_data.section_pos[crm][0],
+                        hic_data.section_pos[crm][1] - dist):
+            diag.append(hic_data[i, i + dist])
+    if sum(diag) > min_n:
+        return dist, float(sum(diag)) / len(diag)
+    else:
+        return _meandiag(hic_data, dist + 1, diag, min_n)
