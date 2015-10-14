@@ -148,16 +148,25 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, verbose=False):
     expc = {}
     dist = 1
     while dist < size:
-        new_dist, val = _meandiag(hic_data, dist, [], min_n)
+        diag = []
+        new_dist, val = _meandiag(hic_data, dist, diag, min_n, size)
         for dist in range(dist, new_dist + 1):
             expc[dist] = val
 
-def _meandiag(hic_data, dist, diag, min_n):
-    for crm in hic_data.section_pos:
-        for i in xrange(hic_data.section_pos[crm][0],
-                        hic_data.section_pos[crm][1] - dist):
+def _meandiag(hic_data, dist, diag, min_n, size):
+    if hic_data.section_pos:
+        for crm in hic_data.section_pos:
+            for i in xrange(hic_data.section_pos[crm][0],
+                            hic_data.section_pos[crm][1] - dist):
+                diag.append(hic_data[i, i + dist])
+    else:
+        for i in xrange(size - dist):
             diag.append(hic_data[i, i + dist])
     if sum(diag) > min_n:
-        return dist, float(sum(diag)) / len(diag)
+        return dist + 1, float(sum(diag)) / len(diag)
+    elif dist >= size:
+        print dist
+        return dist + 1, float(sum(diag)) / len(diag)
     else:
-        return _meandiag(hic_data, dist + 1, diag, min_n)
+        print 'more', dist, len(diag), sum(diag)
+        return _meandiag(hic_data, dist + 1, diag, min_n, size)
