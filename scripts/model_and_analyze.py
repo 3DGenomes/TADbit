@@ -351,6 +351,9 @@ models.save_models(
                    'experiment type': exp.exp_type,
                    'resolution'     : exp.resolution,
                    'assembly'       : crm.assembly}
+    for key in opts.description:
+        print 'Hola', opts.description, 'dd'
+        description[key] = opts.description[key]
     for desc in exp.description:
         description[desc] = exp.description[desc]
     for desc in crm.description:
@@ -956,8 +959,13 @@ def get_options():
                 continue
             new_opts[key] = value
     # bad key in configuration file
+    opts.__dict__['description'] = {}
     for bad_k in set(new_opts.keys()) - set(opts.__dict__.keys()):
-        sys.stderr.write('WARNING: parameter "%s" not recognized' % (bad_k))
+        sys.stderr.write('WARNING: parameter "%s" not recognized (used as description)\n' % (bad_k))
+        try:
+            opts.__dict__['description'][bad_k] = int(new_opts[bad_k])
+        except ValueError:
+            opts.__dict__['description'][bad_k] = new_opts[bad_k]
     for key in sorted(opts.__dict__.keys()):
         if key in args:
             log += '  * Command setting   %13s to %s\n' % (
