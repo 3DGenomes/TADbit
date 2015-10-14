@@ -517,6 +517,9 @@ def main():
     except:
         logging.info("\t\tWARNING: plot for clusters could not be made...")
 
+    if not opts.not_write_json:
+        models.write_json(os.path.join(opts.outdir, name, name + '.json'))
+
     if not (opts.not_write_xyz and opts.not_write_cmm):
         # Save the clustered models into directories for easy visualization with
         # Chimera (http://www.cgl.ucsf.edu/chimera/)
@@ -915,6 +918,9 @@ def get_options():
                         default=False, action='store_true',
                         help='''[%(default)s] do not generate xyz files for each
                         model (3D coordinates)''')
+    analyz.add_argument('--not_write_json', dest='not_write_json',
+                        default=False, action='store_true',
+                        help='''[%(default)s] do not generate json file.''')
 
     parser.add_argument_group(optimo)
     parser.add_argument_group(modelo)
