@@ -599,7 +599,8 @@ class HiC_data(dict):
            inclusive). Alternatively a chromosome name can be input or a tuple
            of chromosome name, in order to retrieve a specific inter-chromosomal
            region
-        :param True diagonal: if False, diagonal is replaced by zeroes
+        :param True diagonal: if False, diagonal is replaced by ones, or zeroes
+           if normalized
         :param False normalized: get normalized data
 
         :returns: matrix (a list of lists of values)
@@ -638,7 +639,7 @@ class HiC_data(dict):
                         for j in xrange(start1, end1)]
                 if start1 == start2:
                     for i in xrange(len(mtrx)):
-                        mtrx[i][i] = 1 if mtrx[i][i] else 0
+                        mtrx[i][i] = 0
                 return mtrx
         else:
             if diagonal:
