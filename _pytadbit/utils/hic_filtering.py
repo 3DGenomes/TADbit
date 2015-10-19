@@ -191,7 +191,7 @@ def filter_by_zero_count(matrx, perc_zero, silent=True):
                       'zeroes:\n %s\n') % (
                          min_val, ' '.join(
                              ['%5s'%str(i + 1) + (''if (j + 1) % 20 else '\n')
-                              for j, i in enumerate(sorted(bads.values()))])))
+                              for j, i in enumerate(sorted(bads.keys()))])))
     return bads
 
 
