@@ -795,40 +795,51 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         warn("WARNING: raw Hi-C data not available, " +
              "TAD's height fixed to 1")
         norms = None
-    diags = []
-    siz = xpr.size
-    sp1 = siz + 1
-    if norms:
-        for k in xrange(1, siz):
-            s_k = siz * k
-            diags.append(sum([norms[i * sp1 + s_k]
-                             if not (i in zeros
-                                     or (i + k) in zeros) else 0.
-                              for i in xrange(siz - k)]) / (siz - k))
-    for tad in tads:
-        start, end = (int(tads[tad]['start']) + 1,
-                      int(tads[tad]['end']) + 1)
+    if not 'height' in tads[tads.keys()[0]]:
+        diags = []
+        siz = xpr.size
+        sp1 = siz + 1
         if norms:
-            matrix = sum([norms[i + siz * j]
-                         if not (i in zeros
-                                 or j in zeros) else 0.
-                          for i in xrange(start - 1, end - 1)
-                          for j in xrange(i + 1, end - 1)])
-        try:
+            for k in xrange(1, siz):
+                s_k = siz * k
+                diags.append(sum([norms[i * sp1 + s_k]
+                                 if not (i in zeros
+                                         or (i + k) in zeros) else 0.
+                                  for i in xrange(siz - k)]) / (siz - k))
+        for tad in tads:
+            start, end = (int(tads[tad]['start']) + 1,
+                          int(tads[tad]['end']) + 1)
             if norms:
-                height = float(matrix) / sum(
-                    [diags[i-1] * (end - start - i)
-                     for i in xrange(1, end - start)])
-            else:
-                height = 1.
-        except ZeroDivisionError:
-            height = 0.
-        maxys.append(height)
-        start = float(start) / fact_res  # facts[iex]
-        end   = float(end) / fact_res  # facts[iex]
-        axe.fill([start] + list(np.linspace(start, end)) + [end], shape(height),
-                 alpha=.8 if height > 1 else 0.4,
-                 facecolor='grey', edgecolor='grey')
+                matrix = sum([norms[i + siz * j]
+                             if not (i in zeros
+                                     or j in zeros) else 0.
+                              for i in xrange(start - 1, end - 1)
+                              for j in xrange(i + 1, end - 1)])
+            try:
+                if norms:
+                    height = float(matrix) / sum(
+                        [diags[i-1] * (end - start - i)
+                         for i in xrange(1, end - start)])
+                else:
+                    height = 1.
+            except ZeroDivisionError:
+                height = 0.
+            maxys.append(height)
+            start = float(start) / fact_res  # facts[iex]
+            end   = float(end) / fact_res  # facts[iex]
+            axe.fill([start] + list(np.linspace(start, end)) + [end], shape(height),
+                     alpha=.8 if height > 1 else 0.4,
+                     facecolor='grey', edgecolor='grey')
+    else:
+        for tad in tads:
+            start, end = (int(tads[tad]['start']) + 1,
+                          int(tads[tad]['end']) + 1)
+            height = float(tads[tad]['height'])
+            maxys.append(height)
+            axe.fill([start] + list(np.linspace(start, end)) + [end],
+                     shape(height),
+                     alpha=.8 if height > 1 else 0.4,
+                     facecolor='grey', edgecolor='grey')
     if extras:
         axe.plot(extras, [.5 for _ in xrange(len(extras))], 'rx')
     axe.grid()

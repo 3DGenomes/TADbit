@@ -558,7 +558,44 @@ class Experiment(object):
             self.norm  = weights or norm
             if self.norm:
                 self._normalization = 'visibility'
-
+        if self._normalization:
+            norms = self.norm[0]
+        elif self.hic_data:
+            norms = self.hic_data[0]
+        else:
+            warn("WARNING: raw Hi-C data not available, " +
+                 "TAD's height fixed to 1")
+            norms = None
+        diags = []
+        siz = self.size
+        sp1 = siz + 1
+        zeros = self._zeros or {}
+        if norms:
+            for k in xrange(1, siz):
+                s_k = siz * k
+                diags.append(sum([norms[i * sp1 + s_k]
+                                 if not (i in zeros
+                                         or (i + k) in zeros) else 0.
+                                  for i in xrange(siz - k)]) / (siz - k))
+        for tad in tads:
+            start, end = (int(tads[tad]['start']) + 1,
+                          int(tads[tad]['end']) + 1)
+            if norms:
+                matrix = sum([norms[i + siz * j]
+                             if not (i in zeros
+                                     or j in zeros) else 0.
+                              for i in xrange(start - 1, end - 1)
+                              for j in xrange(i + 1, end - 1)])
+            try:
+                if norms:
+                    height = float(matrix) / sum(
+                        [diags[i-1] * (end - start - i)
+                         for i in xrange(1, end - start)])
+                else:
+                    height = 1.
+            except ZeroDivisionError:
+                height = 0.
+            tads[tad]['height'] = height
 
     def normalize_hic(self, factor=1, iterations=0, max_dev=0.1, silent=False,
                       rowsums=None):

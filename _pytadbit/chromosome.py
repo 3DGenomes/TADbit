@@ -549,7 +549,6 @@ class Chromosome(object):
             xpr.load_tad_def(result)
             self._get_forbidden_region(xpr)
 
-
     def __update_size(self, xpr):
         """
         Update the chromosome size and relative size after loading new Hi-C
