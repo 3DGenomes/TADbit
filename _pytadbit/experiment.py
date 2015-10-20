@@ -1376,7 +1376,7 @@ class Experiment(object):
         zeros = self._zeros or {}
         table = ''
         table += '%-8s%8s%8s%8s%s\n' % ('#', 'start', 'end', 'score',
-                                        '' if not density else 'density')
+                                        '' if not density else '\tdensity')
         tads = self.tads
         sp1 = self.size + 1
         diags = []
@@ -1389,28 +1389,10 @@ class Experiment(object):
                                   for i in xrange(
                                       self.size - k)]) / (self.size - k))
         for tad in tads:
-            start, end = (int(tads[tad]['start']) + 1,
-                          int(tads[tad]['end']) + 1)
-            if norms:
-                matrix = sum([norms[i + self.size * j]
-                             if not (i in zeros
-                                     or j in zeros) else 0.
-                              for i in xrange(start - 1, end - 1)
-                              for j in xrange(i + 1, end - 1)])
-            try:
-                if norms:
-                    height = float(matrix) / sum(
-                        [diags[i-1] * (end - start - i)
-                         for i in xrange(1, end - start)])
-                else:
-                    height = 1.
-            except ZeroDivisionError:
-                height = 0.
-            table += '%-8s%8s%8s%8s%s\n' % (tad, int(tads[tad]['start'] + 1),
-                                             int(tads[tad]['end'] + 1),
-                                             abs(tads[tad]['score']),
-                                             '' if not density else
-                                            '%8s' % (round(height, 3)))
+            table += '%-8s%8s%8s%8s%s\n' % (
+                tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),
+                abs(tads[tad]['score']), '' if not density else
+                '%8s' % (round(float(tads[tad]['height']), 3)))
         if not savedata:
             print table
             return
