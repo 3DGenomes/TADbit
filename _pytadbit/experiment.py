@@ -1375,7 +1375,7 @@ class Experiment(object):
             norms = None
         zeros = self._zeros or {}
         table = ''
-        table += '%-8s%8s%8s%8s%s\n' % ('#', 'start', 'end', 'score',
+        table += '%s\t%s\t%s\t%s%s\n' % ('#', 'start', 'end', 'score',
                                         '' if not density else '\tdensity')
         tads = self.tads
         sp1 = self.size + 1
@@ -1389,10 +1389,10 @@ class Experiment(object):
                                   for i in xrange(
                                       self.size - k)]) / (self.size - k))
         for tad in tads:
-            table += '%-8s%8s%8s%8s%s\n' % (
+            table += '%s\t%s\t%s\t%s%s\n' % (
                 tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),
                 abs(tads[tad]['score']), '' if not density else
-                '%8s' % (round(float(tads[tad]['height']), 3)))
+                '\t%s' % (round(float(tads[tad]['height']), 3)))
         if not savedata:
             print table
             return
