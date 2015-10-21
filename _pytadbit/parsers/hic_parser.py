@@ -692,7 +692,7 @@ class HiC_data(dict):
         if savefig:
             mkdir(savefig)
         if self.section_pos:
-            evects = {}
+            cmprts = {}
             for crm in self.section_pos:
                 if crm and crm != crm:
                     continue
@@ -720,18 +720,30 @@ class HiC_data(dict):
                      for b in bads]
                 _ = [matrix[i].insert(b, float('nan'))
                      for b in bads for i in xrange(len(first))]
-                breaks = [0] + [i + 0.5 for i, (a, b) in
+                breaks = [0] + [i for i, (a, b) in
                                 enumerate(zip(first[1:], first[:-1]))
                                 if a*b < 0] + [len(first)]
-                evects[crm] = breaks
+                breaks = [{'start': b + beg, 'end': breaks[i+1] + beg}
+                          for i, b in enumerate(breaks[:-1])]
+                cmprts[crm] = breaks
+        for crm in cmprts:
+            for cmprt in cmprts[crm]:
+                start, end = cmprt['start'], cmprt['end']
+                matrix = [(self[i,j] / self.expected[abs(j-i)]
+                           / self.bias[i] / self.bias[j])
+                          for i in xrange(start, end)
+                          if not i in self.bads
+                          for j in xrange(start + i, end)
+                          if not j in self.bads]
+                cmprt['height'] = sum(matrix) / len(matrix)
         if savedata:
             out = open(savedata, 'w')
-            out.write('#CRM\tbin\n')
-            out.write('\n'.join(['\n'.join(['%s\t%d' % (crm, i)
-                                            for i in xrange(evects[crm])])
-                                 for crm in evects]) + '\n')
+            out.write('#CRM\tstart\tend\theight\n')
+            out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%f' % (
+                crm, c['start'], c['end'], c['height']) for c in xrange(cmprts[crm])])
+                                 for crm in cmprts]) + '\n')
             out.close()
-        return evects
+        return cmprts
 
     def yield_matrix(self, focus=None, diagonal=True, normalized=False):
         """
