@@ -5,6 +5,7 @@ iterative mapping copied from hiclib
 
 """
 
+from pytadbit.utils.file_handling import mkdir
 import os
 import tempfile
 import gzip
@@ -243,11 +244,7 @@ def iterative_mapping(gem_index_path, fastq_path, out_sam_path,
 
     # create directories
     for rep in [temp_dir, os.path.split(out_sam_path)[0]]:
-        try:
-            os.mkdir(rep)
-        except OSError, error:
-            if error.strerror != 'File exists':
-                raise error
+        mkdir(rep)
 
     #get the length of a read
     if fastq_path.endswith('.gz'):
