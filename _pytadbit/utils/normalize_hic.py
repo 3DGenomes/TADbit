@@ -130,43 +130,53 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     return B
 
 
-def expected(hic_data, bads=None, signal_to_noise=0.05, verbose=False):
+def expected(hic_data, bads=None, signal_to_noise=0.05):
     """
     Computes the expected values by averaging observed interactions at a given
     distance in a given HiC matrix.
     
     :param hic_data: dictionary containing the interaction data
     :param None bads: dictionary with column not to be considered
-    :param 0.05 signal_to_noise:
+    :param 0.05 signal_to_noise: to calculate expected interaction counts,
+       if not enough reads are observed at a given distance the observations
+       of the distance+1 are summed. a signal to noise ratio of < 0.05
+       corresponds to > 400 reads.
     
     :returns: a vector of biases (length equal to the size of the matrix)
     """
     min_n = signal_to_noise ** -2. # equals 400 when default
 
-    size = len(hic_data)
+    try:
+        size = max(hic_data.chromosomes.values())
+    except AttributeError:
+        size = len(hic_data)
 
     expc = {}
-    dist = 1
+    dist = 0
     while dist < size:
         diag = []
-        new_dist, val = _meandiag(hic_data, dist, diag, min_n, size)
+        new_dist, val = _meandiag(hic_data, dist, diag, min_n, size, bads)
         for dist in range(dist, new_dist + 1):
             expc[dist] = val
+    return expc
 
-def _meandiag(hic_data, dist, diag, min_n, size):
+def _meandiag(hic_data, dist, diag, min_n, size, bads):
     if hic_data.section_pos:
         for crm in hic_data.section_pos:
             for i in xrange(hic_data.section_pos[crm][0],
                             hic_data.section_pos[crm][1] - dist):
+                if i in bads:
+                    continue
                 diag.append(hic_data[i, i + dist])
     else:
         for i in xrange(size - dist):
+            if i in bads:
+                continue
             diag.append(hic_data[i, i + dist])
-    if sum(diag) > min_n:
-        return dist + 1, float(sum(diag)) / len(diag)
+    sum_diag = sum(diag)
+    if sum_diag > min_n:
+        return dist + 1, float(sum_diag) / len(diag)
     elif dist >= size:
-        print dist
-        return dist + 1, float(sum(diag)) / len(diag)
+        return dist + 1, float(sum_diag) / len(diag)
     else:
-        print 'more', dist, len(diag), sum(diag)
-        return _meandiag(hic_data, dist + 1, diag, min_n, size)
+        return _meandiag(hic_data, dist + 1, diag, min_n, size, bads)

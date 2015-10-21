@@ -3,6 +3,7 @@
 """
 
 import os
+from pytadbit.utils.file_handling import mkdir
 from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
@@ -241,13 +242,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         kwargs.get('temp_dir', gettempdir())))
     # create directories
     for rep in [temp_dir, out_map_dir]:
-        try:
-            os.mkdir(rep)
-        except OSError, error:
-            if error.strerror != 'File exists':
-                warn('ERROR: problem loading file, probable problem with the ' +
-                     'use of relative path')
-                raise error
+        mkdir(rep)
     # check space
     if get_free_space_mb(temp_dir, div=3) < 50:
         warn('WARNING: less than 50 Gb left on tmp_dir: %s\n' % temp_dir)

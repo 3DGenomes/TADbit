@@ -3,7 +3,7 @@
 """
 
 import ctypes
-import os
+import os, errno
 import platform
 import bz2, gzip, zipfile, tarfile
 
@@ -87,3 +87,13 @@ def wc(fnam):
     Pythonic way to count lines
     """
     return sum(1 for _ in open(fnam))
+
+def mkdir(dnam):
+    try:
+        os.mkdir(dnam)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(dnam):
+            pass
+        else:
+            raise
+    

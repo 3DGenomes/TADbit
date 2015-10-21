@@ -2,18 +2,17 @@
 18 Nov 2014
 """
 
-from pytadbit.utils.extraviews   import tadbit_savefig, setup_plot
-from pytadbit.utils.tadmaths     import nozero_log_matrix as nozero_log
-from pytadbit.parsers.hic_parser import HiC_data
-from warnings                    import warn
-from collections                 import OrderedDict
-from pytadbit.parsers.hic_parser import load_hic_data_from_reads
-from pytadbit.utils.extraviews   import nicer
-from scipy.stats                 import norm as sc_norm, skew, kurtosis
-from scipy.stats                 import pearsonr, spearmanr, linregress
-from numpy.linalg                import eigh
-import os
-import errno
+from pytadbit.utils.extraviews    import tadbit_savefig, setup_plot
+from pytadbit.utils.tadmaths      import nozero_log_matrix as nozero_log
+from pytadbit.parsers.hic_parser  import HiC_data
+from warnings                     import warn
+from collections                  import OrderedDict
+from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
+from pytadbit.utils.extraviews    import nicer
+from pytadbit.utils.file_handling import mkdir
+from scipy.stats                  import norm as sc_norm, skew, kurtosis
+from scipy.stats                  import pearsonr, spearmanr, linregress
+from numpy.linalg                 import eigh
 import numpy as np
 
 try:
@@ -84,21 +83,9 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
         if focus:
             raise Exception('Incompatible options focus and by_chrom\n')
         if savedata:
-            try:
-                os.mkdir(savedata)
-            except OSError as exc:
-                if exc.errno == errno.EEXIST and os.path.isdir(savedata):
-                    pass
-                else:
-                    raise
+            mkdir(savedata)
         if savefig:
-            try:
-                os.mkdir(savefig)
-            except OSError as exc:
-                if exc.errno == errno.EEXIST and os.path.isdir(savedata):
-                    pass
-                else:
-                    raise
+            mkdir(savefig)
         for i, crm1 in enumerate(hic_data.chromosomes):
             for crm2 in hic_data.chromosomes.keys()[i:]:
                 if by_chrom == 'intra' and crm1 != crm2:

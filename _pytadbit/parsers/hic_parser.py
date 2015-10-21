@@ -3,13 +3,16 @@ November 7, 2013.
 
 """
 
-from warnings import warn
-from math import sqrt, isnan
-from pytadbit.parsers.gzopen import gzopen
+from warnings                       import warn
+from math                           import sqrt, isnan
+from pytadbit.parsers.gzopen        import gzopen
 from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
-from collections import OrderedDict
-from pytadbit.utils.normalize_hic  import iterative
+from collections                    import OrderedDict
+from pytadbit.utils.normalize_hic   import iterative, expected
 from pytadbit.parsers.genome_parser import parse_fasta
+from pytadbit.utils.file_handling   import mkdir
+from numpy.linalg                   import eigh
+from numpy                          import corrcoef
 
 HIC_DATA = True
 
@@ -326,12 +329,18 @@ class HiC_data(dict):
         self.sections = dict_sec
         self.section_pos = {}
         self.resolution = resolution
+        self.expected = None
         if self.chromosomes:
             total = 0
             for crm in self.chromosomes:
                 self.section_pos[crm] = (total, total + self.chromosomes[crm])
                 total += self.chromosomes[crm]
 
+
+    def _update_size(self, size):
+        self.__size +=  size
+        self._size2 = self.__size**2
+        
     def __len__(self):
         return self.__size
 
@@ -493,7 +502,8 @@ class HiC_data(dict):
         return float(intra) / (intra + inter)
     
 
-    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75):
+    def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
+                       by_mean=True):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -509,11 +519,11 @@ class HiC_data(dict):
            of the file name will determine the desired format).
         :param 75 perc_zero: maximum percentage of cells with no interactions
            allowed.
-
         """
         self.bads = filter_by_zero_count(self, perc_zero, silent=False)
-        self.bads.update(filter_by_mean(self, draw_hist=draw_hist,
-                                        savefig=savefig, bads=self.bads))
+        if by_mean:
+            self.bads.update(filter_by_mean(self, draw_hist=draw_hist,
+                                            savefig=savefig, bads=self.bads))
 
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False):
         """
@@ -647,6 +657,81 @@ class HiC_data(dict):
                     for i in xrange(len(mtrx)):
                         mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx
+
+    def find_compartments(self, crm=None, savefig=None, savedata=None, **kwargs):
+        """
+        Search for A/B copartments in each chromsome of the Hi-C matrix.
+        Hi-C matrix is normalized by the number interaction expected at a given
+        distance, and by visibility (one iteration of ICE). A correlation matrix
+        is then calculated from this normalized matrix, and its first
+        eigenvector is used to identify compartments. Changes in sign marking
+        boundaries between compartments.
+
+        :param 99 perc_zero: to filter bad columns
+        :param 0.05 signal_to_noise: to calculate expected interaction counts,
+           if not enough reads are observed at a given distance the observations
+           of the distance+1 are summed. a signal to noise ratio of < 0.05
+           corresponds to > 400 reads.
+        :param None crm: only runs this given chromosome
+        :param None savefig: path to a directory to store matrices with
+           compartment predictions, one image per chromosome, stored under
+           'chromosome-name.png'.
+        :param None savedata: path to a new file to store compartment
+           predictions, one file only.
+
+        :returns: a dictionary of compartment boundaries, keys being chromsome
+           names
+        """
+        if not self.bads:
+            self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
+                                by_mean=False)
+        if not self.expected:
+            self.expected = expected(self, bads=self.bads, **kwargs)
+        if not self.bias:
+            self.normalize_hic(iterations=0, **kwargs)
+        if savefig:
+            mkdir(savefig)
+        if self.section_pos:
+            evects = {}
+            for crm in self.section_pos:
+                if crm and crm != crm:
+                    continue
+                matrix = [[(self[i,j] / self.expected[abs(j-i)]
+                           / self.bias[i] / self.bias[j])
+                          for i in xrange(*self.section_pos[crm])
+                           if not i in self.bads]
+                         for j in xrange(*self.section_pos[crm])
+                          if not j in self.bads]
+                for i in xrange(len(matrix)):
+                    for j in xrange(i+1, len(matrix)):
+                        matrix[i][j] = matrix[j][i]
+                matrix = [list(m) for m in corrcoef(matrix)]
+                
+                evals, evect = eigh(matrix)
+                
+                sort_perm = abs(evals).argsort()
+                first = list(evect[sort_perm][:,-1])
+
+                beg, end = self.section_pos[crm]
+                bads = [k - beg for k in self.bads if beg <= k <= end]
+
+                _ = [first.insert(b, 0) for b in bads]
+                _ = [matrix.insert(b, [float('nan')]*len(matrix[0]))
+                     for b in bads]
+                _ = [matrix[i].insert(b, float('nan'))
+                     for b in bads for i in xrange(len(first))]
+                breaks = [0] + [i + 0.5 for i, (a, b) in
+                                enumerate(zip(first[1:], first[:-1]))
+                                if a*b < 0] + [len(first)]
+                evects[crm] = breaks
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#CRM\tbin\n')
+            out.write('\n'.join(['\n'.join(['%s\t%d' % (crm, i)
+                                            for i in xrange(evects[crm])])
+                                 for crm in evects]) + '\n')
+            out.close()
+        return evects
 
     def yield_matrix(self, focus=None, diagonal=True, normalized=False):
         """
