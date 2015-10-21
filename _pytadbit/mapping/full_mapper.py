@@ -228,7 +228,7 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
                       threads=nthreads)
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
-                 min_seq_len=15, windows=((None, None),), add_site=True, clean=False,
+                 min_seq_len=15, windows=None, add_site=True, clean=False,
                  **kwargs):
     """
     Do the mapping
@@ -246,8 +246,11 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     :param True add_site: when splitting the sequence by ligated sites found,
        removes the ligation site, and put back the original RE site.
     :param 15 min_seq_len: minimum size of a fragment to map
-    :param ((None, None),) windows: tuple of ranges for begining and end of the
-       mapping. This parameter allows to do classical iterative mapping.
+    :param None windows: tuple of ranges for begining and end of the
+       mapping. This parameter allows to do classical iterative mapping, e.g.
+         windows=((1,25),(1,30),(1,35),(1,40),(1,45),(1,50))
+       A unique window can also be passed, for trimming, like this:
+         windows=((1,101),)
     :param False clean: remove intermedite files created in temp_dir
     :param 4 nthreads: number of threads to use for mapping (number of CPUs)
     :param 0.04 max_edit_distance: The maximum number of edit operations allowed
@@ -276,19 +279,25 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     base_name = os.path.split(fastq_path)[-1].replace('.gz', '')
     base_name = base_name.replace('.fastq', '')
     input_reads = fastq_path
-    for beg, end in windows:
+    if windows is None:
+        windows = (None, )
+    for win in windows:
         # Prepare the FASTQ file and iterate over them
         curr_map = transform_fastq(input_reads, 
                                    mkstemp(prefix=base_name + '_',
                                            dir=temp_dir)[1],
                                    fastq=(input_reads.endswith('.fastq')
                                           or input_reads.endswith('.fastq.gz')),
-                                   min_seq_len=min_seq_len, trim=(beg, end))
+                                   min_seq_len=min_seq_len, trim=win)
         # clean
         if input_reads != fastq_path and clean:
             print '   x removing original input %s' % input_reads
             os.system('rm -f %s' % (input_reads))
         # First mapping, full length
+        if not win:
+            beg, end = 1, 'end'
+        else:
+            beg, end = win
         out_map_path = curr_map + '_full_%s-%s.map' % (beg, end)
         if end:
             print 'Mapping reads in window %s-%s...' % (beg, end)
@@ -321,7 +330,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         frag_map = transform_fastq(input_reads,
                                    mkstemp(prefix=base_name + '_',
                                            dir=temp_dir)[1],
-                                   min_seq_len=min_seq_len, trim=(beg, end),
+                                   min_seq_len=min_seq_len, trim=win,
                                    fastq=False, r_enz=r_enz, add_site=add_site)
         out_map_path = frag_map + '_frag.map'
         print 'Mapping fragments of remaining reads...'
