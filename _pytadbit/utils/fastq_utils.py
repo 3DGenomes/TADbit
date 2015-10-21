@@ -35,8 +35,8 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
        of the file name will determine the desired format).
     :param False paired: is input FASTQ contains both ends
 
-    :returns: the percentage of dangling-ends (sensu stricto) and percentage of
-       ligation sites.
+    :returns: the percentage of dangling-ends (sensu stricto) and the percentage of
+       reads with at least a ligation site.
     """
     phred = dict([(c, i) for i, c in enumerate(
         '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~')])
@@ -45,6 +45,7 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
     sites = []
     fixes = []
     liges = []
+    ligep = 0
     tkw = dict(size=4, width=1.5)
     if fnam.endswith('.gz'):
         fhandler = gopen(fnam)
@@ -99,6 +100,7 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
                 sites.extend([m.start() for m in site.finditer(seq)])
                 fixes.extend([m.start() for m in fixe.finditer(seq)])
                 liges.extend([m.start() for m in lige.finditer(seq)])
+                ligep += l_site in seq
                 if 'N' in seq:
                     henes.extend([i for i, s in enumerate(seq) if s == 'N'])
                 next(fhandler)
@@ -116,6 +118,7 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
                 sites.extend([m.start() for m in site.finditer(seq)])
                 fixes.extend([m.start() for m in fixe.finditer(seq)])
                 liges.extend([m.start() for m in lige.finditer(seq)])
+                ligep += l_site in seq
                 if 'N' in seq:
                     henes.extend([i for i, s in enumerate(seq) if s == 'N'])
                 next(fhandler)
@@ -229,18 +232,18 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
                                             if paired else 0)))
                        / nreads) if any([f > 0 for f in fixes]) else (
             100. * (sites[0] + (sites[(len(line) / 2)] if paired else 0))) / nreads
-        plt.title(('Proportion of digested sites: %.0f%%\n' +
-                   'Proportion of dangling-ends: %.0f%%, of ligation sites: %.0f%%') %(
+        plt.title(('Percentage of digested sites: %.0f%%, of dangling-ends: %.0f%%\n' +
+                   'Percentage of reads with ligation site: %.0f%%') %(
                       (100. * lig_cnt) / (lig_cnt + sit_cnt),
                       des,
-                      (np.nansum(liges) * 100.) / nreads))
+                      (ligep * 100.) / nreads))
         plt.subplots_adjust(right=0.85)
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
     elif not axe:
         plt.show()
-    return des, (np.nansum(liges) * 100.) / nreads
+    return des, (ligep * 100.) / nreads
 
 
 def make_patch_spines_invisible(ax):
