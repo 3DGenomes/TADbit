@@ -330,6 +330,7 @@ class HiC_data(dict):
         self.section_pos = {}
         self.resolution = resolution
         self.expected = None
+        self.compartments = {}
         if self.chromosomes:
             total = 0
             for crm in self.chromosomes:
@@ -666,7 +667,9 @@ class HiC_data(dict):
         is then calculated from this normalized matrix, and its first
         eigenvector is used to identify compartments. Changes in sign marking
         boundaries between compartments.
-
+        Result is stored as a dictionary of compartment boundaries, keys being
+        chromsome names.
+        
         :param 99 perc_zero: to filter bad columns
         :param 0.05 signal_to_noise: to calculate expected interaction counts,
            if not enough reads are observed at a given distance the observations
@@ -679,8 +682,7 @@ class HiC_data(dict):
         :param None savedata: path to a new file to store compartment
            predictions, one file only.
 
-        :returns: a dictionary of compartment boundaries, keys being chromsome
-           names
+        TODO: this is really slow...
         """
         if not self.bads:
             self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
@@ -693,28 +695,24 @@ class HiC_data(dict):
             mkdir(savefig)
         if self.section_pos:
             cmprts = {}
-            for crm in self.section_pos:
-                if crm and crm != crm:
+            for sec in self.section_pos:
+                if crm and crm != sec:
                     continue
                 matrix = [[(self[i,j] / self.expected[abs(j-i)]
                            / self.bias[i] / self.bias[j])
-                          for i in xrange(*self.section_pos[crm])
+                          for i in xrange(*self.section_pos[sec])
                            if not i in self.bads]
-                         for j in xrange(*self.section_pos[crm])
+                         for j in xrange(*self.section_pos[sec])
                           if not j in self.bads]
                 for i in xrange(len(matrix)):
                     for j in xrange(i+1, len(matrix)):
                         matrix[i][j] = matrix[j][i]
                 matrix = [list(m) for m in corrcoef(matrix)]
-                
                 evals, evect = eigh(matrix)
-                
                 sort_perm = abs(evals).argsort()
                 first = list(evect[sort_perm][:,-1])
-
-                beg, end = self.section_pos[crm]
+                beg, end = self.section_pos[sec]
                 bads = [k - beg for k in self.bads if beg <= k <= end]
-
                 _ = [first.insert(b, 0) for b in bads]
                 _ = [matrix.insert(b, [float('nan')]*len(matrix[0]))
                      for b in bads]
@@ -723,27 +721,43 @@ class HiC_data(dict):
                 breaks = [0] + [i for i, (a, b) in
                                 enumerate(zip(first[1:], first[:-1]))
                                 if a*b < 0] + [len(first)]
-                breaks = [{'start': b + beg, 'end': breaks[i+1] + beg}
+                breaks = [{'start': b, 'end': breaks[i+1]}
                           for i, b in enumerate(breaks[:-1])]
-                cmprts[crm] = breaks
-        for crm in cmprts:
-            for cmprt in cmprts[crm]:
-                start, end = cmprt['start'], cmprt['end']
+                cmprts[sec] = breaks
+        for sec in cmprts:
+            for cmprt in cmprts[sec]:
+                beg = self.section_pos[sec][0]
+                beg, end = cmprt['start'] + beg, cmprt['end'] + beg
                 matrix = [(self[i,j] / self.expected[abs(j-i)]
                            / self.bias[i] / self.bias[j])
-                          for i in xrange(start, end)
-                          if not i in self.bads
-                          for j in xrange(start + i, end)
-                          if not j in self.bads]
-                cmprt['height'] = sum(matrix) / len(matrix)
+                          for i in xrange(beg, end) if not i in self.bads
+                          for j in xrange(i, end) if not j in self.bads]
+                try:
+                    cmprt['height'] = sum(matrix) / len(matrix)
+                except ZeroDivisionError:
+                    cmprt['height'] = 0.
+            meanh = sum([cmprt['height'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+            for cmprt in cmprts[sec]:
+                cmprt['height'] /= meanh
+        self.compartments = cmprts
         if savedata:
-            out = open(savedata, 'w')
-            out.write('#CRM\tstart\tend\theight\n')
-            out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%f' % (
-                crm, c['start'], c['end'], c['height']) for c in xrange(cmprts[crm])])
-                                 for crm in cmprts]) + '\n')
-            out.close()
-        return cmprts
+            self.write_compartments(savedata)
+
+
+    def write_compartments(self, savedata):
+        """
+        Write compartments to a file.
+
+        :param savedata: path to a file.
+        """
+        out = open(savedata, 'w')
+        out.write('#CHR\tstart\tend\theight\n')
+        out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%f' % (
+            sec, c['start'], c['end'], c['height'])
+                                        for c in self.compartments[sec]])
+                             for sec in self.compartments]) + '\n')
+        out.close()
+        
 
     def yield_matrix(self, focus=None, diagonal=True, normalized=False):
         """
