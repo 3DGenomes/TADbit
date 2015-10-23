@@ -826,6 +826,7 @@ class StructuralModels(object):
                 for j in xrange(i+1, len(matrix)):
                     out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
             out.close()
+        if not savefig and not show:
             return # stop here, we do not want to display anything
         if not axe:
             fig = plt.figure(figsize=(8, 6))
