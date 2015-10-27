@@ -94,20 +94,28 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
                         elts.setdefault((crm, beg, end), []).append(
                             (nam, crm, pos, strd, nts, beg, end))
                     # write contacts by pairs
+                    # loop over RE fragments
                     for elt in elts:
+                        # case we have 2 read-frags inside current fragment
                         if len(elts[elt]) == 1:
                             elts[elt] = elts[elt][0]
+                        # case all fragments felt into a single RE frag
+                        # we take only first and last
                         elif len(elts) == 1:
                             elts[elt] = sorted(
                                 elts[elt],
                                 key=lambda x: int(x[2]))[::len(elts[elt])-1]
                             elts1 = {elt: elts[elt][0]}
                             elts2 = {elt: elts[elt][1]}
+                        # case we have several read-frag in this RE fragment
                         else:
+                            # take first and last
                             map1, map2 = sorted(
                                 elts[elt],
                                 key=lambda x: int(x[2]))[::len(elts[elt])-1]
                             elts[elt] = map1
+                            # sum up read-frags in the RE fragment  by putting
+                            # them on the same strand
                             if map1[3] == '1':
                                 beg = int(map1[2])
                             else:
