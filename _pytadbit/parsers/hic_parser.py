@@ -737,12 +737,12 @@ class HiC_data(dict):
                           for i in xrange(beg, end) if not i in self.bads
                           for j in xrange(i, end) if not j in self.bads]
                 try:
-                    cmprt['height'] = sum(matrix) / len(matrix)
+                    cmprt['dens'] = sum(matrix) / len(matrix)
                 except ZeroDivisionError:
-                    cmprt['height'] = 0.
-            meanh = sum([cmprt['height'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+                    cmprt['dens'] = 0.
+            meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
             for cmprt in cmprts[sec]:
-                cmprt['height'] /= meanh
+                cmprt['dens'] /= meanh
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata)
@@ -755,9 +755,9 @@ class HiC_data(dict):
         :param savedata: path to a file.
         """
         out = open(savedata, 'w')
-        out.write('#CHR\tstart\tend\theight\n')
+        out.write('#CHR\tstart\tend\tdensity\n')
         out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%f' % (
-            sec, c['start'], c['end'], c['height'])
+            sec, c['start'], c['end'], c['dens'])
                                         for c in self.compartments[sec]])
                              for sec in self.compartments]) + '\n')
         out.close()
