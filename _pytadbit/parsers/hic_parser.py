@@ -708,6 +708,9 @@ class HiC_data(dict):
                            if not i in self.bads]
                          for j in xrange(*self.section_pos[sec])
                           if not j in self.bads]
+                if not matrix: # MT chromosome will fall there
+                    cmprts[sec] = []
+                    continue
                 for i in xrange(len(matrix)):
                     for j in xrange(i+1, len(matrix)):
                         matrix[i][j] = matrix[j][i]

@@ -683,7 +683,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               axe=None, ylim=None, savefig=None,
-                              chr_names=None, nreads=None):
+                              savedata=None, chr_names=None, nreads=None):
     """
     :param fnam: input file name
     :param True first_read: uses first read.
@@ -694,6 +694,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
+    :param None savedata: path where to store the output read counts per bin.
     :param None chr_names: can pass a list of chromosome names in case only some
        them the need to be plotted (this option may last even more than default)
     
