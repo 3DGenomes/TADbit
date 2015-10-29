@@ -745,7 +745,10 @@ class HiC_data(dict):
                     cmprt['dens'] = 0.
             meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
             for cmprt in cmprts[sec]:
-                cmprt['dens'] /= meanh
+                try:
+                    cmprt['dens'] /= meanh
+                except ZeroDivisionError:
+                    cmprt['dens'] = 1.
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata)
