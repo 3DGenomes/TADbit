@@ -6,13 +6,14 @@ November 7, 2013.
 from warnings                       import warn
 from math                           import sqrt, isnan
 from pytadbit.parsers.gzopen        import gzopen
+from pytadbit.utils.extraviews      import plot_compartments
 from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
 from collections                    import OrderedDict
 from pytadbit.utils.normalize_hic   import iterative, expected
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.utils.file_handling   import mkdir
 from numpy.linalg                   import eigh
-from numpy                          import corrcoef
+from numpy                          import corrcoef, array
 
 HIC_DATA = True
 
@@ -504,7 +505,7 @@ class HiC_data(dict):
     
 
     def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
-                       by_mean=True):
+                       by_mean=True, show=False):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -663,7 +664,8 @@ class HiC_data(dict):
                         mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx
 
-    def find_compartments(self, crm=None, savefig=None, savedata=None, **kwargs):
+    def find_compartments(self, crm=None, savefig=None, savedata=None,
+                          show=False, **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -683,6 +685,7 @@ class HiC_data(dict):
         :param None savefig: path to a directory to store matrices with
            compartment predictions, one image per chromosome, stored under
            'chromosome-name.png'.
+        :param False show: show the plot
         :param None savedata: path to a new file to store compartment
            predictions, one file only.
 
@@ -749,10 +752,12 @@ class HiC_data(dict):
                     cmprt['dens'] /= meanh
                 except ZeroDivisionError:
                     cmprt['dens'] = 1.
+            if savefig or show:
+                plot_compartments(sec, first, cmprts, matrix, show,
+                                  savefig + '/chr' + crm + '.pdf')
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata)
-
 
     def write_compartments(self, savedata):
         """

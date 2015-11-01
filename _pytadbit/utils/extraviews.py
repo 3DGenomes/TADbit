@@ -43,7 +43,6 @@ def tadbit_savefig(savefig):
             ['png', 'pdf', 'ps', 'eps', 'svg']))
     plt.savefig(savefig, format=form)
 
-
 def nicer(res):
     """
     writes resolution number for human beings.
@@ -87,7 +86,6 @@ COLORHTML = {None: '<span style="color:red;">'       , # red
              10  : '<span style="color:red;">'         # red
              }
 
-
 def colorize(string, num, ftype='ansi'):
     """
     Colorize with ANSII colors a string for printing in shell. this acording to
@@ -101,7 +99,6 @@ def colorize(string, num, ftype='ansi'):
     color = COLOR if ftype=='ansi' else COLORHTML
     return '%s%s%s' % (color[num], string,
                        '\033[m' if ftype=='ansi' else '</span>')
-
 
 def color_residues(x, **kwargs):
     """
@@ -884,3 +881,64 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         else:
             plt.show()
         
+def plot_compartments(crm, first, cmprts, matrix, show, savefig):
+    heights = []
+    val = 0
+    for i in xrange(len(matrix)):
+        try:
+            val = [c['height'] for c in cmprts[crm] if c['start']==i][0]
+        except IndexError:
+            pass
+        heights.append(val-1)
+    
+    maxheights = max([abs(f) for f in heights])
+    heights = [f/maxheights for f in heights]
+
+    # definitions for the axes
+    left, width = 0.1, 0.75
+    bottom, height = 0.1, 0.75
+    bottom_h = left + height + 0.02
+    
+    rect_scatter = [left               , bottom  , width, height]
+    rect_histx   = [left               , bottom_h, width, 0.08 ]
+    rect_histy   = [left + width + 0.02, bottom  , 0.02 , 0.75  ]
+    
+    # start with a rectangular Figure
+    plt.figure(1, figsize=(14, 14))
+    
+    axim = plt.axes(rect_scatter)
+    axex = plt.axes(rect_histx, sharex=axim)
+    axey = plt.axes(rect_histy)
+    
+    im = axim.imshow(matrix, interpolation='none', cmap='coolwarm',
+                     vmin=-1, vmax=1)
+    axim.minorticks_on()
+    plt.colorbar(im, cax=axey)
+    axim.grid()
+    
+    axex.plot(first, color='green', alpha=0.5)
+    axex.plot(heights, color='black', alpha=1, linewidth=2)
+    axex.plot(heights, color='orange', alpha=1, linewidth=1)
+    axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
+                      where=np.array(first) > 0, color='olive', alpha=0.5)
+    axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
+                      where=np.array(first) < 0, color='darkgreen', alpha=0.5)
+    axex.set_yticks([0])
+    breaks = [0] + [i + 0.5 for i, (a, b) in
+                    enumerate(zip(first[1:], first[:-1]))
+                    if a * b < 0] + [len(first)]
+    axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
+                color='red' , linewidth=4, alpha=0.7)
+    axex.hlines([0]*(len(breaks)/2), breaks[1:-1:2], breaks[2::2],
+                color='blue', linewidth=4, alpha=0.7)
+    axex.grid()
+    axex.minorticks_on()
+    axex.grid(b=True, which='minor')
+    plt.setp(axex.get_xticklabels(), visible=False)
+    
+    axex.set_xlim(0,len(matrix))
+    axim.set_ylim(0,len(matrix))
+    if show:
+        plt.show()
+    if savefig:
+        tadbit_savefig(savefig)
