@@ -78,7 +78,7 @@ def _update_W(W, DB):
                 continue
 
 def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
-              verbose=False):
+              verbose=False, **kwargs):
     """
     Implementation of iterative correction Imakaev 2012
     
@@ -132,7 +132,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     return B
 
 
-def expected(hic_data, bads=None, signal_to_noise=0.05):
+def expected(hic_data, bads=None, signal_to_noise=0.05, **kwargs):
     """
     Computes the expected values by averaging observed interactions at a given
     distance in a given HiC matrix.

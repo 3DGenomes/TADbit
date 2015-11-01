@@ -6,14 +6,13 @@ November 7, 2013.
 from warnings                       import warn
 from math                           import sqrt, isnan
 from pytadbit.parsers.gzopen        import gzopen
-from pytadbit.utils.extraviews      import plot_compartments
 from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
 from collections                    import OrderedDict
 from pytadbit.utils.normalize_hic   import iterative, expected
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.utils.file_handling   import mkdir
-from numpy.linalg                   import eigh
-from numpy                          import corrcoef, array
+from numpy.linalg                   import eigh, LinAlgError
+from numpy                          import corrcoef
 
 HIC_DATA = True
 
@@ -697,7 +696,7 @@ class HiC_data(dict):
         if not self.expected:
             self.expected = expected(self, bads=self.bads, **kwargs)
         if not self.bias:
-            self.normalize_hic(iterations=0, **kwargs)
+            self.normalize_hic(iterations=0)
         if savefig:
             mkdir(savefig)
         if self.section_pos:
@@ -705,20 +704,29 @@ class HiC_data(dict):
             for sec in self.section_pos:
                 if crm and crm != sec:
                     continue
-                matrix = [[(self[i,j] / self.expected[abs(j-i)]
+                if kwargs.get('verbose', False):
+                    print 'Processing chromosome', sec
+                    warn('Processing chromosome %s' % (sec))
+                matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
                            / self.bias[i] / self.bias[j])
                           for i in xrange(*self.section_pos[sec])
                            if not i in self.bads]
                          for j in xrange(*self.section_pos[sec])
                           if not j in self.bads]
                 if not matrix: # MT chromosome will fall there
+                    warn('Chromosome %s is probably MT :)' % (sec))
                     cmprts[sec] = []
                     continue
                 for i in xrange(len(matrix)):
                     for j in xrange(i+1, len(matrix)):
                         matrix[i][j] = matrix[j][i]
                 matrix = [list(m) for m in corrcoef(matrix)]
-                evals, evect = eigh(matrix)
+                try:
+                    evals, evect = eigh(matrix)
+                except LinAlgError:
+                    warn('Chromosome %s too small to compute PC1' % (sec))
+                    cmprts[sec] = [] # Y chromosome, or so...
+                    continue
                 sort_perm = abs(evals).argsort()
                 first = list(evect[sort_perm][:,-1])
                 beg, end = self.section_pos[sec]
@@ -746,7 +754,10 @@ class HiC_data(dict):
                     cmprt['dens'] = sum(matrix) / len(matrix)
                 except ZeroDivisionError:
                     cmprt['dens'] = 0.
-            meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+            try:
+                meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+            except ZeroDivisionError:
+                meanh = 1.
             for cmprt in cmprts[sec]:
                 try:
                     cmprt['dens'] /= meanh
@@ -758,6 +769,7 @@ class HiC_data(dict):
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata)
+
 
     def write_compartments(self, savedata):
         """
