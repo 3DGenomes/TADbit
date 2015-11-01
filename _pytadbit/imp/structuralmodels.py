@@ -1006,7 +1006,7 @@ class StructuralModels(object):
 
 
     def _get_density(self, models, interval, mass_center):
-        dists = [[None] * len(models)] * (interval)
+        dists = [[None] * len(models)]
         for p in range(interval, self.nloci - interval):
             part1, part2, part3 = p - interval, p, p + interval
             if mass_center:
@@ -2507,8 +2507,11 @@ class StructuralModels(object):
                     errorp[k].append(None)
                     errorn[k].append(None)
                     continue
-                mean_part = (np_mean([p for p in part if p != None]) if average
-                             else np_median([p for p in part if p != None]))
+                try:
+                    mean_part = (np_mean([p for p in part if p != None]) if average
+                                 else np_median([p for p in part if p != None]))
+                except IndexError: # bug in new version of numpy?
+                    mean_part = float('nan')
                 new_distsk[k].append(mean_part)
                 try:
                     errorn[k].append(mean_part - 2 * np_std(

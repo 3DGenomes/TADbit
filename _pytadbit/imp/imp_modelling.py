@@ -396,8 +396,11 @@ def generate_IMPmodel(rand_init):
             model['model'].get_number_of_restraints())
 
     # Set up optimizer
-    lo = IMP.core.ConjugateGradients()
-    lo.set_model(model['model'])
+    try:
+        lo = IMP.core.ConjugateGradients()
+        lo.set_model(model['model'])
+    except: # since version 2.5, IMP goes this way
+        lo = IMP.core.ConjugateGradients(model['model'])
     o = IMP.core.MonteCarloWithLocalOptimization(lo, LSTEPS)
     o.set_return_best(True)
     fk = IMP.core.XYZ.get_xyz_keys()
