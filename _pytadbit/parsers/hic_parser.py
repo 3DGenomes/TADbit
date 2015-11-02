@@ -6,6 +6,7 @@ November 7, 2013.
 from warnings                       import warn
 from math                           import sqrt, isnan
 from pytadbit.parsers.gzopen        import gzopen
+from pytadbit.utils.extraviews      import plot_compartments
 from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
 from collections                    import OrderedDict
 from pytadbit.utils.normalize_hic   import iterative, expected
