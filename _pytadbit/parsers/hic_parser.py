@@ -743,30 +743,29 @@ class HiC_data(dict):
                 breaks = [{'start': b, 'end': breaks[i+1]}
                           for i, b in enumerate(breaks[:-1])]
                 cmprts[sec] = breaks
-        for sec in cmprts:
-            for cmprt in cmprts[sec]:
-                beg = self.section_pos[sec][0]
-                beg, end = cmprt['start'] + beg, cmprt['end'] + beg
-                matrix = [(self[i,j] / self.expected[abs(j-i)]
-                           / self.bias[i] / self.bias[j])
-                          for i in xrange(beg, end) if not i in self.bads
-                          for j in xrange(i, end) if not j in self.bads]
+                for cmprt in cmprts[sec]:
+                    beg = self.section_pos[sec][0]
+                    beg, end = cmprt['start'] + beg, cmprt['end'] + beg
+                    sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
+                                   / self.bias[i] / self.bias[j])
+                                  for i in xrange(beg, end) if not i in self.bads
+                                  for j in xrange(i, end) if not j in self.bads]
+                    try:
+                        cmprt['dens'] = sum(sec_matrix) / len(sec_matrix)
+                    except ZeroDivisionError:
+                        cmprt['dens'] = 0.
                 try:
-                    cmprt['dens'] = sum(matrix) / len(matrix)
+                    meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
                 except ZeroDivisionError:
-                    cmprt['dens'] = 0.
-            try:
-                meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
-            except ZeroDivisionError:
-                meanh = 1.
-            for cmprt in cmprts[sec]:
-                try:
-                    cmprt['dens'] /= meanh
-                except ZeroDivisionError:
-                    cmprt['dens'] = 1.
-            if savefig or show:
-                plot_compartments(sec, first, cmprts, matrix, show,
-                                  savefig + '/chr' + crm + '.pdf')
+                    meanh = 1.
+                for cmprt in cmprts[sec]:
+                    try:
+                        cmprt['dens'] /= meanh
+                    except ZeroDivisionError:
+                        cmprt['dens'] = 1.
+                if savefig or show:
+                    plot_compartments(sec, first, cmprts, matrix, show,
+                                      savefig + '/chr' + sec + '.pdf')
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata)

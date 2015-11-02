@@ -882,17 +882,22 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
             plt.show()
         
 def plot_compartments(crm, first, cmprts, matrix, show, savefig):
+    plt.close('all')
     heights = []
     val = 0
     for i in xrange(len(matrix)):
         try:
-            val = [c['height'] for c in cmprts[crm] if c['start']==i][0]
+            val = [c['dens'] for c in cmprts[crm] if c['start']==i][0]
         except IndexError:
             pass
         heights.append(val-1)
     
     maxheights = max([abs(f) for f in heights])
-    heights = [f/maxheights for f in heights]
+    try:
+        heights = [f / maxheights for f in heights]
+    except ZeroDivisionError:
+        warn('WARNING: no able to plot chromosome %s' % crm)
+        return
 
     # definitions for the axes
     left, width = 0.1, 0.75
@@ -910,7 +915,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig):
     axex = plt.axes(rect_histx, sharex=axim)
     axey = plt.axes(rect_histy)
     
-    im = axim.imshow(matrix, interpolation='none', cmap='coolwarm',
+    im = axim.imshow(matrix, interpolation='nearest', cmap='coolwarm',
                      vmin=-1, vmax=1)
     axim.minorticks_on()
     plt.colorbar(im, cax=axey)
