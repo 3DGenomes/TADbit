@@ -180,11 +180,12 @@ def filter_by_zero_count(matrx, perc_zero, silent=True):
     """
     bads = {}
     size = len(matrx)
-    size2 = size**2
+    cols = [size for i in xrange(size)]
+    for k in matrx:
+        cols[k / size] -= 1
     min_val = int(size * float(perc_zero) / 100)
-    for i, col in enumerate([[matrx.get(i+j, 0) for j in xrange(0, size2, size)]
-                             for i in xrange(size)]):
-        if col.count(0) > min_val:
+    for i, col in enumerate(cols):
+        if col > min_val:
             bads[i] = True
     if bads and not silent:
         stderr.write(('\nWARNING: removing columns having more than %s ' +
