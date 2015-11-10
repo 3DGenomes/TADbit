@@ -7,6 +7,7 @@ from warnings                       import warn
 from math                           import sqrt, isnan
 from pytadbit.parsers.gzopen        import gzopen
 from pytadbit.utils.extraviews      import plot_compartments
+from pytadbit.utils.extraviews      import plot_compartments_summary
 from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
 from collections                    import OrderedDict
 from pytadbit.utils.normalize_hic   import iterative, expected
@@ -775,17 +776,19 @@ class HiC_data(dict):
                     cmprt['dens'] /= meanh
                 except ZeroDivisionError:
                     cmprt['dens'] = 1.
-            if savefig or show:
-                plot_compartments(sec, first, cmprts, matrix, show,
-                                  savefig + '/chr' + sec + '.pdf')
             gammas = {}
             for gamma in range(101):
                 gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
                                                       breaks, cmprts[sec],
                                                       save=False)
             gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
-            _ = _find_ab_compartments(gamma, matrix, breaks, cmprts[sec],
-                                      save=True)
+            _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
+                                      cmprts[sec], save=True)
+            if savefig or show:
+                plot_compartments(sec, first, cmprts, matrix, show,
+                                  savefig + '/chr' + sec + '.pdf')
+                plot_compartments_summary(sec, cmprts, show,
+                                          savefig + '/chr' + sec + '_summ.pdf')
             
         self.compartments = cmprts
         if savedata:
@@ -799,9 +802,9 @@ class HiC_data(dict):
         :param savedata: path to a file.
         """
         out = open(savedata, 'w')
-        out.write('#CHR\tstart\tend\tdensity\tcompartment\n')
+        out.write('#CHR\tstart\tend\tdensity\ttype\n')
         out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%.2f\t%s' % (
-            sec, c['start'], c['end'], c['dens'], c['comp'])
+            sec, c['start'], c['end'], c['dens'], c['type'])
                                         for c in self.compartments[sec]])
                              for sec in self.compartments]) + '\n')
         out.close()
@@ -936,7 +939,7 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=Fa
             if cmprtsec[c]['end'] - cmprtsec[c]['start'] > 2]
         if save:
             for c in clusters[k]:
-               cmprtsec[c]['comp'] = 'A' if val < 1 else 'B'
+               cmprtsec[c]['type'] = 'A' if val < 1 else 'B'
     tt, pval = ttest_ind(dens['A'], dens['B'])
     prop = float(len(dens['A'])) / (len(dens['A']) + len(dens['B']))
     score = 5000*(prop- 0.5)**4 - 2

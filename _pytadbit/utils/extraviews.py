@@ -952,3 +952,46 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig):
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
+
+
+def plot_compartments_summary(crm, cmprts, show, savefig):
+
+    plt.close('all')
+    # start with a rectangular Figure
+    a_comp = []
+    b_comp = []
+    breaks = []
+    for cmprt in cmprts[crm]:
+        breaks.append(cmprt['start'])
+        if cmprt['type'] == 'A':
+            a_comp.append((cmprt['start'], cmprt['end']))
+        elif cmprt['type'] == 'B':
+            b_comp.append((cmprt['start'], cmprt['end']))
+    a_comp.sort()
+    b_comp.sort()
+    fig, ax = plt.subplots(figsize=(3 + 10 * len(a_comp + b_comp) / 100., 2))
+    plt.subplots_adjust(top=0.7, bottom=0.25)
+    plt.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
+               [a[1] for a in a_comp], color='red' , linewidth=6)
+    plt.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
+               [b[1] for b in b_comp], color='blue' , linewidth=6)
+    plt.vlines(breaks, [-0.3]*len(breaks), [0.3]*len(breaks), color='black',
+               linestyle=':')
+    plt.title('Chromosome %s' % crm)
+    plt.text(1, 0.55, 'A compartments')
+    plt.text(1, -0.75, 'B compartments')
+    plt.xlabel('Genomic bin')
+    plt.ylim((-1, 1))
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.set_yticks([])
+    plt.xlim((0, cmprts[crm][-1]['end']))
+    for item in [fig, ax]:
+        item.patch.set_visible(False)
+    if show:
+        plt.show()
+    if savefig:
+        tadbit_savefig(savefig)
+        plt.close('all')
