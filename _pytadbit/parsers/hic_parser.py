@@ -12,8 +12,13 @@ from collections                    import OrderedDict
 from pytadbit.utils.normalize_hic   import iterative, expected
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.utils.file_handling   import mkdir
-from numpy.linalg                   import eigh, LinAlgError
-from numpy                          import corrcoef
+from numpy.linalg                   import LinAlgError
+from numpy                          import corrcoef, nansum, array
+from scipy.cluster.hierarchy        import linkage, fcluster
+from scipy.sparse.linalg            import eigsh
+from pytadbit.utils.tadmaths        import calinski_harabasz
+from scipy.stats import ttest_ind
+
 
 HIC_DATA = True
 
@@ -505,7 +510,7 @@ class HiC_data(dict):
     
 
     def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
-                       by_mean=True, show=False):
+                       by_mean=True, show=False, silent=False):
         """
         Call filtering function, to remove artefactual columns in a given Hi-C
         matrix. This function will detect columns with very low interaction
@@ -525,10 +530,11 @@ class HiC_data(dict):
            :func:`pytadbit.utils.hic_filtering.filter_by_mean` function
 
         """
-        self.bads = filter_by_zero_count(self, perc_zero, silent=False)
+        self.bads = filter_by_zero_count(self, perc_zero, silent=silent)
         if by_mean:
-            self.bads.update(filter_by_mean(self, draw_hist=draw_hist,
-                                            savefig=savefig, bads=self.bads))
+            self.bads.update(filter_by_mean(
+                self, draw_hist=draw_hist, silent=silent,
+                savefig=savefig, bads=self.bads))
 
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False):
         """
@@ -690,82 +696,97 @@ class HiC_data(dict):
            predictions, one file only.
 
         TODO: this is really slow...
+
+        Notes: building the distance matrix using the amount of interactions
+               instead of the mean correlation, gives generally worse results.
+        
         """
         if not self.bads:
             self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
-                                by_mean=False)
+                                by_mean=False, silent=True)
         if not self.expected:
             self.expected = expected(self, bads=self.bads, **kwargs)
         if not self.bias:
             self.normalize_hic(iterations=0)
         if savefig:
             mkdir(savefig)
-        if self.section_pos:
-            cmprts = {}
-            for sec in self.section_pos:
-                if crm and crm != sec:
-                    continue
-                if kwargs.get('verbose', False):
-                    print 'Processing chromosome', sec
-                    warn('Processing chromosome %s' % (sec))
-                matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
-                           / self.bias[i] / self.bias[j])
-                          for i in xrange(*self.section_pos[sec])
-                           if not i in self.bads]
-                         for j in xrange(*self.section_pos[sec])
-                          if not j in self.bads]
-                if not matrix: # MT chromosome will fall there
-                    warn('Chromosome %s is probably MT :)' % (sec))
-                    cmprts[sec] = []
-                    continue
-                for i in xrange(len(matrix)):
-                    for j in xrange(i+1, len(matrix)):
-                        matrix[i][j] = matrix[j][i]
-                matrix = [list(m) for m in corrcoef(matrix)]
+
+        cmprts = {}
+        for sec in self.section_pos:
+            if crm and crm != sec:
+                continue
+            if kwargs.get('verbose', False):
+                print 'Processing chromosome', sec
+                warn('Processing chromosome %s' % (sec))
+            matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
+                       / self.bias[i] / self.bias[j])
+                      for i in xrange(*self.section_pos[sec])
+                       if not i in self.bads]
+                     for j in xrange(*self.section_pos[sec])
+                      if not j in self.bads]
+            if not matrix: # MT chromosome will fall there
+                warn('Chromosome %s is probably MT :)' % (sec))
+                cmprts[sec] = []
+                continue
+            for i in xrange(len(matrix)):
+                for j in xrange(i+1, len(matrix)):
+                    matrix[i][j] = matrix[j][i]
+            matrix = [list(m) for m in corrcoef(matrix)]
+            try:
+                # This eighs is very very fast, only ask for one eigvector
+                evals, evect = eigsh(array(matrix), k=1)
+            except LinAlgError:
+                warn('Chromosome %s too small to compute PC1' % (sec))
+                cmprts[sec] = [] # Y chromosome, or so...
+                continue
+            first = list(evect[:,-1])
+            beg, end = self.section_pos[sec]
+            bads = [k - beg for k in self.bads if beg <= k <= end]
+            _ = [first.insert(b, 0) for b in bads]
+            _ = [matrix.insert(b, [float('nan')] * len(matrix[0]))
+                 for b in bads]
+            _ = [matrix[i].insert(b, float('nan'))
+                 for b in bads for i in xrange(len(first))]
+            breaks = [0] + [i for i, (a, b) in
+                            enumerate(zip(first[1:], first[:-1]))
+                            if a*b < 0] + [len(first)]
+            breaks = [{'start': b, 'end': breaks[i+1]}
+                      for i, b in enumerate(breaks[:-1])]
+            cmprts[sec] = breaks
+            
+            # calculate compartment internat density
+            for k, cmprt in enumerate(cmprts[sec]):
+                beg = self.section_pos[sec][0]
+                beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg
+                sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
+                               / self.bias[i] / self.bias[j])
+                              for i in xrange(beg1, end1) if not i in self.bads
+                              for j in xrange(i, end1) if not j in self.bads]
                 try:
-                    evals, evect = eigh(matrix)
-                except LinAlgError:
-                    warn('Chromosome %s too small to compute PC1' % (sec))
-                    cmprts[sec] = [] # Y chromosome, or so...
-                    continue
-                sort_perm = abs(evals).argsort()
-                first = list(evect[sort_perm][:,-1])
-                beg, end = self.section_pos[sec]
-                bads = [k - beg for k in self.bads if beg <= k <= end]
-                _ = [first.insert(b, 0) for b in bads]
-                _ = [matrix.insert(b, [float('nan')]*len(matrix[0]))
-                     for b in bads]
-                _ = [matrix[i].insert(b, float('nan'))
-                     for b in bads for i in xrange(len(first))]
-                breaks = [0] + [i for i, (a, b) in
-                                enumerate(zip(first[1:], first[:-1]))
-                                if a*b < 0] + [len(first)]
-                breaks = [{'start': b, 'end': breaks[i+1]}
-                          for i, b in enumerate(breaks[:-1])]
-                cmprts[sec] = breaks
-                for cmprt in cmprts[sec]:
-                    beg = self.section_pos[sec][0]
-                    beg, end = cmprt['start'] + beg, cmprt['end'] + beg
-                    sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
-                                   / self.bias[i] / self.bias[j])
-                                  for i in xrange(beg, end) if not i in self.bads
-                                  for j in xrange(i, end) if not j in self.bads]
-                    try:
-                        cmprt['dens'] = sum(sec_matrix) / len(sec_matrix)
-                    except ZeroDivisionError:
-                        cmprt['dens'] = 0.
-                try:
-                    meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+                    cmprt['dens'] = sum(sec_matrix) / len(sec_matrix)
                 except ZeroDivisionError:
-                    meanh = 1.
-                for cmprt in cmprts[sec]:
-                    try:
-                        cmprt['dens'] /= meanh
-                    except ZeroDivisionError:
-                        cmprt['dens'] = 1.
-                if savefig or show:
-                    plot_compartments(sec, first, cmprts, matrix, show,
-                                      savefig + '/chr' + sec + '.pdf')
+                    cmprt['dens'] = 0.
+            try:
+                meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+            except ZeroDivisionError:
+                meanh = 1.
+            for cmprt in cmprts[sec]:
+                try:
+                    cmprt['dens'] /= meanh
+                except ZeroDivisionError:
+                    cmprt['dens'] = 1.
+            if savefig or show:
+                plot_compartments(sec, first, cmprts, matrix, show,
+                                  savefig + '/chr' + sec + '.pdf')
+            gammas = {}
+            for gamma in range(101):
+                gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
+                                                      breaks, cmprts[sec],
+                                                      save=False)
+            gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
+            _ = _find_ab_compartments(gamma, matrix, breaks, cmprts[sec],
+                                      save=True)
+            
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata)
@@ -778,9 +799,9 @@ class HiC_data(dict):
         :param savedata: path to a file.
         """
         out = open(savedata, 'w')
-        out.write('#CHR\tstart\tend\tdensity\n')
-        out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%f' % (
-            sec, c['start'], c['end'], c['dens'])
+        out.write('#CHR\tstart\tend\tdensity\tcompartment\n')
+        out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%.2f\t%s' % (
+            sec, c['start'], c['end'], c['dens'], c['comp'])
                                         for c in self.compartments[sec]])
                              for sec in self.compartments]) + '\n')
         out.close()
@@ -855,3 +876,73 @@ class HiC_data(dict):
                     yield ([self[i, j] for j in xrange(start1, i)] +
                            [0] + 
                            [self[i, j] for j in xrange(i + 1, end1)])
+
+
+def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=False):
+    # function to convert correlation into distances
+    gamma += 1
+    func = lambda x: -abs(x)**gamma / x
+    funczero = lambda x: 0.0
+    # calculate distance_matrix
+    dist_matrix = [[0 for _ in xrange(len(breaks))]
+                   for _ in xrange(len(breaks))]
+    scores = {}
+    for k, cmprt in enumerate(cmprtsec):
+        beg1, end1 = cmprt['start'], cmprt['end']
+        diff1 = end1 - beg1
+        for l, cmprt2 in enumerate(cmprtsec):
+            if k >= l:
+                if k == l:
+                    scores[(k,l)] = dist_matrix[k][l] = -1
+                else:
+                    scores[(k,l)] = dist_matrix[k][l]= dist_matrix[l][k]
+                continue
+            beg2, end2 = cmprt2['start'], cmprt2['end']
+            val = nansum([matrix[i][j] for i in xrange(beg1, end1)
+                          for j in xrange(beg2, end2)]) / (end2 - beg2) / diff1
+            try:
+                scores[(k,l)] = dist_matrix[k][l] = func(val)
+            except ZeroDivisionError:
+                scores[(k,l)] = dist_matrix[k][l] = funczero(val)
+    # cluster compartments according to their correlation score
+    clust = linkage(dist_matrix, method='ward')
+    # find best place to divide dendrogram (only check 1, 2, 3 or 4 clusters)
+    solutions = {}
+    for k in clust[:,2][-3:]:
+        clusters = {}
+        _ = [clusters.setdefault(j, []).append(i) for i, j in
+             enumerate(fcluster(clust, k, criterion='distance'))]
+        solutions[k] = {'out': clusters}
+        solutions[k]['score'] = calinski_harabasz(scores, clusters)
+    try:
+        # take best cluster according to calinski_harabasz score
+        clusters = [solutions[s] for s in sorted(
+            solutions, key=lambda x: solutions[x]['score'])
+                    if solutions[s]['score']>0][-1]['out']
+    except IndexError:
+        warn('WARNING: compartment clustering is not clear. Skipping')
+        return (0,0,0,0)
+    if len(clusters) != 2:
+        warn('WARNING: compartment clustering is too clear. Skipping')
+        return (0,0,0,0)
+    # labelling compartments. A compartments shall have lower
+    # mean intra-interactions
+    dens = {}
+    for k in clusters:
+        val = sum([cmprtsec[c]['dens']
+                   for c in clusters[k]]) / len(clusters[k])
+        dens['A' if val < 1 else 'B'] = [
+            cmprtsec[c]['dens'] for c in clusters[k]
+            if cmprtsec[c]['end'] - cmprtsec[c]['start'] > 2]
+        if save:
+            for c in clusters[k]:
+               cmprtsec[c]['comp'] = 'A' if val < 1 else 'B'
+    tt, pval = ttest_ind(dens['A'], dens['B'])
+    prop = float(len(dens['A'])) / (len(dens['A']) + len(dens['B']))
+    score = 5000*(prop- 0.5)**4 - 2
+    if verbose:
+        print 'g:%5s %5s%% pen:%7s tt:%7s score:%7s pv:%s' % (
+            gamma - 1, round(prop*100, 1), round(score, 3), round(tt, 3),
+            round(score + tt, 3), pval)
+    return score + tt, tt, prop
+

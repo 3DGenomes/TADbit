@@ -920,6 +920,10 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig):
     axim.minorticks_on()
     plt.colorbar(im, cax=axey)
     axim.grid()
+
+    # scale first PC
+    mfirst = max(max(first), abs(min(first)))
+    first = [f/mfirst for f in first]
     
     axex.plot(first, color='green', alpha=0.5)
     axex.plot(heights, color='black', alpha=1, linewidth=2)
@@ -947,3 +951,4 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig):
         plt.show()
     if savefig:
         tadbit_savefig(savefig)
+        plt.close('all')

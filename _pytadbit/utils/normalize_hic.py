@@ -99,13 +99,10 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     remove = [i in bads for i in xrange(size)]
     remove = remove or tuple([int(hic_data[i+i*size]==0) for i in xrange(size)])
     W = {}
-    for i in xrange(size):
-        if remove[i]:
-            continue
+    valids = [i for i in xrange(size) if not remove[i]]
+    for i in valids:
         W[i] = {}
-        for j in xrange(size):
-            if remove[j]:
-                continue
+        for j in valids:
             if hic_data[i, j]:
                 W[i][j] = hic_data[i, j]
     B = dict([(b, 1.) for b in W])
