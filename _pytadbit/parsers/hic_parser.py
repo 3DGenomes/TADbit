@@ -940,7 +940,10 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=Fa
         if save:
             for c in clusters[k]:
                 cmprtsec[c]['type'] = 'A' if val < 1 else 'B'
-    tt, pval = ttest_ind(dens['A'], dens['B'])
+    try:
+        tt, pval = ttest_ind(dens['A'], dens['B'])
+    except ZeroDivisionError:
+        return (0,0,0,0)
     prop = float(len(dens['A'])) / (len(dens['A']) + len(dens['B']))
     score = 5000*(prop- 0.5)**4 - 2
     if verbose:
