@@ -954,7 +954,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig):
         plt.close('all')
 
 
-def plot_compartments_summary(crm, cmprts, show, savefig):
+def plot_compartments_summary(crm, cmprts, show, savefig, title=None):
 
     plt.close('all')
     # start with a rectangular Figure
@@ -963,13 +963,19 @@ def plot_compartments_summary(crm, cmprts, show, savefig):
     breaks = []
     for cmprt in cmprts[crm]:
         breaks.append(cmprt['start'])
-        if cmprt['type'] == 'A':
-            a_comp.append((cmprt['start'], cmprt['end']))
-        elif cmprt['type'] == 'B':
-            b_comp.append((cmprt['start'], cmprt['end']))
+        try:
+            if cmprt['type'] == 'A':
+                a_comp.append((cmprt['start'], cmprt['end']))
+            elif cmprt['type'] == 'B':
+                b_comp.append((cmprt['start'], cmprt['end']))
+        except KeyError:
+            if cmprt['dens'] > 1:
+                a_comp.append((cmprt['start'], cmprt['end']))
+            else:
+                b_comp.append((cmprt['start'], cmprt['end']))            
     a_comp.sort()
     b_comp.sort()
-    fig, ax = plt.subplots(figsize=(3 + 10 * len(a_comp + b_comp) / 100., 2))
+    fig, ax = plt.subplots(figsize=(3 + cmprt['end'] / 100., 2))
     plt.subplots_adjust(top=0.7, bottom=0.25)
     plt.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
                [a[1] for a in a_comp], color='red' , linewidth=6)
@@ -977,7 +983,7 @@ def plot_compartments_summary(crm, cmprts, show, savefig):
                [b[1] for b in b_comp], color='blue' , linewidth=6)
     plt.vlines(breaks, [-0.3]*len(breaks), [0.3]*len(breaks), color='black',
                linestyle=':')
-    plt.title('Chromosome %s' % crm)
+    plt.title(title if title else ('Chromosome %s' % crm))
     plt.text(1, 0.55, 'A compartments')
     plt.text(1, -0.75, 'B compartments')
     plt.xlabel('Genomic bin')

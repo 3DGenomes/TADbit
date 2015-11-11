@@ -781,6 +781,7 @@ class HiC_data(dict):
                 gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
                                                       breaks, cmprts[sec],
                                                       save=False)
+                print gamma, gammas[gamma]
             gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
             _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
                                       cmprts[sec], save=True)
@@ -803,10 +804,16 @@ class HiC_data(dict):
         """
         out = open(savedata, 'w')
         out.write('#CHR\tstart\tend\tdensity\ttype\n')
-        out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%.2f\t%s' % (
-            sec, c['start'], c['end'], c['dens'], c['type'])
-                                        for c in self.compartments[sec]])
-                             for sec in self.compartments]) + '\n')
+        try:
+            out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%.2f\t%s' % (
+                sec, c['start'], c['end'], c['dens'], c['type'])
+                                            for c in self.compartments[sec]])
+                                 for sec in self.compartments]) + '\n')
+        except KeyError:
+            out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%.2f\t%s' % (
+                sec, c['start'], c['end'], c['dens'], '')
+                                            for c in self.compartments[sec]])
+                                 for sec in self.compartments]) + '\n')
         out.close()
         
 
