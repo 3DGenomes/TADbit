@@ -467,7 +467,7 @@ class Chromosome(object):
             raise Exception('resolution param is needed\n')
 
 
-    def find_tad(self, experiments, weights=None, name=None, n_cpus=1,
+    def find_tad(self, experiments, name=None, n_cpus=1,
                  verbose=True, max_tad_size="max", heuristic=True,
                  batch_mode=False, **kwargs):
         """
