@@ -771,7 +771,7 @@ tadbit
       return;
    }
 
-   const int MAXBREAKS = nbrks ? nbrks : n/5;
+   const int MAXBREAKS = n/5;
 
    _cache_index = (int *) malloc(n*n * sizeof(int));
    _max_cache_index = N+1;
