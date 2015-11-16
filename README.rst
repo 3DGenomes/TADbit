@@ -49,11 +49,6 @@ TADbit training
 Next editions
 -------------
 
-* **November 15th to November 24th 2015**: `CSDM 2015
-  <http://gtpb.igc.gulbenkian.pt/bicourses/CSDM15/>`_ at the
-  `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
-  training programme Oeiras (Portugal)
-
 Past editions
 -------------
 
