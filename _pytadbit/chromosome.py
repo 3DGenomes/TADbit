@@ -1,3 +1,4 @@
+
 """
 26 Nov 2012
 
@@ -46,7 +47,7 @@ def load_chromosome(in_f, fast=2):
     except KeyError:
         exp_order = dico['experiments'].keys()
     for name in exp_order:
-        xpr = Experiment(name, dico['experiments'][name]['resolution'], 
+        xpr = Experiment(name, dico['experiments'][name]['resolution'],
                          no_warn=True)
         xpr.tads        = dico['experiments'][name]['tads']
         xpr.norm        = dico['experiments'][name]['wght']

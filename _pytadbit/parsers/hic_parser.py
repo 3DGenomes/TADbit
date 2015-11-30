@@ -887,9 +887,9 @@ class HiC_data(dict):
                            [0] + 
                            [self[i, j] for j in xrange(i + 1, end1)])
 
-
 def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=False):
     # function to convert correlation into distances
+
     gamma += 1
     func = lambda x: -abs(x)**gamma / x
     funczero = lambda x: 0.0
@@ -900,20 +900,17 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=Fa
     for k, cmprt in enumerate(cmprtsec):
         beg1, end1 = cmprt['start'], cmprt['end']
         diff1 = end1 - beg1
-        for l, cmprt2 in enumerate(cmprtsec):
-            if k >= l:
-                if k == l:
-                    scores[(k,l)] = dist_matrix[k][l] = -1
-                else:
-                    scores[(k,l)] = dist_matrix[k][l]= dist_matrix[l][k]
-                continue
-            beg2, end2 = cmprt2['start'], cmprt2['end']
+        scores[(k,k)] = dist_matrix[k][k] = -1
+        for l in xrange(k + 1, len(cmprtsec)):
+            beg2, end2 = cmprtsec[l]['start'], cmprtsec[l]['end']
             val = nansum([matrix[i][j] for i in xrange(beg1, end1)
                           for j in xrange(beg2, end2)]) / (end2 - beg2) / diff1
             try:
-                scores[(k,l)] = dist_matrix[k][l] = func(val)
+                scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = func(val)
             except ZeroDivisionError:
-                scores[(k,l)] = dist_matrix[k][l] = funczero(val)
+                scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = funczero(val)
+            if np.isnan(scores[(k,l)]):
+                scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = funczero(0)
     # cluster compartments according to their correlation score
     clust = linkage(dist_matrix, method='ward')
     # find best place to divide dendrogram (only check 1, 2, 3 or 4 clusters)
@@ -930,9 +927,11 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=Fa
             solutions, key=lambda x: solutions[x]['score'])
                     if solutions[s]['score']>0][-1]['out']
     except IndexError:
+        print('WARNING: compartment clustering is not clear. Skipping')
         warn('WARNING: compartment clustering is not clear. Skipping')
         return (0,0,0,0)
     if len(clusters) != 2:
+        print('WARNING: compartment clustering is too clear. Skipping')
         warn('WARNING: compartment clustering is too clear. Skipping')
         return (0,0,0,0)
     # labelling compartments. A compartments shall have lower
