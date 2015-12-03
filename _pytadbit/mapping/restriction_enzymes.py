@@ -30,6 +30,46 @@ def count_re_fragments(fnam):
     return frag_count
 
 
+
+def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
+    """
+    map all restriction enzyme (RE) sites of a given enzyme in a genome.
+    Position of a RE site is defined as the genomic coordinate of the first
+    nucleotide after the first cut (genomic coordinate starts at 1).
+    In the case of HindIII the genomic coordinate is this one:
+
+    123456 789...
+           |
+           v
+    -----A|AGCT T--------------
+    -----T TCGA|A--------------
+
+    In this example the coordinate of the RE site would be 7.
+
+
+    :param enzyme_name: name of the enzyme to map (upper/lower case are
+       important)
+    :param genome_seq: a dictionary containing the genomic sequence by
+       chromosome
+    """
+    enzyme      = RESTRICTION_ENZYMES[enzyme_name]
+    enz_pattern = compile(enzyme.replace('|', ''))
+    enz_cut     = enzyme.index('|') + 1 # re search starts at 0
+    frags = {}
+    count = 0
+    for crm in genome_seq:
+        seq = genome_seq[crm]
+        frags[crm] = [1]
+        for match in enz_pattern.finditer(seq):
+            pos = match.start() + enz_cut
+            frags[crm].append(pos)
+            count += 1
+        # at the end of last chunk we add the chromosome length
+        frags[crm].append(len(seq))
+    if verbose:
+        print 'Found %d RE sites' % count
+    return frags
+
 def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     """
     map all restriction enzyme (RE) sites of a given enzyme in a genome.

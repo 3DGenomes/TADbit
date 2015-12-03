@@ -650,9 +650,11 @@ class TestTadbit(unittest.TestCase):
 
             # GET INTERSECTION
             from pytadbit.mapping.mapper import get_intersection
-            get_intersection('lala1-%s~' % (ali), 'lala2-%s~' % (ali), 'lala-%s~' % (ali))
+            get_intersection('lala1-%s~' % (ali), 'lala2-%s~' % (ali),
+                             'lala-%s~' % (ali))
             # FILTER
-            masked = filter_reads('lala-%s~' % (ali), verbose=False, fast=(ali=='map'))
+            masked = filter_reads('lala-%s~' % (ali), verbose=False,
+                                  fast=(ali=='map'))
             self.assertEqual(masked[1]['reads'], 1000)
             self.assertEqual(masked[2]['reads'], 1000)
             self.assertEqual(masked[3]['reads'], 1000)
@@ -666,9 +668,10 @@ class TestTadbit(unittest.TestCase):
             else:
                 self.assertTrue (masked[5]['reads'] > 1000)
             self.assertEqual(masked[9]['reads'], 1000)
-        apply_filter('lala-map~', 'lala-map-filt~', masked, filters=[1], reverse=True)
-        self.assertEqual(len([True for l in open('lala-map-filt~') if not l.startswith('#')]),
-                         1000)
+        apply_filter('lala-map~', 'lala-map-filt~', masked, filters=[1],
+                     reverse=True, verbose=False)
+        self.assertEqual(len([True for l in open('lala-map-filt~')
+                              if not l.startswith('#')]), 1000)
         d = plot_iterative_mapping('lala1-map~', 'lala2-map~')
         self.assertEqual(d[0][1], 6000)
 

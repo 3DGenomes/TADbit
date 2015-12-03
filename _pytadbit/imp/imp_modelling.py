@@ -19,10 +19,6 @@ import IMP.display
 from IMP.container import ListSingletonContainer
 from IMP import Model
 from IMP import FloatKey
-try:
-    import IMP.kernel
-except ImportError:
-    pass
 
 IMP.set_check_level(IMP.NONE)
 IMP.set_log_level(IMP.SILENT)
@@ -355,11 +351,7 @@ def generate_IMPmodel(rand_init):
         #p.set_value(model['rk'], RADIUS)
 
     # Restraints between pairs of LOCI proportional to the PDIST
-    try:
-        # version: 847e65d44da7d06718bcad366b09264c818752d5
-        model['pps']  = IMP.ParticlePairs()
-    except AttributeError:
-        model['pps']  = IMP.kernel.ParticlePairsTemp()
+    model['pps']  = IMP.kernel.ParticlePairsTemp()
 
     # CALL BIG FUNCTION
     if rand_init == 1 and verbose == 0.5:
