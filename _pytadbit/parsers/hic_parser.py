@@ -14,7 +14,7 @@ from pytadbit.utils.normalize_hic   import iterative, expected
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.utils.file_handling   import mkdir
 from numpy.linalg                   import LinAlgError
-from numpy                          import corrcoef, nansum, array
+from numpy                          import corrcoef, nansum, array, isnan
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.sparse.linalg            import eigsh
 from pytadbit.utils.tadmaths        import calinski_harabasz
@@ -909,7 +909,7 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=Fa
                 scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = func(val)
             except ZeroDivisionError:
                 scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = funczero(val)
-            if np.isnan(scores[(k,l)]):
+            if isnan(scores[(k,l)]):
                 scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = funczero(0)
     # cluster compartments according to their correlation score
     clust = linkage(dist_matrix, method='ward')

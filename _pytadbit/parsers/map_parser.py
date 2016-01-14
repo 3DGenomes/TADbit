@@ -16,9 +16,12 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
     Parse map files
 
     Keep a summary of the results into 2 tab-separated files that will contain 6
-       columns: read ID, Chromosome, position, strand (either 0 or 1), mapped
-       sequence lebgth, position of the closest upstream RE site, position of
-       the closest downstream RE site
+    columns: read ID, Chromosome, position, strand (either 0 or 1), mapped
+    sequence lebgth, position of the closest upstream RE site, position of
+    the closest downstream RE site.
+
+    The position of reads mapped on reverse strand will be computed from the end of
+    the read (original position + read length - 1)
 
     :param f_names1: a list of path to sam/bam files corresponding to the
        mapping of read1, can also  be just one file
