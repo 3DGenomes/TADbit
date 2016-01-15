@@ -55,18 +55,23 @@ def parse_tads(handler):
     elif isfile(handler):
         for line in open(handler):
             if line.startswith('#'): continue
-            pos, start, end, score = line.split()
+            try:
+                pos, start, end, score = line.split()
+            except ValueError:
+                pos, start, end, score, dens = line.split()
             start = float(start)
             end   = float(end)
             pos   = int(pos)
+            dens  = float(dens)
             try:
                 score = float(score)
             except ValueError: # last one
                 score = 10.0
-            tads[pos] = {'start': start,
-                         'end'  : end,
-                         'brk'  : end,
-                         'score': score}
+            tads[pos] = {'start' : start,
+                         'end'   : end,
+                         'brk'   : end,
+                         'score' : score,
+                         'height': dens}
     else:
         raise Exception('File %s not found\n' % (handler))
     return tads, weights
