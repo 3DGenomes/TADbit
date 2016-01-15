@@ -35,6 +35,12 @@ Documentation
 * `TADbit documentation <http://3dgenomes.github.io/TADbit/>`_
 * `Summary of TADbit classes and functions <https://github.com/3DGenomes/tadbit/blob/master/doc/summary.rst>`_
 
+Citation
+--------
+Serra, F., Baù, D., Filion, G., & Marti-Renom, M. A. (2016).
+**Structural features of the fly chromatin colors revealed by automatic three-dimensional modeling.**
+*bioRxiv*. `doi:10.1101/036764 <http://biorxiv.org/cgi/content/short/036764>`_
+
 Feedback
 --------
 If you have any question remaining, we would be happy to answer informally:
