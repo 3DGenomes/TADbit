@@ -912,7 +912,12 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=Fa
             if isnan(scores[(k,l)]):
                 scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = funczero(0)
     # cluster compartments according to their correlation score
-    clust = linkage(dist_matrix, method='ward')
+    try:
+        clust = linkage(dist_matrix, method='ward')
+    except UnboundLocalError:
+        print('WARNING: Chromosome probably too small. Skipping')
+        warn('WARNING: Chromosome probably too small. Skipping')
+        return (0,0,0,0)
     # find best place to divide dendrogram (only check 1, 2, 3 or 4 clusters)
     solutions = {}
     for k in clust[:,2][-3:]:
