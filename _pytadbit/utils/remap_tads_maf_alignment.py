@@ -1,17 +1,13 @@
 """
-22 Jan 2014
+12 Jan 2016
 
-This script uses ensembl REST service to convert genomic coordinates of one
+This script uses MAF alignment files to convert genomic coordinates of one
 species to another species.
 As borders from one chromosome in one species might be distribute along several
 chromosome in an other species, this script needs to be used over whole genomes.
-
-WARNING: Ensembl REST server is beta and only provides for latest genome builts
-WARNING: needs internet :)
 """
 
-import httplib2, sys, re, os
-import json
+import sys, re, os
 from os                           import listdir
 from os.path                      import isdir
 from pytadbit.utils.file_handling import check_pik
@@ -20,7 +16,7 @@ from time                         import sleep, time
 from pytadbit.parsers.tad_parser  import parse_tads
 
 
-GOOD_CRM = re.compile("^[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$")
+GOOD_CRM = re.compile("^(?:chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$")
 
 
 def decode_resolution(res):
@@ -107,6 +103,123 @@ def get_best_map_coord(map_list):
             'start'  : map_list[best_mapped]['mapped']['start'],
             'end'    : map_list[best_mapped]['mapped']['end'],
             'strand' : map_list[best_mapped]['mapped']['strand']}
+
+
+def get_synteny_defitinion(fname):
+    """
+    From a tab separated file with this columns:
+     1- Reference chromosome name
+     2- Reference start position
+     3- Reference end position
+     4- Target chromosome name
+     5- Target start position
+     6- Target end position
+     7- Target orientation
+
+    :param fname: path to file with columns
+
+    :returns: dictionary with synthenic block coordinates
+    """
+    synteny = {}
+    for line in open(fname):
+        if line.startswith('#'):
+            continue
+        at_crm, at_beg, at_end, to_crm, to_beg, to_end, to_std = line.split()
+        at_beg, at_end, to_beg, to_end, to_std = map(
+            int, [at_beg, at_end, to_beg, to_end, to_std])
+        synteny.setdefault(at_crm, []).append({'from': {'crm': at_crm,
+                                                        'beg': at_beg,
+                                                        'end': at_end},
+                                               'targ': {'crm': to_crm,
+                                                        'beg': to_beg,
+                                                        'end': to_end,
+                                                        'std': to_std}})
+    return synteny
+
+def get_alignments(seed, targ, maf_file):
+    """
+    From a MAF file extract alignment of a pair of species. Tris to extend
+    the alignment taking advantage of missing species.
+    """
+    species = [seed, targ]
+    # get alignments
+    pre_alignments = []
+    maf_handler = open(maf_file)
+    while True:
+        try:
+            found = False
+            while True:
+                line = maf_handler.next()
+                if not line.startswith('s '):
+                    if line.startswith('a '):
+                        ali = {}
+                        break
+                    if line.startswith('i '):
+                        if not spe in species:
+                            continue
+                        if '_' in crm or not GOOD_CRM.match(crm):
+                            continue
+                        if spe in ali:
+                            raise Exception()
+                        found = True
+                        ali[spe] = (crm, pos, slen, strand, seq,
+                                    ' '.join(line.split()[-4:]))
+                    continue
+                _, spe_crm, pos, slen, strand, clen, seq = line.split()
+                spe, crm = spe_crm.split('.', 1)
+                slen = int(slen)
+                if strand == '+':
+                    pos  = int(pos)
+                    strand = 1
+                else:
+                    pos = int(clen) - int(pos)
+                    strand = -1
+                if spe == seed:
+                    ali[spe] = crm, pos, slen, strand, seq, 'C 0 C 0'
+            if found:
+                pre_alignments.append(ali)
+        except StopIteration:
+            break
+
+    # reduce alignments to our species, and merge chunks if possible
+    alignments = []
+    dico1 = {}
+    for k, dico2 in enumerate(pre_alignments[1:]):
+        if not dico1:
+            dico1 = pre_alignments[k].copy()
+        species1 = sorted(dico1.keys())
+        species2 = sorted(dico2.keys())
+        if species1 == species2:
+            vals2  = [dico2[spe] for spe in species2]
+            if all([val[-1].startswith('C 0') for val in vals2]):
+                # sumup sequences and lengths
+                for spe in dico1:
+                    crm, pos, slen1, strand, seq1, _    = dico1[spe]
+                    _  , _  , slen2, _     , seq2, comp = dico2[spe]
+                    dico1[spe] = crm, pos, slen1 + slen2, strand, seq1 + seq2, comp
+                continue
+        alignments.append(dico1)
+        dico1 = dico2
+    alignments.append(dico1)
+
+    bads = []
+    for i in xrange(len(alignments)):
+        try:
+            alignments[i] = {'from': {'crm': alignments[i][seed][0],
+                                      'beg': alignments[i][seed][1],
+                                      'len': alignments[i][seed][2],
+                                      'dir': alignments[i][seed][3],
+                                      'seq': alignments[i][seed][4]},
+                             'targ': {'crm': alignments[i][targ][0],
+                                      'beg': alignments[i][targ][1],
+                                      'len': alignments[i][targ][2],
+                                      'dir': alignments[i][targ][3],
+                                      'seq': alignments[i][targ][4]}}
+        except KeyError:
+            bads.append(i)
+    for i in bads[::-1]:
+        alignments.pop(i)
+    return alignments
 
 
 def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
@@ -487,3 +600,4 @@ def save_new_genome(genome, trace, check=False, target_species=None, rootdir='./
             os.mkdir(crmdir)
         new_crm.save_chromosome(os.path.join(crmdir, crm + '.tdb'))
     
+
