@@ -136,6 +136,45 @@ def get_synteny_defitinion(fname):
                                                         'std': to_std}})
     return synteny
 
+
+def filter_non_syntenic_alignments(synteny_file):
+    synteny = get_synteny_defitinion(synteny_file)
+    goods = set()
+    for at_crm in synteny:
+        for blk in synteny[at_crm]:
+            to_crm = blk['targ']['crm']
+            # to_std = blk['targ']['std']
+            to_pos = set(range(blk['targ']['beg']/100, blk['targ']['end']/100 + 1))
+            at_pos = set(range(blk['from']['beg']/100, blk['from']['end']/100 + 1))
+            for num, ali in enumerate(ALIGNMENTS):
+                if ali['from']['crm'] != at_crm:
+                    continue
+                if not at_pos.intersection(set(range(ali['from']['beg']/100,
+                                                     ali['from']['end']/100 + 1))):
+                    continue
+                # print 'ok: %3s %11s %11s [%5s] %2s %3s %11s %11s' % (
+                #     ali['targ']['crm'], ali['targ']['beg'], ali['targ']['end'],
+                #     ali['targ']['len'], ali['targ']['std'],
+                #     ali['from']['crm'], ali['from']['beg'], ali['from']['end'])
+                if ali['targ']['crm'] != to_crm:
+                    continue
+                # if ali['targ']['crm'] != to_crm or ali['targ']['std'] != to_std:
+                #     print " " * 39, "'-> STRAND!!!"
+                #     continue
+                if not to_pos.intersection(set(range(ali['targ']['beg']/100,
+                                                     ali['targ']['end']/100 + 1))):
+                    print 'HA! %3s %11s %11s [%5s] %2s %3s %11s %11s' % (
+                        blk['targ']['crm'], blk['targ']['beg'], blk['targ']['end'],
+                        blk['targ']['end'] - blk['targ']['beg'], blk['targ']['std'],
+                        blk['from']['crm'], blk['from']['beg'], blk['from']['end'])
+                    print '=> POSITION??'
+                    continue
+                goods.add(num)
+    for num in xrange(len(ALIGNMENTS) - 1, -1, -1):
+        if not num in goods:
+            ALIGNMENTS.pop(num)
+                
+
 def get_alignments(seed, targ, maf_file):
     """
     From a MAF file extract alignment of a pair of species. Tris to extend
@@ -166,7 +205,10 @@ def get_alignments(seed, targ, maf_file):
                                     ' '.join(line.split()[-4:]))
                     continue
                 _, spe_crm, pos, slen, strand, clen, seq = line.split()
-                spe, crm = spe_crm.split('.', 1)
+                try:
+                    spe, crm = spe_crm.split('.chr', 1)
+                except ValueError:
+                    spe, crm = spe_crm.split('.', 1)
                 slen = int(slen)
                 if strand == '+':
                     pos  = int(pos)
@@ -205,16 +247,19 @@ def get_alignments(seed, targ, maf_file):
     bads = []
     for i in xrange(len(alignments)):
         try:
-            alignments[i] = {'from': {'crm': alignments[i][seed][0],
-                                      'beg': alignments[i][seed][1],
-                                      'len': alignments[i][seed][2],
-                                      'dir': alignments[i][seed][3],
-                                      'seq': alignments[i][seed][4]},
-                             'targ': {'crm': alignments[i][targ][0],
-                                      'beg': alignments[i][targ][1],
-                                      'len': alignments[i][targ][2],
-                                      'dir': alignments[i][targ][3],
-                                      'seq': alignments[i][targ][4]}}
+            alignments[i] = {
+                'from': {'crm': alignments[i][seed][0],
+                         'beg': alignments[i][seed][1],
+                         'end': alignments[i][seed][1] + alignments[i][seed][2],
+                         'len': alignments[i][seed][2],
+                         'std': alignments[i][seed][3],
+                         'seq': alignments[i][seed][4]},
+                'targ': {'crm': alignments[i][targ][0],
+                         'beg': alignments[i][targ][1],
+                         'end': alignments[i][targ][1] + alignments[i][targ][2],
+                         'len': alignments[i][targ][2],
+                         'std': alignments[i][targ][3],
+                         'seq': alignments[i][targ][4]}}
         except KeyError:
             bads.append(i)
     for i in bads[::-1]:
@@ -222,56 +267,17 @@ def get_alignments(seed, targ, maf_file):
     return alignments
 
 
-def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
-                     to_species='mus_musculus', alignment=None, **kwargs):
-    """
-    Given a seed genomic segment find the coordinate of its syntenic segment on
-    a given target species.
-    
-    :param crm: chromosome name
-    :param beg: region start position
-    :param end: region end position
-    :param seed_spe: name of the seed species (from which com the original
-       coordinates). Scientific name with underscore instead of spaces
-    :param targ_spe: name of the target species
-    :param 'LASTZ_NET' alignment: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
-       for more explanations
-    :param 'http://beta.rest.ensembl.org' server: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
-       for more explanations
-
-    :returns: a dict with the coordinates of the syntenic segment found (chr,
-       start, end, strand)
-       
-    """
-    output = 'json'
-    strand = 1
-    ext = ("/alignment/block/region/%s/%s:%s-%s:%s?" +
-           "species_set=%s&species_set=%s;method=%s")
-    ext = ext % (from_species, crm, beg, end, strand, from_species,
-                 to_species, alignment)
-    resp, content = HTTP.request(
-        server + ext, method="GET",
-        headers={"Content-Type":"application/%s" % output})
-
-    if content.startswith('Content-Type application/json had a problem'):
-        return 'Region %s:%s-%s not found' % (crm, beg, end)
-    
-    if not resp.status == 200:
-        try:
-            jsonel = json.loads(content)['error']
-            if re.findall('greater than ([0-9]+) for ',
-                          jsonel):
-                end = int(re.findall('greater than ([0-9]+) for ',
-                                     jsonel)[0])
-                return end
-        except Exception, e:
-            print str(e)
-            print content
-            print "Invalid response: ", resp.status
-        raise Exception
-
-    return get_best_alignment_coord(json.loads(content))
-
+def syntenic_segment(crm, beg, end):
+    ins = set(range(beg / 10, end / 10 + 1))
+    matching = []
+    for ali in ALIGNMENTS:
+        if ali['from']['crm'] != crm:
+            continue
+        val = len(ins.intersection(range(ali['from']['beg'] / 10,
+                                         ali['from']['end'] / 10 + 1)))
+        if val > 1: # at least an overlap of 10 nucleotides
+            matching.append((val, ali))
+    return max(matching)[1]
 
 def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
                   server="http://beta.rest.ensembl.org", **kwargs):
@@ -343,44 +349,25 @@ def map_tad(tad, crm, resolution, from_species, synteny=True,
                                   {'crm': crm, 'start': beg, 'end': end}}
 
     coords = {}
-    global HTTP
     crm, beg, end = coords['chr'], coords['start'], coords['end']
-    errors = 0
-    while errors < 100:
-        try:
-            coords = syntenic_segment(crm, beg, end, from_species, **kwargs)
-            if isinstance(coords, int):
-                if coords > beg:
-                    beg = int(tad['end']       * resolution)
-                    end = coords
-                else:
-                    beg = int((tad['end'] - 1) * resolution)
-                    end = coords
-            else:
-                if not 'syntenic at' in trace[ori_crm][tad['end']]:
-                    if isinstance(coords, dict):
-                        trace[ori_crm][tad['end']]['syntenic at'] = coords
-                    else:
-                        trace[ori_crm][tad['end']]['syntenic at'] = {
-                            'chr': None, 'start':None, 'end': None}
-                break
-        except Exception, e:
-            errors += 1
-            # print str(e)
-            print '\n... reconnecting (synteny)...'
-            if errors == 2 and beg > resolution:
-                print 'extending region left'
-                beg -= resolution
-            if errors == 4:
-                print 'extending region right'
-                beg += resolution
-                end += resolution
-            # print ' ' * ((i%50) + 9 + (i%50)/10),
-            sleep(1)
-            HTTP = httplib2.Http(".cache")
-    else:
+    try:
+        coords = syntenic_segment(crm, beg, end)
+        if isinstance(coords, list): # found nothing
+            return coords
+
+        diff_beg = beg - coords['from']['beg']
+        diff_end = end - coords['from']['end']
+
+        if coords['targ']['std'] == 1:
+            coords['targ']['beg'] += coords['targ']['beg'] + diff_beg
+            coords['targ']['end'] += diff_end
+        else:
+            coords['targ']['beg'] -= diff_end # use diff end it's all reverted
+            coords['targ']['end'] -= diff_beg
+    except Exception, e:
+        print e
         raise Exception('ERROR: not able to find synteny %s:%s-%s\n' % (crm, beg, end))
-    return coords
+    return coords['targ']
 
 
 def convert_chromosome(crm, new_genome, from_species, synteny=True,
@@ -396,9 +383,6 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
     for exp in crm.experiments:
         print '      Experiment %10s (%s TADs)' % (exp.name, len(exp.tads))
         sys.stdout.write('         ')
-        connections = 0 # variable to avoid reaching the limit of 6 connection
-                        # per second allowed by Ensembl.
-        t0 = time()
         for i, tad in enumerate(exp.tads.values()):
             trace.setdefault(crm, {})
             if not tad['end'] in trace[crm]:
@@ -406,12 +390,6 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                 coords = map_tad(tad, crm_name, exp.resolution,
                                  from_species, synteny=synteny, mapping=mapping,
                                  trace=trace, **kwargs)
-                connections += synteny + mapping
-                if connections >= 4 :
-                    to_sleep = 0.9 - min(0.9, time() - t0)
-                    sleep(to_sleep)
-                    connections = 0
-                    t0 = time()
             else:
                 coords = trace[crm][tad['end']][
                     'syntenic at' if synteny else 'mapped to']
@@ -477,8 +455,14 @@ def remap_genome(genome, original_assembly, target_assembly,
        dictionnary that allows to reconstruct the process of remapping and finding
        syntenic regions.
     """
-    global HTTP
-    HTTP = httplib2.Http(".cache")
+    global ALIGNMENTS
+
+    ALIGNMENTS = get_alignments(seed, targ, maf_file)
+
+    # remove alignments that are not inside syntenic regions
+    filter_non_syntenic_alignments(synteny_file)
+
+    
     trace = {}
 
     if write_log:
