@@ -238,7 +238,7 @@ def map_tad(tad, crm, resolution, from_species, synteny=True, mapping=True,
             try:
                 coords = remap_segment(crm, beg, end, from_species, **kwargs)
                 if isinstance(coords, int):
-                    if coords > beg:
+                    if coordsX3 > beg:
                         beg = int(tad['end']       * resolution)
                         end = coords
                     else:

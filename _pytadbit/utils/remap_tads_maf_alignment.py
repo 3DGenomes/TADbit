@@ -223,8 +223,7 @@ def get_alignments(seed, targ, maf_file):
 
 
 def syntenic_segment(crm, beg, end, from_species='homo_sapiens',
-                     to_species='mus_musculus', alignment='LASTZ_NET',
-                     server="http://beta.rest.ensembl.org", **kwargs):
+                     to_species='mus_musculus', alignment=None, **kwargs):
     """
     Given a seed genomic segment find the coordinate of its syntenic segment on
     a given target species.
@@ -327,7 +326,7 @@ def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
     return get_best_map_coord(map_list)
 
 
-def map_tad(tad, crm, resolution, from_species, synteny=True, mapping=True,
+def map_tad(tad, crm, resolution, from_species, synteny=True,
             trace=None, **kwargs):
     """
     Converts coordinates of 1 TAD border in a given chromosome. Convertion in
@@ -345,72 +344,42 @@ def map_tad(tad, crm, resolution, from_species, synteny=True, mapping=True,
 
     coords = {}
     global HTTP
-    if mapping:
-        errors = 0
-        while errors < 100:
-            try:
-                coords = remap_segment(crm, beg, end, from_species, **kwargs)
-                if isinstance(coords, int):
-                    if coords > beg:
-                        beg = int(tad['end']       * resolution)
-                        end = coords
-                    else:
-                        beg = int((tad['end'] - 1) * resolution)
-                        end = coords
+    crm, beg, end = coords['chr'], coords['start'], coords['end']
+    errors = 0
+    while errors < 100:
+        try:
+            coords = syntenic_segment(crm, beg, end, from_species, **kwargs)
+            if isinstance(coords, int):
+                if coords > beg:
+                    beg = int(tad['end']       * resolution)
+                    end = coords
                 else:
-                    if not 'mapped to' in trace[crm][tad['end']]:
-                        if isinstance(coords, dict):
-                            trace[crm][tad['end']]['mapped to'] = coords
-                        else:
-                            trace[crm][tad['end']]['syntenic at'] = {
-                                'chr': None, 'start':None, 'end': None}
-                    break
-            except Exception, e:
-                errors += 1
-                # print e.message
-                print '\n... reconnecting (mapping)...'
-                # print ' ' * ((i%50) + 9 + (i%50)/10),
-                sleep(1)
-                HTTP = httplib2.Http(".cache")
-        else:
-            raise Exception('ERROR: not able to remap %s:%s-%s\n' % (crm, beg, end))
-    if synteny and isinstance(coords, dict):
-        crm, beg, end = coords['chr'], coords['start'], coords['end']
-        errors = 0
-        while errors < 100:
-            try:
-                coords = syntenic_segment(crm, beg, end, from_species, **kwargs)
-                if isinstance(coords, int):
-                    if coords > beg:
-                        beg = int(tad['end']       * resolution)
-                        end = coords
+                    beg = int((tad['end'] - 1) * resolution)
+                    end = coords
+            else:
+                if not 'syntenic at' in trace[ori_crm][tad['end']]:
+                    if isinstance(coords, dict):
+                        trace[ori_crm][tad['end']]['syntenic at'] = coords
                     else:
-                        beg = int((tad['end'] - 1) * resolution)
-                        end = coords
-                else:
-                    if not 'syntenic at' in trace[ori_crm][tad['end']]:
-                        if isinstance(coords, dict):
-                            trace[ori_crm][tad['end']]['syntenic at'] = coords
-                        else:
-                            trace[ori_crm][tad['end']]['syntenic at'] = {
-                                'chr': None, 'start':None, 'end': None}
-                    break
-            except Exception, e:
-                errors += 1
-                # print str(e)
-                print '\n... reconnecting (synteny)...'
-                if errors == 2 and beg > resolution:
-                    print 'extending region left'
-                    beg -= resolution
-                if errors == 4:
-                    print 'extending region right'
-                    beg += resolution
-                    end += resolution
-                # print ' ' * ((i%50) + 9 + (i%50)/10),
-                sleep(1)
-                HTTP = httplib2.Http(".cache")
-        else:
-            raise Exception('ERROR: not able to find synteny %s:%s-%s\n' % (crm, beg, end))
+                        trace[ori_crm][tad['end']]['syntenic at'] = {
+                            'chr': None, 'start':None, 'end': None}
+                break
+        except Exception, e:
+            errors += 1
+            # print str(e)
+            print '\n... reconnecting (synteny)...'
+            if errors == 2 and beg > resolution:
+                print 'extending region left'
+                beg -= resolution
+            if errors == 4:
+                print 'extending region right'
+                beg += resolution
+                end += resolution
+            # print ' ' * ((i%50) + 9 + (i%50)/10),
+            sleep(1)
+            HTTP = httplib2.Http(".cache")
+    else:
+        raise Exception('ERROR: not able to find synteny %s:%s-%s\n' % (crm, beg, end))
     return coords
 
 
