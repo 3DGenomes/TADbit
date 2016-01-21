@@ -9,12 +9,12 @@ chromosome in an other species, this script needs to be used over whole genomes.
 
 import sys, re, os
 from os                           import listdir
-from os.path                      import isdir
+from os.path                      import isdir, isfile
 from pytadbit.utils.file_handling import check_pik
 from pytadbit                     import load_chromosome, Chromosome
 from time                         import sleep, time
 from pytadbit.parsers.tad_parser  import parse_tads
-
+from cPickle import dump, load
 
 GOOD_CRM = re.compile("^(?:chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$")
 
@@ -30,6 +30,34 @@ def decode_resolution(res):
     else:
         raise NotImplementedError('%s not know' % (res[-2:]))
     return int(res[:-2]) * mult
+
+
+def load_genome_from_tad_def(genome_path, res, verbose=False):
+    """
+    Search, at a given path, for chromosome folders containing TAD
+    definitions in tsv files.
+
+    :param genome_path: Path where to search for TADbit chromosomes
+    :param res: Resolution at were saved chromosomes
+    :param False verbose:
+
+    :returns: a dictionary with all TADbit chromosomes found
+    """
+    ref_genome = {}
+    for crm in listdir(genome_path):
+        crm_path = os.path.join(genome_path, crm)
+        if not isfile(crm_path):
+            continue
+        if crm in ref_genome:
+            raise Exception('More than 1 TAD definition file found\n')
+        crm = crm.replace('.tsv', '').replace('chr', '')
+        if verbose:
+            print '  Chromosome:', crm
+        crmO = Chromosome(crm)
+        crmO.add_experiment('sample', res)
+        crmO.experiments[0].load_tad_def(crm_path)
+        ref_genome[crm] = crmO
+    return ref_genome
 
 
 def load_genome(genome_path, res=None, verbose=False):
@@ -67,43 +95,6 @@ def load_genome(genome_path, res=None, verbose=False):
                              'same resolution\n')
     res = resolutions[0]
     return ref_genome
-
-
-def get_best_alignment_coord(ali_list):
-    """
-    returns coordinates of the longest ungapped alignment
-    """
-    best_sumlen = 0
-    best_ali = None
-    for i, ali in enumerate(ali_list):
-        sumlen = len([c for c in zip(*[ali['alignments'][0]['seq'],
-                                       ali['alignments'][1]['seq']])
-                      if not '-' in c])
-        if sumlen > best_sumlen:
-            best_ali = i
-            best_sumlen = sumlen
-    return {'chr'    : ali_list[best_ali]['alignments'][1]['seq_region'],
-            'start'  : ali_list[best_ali]['alignments'][1]['start'],
-            'end'    : ali_list[best_ali]['alignments'][1]['end'],
-            'strand' : ali_list[best_ali]['alignments'][1]['strand']}
-
-
-def get_best_map_coord(map_list):
-    """
-    returns coordinates of the longest mapped region
-    """
-    best_length = 0
-    best_mapped = None
-    for i, mapped in enumerate(map_list):
-        length = mapped['mapped']['end'] - mapped['mapped']['start']
-        if length > best_length:
-            best_mapped = i
-            best_length = length
-    return {'chr'    : map_list[best_mapped]['mapped']['seq_region_name'],
-            'start'  : map_list[best_mapped]['mapped']['start'],
-            'end'    : map_list[best_mapped]['mapped']['end'],
-            'strand' : map_list[best_mapped]['mapped']['strand']}
-
 
 def get_synteny_defitinion(fname):
     """
@@ -183,6 +174,11 @@ def get_alignments(seed, targ, maf_file):
     species = [seed, targ]
     # get alignments
     pre_alignments = []
+    pick_path = maf_file.replace('.maf', '%s-%s.pick' % (seed, targ))
+    if isfile(pick_path):
+        print '       Found pre-computed alignment at %s' % pick_path
+        print '         -> loading it...'
+        return load(open(pick_path))
     maf_handler = open(maf_file)
     while True:
         try:
@@ -264,12 +260,22 @@ def get_alignments(seed, targ, maf_file):
             bads.append(i)
     for i in bads[::-1]:
         alignments.pop(i)
+    print '      Filtering alignment'
+    # remove alignments that are not inside syntenic regions
+    filter_non_syntenic_alignments(synteny_file)
+
+
+
+    print 'Dumping alignment to file', pick_path
+    out = open(pick_path, 'w')
+    dump(alignments, out)
+    out.close()
     return alignments
 
 
 def syntenic_segment(crm, beg, end):
     ins = set(range(beg / 10, end / 10 + 1))
-    matching = []
+    matching = [(0, {})]
     for ali in ALIGNMENTS:
         if ali['from']['crm'] != crm:
             continue
@@ -279,61 +285,8 @@ def syntenic_segment(crm, beg, end):
             matching.append((val, ali))
     return max(matching)[1]
 
-def remap_segment(crm, beg, end, species, from_map=None, to_map=None,
-                  server="http://beta.rest.ensembl.org", **kwargs):
-    """
-    Given a seed genomic segment find its coordinates in a different assembly
-    version.
-    
-    :param crm: chromosome name
-    :param beg: region start position
-    :param end: region end position
-    :param species: name of the seed species (from which com the original
-       coordinates). Scientific name with underscore instead of spaces
-    :param None from_map: name of the original assembly version
-    :param None to_map: name of the target assembly version
-    :param 'http://beta.rest.ensembl.org' server: see http://beta.rest.ensembl.org/documentation/info/genomic_alignment_block_region
-       for more explanations
 
-    :returns: a dict with the coordinates of the remapped segment found (chr,
-       start, end, strand)
-       
-    """
-    output = 'json'
-    strand = 1
-    ext = ('/map/%s/%s/%s:%s..%s:%s/%s')
-    ext = ext % (species, from_map, crm, beg, end, strand, to_map)
-    resp, content = HTTP.request(
-        server + ext, method="GET",
-        headers={"Content-Type":"application/%s" % output})
-    if content.startswith('Content-Type application/json had a problem'):
-        return 'Region %s:%s-%s not found' % (crm, beg, end)
-    
-    if not resp.status == 200:
-        jsonel = ''
-        try:
-            jsonel = json.loads(content)['error']
-            if re.findall('greater than ([0-9]+) for ',
-                          jsonel):
-                end = int(re.findall('greater than ([0-9]+) for ',
-                                     jsonel)[0])
-                return end
-        except Exception, e:
-            print str(e)
-            print content
-            print "Invalid response: ", resp.status
-        raise Exception(jsonel)
-    try:
-        map_list = json.loads(content)['mappings']
-    except KeyError:
-        return
-    if not map_list:
-        return 'Region %s:%s-%s not found' % (crm, beg, end)
-    return get_best_map_coord(map_list)
-
-
-def map_tad(tad, crm, resolution, from_species, synteny=True,
-            trace=None, **kwargs):
+def map_tad(tad, crm, resolution, trace=None):
     """
     Converts coordinates of 1 TAD border in a given chromosome. Convertion in
     terms of change in assembly version, or in terms of syntenic regions between
@@ -341,23 +294,20 @@ def map_tad(tad, crm, resolution, from_species, synteny=True,
     """
     beg = int(tad['end']       * resolution)
     end = int((tad['end'] + 1) * resolution)
-    ori_crm = crm
     ## keep trace
-    trace.setdefault(crm, {})
+    try:
+        trace.setdefault(crm, {})
+    except AttributeError:
+        trace = {crm: {}}
     if not tad['end'] in trace[crm]:
-        trace[crm][tad['end']] = {'from':
-                                  {'crm': crm, 'start': beg, 'end': end}}
-
+        trace[crm][tad['end']] = {'from': {'crm': crm, 'beg': beg, 'end': end}}
     coords = {}
-    crm, beg, end = coords['chr'], coords['start'], coords['end']
     try:
         coords = syntenic_segment(crm, beg, end)
-        if isinstance(coords, list): # found nothing
+        if not coords: # found nothing
             return coords
-
         diff_beg = beg - coords['from']['beg']
         diff_end = end - coords['from']['end']
-
         if coords['targ']['std'] == 1:
             coords['targ']['beg'] += coords['targ']['beg'] + diff_beg
             coords['targ']['end'] += diff_end
@@ -367,17 +317,16 @@ def map_tad(tad, crm, resolution, from_species, synteny=True,
     except Exception, e:
         print e
         raise Exception('ERROR: not able to find synteny %s:%s-%s\n' % (crm, beg, end))
+    trace[crm][tad['end']]['syntenic at'] = coords['targ']
     return coords['targ']
 
 
-def convert_chromosome(crm, new_genome, from_species, synteny=True,
-                       mapping=True, trace=None, **kwargs):
+def convert_chromosome(crm, new_genome, trace=None):
     """
     Converts coordinates of TAD borders in a given chromosome. Convertion in
     terms of change in assembly version, or in terms of syntenic regions between
     species (or both).
     """
-    new_crm = Chromosome(crm.name, species=crm.species, assembly=crm.assembly)
     log = []
     crm_name = crm.name.replace('chr', '').replace('crm', '')
     for exp in crm.experiments:
@@ -387,26 +336,26 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
             trace.setdefault(crm, {})
             if not tad['end'] in trace[crm]:
                 # MAP
-                coords = map_tad(tad, crm_name, exp.resolution,
-                                 from_species, synteny=synteny, mapping=mapping,
-                                 trace=trace, **kwargs)
+                coords = map_tad(tad, crm_name, exp.resolution, trace=trace)
             else:
-                coords = trace[crm][tad['end']][
-                    'syntenic at' if synteny else 'mapped to']
-            if isinstance(coords, dict) and GOOD_CRM.match(coords['chr']):
+                print 'NEVER happening...'
+                coords = trace[crm.name][tad['end']]
+            if coords and GOOD_CRM.match(coords['crm']):
+                # add new chromosome in the target genome, if not there
                 new_genome.setdefault(
-                    coords['chr'], Chromosome(coords['chr'],
+                    coords['crm'], Chromosome(coords['crm'],
                                               species=crm.species,
                                               assembly=crm.assembly))
+                # add new experiment with empty dict of TADs, if not there
                 if not exp.name in [e.name for e in
-                                    new_genome[coords['chr']].experiments]:
-                    new_genome[coords['chr']].add_experiment(
+                                    new_genome[coords['crm']].experiments]:
+                    new_genome[coords['crm']].add_experiment(
                         exp.name, cell_type=exp.cell_type,
                         identifier=exp.identifier, enzyme=exp.enzyme,
                         resolution=exp.resolution, no_warn=True)
-                    new_genome[coords['chr']].experiments[exp.name]._tads = {
+                    new_genome[coords['crm']].experiments[exp.name]._tads = {
                         'end': [], 'start': [], 'score': []}
-                tads = new_genome[coords['chr']].experiments[exp.name]._tads
+                tads = new_genome[coords['crm']].experiments[exp.name]._tads
                 tads['start'].append(
                     (tads['end'][-1] + 1) if tads['end'] else 0.0)
                 tads['end'  ].append(float(round(
@@ -414,9 +363,13 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                 tads['score'].append(tad['score'])
                 sys.stdout.write('.')
             else:
-                if isinstance(coords, dict):
-                    coords = 'Region %s:%s-%s not nice' % (
-                        coords['chr'], coords['start'], coords['end'])
+                if 'crm' in coords:
+                    coords = 'Target region %s:%s-%s not nice' % (
+                        coords['crm'], coords['start'], coords['end'])
+                else:
+                    coords = 'Seed region %s:%s-%s not found ' % (
+                        crm_name, tad['end'] * exp.resolution,
+                        (tad['end'] + 1) * exp.resolution)
                 if not coords in log:
                     log.append(coords)
                 sys.stdout.write('E')
@@ -429,42 +382,29 @@ def convert_chromosome(crm, new_genome, from_species, synteny=True,
                 sys.stdout.flush()
         print ''
     if log:
-        log.sort(key=lambda x: int(x.split(':')[1].split('-')[0]))
+        log.sort(key=lambda x: int(float(x.split(':')[1].split('-')[0])))
         sys.stdout.write('              '+'\n              '.join(log))
         sys.stdout.write('\n              ')
-    log = []
-    return new_crm
 
 
-def remap_genome(genome, original_assembly, target_assembly,
-                 original_species, target_species, write_log=False):
+def remap_genome(seed_species, target_species, maf_file, genome, synteny_file=None,
+                 write_log=False):
     """
     Given a set of chromosomes from one species with a given assembly version.
     Remap the coordinates of TAD borders to a new assembly and/or to a new
     species.
 
-    :para genome: a dict containing all chromosomes computed
-    :param original_assembly: i.e.: 'NCBI36'
-    :param target_assembly:  i.e.: 'GRCh37', if None, no remapping will be done
+    :para genome: a dict containing all chromosomes computed of the target species
     :param original_species: i.e.: 'Homo_sapiens'
     :param target_species: i.e.: 'mus_musculus', if None, no search for syntenic
        regions will be done
     :param False write_log: path where to write a log file
 
     :returns: new genome dictionary with remapped TAD borders, and a trace
-       dictionnary that allows to reconstruct the process of remapping and finding
+       dictionary that allows to reconstruct the process of remapping and finding
        syntenic regions.
     """
-    global ALIGNMENTS
-
-    ALIGNMENTS = get_alignments(seed, targ, maf_file)
-
-    # remove alignments that are not inside syntenic regions
-    filter_non_syntenic_alignments(synteny_file)
-
-    
     trace = {}
-
     if write_log:
         log = open(write_log, 'w')
     else:
@@ -473,38 +413,38 @@ def remap_genome(genome, original_assembly, target_assembly,
     new_genome = {}
     for crm in genome:
         print '\n   Chromosome:', crm
+        print '      Loading MAF alignment'
+        global ALIGNMENTS
+        ALIGNMENTS = get_alignments(seed_species, target_species, maf_file % crm)
         # remap and syntenic region
-        if original_assembly:
-            if target_assembly:
-                print '\n     remapping from %s to %s:' % (
-                    original_assembly, target_assembly)
-            if target_species:
-                print '        and searching syntenic regions from %s to %s' %(
-                    original_species.capitalize().replace('_', ' '),
-                    target_species.capitalize().replace('_', ' '))
-            convert_chromosome(genome[crm], new_genome, original_species,
-                               from_map=original_assembly,
-                               to_map=target_assembly,
-                               to_species=target_species,
-                               synteny=True if target_species  else False,
-                               mapping=True if target_assembly else False,
-                               trace=trace)
+        print '           Searching syntenic regions from %s to %s' %(
+            seed_species.capitalize().replace('_', ' '),
+            target_species.capitalize().replace('_', ' '))
+        convert_chromosome(genome[crm], new_genome, trace=trace)
+
+        crm = genome[crm]
+        new_genome[crm.name] = Chromosome(crm.name, species=crm.species,
+                                          assembly=crm.assembly)
         for t in sorted(trace[crm]):
             try:
-                log.write('%4s : %2s:%9s-%9s -> %2s:%9s-%9s -> %2s:%9s-%9s\n' %(
-                    int(t),
-                    trace[crm][t]['from']['crm']       , trace[crm][t]['from']['start']       , trace[crm][t]['from']['end'],
-                    trace[crm][t]['mapped to']['chr']  , trace[crm][t]['mapped to']['start']  , trace[crm][t]['mapped to']['end'],
-                    trace[crm][t]['syntenic at']['chr'], trace[crm][t]['syntenic at']['start'], trace[crm][t]['syntenic at']['end'],
+                log.write('%4s : %2s:%9s-%9s -> %2s:%9s-%9s\n' %(
+                    int(t)                             ,
+                    trace[crm][t]['from']['crm']       ,
+                    trace[crm][t]['from']['beg']       ,
+                    trace[crm][t]['from']['end']       ,
+                    trace[crm][t]['syntenic at']['crm'],
+                    trace[crm][t]['syntenic at']['beg'],
+                    trace[crm][t]['syntenic at']['end'],
                     ))
             except KeyError:
                 log.write('%4s : %2s:%9s-%9s -> %22s -> %22s\n' %(
                     int(t),
-                    trace[crm][t]['from']['crm']       , trace[crm][t]['from']['start']       , trace[crm][t]['from']['end'],
+                    trace[crm][t]['from']['crm'],
+                    trace[crm][t]['from']['beg'],
+                    trace[crm][t]['from']['end'],
                     'None',
                     'None',
                     ))
-
     if write_log:
         log.close()
         
@@ -532,7 +472,7 @@ def save_new_genome(genome, trace, check=False, target_species=None, rootdir='./
                 for tad in exp.tads:
                     cond = 'syntenic at' if target_species else 'mapped to'
                     try:
-                        if trace[crm][exp.tads[tad]['end']][cond]['chr'] is None:
+                        if trace[crm][exp.tads[tad]['end']][cond]['crm'] is None:
                             continue
                     except KeyError:
                         print ('Not found:', crm, exp.tads[tad]['end'],
