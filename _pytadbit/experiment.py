@@ -592,7 +592,7 @@ class Experiment(object):
                         [diags[i-1] * (end - start - i)
                          for i in xrange(1, end - start)])
                 else:
-                    height = 1.
+                    height = tads[tad].get('height', 1.0)
             except ZeroDivisionError:
                 height = 0.
             tads[tad]['height'] = height

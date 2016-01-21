@@ -15,6 +15,7 @@ from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.utils.file_handling   import mkdir
 from numpy.linalg                   import LinAlgError
 from numpy                          import corrcoef, nansum, array, isnan
+from numpy                          import min as npmin, max as npmax
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.sparse.linalg            import eigsh
 from pytadbit.utils.tadmaths        import calinski_harabasz
@@ -695,6 +696,8 @@ class HiC_data(dict):
         :param False show: show the plot
         :param None savedata: path to a new file to store compartment
            predictions, one file only.
+        :param -1 vmin: for the color scale of the plotted map
+        :param 1 vmax: for the color scale of the plotted map
 
         TODO: this is really slow...
 
@@ -740,7 +743,7 @@ class HiC_data(dict):
                 warn('Chromosome %s too small to compute PC1' % (sec))
                 cmprts[sec] = [] # Y chromosome, or so...
                 continue
-            first = list(evect[:,-1])
+            first = list(evect[:, -1])
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]
             _ = [first.insert(b, 0) for b in bads]
@@ -750,12 +753,12 @@ class HiC_data(dict):
                  for b in bads for i in xrange(len(first))]
             breaks = [0] + [i for i, (a, b) in
                             enumerate(zip(first[1:], first[:-1]))
-                            if a*b < 0] + [len(first)]
+                            if a * b < 0] + [len(first)]
             breaks = [{'start': b, 'end': breaks[i+1]}
-                      for i, b in enumerate(breaks[:-1])]
+                      for i, b in enumerate(breaks[: -1])]
             cmprts[sec] = breaks
             
-            # calculate compartment internat density
+            # calculate compartment internal density
             for k, cmprt in enumerate(cmprts[sec]):
                 beg = self.section_pos[sec][0]
                 beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg
@@ -786,8 +789,14 @@ class HiC_data(dict):
             _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
                                       cmprts[sec], save=True)
             if savefig or show:
+                vmin = kwargs.get('vmin', -1)
+                vmax = kwargs.get('vmax',  1)
+                if vmin == 'auto' == vmax:
+                    vmax = max([abs(npmin(matrix)), abs(npmax(matrix))])
+                    vmin = -vmax
                 plot_compartments(sec, first, cmprts, matrix, show,
-                                  savefig + '/chr' + sec + '.pdf')
+                                  savefig + '/chr' + sec + '.pdf',
+                                  vmin=vmin, vmax=vmax)
                 plot_compartments_summary(sec, cmprts, show,
                                           savefig + '/chr' + sec + '_summ.pdf')
             

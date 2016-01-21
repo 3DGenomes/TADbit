@@ -881,7 +881,8 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         else:
             plt.show()
         
-def plot_compartments(crm, first, cmprts, matrix, show, savefig):
+def plot_compartments(crm, first, cmprts, matrix, show, savefig,
+                      vmin=-1, vmax=1):
     plt.close('all')
     heights = []
     val = 0
@@ -916,7 +917,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig):
     axey = plt.axes(rect_histy)
     
     im = axim.imshow(matrix, interpolation='nearest', cmap='coolwarm',
-                     vmin=-1, vmax=1)
+                     vmin=vmin, vmax=vmax)
     axim.minorticks_on()
     plt.colorbar(im, cax=axey)
     axim.grid()
@@ -952,7 +953,6 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig):
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
-
 
 def plot_compartments_summary(crm, cmprts, show, savefig, title=None):
 
