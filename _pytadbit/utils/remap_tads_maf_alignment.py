@@ -151,12 +151,12 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0, clean_all
         global ALIGNMENTS
         ALIGNMENTS = load(open(pick_path))
         return
-    for crm_num, crm_file in enumerate(os.listdir(maf_path), 1):
+    crm_num = 1
+    for crm_file in os.listdir(maf_path):
         if (not os.path.isfile(os.path.join(maf_path, crm_file))
             or not crm_file.endswith('.maf')):
             continue
         print '     %2s- loading MAF file' % crm_num, crm_file
-
         maf_handler = open(os.path.join(maf_path, crm_file))
         for line in maf_handler:
             if line.startswith('s '):
@@ -191,7 +191,7 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0, clean_all
                 for line in maf_handler:
                     if line.startswith('a '):
                         break
-
+        crm_num += 1
     # reduce alignments to our species, and merge chunks if possible
     global ALIGNMENTS
     ALIGNMENTS = []
