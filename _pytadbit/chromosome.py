@@ -1,4 +1,3 @@
-
 """
 26 Nov 2012
 
@@ -358,7 +357,7 @@ class Chromosome(object):
 
     def align_experiments(self, names=None, verbose=False, randomize=False,
                           rnd_method='interpolate', rnd_num=1000,
-                          **kwargs):
+                          get_score=False, **kwargs):
         """
         Align the predicted boundaries of two different experiments. The 
         resulting alignment will be stored in the self.experiment list.
@@ -376,6 +375,8 @@ class Chromosome(object):
             randomized boundaries over Chromosomes of the same size. This will
             return a extra value, the p-value of accepting that the observed
             alignment is not better than a random alignment
+        :param False get_score: returns alignemnt object, alignment score and
+           percentage of identity from one side and from the other
         :param interpolate rnd_method: by default uses the interpolation of TAD
            distribution. The alternative method is 'shuffle', where TADs are
            simply shuffled
@@ -398,19 +399,21 @@ class Chromosome(object):
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([xpr.tads[x]['brk'] * xpr.resolution for x in xpr.tads
                          if xpr.tads[x]['score'] >= 0])
-        aligneds, score = align(tads, verbose=verbose, **kwargs)
+        aligneds, score, perc1, perc2 = align(tads, verbose=verbose, **kwargs)
         name = tuple(sorted([x.name for x in xpers]))
         ali = Alignment(name, aligneds, xpers, score=score)
         self.alignment[name] = ali
         if verbose:
             print self.alignment[name]
         if not randomize:
-            # return self.get_alignment(name), score
-            return ali
+            if get_score:
+                return ali, score, perc1, perc2
+            else:
+                return ali
         p_value = randomization_test(xpers, score=score, rnd_method=rnd_method,
                                      verbose=verbose, r_size=self.r_size,
                                      num=rnd_num, **kwargs)
-        return ali, (score, p_value)
+        return ali, (score, p_value, perc1, perc2)
 
 
     def add_experiment(self, name, resolution=None, tad_def=None,

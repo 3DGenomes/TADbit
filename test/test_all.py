@@ -120,11 +120,13 @@ class TestTadbit(unittest.TestCase):
 
         test_chr.align_experiments(verbose=False, randomize=False,
                                    method='global')
-        _, (score1, pval1) = test_chr.align_experiments(verbose=False,
-                                                        method='global',
-                                                        randomize=True, rnd_num=100)
-        _, (_, pval2) = test_chr.align_experiments(verbose=False, randomize=True,
-                                                   rnd_method='shuffle', rnd_num=100)
+        _, (score1, pval1,
+            perc1, perc2) = test_chr.align_experiments(verbose=False,
+                                                       method='global',
+                                                       randomize=True, rnd_num=100)
+        _, (_, pval2,
+            perc1, perc2) = test_chr.align_experiments(verbose=False, randomize=True,
+                                                       rnd_method='shuffle', rnd_num=100)
         # Values with alignments obtained with square root normalization.
         #self.assertEqual(round(-26.095, 3), round(score1, 3))
         #self.assertEqual(round(0.001, 1), round(pval1, 1))

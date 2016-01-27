@@ -80,10 +80,10 @@ def get_synteny_defitinion(fname):
         to_crm, to_beg, to_end, at_crm, at_beg, at_end, at_std = line.split()
         to_beg, to_end, at_beg, at_end, at_std = map(
             int, [to_beg, to_end, at_beg, at_end, at_std])
-        synteny.setdefault(at_crm, []).append({'targ': {'crm': to_crm,
+        synteny.setdefault(at_crm, []).append({'targ': {'crm': to_crm.upper(),
                                                         'beg': to_beg,
                                                         'end': to_end},
-                                               'from': {'crm': at_crm,
+                                               'from': {'crm': at_crm.upper(),
                                                         'beg': at_beg,
                                                         'end': at_end,
                                                         'std': at_std}})
@@ -165,6 +165,7 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0, clean_all
                     spe, crm = spe_crm.split('.chr', 1)
                 except ValueError:
                     spe, crm = spe_crm.split('.', 1)
+                crm = crm.upper()
                 # skip other species and their "i " line
                 if not spe in species:
                     _ = maf_handler.next()
@@ -312,8 +313,7 @@ def convert_chromosome(crm, new_genome, trace=None):
             if not tad['end'] in trace[crm_name]:
                 # MAP
                 coords = map_tad(tad, crm_name, exp.resolution, trace=trace)
-            else:
-                print 'NEVER happening...'
+            else: # already found in an other experiment
                 coords = trace[crm_name][tad['end']]
             if coords and GOOD_CRM.match(coords['crm']):
                 # add new chromosome in the target genome, if not there
@@ -350,7 +350,7 @@ def convert_chromosome(crm, new_genome, trace=None):
                 sys.stdout.write('E')
             if not (i + 1) % 50:
                 sys.stdout.write (' %3s\n         ' % (i + 1))
-            elif not (i+1) % 10:
+            elif not (i + 1) % 10:
                 sys.stdout.write(' ')
                 sys.stdout.flush()
             else:
@@ -438,12 +438,20 @@ def save_new_genome(genome, trace, check=False, rootdir='./'):
     for crm in genome:
         new_crm = genome[crm]
         for exp in new_crm.experiments:
+            # reorder the TADs in increasing order of their end position
+            end, _, score = zip(*sorted(zip(
+                *[exp._tads[k] for k in ['end', 'start', 'score']])))
+            exp._tads['start'] = [0.] + [v - 1 for v in end[:-1]]
+            exp._tads['end'  ] = list(end)
+            exp._tads['score'] = list(score)
             if check:
+                # check TADs that have synteny
                 tadcnt = 0
                 new_tads = {}
                 for tad in exp.tads:
                     try:
-                        if trace[crm][exp.tads[tad]['end']]['syntenic at']['crm'] is None:
+                        if trace[crm][
+                            exp.tads[tad]['end']]['syntenic at']['crm'] is None:
                             continue
                     except KeyError:
                         print ('Not found:', crm, exp.tads[tad]['end'],
@@ -453,6 +461,7 @@ def save_new_genome(genome, trace, check=False, rootdir='./'):
                     tadcnt += 1
                 exp.tads = new_tads
             else:
+                # create new genome on which are mapped the old coordinates
                 tads, norm = parse_tads(exp._tads)
                 last = max(tads.keys())
                 if not exp.size:

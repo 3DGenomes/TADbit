@@ -249,7 +249,7 @@ def optimal_cmo(hic1, hic2, num_v=None, max_num_v=None, verbose=False,
                 if method == 'frobenius':
                     dist = dister(align1, align2, hic1, hic2)
                 else:
-                    dist = -dist
+                    dist *= -1
                 if dist < nearest:
                     if not penalty:
                         for scr in p_scores:

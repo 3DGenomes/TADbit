@@ -64,9 +64,17 @@ def align(sequences, method='reciprocal', **kwargs):
                        'seq' :seq}
         aligneds = []
         scores = 0
+        perc1 = 0
+        perc2 = 0
         for other in xrange(1, len(sequences)):
-            [align1, align2], score = aligner(reference, dico[other]['seq'],
-                                              **kwargs)
+            try:
+                ([align1, align2], score,
+                 p1, p2) = aligner(reference, dico[other]['seq'], **kwargs)
+                perc1 += p1
+                perc2 += p2
+            except ValueError:
+                [align1, align2], score = aligner(reference, dico[other]['seq'],
+                                                  **kwargs)
             scores += score
             if len(reference) != len(align1):
                 for pos in xrange(len(align1)):
@@ -86,6 +94,8 @@ def align(sequences, method='reciprocal', **kwargs):
         sort_alis = [[] for _ in xrange(len(dico))]
         for seq in xrange(len(dico)):
             sort_alis[dico[seq]['sort']] = aligneds[seq][:]
-        return sort_alis, scores
+        return (sort_alis, scores,
+                perc1 / (len(sequences) - 1.),
+                perc2 / (len(sequences) - 1.))
     return aligner(sequences[0], sequences[1], **kwargs)
 

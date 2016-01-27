@@ -16,7 +16,7 @@ def parse_tads(handler):
     :param handler: path to file
     :param 1 bin_size: resolution of the experiment
 
-    :returns: list of TADs, each TAD being a dict of type:
+    :returns: list of TADs and list of weights, each TAD being a dict of type:
 
     ::
     
@@ -57,12 +57,13 @@ def parse_tads(handler):
             if line.startswith('#'): continue
             try:
                 pos, start, end, score = line.split()
+                dens = float('nan')
             except ValueError:
                 pos, start, end, score, dens = line.split()
-            start = float(start)
-            end   = float(end)
+                dens  = float(dens)
+            start = float(start) - 1
+            end   = float(end)   - 1
             pos   = int(pos)
-            dens  = float(dens)
             try:
                 score = float(score)
             except ValueError: # last one

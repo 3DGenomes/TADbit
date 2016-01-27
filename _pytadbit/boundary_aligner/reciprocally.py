@@ -107,6 +107,9 @@ def reciprocal(tads1, tads2, penalty=None, verbose=False, max_dist=100000):
         print 'TADS 2: '+'|'.join(['%6s' % (str(int(x/1000)) if x!='-' else '-'*3) \
                                    for x in align2])
     diff = len(align1) - len(diffs)
-    return ([align1, align2],
-            1 - (float(penalty * diff + sum(diffs))) / len(align1) / penalty)
+    perc1 = 1 - float(diff) / len(tads1)
+    perc2 = 1 - float(diff) / len(tads2)
+    score = 1 - (float(penalty * diff + sum(diffs))) / len(align1) / penalty
+    return [align1, align2], score, perc1, perc2
+            
         
