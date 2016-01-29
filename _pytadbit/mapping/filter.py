@@ -442,7 +442,7 @@ def _filter_yannick(fnam, maxlen, de_left, de_right, output):
                     and re2-pos2<maxlen:
                         cat=14
             #random, rejoined and dangling
-            if pos2-pos1<maxlen and strand1==1 and strand2==0:
+            if n1==n2 and pos2-pos1<maxlen and strand1==1 and strand2==0:
                 if re2==re1:
                     cat=15
                 elif re1 <= rs2:
