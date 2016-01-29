@@ -1007,3 +1007,129 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
     pp.close()
 
 
+
+def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
+        maxdist=800, de_left=[-2,3], de_right=[0,5]):
+    rbreaks={}
+    rejoined={}
+    des={}
+    print "process reads"
+    fl=open(reads_file)
+    while True:
+        line=fl.next()
+        if not line.startswith('#'):
+            break
+    nreads=0
+    try:
+        while True:
+            nreads += 1
+            if nreads % 1000000 == 0:
+                print nreads
+            try:
+                _, n1, sb1, sd1, _, ru1, rd1, n2, sb2, sd2, _, ru2, rd2\
+                        = line.split()
+                sb1, sd1, ru1, rd1, sb2, sd2, ru2, rd2 = \
+                        map(int, [sb1, sd1, ru1, rd1, sb2, sd2, ru2, rd2])
+            except ValueError:
+                print line
+                raise ValueError("line is not the right format!")
+            if n1 != n2:
+                line=fl.next()
+                continue
+            #read1 ahead of read2
+            if sb1 > sb2:
+                sb1, sd1, ru1, rd1, sb2, sd2, ru2, rd2 = \
+                    sb2, sd2, ru2, rd2, sb1, sd1, ru1, rd1
+            #direction always -> <-
+            if not (sd1 == 1 and sd2 == 0):
+                line=fl.next()
+                continue
+            mollen = sb2-sb1
+            if mollen > maxdist:
+                line=fl.next()
+                continue
+            #DE1
+            if abs(sb1-ru1) < abs(sb1-rd1):
+                rc1=ru1
+            else:
+                rc1=rd1
+            pos=sb1-rc1
+            if pos in de_right:
+                if not mollen in des:
+                    des[mollen]=0
+                des[mollen]+=1
+                line=fl.next()
+                continue
+            #DE2
+            if abs(sb2-ru2) < abs(sb2-rd2):
+                rc2=ru2
+            else:
+                rc2=rd2
+            pos=sb2-rc2
+            if pos in de_left:
+                if not mollen in des:
+                    des[mollen]=0
+                des[mollen]+=1
+                line=fl.next()
+                continue
+            #random: map on same fragment
+            if rd1 == rd2:
+                if not mollen in rbreaks:
+                    rbreaks[mollen]=0
+                rbreaks[mollen]+=1
+                line=fl.next()
+                continue
+            #rejoined ends
+            if not mollen in rejoined:
+                rejoined[mollen]=0
+            rejoined[mollen]+=1
+            line=fl.next()
+    except StopIteration:
+        pass
+    print "   finished processing {} reads".format(nreads)
+
+    #transform to arrays
+    maxlen = max(max(rejoined),max(des),max(rbreaks))
+    ind = range(1,maxlen+1)
+    des = map(lambda x:des.get(x,0), ind)
+    rbreaks = map(lambda x:rbreaks.get(x,0), ind)
+    rejoined = map(lambda x:rejoined.get(x,0), ind)
+    #reweight corner for rejoined
+    rejoined = map(lambda x: x**.5 * rejoined[x-1]/x, ind)
+
+    #write to files
+    print "write to files"
+    fl=open(outprefix+'_count.dat','w')
+    fl.write('#dist\trbreaks\tdes\trejoined\n')
+    for i,j,k,l in zip(ind,rbreaks,des,rejoined):
+        fl.write('{}\t{}\t{}\t{}\n'.format(i, j, k, l))
+
+    #transform data a bit more
+    ind, des, rbreaks, rejoined = \
+            map(lambda x: moving_average(np.array(x), ma_window),
+                    [ind, des, rbreaks, rejoined])
+    des, rbreaks, rejoined = map(lambda x:x/float(x.sum()),
+            [des, rbreaks, rejoined])
+    np.insert(ind,0,0)
+    np.insert(des,0,0)
+    np.insert(rbreaks,0,0)
+    np.insert(rejoined,0,0)
+
+    #write plot
+    pp = PdfPages(outprefix+'_plot.pdf')
+    matplotlib.rcParams.update({'font.size': 10})
+    pde = plt.fill_between(ind, des, 0, color='r', alpha=0.5)
+    prb = plt.fill_between(ind, rbreaks, 0, color='b', alpha=0.5)
+    prj = plt.fill_between(ind, rejoined, 0, color='y', alpha=0.5)
+    plt.ylabel("Normalized count")
+    plt.ylabel("Putative DNA molecule length")
+    plt.title("Histogram of counts close to the diagonal")
+    #plt.xticks(ind[::10], rotation="vertical")
+    plt.legend((prb, pde, prj), ("Random breaks", "Dangling ends",
+        "Rejoined"))
+    plt.gca().set_xlim([0,maxlen])
+    pp.savefig()
+    pp.close()
+
+
+
