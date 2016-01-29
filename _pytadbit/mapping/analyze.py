@@ -16,7 +16,9 @@ import os
 import numpy as np
 
 try:
+    from matplotlib import rcParams
     from matplotlib import pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
     from matplotlib.colors import LinearSegmentedColormap
 except ImportError:
     warn('matplotlib not found\n')
@@ -909,3 +911,99 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
         out.close()
 
     return corr
+
+
+
+def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
+        maxdist=1000):
+    de_right={}
+    de_left={}
+    print "process reads"
+    fl=open(reads_file)
+    while True:
+        line=fl.next()
+        if not line.startswith('#'):
+            break
+    nreads=0
+    try:
+        while True:
+            nreads += 1
+            if nreads % 1000000 == 0:
+                print nreads
+            try:
+                _, n1, sb1, sd1, l1, ru1, rd1, n2, sb2, sd2, l2, ru2, rd2\
+                        = line.split()
+                sb1, sd1, l1, ru1, rd1, sb2, sd2, l2, ru2, rd2 = \
+                        map(int, [sb1, sd1, l1, ru1, rd1, sb2, sd2, l2,
+                            ru2, rd2])
+            except ValueError:
+                print line
+                raise ValueError("line is not the right format!")
+            if n1 != n2:
+                line=fl.next()
+                continue
+            #read1 ahead of read2
+            if sb1 > sb2:
+                sb1, sd1, l1, ru1, rd1, sb2, sd2, l2, ru2, rd2 = \
+                    sb2, sd2, l2, ru2, rd2, sb1, sd1, l1, ru1, rd1
+            #direction always -> <-
+            if not (sd1 == 1 and sd2 == 0):
+                line=fl.next()
+                continue
+            #close to the diagonal
+            if sb2-sb1 > maxdist:
+                line=fl.next()
+                continue
+            #close to RE 1
+            if abs(sb1-ru1) < abs(sb1-rd1):
+                rc1=ru1
+            else:
+                rc1=rd1
+            pos=sb1-rc1
+            if abs(pos)<=window:
+                if not pos in de_right:
+                    de_right[pos]=0
+                de_right[pos]+=1
+            #close to RE 2
+            if abs(sb2-ru2) < abs(sb2-rd2):
+                rc2=ru2
+            else:
+                rc2=rd2
+            pos=sb2-rc2
+            if abs(pos)<=window:
+                if not pos in de_left:
+                    de_left[pos]=0
+                de_left[pos]+=1
+            line=fl.next()
+    except StopIteration:
+        pass
+    print "   finished processing {} reads".format(nreads)
+
+    #transform to arrays
+    ind = range(-window,window+1)
+    de_r = map(lambda x:de_right.get(x,0), ind)
+    de_l = map(lambda x:de_left.get(x,0), ind)
+
+    #write to files
+    print "write to files"
+    fl=open(outprefix+'_count.dat','w')
+    fl.write('#dist\tX~~\t~~X\n')
+    for i,j,k in zip(ind,de_r, de_l):
+        fl.write('{}\t{}\t{}\n'.format(i, j, k))
+
+    #write plot
+    rcParams.update({'font.size': 10})
+    pp = PdfPages(outprefix+'_plot.pdf')
+    ind = np.array(ind)
+    width = 1
+    pr = plt.bar(ind-0.5, de_r, width, color='r')
+    pl = plt.bar(ind-0.5, de_l, width, bottom=de_r, color='b')
+    plt.ylabel("Count")
+    plt.title("Histogram of counts around cut site")
+    plt.xticks(ind[::2], rotation="vertical")
+    plt.legend((pl[0], pr[0]), ("~~X", "X~~")) 
+    plt.gca().set_xlim([-window-1,window+1])
+    pp.savefig()
+    pp.close()
+
+
