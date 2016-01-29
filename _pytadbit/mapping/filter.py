@@ -387,3 +387,80 @@ def _filter_over_represented(fnam, over_represented, output):
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k].close()
     return masked
+
+
+def _filter_yannick(fnam, maxlen, de_left, de_right, output):
+    # t0 = time()
+    masked = {11: {'name': 'Y Dangling L', 'reads': 0},
+              12: {'name': 'Y Dangling R', 'reads': 0},
+              13: {'name': 'Y Rejoined', 'reads': 0},
+              14: {'name': 'Y Self Circle', 'reads': 0},
+              15: {'name': 'Y Random Break', 'reads': 0},
+              16: {'name': 'Y Contact Close', 'reads': 0},
+              17: {'name': 'Y Contact Far', 'reads': 0},
+              18: {'name': 'Y Contact Upstream', 'reads': 0},
+              19: {'name': 'Y Contact Downstream', 'reads': 0},
+              20: {'name': 'Y Other', 'reads': 0}}
+    outfil = {}
+    for k in masked:
+        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
+        outfil[k] = open(masked[k]['fnam'], 'w')
+    fhandler = open(fnam)
+    line = fhandler.next()
+    while line.startswith('#'):
+        line = fhandler.next()
+    try:
+        while True:
+            (read,
+             n1, pos1, strand1, _, rs1, re1,
+             n2, pos2, strand2, _, rs2, re2) = line.split('\t')
+            ps1, ps2, re1, rs1, re2, rs2, strand1, strand2 = map(int,
+                    (pos1, pos2, re1, rs1, re2, rs2, strand1, strand2))
+            #lexicographic order for chromosomes
+            if n1 > n2 or (n1 == n2 and pos2<pos1):
+                pos1,pos2,n1,n2,ps1,ps2,re1,rs1,re2,rs2,strand1,strand2 = \
+                   pos2,pos1,n2,n1,ps2,ps1,re2,rs2,re1,rs1,strand2,strand1
+            closest1 = if (pos1-rs1 < re1-pos1) rs1 else re1
+            closest2 = if (pos2-rs2 < re2-pos2) rs2 else re2
+            cat=20 #fall-through is "Other"
+            #contacts
+            if n1 != n2 or (closest1 != closest2 and re1 != re2):
+                if strand1==1 and re1-pos1 < maxlen and\
+                        strand2==1 and re2-pos2 < maxlen:
+                            cat=18
+                elif strand1==1 and re1-pos1 < maxlen and\
+                        strand2==0 and pos2-rs2 < maxlen and pos2-pos1>=maxlen:
+                            cat=17
+                elif strand1==0 and pos1-rs1 < maxlen and\
+                        strand2==1 and re2-pos2 < maxlen:
+                            cat=16
+                elif strand1==0 and pos1-rs1 < maxlen and\
+                        strand2==0 and pos2-rs2 < maxlen:
+                            cat=19
+            #self circles
+            if re1 == re2 and strand1==0 and strand2==1 and pos1-rs1<maxlen\
+                    and re2-pos2<maxlen:
+                        cat=14
+            #random, rejoined and dangling
+            if pos2-pos1<maxlen and strand1==1 and strand2==0:
+                if re2==re1:
+                    cat=15
+                elif re1 <= rs2:
+                    cat=13
+                if pos1 - closest1 in de_left:
+                    cat=11
+                if closest2 - pos2 in de_right:
+                    cat=12
+            #apply classification
+            masked[cat]["reads"] += 1
+            outfil[cat].write(read + '\n')
+            line = fhandler.next()
+    except StopIteration:
+        pass
+    for k in masked:
+        masked[k]['fnam'] = output + '_' +\
+                masked[k]['name'].replace(' ', '_') + '.tsv'
+        outfil[k].close()
+    return masked
+
+
