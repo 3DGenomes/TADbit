@@ -3,7 +3,7 @@
 """
 
 from pytadbit.utils.file_handling import magic_open
-from bisect import bisect_left as bisect
+from bisect import bisect_right as bisect
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 from subprocess import Popen, PIPE
 from warnings import warn
