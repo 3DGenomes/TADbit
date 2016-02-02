@@ -420,8 +420,8 @@ def _filter_yannick(fnam, maxlen, de_left, de_right, output):
             if n1 > n2 or (n1 == n2 and pos2<pos1):
                 pos1,pos2,n1,n2,ps1,ps2,re1,rs1,re2,rs2,strand1,strand2 = \
                    pos2,pos1,n2,n1,ps2,ps1,re2,rs2,re1,rs1,strand2,strand1
-            closest1 = if (pos1-rs1 < re1-pos1) rs1 else re1
-            closest2 = if (pos2-rs2 < re2-pos2) rs2 else re2
+            closest1 = rs1 if (pos1-rs1 < re1-pos1) else re1
+            closest2 = rs2 if (pos2-rs2 < re2-pos2) else re2
             cat=20 #fall-through is "Other"
             #contacts
             if n1 != n2 or (closest1 != closest2 and re1 != re2):
