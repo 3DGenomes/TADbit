@@ -48,7 +48,7 @@ def load_genome_from_tad_def(genome_path, res, verbose=False):
             continue
         if crm in ref_genome:
             raise Exception('More than 1 TAD definition file found\n')
-        crm = crm.replace('.tsv', '').replace('chr', '')
+        crm = crm.replace('.tsv', '').replace('chr', '').upper()
         if verbose:
             print '  Chromosome:', crm
         crmO = Chromosome(crm)
@@ -80,13 +80,14 @@ def get_synteny_defitinion(fname):
         to_crm, to_beg, to_end, at_crm, at_beg, at_end, at_std = line.split()
         to_beg, to_end, at_beg, at_end, at_std = map(
             int, [to_beg, to_end, at_beg, at_end, at_std])
-        synteny.setdefault(at_crm, []).append({'targ': {'crm': to_crm.upper(),
-                                                        'beg': to_beg,
-                                                        'end': to_end},
-                                               'from': {'crm': at_crm.upper(),
-                                                        'beg': at_beg,
-                                                        'end': at_end,
-                                                        'std': at_std}})
+        synteny.setdefault(at_crm.upper(), []).append(
+            {'targ': {'crm': to_crm.upper(),
+                      'beg': to_beg,
+                      'end': to_end},
+             'from': {'crm': at_crm.upper(),
+                      'beg': at_beg,
+                      'end': at_end,
+                      'std': at_std}})
     return synteny
 
 
@@ -141,7 +142,6 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0, clean_all
     From a MAF file extract alignment of a pair of species. Also extends
     the alignment taking advantage of missing species.
     """
-    species = set([seed, targ])
     # get alignments
     pre_alignments = []
     pick_path = os.path.join(maf_path, 'alignments_%s-%s.pick' % (seed, targ))
@@ -159,39 +159,38 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0, clean_all
         print '     %2s- loading MAF file' % crm_num, crm_file
         maf_handler = open(os.path.join(maf_path, crm_file))
         for line in maf_handler:
-            if line.startswith('s '):
+            if line.startswith('s'):
                 _, spe_crm, pos, slen, strand, clen, _ = line.split()
                 try:
                     spe, crm = spe_crm.split('.chr', 1)
                 except ValueError:
                     spe, crm = spe_crm.split('.', 1)
                 crm = crm.upper()
-                # skip other species and their "i " line
-                if not spe in species:
+                slen = int(slen)
+                if spe == seed:   # seed always on positive strand
+                    ali = {}
+                    ali[spe] = crm, int(pos), slen, 1, True
+                elif spe != targ: # skip other species and their "i " line
                     _ = maf_handler.next()
                     continue
-                slen = int(slen)
-                if spe == seed: # seed always on positive strand
-                    ali = {}
-                    ali[spe] = crm, int(pos), slen, 1, 'C 0 C 0'
                 elif strand == '+':
-                    pos  = int(pos)
+                    pos = int(pos)
                     strand = 1
                 else:
                     pos = int(clen) - int(pos)
                     strand = -1
-            elif line.startswith('i '):
-                if '_' in crm or not GOOD_CRM.match(crm):
+            elif line.startswith('i'):
+                if not GOOD_CRM.match(crm):
                     continue
-                ali[spe] = (crm, pos, slen, strand,
-                            ' '.join(line.split()[-4:]))
+                ali[spe] = (crm, pos, slen, strand, line.endswith('C 0 C 0\n'))
                 # store this species and seed
                 pre_alignments.append(ali)
                 # skip other species
                 for line in maf_handler:
-                    if line.startswith('a '):
+                    if line.startswith('a'):
                         break
         crm_num += 1
+
     # reduce alignments to our species, and merge chunks if possible
     global ALIGNMENTS
     ALIGNMENTS = []
@@ -203,7 +202,7 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0, clean_all
         species2 = sorted(dico2.keys())
         if species1 == species2:
             vals2  = [dico2[spe] for spe in species2]
-            if all([val[-1].startswith('C 0') for val in vals2]):
+            if all([val[-1] for val in vals2]):
                 # sumup sequences and lengths
                 for spe in dico1:
                     # crm, pos, slen1, strand, seq1, _    = dico1[spe]
@@ -250,16 +249,18 @@ def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0, clean_all
 
 
 def syntenic_segment(crm, beg, end):
-    ins = set(range(beg / 10, end / 10 + 1))
     matching = [(0, {})]
     for ali in ALIGNMENTS:
         if ali['from']['crm'] != crm:
             continue
-        val = len(ins.intersection(range(ali['from']['beg'] / 10,
-                                         ali['from']['end'] / 10 + 1)))
-        if val > 1: # at least an overlap of 10 nucleotides
+        if beg > ali['from']['end'] or end < ali['from']['beg']:
+            continue
+        val = min([end, ali['from']['end']]) - max([beg, ali['from']['beg']])
+        if val > 10: # at least an overlap of 10 nucleotide
             matching.append((val, ali))
-    return max(matching)[1]
+            if val == end - beg:
+                break
+    return max(matching)[1] # take alignment only, not val
 
 
 def map_tad(tad, crm, resolution, trace=None):
