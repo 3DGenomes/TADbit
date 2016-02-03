@@ -414,12 +414,12 @@ def _filter_yannick(fnam, maxlen, de_left, de_right, output):
             (read,
              n1, pos1, strand1, _, rs1, re1,
              n2, pos2, strand2, _, rs2, re2) = line.split('\t')
-            ps1, ps2, re1, rs1, re2, rs2, strand1, strand2 = map(int,
+            pos1, pos2, re1, rs1, re2, rs2, strand1, strand2 = map(int,
                     (pos1, pos2, re1, rs1, re2, rs2, strand1, strand2))
             #lexicographic order for chromosomes
             if n1 > n2 or (n1 == n2 and pos2<pos1):
-                pos1,pos2,n1,n2,ps1,ps2,re1,rs1,re2,rs2,strand1,strand2 = \
-                   pos2,pos1,n2,n1,ps2,ps1,re2,rs2,re1,rs1,strand2,strand1
+                pos1,pos2,n1,n2,re1,rs1,re2,rs2,strand1,strand2 = \
+                   pos2,pos1,n2,n1,re2,rs2,re1,rs1,strand2,strand1
             closest1 = rs1 if (pos1-rs1 < re1-pos1) else re1
             closest2 = rs2 if (pos2-rs2 < re2-pos2) else re2
             cat=20 #fall-through is "Other"
@@ -449,7 +449,7 @@ def _filter_yannick(fnam, maxlen, de_left, de_right, output):
                     cat=13
                 if pos1 - closest1 in de_left:
                     cat=11
-                if closest2 - pos2 in de_right:
+                if pos2 - closest2 in de_right:
                     cat=12
             #apply classification
             masked[cat]["reads"] += 1
