@@ -662,10 +662,10 @@ class TestTadbit(unittest.TestCase):
             self.assertEqual(masked[3]['reads'], 1000)
             self.assertEqual(masked[4]['reads'], 1000)
             if same_seed:
-                self.assertEqual(masked[5]['reads'], 1125)
-                self.assertEqual(masked[6]['reads'], 2328)
+                self.assertEqual(masked[5]['reads'], 1110)
+                self.assertEqual(masked[6]['reads'], 2332)
                 self.assertEqual(masked[7]['reads'], 0)
-                self.assertEqual(masked[8]['reads'], 94)
+                self.assertEqual(masked[8]['reads'], 141)
                 self.assertEqual(masked[10]['reads'], 1)
             else:
                 self.assertTrue (masked[5]['reads'] > 1000)
@@ -694,7 +694,7 @@ class TestTadbit(unittest.TestCase):
         
         self.assertEqual([round(i, 2) if str(i)!='nan' else 0.0 for i in
                           reduce(lambda x, y: x + y, vals)],
-                         [-2.26, 4.18, 0.61, -2.22, 6.06, 0.0, -0.6, 3.25, 0.0])
+                         [-1.74, 4.2, 0.52, 1.82, -0.44, 0.0, -0.5, 2.95, 0.0])
         
         a, b = insert_sizes('lala-map~')
         self.assertEqual([int(a),int(b)], [43, 1033])
@@ -820,9 +820,9 @@ def generate_random_ali(ali='map'):
                 break
         while True:
             pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
                 continue
             if pos2 > pos1:
@@ -849,9 +849,9 @@ def generate_random_ali(ali='map'):
                 break
         while True:
             pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
                 continue
             if pos2 > pos1:
@@ -878,9 +878,9 @@ def generate_random_ali(ali='map'):
                 break
         while True:
             pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             sd1 = sd2 = int(random()*2)
             if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
                 continue
@@ -904,7 +904,7 @@ def generate_random_ali(ali='map'):
         while True:
             while True:
                 pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                           + frags[crm][frag][0] + 1)
+                           + frags[crm][frag][0])
                 if frags[crm][frag][1] - pos1 < 490 or pos1 - frags[crm][frag][0] < 490:
                     break
             while True:
