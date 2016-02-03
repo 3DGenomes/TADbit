@@ -1026,6 +1026,10 @@ def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
     pp.close()
 
 
+def moving_average(a, n=3):
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
 
 def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
         maxdist=800, de_left=[-2,3], de_right=[0,5]):
@@ -1136,7 +1140,7 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
 
     #write plot
     pp = PdfPages(outprefix+'_plot.pdf')
-    matplotlib.rcParams.update({'font.size': 10})
+    rcParams.update({'font.size': 10})
     pde = plt.fill_between(ind, des, 0, color='r', alpha=0.5)
     prb = plt.fill_between(ind, rbreaks, 0, color='b', alpha=0.5)
     prj = plt.fill_between(ind, rejoined, 0, color='y', alpha=0.5)
