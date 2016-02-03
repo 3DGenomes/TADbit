@@ -26,7 +26,8 @@ install:
     - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy matplotlib scipy
     - source activate test-environment
     - yes | python setup.py install
-    - pip install pysam
+    - conda install -y -q -c https://conda.anaconda.org/bcbio pysam
+    - conda install -y -q -c https://conda.anaconda.org/salilab imp
     - pip install coveralls
 
 before_script:

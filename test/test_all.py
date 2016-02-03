@@ -455,10 +455,10 @@ class TestTadbit(unittest.TestCase):
         # fetching models
         models.define_best_models(5)
         m = models.fetch_model_by_rand_init('1', all_models=True)
-        self.assertEqual(m, 2)
+        self.assertEqual(m, 6)
         models.define_best_models(25)
         m = models.fetch_model_by_rand_init('1', all_models=False)
-        self.assertEqual(m, 2)
+        self.assertEqual(m, 6)
         if CHKTIME:
             print '14', time() - t0
 
@@ -502,9 +502,9 @@ class TestTadbit(unittest.TestCase):
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i)/15, 0) for i in lines[1].split('\t')],
-                         [0, 1, 2, 3, 3])
+                         [0, 2, 3, 3, 3])
         self.assertEqual([round(float(i)/15, 0) for i in lines[15].split('\t')],
-                         [1, 6, 7, 7, 7])
+                         [1, 5, 6, 7, 7])
         # measure angle
         self.assertTrue(13 <= round(models.angle_between_3_particles(2,8,15)/10,
                                     0) <= 14)
@@ -514,11 +514,11 @@ class TestTadbit(unittest.TestCase):
                          13)
         # coordinates
         self.assertEqual([round(x, 2) for x in models.particle_coordinates(15)],
-                         [1529.39, 4703.51, -1793.39])
+                         [2098.32, 1565.63, -4319.62])
         # dihedral_angle
         self.assertTrue (round(models.dihedral_angle(2,8,15, 16)  , 2), -13.44)
-        self.assertEqual(round(models.dihedral_angle(15,19,20,21) , 2), 83.07 )
-        self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 2), 7.31  )
+        self.assertEqual(round(models.dihedral_angle(15,19,20,21) , 2), 80.54 )
+        self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 2), 9.12  )
         # median distance
         self.assertEqual(round(models.median_3d_dist(3, 20, plot=False)/100, 0),
                          15)
@@ -529,25 +529,25 @@ class TestTadbit(unittest.TestCase):
         # accessibility
         models.accessibility(radius=75, nump=10, plot=False, savedata='model.acc')
         vals = [l.split() for l in open('model.acc').readlines()[1:]]
-        self.assertEqual(vals[0][1:3], ['0.520', '0.999'])
+        self.assertEqual(vals[0][1:3], ['0.680', '0.933'])
         self.assertEqual(vals[20][1:3], ['1.000', '0.000'])
         # contact map
         models.contact_map(savedata='model.contacts')
         vals = [l.split() for l in open('model.contacts').readlines()[1:]]
         self.assertEqual(vals[0], ['0', '1', '1.0'])
-        self.assertEqual(vals[1], ['0', '2', '0.92'])
+        self.assertEqual(vals[1], ['0', '2', '0.96'])
         self.assertEqual(vals[192], ['14', '18', '0.12'])
         # interactions
         models.interactions(plot=False, savedata='model.inter')
         vals = [[float(i) for i in l.split()] for l in open('model.inter').readlines()[1:]]
-        self.assertEqual(vals[2], [3.0, 4.88, 1.03, 3.94, 0.52, 4.72, 0.64, 4.02, 0.51, 4.82, 0.41])
+        self.assertEqual(vals[2], [3.0, 4.92, 1.12, 3.88, 0.65, 4.69, 0.82, 4.01, 0.62, 4.81, 0.5])
         # walking angle
         models.walking_angle(savedata='model.walkang')
         vals = [[round(float(i), 2) if i != 'None' else i for i in l.split()] for l in open('model.walkang').readlines()[1:]]
-        self.assertEqual(vals[0], [1.0, 137.99, 'None'],)
-        self.assertEqual(vals[14], [15.0, -50.1, 'None'],)
-        self.assertEqual(vals[13], [14.0, -95.73, 'None'])
-        self.assertEqual(vals[12], [13.0, 155.7, 3.29])
+        self.assertEqual(vals[0],  [1.0, 133.76, 'None'],)
+        self.assertEqual(vals[14], [15.0, -49.94, 'None'],)
+        self.assertEqual(vals[13], [14.0, -101.36, 'None'])
+        self.assertEqual(vals[12], [13.0, 152.52, 0.41])
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -586,7 +586,7 @@ class TestTadbit(unittest.TestCase):
         self.assertTrue(21 <= round((model.shortest_axe() +
                                      model.longest_axe()) / 100,
                                     0) <= 22)
-        self.assertEqual([15, 16], model.inaccessible_particles(1000))
+        self.assertEqual([11, 15, 16], model.inaccessible_particles(1000))
 
         acc, num, acc_area, tot_area, bypt = model.accessible_surface(
             150, superradius=200, nump=150)
@@ -662,10 +662,10 @@ class TestTadbit(unittest.TestCase):
             self.assertEqual(masked[3]['reads'], 1000)
             self.assertEqual(masked[4]['reads'], 1000)
             if same_seed:
-                self.assertEqual(masked[5]['reads'], 1125)
-                self.assertEqual(masked[6]['reads'], 2328)
+                self.assertEqual(masked[5]['reads'], 1110)
+                self.assertEqual(masked[6]['reads'], 2332)
                 self.assertEqual(masked[7]['reads'], 0)
-                self.assertEqual(masked[8]['reads'], 94)
+                self.assertEqual(masked[8]['reads'], 141)
                 self.assertEqual(masked[10]['reads'], 1)
             else:
                 self.assertTrue (masked[5]['reads'] > 1000)
@@ -694,7 +694,7 @@ class TestTadbit(unittest.TestCase):
         
         self.assertEqual([round(i, 2) if str(i)!='nan' else 0.0 for i in
                           reduce(lambda x, y: x + y, vals)],
-                         [-2.26, 4.18, 0.61, -2.22, 6.06, 0.0, -0.6, 3.25, 0.0])
+                         [-1.74, 4.2, 0.52, 1.82, -0.44, 0.0, -0.5, 2.95, 0.0])
         
         a, b = insert_sizes('lala-map~')
         self.assertEqual([int(a),int(b)], [43, 1033])
@@ -820,9 +820,9 @@ def generate_random_ali(ali='map'):
                 break
         while True:
             pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
                 continue
             if pos2 > pos1:
@@ -849,9 +849,9 @@ def generate_random_ali(ali='map'):
                 break
         while True:
             pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
                 continue
             if pos2 > pos1:
@@ -878,9 +878,9 @@ def generate_random_ali(ali='map'):
                 break
         while True:
             pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             sd1 = sd2 = int(random()*2)
             if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
                 continue
@@ -904,7 +904,7 @@ def generate_random_ali(ali='map'):
         while True:
             while True:
                 pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                           + frags[crm][frag][0] + 1)
+                           + frags[crm][frag][0])
                 if frags[crm][frag][1] - pos1 < 490 or pos1 - frags[crm][frag][0] < 490:
                     break
             while True:

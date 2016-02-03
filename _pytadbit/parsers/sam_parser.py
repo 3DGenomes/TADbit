@@ -2,7 +2,7 @@
 17 nov. 2014
 """
 
-from bisect import bisect_left as bisect
+from bisect import bisect_right as bisect
 from pysam import Samfile
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 from warnings import warn

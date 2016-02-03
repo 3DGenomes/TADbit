@@ -5,6 +5,7 @@ This script generates a false genome for testing purposes
 """
 
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.parsers.genome_parser import parse_fasta
 from random import random, seed
 import re, sys
 
@@ -52,7 +53,6 @@ for crm in xrange(1, num_crms + 1):
         out.write(genome[crm][p:p+60] + '\n')
 out.close()
 
-from pytadbit.parsers.genome_parser import parse_fasta
 
 genome_bis = parse_fasta('test.fa~')
 
@@ -109,9 +109,9 @@ for i in xrange(selfcircle):
             break
     while True:
         pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                   + frags[crm][frag][0] + 1)
+                   + frags[crm][frag][0])
         pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                   + frags[crm][frag][0] + 1)
+                   + frags[crm][frag][0])
         if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
             continue
         if pos2 > pos1:
@@ -138,9 +138,9 @@ for i in xrange(dangling):
             break
     while True:
         pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                   + frags[crm][frag][0] + 1)
+                   + frags[crm][frag][0])
         pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                   + frags[crm][frag][0] + 1)
+                   + frags[crm][frag][0])
         if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
             continue
         if pos2 > pos1:
@@ -167,9 +167,9 @@ for i in xrange(error):
             break
     while True:
         pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                   + frags[crm][frag][0] + 1)
+                   + frags[crm][frag][0])
         pos2 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                   + frags[crm][frag][0] + 1)
+                   + frags[crm][frag][0])
         sd1 = sd2 = int(random()*2)
         if not (3 < pos1 < len(genome[crm]) - 3 and 3 < pos2 < len(genome[crm]) - 3):
             continue
@@ -193,7 +193,7 @@ for i in xrange(extradangling):
     while True:
         while True:
             pos1 = int(random() * (frags[crm][frag][1] - frags[crm][frag][0])
-                       + frags[crm][frag][0] + 1)
+                       + frags[crm][frag][0])
             if frags[crm][frag][1] - pos1 < 490 or pos1 - frags[crm][frag][0] < 490:
                 break
         while True:

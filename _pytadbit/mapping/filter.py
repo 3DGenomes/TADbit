@@ -246,9 +246,10 @@ def _filter_duplicates(fnam, output):
     try:
         while True:
             (read,
-             cr1, pos1, _, _, _, _,
-             cr2, pos2, _, _, _, _) = line.split('\t')
-            uniq_key = '_'.join(sorted((cr1 + pos1, cr2 + pos2)))
+             cr1, pos1, sd1, ln1 , _, _,
+             cr2, pos2, sd2, ln2 , _, _) = line.split('\t')
+            uniq_key = '_'.join(sorted((cr1, pos1, cr2, pos2, sd1, sd2,
+                                        ln1, ln2)))
             if uniq_key in uniq_check:
                 masked[9]["reads"] += 1
                 outfil[9].write(read + '\n')
