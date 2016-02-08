@@ -847,7 +847,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
                            savefig=None, show=False, savedata=None, **kwargs):
     """
     Compare the iteractions of two Hi-C matrices using their 6 first
-    eigenvectors, with spearman rank correlation
+    eigenvectors, with pearson correlation
 
     :param hic_data1: Hi-C-data object
     :param hic_data2: Hi-C-data object
