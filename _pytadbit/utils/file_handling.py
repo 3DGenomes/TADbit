@@ -6,6 +6,7 @@ import ctypes
 import os, errno
 import platform
 import bz2, gzip, zipfile, tarfile
+from subprocess import Popen, PIPE
 
 def check_pik(path):
     with open(path, "r") as f:
@@ -39,6 +40,9 @@ def magic_open(filename, verbose=False):
         filename = fhandler.name
         inputpath = False
         start_of_file = ''
+    if filename.endswith('.dsrc'):
+        proc = Popen(['dsrc', 'd', '-t8', '-s', filename], stdout=PIPE)
+        return proc.stdout
     if inputpath:
         start_of_file = fhandler.read(1024)
         fhandler.seek(0)
