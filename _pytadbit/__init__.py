@@ -1,6 +1,7 @@
 
 from pytadbit._version import __version__
 from os import environ
+from subprocess import Popen, PIPE
 import locale
 
 # make sure that we are comparing strings in the same way as the bash sort
@@ -39,6 +40,18 @@ def get_dependencies_version(dico=False):
     except ImportError:
         versions['scipy'] = 'Not found'
     try:
+        from gem import commands
+        versions['gemtools'] = commands.__VERSION__
+    except:
+        versions['gemtools'] = 'Not found'
+    try:
+        from gem import executables
+        out = Popen(executables['gem-mapper'], shell=True, stdout=PIPE,
+                    stderr=PIPE).communicate()
+        versions['gem-mapper'] = out[1].split(' - ')[0].split('build ')[1]
+    except:
+        versions['gem-mapper'] = 'Not found'
+    try:
         import numpy
         versions['numpy'] = numpy.__version__
     except ImportError:
@@ -48,7 +61,6 @@ def get_dependencies_version(dico=False):
         versions['matplotlib'] = matplotlib.__version__
     except ImportError:
         versions['matplotlib'] = 'Not found'
-    from subprocess import Popen, PIPE
     try:
         mcl, _ = Popen(['mcl', '--version'], stdout=PIPE,
                          stderr=PIPE).communicate()

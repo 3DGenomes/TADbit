@@ -381,7 +381,6 @@ def main():
         xnames = [os.path.split(d)[-1] for d in opts.norm]
 
     name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
-    opts.outdir
 
     ############################################################################
     ############################  LOAD HI-C DATA  ##############################

@@ -110,8 +110,10 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     out = open(out_fastq, 'w')
     # iterate over reads and strip them
     site = '' if add_site else enzyme
+    counter = 0
     for header in fhandler:
         header, seq, qal = get_seq(header)
+        counter += 1
         # trim on wanted region of the read
         seq = strip_line(seq)
         qal = strip_line(qal)
@@ -143,7 +145,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                                             seq + site, qal + 'H' * (len(site)),
                                             '0', '-\n'))))
     out.close()
-    return out_name
+    return out_name, counter
 
 def insert_mark(header, num):
     if num == 1 :
@@ -229,7 +231,7 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=None, add_site=True, clean=False,
-                 **kwargs):
+                 get_nread=False, **kwargs):
     """
     Do the mapping
 
@@ -261,6 +263,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
        substitutions will be found by the program.
     :param /tmp temp_dir: important to change. Intermediate FASTQ files will be
        written there.
+    :param False get_nreads: returns a list of lists where each element contains
+       a path and the number of reads processed
 
     :returns: a list of paths to generated outfiles. To be passed to 
        :func:`pytadbit.parsers.map_parser.parse_map`
@@ -283,13 +287,13 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         windows = (None, )
     for win in windows:
         # Prepare the FASTQ file and iterate over them
-        curr_map = transform_fastq(input_reads, 
-                                   mkstemp(prefix=base_name + '_',
-                                           dir=temp_dir)[1],
-                                   fastq=(input_reads.endswith('.fastq')
-                                          or input_reads.endswith('.fastq.gz')
-                                          or input_reads.endswith('.dsrc')),
-                                   min_seq_len=min_seq_len, trim=win)
+        curr_map, counter = transform_fastq(
+            input_reads, mkstemp(prefix=base_name + '_', dir=temp_dir)[1],
+            fastq=(   input_reads.endswith('.fastq'   )
+                   or input_reads.endswith('.fastq.gz')
+                   or input_reads.endswith('.fq.gz'   )
+                   or input_reads.endswith('.dsrc'    )),
+            min_seq_len=min_seq_len, trim=win)
         # clean
         if input_reads != fastq_path and clean:
             print '   x removing original input %s' % input_reads
@@ -320,8 +324,9 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             os.system('rm -f %s' % (out_map_path))
         # for next round, we will use remaining unmapped reads
         input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
-        outfiles.append(os.path.join(out_map_dir,
-                                     base_name + '_full_%s-%s.map' % (beg, end)))
+        outfiles.append(
+            (os.path.join(out_map_dir,
+                          base_name + '_full_%s-%s.map' % (beg, end)), counter))
 
     # map again splitting unmapped reads into RE fragments
     # (no need to trim this time)
@@ -342,7 +347,9 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         _gem_filter(out_map_path, curr_map + '_fail.map',
                     os.path.join(out_map_dir, base_name + '_frag.map'))
         outfiles.append(os.path.join(out_map_dir, base_name + '_frag.map'))
-    return outfiles
+    if get_nread:
+        return outfiles
+    return [out for out, num in outfiles]
 
 def main():
 
