@@ -48,7 +48,7 @@ def main():
                             path.join(opts.output, '01_mapped_r' + opts.read),
                             opts.renz, temp_dir=opts.tmp,
                             frag_map=opts.strategy=='frag', clean=True,
-                            windows=windows)
+                            windows=windows, get_nread=True)
 
     # write machine log
     with open(path.join(opts.output, 'trace.log'), "a") as mlog:
