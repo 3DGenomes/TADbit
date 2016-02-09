@@ -17,6 +17,8 @@ mapping strategy
  - mapper
 
 """
+import matplotlib
+matplotlib.use('Agg')
 
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
@@ -183,26 +185,38 @@ def get_options():
     if opts.strategy == 'iter':
         raise NotImplementedError()
 
+    system('mkdir -p ' + opts.output)
     # write log
     if opts.mapping_only:
         log_format = '[MAPPING {} READ{}]   %(message)s'.format(opts.fastq, opts.read)
     else:
         log_format = '[DEFAULT]   %(message)s'
+
+    # reset logging
+    logging.getLogger().handlers = []
+
     try:
-        logging.basicConfig(filename=path.join(opts.output, 'process.log'),
-                            level=logging.INFO, format=log_format)
+        print 'Writting log to ' + path.join(opts.output, 'process.log')
+        logging.basicConfig(level=logging.INFO,
+                            format=log_format,
+                            filename=path.join(opts.output, 'process.log'),
+                            filemode='aw')
     except IOError:
-        logging.basicConfig(filename=path.join(opts.outdir, 'process.log2'),
-                            level=logging.INFO, format=log_format)
+        logging.basicConfig(level=logging.DEBUG,
+                            format=log_format,
+                            filename=path.join(opts.output, 'process.log2'),
+                            filemode='aw')
+
+    # to display log on stdout also
     logging.getLogger().addHandler(logging.StreamHandler())
 
     # write version log
-    system('mkdir -p ' + opts.output)
-    if not path.exists(path.join(opts.output,
-                                 'TADbit_and_dependencies_versions.log')):
-        vlog = path.join(opts.output, 'TADbit_and_dependencies_versions.log')
-        vlog = open(vlog, 'w')
-        vlog.write(get_dependencies_version())
+    vlog_path = path.join(opts.output, 'TADbit_and_dependencies_versions.log')
+    dependencies = get_dependencies_version()
+    if not path.exists(vlog_path) or open(vlog_path).readlines() != dependencies:
+        logging.info('Writting versions of TADbit and dependencies')
+        vlog = open(vlog_path, 'w')
+        vlog.write(dependencies)
         vlog.close()
 
     return opts
