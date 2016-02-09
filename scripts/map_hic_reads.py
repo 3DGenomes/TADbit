@@ -41,7 +41,7 @@ def main():
 
     windows = opts.windows
 
-    logging.info('mapping %s read %s to %s' % (opts.fastq, opts.read, opts.output))
+    logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.output)
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.output, '01_mapped_r' + opts.read),
                             opts.renz, temp_dir=opts.tmp,
@@ -49,7 +49,7 @@ def main():
                             windows=windows)
 
     # write machine log
-    with open((opts.output, 'trace.log'), "a") as mlog:
+    with open(path.join(opts.output, 'trace.log'), "a") as mlog:
         fcntl.flock(mlog, fcntl.LOCK_EX)
         mlog.write('\n'.join([('# MAPPED READ%s PATH\t%d\t' % (opts.read, num)) + out
                               for out, num in outfiles]))
