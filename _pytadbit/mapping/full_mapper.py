@@ -333,11 +333,11 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     if frag_map:
         if not r_enz:
             raise Exception('ERROR: need enzyme name to fragment.')
-        frag_map = transform_fastq(input_reads,
-                                   mkstemp(prefix=base_name + '_',
-                                           dir=temp_dir)[1],
-                                   min_seq_len=min_seq_len, trim=win,
-                                   fastq=False, r_enz=r_enz, add_site=add_site)
+        frag_map, counter = transform_fastq(input_reads,
+                                            mkstemp(prefix=base_name + '_',
+                                                    dir=temp_dir)[1],
+                                            min_seq_len=min_seq_len, trim=win,
+                                            fastq=False, r_enz=r_enz, add_site=add_site)
         out_map_path = frag_map + '_frag.map'
         print 'Mapping fragments of remaining reads...'
         map_file = gem_mapping(gem_index_path, frag_map, out_map_path,
@@ -346,10 +346,10 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         print 'Parsing result...'
         _gem_filter(out_map_path, curr_map + '_fail.map',
                     os.path.join(out_map_dir, base_name + '_frag.map'))
-        outfiles.append(os.path.join(out_map_dir, base_name + '_frag.map'))
+        outfiles.append((os.path.join(out_map_dir, base_name + '_frag.map'), counter))
     if get_nread:
         return outfiles
-    return [out for out, num in outfiles]
+    return [out for out, _ in outfiles]
 
 def main():
 
