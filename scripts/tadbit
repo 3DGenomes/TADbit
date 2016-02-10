@@ -6,8 +6,8 @@ from __future__ import absolute_import
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
-from pytadbit.tools import tadbit_mapper
-from pytadbit.tools import tadbit_parser
+from pytadbit.tools import tadbit_map
+from pytadbit.tools import tadbit_parse
 
 def main(arguments):
     if len(arguments) > 1:
@@ -20,20 +20,26 @@ def main(arguments):
     parser = ArgumentParser()
     subparser = parser.add_subparsers(title="AVAILABLE PROGRAMS")
 
-    # - MAPPER -
-    mapper_args_pp = subparser.add_parser("mapper",
-                                          description=tadbit_mapper.DESC,
+    # - MAP -
+    map_args_pp = subparser.add_parser("map",
+                                          description=tadbit_map.DESC,
                                           formatter_class=RawDescriptionHelpFormatter)
-    mapper_args_pp.set_defaults(func=tadbit_mapper.run)
-    tadbit_mapper.populate_args(mapper_args_pp)
+    map_args_pp.set_defaults(func=tadbit_map.run)
+    tadbit_map.populate_args(map_args_pp)
 
-    # - PARSER -
-    parser_args_pp = subparser.add_parser("parser",
-                                          description=tadbit_parser.DESC,
+    # - PARSE -
+    parse_args_pp = subparser.add_parser("parse",
+                                         description=tadbit_parse.DESC,
+                                         formatter_class=RawDescriptionHelpFormatter)
+    parse_args_pp.set_defaults(func=tadbit_parse.run)
+    tadbit_parse.populate_args(parse_args_pp)
+
+    # - FILTER -
+    filter_args_pp = subparser.add_parser("filter",
+                                          description=tadbit_filter.DESC,
                                           formatter_class=RawDescriptionHelpFormatter)
-    parser_args_pp.set_defaults(func=tadbit_parser.run)
-    tadbit_parser.populate_args(parser_args_pp)
-
+    filter_args_pp.set_defaults(func=tadbit_filter.run)
+    tadbit_filter.populate_args(filter_args_pp)
 
     if len(arguments) == 1:
         parser.print_usage()
