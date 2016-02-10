@@ -285,6 +285,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     input_reads = fastq_path
     if windows is None:
         windows = (None, )
+    elif isinstance(windows[0], int):
+        windows = [windows]
     for win in windows:
         # Prepare the FASTQ file and iterate over them
         curr_map, counter = transform_fastq(
