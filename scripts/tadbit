@@ -8,6 +8,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from pytadbit.tools import tadbit_map
 from pytadbit.tools import tadbit_parse
+from pytadbit.tools import tadbit_filter
 
 def main(arguments):
     if len(arguments) > 1:
