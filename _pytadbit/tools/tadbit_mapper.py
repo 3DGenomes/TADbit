@@ -17,10 +17,8 @@ mapping strategy
  - mapper
 
 """
-import matplotlib
-matplotlib.use('Agg')
 
-from argparse import ArgumentParser, HelpFormatter
+from argparse import HelpFormatter
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils   import quality_plot
 from pytadbit.mapping.full_mapper import full_mapping
@@ -29,8 +27,11 @@ from os import system, path
 import logging
 import fcntl
 
-def main():
-    opts = get_options()
+
+DESC = "Map Hi-C reads and organize results in an output working directory"
+
+def run(opts):
+    check_options(opts)
 
     if opts.quality_plot:
         logging.info('Generating Hi-C QC plot at:\n  ' +
@@ -41,14 +42,12 @@ def main():
                                        path.split(opts.fastq)[-1] + '.pdf'))
         return
 
-    windows = opts.windows
-
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.output)
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.output, '01_mapped_r' + opts.read),
                             opts.renz, temp_dir=opts.tmp,
                             frag_map=opts.strategy=='frag', clean=True,
-                            windows=windows, get_nread=True)
+                            windows=opts.windows, get_nread=True)
 
     # write machine log
     with open(path.join(opts.output, 'trace.log'), "a") as mlog:
@@ -61,14 +60,12 @@ def main():
     # clean
     system('rm -rf ' + opts.tmp)
 
-def get_options():
+def populate_args(parser):
     """
     parse option from call
     """
-    parser = ArgumentParser(
-        usage="%(prog)s [options] [--cfg CONFIG_PATH]",
-        formatter_class=lambda prog: HelpFormatter(prog, width=95,
-                                                   max_help_position=27))
+    parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
+                                                      max_help_position=27)
 
     glopts = parser.add_argument_group('General options')
     mapper = parser.add_argument_group('Mapping options')
@@ -90,14 +87,6 @@ def get_options():
     glopts.add_argument('--fastq', dest='fastq', metavar="PATH", action='store',
                       default=None, type=str,
                       help='path to a FASTQ files (can be compressed files)')
-
-    glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
-                        type=str,
-                        help='''paths to file(s) with FASTA files of the
-                        reference genome. If many, files will be concatenated.
-                        I.e.: --fasta chr_1.fa chr_2.fa
-                        In this last case, order is important or the rest of the
-                        analysis.''')
 
     glopts.add_argument('--index', dest='index', metavar="PATH",
                         type=str,
@@ -127,18 +116,18 @@ def get_options():
                         help='''mapping strategy, can be "frag" for fragment
                         based mapping or "iter" for iterative mapping''')
 
-    mapper.add_argument('--windows', dest='windows', default='auto',
+    mapper.add_argument('--windows', dest='windows', default=None,
                         nargs='+',
-                        help='''for iterative mapping, defines windows. e.g.
-                        --windows 20 25 30 35 40 45 50''')
+                        help='''defines windows to be used to trim the input
+                        FASTQ reads, for example an iterative mapping can be defined
+                        as: "--windows 1:20 1:25 1:30 1:35 1:40 1:45 1:50". But
+                        this parameter can also be used for fragment based mapping
+                        if for example pair-end reads are both in the same FASTQ,
+                        for example: "--windows 1:50" (if the length of the reads
+                        is 100). Note: that the numbers are both inclusive.''')
 
-    mapper.add_argument('--read_length', dest='read_length',
-                        type=int,
-                        help='''read length, compulsory in iterative mapping with
-                        --windows auto''')
-
-    mapper.add_argument('--mapping_only', dest='mapping_only', action='store_true',
-                        help='only do the mapping does not parse results')
+    # mapper.add_argument('--mapping_only', dest='mapping_only', action='store_true',
+    #                     help='only do the mapping does not parse results')
 
     descro.add_argument('--species', dest='species', metavar="STR", 
                         type=str,
@@ -153,14 +142,11 @@ def get_options():
     parser.add_argument_group(glopts)
     parser.add_argument_group(descro)
     parser.add_argument_group(mapper)
-    opts = parser.parse_args()
 
+def check_options(opts):
     if opts.cfg:
         get_options_from_cfg(opts.cfg, opts)
 
-    if (opts.strategy == 'iter' and opts.window == 'auto'
-        and not opts.read_length):
-        raise Exception('ERROR: need to input read_length')
     # check RE name
     try:
         _ = RESTRICTION_ENZYMES[opts.renz]
@@ -168,14 +154,15 @@ def get_options():
         print ('\n\nERROR: restriction enzyme not found. Use one of:\n\n'
                + ' '.join(sorted(RESTRICTION_ENZYMES)) + '\n\n')
         raise KeyError()
+    except AttributeError:
+        pass
 
     # check compulsory options
     if not opts.quality_plot:
-        if not opts.genome: raise Exception('ERROR: genome option required.')
-        if not opts.index : raise Exception('ERROR: index  option required.')
-    if not opts.output: raise Exception('ERROR: output option required.')
-    if not opts.fastq : raise Exception('ERROR: fastq  option required.')
-    if not opts.renz  : raise Exception('ERROR: renz   option required.')
+        if not opts.index : raise Exception('ERROR: index  parameter required.')
+    if not opts.output:     raise Exception('ERROR: output parameter required.')
+    if not opts.fastq :     raise Exception('ERROR: fastq  parameter required.')
+    if not opts.renz  :     raise Exception('ERROR: renz   parameter required.')
     if not opts.tmp:
         opts.tmp = opts.output + '_tmp_r' + opts.read
 
@@ -187,10 +174,10 @@ def get_options():
 
     system('mkdir -p ' + opts.output)
     # write log
-    if opts.mapping_only:
-        log_format = '[MAPPING {} READ{}]   %(message)s'.format(opts.fastq, opts.read)
-    else:
-        log_format = '[DEFAULT]   %(message)s'
+    # if opts.mapping_only:
+    log_format = '[MAPPING {} READ{}]   %(message)s'.format(opts.fastq, opts.read)
+    # else:
+    #     log_format = '[DEFAULT]   %(message)s'
 
     # reset logging
     logging.getLogger().handlers = []
@@ -219,11 +206,6 @@ def get_options():
         vlog.write(dependencies)
         vlog.close()
 
-    return opts
-
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
 
-
-if __name__ == "__main__":
-    exit(main())

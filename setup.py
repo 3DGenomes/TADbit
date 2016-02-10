@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.core import setup, Extension
-from os import path
+from os import path, system
 from re import sub
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
@@ -192,7 +192,7 @@ def main():
                         eqv_rmsd_module, centroid_module,
                         consistency_module, aligner3d_module],
         package_dir  = {'pytadbit': PATH + '/_pytadbit'},
-        packages     = ['pytadbit', 'pytadbit.parsers',
+        packages     = ['pytadbit', 'pytadbit.parsers', 'pytadbit.tools',
                         'pytadbit.boundary_aligner', 'pytadbit.utils',
                         'pytadbit.tad_clustering', 'pytadbit.imp',
                         'pytadbit.mapping'],
@@ -207,7 +207,10 @@ def main():
         keywords     = ["testing"],
         url          = 'https://github.com/3DGenomes/tadbit',
         download_url = 'https://github.com/3DGenomes/tadbit/tarball/master',
-        scripts      = ['scripts/shrec.py', 'scripts/model_and_analyze.py']
+        scripts      = ['scripts/shrec.py', 'scripts/model_and_analyze.py',
+                        'scripts/tadbit'],
+        data_files   = [(path.expanduser('~'),
+                         ['extras/.bash_completion'])]
     )
 
 

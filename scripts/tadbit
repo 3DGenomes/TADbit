@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+"""
+"""
+
+from __future__ import absolute_import
+import sys
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+
+from pytadbit.tools import tadbit_mapper
+from pytadbit.tools import tadbit_parser
+
+def main(arguments):
+    if len(arguments) > 1:
+        subcommand = arguments[1]
+        if  subcommand == "version":
+            from pytadbit import __version__
+            print(__version__)
+            return
+
+    parser = ArgumentParser()
+    subparser = parser.add_subparsers(title="AVAILABLE PROGRAMS")
+
+    # - MAPPER -
+    mapper_args_pp = subparser.add_parser("mapper",
+                                          description=tadbit_mapper.DESC,
+                                          formatter_class=RawDescriptionHelpFormatter)
+    mapper_args_pp.set_defaults(func=tadbit_mapper.run)
+    tadbit_mapper.populate_args(mapper_args_pp)
+
+    # - PARSER -
+    parser_args_pp = subparser.add_parser("parser",
+                                          description=tadbit_parser.DESC,
+                                          formatter_class=RawDescriptionHelpFormatter)
+    parser_args_pp.set_defaults(func=tadbit_parser.run)
+    tadbit_parser.populate_args(parser_args_pp)
+
+
+    if len(arguments) == 1:
+        parser.print_usage()
+        return
+
+    # Call main program
+    args = parser.parse_args(arguments[1:])
+    args.func(args)
+
+
+
+
+
+if __name__ == "__main__":
+    main(sys.argv)
