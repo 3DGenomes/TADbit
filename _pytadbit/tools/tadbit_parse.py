@@ -71,10 +71,6 @@ def run(opts):
                     out_file1 if read == 1 else out_file2))
         fcntl.flock(mlog, fcntl.LOCK_UN)
 
-    logging.info('cleaning temporary files')
-    # clean
-    system('rm -rf ' + opts.tmp)
-
 def populate_args(parser):
     """
     parse option from call
@@ -115,11 +111,6 @@ def populate_args(parser):
                         analysis. Note: it can also be the path to a previously
                         parsed genome in pickle format.''')
 
-    glopts.add_argument('--tmp', dest='tmp', metavar="PATH", action='store',
-                      default=None, type=str,
-                      help='''path to a temporary directory (default next to
-                      output directory)''')
-
     parser.add_argument_group(glopts)
 
 def check_options(opts):
@@ -127,8 +118,6 @@ def check_options(opts):
     if not opts.workdir: raise Exception('ERROR: output option required.')
     if opts.type != 'map':
         raise NotImplementedError('ERROR: not yet there')
-    if not opts.tmp:
-        opts.tmp = opts.workdir + '_tmp'
 
     if not opts.genome: raise Exception('ERROR: genome parameter required.')
     if not opts.workdir: raise Exception('ERROR: workdir parameter required.')
