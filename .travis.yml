@@ -28,6 +28,7 @@ install:
     - yes | python setup.py install
     - conda install -y -q -c https://conda.anaconda.org/bcbio pysam
     - conda install -y -q -c https://conda.anaconda.org/salilab imp
+    - pip install gemtools
     - pip install coveralls
 
 before_script:

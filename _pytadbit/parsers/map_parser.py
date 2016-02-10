@@ -163,4 +163,4 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
 
         if clean:
             os.system('rm -rf ' + tmp_name)
-        return windows
+    return windows

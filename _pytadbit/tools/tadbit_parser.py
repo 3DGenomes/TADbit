@@ -13,7 +13,7 @@ from pytadbit.parsers.map_parser import parse_map
 from os import system, path
 import logging
 import fcntl
-
+from cPickle import load, UnpicklingError
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
 
@@ -24,7 +24,7 @@ def get_out_files(workdir):
         if   line.startswith('# MAPPED READ1 '):
             fnames1.append(line.split()[-1])
         elif line.startswith('# MAPPED READ2 '):
-            fnames1.append(line.split()[-1])
+            fnames2.append(line.split()[-1])
     return fnames1, fnames2
 
 def run(opts):
@@ -34,15 +34,23 @@ def run(opts):
     f_names1, f_names2 = get_out_files(opts.workdir)
 
     name = path.split(opts.workdir)[-1]
-
-    logging.info('parsing reads in %s project', name)
+    
+    system('mkdir -p ' + path.join(opts.workdir, '02_parsed_reads'))
 
     out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r1.tsv' % name)
     out_file2 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
 
+    logging.info('parsing genomic sequence')
+    try:
+        # allows the use of cPickle genome to make it faster
+        genome = load(open(opts.genome[0]))
+    except UnpicklingError:
+        genome = parse_fasta(opts.genome)
+
+    logging.info('parsing reads in %s project', name)
     counts = parse_map(f_names1, f_names2, out_file1=out_file1, out_file2=out_file2,
                        re_name=opts.renz, verbose=True,
-                       genome_seq=parse_fasta(opts.genome))
+                       genome_seq=genome)
 
     # write machine log
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
@@ -91,7 +99,8 @@ def populate_args(parser):
                         reference genome. If many, files will be concatenated.
                         I.e.: --fasta chr_1.fa chr_2.fa
                         In this last case, order is important or the rest of the
-                        analysis.''')
+                        analysis. Note: it can also be the path to a previously
+                        parsed genome in pickle format.''')
 
     glopts.add_argument('--tmp', dest='tmp', metavar="PATH", action='store',
                       default=None, type=str,
@@ -109,6 +118,10 @@ def check_options(opts):
         opts.tmp = opts.workdir + '_tmp'
 
     if not opts.genome: raise Exception('ERROR: genome parameter required.')
+    if not opts.workdir: raise Exception('ERROR: workdir parameter required.')
+
+    if opts.workdir.endswith('/'):
+        opts.workdir = opts.workdir[:-1]
 
     # write log
     log_format = '[PARSING]   %(message)s'
