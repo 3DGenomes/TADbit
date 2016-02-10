@@ -37,8 +37,17 @@ def run(opts):
     
     system('mkdir -p ' + path.join(opts.workdir, '02_parsed_reads'))
 
-    out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r1.tsv' % name)
-    out_file2 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
+    if not opts.read:
+        out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r1.tsv' % name)
+        out_file2 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
+    elif opts.read == 1:
+        out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r1.tsv' % name)
+        out_file2 = None
+        f_names2  = None
+    elif opts.read == 2:
+        out_file1 = None
+        f_names1  = None
+        out_file2 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
 
     logging.info('parsing genomic sequence')
     try:
@@ -92,6 +101,10 @@ def populate_args(parser):
                         type=str, default='map', choices=['map', 'sam', 'bam'], 
                         help='''[%(default)s]file type to be parser, map
                         (GEM-mapper), sam or bam''')
+
+    glopts.add_argument('--read', dest='read', metavar="INT",
+                        type=str, default=None, 
+                        help='In case only one of the reads needs to be parsed')
 
     glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
                         type=str,
