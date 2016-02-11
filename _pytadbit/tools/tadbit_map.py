@@ -36,18 +36,18 @@ def run(opts):
 
     if opts.quality_plot:
         logging.info('Generating Hi-C QC plot at:\n  ' +
-               path.join(opts.output, path.split(opts.fastq)[-1] + '.pdf'))
+               path.join(opts.workdir, path.split(opts.fastq)[-1] + '.pdf'))
         quality_plot(opts.fastq, r_enz=opts.renz,
                      nreads=100000, paired=False,
-                     savefig=path.join(opts.output,
+                     savefig=path.join(opts.workdir,
                                        path.split(opts.fastq)[-1] + '.pdf'))
         return
 
-    logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.output)
+    logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
     outfiles = full_mapping(opts.index, opts.fastq,
-                            path.join(opts.output, '01_mapped_r%d' % opts.read),
+                            path.join(opts.workdir, '01_mapped_r%d' % opts.read),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
-                            frag_map=opts.strategy=='frag', clean=True,
+                            frag_map=not opts.iterative, clean=True,
                             windows=opts.windows, get_nread=True, skip=opts.skip)
 
     # adjust line count
@@ -59,7 +59,7 @@ def run(opts):
     save_to_db(opts, outfiles)
     
     # write machine log
-    with open(path.join(opts.output, 'trace.log'), "a") as mlog:
+    with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
         fcntl.flock(mlog, fcntl.LOCK_EX)
         mlog.write('\n'.join([
             ('# MAPPED READ%s\t%d\t%s' % (opts.read, num, out))
@@ -90,9 +90,9 @@ def populate_args(parser):
                       default=False,
                       help='generate a quality plot of FASTQ and exits')
 
-    glopts.add_argument('-o', '--output', dest='output', metavar="PATH",
+    glopts.add_argument('-o', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,
-                        help='path to output folder')
+                        help='path to an output folder.')
 
     glopts.add_argument('--fastq', dest='fastq', metavar="PATH", action='store',
                       default=None, type=str,
@@ -119,12 +119,12 @@ def populate_args(parser):
     glopts.add_argument('--tmp', dest='tmp', metavar="PATH", action='store',
                       default=None, type=str,
                       help='''path to a temporary directory (default next to
-                      output directory)''')
+                      "workdir" directory)''')
 
-    mapper.add_argument('--strategy', dest='strategy', default='frag',
-                        choices=['frag', 'iter'],
-                        help='''mapping strategy, can be "frag" for fragment
-                        based mapping or "iter" for iterative mapping''')
+    mapper.add_argument('--iterative', dest='iterative', default=False,
+                        action='store_true',
+                        help='''default mapping strategy is fragment based
+                        use this flag for iterative mapping''')
 
     mapper.add_argument('--windows', dest='windows', default=None,
                         nargs='+',
@@ -160,10 +160,6 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
-    parser.add_argument_group(glopts)
-    parser.add_argument_group(descro)
-    parser.add_argument_group(mapper)
-
 def check_options(opts):
     if opts.cfg:
         get_options_from_cfg(opts.cfg, opts)
@@ -178,6 +174,10 @@ def check_options(opts):
     except AttributeError:
         pass
 
+    # check skip
+    if not path.exists(opts.workdir) and opts.skip:
+        raise Exception('ERROR: can use output files, workdir missing')
+
     # number of cpus
     if opts.cpus == 0:
         opts.cpus = cpu_count()
@@ -186,12 +186,14 @@ def check_options(opts):
 
     # check compulsory options
     if not opts.quality_plot:
-        if not opts.index : raise Exception('ERROR: index  parameter required.')
-    if not opts.output:     raise Exception('ERROR: output parameter required.')
-    if not opts.fastq :     raise Exception('ERROR: fastq  parameter required.')
-    if not opts.renz  :     raise Exception('ERROR: renz   parameter required.')
+        if not opts.index: raise Exception('ERROR: index  parameter required.')
+    if not opts.workdir:   raise Exception('ERROR: workdir parameter required.')
+    if not opts.fastq  :   raise Exception('ERROR: fastq  parameter required.')
+    if not opts.renz   :   raise Exception('ERROR: renz   parameter required.')
+
+    # create tmp directory
     if not opts.tmp:
-        opts.tmp = opts.output + '_tmp_r%d' % opts.read
+        opts.tmp = opts.workdir + '_tmp_r%d' % opts.read
 
     try:
         opts.windows = [[int(i) for i in win.split(':')]
@@ -199,10 +201,7 @@ def check_options(opts):
     except TypeError:
         pass
         
-    if opts.strategy == 'iter':
-        raise NotImplementedError()
-
-    system('mkdir -p ' + opts.output)
+    system('mkdir -p ' + opts.workdir)
     # write log
     # if opts.mapping_only:
     log_format = '[MAPPING {} READ{}]   %(message)s'.format(opts.fastq, opts.read)
@@ -213,22 +212,22 @@ def check_options(opts):
     logging.getLogger().handlers = []
 
     try:
-        print 'Writting log to ' + path.join(opts.output, 'process.log')
+        print 'Writting log to ' + path.join(opts.workdir, 'process.log')
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
-                            filename=path.join(opts.output, 'process.log'),
+                            filename=path.join(opts.workdir, 'process.log'),
                             filemode='aw')
     except IOError:
         logging.basicConfig(level=logging.DEBUG,
                             format=log_format,
-                            filename=path.join(opts.output, 'process.log2'),
+                            filename=path.join(opts.workdir, 'process.log2'),
                             filemode='aw')
 
     # to display log on stdout also
     logging.getLogger().addHandler(logging.StreamHandler())
 
     # write version log
-    vlog_path = path.join(opts.output, 'TADbit_and_dependencies_versions.log')
+    vlog_path = path.join(opts.workdir, 'TADbit_and_dependencies_versions.log')
     dependencies = get_dependencies_version()
     if not path.exists(vlog_path) or open(vlog_path).readlines() != dependencies:
         logging.info('Writting versions of TADbit and dependencies')
@@ -238,7 +237,7 @@ def check_options(opts):
 
 def save_to_db(opts, outfiles):
     # write little DB to keep track of processes and options
-    con = lite.connect(path.join(opts.output, 'trace.db'))
+    con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         # check if table exists
         cur = con.cursor()
@@ -263,7 +262,7 @@ def save_to_db(opts, outfiles):
                 SAMid int,
                 INDEXid int,
                 unique (FASTQid,Entries,Read,Enzyme,WRKDIRid,SAMid,INDEXid))""")
-        add_path(cur, opts.output, 'WORKDIR')
+        add_path(cur, opts.workdir, 'WORKDIR')
         add_path(cur, opts.fastq,  'FASTQ')
         add_path(cur, opts.index, 'INDEX')
         for i, (out, num) in enumerate(outfiles):
@@ -280,8 +279,8 @@ def save_to_db(opts, outfiles):
      (Id  , FASTQid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
     values
      (NULL,      %d,      %d, '%s',   %d,   %d,   '%s',       %d,    %d,      %d)
-     """ % (get_id(cur, opts.fastq), num, window, opts.strategy == 'frag',
-            opts.read, opts.renz, get_id(cur, opts.output), get_id(cur, out),
+     """ % (get_id(cur, opts.fastq), num, window, not opts.iterative,
+            opts.read, opts.renz, get_id(cur, opts.workdir), get_id(cur, out),
             get_id(cur, opts.index)))
             except lite.IntegrityError:
                 pass

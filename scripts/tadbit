@@ -21,33 +21,43 @@ def main(arguments):
     parser = ArgumentParser()
     subparser = parser.add_subparsers(title="AVAILABLE PROGRAMS")
 
+    args_pp = {}
+
     # - MAP -
-    map_args_pp = subparser.add_parser("map",
+    args_pp["map"] = subparser.add_parser("map",
                                           description=tadbit_map.DESC,
                                           formatter_class=RawDescriptionHelpFormatter)
-    map_args_pp.set_defaults(func=tadbit_map.run)
-    tadbit_map.populate_args(map_args_pp)
+    args_pp["map"].set_defaults(func=tadbit_map.run)
+    tadbit_map.populate_args(args_pp["map"])
 
     # - PARSE -
-    parse_args_pp = subparser.add_parser("parse",
-                                         description=tadbit_parse.DESC,
-                                         formatter_class=RawDescriptionHelpFormatter)
-    parse_args_pp.set_defaults(func=tadbit_parse.run)
-    tadbit_parse.populate_args(parse_args_pp)
+    args_pp["parse"] = subparser.add_parser("parse",
+                                            description=tadbit_parse.DESC,
+                                            formatter_class=RawDescriptionHelpFormatter)
+    args_pp["parse"].set_defaults(func=tadbit_parse.run)
+    tadbit_parse.populate_args(args_pp["parse"])
 
     # - FILTER -
-    filter_args_pp = subparser.add_parser("filter",
-                                          description=tadbit_filter.DESC,
-                                          formatter_class=RawDescriptionHelpFormatter)
-    filter_args_pp.set_defaults(func=tadbit_filter.run)
-    tadbit_filter.populate_args(filter_args_pp)
+    args_pp["filter"] = subparser.add_parser("filter",
+                                             description=tadbit_filter.DESC,
+                                             formatter_class=RawDescriptionHelpFormatter)
+    args_pp["filter"].set_defaults(func=tadbit_filter.run)
+    tadbit_filter.populate_args(args_pp["filter"])
 
     if len(arguments) == 1:
         parser.print_usage()
         return
 
+    if len(arguments) == 2:
+        try:
+            args_pp[arguments[1]].print_help()
+        except KeyError:
+            parser.print_usage()
+        return
+
     # Call main program
     args = parser.parse_args(arguments[1:])
+
     args.func(args)
 
 
