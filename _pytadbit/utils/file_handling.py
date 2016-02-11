@@ -25,7 +25,7 @@ def magic_open(filename, verbose=False):
 
     :returns: opened file ready to be iterated
     """
-    if isinstance(filename, str):
+    if isinstance(filename, str) or isinstance(filename, unicode):
         fhandler = file(filename, 'rb')
         inputpath = True
         if tarfile.is_tarfile(filename):

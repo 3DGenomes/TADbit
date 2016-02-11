@@ -145,7 +145,12 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
 
         ## Multicontacts
         tmp_reads_fh = open(tmp_name)
-        read = tmp_reads_fh.next()
+        try:
+            read = tmp_reads_fh.next()
+        except StopIteration:
+            raise StopIteration('ERROR!\n Nothing parsed, check input files and'
+                                ' chromosome names (in genome.fasta and SAM/MAP'
+                                ' files).')
         prev_head = read.split('\t', 1)[0]
         prev_head = prev_head.split('~' , 1)[0]
         prev_read = read

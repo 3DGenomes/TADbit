@@ -38,7 +38,7 @@ def run(opts):
         f_names1  = f_names2
         f_names2  = None
         out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
-
+        
     logging.info('parsing genomic sequence')
     try:
         # allows the use of cPickle genome to make it faster
@@ -60,6 +60,11 @@ def run(opts):
                     read, counts[read][item],
                     out_file1 if read == 1 else out_file2))
         fcntl.flock(mlog, fcntl.LOCK_UN)
+
+
+    # save all job information to sqlite DB
+    save_to_db(opts, counts, f_names1, f_names2, out_file1, out_file2)
+
 
 def populate_args(parser):
     """
@@ -140,6 +145,16 @@ def check_options(opts):
         vlog = open(vlog_path, 'w')
         vlog.write(dependencies)
         vlog.close()
+
+def save_to_db(opts, counts, f_names1, f_names2, out_file1, out_file2):
+    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    with con:
+        cur = con.cursor()
+        for read in counts:
+            for item in counts[read]:
+                ('# PARSED READ%s PATH\t%d\t%s\n' % (
+                    read, counts[read][item],
+                    out_file1 if read == 1 else out_file2))
 
 def load_parameters_fromdb(workdir):
     con = lite.connect(path.join(workdir, 'trace.db'))
