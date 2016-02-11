@@ -27,7 +27,7 @@ from os import system, path
 from multiprocessing import cpu_count
 import logging
 import fcntl
-
+import sqlite3 as lite
 
 DESC = "Map Hi-C reads and organize results in an output working directory"
 
@@ -45,16 +45,20 @@ def run(opts):
 
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.output)
     outfiles = full_mapping(opts.index, opts.fastq,
-                            path.join(opts.output, '01_mapped_r' + opts.read),
+                            path.join(opts.output, '01_mapped_r%d' % opts.read),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
                             frag_map=opts.strategy=='frag', clean=True,
                             windows=opts.windows, get_nread=True)
-
+    
+    # save all job information to sqlite DB
+    save_to_db(opts, outfiles)
+    
     # write machine log
     with open(path.join(opts.output, 'trace.log'), "a") as mlog:
         fcntl.flock(mlog, fcntl.LOCK_EX)
-        mlog.write('\n'.join([('# MAPPED READ%s PATH\t%d\t' % (opts.read, num)) + out
-                              for out, num in outfiles]) + '\n')
+        mlog.write('\n'.join([
+            ('# MAPPED READ%s\t%d\t%s' % (opts.read, num, out))
+            for out, num in outfiles]) + '\n')
         fcntl.flock(mlog, fcntl.LOCK_UN)
 
     logging.info('cleaning temporary files')
@@ -95,7 +99,7 @@ def populate_args(parser):
                         reference genome.''')
 
     glopts.add_argument('--read', dest='read', metavar="INT", 
-                        type=str,
+                        type=int,
                         help='read number')
 
     glopts.add_argument('--renz', dest='renz', metavar="STR", 
@@ -178,10 +182,13 @@ def check_options(opts):
     if not opts.fastq :     raise Exception('ERROR: fastq  parameter required.')
     if not opts.renz  :     raise Exception('ERROR: renz   parameter required.')
     if not opts.tmp:
-        opts.tmp = opts.output + '_tmp_r' + opts.read
+        opts.tmp = opts.output + '_tmp_r%d' % opts.read
 
-    if opts.strategy == 'frag':
-        opts.windows = None
+    try:
+        opts.windows = [[int(i) for i in win.split(':')]
+                        for win in opts.windows]
+    except TypeError:
+        pass
         
     if opts.strategy == 'iter':
         raise NotImplementedError()
@@ -220,6 +227,83 @@ def check_options(opts):
         vlog.write(dependencies)
         vlog.close()
 
+
+def save_to_db(opts, outfiles):
+    # write little DB to keep track of processes and options
+    con = lite.connect(path.join(opts.output, 'trace.db'))
+    with con:
+        # check if table exists
+        cur = con.cursor()
+        cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='FASTQs'""")
+        if not cur.fetchall():
+            cur.execute("""
+            create table PATHs
+               (Id integer primary key,
+                Path text, Type text,
+                unique (Path))""")
+            cur.execute("""
+            create table FASTQs
+               (Id integer primary key,
+                FASTQid int,
+                Entries int,
+                Trim text,
+                Frag int,
+                Read int,
+                Enzyme text,
+                WRKDIRid int,
+                SAMid int,
+                INDEXid int,
+                unique (FASTQid,Entries,Read,Enzyme,WRKDIRid,SAMid,INDEXid))""")
+        add_path(cur, opts.output, 'WORKDIR')
+        add_path(cur, opts.fastq,  'FASTQ')
+        add_path(cur, opts.index, 'INDEX')
+        for i, (out, num) in enumerate(outfiles):
+            try:
+                window = opts.windows[i]
+            except IndexError:
+                window = opts.windows[-1]
+            except TypeError:
+                window = 'None'
+            add_path(cur, out, 'SAM/MAP')
+            try:
+                cur.execute("""
+    insert into FASTQs
+     (Id  , FASTQid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
+    values
+     (NULL,      %d,      %d, '%s',   %d,   %d,   '%s',       %d,    %d,      %d)
+     """ % (get_id(cur, opts.fastq), num, window, opts.strategy == 'frag',
+            opts.read, opts.renz, get_id(cur, opts.output), get_id(cur, out),
+            get_id(cur, opts.index)))
+            except lite.IntegrityError:
+                pass
+        print_db(cur, 'FASTQs')
+        print_db(cur, 'PATHs')
+
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
 
+def add_path(cur, path, type):
+    try:
+        cur.execute("insert into PATHs (Id  , Path, Type) values (NULL, '%s', '%s')" % (
+            path, type))
+    except lite.IntegrityError:
+        pass
+
+def get_id(cur, name):
+    cur.execute('SELECT Id from PATHS where Path="%s"' % name)
+    return cur.fetchall()[0][0]
+
+def print_db(cur, name):
+    cur.execute('select * from %s' % name)
+    names = [x[0] for x in cur.description]
+    rows = cur.fetchall()
+    cols = [max(vals) for vals in zip(*[[len(str(v)) for v in row]
+                                        for row in rows + [names]])]
+    print ',-' + '-.-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-.'
+    print '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v) for i, v in enumerate(names)]) + ' |'
+    print '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|'
+    print '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
+                                        for i, v in enumerate(row)]) + ' |'  for row in rows])
+    print "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'"
+    

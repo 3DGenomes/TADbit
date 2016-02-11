@@ -286,7 +286,10 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     if windows is None:
         windows = (None, )
     elif isinstance(windows[0], int):
-        windows = [windows]
+        windows = [tuple(windows)]
+    else:
+        # ensure that each element is a tuple, not a list
+        windows = [tuple(win) for win in windows]
     for win in windows:
         # Prepare the FASTQ file and iterate over them
         curr_map, counter = transform_fastq(
@@ -340,15 +343,22 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
                                                     dir=temp_dir)[1],
                                             min_seq_len=min_seq_len, trim=win,
                                             fastq=False, r_enz=r_enz, add_site=add_site)
-        out_map_path = frag_map + '_frag.map'
+        if not win:
+            beg, end = 1, 'end'
+        else:
+            beg, end = win
+        out_map_path = frag_map + '_frag_%s-%s.map' % (beg, end)
         print 'Mapping fragments of remaining reads...'
         map_file = gem_mapping(gem_index_path, frag_map, out_map_path,
                                **kwargs)
         map_file.close()
         print 'Parsing result...'
         _gem_filter(out_map_path, curr_map + '_fail.map',
-                    os.path.join(out_map_dir, base_name + '_frag.map'))
-        outfiles.append((os.path.join(out_map_dir, base_name + '_frag.map'), counter))
+                    os.path.join(out_map_dir,
+                                 base_name + '_frag_%s-%s.map' % (beg, end)))
+        outfiles.append((os.path.join(out_map_dir,
+                                      base_name + '_frag_%s-%s.map' % (beg, end)),
+                         counter))
     if get_nread:
         return outfiles
     return [out for out, _ in outfiles]
