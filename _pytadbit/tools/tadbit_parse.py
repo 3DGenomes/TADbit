@@ -14,24 +14,14 @@ from os import system, path
 import logging
 import fcntl
 from cPickle import load, UnpicklingError
+import sqlite3 as lite
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
-
-def get_out_files(workdir):
-    fnames1 = []
-    fnames2 = []
-    for line in open(path.join(workdir, 'trace.log')):
-        if   line.startswith('# MAPPED READ1 '):
-            fnames1.append(line.split()[-1])
-        elif line.startswith('# MAPPED READ2 '):
-            fnames2.append(line.split()[-1])
-    return fnames1, fnames2
 
 def run(opts):
     check_options(opts)
 
-
-    f_names1, f_names2 = get_out_files(opts.workdir)
+    f_names1, f_names2, renz = load_parameters_fromdb(opts.workdir)
 
     name = path.split(opts.workdir)[-1]
     
@@ -58,7 +48,7 @@ def run(opts):
 
     logging.info('parsing reads in %s project', name)
     counts = parse_map(f_names1, f_names2, out_file1=out_file1, out_file2=out_file2,
-                       re_name=opts.renz, verbose=True,
+                       re_name=renz, verbose=True,
                        genome_seq=genome)
 
     # write machine log
@@ -88,10 +78,6 @@ def populate_args(parser):
                         action='store', default=None, type=str,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
-
-    glopts.add_argument('--renz', dest='renz', metavar="STR", 
-                        type=str,
-                        help='restriction enzyme name')
 
     glopts.add_argument('--type', dest='type', metavar="STR", 
                         type=str, default='map', choices=['map', 'sam', 'bam'], 
@@ -155,3 +141,42 @@ def check_options(opts):
         vlog.write(dependencies)
         vlog.close()
 
+def load_parameters_fromdb(workdir):
+    con = lite.connect(path.join(workdir, 'trace.db'))
+    fnames1 = []
+    fnames2 = []
+    ids = []
+    with con:
+        cur = con.cursor()
+        # fetch file names to parse
+        cur.execute("""
+        select distinct PATHs.Id,PATHs.Path from PATHs
+        join FASTQs on FASTQs.Read = 1
+        where PATHs.Type='SAM/MAP'
+        """)
+        for fname in cur.fetchall():
+            ids.append(fname[0])
+            fnames1.append(fname[1])
+        cur.execute("""
+        select distinct PATHs.Id,PATHs.Path from PATHs
+        join FASTQs on FASTQs.Read = 2
+        where PATHs.Type='SAM/MAP'
+        """)
+        for fname in cur.fetchall():
+            ids.append(fname[0])
+            fnames2.append(fname[1])
+        # GET enzyme name
+        enzymes = []
+        for fid in ids:
+            cur.execute("""
+            select distinct FASTQs.Enzyme from FASTQs
+            where FASTQs.SAMid=%d
+            """ % fid)
+            enzymes.extend(cur.fetchall())
+        if len(set(reduce(lambda x, y: x+ y, enzymes))) != 1:
+            raise Exception(
+                'ERROR: different enzymes used to generate these files')
+        renz = enzymes[0][0]
+            
+    return fnames1, fnames2, renz
+        

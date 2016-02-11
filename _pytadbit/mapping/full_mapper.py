@@ -14,7 +14,7 @@ except ImportError:
     warn('WARNING: GEMTOOLS not found')
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
-                    min_seq_len=15, fastq=True, verbose=True):
+                    min_seq_len=15, fastq=True, verbose=True, **kwargs):
     """
     Given a FASTQ file it can split it into chunks of a given number of reads,
     trim each read according to a start/end positions or split them into
@@ -24,6 +24,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
        removes the ligation site, and put back the original RE site.
 
     """
+    skip = kwargs.get('skip', False)
     ## define local funcitons to process reads and sequences
     def _get_fastq_read(rlines):
         """
@@ -102,7 +103,11 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             print '  - conversion to MAP format'
         if trim:
             print '  - trimming reads %d-%d' % tuple(trim)
-            
+    if skip:
+        print '    ... skipping, only counting lines'
+        counter = sum(1 for _ in open(fastq_path))
+        counter /= 4 if fastq else 1
+        return out_fastq, counter
     # open input file
     fhandler = magic_open(fastq_path)
     # create output file
@@ -269,6 +274,9 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     :returns: a list of paths to generated outfiles. To be passed to 
        :func:`pytadbit.parsers.map_parser.parse_map`
     """
+
+    skip = kwargs.get('skip', False)
+    
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', gettempdir())))
@@ -298,7 +306,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
                    or input_reads.endswith('.fastq.gz')
                    or input_reads.endswith('.fq.gz'   )
                    or input_reads.endswith('.dsrc'    )),
-            min_seq_len=min_seq_len, trim=win)
+            min_seq_len=min_seq_len, trim=win, skip=skip)
         # clean
         if input_reads != fastq_path and clean:
             print '   x removing original input %s' % input_reads
@@ -313,25 +321,29 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             print 'Mapping reads in window %s-%s...' % (beg, end)
         else:
             print 'Mapping full reads...', curr_map
-        map_file = gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
-        map_file.close()
 
-        # parse map file to extract not uniquely mapped reads
-        print 'Parsing result...'
-        _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
-                    os.path.join(out_map_dir,
-                                 base_name + '_full_%s-%s.map' % (beg, end)))
-        # clean
-        if clean:
-            print '   x removing GEM input %s' % curr_map
-            os.system('rm -f %s' % (curr_map))
-            print '   x removing map %s' % out_map_path
-            os.system('rm -f %s' % (out_map_path))
-        # for next round, we will use remaining unmapped reads
-        input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
+        if not skip:
+            map_file = gem_mapping(gem_index_path, curr_map,
+                                   out_map_path, **kwargs)
+            map_file.close()
+
+            # parse map file to extract not uniquely mapped reads
+            print 'Parsing result...'
+            _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
+                        os.path.join(out_map_dir,
+                                     base_name + '_full_%s-%s.map' % (beg, end)))
+            # clean
+            if clean:
+                print '   x removing GEM input %s' % curr_map
+                os.system('rm -f %s' % (curr_map))
+                print '   x removing map %s' % out_map_path
+                os.system('rm -f %s' % (out_map_path))
+            # for next round, we will use remaining unmapped reads
+            input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
         outfiles.append(
             (os.path.join(out_map_dir,
-                          base_name + '_full_%s-%s.map' % (beg, end)), counter))
+                          base_name + '_full_%s-%s.map' % (beg, end)),
+             counter))
 
     # map again splitting unmapped reads into RE fragments
     # (no need to trim this time)
@@ -342,20 +354,22 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
                                             mkstemp(prefix=base_name + '_',
                                                     dir=temp_dir)[1],
                                             min_seq_len=min_seq_len, trim=win,
-                                            fastq=False, r_enz=r_enz, add_site=add_site)
+                                            fastq=False, r_enz=r_enz,
+                                            add_site=add_site, skip=skip)
         if not win:
             beg, end = 1, 'end'
         else:
             beg, end = win
         out_map_path = frag_map + '_frag_%s-%s.map' % (beg, end)
-        print 'Mapping fragments of remaining reads...'
-        map_file = gem_mapping(gem_index_path, frag_map, out_map_path,
-                               **kwargs)
-        map_file.close()
-        print 'Parsing result...'
-        _gem_filter(out_map_path, curr_map + '_fail.map',
-                    os.path.join(out_map_dir,
-                                 base_name + '_frag_%s-%s.map' % (beg, end)))
+        if not skip:
+            print 'Mapping fragments of remaining reads...'
+            map_file = gem_mapping(gem_index_path, frag_map, out_map_path,
+                                   **kwargs)
+            map_file.close()
+            print 'Parsing result...'
+            _gem_filter(out_map_path, curr_map + '_fail.map',
+                        os.path.join(out_map_dir,
+                                     base_name + '_frag_%s-%s.map' % (beg, end)))
         outfiles.append((os.path.join(out_map_dir,
                                       base_name + '_frag_%s-%s.map' % (beg, end)),
                          counter))

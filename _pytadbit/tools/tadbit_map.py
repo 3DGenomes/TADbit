@@ -48,7 +48,12 @@ def run(opts):
                             path.join(opts.output, '01_mapped_r%d' % opts.read),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
                             frag_map=opts.strategy=='frag', clean=True,
-                            windows=opts.windows, get_nread=True)
+                            windows=opts.windows, get_nread=True, skip=opts.skip)
+
+    # adjust line count
+    if opts.skip:
+        for i, (out, _) in enumerate(outfiles[1:], 1):
+            outfiles[i] = out, outfiles[i-1][1] - sum(1 for _ in open(outfiles[i-1][0]))
     
     # save all job information to sqlite DB
     save_to_db(opts, outfiles)
@@ -144,6 +149,10 @@ def populate_args(parser):
                         coma, and inside each, name and value separated by column: 
                         --descr=cell:lymphoblast,flowcell:C68AEACXX,index:24nf''')
 
+    glopts.add_argument('--skip', dest='skip', action='store_true',
+                      default=False,
+                      help='[DEBUG] in case already mapped.')
+
     mapper.add_argument("-C", "--cpu", dest="cpus", type=int,
                         default=0, help='''[%(default)s] Maximum number of CPU
                         cores  available in the execution host. If higher
@@ -226,7 +235,6 @@ def check_options(opts):
         vlog = open(vlog_path, 'w')
         vlog.write(dependencies)
         vlog.close()
-
 
 def save_to_db(opts, outfiles):
     # write little DB to keep track of processes and options
