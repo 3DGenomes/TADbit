@@ -24,6 +24,7 @@ from pytadbit.utils.fastq_utils   import quality_plot
 from pytadbit.mapping.full_mapper import full_mapping
 from pytadbit import get_dependencies_version
 from os import system, path
+from multiprocessing import cpu_count
 import logging
 import fcntl
 
@@ -45,7 +46,7 @@ def run(opts):
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.output)
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.output, '01_mapped_r' + opts.read),
-                            opts.renz, temp_dir=opts.tmp,
+                            opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
                             frag_map=opts.strategy=='frag', clean=True,
                             windows=opts.windows, get_nread=True)
 
@@ -139,6 +140,13 @@ def populate_args(parser):
                         coma, and inside each, name and value separated by column: 
                         --descr=cell:lymphoblast,flowcell:C68AEACXX,index:24nf''')
 
+    mapper.add_argument("-C", "--cpu", dest="cpus", type=int,
+                        default=0, help='''[%(default)s] Maximum number of CPU
+                        cores  available in the execution host. If higher
+                        than 1, tasks with multi-threading
+                        capabilities will enabled (if 0 all available)
+                        cores will be used''')
+
     parser.add_argument_group(glopts)
     parser.add_argument_group(descro)
     parser.add_argument_group(mapper)
@@ -156,6 +164,12 @@ def check_options(opts):
         raise KeyError()
     except AttributeError:
         pass
+
+    # number of cpus
+    if opts.cpus == 0:
+        opts.cpus = cpu_count()
+    else:
+        opts.cpus = min(opts.cpus, cpu_count())
 
     # check compulsory options
     if not opts.quality_plot:

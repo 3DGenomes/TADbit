@@ -45,9 +45,9 @@ def run(opts):
         out_file2 = None
         f_names2  = None
     elif opts.read == 2:
-        out_file1 = None
-        f_names1  = None
-        out_file2 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
+        out_file2 = None
+        f_names1  = f_names2
+        out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
 
     logging.info('parsing genomic sequence')
     try:
