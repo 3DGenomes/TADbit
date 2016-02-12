@@ -9,6 +9,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from pytadbit.tools import tadbit_map
 from pytadbit.tools import tadbit_parse
 from pytadbit.tools import tadbit_filter
+from pytadbit.tools import tadbit_describe
 
 def main(arguments):
     if len(arguments) > 1:
@@ -43,6 +44,13 @@ def main(arguments):
                                              formatter_class=RawDescriptionHelpFormatter)
     args_pp["filter"].set_defaults(func=tadbit_filter.run)
     tadbit_filter.populate_args(args_pp["filter"])
+
+    # - DESCRIBE -
+    args_pp["describe"] = subparser.add_parser("describe",
+                                             description=tadbit_describe.DESC,
+                                             formatter_class=RawDescriptionHelpFormatter)
+    args_pp["describe"].set_defaults(func=tadbit_describe.run)
+    tadbit_describe.populate_args(args_pp["describe"])
 
     if len(arguments) == 1:
         parser.print_usage()

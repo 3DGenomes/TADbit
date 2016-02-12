@@ -5,7 +5,7 @@ _tadbit()
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="map parse filter"
+  opts="describe map parse filter"
 
   case $prev in
       tadbit)
