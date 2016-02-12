@@ -7,17 +7,17 @@ import os, errno
 import platform
 import bz2, gzip, zipfile, tarfile
 from subprocess import Popen, PIPE
+from multiprocessing import cpu_count
 
 def check_pik(path):
     with open(path, "r") as f:
-        f.seek (0, 2)           # Seek @ EOF
-        fsize = f.tell()        # Get Size
+        f.seek (0, 2)                # Seek @ EOF
+        fsize = f.tell()             # Get Size
         f.seek (max (fsize-2, 0), 0) # Set pos @ last n chars
-        key = f.read()       # Read to end
+        key = f.read()               # Read to end
     return key == 's.'
 
-
-def magic_open(filename, verbose=False):
+def magic_open(filename, verbose=False, cpus=None):
     """
     To read uncompressed zip gzip bzip2 or tar.xx files
 
@@ -41,7 +41,8 @@ def magic_open(filename, verbose=False):
         inputpath = False
         start_of_file = ''
     if filename.endswith('.dsrc'):
-        proc = Popen(['dsrc', 'd', '-t8', '-s', filename], stdout=PIPE)
+        proc = Popen(['dsrc', 'd', '-t%d' % (cpus or cpu_count()),
+                      '-s', filename], stdout=PIPE)
         return proc.stdout
     if inputpath:
         start_of_file = fhandler.read(1024)

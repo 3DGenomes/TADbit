@@ -103,10 +103,14 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             print '  - conversion to MAP format'
         if trim:
             print '  - trimming reads %d-%d' % tuple(trim)
+    counter = 0
     if skip:
-        print '    ... skipping, only counting lines'
-        counter = sum(1 for _ in open(fastq_path))
-        counter /= 4 if fastq else 1
+        if fastq:
+            print '    ... skipping, only counting lines'
+            counter = sum(1 for _ in magic_open(fastq_path,
+                                                cpus=kwargs.get('nthreads')))
+            counter /= 4 if fastq else 1
+            print '            ' + fastq_path, counter, fastq
         return out_fastq, counter
     # open input file
     fhandler = magic_open(fastq_path)
@@ -115,7 +119,6 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     out = open(out_fastq, 'w')
     # iterate over reads and strip them
     site = '' if add_site else enzyme
-    counter = 0
     for header in fhandler:
         header, seq, qal = get_seq(header)
         counter += 1
@@ -276,7 +279,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     """
 
     skip = kwargs.get('skip', False)
-    
+    nthreads = kwargs.get('nthreads', 8)
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', gettempdir())))
@@ -306,7 +309,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
                    or input_reads.endswith('.fastq.gz')
                    or input_reads.endswith('.fq.gz'   )
                    or input_reads.endswith('.dsrc'    )),
-            min_seq_len=min_seq_len, trim=win, skip=skip)
+            min_seq_len=min_seq_len, trim=win, skip=skip, nthreads=nthreads)
         # clean
         if input_reads != fastq_path and clean:
             print '   x removing original input %s' % input_reads
@@ -350,12 +353,10 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     if frag_map:
         if not r_enz:
             raise Exception('ERROR: need enzyme name to fragment.')
-        frag_map, counter = transform_fastq(input_reads,
-                                            mkstemp(prefix=base_name + '_',
-                                                    dir=temp_dir)[1],
-                                            min_seq_len=min_seq_len, trim=win,
-                                            fastq=False, r_enz=r_enz,
-                                            add_site=add_site, skip=skip)
+        frag_map, counter = transform_fastq(
+            input_reads, mkstemp(prefix=base_name + '_', dir=temp_dir)[1],
+            min_seq_len=min_seq_len, trim=win, fastq=False, r_enz=r_enz,
+            add_site=add_site, skip=skip, nthreads=nthreads)
         if not win:
             beg, end = 1, 'end'
         else:
