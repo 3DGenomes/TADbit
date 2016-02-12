@@ -256,7 +256,7 @@ def save_to_db(opts, outfiles):
                 PATHid int,
                 Entries int,
                 Trim text,
-                Frag int,
+                Frag text,
                 Read int,
                 Enzyme text,
                 WRKDIRid int,
@@ -274,13 +274,15 @@ def save_to_db(opts, outfiles):
             except TypeError:
                 window = 'None'
             add_path(cur, out, 'SAM/MAP')
+            frag = ('none' if opts.iterative else 'frag' if i==len(outfiles) - 1
+                    else 'full')
             try:
                 cur.execute("""
     insert into FASTQs
      (Id  , PATHid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
     values
-     (NULL,      %d,      %d, '%s',   %d,   %d,   '%s',       %d,    %d,      %d)
-     """ % (get_path_id(cur, opts.fastq), num, window, not opts.iterative,
+     (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',       %d,    %d,      %d)
+     """ % (get_path_id(cur, opts.fastq), num, window, frag,
             opts.read, opts.renz, get_path_id(cur, opts.workdir),
             get_path_id(cur, out), get_path_id(cur, opts.index)))
             except lite.IntegrityError:
