@@ -87,6 +87,8 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2):
             Multiples int,
             unique (PATHid, Entries))""")
         add_path(cur, out_file1, 'BED')
+        for genome in opts.genome:
+            add_path(cur, genome, 'FASTA')
         if out_file2:
             add_path(cur, out_file2, 'BED')
         if not opts.read == 2:
