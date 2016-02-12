@@ -6,11 +6,12 @@ information needed
 
 """
 
-from argparse import HelpFormatter
-from pytadbit import get_dependencies_version
+from argparse                       import HelpFormatter
+from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
-from pytadbit.parsers.map_parser import parse_map
-from os import system, path
+from pytadbit.parsers.map_parser    import parse_map
+from os                             import system, path
+from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db
 import logging
 import fcntl
 from cPickle import load, UnpicklingError
@@ -150,11 +151,47 @@ def save_to_db(opts, counts, f_names1, f_names2, out_file1, out_file2):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         cur = con.cursor()
-        for read in counts:
-            for item in counts[read]:
-                ('# PARSED READ%s PATH\t%d\t%s\n' % (
-                    read, counts[read][item],
-                    out_file1 if read == 1 else out_file2))
+        cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='PARSED'""")
+        if not cur.fetchall():
+            cur.execute("""
+        create table PARSED
+           (Id integer primary key,
+            SAMid int,
+            PARSEDid int,
+            Entries int,
+            Multiples int,
+            unique (SAMid, PARSEDid, Entries))""")
+        add_path(cur, out_file1, 'BED')
+        if out_file2:
+            add_path(cur, out_file2, 'BED')
+        if not opts.read == 2:
+            for i, item in enumerate(counts[0]):
+                try:
+                    cur.execute("""
+                    insert into PARSED
+                    (Id  , SAMid, PARSEDid, Entries, Multiples)
+                    values
+                    (NULL,    %d,       %d,      %d,        %d)
+                    """ % (get_path_id(cur, f_names1[i]), get_path_id(cur, out_file1),
+                           counts[0][item], counts[0][item]))
+                except lite.IntegrityError:
+                    print 'WARNING: already parsed'
+        if not opts.read == 1:
+            for i, item in enumerate(counts[1]):
+                try:
+                    cur.execute("""
+                    insert into PARSED
+                    (Id  , SAMid, PARSEDid, Entries, Multiples)
+                    values
+                    (NULL,    %d,       %d,       %d,       %d)
+                    """ % (get_path_id(cur, f_names2[i]), get_path_id(cur, out_file2),
+                           counts[1][item], counts[1][item]))
+                except lite.IntegrityError:
+                    print 'WARNING: already parsed'
+        print_db(cur, 'FASTQs')
+        print_db(cur, 'PATHs')
+        print_db(cur, 'PARSED')
 
 def load_parameters_fromdb(workdir):
     con = lite.connect(path.join(workdir, 'trace.db'))
@@ -166,16 +203,16 @@ def load_parameters_fromdb(workdir):
         # fetch file names to parse
         cur.execute("""
         select distinct PATHs.Id,PATHs.Path from PATHs
-        join FASTQs on FASTQs.Read = 1
-        where PATHs.Type='SAM/MAP'
+        inner join FASTQs on PATHs.Id = FASTQs.SAMid
+        where FASTQs.Read = 1
         """)
         for fname in cur.fetchall():
             ids.append(fname[0])
             fnames1.append(fname[1])
         cur.execute("""
         select distinct PATHs.Id,PATHs.Path from PATHs
-        join FASTQs on FASTQs.Read = 2
-        where PATHs.Type='SAM/MAP'
+        inner join FASTQs on PATHs.Id = FASTQs.SAMid
+        where FASTQs.Read = 2
         """)
         for fname in cur.fetchall():
             ids.append(fname[0])
@@ -192,6 +229,5 @@ def load_parameters_fromdb(workdir):
             raise Exception(
                 'ERROR: different enzymes used to generate these files')
         renz = enzymes[0][0]
-            
     return fnames1, fnames2, renz
         

@@ -18,13 +18,14 @@ mapping strategy
 
 """
 
-from argparse import HelpFormatter
+from argparse                             import HelpFormatter
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
-from pytadbit.utils.fastq_utils   import quality_plot
-from pytadbit.mapping.full_mapper import full_mapping
-from pytadbit import get_dependencies_version
-from os import system, path
-from multiprocessing import cpu_count
+from pytadbit.utils.fastq_utils           import quality_plot
+from pytadbit.mapping.full_mapper         import full_mapping
+from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
+from pytadbit                             import get_dependencies_version
+from os                                   import system, path
+from multiprocessing                      import cpu_count
 import logging
 import fcntl
 import sqlite3 as lite
@@ -279,9 +280,9 @@ def save_to_db(opts, outfiles):
      (Id  , FASTQid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
     values
      (NULL,      %d,      %d, '%s',   %d,   %d,   '%s',       %d,    %d,      %d)
-     """ % (get_id(cur, opts.fastq), num, window, not opts.iterative,
-            opts.read, opts.renz, get_id(cur, opts.workdir), get_id(cur, out),
-            get_id(cur, opts.index)))
+     """ % (get_path_id(cur, opts.fastq), num, window, not opts.iterative,
+            opts.read, opts.renz, get_path_id(cur, opts.workdir),
+            get_path_id(cur, out), get_path_id(cur, opts.index)))
             except lite.IntegrityError:
                 pass
         print_db(cur, 'FASTQs')
@@ -290,27 +291,4 @@ def save_to_db(opts, outfiles):
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
 
-def add_path(cur, path, type):
-    try:
-        cur.execute("insert into PATHs (Id  , Path, Type) values (NULL, '%s', '%s')" % (
-            path, type))
-    except lite.IntegrityError:
-        pass
-
-def get_id(cur, name):
-    cur.execute('SELECT Id from PATHS where Path="%s"' % name)
-    return cur.fetchall()[0][0]
-
-def print_db(cur, name):
-    cur.execute('select * from %s' % name)
-    names = [x[0] for x in cur.description]
-    rows = cur.fetchall()
-    cols = [max(vals) for vals in zip(*[[len(str(v)) for v in row]
-                                        for row in rows + [names]])]
-    print ',-' + '-.-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-.'
-    print '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v) for i, v in enumerate(names)]) + ' |'
-    print '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|'
-    print '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
-                                        for i, v in enumerate(row)]) + ' |'  for row in rows])
-    print "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'"
     

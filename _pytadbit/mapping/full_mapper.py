@@ -219,8 +219,8 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
     for kw in kwargs:
         if not kw in ['nthreads', 'max_edit_distance',
                       'mismatches', 'max_reads_per_chunk',
-                      'out_files', 'temp_dir']:
-            warn('WARNING: %s not is usual keywords, misspelled?' % kw)
+                      'out_files', 'temp_dir', 'skip']:
+            warn('WARNING: %s not in usual keywords, misspelled?' % kw)
 
     # input
     inputf = gem.files.open(fastq_path)
