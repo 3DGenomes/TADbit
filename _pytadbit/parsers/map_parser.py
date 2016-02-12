@@ -66,6 +66,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         outfiles = (out_file1, )
 
     windows = {}
+    multis  = {}
     for read in range(len(fnames)):
         if verbose:
             print 'Loading read' + str(read + 1)
@@ -146,28 +147,28 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         ## Multicontacts
         tmp_reads_fh = open(tmp_name)
         try:
-            read = tmp_reads_fh.next()
+            read_line = tmp_reads_fh.next()
         except StopIteration:
             raise StopIteration('ERROR!\n Nothing parsed, check input files and'
                                 ' chromosome names (in genome.fasta and SAM/MAP'
                                 ' files).')
-        prev_head = read.split('\t', 1)[0]
+        prev_head = read_line.split('\t', 1)[0]
         prev_head = prev_head.split('~' , 1)[0]
-        prev_read = read
-        multi = 0
-        for read in tmp_reads_fh:
-            head = read.split('\t', 1)[0]
+        prev_read = read_line
+        multis[read] = 0
+        for read_line in tmp_reads_fh:
+            head = read_line.split('\t', 1)[0]
             head = head.split('~' , 1)[0]
             if head == prev_head:
-                multi += 1
-                prev_read =  prev_read.strip() + '|||' + read
+                multis[read] += 1
+                prev_read =  prev_read.strip() + '|||' + read_line
             else:
                 reads_fh.write(prev_read)
-                prev_read = read
+                prev_read = read_line
             prev_head = head
         reads_fh.write(prev_read)
         reads_fh.close()
 
         if clean:
             os.system('rm -rf ' + tmp_name)
-    return windows
+    return windows, multis

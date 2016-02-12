@@ -2,15 +2,16 @@
 some utils relative to sqlite
 """
 import sqlite3 as lite
+from os.path import abspath
 
-def get_path_id(cur, name):
-    cur.execute('SELECT Id from PATHs where Path="%s"' % name)
+def get_path_id(cur, path):
+    cur.execute('SELECT Id from PATHs where Path="%s"' % abspath(path))
     return cur.fetchall()[0][0]
 
 def add_path(cur, path, typ):
     try:
         cur.execute("insert into PATHs (Id  , Path, Type) values (NULL, '%s', '%s')" % (
-            path, typ))
+            abspath(path), typ))
     except lite.IntegrityError:
         pass
 

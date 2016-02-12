@@ -253,7 +253,7 @@ def save_to_db(opts, outfiles):
             cur.execute("""
             create table FASTQs
                (Id integer primary key,
-                FASTQid int,
+                PATHid int,
                 Entries int,
                 Trim text,
                 Frag int,
@@ -262,7 +262,7 @@ def save_to_db(opts, outfiles):
                 WRKDIRid int,
                 SAMid int,
                 INDEXid int,
-                unique (FASTQid,Entries,Read,Enzyme,WRKDIRid,SAMid,INDEXid))""")
+                unique (PATHid,Entries,Read,Enzyme,WRKDIRid,SAMid,INDEXid))""")
         add_path(cur, opts.workdir, 'WORKDIR')
         add_path(cur, opts.fastq,  'FASTQ')
         add_path(cur, opts.index, 'INDEX')
@@ -277,7 +277,7 @@ def save_to_db(opts, outfiles):
             try:
                 cur.execute("""
     insert into FASTQs
-     (Id  , FASTQid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
+     (Id  , PATHid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
     values
      (NULL,      %d,      %d, '%s',   %d,   %d,   '%s',       %d,    %d,      %d)
      """ % (get_path_id(cur, opts.fastq), num, window, not opts.iterative,

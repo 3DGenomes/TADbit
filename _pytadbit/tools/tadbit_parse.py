@@ -48,9 +48,9 @@ def run(opts):
         genome = parse_fasta(opts.genome)
 
     logging.info('parsing reads in %s project', name)
-    counts = parse_map(f_names1, f_names2, out_file1=out_file1, out_file2=out_file2,
-                       re_name=renz, verbose=True,
-                       genome_seq=genome)
+    counts, multis = parse_map(f_names1, f_names2, out_file1=out_file1,
+                               out_file2=out_file2, re_name=renz, verbose=True,
+                               genome_seq=genome)
 
     # write machine log
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
@@ -62,10 +62,116 @@ def run(opts):
                     out_file1 if read == 1 else out_file2))
         fcntl.flock(mlog, fcntl.LOCK_UN)
 
-
     # save all job information to sqlite DB
-    save_to_db(opts, counts, f_names1, f_names2, out_file1, out_file2)
+    save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2)
 
+def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2):
+    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    with con:
+        cur = con.cursor()
+        cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='SAMs'""")
+        if not cur.fetchall():
+            cur.execute("""
+        create table SAMs
+           (Id integer primary key,
+            PATHid int,
+            BEDid int,
+            Entries int,
+            unique (PATHid, BEDid, Entries))""")
+            cur.execute("""
+        create table BEDs
+           (Id integer primary key,
+            PATHid int,
+            Entries int,
+            Multiples int,
+            unique (PATHid, Entries))""")
+        add_path(cur, out_file1, 'BED')
+        if out_file2:
+            add_path(cur, out_file2, 'BED')
+        if not opts.read == 2:
+            try:
+                sum_reads = 0
+                for i, item in enumerate(counts[0]):
+                    cur.execute("""
+                    insert into SAMs
+                    (Id  , PATHid, BEDid, Entries)
+                    values
+                    (NULL,    %d,     %d,      %d)
+                    """ % (get_path_id(cur, f_names1[i]), get_path_id(cur, out_file1),
+                           counts[0][item]))
+                    sum_reads += counts[0][item]
+                cur.execute("""
+                insert into BEDs
+                (Id  , PATHid, Entries, Multiples)
+                values
+                (NULL,     %d,      %d,        %d)
+                """ % (get_path_id(cur, out_file1), sum_reads, multis[0]))
+            except lite.IntegrityError:
+                print 'WARNING: already parsed'
+        if not opts.read == 1:
+            try:
+                sum_reads = 0
+                for i, item in enumerate(counts[1]):
+                    cur.execute("""
+                    insert into SAMs
+                    (Id  , PATHid, BEDid, Entries)
+                    values
+                    (NULL,     %d,    %d,      %d)
+                    """ % (get_path_id(cur, f_names2[i]), get_path_id(cur, out_file2),
+                           counts[1][item]))
+                    sum_reads += counts[1][item]
+                cur.execute("""
+                insert into BEDs
+                (Id  , PATHid, Entries, Multiples)
+                values
+                (NULL,     %d,      %d,        %d)
+                """ % (get_path_id(cur, out_file2), sum_reads, multis[1]))
+            except lite.IntegrityError:
+                print 'WARNING: already parsed'
+        print_db(cur, 'FASTQs')
+        print_db(cur, 'PATHs')
+        print_db(cur, 'SAMs')
+        print_db(cur, 'BEDs')
+
+def load_parameters_fromdb(workdir):
+    con = lite.connect(path.join(workdir, 'trace.db'))
+    fnames1 = []
+    fnames2 = []
+    ids = []
+    with con:
+        cur = con.cursor()
+        # fetch file names to parse
+        cur.execute("""
+        select distinct PATHs.Id,PATHs.Path from PATHs
+        inner join FASTQs on PATHs.Id = FASTQs.SAMid
+        where FASTQs.Read = 1
+        """)
+        for fname in cur.fetchall():
+            ids.append(fname[0])
+            fnames1.append(fname[1])
+        cur.execute("""
+        select distinct PATHs.Id,PATHs.Path from PATHs
+        inner join FASTQs on PATHs.Id = FASTQs.SAMid
+        where FASTQs.Read = 2
+        """)
+        for fname in cur.fetchall():
+            ids.append(fname[0])
+            fnames2.append(fname[1])
+        # GET enzyme name
+        enzymes = []
+        for fid in ids:
+            cur.execute("""
+            select distinct FASTQs.Enzyme from FASTQs
+            where FASTQs.SAMid=%d
+            """ % fid)
+            enzymes.extend(cur.fetchall())
+        if len(set(reduce(lambda x, y: x+ y, enzymes))) != 1:
+            raise Exception(
+                'ERROR: different enzymes used to generate these files')
+        renz = enzymes[0][0]
+    return fnames1, fnames2, renz
+        
 
 def populate_args(parser):
     """
@@ -146,88 +252,3 @@ def check_options(opts):
         vlog = open(vlog_path, 'w')
         vlog.write(dependencies)
         vlog.close()
-
-def save_to_db(opts, counts, f_names1, f_names2, out_file1, out_file2):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
-    with con:
-        cur = con.cursor()
-        cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='PARSED'""")
-        if not cur.fetchall():
-            cur.execute("""
-        create table PARSED
-           (Id integer primary key,
-            SAMid int,
-            PARSEDid int,
-            Entries int,
-            Multiples int,
-            unique (SAMid, PARSEDid, Entries))""")
-        add_path(cur, out_file1, 'BED')
-        if out_file2:
-            add_path(cur, out_file2, 'BED')
-        if not opts.read == 2:
-            for i, item in enumerate(counts[0]):
-                try:
-                    cur.execute("""
-                    insert into PARSED
-                    (Id  , SAMid, PARSEDid, Entries, Multiples)
-                    values
-                    (NULL,    %d,       %d,      %d,        %d)
-                    """ % (get_path_id(cur, f_names1[i]), get_path_id(cur, out_file1),
-                           counts[0][item], counts[0][item]))
-                except lite.IntegrityError:
-                    print 'WARNING: already parsed'
-        if not opts.read == 1:
-            for i, item in enumerate(counts[1]):
-                try:
-                    cur.execute("""
-                    insert into PARSED
-                    (Id  , SAMid, PARSEDid, Entries, Multiples)
-                    values
-                    (NULL,    %d,       %d,       %d,       %d)
-                    """ % (get_path_id(cur, f_names2[i]), get_path_id(cur, out_file2),
-                           counts[1][item], counts[1][item]))
-                except lite.IntegrityError:
-                    print 'WARNING: already parsed'
-        print_db(cur, 'FASTQs')
-        print_db(cur, 'PATHs')
-        print_db(cur, 'PARSED')
-
-def load_parameters_fromdb(workdir):
-    con = lite.connect(path.join(workdir, 'trace.db'))
-    fnames1 = []
-    fnames2 = []
-    ids = []
-    with con:
-        cur = con.cursor()
-        # fetch file names to parse
-        cur.execute("""
-        select distinct PATHs.Id,PATHs.Path from PATHs
-        inner join FASTQs on PATHs.Id = FASTQs.SAMid
-        where FASTQs.Read = 1
-        """)
-        for fname in cur.fetchall():
-            ids.append(fname[0])
-            fnames1.append(fname[1])
-        cur.execute("""
-        select distinct PATHs.Id,PATHs.Path from PATHs
-        inner join FASTQs on PATHs.Id = FASTQs.SAMid
-        where FASTQs.Read = 2
-        """)
-        for fname in cur.fetchall():
-            ids.append(fname[0])
-            fnames2.append(fname[1])
-        # GET enzyme name
-        enzymes = []
-        for fid in ids:
-            cur.execute("""
-            select distinct FASTQs.Enzyme from FASTQs
-            where FASTQs.SAMid=%d
-            """ % fid)
-            enzymes.extend(cur.fetchall())
-        if len(set(reduce(lambda x, y: x+ y, enzymes))) != 1:
-            raise Exception(
-                'ERROR: different enzymes used to generate these files')
-        renz = enzymes[0][0]
-    return fnames1, fnames2, renz
-        

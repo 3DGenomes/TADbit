@@ -34,7 +34,6 @@ if CHKTIME:
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
-
 def check_hic(hic, size):
     """
     check if hi-c data is symmetric
@@ -44,7 +43,6 @@ def check_hic(hic, size):
             if not hic[i * size + j] == hic[j * size + i]:
                 raise AttributeError('ERROR: matrix should be symmetric.\n')
     return True
-
 
 class TestTadbit(unittest.TestCase):
     """
