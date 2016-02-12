@@ -154,10 +154,12 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         prev_head = read.split('\t', 1)[0]
         prev_head = prev_head.split('~' , 1)[0]
         prev_read = read
+        multi = 0
         for read in tmp_reads_fh:
             head = read.split('\t', 1)[0]
             head = head.split('~' , 1)[0]
             if head == prev_head:
+                multi += 1
                 prev_read =  prev_read.strip() + '|||' + read
             else:
                 reads_fh.write(prev_read)
