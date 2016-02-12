@@ -91,7 +91,7 @@ def populate_args(parser):
                       default=False,
                       help='generate a quality plot of FASTQ and exits')
 
-    glopts.add_argument('-o', '--workdir', dest='workdir', metavar="PATH",
+    glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,
                         help='path to an output folder.')
 
