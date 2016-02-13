@@ -177,7 +177,8 @@ def check_options(opts):
 
     # check skip
     if not path.exists(opts.workdir) and opts.skip:
-        raise Exception('ERROR: can use output files, workdir missing')
+        print ('WARNING: can use output files, found, not skipping...')
+        opts.skip = False
 
     # number of cpus
     if opts.cpus == 0:
