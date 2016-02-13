@@ -164,7 +164,6 @@ def insert_mark(header, num):
 def _map2fastq(read):
     return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
 
-
 def _gem_filter(fnam, unmap_out, map_out):
     """
     Divides reads in a map file in two categories: uniquely mapped, and not.
@@ -201,7 +200,6 @@ def _gem_filter(fnam, unmap_out, map_out):
         if not bad:
             map_out.write(_strip_read_name(line))
     unmap_out.close()
-
 
 def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
     """

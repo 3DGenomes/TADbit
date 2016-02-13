@@ -8,10 +8,10 @@ def get_path_id(cur, path):
     cur.execute('SELECT Id from PATHs where Path="%s"' % abspath(path))
     return cur.fetchall()[0][0]
 
-def add_path(cur, path, typ):
+def add_path(cur, path, typ, jobid):
     try:
-        cur.execute("insert into PATHs (Id  , Path, Type) values (NULL, '%s', '%s')" % (
-            abspath(path), typ))
+        cur.execute("insert into PATHs (Id  , Path, Type, JOBid) values (NULL, '%s', '%s', '%s')" % (
+            abspath(path), typ, jobid))
     except lite.IntegrityError:
         pass
 

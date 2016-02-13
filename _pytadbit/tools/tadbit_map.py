@@ -25,15 +25,19 @@ from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit                             import get_dependencies_version
 from os                                   import system, path
+from hashlib                              import md5
 from multiprocessing                      import cpu_count
 import logging
 import fcntl
 import sqlite3 as lite
+import time
 
 DESC = "Map Hi-C reads and organize results in an output working directory"
 
 def run(opts):
     check_options(opts)
+
+    launch_time = time.localtime()
 
     if opts.quality_plot:
         logging.info('Generating Hi-C QC plot at:\n  ' +
@@ -56,8 +60,10 @@ def run(opts):
         for i, (out, _) in enumerate(outfiles[1:], 1):
             outfiles[i] = out, outfiles[i-1][1] - sum(1 for _ in open(outfiles[i-1][0]))
     
+    finish_time = time.localtime()
+
     # save all job information to sqlite DB
-    save_to_db(opts, outfiles)
+    save_to_db(opts, outfiles, launch_time, finish_time)
     
     # write machine log
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
@@ -237,7 +243,7 @@ def check_options(opts):
         vlog.write(dependencies)
         vlog.close()
 
-def save_to_db(opts, outfiles):
+def save_to_db(opts, outfiles, launch_time, finish_time):
     # write little DB to keep track of processes and options
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
@@ -249,8 +255,17 @@ def save_to_db(opts, outfiles):
             cur.execute("""
             create table PATHs
                (Id integer primary key,
-                Path text, Type text,
+                JOBid int, Path text, Type text,
                 unique (Path))""")
+            cur.execute("""
+            create table JOBs
+               (Id integer primary key,
+                Parameters text,
+                Launch_time text,
+                Finish_time text,
+                Type text,
+                Parameters_md5 text,
+                unique (Parameters_md5))""")
             cur.execute("""
             create table FASTQs
                (Id integer primary key,
@@ -264,9 +279,31 @@ def save_to_db(opts, outfiles):
                 SAMid int,
                 INDEXid int,
                 unique (PATHid,Entries,Read,Enzyme,WRKDIRid,SAMid,INDEXid))""")
-        add_path(cur, opts.workdir, 'WORKDIR')
-        add_path(cur, opts.fastq,  'FASTQ')
-        add_path(cur, opts.index, 'INDEX')
+
+        try:
+            parameters = ' '.join(
+                ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
+                 if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
+                              'func', 'tmp'] and not v is None])
+            param_hash = md5(' '.join(
+                ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
+                 if not k in ['workdir', 'func', 'tmp']])).hexdigest()
+            cur.execute("""
+    insert into JOBs
+     (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
+    values
+     (NULL,       '%s',        '%s',        '%s', 'Map',           '%s')
+     """ % (parameters,
+            time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
+            time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
+        except lite.IntegrityError:
+            pass
+        cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
+        jobid = cur.fetchall()[0][0]
+        print jobid
+        add_path(cur, opts.workdir, 'WORKDIR', jobid)
+        add_path(cur, opts.fastq  ,  'FASTQ' , jobid)
+        add_path(cur, opts.index  , 'INDEX'  , jobid)
         for i, (out, num) in enumerate(outfiles):
             try:
                 window = opts.windows[i]
@@ -274,7 +311,7 @@ def save_to_db(opts, outfiles):
                 window = opts.windows[-1]
             except TypeError:
                 window = 'None'
-            add_path(cur, out, 'SAM/MAP')
+            add_path(cur, out, 'SAM/MAP', jobid)
             frag = ('none' if opts.iterative else 'frag' if i==len(outfiles) - 1
                     else 'full')
             try:
@@ -289,7 +326,8 @@ def save_to_db(opts, outfiles):
             except lite.IntegrityError:
                 pass
         print_db(cur, 'FASTQs')
-        print_db(cur, 'PATHs')
+        print_db(cur, 'PATHs' )
+        print_db(cur, 'JOBs'  )
 
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
