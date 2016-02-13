@@ -12,6 +12,8 @@ from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
 from os                             import system, path
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db
+from hashlib                        import md5
+import time
 import logging
 import fcntl
 from cPickle import load, UnpicklingError
@@ -22,6 +24,8 @@ DESC = "Parse mapped Hi-C reads and get the intersection"
 def run(opts):
     check_options(opts)
 
+    launch_time = time.localtime()
+    
     f_names1, f_names2, renz = load_parameters_fromdb(opts.workdir)
 
     name = path.split(opts.workdir)[-1]
@@ -62,10 +66,14 @@ def run(opts):
                     out_file1 if read == 1 else out_file2))
         fcntl.flock(mlog, fcntl.LOCK_UN)
 
-    # save all job information to sqlite DB
-    save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2)
+    finish_time = time.localtime()
 
-def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2):
+    # save all job information to sqlite DB
+    save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
+               launch_time, finish_time)
+
+def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
+               launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         cur = con.cursor()
@@ -86,11 +94,32 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2):
             Entries int,
             Multiples int,
             unique (PATHid, Entries))""")
-        add_path(cur, out_file1, 'BED')
+        try:
+            parameters = ' '.join(
+                ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
+                 if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
+                              'func', 'tmp'] and not v is None])
+            parameters = parameters.replace("'", '"')
+            param_hash = md5(' '.join(
+                ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
+                 if not k in ['workdir', 'func', 'tmp']])).hexdigest()
+            cur.execute("""
+    insert into JOBs
+     (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
+    values
+     (NULL,       '%s',        '%s',        '%s', 'Parse',           '%s')
+     """ % (parameters,
+            time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
+            time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
+        except lite.IntegrityError:
+            pass
+        cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
+        jobid = cur.fetchall()[0][0]        
+        add_path(cur, out_file1, 'BED', jobid)
         for genome in opts.genome:
-            add_path(cur, genome, 'FASTA')
+            add_path(cur, genome, 'FASTA', jobid)
         if out_file2:
-            add_path(cur, out_file2, 'BED')
+            add_path(cur, out_file2, 'BED', jobid)
         if not opts.read == 2:
             try:
                 sum_reads = 0
@@ -135,6 +164,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2):
         print_db(cur, 'PATHs')
         print_db(cur, 'SAMs')
         print_db(cur, 'BEDs')
+        print_db(cur, 'JOBs')
 
 def load_parameters_fromdb(workdir):
     con = lite.connect(path.join(workdir, 'trace.db'))

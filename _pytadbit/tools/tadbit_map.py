@@ -300,7 +300,6 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
             pass
         cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
         jobid = cur.fetchall()[0][0]
-        print jobid
         add_path(cur, opts.workdir, 'WORKDIR', jobid)
         add_path(cur, opts.fastq  ,  'FASTQ' , jobid)
         add_path(cur, opts.index  , 'INDEX'  , jobid)
