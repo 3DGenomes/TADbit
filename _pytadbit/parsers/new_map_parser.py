@@ -186,7 +186,7 @@ def write_reads_to_file(reads, outfiles, tmp_files, nfile):
 
 def merge_sort(file1, file2, outfiles, nfile):
     tmp_name = os.path.join(*outfiles.split('/')[:-1] +
-                            [('tmp_%03d_' % nfile) + outfiles.split('/')[-1]])
+                            [('tmp_merged_%03d_' % nfile) + outfiles.split('/')[-1]])
     tmp_name = ('/' * outfiles.startswith('/')) + tmp_name
     tmp_file = open(tmp_name, 'w')
     fh1 = open(file1)
