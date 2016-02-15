@@ -26,38 +26,38 @@ def run(opts):
 
     fname1, fname2 = load_parameters_fromdb(opts)
 
-    jobid = get_jobid(workdir=opts.workdir)
-
-    system('mkdir -p ' + path.join(opts.workdir, '%03d_filtered_reads' % jobid))
+    jobid = get_jobid(workdir=opts.workdir) + 1
 
     reads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
                       'all_r1-r2_intersection.tsv')
-
     mreads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
                        'valid_r1-r2_intersection.tsv')
 
-    # compute the intersection of the two read ends
-    count, multiples = get_intersection(fname1, fname2, reads)
+    if not opts.resume:
+        system('mkdir -p ' + path.join(opts.workdir, '%03d_filtered_reads' % jobid))
 
-    # compute insert size
-    print 'Get insert size...'
-    median, ori_max_mol = insert_sizes(reads, nreads=1000000)
+        # compute the intersection of the two read ends
+        count, multiples = get_intersection(fname1, fname2, reads)
+
+        # compute insert size
+        print 'Get insert size...'
+        median, ori_max_mol = insert_sizes(reads, nreads=1000000)
+        
+        print '  - median insert size =', median
+        print '  - max (99.9%) insert size =', ori_max_mol
     
-    print '  - median insert size =', median
-    print '  - max (99.9%) insert size =', ori_max_mol
-
-    max_mol = 4 * median
-    print ('   Using 4 times median insert size (%d bp) to check '
-           'for random breaks') % max_mol
-
-    print "identify pairs to filter..."
-    masked = filter_reads(reads, max_molecule_length=max_mol,
-                          over_represented=0.001, max_frag_size=100000,
-                          min_frag_size=50, re_proximity=5,
-                          min_dist_to_re=max_mol, fast=True)
+        max_mol = 4 * median
+        print ('   Using 4 times median insert size (%d bp) to check '
+               'for random breaks') % max_mol
+    
+        print "identify pairs to filter..."
+        masked = filter_reads(reads, max_molecule_length=max_mol,
+                              over_represented=0.001, max_frag_size=100000,
+                              min_frag_size=50, re_proximity=5,
+                              min_dist_to_re=max_mol, fast=True)
 
     n_valid_pairs = apply_filter(reads, mreads, masked,
-                                 filters=[1, 2, 3, 4, 6, 7, 8, 9, 10])
+                                 filters=opts.apply)
 
     finish_time = time.localtime()
 
@@ -86,6 +86,7 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
             PATHid int,
             Name text,
             Count int,
+            JOBid int,
             unique (PATHid))""")
         try:
             parameters = ' '.join(
@@ -126,13 +127,23 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
             try:
                 cur.execute("""
             insert into FILTERs
-            (Id  , PATHid, Name, Count)
+            (Id  , PATHid, Name, Count, JOBid)
             values
-            (NULL,    %d,     '%s',      '%s')
+            (NULL,    %d,     '%s',      '%s', %d)
                 """ % (get_path_id(cur, masked[f]['fnam'], opts.workdir),
-                       masked[f]['name'], masked[f]['reads']))
+                       masked[f]['name'], masked[f]['reads'], jobid))
             except lite.IntegrityError:
                 print 'WARNING: already filtered'
+        try:
+            cur.execute("""
+        insert into FILTERs
+        (Id  , PATHid, Name, Count, JOBid)
+        values
+        (NULL,    %d,     '%s',      '%s', %d)
+            """ % (get_path_id(cur, mreads, opts.workdir),
+                   'Valid-pairs', n_valid_pairs, jobid))
+        except lite.IntegrityError:
+            print 'WARNING: already filtered'
         print_db(cur, 'FASTQs')
         print_db(cur, 'PATHs')
         print_db(cur, 'SAMs')
@@ -163,11 +174,20 @@ def load_parameters_fromdb(opts):
 
     return fname1, fname2
 
-
 def populate_args(parser):
     """
     parse option from call
     """
+    masked = {1 : {'name': 'self-circle'       }, 
+              2 : {'name': 'dangling-end'      },
+              3 : {'name': 'error'             },
+              4 : {'name': 'extra dangling-end'},
+              5 : {'name': 'too close from RES'},
+              6 : {'name': 'too short'         },
+              7 : {'name': 'too large'         },
+              8 : {'name': 'over-represented'  },
+              9 : {'name': 'duplicated'        },
+              10: {'name': 'random breaks'     }}
     parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
                                                       max_help_position=27)
 
@@ -177,14 +197,33 @@ def populate_args(parser):
                       default=False,
                       help='overwrite previously run job')
 
+    glopts.add_argument('--resume', dest='resume', action='store_true',
+                      default=False,
+                      help='use filters of previously run job')
+
+    glopts.add_argument('--apply', dest='apply', nargs='+',
+                        type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        help=("""[%(default)s] Use filters to define a set os valid pair of reads
+                        e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" + 
+                        "correspond to: %s" % (', '.join(
+                            ['%2d: %15s' % (k, masked[k]['name']) for k in masked]))))
+
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
-
 
     parser.add_argument_group(glopts)
 
 def check_options(opts):
 
     if not opts.workdir: raise Exception('ERROR: output option required.')
+
+    # check resume
+    if not path.exists(opts.workdir) and opts.resume:
+        print ('WARNING: can use output files, found, not resuming...')
+        opts.resume = False
+
+    # sort filters
+    if opts.apply:
+        opts.apply.sort()
