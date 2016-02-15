@@ -147,8 +147,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
         except lite.IntegrityError:
             pass
-        cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
-        jobid = cur.fetchall()[0][0]        
+        jobid = get_jobid(cur)
         add_path(cur, out_file1, 'BED', jobid, opts.workdir)
         for genome in opts.genome:
             add_path(cur, genome, 'FASTA', jobid, opts.workdir)

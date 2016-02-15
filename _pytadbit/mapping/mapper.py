@@ -78,6 +78,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     reads_fh.write(header1)
     # writes common reads
     count = 0
+    multiples = {}
     try:
         while True:
             if eq_reads(read1, read2):
@@ -129,6 +130,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
                                               list(elts[elt][5:]))
                     contacts = len(elts) - 1
                     if contacts > 1:
+                        multiples.setdefault(contacts, 0)
+                        multiples[contacts] += 1
                         for i, (r1, r2) in enumerate(combinations(elts.values(), 2)):
                             r1, r2 = sorted((r1, r2), key=lambda x: x[1:2])
                             reads_fh.write(r1[0] + (
@@ -167,6 +170,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     reads_fh.close()
     if verbose:
         print 'Found %d pair of reads mapping uniquely' % count
+    return count, multiples
 
 def trimming(raw_seq_len, seq_start, min_seq_len):
     return seq_start, raw_seq_len - seq_start - min_seq_len
