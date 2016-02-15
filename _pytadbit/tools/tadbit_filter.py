@@ -10,6 +10,8 @@ from argparse                    import HelpFormatter
 from pytadbit.mapping.mapper     import get_intersection
 from os                          import path, system
 from pytadbit.utils.sqlite_utils import get_jobid, add_path, get_path_id, print_db
+from pytadbit.mapping.analyze    import plot_iterative_mapping, insert_sizes
+from pytadbit.mapping.filter     import filter_reads, apply_filter
 from hashlib                     import md5
 import logging
 import fcntl
@@ -22,24 +24,48 @@ def run(opts):
     check_options(opts)
     launch_time = time.localtime()
 
-    fname1, fname2 = load_parameters_fromdb(opts.workdir)
+    fname1, fname2 = load_parameters_fromdb(opts)
 
     jobid = get_jobid(workdir=opts.workdir)
 
     system('mkdir -p ' + path.join(opts.workdir, '%03d_filtered_reads' % jobid))
 
-    mreads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
-                       'all_r1-r2_intersection.tsv')
+    reads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
+                      'all_r1-r2_intersection.tsv')
 
-    count, multiples = get_intersection(fname1, fname2, mreads)
+    mreads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
+                       'valid_r1-r2_intersection.tsv')
+
+    # compute the intersection of the two read ends
+    count, multiples = get_intersection(fname1, fname2, reads)
+
+    # compute insert size
+    print 'Get insert size...'
+    median, ori_max_mol = insert_sizes(reads, nreads=1000000)
+    
+    print '  - median insert size =', median
+    print '  - max (99.9%) insert size =', ori_max_mol
+
+    max_mol = 4 * median
+    print ('   Using 4 times median insert size (%d bp) to check '
+           'for random breaks') % max_mol
+
+    print "identify pairs to filter..."
+    masked = filter_reads(reads, max_molecule_length=max_mol,
+                          over_represented=0.001, max_frag_size=100000,
+                          min_frag_size=50, re_proximity=5,
+                          min_dist_to_re=max_mol, fast=True)
+
+    n_valid_pairs = apply_filter(reads, mreads, masked,
+                                 filters=[1, 2, 3, 4, 6, 7, 8, 9, 10])
 
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
-    save_to_db(opts, count, multiples, mreads,
+    save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
                launch_time, finish_time)
 
-def save_to_db(opts, count, multiples, mreads,
+def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
                launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
@@ -54,6 +80,13 @@ def save_to_db(opts, count, multiples, mreads,
             Total_interactions int,
             Multiple_interactions text,
             unique (PATHid))""")
+            cur.execute("""
+        create table FILTERs
+           (Id integer primary key,
+            PATHid int,
+            Name text,
+            Count int,
+            unique (PATHid))""")
         try:
             parameters = ' '.join(
                 ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
@@ -62,12 +95,12 @@ def save_to_db(opts, count, multiples, mreads,
             parameters = parameters.replace("'", '"')
             param_hash = md5(' '.join(
                 ['%s:%s' % (k, v) for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['workdir', 'func', 'tmp']])).hexdigest()
+                 if not k in ['force', 'workdir', 'func', 'tmp']])).hexdigest()
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
     values
-     (NULL,       '%s',        '%s',        '%s', 'Parse',           '%s')
+     (NULL,       '%s',        '%s',        '%s', 'Filter',           '%s')
      """ % (parameters,
             time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
             time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
@@ -88,16 +121,28 @@ def save_to_db(opts, count, multiples, mreads,
                                     for k in sorted(multiples)])))
         except lite.IntegrityError:
             print 'WARNING: already parsed'
+        for f in masked:
+            add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
+            try:
+                cur.execute("""
+            insert into FILTERs
+            (Id  , PATHid, Name, Count)
+            values
+            (NULL,    %d,     '%s',      '%s')
+                """ % (get_path_id(cur, masked[f]['fnam'], opts.workdir),
+                       masked[f]['name'], masked[f]['reads']))
+            except lite.IntegrityError:
+                print 'WARNING: already filtered'
         print_db(cur, 'FASTQs')
         print_db(cur, 'PATHs')
         print_db(cur, 'SAMs')
         print_db(cur, 'BEDs')
         print_db(cur, 'JOBs')
-        print_db(cur, 'INTERSECTIONs')
-        
+        print_db(cur, 'INTERSECTIONs')        
+        print_db(cur, 'FILTERs')
 
-def load_parameters_fromdb(workdir):
-    con = lite.connect(path.join(workdir, 'trace.db'))
+def load_parameters_fromdb(opts):
+    con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         cur = con.cursor()
         # get the JOBid of the parsing job
@@ -107,15 +152,14 @@ def load_parameters_fromdb(workdir):
         """)
         jobids = cur.fetchall()
         if len(jobids) > 1:
-            raise NotImplementedError('ERROR: only one parsing per working '
-                                      'directory supported')
+            cur.execute("delete from JOBs where Id = jobids")
         parse_jobid = jobids[0][0]
         # fetch path to parsed BED files
         cur.execute("""
         select distinct Path from PATHs
         where JOBid = %d and Type = 'BED'
         """ % parse_jobid)
-        fname1, fname2 = [path.join(workdir, e[0]) for e in cur.fetchall()]
+        fname1, fname2 = [path.join(opts.workdir, e[0]) for e in cur.fetchall()]
 
     return fname1, fname2
 
@@ -129,9 +173,9 @@ def populate_args(parser):
 
     glopts = parser.add_argument_group('General options')
 
-    # glopts.add_argument('--qc_plot', dest='quality_plot', action='store_true',
-    #                   default=False,
-    #                   help='generate a quality plot of FASTQ and exits')
+    glopts.add_argument('--force', dest='force', action='store_true',
+                      default=False,
+                      help='overwrite previously run job')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,
