@@ -56,7 +56,7 @@ def run(opts):
                             path.join(opts.workdir,
                                       '%03d_mapped_r%d' % (jobid, opts.read)),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
-                            frag_map=not opts.iterative, clean=True,
+                            frag_map=not opts.iterative, clean=opts.keep_tmp,
                             windows=opts.windows, get_nread=True, skip=opts.skip)
 
     # adjust line count
@@ -77,9 +77,10 @@ def run(opts):
             for out, num in outfiles]) + '\n')
         fcntl.flock(mlog, fcntl.LOCK_UN)
 
-    logging.info('cleaning temporary files')
     # clean
-    system('rm -rf ' + opts.tmp)
+    if not opts.keep_tmp:
+        logging.info('cleaning temporary files')
+        system('rm -rf ' + opts.tmp)
 
 def populate_args(parser):
     """
@@ -163,6 +164,10 @@ def populate_args(parser):
     glopts.add_argument('--skip', dest='skip', action='store_true',
                       default=False,
                       help='[DEBUG] in case already mapped.')
+
+    glopts.add_argument('--keep_tmp', dest='keep_tmp', action='store_true',
+                      default=False,
+                      help='[DEBUG] keep temporary files.')
 
     mapper.add_argument("-C", "--cpu", dest="cpus", type=int,
                         default=0, help='''[%(default)s] Maximum number of CPU
