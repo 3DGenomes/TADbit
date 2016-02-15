@@ -286,7 +286,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                  if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
                               'func', 'tmp'] and not v is None])
             param_hash = md5(' '.join(
-                ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
+                ['%s:%s' % (k, v) for k, v in sorted(opts.__dict__.iteritems())
                  if not k in ['workdir', 'func', 'tmp']])).hexdigest()
             cur.execute("""
     insert into JOBs

@@ -130,7 +130,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                               'func', 'tmp'] and not v is None])
             parameters = parameters.replace("'", '"')
             param_hash = md5(' '.join(
-                ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
+                ['%s:%s' % (k, v) for k, v in sorted(opts.__dict__.iteritems())
                  if not k in ['workdir', 'func', 'tmp']])).hexdigest()
             cur.execute("""
     insert into JOBs
