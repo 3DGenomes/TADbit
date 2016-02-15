@@ -23,6 +23,7 @@ from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils           import quality_plot
 from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
+from pytadbit.utils.sqlite_utils          import get_jobid
 from pytadbit                             import get_dependencies_version
 from os                                   import system, path
 from hashlib                              import md5
@@ -48,9 +49,12 @@ def run(opts):
                                        path.split(opts.fastq)[-1] + '.pdf'))
         return
 
+    jobid = get_jobid(workdir=opts.workdir) + 1
+
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
     outfiles = full_mapping(opts.index, opts.fastq,
-                            path.join(opts.workdir, '01_mapped_r%d' % opts.read),
+                            path.join(opts.workdir,
+                                      '%03d_mapped_r%d' % (jobid, opts.read)),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
                             frag_map=not opts.iterative, clean=True,
                             windows=opts.windows, get_nread=True, skip=opts.skip)
@@ -298,8 +302,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
             time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
         except lite.IntegrityError:
             pass
-        cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
-        jobid = cur.fetchall()[0][0]
+        jobid = get_jobid(cur)
         add_path(cur, opts.workdir, 'WORKDIR', jobid)
         add_path(cur, opts.fastq  ,  'FASTQ' , jobid, opts.workdir)
         add_path(cur, opts.index  , 'INDEX'  , jobid, opts.workdir)

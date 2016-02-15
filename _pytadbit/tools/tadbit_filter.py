@@ -7,13 +7,10 @@ information needed
 """
 
 from argparse import HelpFormatter
-from pytadbit import get_dependencies_version
-from pytadbit.parsers.genome_parser import parse_fasta
-from pytadbit.parsers.map_parser import parse_map
-from os import system, path
+from pytadbit.mapping.mapper     import get_intersection
+from os import path
 import logging
 import fcntl
-from cPickle import load, UnpicklingError
 import sqlite3 as lite
 import time
 
@@ -24,9 +21,10 @@ def run(opts):
     launch_time = time.localtime()
 
     fname1, fname2 = load_parameters_fromdb(opts.workdir)
-    print fname1
-    print fname2
 
+    mreads = opts.workdir, '02_parsed_reads', ''
+
+    get_intersection(fname1, fname2, mreads)
 
 def load_parameters_fromdb(workdir):
     con = lite.connect(path.join(workdir, 'trace.db'))
@@ -47,7 +45,7 @@ def load_parameters_fromdb(workdir):
         select distinct Path from PATHs
         where JOBid = %d and Type = 'BED'
         """ % parse_jobid)
-        fname1, fname2 = [e[0]for e in cur.fetchall()]
+        fname1, fname2 = [path.join(workdir, e[0]) for e in cur.fetchall()]
 
     return fname1, fname2
 

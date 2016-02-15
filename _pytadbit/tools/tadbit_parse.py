@@ -11,7 +11,7 @@ from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.new_map_parser    import parse_map
 from os                             import system, path
-from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db
+from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
 from hashlib                        import md5
 import time
 import logging
@@ -29,20 +29,25 @@ def run(opts):
     f_names1, f_names2, renz = load_parameters_fromdb(opts.workdir)
 
     name = path.split(opts.workdir)[-1]
+
+    jobid = get_jobid(workdir=opts.workdir) + 1
+
+    outdir = '%03d_parsed_reads' % jobid
     
-    system('mkdir -p ' + path.join(opts.workdir, '02_parsed_reads'))
+    system('mkdir -p ' + path.join(opts.workdir, outdir))
+    
     if not opts.read:
-        out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r1.tsv' % name)
-        out_file2 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r1.tsv' % name)
+        out_file2 = path.join(opts.workdir, outdir, '%s_r2.tsv' % name)
     elif opts.read == 1:
-        out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r1.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r1.tsv' % name)
         out_file2 = None
         f_names2  = None
     elif opts.read == 2:
         out_file2 = None
         f_names1  = f_names2
         f_names2  = None
-        out_file1 = path.join(opts.workdir, '02_parsed_reads', '%s_r2.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r2.tsv' % name)
         
     logging.info('parsing genomic sequence')
     try:

@@ -2,7 +2,21 @@
 some utils relative to sqlite
 """
 import sqlite3 as lite
-from os.path import abspath, relpath
+from os.path import abspath, relpath, join
+
+def get_jobid(cur=None, workdir=None):
+    try:
+        if cur:
+            cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
+            return cur.fetchall()[0][0]
+        con = lite.connect(join(abspath(workdir), 'trace.db'))
+        with con:
+            # check if table exists
+            cur = con.cursor()
+            cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
+        return cur.fetchall()[0][0]
+    except lite.OperationalError:
+        return 0
 
 def get_path_id(cur, path, workdir=None):
     path = abspath(path)
