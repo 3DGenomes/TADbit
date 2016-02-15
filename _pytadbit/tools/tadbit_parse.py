@@ -58,6 +58,7 @@ def run(opts):
                                    genome_seq=genome)
     else:
         counts = {}
+        counts[0] = {}
         fhandler = open(out_file1)
         for line in fhandler:
             if line.startswith('# MAPPED '):
@@ -71,6 +72,7 @@ def run(opts):
             if '|||' in line:
                 multis[0] += line.count('|||')
         if out_file2:
+            counts[1] = {}
             fhandler = open(out_file2)
             for line in fhandler:
                 if line.startswith('# MAPPED '):

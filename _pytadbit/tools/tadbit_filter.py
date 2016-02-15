@@ -14,21 +14,43 @@ from os import system, path
 import logging
 import fcntl
 from cPickle import load, UnpicklingError
+import sqlite3 as lite
+import time
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
 
-def get_out_files(workdir):
-    fnames1 = []
-    fnames2 = []
-    for line in open(path.join(workdir, 'trace.log')):
-        if   line.startswith('# MAPPED READ1 '):
-            fnames1.append(line.split()[-1])
-        elif line.startswith('# MAPPED READ2 '):
-            fnames2.append(line.split()[-1])
-    return fnames1, fnames2
-
 def run(opts):
     check_options(opts)
+    launch_time = time.localtime()
+
+    fname1, fname2 = load_parameters_fromdb(opts.workdir)
+    print fname1
+    print fname2
+
+
+def load_parameters_fromdb(workdir):
+    con = lite.connect(path.join(workdir, 'trace.db'))
+    with con:
+        cur = con.cursor()
+        # get the JOBid of the parsing job
+        cur.execute("""
+        select distinct Id from JOBs
+        where Type = 'Parse'
+        """)
+        jobids = cur.fetchall()
+        if len(jobids) > 1:
+            raise NotImplementedError('ERROR: only one parsing per working '
+                                      'directory supported')
+        parse_jobid = jobids[0][0]
+        # fetch path to parsed BED files
+        cur.execute("""
+        select distinct Path from PATHs
+        where JOBid = %d and Type = 'BED'
+        """ % parse_jobid)
+        fname1, fname2 = [e[0]for e in cur.fetchall()]
+
+    return fname1, fname2
+
 
 def populate_args(parser):
     """
