@@ -122,7 +122,10 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
             stdout.flush()
         while len(tmp_files) > 1:
             file1 = tmp_files.pop(0)
-            file2 = tmp_files.pop(0)
+            try:
+                file2 = tmp_files.pop(0)
+            except IndexError:
+                break
             if verbose:
                 stdout.write('.')
             stdout.flush()
