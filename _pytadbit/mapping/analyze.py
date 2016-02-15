@@ -650,13 +650,16 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     except StopIteration:
         pass
     fhandler.close()
-    ax = setup_plot(axe, figsize=(10, 5.5))
     max_perc = np.percentile(des, max_size)
     perc99   = np.percentile(des, 99)
     perc01   = np.percentile(des, 1)
     perc50   = np.percentile(des, 50)
     perc95   = np.percentile(des, 95)
     perc05   = np.percentile(des, 5)
+    if not savefig and not axe:
+        return perc50, max_perc
+    
+    ax = setup_plot(axe, figsize=(10, 5.5))
     desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
                          label='1-99%% DEs\n(%.0f-%.0f nts)' % (perc01, perc99))
     ax.axvspan(perc01, perc05, facecolor='darkolivegreen', alpha=.3)
