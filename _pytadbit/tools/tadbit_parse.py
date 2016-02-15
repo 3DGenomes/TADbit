@@ -144,11 +144,11 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             pass
         cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
         jobid = cur.fetchall()[0][0]        
-        add_path(cur, out_file1, 'BED', jobid)
+        add_path(cur, out_file1, 'BED', jobid, opts.workdir)
         for genome in opts.genome:
-            add_path(cur, genome, 'FASTA', jobid)
+            add_path(cur, genome, 'FASTA', jobid, opts.workdir)
         if out_file2:
-            add_path(cur, out_file2, 'BED', jobid)
+            add_path(cur, out_file2, 'BED', jobid, opts.workdir)
         if not opts.read == 2:
             try:
                 sum_reads = 0
@@ -158,7 +158,8 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                     (Id  , PATHid, BEDid, Entries)
                     values
                     (NULL,    %d,     %d,      %d)
-                    """ % (get_path_id(cur, f_names1[i]), get_path_id(cur, out_file1),
+                    """ % (get_path_id(cur, f_names1[i], opts.workdir),
+                           get_path_id(cur, out_file1, opts.workdir),
                            counts[0][item]))
                     sum_reads += counts[0][item]
                 cur.execute("""
@@ -166,7 +167,8 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                 (Id  , PATHid, Entries, Multiples)
                 values
                 (NULL,     %d,      %d,        %d)
-                """ % (get_path_id(cur, out_file1), sum_reads, multis[0]))
+                """ % (get_path_id(cur, out_file1, opts.workdir),
+                       sum_reads, multis[0]))
             except lite.IntegrityError:
                 print 'WARNING: already parsed'
         if not opts.read == 1:
@@ -178,7 +180,8 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                     (Id  , PATHid, BEDid, Entries)
                     values
                     (NULL,     %d,    %d,      %d)
-                    """ % (get_path_id(cur, f_names2[i]), get_path_id(cur, out_file2),
+                    """ % (get_path_id(cur, f_names2[i], opts.workdir),
+                           get_path_id(cur, out_file2, opts.workdir),
                            counts[1][item]))
                     sum_reads += counts[1][item]
                 cur.execute("""
@@ -186,7 +189,8 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                 (Id  , PATHid, Entries, Multiples)
                 values
                 (NULL,     %d,      %d,        %d)
-                """ % (get_path_id(cur, out_file2), sum_reads, multis[1]))
+                """ % (get_path_id(cur, out_file2, opts.workdir),
+                       sum_reads, multis[1]))
             except lite.IntegrityError:
                 print 'WARNING: already parsed'
         print_db(cur, 'FASTQs')
@@ -210,7 +214,7 @@ def load_parameters_fromdb(workdir):
         """)
         for fname in cur.fetchall():
             ids.append(fname[0])
-            fnames1.append(fname[1])
+            fnames1.append(path.join(workdir, fname[1]))
         cur.execute("""
         select distinct PATHs.Id,PATHs.Path from PATHs
         inner join FASTQs on PATHs.Id = FASTQs.SAMid
@@ -218,7 +222,7 @@ def load_parameters_fromdb(workdir):
         """)
         for fname in cur.fetchall():
             ids.append(fname[0])
-            fnames2.append(fname[1])
+            fnames2.append(path.join(workdir, fname[1]))
         # GET enzyme name
         enzymes = []
         for fid in ids:

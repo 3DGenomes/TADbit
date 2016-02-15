@@ -2,16 +2,25 @@
 some utils relative to sqlite
 """
 import sqlite3 as lite
-from os.path import abspath
+from os.path import abspath, relpath
 
-def get_path_id(cur, path):
-    cur.execute('SELECT Id from PATHs where Path="%s"' % abspath(path))
+def get_path_id(cur, path, workdir=None):
+    path = abspath(path)
+    if workdir:
+        workdir = abspath(workdir)
+        path    = relpath(path, workdir)
+    cur.execute('SELECT Id from PATHs where Path="%s"' % path)
     return cur.fetchall()[0][0]
 
-def add_path(cur, path, typ, jobid):
+def add_path(cur, path, typ, jobid, workdir=None):
+    path    = abspath(path)
+    if workdir:
+        workdir = abspath(workdir)
+        path    = relpath(path, workdir)
     try:
-        cur.execute("insert into PATHs (Id  , Path, Type, JOBid) values (NULL, '%s', '%s', '%s')" % (
-            abspath(path), typ, jobid))
+        cur.execute("""
+        insert into PATHs (Id  , Path, Type, JOBid)
+        values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
     except lite.IntegrityError:
         pass
 

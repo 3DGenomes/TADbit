@@ -301,8 +301,8 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         cur.execute("select Id from JOBs where Id = (select max(id)  from JOBs)")
         jobid = cur.fetchall()[0][0]
         add_path(cur, opts.workdir, 'WORKDIR', jobid)
-        add_path(cur, opts.fastq  ,  'FASTQ' , jobid)
-        add_path(cur, opts.index  , 'INDEX'  , jobid)
+        add_path(cur, opts.fastq  ,  'FASTQ' , jobid, opts.workdir)
+        add_path(cur, opts.index  , 'INDEX'  , jobid, opts.workdir)
         for i, (out, num) in enumerate(outfiles):
             try:
                 window = opts.windows[i]
@@ -310,7 +310,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                 window = opts.windows[-1]
             except TypeError:
                 window = 'None'
-            add_path(cur, out, 'SAM/MAP', jobid)
+            add_path(cur, out, 'SAM/MAP', jobid, opts.workdir)
             frag = ('none' if opts.iterative else 'frag' if i==len(outfiles) - 1
                     else 'full')
             try:
@@ -319,9 +319,10 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
      (Id  , PATHid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
     values
      (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',       %d,    %d,      %d)
-     """ % (get_path_id(cur, opts.fastq), num, window, frag,
+     """ % (get_path_id(cur, opts.fastq, opts.workdir), num, window, frag,
             opts.read, opts.renz, get_path_id(cur, opts.workdir),
-            get_path_id(cur, out), get_path_id(cur, opts.index)))
+            get_path_id(cur, out, opts.workdir),
+            get_path_id(cur, opts.index, opts.workdir)))
             except lite.IntegrityError:
                 pass
         print_db(cur, 'FASTQs')
