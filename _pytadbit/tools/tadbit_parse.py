@@ -51,10 +51,37 @@ def run(opts):
     except UnpicklingError:
         genome = parse_fasta(opts.genome)
 
-    logging.info('parsing reads in %s project', name)
-    counts, multis = parse_map(f_names1, f_names2, out_file1=out_file1,
-                               out_file2=out_file2, re_name=renz, verbose=True,
-                               genome_seq=genome)
+    if not opts.skip:
+        logging.info('parsing reads in %s project', name)
+        counts, multis = parse_map(f_names1, f_names2, out_file1=out_file1,
+                                   out_file2=out_file2, re_name=renz, verbose=True,
+                                   genome_seq=genome)
+    else:
+        counts = {}
+        fhandler = open(out_file1)
+        for line in fhandler:
+            if line.startswith('# MAPPED '):
+                _, _, item, value = line.split()
+                counts[0][item] = int(value)
+            elif not line.startswith('#'):
+                break
+        multis = {}
+        multis[0] = 0
+        for line in fhandler:
+            if '|||' in line:
+                multis[0] += line.count('|||')
+        if out_file2:
+            fhandler = open(out_file2)
+            for line in fhandler:
+                if line.startswith('# MAPPED '):
+                    _, _, item, value = line.split()
+                    counts[1][item] = int(value)
+                elif not line.startswith('#'):
+                    break
+            multis[1] = 0
+            for line in fhandler:
+                if '|||' in line:
+                    multis[1] += line.count('|||')                
 
     # write machine log
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
@@ -232,6 +259,10 @@ def populate_args(parser):
                         type=int, default=None, 
                         help='In case only one of the reads needs to be parsed')
 
+    glopts.add_argument('--skip', dest='skip', action='store_true',
+                      default=False,
+                      help='[DEBUG] in case already mapped.')
+
     glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
                         type=str,
                         help='''paths to file(s) with FASTA files of the
@@ -251,6 +282,11 @@ def check_options(opts):
 
     if not opts.genome: raise Exception('ERROR: genome parameter required.')
     if not opts.workdir: raise Exception('ERROR: workdir parameter required.')
+
+    # check skip
+    if not path.exists(opts.workdir) and opts.skip:
+        print ('WARNING: can use output files, found, not skipping...')
+        opts.skip = False
 
     if opts.workdir.endswith('/'):
         opts.workdir = opts.workdir[:-1]
