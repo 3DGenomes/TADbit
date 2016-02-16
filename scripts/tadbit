@@ -10,6 +10,7 @@ from pytadbit.tools import tadbit_map
 from pytadbit.tools import tadbit_parse
 from pytadbit.tools import tadbit_filter
 from pytadbit.tools import tadbit_describe
+from pytadbit.tools import tadbit_normalize
 
 def main(arguments):
     if len(arguments) > 1:
@@ -52,9 +53,19 @@ def main(arguments):
     args_pp["describe"].set_defaults(func=tadbit_describe.run)
     tadbit_describe.populate_args(args_pp["describe"])
 
+    # - NORMALIZE -
+    args_pp["normalize"] = subparser.add_parser("normalize",
+                                             description=tadbit_normalize.DESC,
+                                             formatter_class=RawDescriptionHelpFormatter)
+    args_pp["normalize"].set_defaults(func=tadbit_normalize.run)
+    tadbit_normalize.populate_args(args_pp["normalize"])
+
     if len(arguments) == 1:
         parser.print_usage()
         return
+
+    if not arguments[2].startswith('-'):
+        arguments.insert(2, '-w')
 
     if len(arguments) == 2:
         try:
