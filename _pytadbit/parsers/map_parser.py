@@ -2,12 +2,12 @@
 22 may 2015
 """
 
-from pytadbit.utils.file_handling import magic_open
-from bisect import bisect_right as bisect
+from pytadbit.utils.file_handling         import magic_open
+from bisect                               import bisect_right as bisect
 from pytadbit.mapping.restriction_enzymes import map_re_sites
-from subprocess import Popen, PIPE
-from warnings import warn
+from warnings                             import warn
 import os
+from sys import stdout
 
 def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, clean=True,
@@ -65,19 +65,20 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         fnames = (f_names1,)
         outfiles = (out_file1, )
 
+    # max number of reads per intermediate files for sorting
+    max_size = 1000000
+    
     windows = {}
     multis  = {}
     for read in range(len(fnames)):
         if verbose:
             print 'Loading read' + str(read + 1)
         windows[read] = {}
-        tmp_name = os.path.join(*outfiles[read].split('/')[:-1] +
-                                ['tmp_' + outfiles[read].split('/')[-1]])
-        tmp_name = ('/' * outfiles[read].startswith('/')) + tmp_name
-        tmp_reads_fh = open(tmp_name, 'w')
-        sorter = Popen(['sort', '-k', '1,1', '-s', '-t', '\t'], stdin=PIPE,
-                       stdout=tmp_reads_fh)
         num = 0
+        # iteration over reads
+        nfile = 0
+        tmp_files = []
+        reads     = []
         for fnam in fnames[read]:
             try:
                 fhandler = magic_open(fnam)
@@ -89,49 +90,51 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 num = int(fnam.split('.')[-1].split(':')[0])
             except:
                 num += 1
-            windows[read].setdefault(num, 0)
+            # set read counter
             if verbose:
                 print 'loading file: %s' % (fnam)
-            # iteration over reads
-            for r in fhandler:
-                name, seq, _, _, ali = r.split('\t')[:5]
-                crm, strand, pos = ali.split(':')[:3]
-                positive = strand == '+'
-                len_seq  = len(seq)
-                if positive:
-                    pos = int(pos)
-                else:
-                    pos = int(pos) + len_seq - 1 # remove 1 because all inclusive
-                try:
-                    frag_piece = frags[crm][pos / frag_chunk]
-                except KeyError:
-                    # Chromosome not in hash
-                    continue
-                idx = bisect(frag_piece, pos)
-                try:
-                    next_re = frag_piece[idx]
-                except IndexError:
-                    # case where part of the read is mapped outside chromosome
-                    count = 0
-                    while idx >= len(frag_piece) and count < len_seq:
-                        pos -= 1
-                        count += 1
-                        frag_piece = frags[crm][pos / frag_chunk]
-                        idx = bisect(frag_piece, pos)
-                    if count >= len_seq:
-                        raise Exception('Read mapped mostly outside ' +
-                                        'chromosome\n')
-                    next_re = frag_piece[idx]
-                prev_re = frag_piece[idx - 1 if idx else 0]
-                sorter.stdin.write('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
-                    name, crm, pos, positive, len_seq, prev_re, next_re))
-                windows[read][num] += 1
-        
-        if verbose:
-            print 'finishing to sort'
-        sorter.communicate()
-        tmp_reads_fh.close()
+            # start parsing
+            read_count = 0
+            try:
+                while not False:
+                    for _ in xrange(max_size):
+                        try:
+                            reads.append(read_read(fhandler.next(), frags,
+                                                   frag_chunk))
+                        except KeyError:
+                            # Chromosome not in hash
+                            continue
+                        read_count += 1
+                    nfile += 1
+                    write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
+            except StopIteration:
+                fhandler.close()
+                nfile += 1
+                write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
+            windows[read][num] = read_count
+        nfile += 1
+        write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
 
+        # we have now sorted temporary files
+        # we do merge sort for eah pair
+        if verbose:
+            stdout.write('Merge sort')
+            stdout.flush()
+        while len(tmp_files) > 1:
+            file1 = tmp_files.pop(0)
+            try:
+                file2 = tmp_files.pop(0)
+            except IndexError:
+                break
+            if verbose:
+                stdout.write('.')
+            stdout.flush()
+            nfile += 1
+            tmp_files.append(merge_sort(file1, file2, outfiles[read], nfile))
+        if verbose:
+            stdout.write('\n')
+        tmp_name = tmp_files[0]
+        
         if verbose:
             print 'Getting Multiple contacts'
         reads_fh = open(outfiles[read], 'w')
@@ -168,7 +171,83 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
             prev_head = head
         reads_fh.write(prev_read)
         reads_fh.close()
-
         if clean:
             os.system('rm -rf ' + tmp_name)
     return windows, multis
+
+def write_reads_to_file(reads, outfiles, tmp_files, nfile):
+    if not reads: # can be...
+        return
+    tmp_name = os.path.join(*outfiles.split('/')[:-1] +
+                            [('tmp_%03d_' % nfile) + outfiles.split('/')[-1]])
+    tmp_name = ('/' * outfiles.startswith('/')) + tmp_name
+    tmp_files.append(tmp_name)
+    out = open(tmp_name, 'w')
+    out.write(''.join(sorted(reads, key=lambda x: x.split('\t', 1)[0].split('~')[0])))
+    out.close()
+    del(reads[:]) # empty list
+
+def merge_sort(file1, file2, outfiles, nfile):
+    tmp_name = os.path.join(*outfiles.split('/')[:-1] +
+                            [('tmp_merged_%03d_' % nfile) + outfiles.split('/')[-1]])
+    tmp_name = ('/' * outfiles.startswith('/')) + tmp_name
+    tmp_file = open(tmp_name, 'w')
+    fh1 = open(file1)
+    fh2 = open(file2)
+    greater = lambda x, y: x.split('\t', 1)[0].split('~')[0] > y.split('\t', 1)[0].split('~')[0]
+    read1 = fh1.next()
+    read2 = fh2.next()
+    while not False:
+        if greater(read2, read1):
+            tmp_file.write(read1)
+            try:
+                read1 = fh1.next()
+            except StopIteration:
+                tmp_file.write(read2)
+                break
+        else:
+            tmp_file.write(read2)
+            try:
+                read2 = fh2.next()
+            except StopIteration:
+                tmp_file.write(read1)
+                break
+    for read in fh1:
+        tmp_file.write(read)
+    for read in fh2:
+        tmp_file.write(read)
+    fh1.close()
+    fh2.close()
+    tmp_file.close()
+    os.system('rm -f ' + file1)
+    os.system('rm -f ' + file2)
+    return tmp_name
+
+def read_read(r, frags, frag_chunk):
+    name, seq, _, _, ali = r.split('\t')[:5]
+    crm, strand, pos = ali.split(':')[:3]
+    positive = strand == '+'
+    len_seq  = len(seq)
+    if positive:
+        pos = int(pos)
+    else:
+        pos = int(pos) + len_seq - 1 # remove 1 because all inclusive
+    frag_piece = frags[crm][pos / frag_chunk]
+    idx = bisect(frag_piece, pos)
+    try:
+        next_re = frag_piece[idx]
+    except IndexError:
+        # case where part of the read is mapped outside chromosome
+        count = 0
+        while idx >= len(frag_piece) and count < len_seq:
+            pos -= 1
+            count += 1
+            frag_piece = frags[crm][pos / frag_chunk]
+            idx = bisect(frag_piece, pos)
+        if count >= len_seq:
+            raise Exception('Read mapped mostly outside ' +
+                            'chromosome\n')
+        next_re = frag_piece[idx]
+    prev_re = frag_piece[idx - 1 if idx else 0]
+    return ('%s\t%s\t%d\t%d\t%d\t%d\t%d\n' % (
+        name, crm, pos, positive, len_seq, prev_re, next_re))

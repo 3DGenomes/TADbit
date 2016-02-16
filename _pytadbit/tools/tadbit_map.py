@@ -40,16 +40,19 @@ def run(opts):
 
     launch_time = time.localtime()
 
+    jobid = get_jobid(workdir=opts.workdir) + 1
+
     if opts.quality_plot:
         logging.info('Generating Hi-C QC plot at:\n  ' +
                path.join(opts.workdir, path.split(opts.fastq)[-1] + '.pdf'))
-        quality_plot(opts.fastq, r_enz=opts.renz,
-                     nreads=100000, paired=False,
-                     savefig=path.join(opts.workdir,
-                                       path.split(opts.fastq)[-1] + '.pdf'))
+        dangling_ends, ligated = quality_plot(opts.fastq, r_enz=opts.renz,
+                                              nreads=100000, paired=False,
+                                              savefig=path.join(
+                                                  opts.workdir,
+                                                  path.split(opts.fastq)[-1] + '.pdf'))
+        logging.info('  - Dangling-ends (sensu-stricto): %.3f%%', dangling_ends)
+        logging.info('  - Ligation sites: %.3f%%', ligated)
         return
-
-    jobid = get_jobid(workdir=opts.workdir) + 1
 
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
     outfiles = full_mapping(opts.index, opts.fastq,
@@ -103,7 +106,7 @@ def populate_args(parser):
                       help='generate a quality plot of FASTQ and exits')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
-                        action='store', default=None, type=str,
+                        action='store', default=None, type=str, required=True,
                         help='path to an output folder.')
 
     glopts.add_argument('--fastq', dest='fastq', metavar="PATH", action='store',

@@ -9,7 +9,7 @@ information needed
 from argparse                       import HelpFormatter
 from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
-from pytadbit.parsers.new_map_parser    import parse_map
+from pytadbit.parsers.map_parser    import parse_map
 from os                             import system, path
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
 from hashlib                        import md5
