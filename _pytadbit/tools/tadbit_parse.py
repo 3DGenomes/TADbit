@@ -34,9 +34,9 @@ def run(opts):
     jobid = get_jobid(workdir=opts.workdir) + 1
 
     outdir = '%03d_parsed_reads' % jobid
-    
+
     system('mkdir -p ' + path.join(opts.workdir, outdir))
-    
+
     if not opts.read:
         out_file1 = path.join(opts.workdir, outdir, '%s_r1.tsv' % name)
         out_file2 = path.join(opts.workdir, outdir, '%s_r2.tsv' % name)
@@ -113,22 +113,22 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='SAMs'""")
+                       type='table' AND name='MAPPED_OUTPUTs'""")
         if not cur.fetchall():
             cur.execute("""
-        create table SAMs
+        create table MAPPED_OUTPUTs
            (Id integer primary key,
             PATHid int,
             BEDid int,
-            Entries int,
-            unique (PATHid, BEDid, Entries))""")
+            Uniquely_mapped int,
+            unique (PATHid, BEDid))""")
             cur.execute("""
-        create table BEDs
+        create table PARSED_OUTPUTs
            (Id integer primary key,
             PATHid int,
-            Entries int,
+            Total_interactions int,
             Multiples int,
-            unique (PATHid, Entries))""")
+            unique (PATHid))""")
         try:
             parameters = ' '.join(
                 ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
@@ -154,32 +154,34 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             add_path(cur, genome, 'FASTA', jobid, opts.workdir)
         if out_file2:
             add_path(cur, out_file2, 'BED', jobid, opts.workdir)
+        fnames = f_names1, f_names2
+        outfiles = out_file1, out_file2
         for count in counts:
             try:
                 sum_reads = 0
                 for i, item in enumerate(counts[count]):
                     cur.execute("""
-                    insert into SAMs
-                    (Id  , PATHid, BEDid, Entries)
+                    insert into MAPPED_OUTPUTs
+                    (Id  , PATHid, BEDid, Uniquely_mapped)
                     values
                     (NULL,    %d,     %d,      %d)
-                    """ % (get_path_id(cur, f_names1[i], opts.workdir),
-                           get_path_id(cur, out_file1, opts.workdir),
+                    """ % (get_path_id(cur, fnames[count][i], opts.workdir),
+                           get_path_id(cur, outfiles[count], opts.workdir),
                            counts[count][item]))
                     sum_reads += counts[count][item]
                 cur.execute("""
-                insert into BEDs
-                (Id  , PATHid, Entries, Multiples)
+                insert into PARSED_OUTPUTs
+                (Id  , PATHid, Total_interactions, Multiples)
                 values
                 (NULL,     %d,      %d,        %d)
-                """ % (get_path_id(cur, out_file1, opts.workdir),
+                """ % (get_path_id(cur, outfiles[count], opts.workdir),
                        sum_reads, multis[count]))
             except lite.IntegrityError:
                 print 'WARNING: already parsed'
-        print_db(cur, 'FASTQs')
+        print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
-        print_db(cur, 'SAMs')
-        print_db(cur, 'BEDs')
+        print_db(cur, 'MAPPED_OUTPUTs')
+        print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
 
 def load_parameters_fromdb(workdir, reads=None, jobids=None):
@@ -196,8 +198,8 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                 cur.execute("""
                 select distinct JOBs.Id from JOBs
                    inner join PATHs on (JOBs.Id = PATHs.JOBid)
-                   inner join FASTQs on (PATHs.Id = FASTQs.SAMid)
-                 where FASTQs.Read = %d
+                   inner join MAPPED_INPUTs on (PATHs.Id = MAPPED_INPUTs.SAMid)
+                 where MAPPED_INPUTs.Read = %d
                 """ % read)
                 jobids.append([j[0] for j in cur.fetchall()])
                 if len(jobids[-1]) > 1:
@@ -209,8 +211,8 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
         if 1 in reads:
             cur.execute("""
             select distinct PATHs.Id,PATHs.Path from PATHs
-            inner join FASTQs on PATHs.Id = FASTQs.SAMid
-            where FASTQs.Read = 1 and PATHs.JOBid = %d
+            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.SAMid
+            where MAPPED_INPUTs.Read = 1 and PATHs.JOBid = %d
             """ % jobids.pop(0))
             for fname in cur.fetchall():
                 ids.append(fname[0])
@@ -218,8 +220,8 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
         if 2 in reads:
             cur.execute("""
             select distinct PATHs.Id,PATHs.Path from PATHs
-            inner join FASTQs on PATHs.Id = FASTQs.SAMid
-            where FASTQs.Read = 2 and PATHs.JOBid = %d 
+            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.SAMid
+            where MAPPED_INPUTs.Read = 2 and PATHs.JOBid = %d 
            """ % jobids.pop(0))
             for fname in cur.fetchall():
                 ids.append(fname[0])
@@ -228,8 +230,8 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
         enzymes = []
         for fid in ids:
             cur.execute("""
-            select distinct FASTQs.Enzyme from FASTQs
-            where FASTQs.SAMid=%d
+            select distinct MAPPED_INPUTs.Enzyme from MAPPED_INPUTs
+            where MAPPED_INPUTs.SAMid=%d
             """ % fid)
             enzymes.extend(cur.fetchall())
         if len(set(reduce(lambda x, y: x+ y, enzymes))) != 1:

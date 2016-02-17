@@ -70,17 +70,17 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='INTERSECTIONs'""")
+                       type='table' AND name='INTERSECTION_OUTPUTs'""")
         if not cur.fetchall():
             cur.execute("""
-        create table INTERSECTIONs
+        create table INTERSECTION_OUTPUTs
            (Id integer primary key,
             PATHid int,
             Total_interactions int,
             Multiple_interactions text,
             unique (PATHid))""")
             cur.execute("""
-        create table FILTERs
+        create table FILTER_OUTPUTs
            (Id integer primary key,
             PATHid int,
             Name text,
@@ -112,7 +112,7 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
         add_path(cur, mreads, '2D_BED', jobid, opts.workdir)
         try:
             cur.execute("""
-            insert into INTERSECTIONs
+            insert into INTERSECTION_OUTPUTs
             (Id  , PATHid, Total_interactions, Multiple_interactions)
             values
             (NULL,    %d,     %d,      '%s')
@@ -125,7 +125,7 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
             add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
             try:
                 cur.execute("""
-            insert into FILTERs
+            insert into FILTER_OUTPUTs
             (Id  , PATHid, Name, Count, JOBid)
             values
             (NULL,    %d,     '%s',      '%s', %d)
@@ -135,7 +135,7 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
                 print 'WARNING: already filtered'
         try:
             cur.execute("""
-        insert into FILTERs
+        insert into FILTER_OUTPUTs
         (Id  , PATHid, Name, Count, JOBid)
         values
         (NULL,    %d,     '%s',      '%s', %d)
@@ -148,8 +148,8 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
         print_db(cur, 'SAMs')
         print_db(cur, 'BEDs')
         print_db(cur, 'JOBs')
-        print_db(cur, 'INTERSECTIONs')        
-        print_db(cur, 'FILTERs')
+        print_db(cur, 'INTERSECTION_OUTPUTs')        
+        print_db(cur, 'FILTER_OUTPUTs')
 
 def load_parameters_fromdb(opts):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))

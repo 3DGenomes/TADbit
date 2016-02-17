@@ -262,7 +262,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         # check if table exists
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='FASTQs'""")
+                       type='table' AND name='MAPPED_INPUTs'""")
         if not cur.fetchall():
             cur.execute("""
             create table PATHs
@@ -279,7 +279,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                 Parameters_md5 text,
                 unique (Parameters_md5))""")
             cur.execute("""
-            create table FASTQs
+            create table MAPPED_INPUTs
                (Id integer primary key,
                 PATHid int,
                 Entries int,
@@ -312,7 +312,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
             pass
         jobid = get_jobid(cur)
         add_path(cur, opts.workdir, 'WORKDIR', jobid)
-        add_path(cur, opts.fastq  ,  'FASTQ' , jobid, opts.workdir)
+        add_path(cur, opts.fastq  ,  'MAPPED_FASTQ' , jobid, opts.workdir)
         add_path(cur, opts.index  , 'INDEX'  , jobid, opts.workdir)
         for i, (out, num) in enumerate(outfiles):
             try:
@@ -326,7 +326,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                     else 'full')
             try:
                 cur.execute("""
-    insert into FASTQs
+    insert into MAPPED_INPUTs
      (Id  , PATHid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
     values
      (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',       %d,    %d,      %d)
@@ -336,7 +336,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
             get_path_id(cur, opts.index, opts.workdir)))
             except lite.IntegrityError:
                 pass
-        print_db(cur, 'FASTQs')
+        print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs' )
         print_db(cur, 'JOBs'  )
 
