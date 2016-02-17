@@ -137,7 +137,8 @@ def filter_non_syntenic_alignments(synteny_file, synteny_reso=0):
             ALIGNMENTS.pop(num)
                 
 
-def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0, clean_all=False):
+def get_alignments(seed, targ, maf_path, synteny_file, synteny_reso=0,
+                   clean_all=False):
     """
     From a MAF file extract alignment of a pair of species. Also extends
     the alignment taking advantage of missing species.

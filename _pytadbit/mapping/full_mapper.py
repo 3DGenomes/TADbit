@@ -3,18 +3,15 @@
 """
 
 import os
-from pytadbit.utils.file_handling import mkdir
+from pytadbit.utils.file_handling import mkdir, which
 from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
 from tempfile import gettempdir, mkstemp
-try:
-    import gem
-except ImportError:
-    warn('WARNING: GEMTOOLS not found')
+from subprocess import Popen
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
-                    min_seq_len=15, fastq=True, verbose=True):
+                    min_seq_len=15, fastq=True, verbose=True, **kwargs):
     """
     Given a FASTQ file it can split it into chunks of a given number of reads,
     trim each read according to a start/end positions or split them into
@@ -24,6 +21,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
        removes the ligation site, and put back the original RE site.
 
     """
+    skip = kwargs.get('skip', False)
     ## define local funcitons to process reads and sequences
     def _get_fastq_read(rlines):
         """
@@ -102,7 +100,15 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             print '  - conversion to MAP format'
         if trim:
             print '  - trimming reads %d-%d' % tuple(trim)
-            
+    counter = 0
+    if skip:
+        if fastq:
+            print '    ... skipping, only counting lines'
+            counter = sum(1 for _ in magic_open(fastq_path,
+                                                cpus=kwargs.get('nthreads')))
+            counter /= 4 if fastq else 1
+            print '            ' + fastq_path, counter, fastq
+        return out_fastq, counter
     # open input file
     fhandler = magic_open(fastq_path)
     # create output file
@@ -112,6 +118,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     site = '' if add_site else enzyme
     for header in fhandler:
         header, seq, qal = get_seq(header)
+        counter += 1
         # trim on wanted region of the read
         seq = strip_line(seq)
         qal = strip_line(qal)
@@ -143,7 +150,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                                             seq + site, qal + 'H' * (len(site)),
                                             '0', '-\n'))))
     out.close()
-    return out_name
+    return out_name, counter
 
 def insert_mark(header, num):
     if num == 1 :
@@ -153,7 +160,6 @@ def insert_mark(header, num):
 
 def _map2fastq(read):
     return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
-
 
 def _gem_filter(fnam, unmap_out, map_out):
     """
@@ -192,8 +198,8 @@ def _gem_filter(fnam, unmap_out, map_out):
             map_out.write(_strip_read_name(line))
     unmap_out.close()
 
-
-def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
+def gem_mapping(gem_index_path, fastq_path, out_map_path,
+                gem_binary='gem-mapper', **kwargs):
     """
     :param None focus: trims the sequence in the input FASTQ file according to a
        (start, end) position, or the name of a restriction enzyme. By default it
@@ -206,30 +212,39 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
     nthreads          = kwargs.get('nthreads'            , 8)
     max_edit_distance = kwargs.get('max_edit_distance'   , 0.04)
     mismatches        = kwargs.get('mismatches'          , 0.04)
-    quality           = kwargs.get('quality'             , 33)
 
     # check kwargs
     for kw in kwargs:
         if not kw in ['nthreads', 'max_edit_distance',
                       'mismatches', 'max_reads_per_chunk',
-                      'out_files', 'temp_dir']:
-            warn('WARNING: %s not is usual keywords, misspelled?' % kw)
+                      'out_files', 'temp_dir', 'skip']:
+            warn('WARNING: %s not in usual keywords, misspelled?' % kw)
 
-    # input
-    inputf = gem.files.open(fastq_path)
-
+    # check that we have the GEM binary:
+    gem_binary = which(gem_binary)
+    if not gem_binary:
+        raise Exception('\n\nERROR: GEM binary not found, install it from:'
+                        '\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/'
+                        '\n - Download the GEM-binaries-Linux-x86_64-core_i3 if'
+                        'have a recent computer, the '
+                        'GEM-binaries-Linux-x86_64-core_2 otherwise\n - '
+                        'Uncompress with "tar xjvf GEM-binaries-xxx.tbz2"\n - '
+                        'Copy the binary gem-mapper to /usr/local/bin/ for '
+                        'example (somewhere in your PATH).\n\nNOTE: GEM does '
+                        'not provide any binary for MAC-OS.')
     # mapping
     print 'TO GEM', fastq_path
-    return gem.mapper(inputf, gem_index_path, min_decoded_strata=0,
-                      max_decoded_matches=1, unique_mapping=False,
-                      max_edit_distance=max_edit_distance,
-                      mismatches=mismatches, quality=quality,
-                      output=out_map_path,
-                      threads=nthreads)
+    Popen([gem_binary, '-I', gem_index_path, '-q', 'offset-33',
+           '-m', str(max_edit_distance), '-s', '0',
+           '--max-decoded-matches', '1', '--min-decoded-strata', '0',
+           '--min-matched-bases', '0.8', '--gem-quality-threshold', '26',
+           '--max-big-indel-length', '15', '--mismatch-alphabet', 'ACGT',
+           '-T', str(nthreads), '-e', str(mismatches), '-i', fastq_path,
+           '-o', out_map_path.replace('.map', '')]).communicate()
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=None, add_site=True, clean=False,
-                 **kwargs):
+                 get_nread=False, **kwargs):
     """
     Do the mapping
 
@@ -261,10 +276,15 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
        substitutions will be found by the program.
     :param /tmp temp_dir: important to change. Intermediate FASTQ files will be
        written there.
+    :param False get_nreads: returns a list of lists where each element contains
+       a path and the number of reads processed
 
     :returns: a list of paths to generated outfiles. To be passed to 
        :func:`pytadbit.parsers.map_parser.parse_map`
     """
+
+    skip = kwargs.get('skip', False)
+    nthreads = kwargs.get('nthreads', 8)
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
         kwargs.get('temp_dir', gettempdir())))
@@ -281,14 +301,20 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     input_reads = fastq_path
     if windows is None:
         windows = (None, )
+    elif isinstance(windows[0], int):
+        windows = [tuple(windows)]
+    else:
+        # ensure that each element is a tuple, not a list
+        windows = [tuple(win) for win in windows]
     for win in windows:
         # Prepare the FASTQ file and iterate over them
-        curr_map = transform_fastq(input_reads, 
-                                   mkstemp(prefix=base_name + '_',
-                                           dir=temp_dir)[1],
-                                   fastq=(input_reads.endswith('.fastq')
-                                          or input_reads.endswith('.fastq.gz')),
-                                   min_seq_len=min_seq_len, trim=win)
+        curr_map, counter = transform_fastq(
+            input_reads, mkstemp(prefix=base_name + '_', dir=temp_dir)[1],
+            fastq=(   input_reads.endswith('.fastq'   )
+                   or input_reads.endswith('.fastq.gz')
+                   or input_reads.endswith('.fq.gz'   )
+                   or input_reads.endswith('.dsrc'    )),
+            min_seq_len=min_seq_len, trim=win, skip=skip, nthreads=nthreads)
         # clean
         if input_reads != fastq_path and clean:
             print '   x removing original input %s' % input_reads
@@ -303,134 +329,53 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             print 'Mapping reads in window %s-%s...' % (beg, end)
         else:
             print 'Mapping full reads...', curr_map
-        map_file = gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
-        map_file.close()
 
-        # parse map file to extract not uniquely mapped reads
-        print 'Parsing result...'
-        _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
-                    os.path.join(out_map_dir,
-                                 base_name + '_full_%s-%s.map' % (beg, end)))
-        # clean
-        if clean:
-            print '   x removing GEM input %s' % curr_map
-            os.system('rm -f %s' % (curr_map))
-            print '   x removing map %s' % out_map_path
-            os.system('rm -f %s' % (out_map_path))
-        # for next round, we will use remaining unmapped reads
-        input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
-        outfiles.append(os.path.join(out_map_dir,
+        if not skip:
+            gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
+
+            # parse map file to extract not uniquely mapped reads
+            print 'Parsing result...'
+            _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
+                        os.path.join(out_map_dir,
                                      base_name + '_full_%s-%s.map' % (beg, end)))
+            # clean
+            if clean:
+                print '   x removing GEM input %s' % curr_map
+                os.system('rm -f %s' % (curr_map))
+                print '   x removing map %s' % out_map_path
+                os.system('rm -f %s' % (out_map_path))
+            # for next round, we will use remaining unmapped reads
+            input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
+        outfiles.append(
+            (os.path.join(out_map_dir,
+                          base_name + '_full_%s-%s.map' % (beg, end)),
+             counter))
 
     # map again splitting unmapped reads into RE fragments
     # (no need to trim this time)
     if frag_map:
         if not r_enz:
             raise Exception('ERROR: need enzyme name to fragment.')
-        frag_map = transform_fastq(input_reads,
-                                   mkstemp(prefix=base_name + '_',
-                                           dir=temp_dir)[1],
-                                   min_seq_len=min_seq_len, trim=win,
-                                   fastq=False, r_enz=r_enz, add_site=add_site)
-        out_map_path = frag_map + '_frag.map'
-        print 'Mapping fragments of remaining reads...'
-        map_file = gem_mapping(gem_index_path, frag_map, out_map_path,
-                               **kwargs)
-        map_file.close()
-        print 'Parsing result...'
-        _gem_filter(out_map_path, curr_map + '_fail.map',
-                    os.path.join(out_map_dir, base_name + '_frag.map'))
-        outfiles.append(os.path.join(out_map_dir, base_name + '_frag.map'))
-    return outfiles
-
-def main():
-
-    fastq          = '/scratch/db/FASTQs/hsap/dixon_2012/dixon-2012_200bp.fastq'
-    fastq          = 'short_dixon-2012_200bp.fastq'
-    # fastq        = '/scratch/test/sample_dataset/FASTQs/sample_hsap_HindIII.fastq'
-    gem_index_path = '/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.gem'
-    out_map_dir1   = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/'
-    out_map_dir2   = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/'
-    temp_dir1      = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp1/'
-    temp_dir2      = '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/tmp2/'
-
-    print 'read 1'
-    outfiles1 = full_mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
-                             temp_dir=temp_dir1, windows=((1,100),), add_site=True)
-    print 'read 2'
-    outfiles2 = full_mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
-                             temp_dir=temp_dir2, windows=((101, 200),), add_site=True)
-    # print 'read 1'
-    # outfiles1 = mapping(gem_index_path, fastq, out_map_dir1, 'HindIII',
-    #                     temp_dir=temp_dir1,
-    #                     windows=(zip(*([0] * len(range(25, 105, 5)),
-    #                                    range(25,105,5)))))
-    # print 'read 2'
-    # outfiles2 = mapping(gem_index_path, fastq, out_map_dir2, 'HindIII',
-    #                     temp_dir=temp_dir2,
-    #                     windows=(zip(*([100] * len(range(125, 205, 5)),
-    #                                            range(125,205,5)))))
-    
-    print outfiles1
-    print 'xcmvnkljnv'
-    print outfiles2
-    
-    from pytadbit.parsers.map_parser import parse_map
-    from pytadbit.parsers.genome_parser import parse_fasta
-    from pytadbit.mapping.mapper import get_intersection
-    from pytadbit.mapping.filter import filter_reads, apply_filter
-    
-    read1, read2 = 'read1.tsv', 'read2.tsv',
-    parse_map(outfiles1, outfiles2, out_file1=read1, out_file2=read2,
-              genome_seq=parse_fasta('/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.fa'),
-              re_name='HindIII', verbose=True)
-
-    reads = 'both_reads.tsv'
-    get_intersection(read1, read2, reads)
-
-    masked = filter_reads(reads)
-    freads = 'filtered_reads.tsv'
-    apply_filter(reads, freads, masked)
-
-if __name__ == "__main__":
-    exit(main())
-
-
-"""
-outfiles1 = ['/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-25.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-30.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-35.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-40.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-45.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-50.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-55.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-60.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-65.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-70.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-75.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-80.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-85.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-90.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-95.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_full_0-100.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read1/short_dixon-2012_200bp_frag.map']
-outfiles2 = ['/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-125.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-130.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-135.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-140.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-145.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-150.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-155.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-160.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-165.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-170.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-175.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-180.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-185.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-190.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-195.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_full_100-200.map',
-             '/home/fransua/Box/tadbits/tadbit/_pytadbit/mapping/read2/short_dixon-2012_200bp_frag.map']
-"""
-
+        frag_map, counter = transform_fastq(
+            input_reads, mkstemp(prefix=base_name + '_', dir=temp_dir)[1],
+            min_seq_len=min_seq_len, trim=win, fastq=False, r_enz=r_enz,
+            add_site=add_site, skip=skip, nthreads=nthreads)
+        if not win:
+            beg, end = 1, 'end'
+        else:
+            beg, end = win
+        out_map_path = frag_map + '_frag_%s-%s.map' % (beg, end)
+        if not skip:
+            print 'Mapping fragments of remaining reads...'
+            gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
+            print 'Parsing result...'
+            _gem_filter(out_map_path, curr_map + '_fail.map',
+                        os.path.join(out_map_dir,
+                                     base_name + '_frag_%s-%s.map' % (beg, end)))
+        outfiles.append((os.path.join(out_map_dir,
+                                      base_name + '_frag_%s-%s.map' % (beg, end)),
+                         counter))
+    if get_nread:
+        return outfiles
+    return [out for out, _ in outfiles]
 

@@ -1,0 +1,17 @@
+# tadbit
+_tadbit()
+{
+  local cur prev opts
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+  opts="map parse filter describe normalize compare[NOT_YET] merge[NOT_YET] segment[NOT_YET] model[NOT_YET]"
+
+  case $prev in
+      tadbit)
+          COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+          ;;
+  esac
+  return 0
+}
+complete -F _tadbit -o default tadbit

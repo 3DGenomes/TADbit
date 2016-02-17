@@ -6,17 +6,18 @@ import ctypes
 import os, errno
 import platform
 import bz2, gzip, zipfile, tarfile
+from subprocess import Popen, PIPE
+from multiprocessing import cpu_count
 
 def check_pik(path):
     with open(path, "r") as f:
-        f.seek (0, 2)           # Seek @ EOF
-        fsize = f.tell()        # Get Size
+        f.seek (0, 2)                # Seek @ EOF
+        fsize = f.tell()             # Get Size
         f.seek (max (fsize-2, 0), 0) # Set pos @ last n chars
-        key = f.read()       # Read to end
+        key = f.read()               # Read to end
     return key == 's.'
 
-
-def magic_open(filename, verbose=False):
+def magic_open(filename, verbose=False, cpus=None):
     """
     To read uncompressed zip gzip bzip2 or tar.xx files
 
@@ -24,7 +25,7 @@ def magic_open(filename, verbose=False):
 
     :returns: opened file ready to be iterated
     """
-    if isinstance(filename, str):
+    if isinstance(filename, str) or isinstance(filename, unicode):
         fhandler = file(filename, 'rb')
         inputpath = True
         if tarfile.is_tarfile(filename):
@@ -39,6 +40,10 @@ def magic_open(filename, verbose=False):
         filename = fhandler.name
         inputpath = False
         start_of_file = ''
+    if filename.endswith('.dsrc'):
+        proc = Popen(['dsrc', 'd', '-t%d' % (cpus or cpu_count()),
+                      '-s', filename], stdout=PIPE)
+        return proc.stdout
     if inputpath:
         start_of_file = fhandler.read(1024)
         fhandler.seek(0)
@@ -97,3 +102,22 @@ def mkdir(dnam):
         else:
             raise
     
+def which(program):
+    """
+    stackoverflow: http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+    """
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, _ = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
+

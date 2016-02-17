@@ -114,7 +114,7 @@ def load_hic_data(opts, xnames):
             norm_data=xnorm)
         if not xnorm:
             crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag)
-            logging.info("\tNormalizing HiC data of %s..." % xnam)
+            logging.info("\tNormalizing HiC data of %s...", xnam)
             crm.experiments[xnam].normalize_hic(iterations=10, max_dev=0.1)
     if opts.beg > crm.experiments[-1].size:
         raise Exception('ERROR: beg parameter is larger than chromosome size.')
@@ -133,8 +133,7 @@ def load_optimal_imp_parameters(opts, name, exp):
     # If some optimizations have finished, we load log files into a single
     # IMPoptimizer object
     logging.info(("\tReading optimal parameters also saved in " +
-                  "%s_optimal_params.tsv") % (
-                     os.path.join(opts.outdir, name)))
+                  "%s_optimal_params.tsv"), os.path.join(opts.outdir, name))
 
     from pytadbit import IMPoptimizer
     beg = opts.beg or 1
@@ -236,7 +235,7 @@ tmp.close()
     results.write_result(logpath)
     if opts.optimize_only and opts.optimize_from_scratch:
         logging.info('Optimization done.')
-        exit()
+        return
 
     ## get best parameters
     optpar, cc = results.get_best_parameters_dict(
@@ -260,7 +259,7 @@ tmp.close()
                             os.path.join(opts.outdir, name), name))
     if opts.optimize_only:
         logging.info('Optimization done.')
-        exit()
+        return
     # Optimal parameters
     kf = 5 # IMP penalty for connectivity between two consecutive particles.
            # This needs to be large enough to ensure connectivity.
@@ -381,7 +380,6 @@ def main():
         xnames = [os.path.split(d)[-1] for d in opts.norm]
 
     name = '{0}_{1}_{2}'.format(opts.crm, opts.beg, opts.end)
-    opts.outdir
 
     ############################################################################
     ############################  LOAD HI-C DATA  ##############################
@@ -402,7 +400,7 @@ def main():
     if not opts.tad_only and not opts.analyze_only:
         # Sum all experiments into a new one
         if len(xnames) > 1:
-            logging.info("\tSumming experiments %s..." % (' + '.join(xnames)))
+            logging.info("\tSumming experiments %s...", ' + '.join(xnames))
             exp = crm.experiments[0] + crm.experiments[1]
             for i in range(2, len(xnames)):
                 exp += crm.experiments[i]
@@ -483,8 +481,7 @@ def main():
             savefig=os.path.join(opts.outdir, name,
                                  name + '_corre_real.pdf'),
             plot=True)
-        logging.info("\t Correlation coefficient: %s [p-value: %s]" % (
-            rho, pval))
+        logging.info("\t Correlation coefficient: %s [p-value: %s]", rho, pval)
 
     if "z-score plot" in opts.analyze:
         # zscore plots
@@ -567,8 +564,8 @@ def main():
                 out.close()
         # same with singletons
         singletons = [m['rand_init'] for m in models if m['cluster']=='Singleton']
-        logging.info("\t\tSingletons has {1} models {2}".format(
-            'Singletons', len(singletons), singletons))
+        logging.info("\t\tSingletons has %s models %s", len(singletons),
+                     singletons)
         if not os.path.exists(os.path.join(
             opts.outdir, name, 'models', 'Singletons')):
             os.makedirs(os.path.join(

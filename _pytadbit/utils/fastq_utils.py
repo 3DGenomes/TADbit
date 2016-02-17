@@ -10,6 +10,7 @@ from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated,
 from os import SEEK_END
 from numpy import std, mean
 from random import random
+from subprocess import Popen, PIPE
 import re
 
 try:
@@ -49,6 +50,9 @@ def quality_plot(fnam, r_enz=None, nreads=None, axe=None, savefig=None, paired=F
     tkw = dict(size=4, width=1.5)
     if fnam.endswith('.gz'):
         fhandler = gopen(fnam)
+    elif fnam.endswith('.dsrc'):
+        proc = Popen(['dsrc', 'd', '-t8', '-s', fnam], stdout=PIPE)
+        fhandler = proc.stdout
     else:
         fhandler = open(fnam)
     if not r_enz:
