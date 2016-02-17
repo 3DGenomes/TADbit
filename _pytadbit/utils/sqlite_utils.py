@@ -13,7 +13,7 @@ def already_run(opts):
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
-             if not k in ['workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+             if not k in ['force', 'workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
         cur.execute("select * from JOBs where Parameters_md5 = '%s'" % param_hash)
         found = len(cur.fetchall()) == 1
         if found:

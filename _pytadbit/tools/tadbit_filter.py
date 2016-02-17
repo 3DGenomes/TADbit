@@ -10,6 +10,7 @@ from argparse                    import HelpFormatter
 from pytadbit.mapping.mapper     import get_intersection
 from os                          import path, system
 from pytadbit.utils.sqlite_utils import get_jobid, add_path, get_path_id, print_db
+from pytadbit.utils.sqlite_utils import already_run
 from pytadbit.mapping.analyze    import insert_sizes
 from pytadbit.mapping.filter     import filter_reads, apply_filter
 from hashlib                     import md5
@@ -242,3 +243,9 @@ def check_options(opts):
     # sort filters
     if opts.apply:
         opts.apply.sort()
+
+    # check if job already run using md5 digestion of parameters
+    if already_run(opts):
+        exit('WARNING: exact same job already computed, see JOBs table above')
+
+

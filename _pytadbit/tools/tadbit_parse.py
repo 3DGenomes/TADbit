@@ -12,6 +12,7 @@ from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
 from os                             import system, path
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
+from pytadbit.utils.sqlite_utils    import already_run
 from hashlib                        import md5
 import time
 import logging
@@ -139,7 +140,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             param_hash = md5(' '.join(
                 ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
                  for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['workdir', 'func', 'tmp']])).hexdigest()
+                 if not k in ['workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
@@ -337,3 +338,7 @@ def check_options(opts):
         vlog = open(vlog_path, 'w')
         vlog.write(dependencies)
         vlog.close()
+
+    # check if job already run using md5 digestion of parameters
+    if already_run(opts):
+        exit('WARNING: exact same job already computed, see JOBs table above')
