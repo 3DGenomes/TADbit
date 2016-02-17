@@ -1,7 +1,7 @@
 
 from pytadbit._version import __version__
 from os import environ
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, check_call, CalledProcessError
 import locale
 
 # make sure that we are comparing strings in the same way as the bash sort
@@ -12,6 +12,12 @@ except:
     environ["LANG"] = "en_US.UTF-8"
     locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
 
+## Check if we have X display
+try:
+    check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"', shell=True)
+except CalledProcessError:
+    import matplotlib
+    matplotlib.use('Agg')
 
 def get_dependencies_version(dico=False):
     """
