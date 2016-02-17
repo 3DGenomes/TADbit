@@ -3,15 +3,12 @@
 """
 
 import os
-from pytadbit.utils.file_handling import mkdir
+from pytadbit.utils.file_handling import mkdir, which
 from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
 from tempfile import gettempdir, mkstemp
-try:
-    import gem
-except ImportError:
-    warn('WARNING: GEMTOOLS not found')
+from subprocess import Popen
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                     min_seq_len=15, fastq=True, verbose=True, **kwargs):
@@ -201,7 +198,8 @@ def _gem_filter(fnam, unmap_out, map_out):
             map_out.write(_strip_read_name(line))
     unmap_out.close()
 
-def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
+def gem_mapping(gem_index_path, fastq_path, out_map_path,
+                gem_binary='gem-mapper', **kwargs):
     """
     :param None focus: trims the sequence in the input FASTQ file according to a
        (start, end) position, or the name of a restriction enzyme. By default it
@@ -214,7 +212,6 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
     nthreads          = kwargs.get('nthreads'            , 8)
     max_edit_distance = kwargs.get('max_edit_distance'   , 0.04)
     mismatches        = kwargs.get('mismatches'          , 0.04)
-    quality           = kwargs.get('quality'             , 33)
 
     # check kwargs
     for kw in kwargs:
@@ -223,17 +220,19 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path, **kwargs):
                       'out_files', 'temp_dir', 'skip']:
             warn('WARNING: %s not in usual keywords, misspelled?' % kw)
 
-    # input
-    inputf = gem.files.open(fastq_path)
-
+    # check that we have the GEM binary:
+    gem_binary = which(gem_binary)
+    if not gem_binary:
+        raise Exception('ERROR: GEM binary not found, install it from:\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/')
     # mapping
     print 'TO GEM', fastq_path
-    return gem.mapper(inputf, gem_index_path, min_decoded_strata=0,
-                      max_decoded_matches=1, unique_mapping=False,
-                      max_edit_distance=max_edit_distance,
-                      mismatches=mismatches, quality=quality,
-                      output=out_map_path,
-                      threads=nthreads)
+    Popen([gem_binary, '-I', gem_index_path, '-q', 'offset-33',
+           '-m', str(max_edit_distance), '-s', '0',
+           '--max-decoded-matches', '1', '--min-decoded-strata', '0',
+           '--min-matched-bases', '0.8', '--gem-quality-threshold', '26',
+           '--max-big-indel-length', '15', '--mismatch-alphabet', 'ACGT',
+           '-T', str(nthreads), '-e', str(mismatches), '-i', fastq_path,
+           '-o', out_map_path.replace('.map', '')]).communicate()
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=None, add_site=True, clean=False,
@@ -324,9 +323,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             print 'Mapping full reads...', curr_map
 
         if not skip:
-            map_file = gem_mapping(gem_index_path, curr_map,
-                                   out_map_path, **kwargs)
-            map_file.close()
+            gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
 
             # parse map file to extract not uniquely mapped reads
             print 'Parsing result...'
@@ -362,9 +359,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         out_map_path = frag_map + '_frag_%s-%s.map' % (beg, end)
         if not skip:
             print 'Mapping fragments of remaining reads...'
-            map_file = gem_mapping(gem_index_path, frag_map, out_map_path,
-                                   **kwargs)
-            map_file.close()
+            gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
             print 'Parsing result...'
             _gem_filter(out_map_path, curr_map + '_fail.map',
                         os.path.join(out_map_dir,
@@ -375,3 +370,4 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     if get_nread:
         return outfiles
     return [out for out, _ in outfiles]
+
