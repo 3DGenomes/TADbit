@@ -10,11 +10,10 @@ from argparse                    import HelpFormatter
 from pytadbit.mapping.mapper     import get_intersection
 from os                          import path, system
 from pytadbit.utils.sqlite_utils import get_jobid, add_path, get_path_id, print_db
-from pytadbit.mapping.analyze    import plot_iterative_mapping, insert_sizes
+from pytadbit.mapping.analyze    import insert_sizes
 from pytadbit.mapping.filter     import filter_reads, apply_filter
 from hashlib                     import md5
 import logging
-import fcntl
 import sqlite3 as lite
 import time
 

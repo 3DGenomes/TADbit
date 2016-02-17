@@ -25,8 +25,9 @@ def run(opts):
     check_options(opts)
 
     launch_time = time.localtime()
-    
-    f_names1, f_names2, renz = load_parameters_fromdb(opts.workdir)
+
+    reads = [1] if opts.read == 1 else [2] if opts.read == 2 else [1, 2]
+    f_names1, f_names2, renz = load_parameters_fromdb(opts.workdir, reads, opts.jobids)
 
     name = path.split(opts.workdir)[-1]
 
@@ -153,10 +154,10 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             add_path(cur, genome, 'FASTA', jobid, opts.workdir)
         if out_file2:
             add_path(cur, out_file2, 'BED', jobid, opts.workdir)
-        if not opts.read == 2:
+        for count in counts:
             try:
                 sum_reads = 0
-                for i, item in enumerate(counts[0]):
+                for i, item in enumerate(counts[count]):
                     cur.execute("""
                     insert into SAMs
                     (Id  , PATHid, BEDid, Entries)
@@ -164,37 +165,15 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                     (NULL,    %d,     %d,      %d)
                     """ % (get_path_id(cur, f_names1[i], opts.workdir),
                            get_path_id(cur, out_file1, opts.workdir),
-                           counts[0][item]))
-                    sum_reads += counts[0][item]
+                           counts[count][item]))
+                    sum_reads += counts[count][item]
                 cur.execute("""
                 insert into BEDs
                 (Id  , PATHid, Entries, Multiples)
                 values
                 (NULL,     %d,      %d,        %d)
                 """ % (get_path_id(cur, out_file1, opts.workdir),
-                       sum_reads, multis[0]))
-            except lite.IntegrityError:
-                print 'WARNING: already parsed'
-        if not opts.read == 1:
-            try:
-                sum_reads = 0
-                for i, item in enumerate(counts[1]):
-                    cur.execute("""
-                    insert into SAMs
-                    (Id  , PATHid, BEDid, Entries)
-                    values
-                    (NULL,     %d,    %d,      %d)
-                    """ % (get_path_id(cur, f_names2[i], opts.workdir),
-                           get_path_id(cur, out_file2, opts.workdir),
-                           counts[1][item]))
-                    sum_reads += counts[1][item]
-                cur.execute("""
-                insert into BEDs
-                (Id  , PATHid, Entries, Multiples)
-                values
-                (NULL,     %d,      %d,        %d)
-                """ % (get_path_id(cur, out_file2, opts.workdir),
-                       sum_reads, multis[1]))
+                       sum_reads, multis[count]))
             except lite.IntegrityError:
                 print 'WARNING: already parsed'
         print_db(cur, 'FASTQs')
@@ -203,7 +182,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
         print_db(cur, 'BEDs')
         print_db(cur, 'JOBs')
 
-def load_parameters_fromdb(workdir):
+def load_parameters_fromdb(workdir, reads=None, jobids=None):
     con = lite.connect(path.join(workdir, 'trace.db'))
     fnames1 = []
     fnames2 = []
@@ -211,22 +190,40 @@ def load_parameters_fromdb(workdir):
     with con:
         cur = con.cursor()
         # fetch file names to parse
-        cur.execute("""
-        select distinct PATHs.Id,PATHs.Path from PATHs
-        inner join FASTQs on PATHs.Id = FASTQs.SAMid
-        where FASTQs.Read = 1
-        """)
-        for fname in cur.fetchall():
-            ids.append(fname[0])
-            fnames1.append(path.join(workdir, fname[1]))
-        cur.execute("""
-        select distinct PATHs.Id,PATHs.Path from PATHs
-        inner join FASTQs on PATHs.Id = FASTQs.SAMid
-        where FASTQs.Read = 2
-        """)
-        for fname in cur.fetchall():
-            ids.append(fname[0])
-            fnames2.append(path.join(workdir, fname[1]))
+        if not jobids:
+            jobids = []
+            for read in reads:
+                cur.execute("""
+                select distinct JOBs.Id from JOBs
+                   inner join PATHs on (JOBs.Id = PATHs.JOBid)
+                   inner join FASTQs on (PATHs.Id = FASTQs.SAMid)
+                 where FASTQs.Read = %d
+                """ % read)
+                jobids.append([j[0] for j in cur.fetchall()])
+                if len(jobids[-1]) > 1:
+                    raise Exception(('ERROR: more than one possible input found for read %d '
+                                     '(jobids: %s), use "tadbit describe" and select corresponding '
+                                     'jobid with --jobids option') % (
+                                        read, ', '.join([str(j) for j in jobids[-1]])))
+            jobids = [j[0] for j in jobids]
+        if 1 in reads:
+            cur.execute("""
+            select distinct PATHs.Id,PATHs.Path from PATHs
+            inner join FASTQs on PATHs.Id = FASTQs.SAMid
+            where FASTQs.Read = 1 and PATHs.JOBid = %d
+            """ % jobids.pop(0))
+            for fname in cur.fetchall():
+                ids.append(fname[0])
+                fnames1.append(path.join(workdir, fname[1]))
+        if 2 in reads:
+            cur.execute("""
+            select distinct PATHs.Id,PATHs.Path from PATHs
+            inner join FASTQs on PATHs.Id = FASTQs.SAMid
+            where FASTQs.Read = 2 and PATHs.JOBid = %d 
+           """ % jobids.pop(0))
+            for fname in cur.fetchall():
+                ids.append(fname[0])
+                fnames2.append(path.join(workdir, fname[1]))
         # GET enzyme name
         enzymes = []
         for fid in ids:
@@ -282,10 +279,11 @@ def populate_args(parser):
                         analysis. Note: it can also be the path to a previously
                         parsed genome in pickle format.''')
 
-    glopts.add_argument('--jobid', dest='jobid', metavar="INT",
+    glopts.add_argument('--jobids', dest='jobids', metavar="INT",
                         action='store', default=None, nargs='+', type=int,
                         help='''Use as input data generated by a job with a given
-                        jobid(s). Use tadbit describe to find out which.''')    
+                        jobid(s). Use tadbit describe to find out which.
+                        In this case one jobid can be passed per read.''')    
 
     parser.add_argument_group(glopts)
 
