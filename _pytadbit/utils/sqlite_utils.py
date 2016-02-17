@@ -38,10 +38,14 @@ def add_path(cur, path, typ, jobid, workdir=None):
     except lite.IntegrityError:
         pass
 
-def print_db(cur, name):
+def print_db(cur, name, no_print='Parameters_md5'):
     cur.execute('select * from %s' % name)
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
+    if no_print in names:
+        bad = names.index(no_print)
+        names.pop(bad)
+        rows = [[v for i, v in enumerate(row) if i != bad] for row in rows]
     cols = [max(vals) for vals in zip(*[[len(str(v)) for v in row]
                                         for row in rows + [names]])]
     print ',-' + '-' * len(name) + '-.'
@@ -50,5 +54,6 @@ def print_db(cur, name):
     print '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v) for i, v in enumerate(names)]) + ' |'
     print '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|'
     print '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
-                                        for i, v in enumerate(row)]) + ' |'  for row in rows])
+                                        for i, v in enumerate(row)]) + ' |'
+                              for row in rows])
     print "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'"

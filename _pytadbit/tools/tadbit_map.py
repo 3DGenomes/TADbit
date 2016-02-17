@@ -288,18 +288,20 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                 Read int,
                 Enzyme text,
                 WRKDIRid int,
-                SAMid int,
+                MAPPED_OUTPUTid int,
                 INDEXid int,
-                unique (PATHid,Entries,Read,Enzyme,WRKDIRid,SAMid,INDEXid))""")
+                unique (PATHid,Entries,Read,Enzyme,WRKDIRid,MAPPED_OUTPUTid,INDEXid))""")
 
         try:
             parameters = ' '.join(
-                ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
+                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+                 for k, v in opts.__dict__.iteritems()
                  if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                              'func', 'tmp'] and not v is None])
+                              'func', 'tmp', 'keep_tmp'] and not v is None])
             param_hash = md5(' '.join(
-                ['%s:%s' % (k, v) for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['workdir', 'func', 'tmp']])).hexdigest()
+                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+                 for k, v in sorted(opts.__dict__.iteritems())
+                 if not k in ['workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
@@ -327,7 +329,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
             try:
                 cur.execute("""
     insert into MAPPED_INPUTs
-     (Id  , PATHid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, SAMid, INDEXid)
+     (Id  , PATHid, Entries, Trim, Frag, Read, Enzyme, WRKDIRid, MAPPED_OUTPUTid, INDEXid)
     values
      (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',       %d,    %d,      %d)
      """ % (get_path_id(cur, opts.fastq, opts.workdir), num, window, frag,

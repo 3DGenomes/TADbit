@@ -131,12 +131,14 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             unique (PATHid))""")
         try:
             parameters = ' '.join(
-                ['%s:%s' % (k, v) for k, v in opts.__dict__.iteritems()
+                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+                 for k, v in opts.__dict__.iteritems()
                  if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
                               'func', 'tmp'] and not v is None])
             parameters = parameters.replace("'", '"')
             param_hash = md5(' '.join(
-                ['%s:%s' % (k, v) for k, v in sorted(opts.__dict__.iteritems())
+                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+                 for k, v in sorted(opts.__dict__.iteritems())
                  if not k in ['workdir', 'func', 'tmp']])).hexdigest()
             cur.execute("""
     insert into JOBs
@@ -198,7 +200,7 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                 cur.execute("""
                 select distinct JOBs.Id from JOBs
                    inner join PATHs on (JOBs.Id = PATHs.JOBid)
-                   inner join MAPPED_INPUTs on (PATHs.Id = MAPPED_INPUTs.SAMid)
+                   inner join MAPPED_INPUTs on (PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid)
                  where MAPPED_INPUTs.Read = %d
                 """ % read)
                 jobids.append([j[0] for j in cur.fetchall()])
@@ -211,7 +213,7 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
         if 1 in reads:
             cur.execute("""
             select distinct PATHs.Id,PATHs.Path from PATHs
-            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.SAMid
+            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
             where MAPPED_INPUTs.Read = 1 and PATHs.JOBid = %d
             """ % jobids.pop(0))
             for fname in cur.fetchall():
@@ -220,7 +222,7 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
         if 2 in reads:
             cur.execute("""
             select distinct PATHs.Id,PATHs.Path from PATHs
-            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.SAMid
+            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
             where MAPPED_INPUTs.Read = 2 and PATHs.JOBid = %d 
            """ % jobids.pop(0))
             for fname in cur.fetchall():
@@ -231,7 +233,7 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
         for fid in ids:
             cur.execute("""
             select distinct MAPPED_INPUTs.Enzyme from MAPPED_INPUTs
-            where MAPPED_INPUTs.SAMid=%d
+            where MAPPED_INPUTs.MAPPED_OUTPUTid=%d
             """ % fid)
             enzymes.extend(cur.fetchall())
         if len(set(reduce(lambda x, y: x+ y, enzymes))) != 1:
