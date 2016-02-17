@@ -7,17 +7,20 @@ from hashlib import md5
 
 def already_run(opts):
     con = lite.connect(join(opts.workdir, 'trace.db'))
-    with con:
-        # check if table exists
-        cur = con.cursor()
-        param_hash = md5(' '.join(
-            ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-             for k, v in sorted(opts.__dict__.iteritems())
-             if not k in ['force', 'workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
-        cur.execute("select * from JOBs where Parameters_md5 = '%s'" % param_hash)
-        found = len(cur.fetchall()) == 1
-        if found:
-            print_db(cur, 'JOBs')
+    try:
+        with con:
+            # check if table exists
+            cur = con.cursor()
+            param_hash = md5(' '.join(
+                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+                 for k, v in sorted(opts.__dict__.iteritems())
+                 if not k in ['force', 'workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+            cur.execute("select * from JOBs where Parameters_md5 = '%s'" % param_hash)
+            found = len(cur.fetchall()) == 1
+            if found:
+                print_db(cur, 'JOBs')
+    except lite.OperationalError:
+        return False
     return found
 
 def get_jobid(cur=None, workdir=None):
