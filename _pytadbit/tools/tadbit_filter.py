@@ -7,7 +7,7 @@ information needed
 """
 
 from argparse                    import HelpFormatter
-from pytadbit.mapping.mapper     import get_intersection
+from pytadbit.mapping            import get_intersection
 from os                          import path, system
 from pytadbit.utils.sqlite_utils import get_jobid, add_path, get_path_id, print_db
 from pytadbit.utils.sqlite_utils import already_run
@@ -211,6 +211,7 @@ def populate_args(parser):
 
     glopts.add_argument('--apply', dest='apply', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        choices = range(1, 11),
                         help=("""[%(default)s] Use filters to define a set os valid pair of reads
                         e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" + 
                         "correspond to: %s" % (', '.join(

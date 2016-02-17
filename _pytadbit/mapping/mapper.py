@@ -7,6 +7,7 @@ iterative mapping copied from hiclib
 
 from itertools import combinations
 import locale
+from warnings import warn
 
 def eq_reads(rd1, rd2):
     """
@@ -36,6 +37,8 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     :param out_path: path to an outfile. It will written in a similar format as
        the inputs
     """
+    warn('WARNING: deprecated, import get_intersection directly like this: '
+         '\n  from pytadbit.mapper import get_intersection')
     reads_fh = open(out_path, 'w')
     reads1 = open(fname1)
     line1 = reads1.next()
