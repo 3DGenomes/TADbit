@@ -23,7 +23,7 @@ from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils           import quality_plot
 from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
-from pytadbit.utils.sqlite_utils          import get_jobid
+from pytadbit.utils.sqlite_utils          import get_jobid, already_run
 from pytadbit                             import get_dependencies_version
 from os                                   import system, path
 from hashlib                              import md5
@@ -254,6 +254,11 @@ def check_options(opts):
         vlog = open(vlog_path, 'w')
         vlog.write(dependencies)
         vlog.close()
+
+    # check if job already run using md5 digestion of parameters
+    if already_run(opts):
+        exit('WARNING: exact same job already computed, see JOBs table above')
+        
 
 def save_to_db(opts, outfiles, launch_time, finish_time):
     # write little DB to keep track of processes and options

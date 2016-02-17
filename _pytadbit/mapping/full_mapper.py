@@ -223,7 +223,15 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
     # check that we have the GEM binary:
     gem_binary = which(gem_binary)
     if not gem_binary:
-        raise Exception('ERROR: GEM binary not found, install it from:\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/')
+        raise Exception('\n\nERROR: GEM binary not found, install it from:'
+                        '\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/'
+                        '\n - Download the GEM-binaries-Linux-x86_64-core_i3 if'
+                        'have a recent computer, the '
+                        'GEM-binaries-Linux-x86_64-core_2 otherwise\n - '
+                        'Uncompress with "tar xjvf GEM-binaries-xxx.tbz2"\n - '
+                        'Copy the binary gem-mapper to /usr/local/bin/ for '
+                        'example (somewhere in your PATH).\n\nNOTE: GEM does '
+                        'not provide any binary for MAC-OS.')
     # mapping
     print 'TO GEM', fastq_path
     Popen([gem_binary, '-I', gem_index_path, '-q', 'offset-33',
