@@ -4,6 +4,7 @@
 
 from pytadbit.utils.extraviews    import tadbit_savefig, setup_plot
 from pytadbit.utils.tadmaths      import nozero_log_matrix as nozero_log
+from pytadbit.utils.tadmaths      import right_double_mad as mad
 from pytadbit.parsers.hic_parser  import HiC_data
 from warnings                     import warn
 from collections                  import OrderedDict
@@ -624,7 +625,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
 
 
 def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
-                 xlog=False):
+                 xlog=False, get_mad=False):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
@@ -632,6 +633,8 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     :param 99.9 max_size: top percentage of distances to consider, within the
        top 0.01% are usually found very long outliers.
     :param False xlog: represent x axis in logarithmic scale
+    :param False get_mad: returns the Median Absolute Deviation instead of maximum
+       percentile
 
     :returns: the median value and the percentile inputed as max_size.
     """
@@ -695,6 +698,8 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     elif not axe:
         plt.show()
     plt.close('all')
+    if get_mad:
+        return perc50, mad(des)
     return perc50, max_perc
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,

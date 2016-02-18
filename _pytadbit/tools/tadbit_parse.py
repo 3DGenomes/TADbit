@@ -10,10 +10,10 @@ from argparse                       import HelpFormatter
 from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
-from os                             import system, path
+from os                             import path
+from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
 from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
-from hashlib                        import md5
 import time
 import logging
 import fcntl
@@ -36,7 +36,7 @@ def run(opts):
 
     outdir = '02_parsed_reads'
 
-    system('mkdir -p ' + path.join(opts.workdir, outdir))
+    mkdir(path.join(opts.workdir, outdir))
 
     if not opts.read:
         out_file1 = path.join(opts.workdir, outdir, '%s_r1_%s.tsv' % (name, param_hash))

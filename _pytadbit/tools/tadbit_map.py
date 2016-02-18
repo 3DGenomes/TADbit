@@ -21,13 +21,12 @@ mapping strategy
 from argparse                             import HelpFormatter
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils           import quality_plot
-from pytadbit.utils.file_handling         import which
+from pytadbit.utils.file_handling         import which, mkdir
 from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
 from os                                   import system, path
-from hashlib                              import md5
 from multiprocessing                      import cpu_count
 import logging
 import fcntl
@@ -243,7 +242,7 @@ def check_options(opts):
     except TypeError:
         pass
         
-    system('mkdir -p ' + opts.workdir)
+    mkdir(opts.workdir)
     # write log
     # if opts.mapping_only:
     log_format = '[MAPPING {} READ{}]   %(message)s'.format(opts.fastq, opts.read)
