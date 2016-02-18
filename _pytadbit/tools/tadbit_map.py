@@ -282,6 +282,20 @@ def check_options(opts):
         opts.gem_param = dict([o.split(':') for o in opts.gem_param])
     else:
         opts.gem_param = {}
+    gem_valid_option = set(["granularity", "q", "quality-format",
+                            "gem-quality-threshold", "mismatch-alphabet",
+                            "m", "e", "min-matched-bases",
+                            "max-big-indel-length", "s", "strata-after-best",
+                            "fast-mapping", "unique-mapping", "d", "D",
+                            "allow-incomplete-strata", "max-decoded-matches",
+                            "min-decoded-strata", "p", "paired-end-alignment",
+                            "b", "map-both-ends", "min-insert-size",
+                            "max-insert-size", "E", "max-extendable-matches",
+                            "max-extensions-per-match", "unique-pairing"])
+    for k in opts.gem_param:
+        if not k in gem_valid_option:
+            raise NotImplementedError(('ERROR: option "%s" not a valid GEM option'
+                                       'or not suported by this tool.') % k)
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         exit('WARNING: exact same job already computed, see JOBs table above')
