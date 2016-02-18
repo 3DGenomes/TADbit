@@ -649,7 +649,7 @@ class TestTadbit(unittest.TestCase):
                    re_name='DPNII', mapper='GEM')
 
             # GET INTERSECTION
-            from pytadbit.mapping.mapper import get_intersection
+            from pytadbit.mapping import get_intersection
             get_intersection('lala1-%s~' % (ali), 'lala2-%s~' % (ali),
                              'lala-%s~' % (ali))
             # FILTER
