@@ -37,7 +37,6 @@ before_script:
 script: cd test; coverage run --source=pytadbit test_all.py
 
 after_success:
-    coverage report
     coveralls
 
 branches:
