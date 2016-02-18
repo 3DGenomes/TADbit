@@ -60,7 +60,8 @@ def run(opts):
                                       '%03d_mapped_r%d' % (jobid, opts.read)),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
                             frag_map=not opts.iterative, clean=opts.keep_tmp,
-                            windows=opts.windows, get_nread=True, skip=opts.skip)
+                            windows=opts.windows, get_nread=True, skip=opts.skip,
+                            **opts.gem_param)
 
     # adjust line count
     if opts.skip:
@@ -179,6 +180,16 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
+    mapper.add_argument('--gem_param', dest="gem_param", type=str, default=0,
+                        nargs='+',
+                        help='''any parameter that could be passed to the GEM
+                        mapper. e.g. if we want to set the proportion of
+                        mismatches to 0.05 and the maximum indel length to 10,
+                        (in GEM it would be: -e 0.05 --max-big-indel-length 10),
+                        here we could write: "--gem_param e:0.05
+                        max-big-indel-length:10". IMPORTANT: some options are
+                        incompatible with 3C-derived experiments.''')
+
 def check_options(opts):
     if opts.cfg:
         get_options_from_cfg(opts.cfg, opts)
@@ -255,6 +266,9 @@ def check_options(opts):
         vlog.write(dependencies)
         vlog.close()
 
+    # check GEM mapper extra options
+    opts.gem_param = dict([option.split(':') for option in opts.gem_param])
+
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         exit('WARNING: exact same job already computed, see JOBs table above')
@@ -307,6 +321,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                 ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
                  for k, v in sorted(opts.__dict__.iteritems())
                  if not k in ['workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+            parameters = parameters.replace("'", "")
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)

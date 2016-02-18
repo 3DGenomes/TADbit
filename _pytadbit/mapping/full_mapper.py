@@ -232,15 +232,46 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
                         'Copy the binary gem-mapper to /usr/local/bin/ for '
                         'example (somewhere in your PATH).\n\nNOTE: GEM does '
                         'not provide any binary for MAC-OS.')
+
     # mapping
     print 'TO GEM', fastq_path
-    Popen([gem_binary, '-I', gem_index_path, '-q', 'offset-33',
-           '-m', str(max_edit_distance), '-s', '0',
-           '--max-decoded-matches', '1', '--min-decoded-strata', '0',
-           '--min-matched-bases', '0.8', '--gem-quality-threshold', '26',
-           '--max-big-indel-length', '15', '--mismatch-alphabet', 'ACGT',
-           '-T', str(nthreads), '-e', str(mismatches), '-i', fastq_path,
-           '-o', out_map_path.replace('.map', '')]).communicate()
+    kgt = kwargs.get
+    gem_cmd = [
+        gem_binary, '-I', gem_index_path,
+        '-q'                        , kgt('q', 'offset-33'                     ),
+        '-m'                        , kgt('m', str(max_edit_distance          )),
+        '-s'                        , kgt('s', kgt('strata-after-best', '0'   )),
+        '--allow-incomplete-strata' , kgt('allow-incomplete-strata', '0.00'    ),
+        '--granularity'             , kgt('granularity', '10000'               ),
+        '--max-decoded-matches'     , kgt('max-decoded-matches', kgt('d', '1' )),
+        '--min-decoded-strata'      , kgt('min-decoded-strata', kgt('D', '0'  )),
+        '--min-insert-size'         , kgt('min-insert-size', '0'               ),
+        '--max-insert-size'         , kgt('max-insert-size', '0'               ),
+        '--min-matched-bases'       , kgt('min-matched-bases', '0.8'           ),
+        '--gem-quality-threshold'   , kgt('gem-quality-threshold', '26'        ),
+        '--max-big-indel-length'    , kgt('max-big-indel-length', '15'         ),
+        '--mismatch-alphabet'       , kgt('mismatch-alphabet', 'ACGT'          ),
+        '-E'                        , kgt('E', '0.30'                          ),
+        '--max-extendable-matches'  , kgt('max-extendable-matches', '20'       ),
+        '--max-extensions-per-match', kgt('max-extensions-per-match', '1'      ),
+        '-e'                        , kgt('e', str(mismatches                 )),
+        '-T'                        , str(nthreads),
+        '-i'                        , fastq_path,
+        '-o', out_map_path.replace('.map', '')]
+
+    if 'paired-end-alignment' in kwargs or 'p' in kwargs:
+        gem_cmd.append('--paired-end-alignment')
+    if 'map-both-ends' in kwargs or 'b' in kwargs:
+        gem_cmd.append('--map-both-ends')
+    if 'fast-mapping' in kwargs:
+        gem_cmd.append('--fast-mapping')
+    if 'unique-mapping' in kwargs:
+        gem_cmd.append('--unique-mapping')
+    if 'unique-pairing' in kwargs:
+        gem_cmd.append('--unique-pairing')
+
+    print ' '.join(gem_cmd)
+    Popen(gem_cmd).communicate()
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=None, add_site=True, clean=False,
