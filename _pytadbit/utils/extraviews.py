@@ -37,7 +37,11 @@ def setup_plot(axe, figsize=None):
     return ax
 
 def tadbit_savefig(savefig):
-    form = savefig[-4:].split('.')[1]
+    try:
+        form = savefig[-4:].split('.')[1]
+    except IndexError: # no dot in file name
+        warn('WARNING: file extension not found saving in png')
+        form = 'png'
     if not form in ['png', 'pdf', 'ps', 'eps', 'svg']:
         raise NotImplementedError('File extension must be one of %s' %(
             ['png', 'pdf', 'ps', 'eps', 'svg']))
