@@ -8,12 +8,12 @@ information needed
 
 from argparse                    import HelpFormatter
 from pytadbit.mapping            import get_intersection
-from os                          import path, system
+from pytadbit.utils.file_handling import mkdir
+from os                          import path
 from pytadbit.utils.sqlite_utils import get_jobid, add_path, get_path_id, print_db
 from pytadbit.utils.sqlite_utils import already_run, digest_parameters
 from pytadbit.mapping.analyze    import insert_sizes
 from pytadbit.mapping.filter     import filter_reads, apply_filter
-from hashlib                     import md5
 import logging
 import sqlite3 as lite
 import time
@@ -34,27 +34,32 @@ def run(opts):
                        'valid_r1-r2_intersection_%s.tsv' %param_hash)
 
     if not opts.resume:
-        system('mkdir -p ' + path.join(opts.workdir, '03_filtered_reads'))
+        mkdir(path.join(opts.workdir, '03_filtered_reads'))
 
         # compute the intersection of the two read ends
         count, multiples = get_intersection(fname1, fname2, reads)
 
         # compute insert size
         print 'Get insert size...'
-        median, ori_max_mol = insert_sizes(reads, nreads=1000000)
+        median, mad = insert_sizes(reads, nreads=1000000, get_mad=True,
+                                   savefig='lala.pdf')
         
         print '  - median insert size =', median
-        print '  - max (99.9%) insert size =', ori_max_mol
+        print '  - max (99.9%) insert size =', mad
     
-        max_mol = 4 * median
+        max_mole = median + 3 * mad # pseudo DEs
+        min_dist = median * 4 # random breaks
+        print ('   Using median insert size + 3 times the median absolute '
+               'deviation  (%d bp) to check '
+               'for pseudo-dangling ends') % max_mole
         print ('   Using 4 times median insert size (%d bp) to check '
-               'for random breaks') % max_mol
+               'for random breaks') % min_dist
     
         print "identify pairs to filter..."
-        masked = filter_reads(reads, max_molecule_length=max_mol,
+        masked = filter_reads(reads, max_molecule_length=max_mole,
                               over_represented=0.001, max_frag_size=100000,
                               min_frag_size=50, re_proximity=5,
-                              min_dist_to_re=max_mol, fast=True)
+                              min_dist_to_re=min_dist, fast=True)
 
     n_valid_pairs = apply_filter(reads, mreads, masked,
                                  filters=opts.apply)
@@ -115,7 +120,19 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
                    count, ' '.join(['%s:%d' % (k, multiples[k])
                                     for k in sorted(multiples)])))
         except lite.IntegrityError:
-            print 'WARNING: already parsed'
+            print 'WARNING: already filtered'
+            if opts.force:
+                cur.execute(
+                    'delete from INTERSECTION_OUTPUTs where PATHid = %d' % (
+                        get_path_id(cur, mreads, opts.workdir)))
+                cur.execute("""
+                insert into INTERSECTION_OUTPUTs
+                (Id  , PATHid, Total_interactions, Multiple_interactions)
+                values
+                (NULL,    %d,     %d,      '%s')
+                """ % (get_path_id(cur, mreads, opts.workdir),
+                       count, ' '.join(['%s:%d' % (k, multiples[k])
+                                        for k in sorted(multiples)])))
         for f in masked:
             add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
             try:
@@ -128,6 +145,17 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
                        masked[f]['name'], masked[f]['reads'], jobid))
             except lite.IntegrityError:
                 print 'WARNING: already filtered'
+                if opts.force:
+                    cur.execute(
+                        'delete from FILTER_OUTPUTs where PATHid = %d' % (
+                            get_path_id(cur, masked[f]['fnam'], opts.workdir)))
+                    cur.execute("""
+                insert into FILTER_OUTPUTs
+                (Id  , PATHid, Name, Count, JOBid)
+                values
+                (NULL,    %d,     '%s',      '%s', %d)
+                    """ % (get_path_id(cur, masked[f]['fnam'], opts.workdir),
+                           masked[f]['name'], masked[f]['reads'], jobid))
         try:
             cur.execute("""
         insert into FILTER_OUTPUTs
@@ -135,9 +163,20 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
         values
         (NULL,    %d,     '%s',      '%s', %d)
             """ % (get_path_id(cur, mreads, opts.workdir),
-                   'Valid-pairs', n_valid_pairs, jobid))
+                   'valid-pairs', n_valid_pairs, jobid))
         except lite.IntegrityError:
             print 'WARNING: already filtered'
+            if opts.force:
+                cur.execute(
+                    'delete from FILTER_OUTPUTs where PATHid = %d' % (
+                        get_path_id(cur, mreads, opts.workdir)))
+                cur.execute("""
+                insert into FILTER_OUTPUTs
+                (Id  , PATHid, Name, Count, JOBid)
+                values
+                (NULL,    %d,     '%s',      '%s', %d)
+                """ % (get_path_id(cur, mreads, opts.workdir),
+                       'valid-pairs', n_valid_pairs, jobid))
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
@@ -214,7 +253,6 @@ def populate_args(parser):
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
 
-
     glopts.add_argument('--pathids', dest='pathids', metavar="INT",
                         action='store', default=None, nargs='+', type=int,
                         help='''Use as input data generated by a job under a given
@@ -238,7 +276,7 @@ def check_options(opts):
         opts.apply.sort()
 
     # check if job already run using md5 digestion of parameters
-    if already_run(opts):
+    if already_run(opts) and not opts.force:
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 
