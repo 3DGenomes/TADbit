@@ -267,8 +267,10 @@ def check_options(opts):
         vlog.close()
 
     # check GEM mapper extra options
-    opts.gem_param = dict([option.split(':') for option in opts.gem_param])
-
+    if opts.gem_param:
+        opts.gem_param = dict([o.split(':') for o in opts.gem_param])
+    else:
+        opts.gem_param = {}
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         exit('WARNING: exact same job already computed, see JOBs table above')
