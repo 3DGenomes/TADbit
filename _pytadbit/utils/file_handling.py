@@ -41,7 +41,11 @@ def magic_open(filename, verbose=False, cpus=None):
         inputpath = False
         start_of_file = ''
     if filename.endswith('.dsrc'):
-        proc = Popen(['dsrc', 'd', '-t%d' % (cpus or cpu_count()),
+        dsrc_binary = which('dsrc')
+        if not dsrc_binary:
+            raise Exception('\n\nERROR: DSRC binary not found, install it from:'
+                            '\nhttps://github.com/lrog/dsrc/releases')
+        proc = Popen([dsrc_binary, 'd', '-t%d' % (cpus or cpu_count()),
                       '-s', filename], stdout=PIPE)
         return proc.stdout
     if inputpath:
