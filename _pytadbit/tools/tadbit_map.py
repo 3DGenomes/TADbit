@@ -21,6 +21,7 @@ mapping strategy
 from argparse                             import HelpFormatter
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils           import quality_plot
+from pytadbit.utils.file_handling         import which
 from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
@@ -181,6 +182,10 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
+    mapper.add_argument('--gem_binary', dest='gem_binary', metavar="STR", 
+                        type=str, default='gem-mapper',
+                        help='[%(default)s] path to GEM mapper binary')
+
     mapper.add_argument('--gem_param', dest="gem_param", type=str, default=0,
                         nargs='+',
                         help='''any parameter that could be passed to the GEM
@@ -194,6 +199,18 @@ def populate_args(parser):
 def check_options(opts):
     if opts.cfg:
         get_options_from_cfg(opts.cfg, opts)
+
+    opts.gem_binary = which(opts.gem_binary)
+    if not opts.gem_binary:
+        raise Exception('\n\nERROR: GEM binary not found, install it from:'
+                        '\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/'
+                        '\n - Download the GEM-binaries-Linux-x86_64-core_i3 if'
+                        'have a recent computer, the '
+                        'GEM-binaries-Linux-x86_64-core_2 otherwise\n - '
+                        'Uncompress with "tar xjvf GEM-binaries-xxx.tbz2"\n - '
+                        'Copy the binary gem-mapper to /usr/local/bin/ for '
+                        'example (somewhere in your PATH).\n\nNOTE: GEM does '
+                        'not provide any binary for MAC-OS.')
 
     # check RE name
     try:
