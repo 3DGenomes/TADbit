@@ -113,20 +113,20 @@ def populate_args(parser):
                         help='path to an output folder.')
 
     glopts.add_argument('--fastq', dest='fastq', metavar="PATH", action='store',
-                      default=None, type=str,
+                      default=None, type=str, required=True,
                       help='path to a FASTQ files (can be compressed files)')
 
     glopts.add_argument('--index', dest='index', metavar="PATH",
-                        type=str,
+                        type=str, required=True,
                         help='''paths to file(s) with indexed FASTA files of the
                         reference genome.''')
 
     glopts.add_argument('--read', dest='read', metavar="INT", 
-                        type=int,
+                        type=int, required=True,
                         help='read number')
 
     glopts.add_argument('--renz', dest='renz', metavar="STR", 
-                        type=str,
+                        type=str, required=True,
                         help='restriction enzyme name')
 
     glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
@@ -232,13 +232,6 @@ def check_options(opts):
         opts.cpus = cpu_count()
     else:
         opts.cpus = min(opts.cpus, cpu_count())
-
-    # check compulsory options
-    if not opts.quality_plot:
-        if not opts.index: raise Exception('ERROR: index  parameter required.')
-    if not opts.workdir:   raise Exception('ERROR: workdir parameter required.')
-    if not opts.fastq  :   raise Exception('ERROR: fastq  parameter required.')
-    if not opts.renz   :   raise Exception('ERROR: renz   parameter required.')
 
     # create tmp directory
     if not opts.tmp:
