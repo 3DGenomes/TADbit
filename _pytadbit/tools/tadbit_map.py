@@ -332,8 +332,8 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                 unique (PATHid,Entries,Read,Enzyme,WRKDIRid,MAPPED_OUTPUTid,INDEXid))""")
 
         try:
-            paprameters = digest_parameters(get_md5=False)
-            param_hash  = digest_parameters(get_md5=True)
+            parameters = digest_parameters(opts, get_md5=False)
+            param_hash = digest_parameters(opts, get_md5=True)
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
