@@ -683,9 +683,9 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
         hic_data1 = load_hic_data_from_reads('lala-map~', resolution=10000)
-        hic_map(hic_data1, savedata='lala-map.tsv~')
-        hic_map(hic_data1, by_chrom='intra', savedata='lala-maps~')
-        hic_map(hic_data1, by_chrom='inter', savedata='lala-maps~')
+        hic_map(hic_data1, savedata='lala-map.tsv~', savefig='lala.pdf~')
+        hic_map(hic_data1, by_chrom='intra', savedata='lala-maps~', savefig='lalalo~')
+        hic_map(hic_data1, by_chrom='inter', savedata='lala-maps~', savefig='lalala~')
         hic_data2 = read_matrix('lala-map.tsv~', resolution=10000)
         self.assertEqual(hic_data1, hic_data2)
         vals = plot_distance_vs_interactions(hic_data1)

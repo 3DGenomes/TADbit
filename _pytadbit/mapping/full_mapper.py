@@ -110,7 +110,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             print '            ' + fastq_path, counter, fastq
         return out_fastq, counter
     # open input file
-    fhandler = magic_open(fastq_path)
+    fhandler = magic_open(fastq_path, cpus=kwargs.get('nthreads'))
     # create output file
     out_name = out_fastq
     out = open(out_fastq, 'w')
@@ -315,8 +315,6 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     """
 
     skip = kwargs.get('skip', False)
-    suffix = kwargs.get('suffix', '')
-    suffix = ('_' * (suffix != '')) + suffix
     nthreads = kwargs.get('nthreads', 8)
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
@@ -357,9 +355,9 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             beg, end = 1, 'end'
         else:
             beg, end = win
-        out_map_path = curr_map + '_full_%s-%s%s.map' % (beg, end, suffix)
+        out_map_path = curr_map + '_full_%s-%s.map' % (beg, end)
         if end:
-            print 'Mapping reads in window %s-%s%s...' % (beg, end, suffix)
+            print 'Mapping reads in window %s-%s...' % (beg, end)
         else:
             print 'Mapping full reads...', curr_map
 
@@ -368,9 +366,9 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
 
             # parse map file to extract not uniquely mapped reads
             print 'Parsing result...'
-            _gem_filter(out_map_path, curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
+            _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
                         os.path.join(out_map_dir,
-                                     base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
+                                     base_name + '_full_%s-%s.map' % (beg, end)))
             # clean
             if clean:
                 print '   x removing GEM input %s' % curr_map
@@ -378,10 +376,10 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
                 print '   x removing map %s' % out_map_path
                 os.system('rm -f %s' % (out_map_path))
             # for next round, we will use remaining unmapped reads
-            input_reads = curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix)
+            input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
         outfiles.append(
             (os.path.join(out_map_dir,
-                          base_name + '_full_%s-%s%s.map' % (beg, end, suffix)),
+                          base_name + '_full_%s-%s.map' % (beg, end)),
              counter))
 
     # map again splitting unmapped reads into RE fragments
@@ -397,16 +395,16 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             beg, end = 1, 'end'
         else:
             beg, end = win
-        out_map_path = frag_map + '_frag_%s-%s%s.map' % (beg, end, suffix)
+        out_map_path = frag_map + '_frag_%s-%s.map' % (beg, end)
         if not skip:
             print 'Mapping fragments of remaining reads...'
             gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
             print 'Parsing result...'
-            _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
+            _gem_filter(out_map_path, curr_map + '_fail.map',
                         os.path.join(out_map_dir,
-                                     base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
+                                     base_name + '_frag_%s-%s.map' % (beg, end)))
         outfiles.append((os.path.join(out_map_dir,
-                                      base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)),
+                                      base_name + '_frag_%s-%s.map' % (beg, end)),
                          counter))
     if get_nread:
         return outfiles

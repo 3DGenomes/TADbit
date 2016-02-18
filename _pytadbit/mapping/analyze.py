@@ -60,6 +60,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
        chromosomes
     :param True decay: plot the correlation between genomic distance and
        interactions (usually a decay).
+    :param False force_image: force to generate an image even if resolution is
+       crazy...
     :param None clim: cutoff for the upper and lower bound in the coloring scale
        of the heatmap
     :param False pdf: when using the bny_chrom option, to specify the format of
@@ -120,6 +122,11 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                               focus=(crm1, crm2),
                                               normalized=normalized)
                     if show or savefig:
+                        if (len(subdata) > 10000
+                            and not kwargs.get('force_image', False)):
+                            warn('WARNING: Matrix image not created, more than '
+                                 '10000 rows, use a lower resolution to create images')
+                            continue
                         draw_map(subdata, 
                                  OrderedDict([(k, hic_data.chromosomes[k])
                                               for k in hic_data.chromosomes.keys()
@@ -143,6 +150,10 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                   normalized=normalized)
         if show or savefig:
             subdata = hic_data.get_matrix(focus=focus, normalized=normalized)
+            if (len(subdata) > 10000 and not kwargs.get('force_image', False)):
+                warn('WARNING: Matrix image not created, more than '
+                     '10000 rows, use a lower resolution to create images')
+                return
             if focus and masked:
                 # rescale masked
                 masked = dict([(m - focus[0], masked[m]) for m in masked])
