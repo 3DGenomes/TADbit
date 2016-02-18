@@ -164,6 +164,9 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                            get_path_id(cur, outfiles[count], opts.workdir),
                            counts[count][item]))
                     sum_reads += counts[count][item]
+            except lite.IntegrityError:
+                print 'WARNING: already parsed (MAPPED_OUTPUTs)'
+            try:
                 cur.execute("""
                 insert into PARSED_OUTPUTs
                 (Id  , PATHid, Total_interactions, Multiples)
@@ -172,7 +175,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                 """ % (get_path_id(cur, outfiles[count], opts.workdir),
                        sum_reads, multis[count]))
             except lite.IntegrityError:
-                print 'WARNING: already parsed'
+                print 'WARNING: already parsed (PARSED_OUTPUTs)'
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
