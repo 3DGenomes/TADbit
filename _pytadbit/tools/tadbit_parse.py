@@ -12,7 +12,7 @@ from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
 from os                             import system, path
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
-from pytadbit.utils.sqlite_utils    import already_run
+from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
 from hashlib                        import md5
 import time
 import logging
@@ -32,24 +32,24 @@ def run(opts):
 
     name = path.split(opts.workdir)[-1]
 
-    jobid = get_jobid(workdir=opts.workdir) + 1
+    param_hash = digest_parameters(opts)
 
-    outdir = '%03d_parsed_reads' % jobid
+    outdir = '02_parsed_reads'
 
     system('mkdir -p ' + path.join(opts.workdir, outdir))
 
     if not opts.read:
-        out_file1 = path.join(opts.workdir, outdir, '%s_r1.tsv' % name)
-        out_file2 = path.join(opts.workdir, outdir, '%s_r2.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r1_%s.tsv' % (name, param_hash))
+        out_file2 = path.join(opts.workdir, outdir, '%s_r2_%s.tsv' % (name, param_hash))
     elif opts.read == 1:
-        out_file1 = path.join(opts.workdir, outdir, '%s_r1.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r1_%s.tsv' % (name, param_hash))
         out_file2 = None
         f_names2  = None
     elif opts.read == 2:
         out_file2 = None
         f_names1  = f_names2
         f_names2  = None
-        out_file1 = path.join(opts.workdir, outdir, '%s_r2.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r2_%s.tsv' % (name, param_hash))
         
     logging.info('parsing genomic sequence')
     try:
@@ -131,16 +131,8 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             Multiples int,
             unique (PATHid))""")
         try:
-            parameters = ' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in opts.__dict__.iteritems()
-                 if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                              'func', 'tmp'] and not v is None])
-            parameters = parameters.replace("'", '"')
-            param_hash = md5(' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+            parameters = digest_parameters(opts, get_md5=False)
+            param_hash = digest_parameters(opts, get_md5=True )
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)

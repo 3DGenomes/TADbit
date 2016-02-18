@@ -10,7 +10,7 @@ from argparse                    import HelpFormatter
 from pytadbit.mapping            import get_intersection
 from os                          import path, system
 from pytadbit.utils.sqlite_utils import get_jobid, add_path, get_path_id, print_db
-from pytadbit.utils.sqlite_utils import already_run
+from pytadbit.utils.sqlite_utils import already_run, digest_parameters
 from pytadbit.mapping.analyze    import insert_sizes
 from pytadbit.mapping.filter     import filter_reads, apply_filter
 from hashlib                     import md5
@@ -26,15 +26,15 @@ def run(opts):
 
     fname1, fname2 = load_parameters_fromdb(opts)
 
-    jobid = get_jobid(workdir=opts.workdir) + 1
+    param_hash = digest_parameters(opts)
 
-    reads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
-                      'all_r1-r2_intersection.tsv')
-    mreads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
-                       'valid_r1-r2_intersection.tsv')
+    reads = path.join(opts.workdir, '03_filtered_reads',
+                      'all_r1-r2_intersection_%s.tsv' % param_hash)
+    mreads = path.join(opts.workdir, '03_filtered_reads',
+                       'valid_r1-r2_intersection_%s.tsv' %param_hash)
 
     if not opts.resume:
-        system('mkdir -p ' + path.join(opts.workdir, '%03d_filtered_reads' % jobid))
+        system('mkdir -p ' + path.join(opts.workdir, '03_filtered_reads'))
 
         # compute the intersection of the two read ends
         count, multiples = get_intersection(fname1, fname2, reads)
@@ -89,16 +89,8 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
             JOBid int,
             unique (PATHid))""")
         try:
-            parameters = ' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in opts.__dict__.iteritems()
-                 if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                              'func', 'tmp'] and not v is None])
-            parameters = parameters.replace("'", '"')
-            param_hash = md5(' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['force', 'workdir', 'func', 'tmp']])).hexdigest()
+            parameters = digest_parameters(opts, get_md5=False)
+            param_hash = digest_parameters(opts, get_md5=True )            
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)

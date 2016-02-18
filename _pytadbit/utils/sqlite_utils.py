@@ -5,16 +5,29 @@ import sqlite3 as lite
 from os.path import abspath, relpath, join
 from hashlib import md5
 
+def digest_parameters(opts, get_md5=True):
+    if get_md5:
+        param_hash = md5(' '.join(
+            ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+             for k, v in sorted(opts.__dict__.iteritems())
+             if not k in ['force', 'workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+        return param_hash
+    parameters = ' '.join(
+        ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+         for k, v in opts.__dict__.iteritems()
+         if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
+                      'func', 'tmp', 'keep_tmp'] and not v is None])
+    parameters = parameters.replace("'", "")
+    return parameters
+
+
 def already_run(opts):
     con = lite.connect(join(opts.workdir, 'trace.db'))
     try:
         with con:
             # check if table exists
             cur = con.cursor()
-            param_hash = md5(' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['force', 'workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+            param_hash = digest_parameters(opts, get_md5=True)
             cur.execute("select * from JOBs where Parameters_md5 = '%s'" % param_hash)
             found = len(cur.fetchall()) == 1
             if found:

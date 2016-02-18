@@ -23,7 +23,7 @@ from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils           import quality_plot
 from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
-from pytadbit.utils.sqlite_utils          import get_jobid, already_run
+from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
 from os                                   import system, path
 from hashlib                              import md5
@@ -40,7 +40,8 @@ def run(opts):
 
     launch_time = time.localtime()
 
-    jobid = get_jobid(workdir=opts.workdir) + 1
+    # hash that gonna be append to output file names
+    param_hash = digest_parameters(opts, get_md5=True)
 
     if opts.quality_plot:
         logging.info('Generating Hi-C QC plot at:\n  ' +
@@ -57,11 +58,11 @@ def run(opts):
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.workdir,
-                                      '%03d_mapped_r%d' % (jobid, opts.read)),
+                                      '01_mapped_r%d' % (opts.read)),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
                             frag_map=not opts.iterative, clean=opts.keep_tmp,
                             windows=opts.windows, get_nread=True, skip=opts.skip,
-                            **opts.gem_param)
+                            suffix=param_hash, **opts.gem_param)
 
     # adjust line count
     if opts.skip:
@@ -314,16 +315,8 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                 unique (PATHid,Entries,Read,Enzyme,WRKDIRid,MAPPED_OUTPUTid,INDEXid))""")
 
         try:
-            parameters = ' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in opts.__dict__.iteritems()
-                 if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                              'func', 'tmp', 'keep_tmp'] and not v is None])
-            param_hash = md5(' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
-            parameters = parameters.replace("'", "")
+            paprameters = digest_parameters(get_md5=False)
+            param_hash  = digest_parameters(get_md5=True)
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
