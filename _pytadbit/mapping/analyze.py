@@ -720,7 +720,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     elif not axe:
         plt.show()
     plt.close('all')
-    return to_return
+    return [to_return[k] for k in to_return if k in stats]
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               axe=None, ylim=None, savefig=None,

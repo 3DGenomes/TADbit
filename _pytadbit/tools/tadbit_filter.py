@@ -42,7 +42,7 @@ def run(opts):
         # compute insert size
         print 'Get insert size...'
         median, max_f, mad = insert_sizes(reads, nreads=1000000,
-                                          stats=('median', 'first_deacay', 'MAD'))
+                                          stats=('median', 'first_decay', 'MAD'))
         
         print '  - median insert size =', median
         print '  - double median absolution of insert size =', mad

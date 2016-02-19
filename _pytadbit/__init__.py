@@ -12,12 +12,13 @@ except:
     environ["LANG"] = "en_US.UTF-8"
     locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
 
-## Check if we have X display
-try:
-    check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"', shell=True)
-except CalledProcessError:
-    import matplotlib
-    matplotlib.use('Agg')
+## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib
+if not "DISPLAY" in environ:
+    try:
+        check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"', shell=True)
+    except CalledProcessError:
+        import matplotlib
+        matplotlib.use('Agg')
 
 def get_dependencies_version(dico=False):
     """
