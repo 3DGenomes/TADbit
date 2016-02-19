@@ -19,6 +19,7 @@ import logging
 import fcntl
 from cPickle import load, UnpicklingError
 import sqlite3 as lite
+from warnings import warn
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
 
@@ -201,10 +202,10 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                 """ % read)
                 jobids.append([j[0] for j in cur.fetchall()])
                 if len(jobids[-1]) > 1:
-                    raise Exception(('ERROR: more than one possible input found for read %d '
-                                     '(jobids: %s), use "tadbit describe" and select corresponding '
-                                     'jobid with --jobids option') % (
-                                        read, ', '.join([str(j) for j in jobids[-1]])))
+                    warn(('WARNING: more than one possible input found for read %d '
+                          '(jobids: %s), use "tadbit describe" and select corresponding '
+                          'jobid with --jobids option') % (
+                             read, ', '.join([str(j) for j in jobids[-1]])))
             jobids = [j[0] for j in jobids]
         if 1 in reads:
             cur.execute("""
