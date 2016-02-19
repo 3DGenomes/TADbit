@@ -4,8 +4,6 @@
 unittest for pytadbit functions
 """
 
-import matplotlib
-matplotlib.use('Agg')
 import unittest
 from pytadbit                             import Chromosome, load_chromosome
 from pytadbit                             import tadbit, batch_tadbit
