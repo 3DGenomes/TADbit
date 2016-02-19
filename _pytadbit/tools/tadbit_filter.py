@@ -37,6 +37,7 @@ def run(opts):
         mkdir(path.join(opts.workdir, '03_filtered_reads'))
 
         # compute the intersection of the two read ends
+        print 'Getting intersection between read 1 and read 2'
         count, multiples = get_intersection(fname1, fname2, reads)
 
         # compute insert size

@@ -20,6 +20,21 @@ def digest_parameters(opts, get_md5=True):
     parameters = parameters.replace("'", "")
     return parameters
 
+def delete_entries(cur, table, col, val):
+    try:
+        cur.execute("select count(*) from %s where %s.%s = %d" % (
+            table, table, col, val))
+        count = cur.fetchall()[0][0]
+        if count == 0:
+            return
+    except lite.OperationalError:
+        return
+    try:
+        cur.execute("delete from %s where %s.%s = %d" % (
+            table, table, col, val))
+        print ' - deleted %d elements with %s = %s' % (count, col, val)
+    except lite.OperationalError:
+        pass
 
 def already_run(opts):
     con = lite.connect(join(opts.workdir, 'trace.db'))

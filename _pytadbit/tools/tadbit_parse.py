@@ -115,7 +115,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='MAPPED_OUTPUTs'""")
+                       type='table' AND name='PARSED_OUTPUTs'""")
         if not cur.fetchall():
             cur.execute("""
         create table MAPPED_OUTPUTs
