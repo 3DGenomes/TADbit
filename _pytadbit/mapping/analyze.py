@@ -625,7 +625,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
 
 
 def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
-                 xlog=False, get_mad=False):
+                 xlog=False, get_mad=False, get_lowest=False):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
@@ -698,6 +698,18 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     elif not axe:
         plt.show()
     plt.close('all')
+    if get_lowest:
+        cutoff = len(des) / 100000.
+        print 'CUTOFF', cutoff
+        count  = 0
+        for v in xrange(int(perc50), int(max(des))):
+            if des.count(v) < cutoff:
+                count += 1
+            else:
+                count = 0
+            if count >= 10:
+                return perc50, v
+        raise Exception('ERROR: not found')
     if get_mad:
         return perc50, mad(des)
     return perc50, max_perc

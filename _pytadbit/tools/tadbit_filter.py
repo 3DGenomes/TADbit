@@ -41,14 +41,14 @@ def run(opts):
 
         # compute insert size
         print 'Get insert size...'
-        median, mad = insert_sizes(reads, nreads=1000000, get_mad=True,
+        median, mad = insert_sizes(reads, nreads=1000000, get_lowest=True,
                                    savefig='lala.pdf')
         
         print '  - median insert size =', median
         print '  - max (99.9%) insert size =', mad
     
-        max_mole = median + 3 * mad # pseudo DEs
-        min_dist = median * 4 # random breaks
+        max_mole = median + 4 * mad # pseudo DEs
+        min_dist = mad # random breaks
         print ('   Using median insert size + 3 times the median absolute '
                'deviation  (%d bp) to check '
                'for pseudo-dangling ends') % max_mole
@@ -247,6 +247,9 @@ def populate_args(parser):
                         e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" + 
                         "correspond to: %s" % (', '.join(
                             ['%2d: %15s' % (k, masked[k]['name']) for k in masked]))))
+
+    glopts.add_argument('--nmads', dest='nmads', 
+                        type=int, metavar='INT', default=6)
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,
