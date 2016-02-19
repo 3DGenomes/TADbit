@@ -41,19 +41,20 @@ def run(opts):
 
         # compute insert size
         print 'Get insert size...'
-        median, mad = insert_sizes(reads, nreads=1000000, get_lowest=True,
-                                   savefig='lala.pdf')
+        median, max_f, mad = insert_sizes(reads, nreads=1000000, get_mad=True,
+                                          get_lowest=True)
         
         print '  - median insert size =', median
-        print '  - max (99.9%) insert size =', mad
+        print '  - double median absolution of insert size =', mad
+        print '  - max insert size (when a gap in continuity of > 10 bp is found in fragment lengths) =', max_f
     
-        max_mole = median + 4 * mad # pseudo DEs
-        min_dist = mad # random breaks
-        print ('   Using median insert size + 3 times the median absolute '
-               'deviation  (%d bp) to check '
+        max_mole = max_f # pseudo DEs
+        min_dist = max_f + mad # random breaks
+        print ('   Using the maximum continuous fragment size'
+               '(%d bp) to check '
                'for pseudo-dangling ends') % max_mole
-        print ('   Using 4 times median insert size (%d bp) to check '
-               'for random breaks') % min_dist
+        print ('   Using maximum continuous fragment size plus the MAD '
+               '(%d bp) to check for random breaks') % min_dist
     
         print "identify pairs to filter..."
         masked = filter_reads(reads, max_molecule_length=max_mole,
@@ -68,10 +69,10 @@ def run(opts):
 
     # save all job information to sqlite DB
     save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
-               launch_time, finish_time)
+               median, max_f, mad, launch_time, finish_time)
 
 def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
-               launch_time, finish_time):
+               median, max_f, mad, launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         cur = con.cursor()
@@ -84,6 +85,9 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
             PATHid int,
             Total_interactions int,
             Multiple_interactions text,
+            Median_fragment_length,
+            MAD_fragment_length,
+            Max_fragment_length,
             unique (PATHid))""")
             cur.execute("""
         create table FILTER_OUTPUTs
@@ -113,12 +117,13 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
         try:
             cur.execute("""
             insert into INTERSECTION_OUTPUTs
-            (Id  , PATHid, Total_interactions, Multiple_interactions)
+            (Id  , PATHid, Total_interactions, Multiple_interactions, Median_fragment_length, MAD_fragment_length, Max_fragment_length)
             values
-            (NULL,    %d,     %d,      '%s')
+            (NULL,    %d,                  %d,                  '%s',                     %d,                  %d,                  %d)
             """ % (get_path_id(cur, mreads, opts.workdir),
                    count, ' '.join(['%s:%d' % (k, multiples[k])
-                                    for k in sorted(multiples)])))
+                                    for k in sorted(multiples)]),
+                   median, mad, max_f))
         except lite.IntegrityError:
             print 'WARNING: already filtered'
             if opts.force:
@@ -127,12 +132,13 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
                         get_path_id(cur, mreads, opts.workdir)))
                 cur.execute("""
                 insert into INTERSECTION_OUTPUTs
-                (Id  , PATHid, Total_interactions, Multiple_interactions)
+                (Id  , PATHid, Total_interactions, Multiple_interactions, Median_fragment_length, MAD_fragment_length, Max_fragment_length)
                 values
-                (NULL,    %d,     %d,      '%s')
+                (NULL,    %d,                  %d,                  '%s',                     %d,                  %d,                  %d)
                 """ % (get_path_id(cur, mreads, opts.workdir),
                        count, ' '.join(['%s:%d' % (k, multiples[k])
-                                        for k in sorted(multiples)])))
+                                        for k in sorted(multiples)]),
+                       median, mad, max_f))
         for f in masked:
             add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
             try:

@@ -670,8 +670,27 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     perc50   = np.percentile(des, 50)
     perc95   = np.percentile(des, 95)
     perc05   = np.percentile(des, 5)
+    to_return = [perc50]
+    if get_lowest:
+        cutoff = len(des) / 100000.
+        count  = 0
+        for v in xrange(int(perc50), int(max(des))):
+            if des.count(v) < cutoff:
+                count += 1
+            else:
+                count = 0
+            if count >= 10:
+                to_return += [v]
+                break
+        else:
+            raise Exception('ERROR: not found')
+    print to_return
+    if get_mad:
+        return to_return + [mad(des)]
+    else:
+        to_return += [max_perc]
     if not savefig and not axe:
-        return perc50, max_perc
+        return to_return
     
     ax = setup_plot(axe, figsize=(10, 5.5))
     desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
@@ -698,21 +717,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     elif not axe:
         plt.show()
     plt.close('all')
-    if get_lowest:
-        cutoff = len(des) / 100000.
-        print 'CUTOFF', cutoff
-        count  = 0
-        for v in xrange(int(perc50), int(max(des))):
-            if des.count(v) < cutoff:
-                count += 1
-            else:
-                count = 0
-            if count >= 10:
-                return perc50, v
-        raise Exception('ERROR: not found')
-    if get_mad:
-        return perc50, mad(des)
-    return perc50, max_perc
+    return to_return
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               axe=None, ylim=None, savefig=None,
