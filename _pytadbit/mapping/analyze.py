@@ -686,14 +686,14 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
         else:
             count = 0
         if count >= 10:
-            to_return['first_decay'] = [v - 10]
+            to_return['first_decay'] = v - 10
             break
     else:
         raise Exception('ERROR: not found')
     to_return['perc_max'] = max_perc
     to_return['MAD'] = mad(des)
     if not savefig and not axe:
-        return [to_return[k] for k in to_return if k in stats]
+        return [to_return[k] for k in stats]
     
     ax = setup_plot(axe, figsize=(10, 5.5))
     desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
@@ -720,7 +720,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     elif not axe:
         plt.show()
     plt.close('all')
-    return [to_return[k] for k in to_return if k in stats]
+    return [to_return[k] for k in stats]
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               axe=None, ylim=None, savefig=None,

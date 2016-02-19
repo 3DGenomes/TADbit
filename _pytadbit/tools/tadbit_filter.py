@@ -66,7 +66,7 @@ def run(opts):
                                  filters=opts.apply)
 
     finish_time = time.localtime()
-
+    print median, max_f, mad
     # save all job information to sqlite DB
     save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
                median, max_f, mad, launch_time, finish_time)
