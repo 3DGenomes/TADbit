@@ -680,14 +680,15 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
             else:
                 count = 0
             if count >= 10:
-                to_return += [v]
+                to_return += [v - 10]
                 break
         else:
             raise Exception('ERROR: not found')
-    print to_return
+    else:
+        to_return += [max_perc]
     if get_mad:
         return to_return + [mad(des)]
-    else:
+    elif get_lowest:
         to_return += [max_perc]
     if not savefig and not axe:
         return to_return
