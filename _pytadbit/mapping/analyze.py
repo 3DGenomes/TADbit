@@ -625,7 +625,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
 
 
 def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
-                 xlog=False, get_mad=False, get_lowest=False):
+                 xlog=False, stats=('median', 'perc_max')):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
@@ -633,8 +633,15 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     :param 99.9 max_size: top percentage of distances to consider, within the
        top 0.01% are usually found very long outliers.
     :param False xlog: represent x axis in logarithmic scale
-    :param False get_mad: returns the Median Absolute Deviation instead of maximum
-       percentile
+    :param ('median', 'perc_max') stats: returns this set of values calculated from the
+       distribution of insert/fragment sizes. Possible values are:
+        - 'median' median of the distribution
+        - 'perc_max' percentil defined by the other parameter 'max_size'
+        - 'first_deacay' starting from the median of the distribution to the
+            first window where 10 consecutive insert sizes are counted less than
+            a given value (this given value is equal to the sum of all
+            sizes divided by 100 000)
+        - 'MAD' Double Median Adjusted Deviation
 
     :returns: the median value and the percentile inputed as max_size.
     """
@@ -670,28 +677,23 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     perc50   = np.percentile(des, 50)
     perc95   = np.percentile(des, 95)
     perc05   = np.percentile(des, 5)
-    to_return = [perc50]
-    if get_lowest:
-        cutoff = len(des) / 100000.
-        count  = 0
-        for v in xrange(int(perc50), int(max(des))):
-            if des.count(v) < cutoff:
-                count += 1
-            else:
-                count = 0
-            if count >= 10:
-                to_return += [v - 10]
-                break
+    to_return = {'median': perc50}
+    cutoff = len(des) / 100000.
+    count  = 0
+    for v in xrange(int(perc50), int(max(des))):
+        if des.count(v) < cutoff:
+            count += 1
         else:
-            raise Exception('ERROR: not found')
+            count = 0
+        if count >= 10:
+            to_return['first_decay'] = [v - 10]
+            break
     else:
-        to_return += [max_perc]
-    if get_mad:
-        return to_return + [mad(des)]
-    elif get_lowest:
-        to_return += [max_perc]
+        raise Exception('ERROR: not found')
+    to_return['perc_max'] = max_perc
+    to_return['MAD'] = mad(des)
     if not savefig and not axe:
-        return to_return
+        return [to_return[k] for k in to_return if k in stats]
     
     ax = setup_plot(axe, figsize=(10, 5.5))
     desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
