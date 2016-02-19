@@ -266,41 +266,6 @@ def _filter_duplicates(fnam, output):
         outfil[k].close()
     return masked, total
 
-
-def _filter_duplicates_DEV(fnam, output):
-    # TODO: use mkfifo to create a named pipe that wold hold reads sorted by
-    #       columns 2,3 and 8,9. Check redundancy on this file by reading it.
-    # t0 = time()
-    total = 0
-    masked = {9 : {'name': 'duplicated'        , 'reads': 0}}
-    outfil = {}
-    for k in masked:
-        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
-        outfil[k] = open(masked[k]['fnam'], 'w')
-
-    proc = Popen(["sort", "-k", "2,9", "-t", "\t", fnam], stdout=PIPE)
-    previous = (None, None)
-    for line in proc.stdout:
-        try:
-            (read,
-             cr1, pos1, _, _, _, _,
-             cr2, pos2, _, _, _, _) = line.split('\t')
-        except ValueError:
-            continue
-        current = sorted((cr1 + pos1, cr2 + pos2))
-        if current == previous:
-            masked[9]["reads"] += 1
-            outfil[9].write(read + '\n')
-        previous = current
-        total += 1
-    proc.wait()
-    # print 'done 4', time() - t0
-    for k in masked:
-        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
-        outfil[k].close()
-    return masked, total
-
-
 def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
                      re_proximity, min_frag_size, output):
     # t0 = time()

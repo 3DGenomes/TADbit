@@ -31,7 +31,7 @@ def run(opts):
     reads = path.join(opts.workdir, '03_filtered_reads',
                       'all_r1-r2_intersection_%s.tsv' % param_hash)
     mreads = path.join(opts.workdir, '03_filtered_reads',
-                       'valid_r1-r2_intersection_%s.tsv' %param_hash)
+                       'valid_r1-r2_intersection_%s.tsv' % param_hash)
 
     if not opts.resume:
         mkdir(path.join(opts.workdir, '03_filtered_reads'))
@@ -41,8 +41,11 @@ def run(opts):
 
         # compute insert size
         print 'Get insert size...'
-        median, max_f, mad = insert_sizes(reads, nreads=1000000,
-                                          stats=('median', 'first_decay', 'MAD'))
+        hist_path = path.join(opts.workdir,
+                              'histogram_fragment_sizes_%s.pdf' % param_hash)
+        median, max_f, mad = insert_sizes(
+            reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
+            savefig=hist_path)
         
         print '  - median insert size =', median
         print '  - double median absolution of insert size =', mad
@@ -69,10 +72,10 @@ def run(opts):
     print median, max_f, mad
     # save all job information to sqlite DB
     save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
-               median, max_f, mad, launch_time, finish_time)
+               hist_path, median, max_f, mad, launch_time, finish_time)
 
 def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
-               median, max_f, mad, launch_time, finish_time):
+               hist_path, median, max_f, mad, launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         cur = con.cursor()
@@ -114,6 +117,7 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
         jobid = get_jobid(cur)
         
         add_path(cur, mreads, '2D_BED', jobid, opts.workdir)
+        add_path(cur, hist_path, 'PDF', jobid, opts.workdir)
         try:
             cur.execute("""
             insert into INTERSECTION_OUTPUTs
