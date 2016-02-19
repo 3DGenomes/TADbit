@@ -276,7 +276,7 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
                       'mismatch-alphabet', 'E', 'max-extendable-matches',
                       'max-extensions-per-match', 'e', 'paired-end-alignment',
                       'p', 'map-both-ends', 'fast-mapping', 'unique-mapping',
-                      'unique-pairing']:
+                      'unique-pairing', 'suffix']:
             warn('WARNING: %s not in usual keywords, misspelled?' % kw)
 
     print ' '.join(gem_cmd)
