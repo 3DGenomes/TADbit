@@ -3,6 +3,7 @@ some utils relative to sqlite
 """
 import sqlite3 as lite
 from os.path import abspath, relpath, join
+from os import system
 from hashlib import md5
 
 def digest_parameters(opts, get_md5=True):
@@ -22,17 +23,17 @@ def digest_parameters(opts, get_md5=True):
 
 def delete_entries(cur, table, col, val):
     try:
-        cur.execute("select count(*) from %s where %s.%s = %d" % (
-            table, table, col, val))
-        count = cur.fetchall()[0][0]
-        if count == 0:
+        cur.execute("select %s from %s where %s.%s = %d" % (
+            col, table, table, col, val))
+        elts = [e[0] for e in cur.fetchall()]
+        if len(elts) == 0:
             return
     except lite.OperationalError:
         return
     try:
         cur.execute("delete from %s where %s.%s = %d" % (
             table, table, col, val))
-        print ' - deleted %d elements with %s = %s' % (count, col, val)
+        print ' - deleted %d elements with %s = %s' % (len(elts), col, val)
     except lite.OperationalError:
         pass
 

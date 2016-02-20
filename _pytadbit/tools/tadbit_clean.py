@@ -9,7 +9,7 @@ information needed
 from argparse                       import HelpFormatter
 from pytadbit.utils.sqlite_utils    import print_db, delete_entries
 import sqlite3 as lite
-from os import path
+from os import path, system
 
 DESC = "Delete jobs and results of a given list of jobids in a given directories"
 
@@ -23,11 +23,22 @@ def run(opts):
 
         # get PATHids corresponding to JOBid:
         paths = []
+        protected_types = ['INDEX', 'FASTA', 'MAPPED_FASTQ', 'WORKDIR']
         for jobid in opts.jobids:
-            cur.execute("SELECT Id FROM PATHs WHERE JOBid=%s" % jobid)
-            paths.extend([p[0] for p in cur.fetchall()])
+            cur.execute("SELECT Id, Path, Type FROM PATHs WHERE JOBid=%s" % jobid)
+            paths.extend([p for p in cur.fetchall()])
 
-        #delete
+        # delete file
+        print 'deleting files'
+        print paths
+        if opts.delete:
+            for _, lpath, typ in paths:
+                if typ in protected_types:
+                    continue
+                print '  x ' + path.join(opts.workdir, lpath)
+                system('rm -f ' + path.join(opts.workdir, lpath))
+
+        # remove entry
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
         for table in [t[0] for t in cur.fetchall()]:
             print 'cleaning table: %s' % table
@@ -38,7 +49,7 @@ def run(opts):
                     col = 'JOBid'
                 delete_entries(cur, table, col, jobid)
                     
-            for cpath in paths:
+            for cpath, _, _ in paths:
                 if table.lower() == 'mapped_outputs':
                     elt = 'BEDid'
                 else:
@@ -70,6 +81,14 @@ def populate_args(parser):
     glopts.add_argument('--jobids', dest='jobids', metavar="INT",
                         action='store', default=None, nargs='+', type=int,
                         help='jobids of the files and entries to be removed')
+
+    glopts.add_argument('--delete', dest='delete', action="store_true",
+                        default=False,
+                        help='delete files, otherwise only DB entries.')
+
+    glopts.add_argument('--compress', dest='compress', action="store_true",
+                        default=False,
+                        help='compress files and update paths accordingly')
 
     parser.add_argument_group(glopts)
 

@@ -72,10 +72,10 @@ def run(opts):
     finish_time = time.localtime()
     print median, max_f, mad
     # save all job information to sqlite DB
-    save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
+    save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                hist_path, median, max_f, mad, launch_time, finish_time)
 
-def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
+def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
                hist_path, median, max_f, mad, launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
@@ -118,6 +118,7 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
         jobid = get_jobid(cur)
         
         add_path(cur, mreads, '2D_BED', jobid, opts.workdir)
+        add_path(cur,  reads, '2D_BED', jobid, opts.workdir)
         add_path(cur, hist_path, 'PDF', jobid, opts.workdir)
         try:
             cur.execute("""
@@ -258,9 +259,6 @@ def populate_args(parser):
                         e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" + 
                         "correspond to: %s" % (', '.join(
                             ['%2d: %15s' % (k, masked[k]['name']) for k in masked]))))
-
-    glopts.add_argument('--nmads', dest='nmads', 
-                        type=int, metavar='INT', default=6)
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,

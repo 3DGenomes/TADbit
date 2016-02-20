@@ -24,6 +24,7 @@ def run(opts):
 
     mreads = path.join(opts.workdir, load_parameters_fromdb(opts))
 
+    print 'loading', mreads
     hic_data = load_hic_data_from_reads(mreads, opts.reso)
 
     print 'Get poor bins...'
@@ -88,8 +89,9 @@ def load_parameters_fromdb(opts):
         parse_jobid = jobids[0][0]
         # fetch path to parsed BED files
         cur.execute("""
-        select distinct Path from PATHs
-        where JOBid = %d and Type = '2D_BED'
+        select distinct path from paths
+        inner join filter_outputs on filter_outputs.pathid = paths.id
+        where filter_outputs.name = 'valid-pairs' and paths.jobid = %s
         """ % parse_jobid)
         return cur.fetchall()[0][0]
 
