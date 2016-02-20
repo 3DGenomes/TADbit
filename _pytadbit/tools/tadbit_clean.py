@@ -7,7 +7,7 @@ information needed
 """
 
 from argparse                       import HelpFormatter
-from pytadbit.utils.sqlite_utils    import print_db, delete_entries
+from pytadbit.utils.sqlite_utils    import delete_entries
 import sqlite3 as lite
 from os import path, system
 
