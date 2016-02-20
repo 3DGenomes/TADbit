@@ -1006,7 +1006,7 @@ class StructuralModels(object):
 
 
     def _get_density(self, models, interval, mass_center):
-        dists = [[None] * len(models)]
+        dists = [[None] * len(models)] * interval
         for p in range(interval, self.nloci - interval):
             part1, part2, part3 = p - interval, p, p + interval
             if mass_center:
