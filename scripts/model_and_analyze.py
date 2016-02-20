@@ -37,10 +37,6 @@ line-specific flags allowing to identify from which step of the computation
 belongs the message.
 """
 
-# MatPlotLib not asking for X11
-import matplotlib as mpl
-mpl.use('Agg')
-
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
 from pytadbit.imp.structuralmodels import load_structuralmodels
@@ -252,7 +248,6 @@ tmp.close()
                   ).format(sc, md, uf, lf, dc, cc))
     results.write_result(os.path.join(
         opts.outdir, name, '%s_optimal_params.tsv' % (name)))
-    print opts.analyze
     if "optimization plot" in opts.analyze:
         results.plot_2d(show_best=20,
                         savefig="%s/%s_optimal_params.pdf" % (

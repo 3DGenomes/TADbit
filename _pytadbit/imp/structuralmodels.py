@@ -826,7 +826,7 @@ class StructuralModels(object):
                 for j in xrange(i+1, len(matrix)):
                     out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
             out.close()
-        if not savefig and not show:
+        if not savefig and not show and not axe:
             return # stop here, we do not want to display anything
         if not axe:
             fig = plt.figure(figsize=(8, 6))
@@ -1666,7 +1666,9 @@ class StructuralModels(object):
                      + 'contact maps (correlation=%.4f)' % (corr[0]),
                      size='x-large')
         ax = fig.add_subplot(131)
+        # imshow of the modeled data
         self.contact_map(models, cluster, cutoff, axe=ax)
+        # correlation
         ax = fig.add_subplot(132)
         try:
             if log_corr:
