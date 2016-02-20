@@ -1005,11 +1005,11 @@ class StructuralModels(object):
         plt.close('all')
 
 
-    def _get_density(self, models, interval, mass_center):
+    def _get_density(self, models, interval, use_mass_center):
         dists = [[None] * len(models)] * interval
         for p in range(interval, self.nloci - interval):
             part1, part2, part3 = p - interval, p, p + interval
-            if mass_center:
+            if use_mass_center:
                 subdists = []
                 for m in models:
                     coord1 = get_center_of_mass(
@@ -1035,7 +1035,7 @@ class StructuralModels(object):
         return dists
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     interval=1, mass_center=False, error=False, axe=None,
+                     interval=1, use_mass_center=False, error=False, axe=None,
                      savefig=None, savedata=None, plot=True):
         """
         Plots the number of nucleotides per nm of chromatin vs the modeled
@@ -1053,7 +1053,7 @@ class StructuralModels(object):
            appearance
         :param 1 interval: distance are measure with this given interval
            between two bins.
-        :param False mass_center: if interval is higher than one, calculates the
+        :param False use_mass_center: if interval is higher than one, calculates the
            distance between the center of mass of the particles *n* to
            *n+interval* and the center of mass of the particles *n+interval* and
            *n+2interval*
@@ -1069,7 +1069,7 @@ class StructuralModels(object):
             steps = (steps, )
 
         models = self._get_models(models, cluster)
-        dists = self._get_density(models, interval, mass_center)
+        dists = self._get_density(models, interval, use_mass_center)
         distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
                                                  average=False)
 
