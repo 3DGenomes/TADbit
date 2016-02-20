@@ -78,18 +78,18 @@ def get_dependencies_version(dico=False):
         versions['MCL'] = mcl.split()[1]
     except:
         versions['MCL'] = 'Not found'
-    try:
-        chi, err = Popen(['chimera', '--version'], stdout=PIPE,
-                         stderr=PIPE).communicate()
-        versions['Chimera'] = chi.strip()
-    except:
-        versions['Chimera'] = 'Not found'
-    try:
-        chi, err = Popen(['chimera', '--version'], stdout=PIPE,
-                         stderr=PIPE).communicate()
-        versions['Chimera'] = chi.strip()
-    except:
-        versions['Chimera'] = 'Not found'
+    # try:
+    #     chi, err = Popen(['chimera', '--version'], stdout=PIPE,
+    #                      stderr=PIPE).communicate()
+    #     versions['Chimera'] = chi.strip()
+    # except:
+    #     versions['Chimera'] = 'Not found'
+    # try:
+    #     chi, err = Popen(['chimera', '--version'], stdout=PIPE,
+    #                      stderr=PIPE).communicate()
+    #     versions['Chimera'] = chi.strip()
+    # except:
+    #     versions['Chimera'] = 'Not found'
     try:
         uname, err = Popen(['uname', '-rom'], stdout=PIPE,
                            stderr=PIPE).communicate()
