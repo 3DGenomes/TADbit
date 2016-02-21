@@ -119,7 +119,7 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
         
         add_path(cur, mreads, '2D_BED', jobid, opts.workdir)
         add_path(cur,  reads, '2D_BED', jobid, opts.workdir)
-        add_path(cur, hist_path, 'PDF', jobid, opts.workdir)
+        add_path(cur, hist_path, 'FIGURE', jobid, opts.workdir)
         try:
             cur.execute("""
             insert into INTERSECTION_OUTPUTs

@@ -28,15 +28,14 @@ def run(opts):
             cur.execute("SELECT Id, Path, Type FROM PATHs WHERE JOBid=%s" % jobid)
             paths.extend([p for p in cur.fetchall()])
 
-        # delete file
-        print 'deleting files'
-        print paths
+        # delete files and directories
         if opts.delete:
+            print 'deleting %d files' % len(paths)
             for _, lpath, typ in paths:
                 if typ in protected_types:
                     continue
                 print '  x ' + path.join(opts.workdir, lpath)
-                system('rm -f ' + path.join(opts.workdir, lpath))
+                system('rm -rf ' + path.join(opts.workdir, lpath))
 
         # remove entry
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
