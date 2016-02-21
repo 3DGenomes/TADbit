@@ -1,7 +1,8 @@
-
-from restriction_enzymes import map_re_sites
-from itertools           import combinations
-from warnings            import warn
+from pytadbit.utils.file_handling import mkdir
+from restriction_enzymes          import map_re_sites
+from itertools                    import combinations
+from warnings                     import warn
+from os                           import path, system
 import locale
 
 """
@@ -16,6 +17,12 @@ def eq_reads(rd1, rd2):
     Compare reads accounting for multicontacts
     """
     return rd1.split('~', 1)[0] == rd2.split('~', 1)[0]
+
+def gt_reads(rd1, rd2):
+    """
+    Compare reads accounting for multicontacts
+    """
+    return rd1.split('~', 1)[0] > rd2.split('~', 1)[0]
 
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
@@ -158,7 +165,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     if verbose:
         print 'Found %d pair of reads mapping uniquely' % count
     return count, multiples
-
+    
 
 def get_intersection_dev(fname1, fname2, out_path, verbose=False):
     """
@@ -182,7 +189,8 @@ def get_intersection_dev(fname1, fname2, out_path, verbose=False):
     :param out_path: path to an outfile. It will written in a similar format as
        the inputs
     """
-    reads_fh = open(out_path, 'w')
+    
+    # Get the headers of the two files 
     reads1 = open(fname1)
     line1 = reads1.next()
     header1 = ''
@@ -202,103 +210,151 @@ def get_intersection_dev(fname1, fname2, out_path, verbose=False):
     read2 = line2.split('\t', 1)[0]
     if header1 != header2:
         raise Exception('seems to be mapped onover different chromosomes\n')
+
+    nchunks = 1000
+    global CHROM_START
+    CHROM_START = {}
+    cum_pos = 0
+    for line in header1.split('\n'):
+        if line.startswith('# CRM'):
+            _, _, crm, pos = line.split()
+            CHROM_START[crm] = cum_pos
+            cum_pos += int(pos)
+
+    lchunk = cum_pos / nchunks
+    buf = dict([(i, []) for i in range(0, nchunks, lchunk)])
+    
+    tmp_dir = path.join(out_path, '_tmp_files')
+    mkdir(tmp_dir)
+
     # setup REGEX to split reads in a single line
     # readex = recompile('((?:[^\t]+\t){6}[^\t]+)')
     # writes header in output
-    reads_fh.write(header1)
     # writes common reads
     count = 0
     multiples = {}
     try:
         while True:
-            if eq_reads(read1, read2):
-                count += 1
-                # case we have potential multicontacts
-                if '|||' in line1 or '|||' in line2:
-                    elts = {}
-                    for read in line1.split('|||'):
-                        nam, crm, pos, strd, nts, beg, end = read.strip().split('\t')
-                        elts.setdefault((crm, beg, end), []).append(
-                            (nam, crm, pos, strd, nts, beg, end))
-                    for read in line2.split('|||'):
-                        nam, crm, pos, strd, nts, beg, end = read.strip().split('\t')
-                        elts.setdefault((crm, beg, end), []).append(
-                            (nam, crm, pos, strd, nts, beg, end))
-                    # write contacts by pairs
-                    # loop over RE fragments
-                    for elt in elts:
-                        # case we have 2 read-frags inside current fragment
-                        if len(elts[elt]) == 1:
-                            elts[elt] = elts[elt][0]
-                        # case all fragments felt into a single RE frag
-                        # we take only first and last
-                        elif len(elts) == 1:
-                            elts[elt] = sorted(
-                                elts[elt],
-                                key=lambda x: int(x[2]))[::len(elts[elt])-1]
-                            elts1 = {elt: elts[elt][0]}
-                            elts2 = {elt: elts[elt][1]}
-                        # case we have several read-frag in this RE fragment
-                        else:
-                            # take first and last
-                            map1, map2 = sorted(
-                                elts[elt],
-                                key=lambda x: int(x[2]))[::len(elts[elt])-1]
-                            elts[elt] = map1
-                            # sum up read-frags in the RE fragment  by putting
-                            # them on the same strand
-                            if map1[3] == '1':
-                                beg = int(map1[2])
-                            else:
-                                beg = int(map1[2]) - int(map1[4]) - 1
-                            if map2[3] == '0':
-                                nts = int(map2[2]) - beg
-                            else:
-                                nts = int(map2[2]) + int(map2[4]) + 1 - beg
-                            elts[elt] = tuple(list(elts[elt][:2]) +
-                                              [str(beg), '1', str(nts)] +
-                                              list(elts[elt][5:]))
-                    contacts = len(elts) - 1
-                    if contacts > 1:
-                        multiples.setdefault(contacts, 0)
-                        multiples[contacts] += 1
-                        for i, (r1, r2) in enumerate(combinations(elts.values(), 2)):
-                            r1, r2 = sorted((r1, r2), key=lambda x: x[1:2])
-                            reads_fh.write(r1[0] + (
-                                '#%d/%d' % (i + 1, contacts * (contacts + 1) / 2)) +
-                                           '\t' + '\t'.join(r1[1:]) + '\t' + 
-                                           '\t'.join(r2[1:]) + '\n')
-                    elif contacts == 1:
-                        r1, r2 = sorted((elts.values()[0], elts.values()[1]),
-                                        key=lambda x: x[1:2])
-                        reads_fh.write('\t'.join(r1) + '\t' + 
-                                       '\t'.join(r2[1:]) + '\n')
-                    else:
-                        r1, r2 = sorted((elts1.values()[0], elts2.values()[0]),
-                                        key=lambda x: x[1:2])
-                        reads_fh.write('\t'.join(r1) + '\t' + 
-                                       '\t'.join(r2[1:]) + '\n')
+            for _ in xrange(1000000): # iterate 1 million times, write to files
+                # same read id in both lianes, we store put the more upstream
+                # before and store them
+                if eq_reads(read1, read2):
+                    count += 1
+                    _process_lines(line1, line2, buf, multiples, lchunk)
+                    line1 = reads1.next()
+                    read1 = line1.split('\t', 1)[0]
+                    line2 = reads2.next()
+                    read2 = line2.split('\t', 1)[0]
+                # if first element of line1 is greater than the one of line2:
+                elif gt_reads(read1, read2):
+                    line2 = reads2.next()
+                    read2 = line2.split('\t', 1)[0]
                 else:
-                    r1, r2 = sorted((line1.split(), line2.split()),
-                                    key=lambda x: x[1:2])
-                    reads_fh.write('\t'.join(r1) + '\t' +
-                                   '\t'.join(r2[1:]) + '\n')
-                line1 = reads1.next()
-                read1 = line1.split('\t', 1)[0]
-                line2 = reads2.next()
-                read2 = line2.split('\t', 1)[0]
-            # if first element of line1 is greater than the one of line2:
-            elif locale.strcoll(read1, read2) > 0:
-                line2 = reads2.next()
-                read2 = line2.split('\t', 1)[0]
-            else:
-                line1 = reads1.next()
-                read1 = line1.split('\t', 1)[0]
+                    line1 = reads1.next()
+                    read1 = line1.split('\t', 1)[0]
+            write_to_files(buf, tmp_dir)
     except StopIteration:
         reads1.close()
         reads2.close()
-    reads_fh.close()
+    write_to_files(buf, tmp_dir)
     if verbose:
         print 'Found %d pair of reads mapping uniquely' % count
+
+    if verbose:
+        print 'Sorting by genomic coordinate'
+
+    # sort each tmp file according to first element (idx) and write them
+    # to output file (without the idx)
+    out = open(out_path, 'w')
+    out.write(header1)
+    for b in buf:
+        out.write('\n'.join(['\t'.join(l[1:]) for l in sorted(
+            [l.split() for l in open(path.join(tmp_dir, str(b) + '_salut'))],
+            key=lambda x: x[0])]) + '\n')
+    out.close()
+
+    # system('rm -rf ' + tmp_dir)
     return count, multiples
+
+def _loc_reads(r1, r2):
+    """
+    put upstream read before, get position in buf
+    """
+    pos1 = CHROM_START[r1[1]] + int(r1[2])
+    pos2 = CHROM_START[r2[1]] + int(r2[2])
+    if pos1 > pos2:
+        r1, r2 = r2, r1
+        pos1, pos2 = pos2, pos1
+    return r1, r2, pos1
+
+def _process_lines(line1, line2, buf, multiples, lchunk):
+    # case we have potential multicontacts
+    if '|||' in line1 or '|||' in line2:
+        elts = {}
+        for read in line1.split('|||'):
+            nam, crm, pos, strd, nts, beg, end = read.strip().split('\t')
+            elts.setdefault((crm, beg, end), []).append(
+                (nam, crm, pos, strd, nts, beg, end))
+        for read in line2.split('|||'):
+            nam, crm, pos, strd, nts, beg, end = read.strip().split('\t')
+            elts.setdefault((crm, beg, end), []).append(
+                (nam, crm, pos, strd, nts, beg, end))
+        # write contacts by pairs
+        # loop over RE fragments
+        for elt in elts:
+            # case we have 2 read-frags inside current fragment
+            if len(elts[elt]) == 1:
+                elts[elt] = elts[elt][0]
+            # case all fragments felt into a single RE frag
+            # we take only first and last
+            elif len(elts) == 1:
+                elts[elt] = sorted(
+                    elts[elt], key=lambda x: int(x[2]))[::len(elts[elt])-1]
+                elts1 = {elt: elts[elt][0]}
+                elts2 = {elt: elts[elt][1]}
+            # case we have several read-frag in this RE fragment
+            else:
+                # take first and last
+                map1, map2 = sorted(
+                    elts[elt], key=lambda x: int(x[2]))[::len(elts[elt])-1]
+                elts[elt] = map1
+                # sum up read-frags in the RE fragment  by putting
+                # them on the same strand
+                if map1[3] == '1':
+                    beg = int(map1[2])
+                else:
+                    beg = int(map1[2]) - int(map1[4]) - 1
+                if map2[3] == '0':
+                    nts = int(map2[2]) - beg
+                else:
+                    nts = int(map2[2]) + int(map2[4]) + 1 - beg
+                elts[elt] = tuple(list(elts[elt][:2]) +
+                                  [str(beg), '1', str(nts)] +
+                                  list(elts[elt][5:]))
+        contacts = len(elts) - 1
+        if contacts > 1:
+            multiples.setdefault(contacts, 0)
+            multiples[contacts] += 1
+            prod_cont = contacts * (contacts + 1) / 2
+            for i, (r1, r2) in enumerate(combinations(elts.values(), 2)):
+                r1, r2, idx = _loc_reads(r1, r2)
+                buf[idx / lchunk] = '%d\t%s#%d/%d\t%s\t%s' % (
+                    idx, r1[0], i + 1, prod_cont, '\t'.join(r1[1:]),
+                    '\t'.join(r2[1:]))
+        elif contacts == 1:
+            r1, r2, idx = _loc_reads(elts.values()[0], elts.values()[1])
+            buf[idx / lchunk] = '%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:]))
+        else:
+            r1, r2, idx = _loc_reads(elts1.values()[0], elts2.values()[0])
+            buf[idx / lchunk] = '%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:]))
+    else:
+        r1, r2, idx = _loc_reads(line1.split(), line2.split())
+        buf[idx / lchunk] = '%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:]))
+
+def write_to_files(buf, tmp_dir):
+    for b in buf:
+        out = open(path.join(tmp_dir, str(b) + '_salut'), 'a')
+        out.write('\n'.join(buf[b]) + '\n')
+        out.close()
+        del(buf[b][:])
 
