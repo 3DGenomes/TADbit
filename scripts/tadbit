@@ -72,15 +72,15 @@ def main(arguments):
         parser.print_usage()
         return
 
-    if not arguments[2].startswith('-'):
+    if len(arguments) > 2 and not arguments[2].startswith('-'):
         arguments.insert(2, '-w')
 
     if len(arguments) == 2:
         try:
             args_pp[arguments[1]].print_help()
+            return
         except KeyError:
-            parser.print_usage()
-        return
+            pass
 
     # Call main program
     args = parser.parse_args(arguments[1:])
