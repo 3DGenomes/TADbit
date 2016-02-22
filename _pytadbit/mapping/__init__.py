@@ -1,7 +1,7 @@
 from pytadbit.utils.file_handling         import mkdir
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 from itertools                            import combinations
-from os                                   import path, system
+from os                                   import path
 from sys                                  import stdout
 
 
@@ -129,6 +129,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     # sort each tmp file according to first element (idx) and write them
     # to output file (without the idx)
     # sort also according to read 2 (to filter duplicates)
+    #      and also according to strand
     if verbose:
         print 'Sorting easch temporary file by genomic coordinate'
 
@@ -142,7 +143,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
             [l.split('\t') for l in open(
                 path.join(tmp_dir, 'rep_%03d' % (b / int(nchunks**0.5)),
                           'tmp_%05d.tsv' % b))],
-            key=lambda x: (x[0], x[8], x[9]))]))
+            key=lambda x: (x[0], x[8], x[9], x[6]))]))
     out.close()
 
     if verbose:

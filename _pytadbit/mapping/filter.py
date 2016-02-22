@@ -5,7 +5,6 @@
 """
 from pytadbit.mapping.restriction_enzymes import count_re_fragments
 import multiprocessing as mu
-from subprocess import Popen, PIPE
 
 def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
                  verbose=True):
@@ -238,28 +237,24 @@ def _filter_duplicates(fnam, output):
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k] = open(masked[k]['fnam'], 'w')
-    uniq_check = set() # huge set
     fhandler = open(fnam)
     line = fhandler.next()
     while line.startswith('#'):
         line = fhandler.next()
-    try:
-        while True:
-            (read,
-             cr1, pos1, sd1, ln1 , _, _,
-             cr2, pos2, sd2, ln2 , _, _) = line.split('\t')
-            uniq_key = '_'.join(sorted((cr1, pos1, cr2, pos2, sd1, sd2,
-                                        ln1, ln2)))
-            if uniq_key in uniq_check:
-                masked[9]["reads"] += 1
-                outfil[9].write(read + '\n')
-            else:
-                uniq_check.add(uniq_key)
-            total += 1
-            line = fhandler.next()
-    except StopIteration:
-        pass
-    del uniq_check
+    (read,
+     cr1, pos1, sd1, _ , _, _,
+     cr2, pos2, sd2, _ , _, _) = line.split('\t')
+    prev_elts = cr1, pos1, cr2, pos2, sd1, sd2
+    for line in fhandler:
+        (read,
+         cr1, pos1, sd1, _ , _, _,
+         cr2, pos2, sd2, _ , _, _) = line.split('\t')
+        new_elts = cr1, pos1, cr2, pos2, sd1, sd2
+        if prev_elts == new_elts:
+            masked[9]["reads"] += 1
+            outfil[9].write(read + '\n')
+        total += 1
+        prev_elts = new_elts
     # print 'done 4', time() - t0
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
