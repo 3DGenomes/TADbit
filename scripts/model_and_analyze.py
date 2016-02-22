@@ -45,7 +45,7 @@ import logging
 from cPickle import load, dump
 from random import random
 from string import ascii_letters as letters
-from subprocess import Popen, PIPE
+from subprocess import check_call
 
 def search_tads(opts, crm, name):
     """
@@ -303,14 +303,13 @@ coords = {"crm"  : opts.crm,
 
 zeros = tuple([i not in zeros for i in xrange(end - beg + 1)])
 
-models=  generate_3d_models(zscores, opts.res, nloci,
-                            values=values, n_models=opts.nmodels_mod,
-                            n_keep=opts.nkeep_mod,
-                            n_cpus=opts.ncpus,
-                            keep_all=True,
-                            first=0, container=opts.container,
-                            config=optpar, verbose=0.5,
-                            coords=coords, zeros=zeros)
+models =  generate_3d_models(zscores, opts.res, nloci,
+                             values=values, n_models=opts.nmodels_mod,
+                             n_keep=opts.nkeep_mod,
+                             n_cpus=opts.ncpus,
+                             keep_all=True,
+                             first=0, container=opts.container,
+                             config=optpar, coords=coords, zeros=zeros)
 # Save models
 models.save_models(
     os.path.join(opts.outdir, "%s", "%s" + ".models"))
@@ -318,19 +317,21 @@ models.save_models(
 ''' % (tmp_name, name, name))
 
     tmp.close()
-    constraints = Popen("python _tmp_model_%s.py" % tmp_name,
-                        shell=True, stdout=PIPE).communicate()[0]
-    if "constraints" in opts.analyze:
-        out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
-                   'w')
-        out.write(constraints)
-        out.close()
-    
+    check_call(["python", "_tmp_model_%s.py" % tmp_name])
     os.system('rm -f _tmp_zscore_%s' % (tmp_name))
     os.system('rm -f _tmp_model_%s.py' % (tmp_name))
     os.system('rm -f _tmp_opts_%s' % (tmp_name))
     models = load_structuralmodels(
         os.path.join(opts.outdir, name, name + '.models'))
+    if "constraints" in opts.analyze:
+        out = open(os.path.join(opts.outdir, name, name + '_constraints.txt'),
+                   'w')
+        out.write('# Harmonic\tpart1\tpart2\tdist\tkforce\n')
+        out.write('\n'.join(['%s\t%s\t%s\t%.1f\t%.3f' % (
+            harm, p1, p2, dist, kforce)
+                             for (p1, p2), (harm, dist, kforce)
+                             in models._restraints.iteritems()]) + '\n')
+        out.close()
     models.experiment = exp
     coords = {"crm"  : opts.crm,
               "start": opts.beg,
@@ -346,7 +347,6 @@ models.save_models(
                    'resolution'     : exp.resolution,
                    'assembly'       : crm.assembly}
     for key in opts.description:
-        print 'Hola', opts.description, 'dd'
         description[key] = opts.description[key]
     for desc in exp.description:
         description[desc] = exp.description[desc]
