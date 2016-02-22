@@ -148,7 +148,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
 
     if verbose:
         print '\nRemoving temporary files...'
-    # system('rm -rf ' + tmp_dir)
+    system('rm -rf ' + tmp_dir)
     return count, multiples
 
 def _loc_reads(r1, r2):
