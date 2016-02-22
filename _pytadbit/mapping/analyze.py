@@ -2,10 +2,10 @@
 18 Nov 2014
 """
 
+from pytadbit                     import HiC_data
 from pytadbit.utils.extraviews    import tadbit_savefig, setup_plot
 from pytadbit.utils.tadmaths      import nozero_log_matrix as nozero_log
 from pytadbit.utils.tadmaths      import right_double_mad as mad
-from pytadbit.parsers.hic_parser  import HiC_data
 from warnings                     import warn
 from collections                  import OrderedDict
 from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
