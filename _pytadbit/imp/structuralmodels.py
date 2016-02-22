@@ -983,17 +983,19 @@ class StructuralModels(object):
         self._plot_polymer(ax)
         scat1 = plt.Line2D((0,1),(0,0), color=(0.15,0.15,0.15), marker='o', linestyle='')
         scat2 = plt.Line2D((0,1),(0,0), color=(0.7,0.7,0.7), marker='o', linestyle='')
-        
+        if error:
+            plot_labels = ['mean accessibility', '2*stddev of accessibility',
+                           'particles with restraints',
+                           'particles without restraints']
+        else:
+            plot_labels = ['mean accessibility', 'particles with restraints',
+                           'particles without restraints']
         try:
-            ax.legend(plots + [scat1, scat2],
-                      ['mean accessibility', '2*stddev of accessibility'] + ['particles with restraints',
-                                                                             'particles without restraints'],
+            ax.legend(plots + [scat1, scat2], plot_labels,
                       fontsize='small', numpoints=1,
                       bbox_to_anchor=(1, 0.5), loc='center left')
         except TypeError:
-            ax.legend(plots + [scat1, scat2],
-                      ['mean accessibility', '2*stddev of accessibility'] + ['particles with restraints',
-                                                                             'particles without restraints'],
+            ax.legend(plots + [scat1, scat2], plot_labels,
                       numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title('Accesibility per particle')
