@@ -211,7 +211,7 @@ def get_intersection_dev(fname1, fname2, out_path, verbose=False):
     if header1 != header2:
         raise Exception('seems to be mapped onover different chromosomes\n')
 
-    nchunks = 1000
+    nchunks = 10000
     global CHROM_START
     CHROM_START = {}
     cum_pos = 0
@@ -222,10 +222,12 @@ def get_intersection_dev(fname1, fname2, out_path, verbose=False):
             cum_pos += int(pos)
 
     lchunk = cum_pos / nchunks
-    buf = dict([(i, []) for i in range(0, nchunks, lchunk)])
-    
-    tmp_dir = path.join(out_path, '_tmp_files')
+    buf = dict([(i, []) for i in xrange(nchunks + 1)])
+
+    tmp_dir = out_path + '_tmp_files'
     mkdir(tmp_dir)
+    for i in xrange(nchunks / 100 + 1):
+        mkdir(path.join(tmp_dir, 'rep_%03d' % i))
 
     # setup REGEX to split reads in a single line
     # readex = recompile('((?:[^\t]+\t){6}[^\t]+)')
@@ -269,23 +271,12 @@ def get_intersection_dev(fname1, fname2, out_path, verbose=False):
     out.write(header1)
     for b in buf:
         out.write('\n'.join(['\t'.join(l[1:]) for l in sorted(
-            [l.split() for l in open(path.join(tmp_dir, str(b) + '_salut'))],
+            [l.split() for l in open(path.join(tmp_dir, 'rep_%03d' % (b / 100), 'tmp_%d.tsv' % b))],
             key=lambda x: x[0])]) + '\n')
     out.close()
 
-    # system('rm -rf ' + tmp_dir)
+    system('rm -rf ' + tmp_dir)
     return count, multiples
-
-def _loc_reads(r1, r2):
-    """
-    put upstream read before, get position in buf
-    """
-    pos1 = CHROM_START[r1[1]] + int(r1[2])
-    pos2 = CHROM_START[r2[1]] + int(r2[2])
-    if pos1 > pos2:
-        r1, r2 = r2, r1
-        pos1, pos2 = pos2, pos1
-    return r1, r2, pos1
 
 def _process_lines(line1, line2, buf, multiples, lchunk):
     # case we have potential multicontacts
@@ -338,23 +329,36 @@ def _process_lines(line1, line2, buf, multiples, lchunk):
             prod_cont = contacts * (contacts + 1) / 2
             for i, (r1, r2) in enumerate(combinations(elts.values(), 2)):
                 r1, r2, idx = _loc_reads(r1, r2)
-                buf[idx / lchunk] = '%d\t%s#%d/%d\t%s\t%s' % (
+                buf[idx / lchunk].append('%d\t%s#%d/%d\t%s\t%s' % (
                     idx, r1[0], i + 1, prod_cont, '\t'.join(r1[1:]),
-                    '\t'.join(r2[1:]))
+                    '\t'.join(r2[1:])))
         elif contacts == 1:
             r1, r2, idx = _loc_reads(elts.values()[0], elts.values()[1])
-            buf[idx / lchunk] = '%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:]))
+            buf[idx / lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
         else:
             r1, r2, idx = _loc_reads(elts1.values()[0], elts2.values()[0])
-            buf[idx / lchunk] = '%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:]))
+            buf[idx / lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
     else:
         r1, r2, idx = _loc_reads(line1.split(), line2.split())
-        buf[idx / lchunk] = '%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:]))
+        buf[idx / lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
+
+def _loc_reads(r1, r2):
+    """
+    put upstream read before, get position in buf
+    """
+    pos1 = CHROM_START[r1[1]] + int(r1[2])
+    pos2 = CHROM_START[r2[1]] + int(r2[2])
+    if pos1 > pos2:
+        r1, r2 = r2, r1
+        pos1, pos2 = pos2, pos1
+    return r1, r2, pos1
 
 def write_to_files(buf, tmp_dir):
     for b in buf:
-        out = open(path.join(tmp_dir, str(b) + '_salut'), 'a')
-        out.write('\n'.join(buf[b]) + '\n')
+        out = open(path.join(tmp_dir, 'rep_%03d' % (b / 100), 'tmp_%d.tsv' % b), 'a')
+        out.write('\n'.join(buf[b]))
+        if buf[b]: # case the file was empty
+            out.write('\n')
         out.close()
         del(buf[b][:])
 
