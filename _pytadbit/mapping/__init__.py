@@ -1,7 +1,7 @@
 from pytadbit.utils.file_handling         import mkdir
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 from itertools                            import combinations
-from os                                   import path
+from os                                   import path, system
 from sys                                  import stdout
 
 
