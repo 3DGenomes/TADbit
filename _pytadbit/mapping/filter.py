@@ -6,7 +6,7 @@
 from pytadbit.mapping.restriction_enzymes import count_re_fragments
 import multiprocessing as mu
 
-def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
+def apply_filter(fnam, outfile, masked, filters=None, reverse=False, 
                  verbose=True):
     """
     Create a new file with reads filtered
@@ -26,14 +26,10 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
     masked_reads = set()
     filters = filters or masked.keys()
     filter_names = []
-    if old:
-        for filt in filters:
-            masked_reads.update(masked[filt]['reads'])
-    else:
-        for k in masked:
-            if k in filters:
-                masked_reads.update(open(masked[k]['fnam']).read().split())
-                filter_names.append(masked[k]['name'])
+    for k in masked:
+        if k in filters:
+            masked_reads.update(open(masked[k]['fnam']).read().split())
+            filter_names.append(masked[k]['name'])
     out = open(outfile, 'w')
     fhandler = open(fnam)
     while True:
@@ -55,6 +51,71 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
             line = next(fhandler)
     except StopIteration:
         pass
+    if verbose:
+        print '    saving to file %d reads %s %s.' % (
+            count, 'with' if reverse else 'without', ', '.join(filter_names))
+    out.close()
+    return count
+
+
+def apply_filter_new(fnam, outfile, masked, filters=None, reverse=False, 
+                 verbose=True, cpus=None):
+    """
+    Create a new file with reads filtered
+
+    :param fnam: input file path, where non-filtered read are stored
+    :param outfile: output file path, where filtered read will be stored
+    :param masked: dictionary given by the
+       :func:`pytadbit.mapping.filter.filter_reads`
+    :param None filters: list of numbers corresponding to the filters we want
+       to apply (numbers correspond to the keys in the masked dictionary)
+    :param False reverse: if set, the resulting outfile will only contain the
+       reads filtered, not the valid pairs.
+    :param False verbose:
+
+    :returns: number of reads kept
+    """
+    filters = filters or masked.keys()
+    filter_names = []
+    filter_handlers = {}
+    for k in filters:
+        try:
+            fh = open(masked[k]['fnam'])
+            val = fh.next()
+            filter_handlers[k] = [val, fh]
+        except StopIteration:
+            pass
+
+    out = open(outfile, 'w')
+    fhandler = open(fnam)
+    # get the header
+    pos = 0
+    while True:
+        line = next(fhandler)
+        pos += len(line)
+        if not line.startswith('#'):
+            break
+        out.write(line)
+    fhandler.seek(pos)
+    # function to check filter
+    if reverse:
+        cond = lambda x, y: x == y
+    else:
+        cond = lambda x, y: x != y
+    
+    count = 0
+    for line in fhandler:
+        read = line.split('\t', 1)[0]
+        # iterate over different filters
+        for k in filter_handlers:
+            if not cond(read, filter_handlers[k][1]):
+                continue
+            count += 1
+            out.write(line)
+            try: # get next line of current filter file
+                filter_handlers[k][0] = filter_handlers[k][1].next()
+            except StopIteration:
+                del filter_handlers[k]
     if verbose:
         print '    saving to file %d reads %s %s.' % (
             count, 'with' if reverse else 'without', ', '.join(filter_names))
