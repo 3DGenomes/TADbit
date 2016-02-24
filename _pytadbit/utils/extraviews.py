@@ -943,7 +943,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                     if a * b < 0] + [len(first)]
     axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
                 color='red' , linewidth=4, alpha=0.7)
-    axex.hlines([0]*(len(breaks)/2), breaks[1:-1:2], breaks[2::2],
+    axex.hlines([0]*((len(breaks) - 1)/2), breaks[1:-1:2], breaks[2::2],
                 color='blue', linewidth=4, alpha=0.7)
     axex.grid()
     axex.minorticks_on()
