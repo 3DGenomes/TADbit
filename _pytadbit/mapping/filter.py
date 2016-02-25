@@ -81,7 +81,7 @@ def apply_filter_new(fnam, outfile, masked, filters=None, reverse=False,
     for k in filters:
         try:
             fh = open(masked[k]['fnam'])
-            val = fh.next()
+            val = fh.next().strip()
             filter_handlers[k] = [val, fh]
         except StopIteration:
             pass
@@ -99,29 +99,34 @@ def apply_filter_new(fnam, outfile, masked, filters=None, reverse=False,
     fhandler.seek(pos)
     # function to check filter
     if reverse:
-        cond = lambda x, y: x == y
+        cond = lambda x, y: x in y
+        cond2 = lambda x, y: x == y
     else:
-        cond = lambda x, y: x != y
-    
+        cond = lambda x, y: x not in y
+        cond2 = lambda x, y: x != y
+
+    current = set([v for v, _ in filter_handlers.values()])
     count = 0
     for line in fhandler:
         read = line.split('\t', 1)[0]
-        # iterate over different filters
-        for k in filter_handlers:
-            if not cond(read, filter_handlers[k][1]):
-                continue
+        if cond(read, current):
             count += 1
             out.write(line)
-            try: # get next line of current filter file
-                filter_handlers[k][0] = filter_handlers[k][1].next()
+            continue
+        # iterate over different filters to update current filters
+        for k in filter_handlers.keys():
+            if cond2(read, filter_handlers[k][0]):
+                continue
+            try: # get next line from filter file
+                filter_handlers[k][0] = filter_handlers[k][1].next().strip()
             except StopIteration:
                 del filter_handlers[k]
+        current = set([v for v, _ in filter_handlers.values()])
     if verbose:
         print '    saving to file %d reads %s %s.' % (
             count, 'with' if reverse else 'without', ', '.join(filter_names))
     out.close()
     return count
-
 
 def filter_reads(fnam, output=None, max_molecule_length=500,
                  over_represented=0.005, max_frag_size=100000,
