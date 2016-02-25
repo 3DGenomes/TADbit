@@ -185,14 +185,13 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
 
 def load_parameters_fromdb(workdir, reads=None, jobids=None):
     con = lite.connect(path.join(workdir, 'trace.db'))
-    fnames1 = []
-    fnames2 = []
+    fnames = {1: [], 2: []}
     ids = []
     with con:
         cur = con.cursor()
         # fetch file names to parse
         if not jobids:
-            jobids = []
+            jobids = {}
             for read in reads:
                 cur.execute("""
                 select distinct JOBs.Id from JOBs
@@ -200,31 +199,22 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                    inner join MAPPED_INPUTs on (PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid)
                  where MAPPED_INPUTs.Read = %d
                 """ % read)
-                jobids.append([j[0] for j in cur.fetchall()])
-                if len(jobids[-1]) > 1:
+                jobids[read] = [j[0] for j in cur.fetchall()]
+                if len(jobids[read]) > 1:
                     warn(('WARNING: more than one possible input found for read %d '
                           '(jobids: %s), use "tadbit describe" and select corresponding '
                           'jobid with --jobids option') % (
-                             read, ', '.join([str(j) for j in jobids[-1]])))
-            jobids = [j[0] for j in jobids]
-        if 1 in reads:
-            cur.execute("""
-            select distinct PATHs.Id,PATHs.Path from PATHs
-            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
-            where MAPPED_INPUTs.Read = 1 and PATHs.JOBid = %d
-            """ % jobids.pop(0))
-            for fname in cur.fetchall():
-                ids.append(fname[0])
-                fnames1.append(path.join(workdir, fname[1]))
-        if 2 in reads:
-            cur.execute("""
-            select distinct PATHs.Id,PATHs.Path from PATHs
-            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
-            where MAPPED_INPUTs.Read = 2 and PATHs.JOBid = %d 
-           """ % jobids.pop(0))
-            for fname in cur.fetchall():
-                ids.append(fname[0])
-                fnames2.append(path.join(workdir, fname[1]))
+                             read, ', '.join([str(j) for j in jobids[read]])))
+        for read in reads:
+            for jobid in jobids[read]:
+                cur.execute("""
+                select distinct PATHs.Id,PATHs.Path from PATHs
+                inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
+                where MAPPED_INPUTs.Read = %d and PATHs.JOBid = %d
+                """ % (read, jobid))
+                for fname in cur.fetchall():
+                    ids.append(fname[0])
+                    fnames[read].append(path.join(workdir, fname[1]))
         # GET enzyme name
         enzymes = []
         for fid in ids:
@@ -237,7 +227,7 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
             raise Exception(
                 'ERROR: different enzymes used to generate these files')
         renz = enzymes[0][0]
-    return fnames1, fnames2, renz
+    return fnames[1], fnames[2], renz
         
 
 def populate_args(parser):
