@@ -23,58 +23,6 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
 
     :returns: number of reads kept
     """
-    masked_reads = set()
-    filters = filters or masked.keys()
-    filter_names = []
-    for k in masked:
-        if k in filters:
-            masked_reads.update(open(masked[k]['fnam']).read().split())
-            filter_names.append(masked[k]['name'])
-    out = open(outfile, 'w')
-    fhandler = open(fnam)
-    while True:
-        line = next(fhandler)
-        if not line.startswith('#'):
-            break
-        out.write(line)
-    if reverse:
-        cond = lambda x, y: x in y
-    else:
-        cond = lambda x, y: x not in y
-    count = 0
-    try:
-        while True:
-            read = line.split('\t', 1)[0]
-            if cond(read, masked_reads):
-                count += 1
-                out.write(line)
-            line = next(fhandler)
-    except StopIteration:
-        pass
-    if verbose:
-        print '    saving to file %d reads %s %s.' % (
-            count, 'with' if reverse else 'without', ', '.join(filter_names))
-    out.close()
-    return count
-
-
-def apply_filter_dev(fnam, outfile, masked, filters=None, reverse=False, 
-                 verbose=True):
-    """
-    Create a new file with reads filtered
-
-    :param fnam: input file path, where non-filtered read are stored
-    :param outfile: output file path, where filtered read will be stored
-    :param masked: dictionary given by the
-       :func:`pytadbit.mapping.filter.filter_reads`
-    :param None filters: list of numbers corresponding to the filters we want
-       to apply (numbers correspond to the keys in the masked dictionary)
-    :param False reverse: if set, the resulting outfile will only contain the
-       reads filtered, not the valid pairs.
-    :param False verbose:
-
-    :returns: number of reads kept
-    """
     filters = filters or masked.keys()
     filter_names = []
     filter_handlers = {}
@@ -92,36 +40,47 @@ def apply_filter_dev(fnam, outfile, masked, filters=None, reverse=False,
     pos = 0
     while True:
         line = next(fhandler)
-        pos += len(line)
         if not line.startswith('#'):
             break
+        pos += len(line)
         out.write(line)
     fhandler.seek(pos)
-    # function to check filter
-    if reverse:
-        cond = lambda x, y: x in y
-        cond2 = lambda x, y: x == y
-    else:
-        cond = lambda x, y: x not in y
-        cond2 = lambda x, y: x != y
 
     current = set([v for v, _ in filter_handlers.values()])
     count = 0
-    for line in fhandler:
-        read = line.split('\t', 1)[0]
-        if cond(read, current):
-            count += 1
-            out.write(line)
-            continue
-        # iterate over different filters to update current filters
-        for k in filter_handlers.keys():
-            if cond2(read, filter_handlers[k][0]):
+    if reverse:
+        for line in fhandler:
+            read = line.split('\t', 1)[0]
+            if read in current:
+                count += 1
+                out.write(line)
+            else:
                 continue
-            try: # get next line from filter file
-                filter_handlers[k][0] = filter_handlers[k][1].next().strip()
-            except StopIteration:
-                del filter_handlers[k]
-        current = set([v for v, _ in filter_handlers.values()])
+            # iterate over different filters to update current filters
+            for k in filter_handlers.keys():
+                if read != filter_handlers[k][0]:
+                    continue
+                try: # get next line from filter file
+                    filter_handlers[k][0] = filter_handlers[k][1].next().strip()
+                except StopIteration:
+                    del filter_handlers[k]
+            current = set([v for v, _ in filter_handlers.values()])
+    else:
+        for line in fhandler:
+            read = line.split('\t', 1)[0]
+            if read not in current:
+                count += 1
+                out.write(line)
+                continue
+            # iterate over different filters to update current filters
+            for k in filter_handlers.keys():
+                if read != filter_handlers[k][0]:
+                    continue
+                try: # get next line from filter file
+                    filter_handlers[k][0] = filter_handlers[k][1].next().strip()
+                except StopIteration:
+                    del filter_handlers[k]
+            current = set([v for v, _ in filter_handlers.values()])
     if verbose:
         print '    saving to file %d reads %s %s.' % (
             count, 'with' if reverse else 'without', ', '.join(filter_names))

@@ -37,7 +37,8 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
     :param re_name: name of the restriction enzyme used
     :param True clean: remove temporary files required for indentification of
        multiple-contacts
-    :param False compress: compress input map files
+    :param False compress: compress (gzip) input map files. This is done in the
+       background while next MAP files are parsed, or while files are sorted.
     """
     # not nice, dirty fix in order to allow this function to only parse
     # one SAM file

@@ -250,8 +250,8 @@ def populate_args(parser):
 
     glopts.add_argument('--type', dest='type', metavar="STR", 
                         type=str, default='map', choices=['map', 'sam', 'bam'], 
-                        help='''[%(default)s]file type to be parser, map
-                        (GEM-mapper), sam or bam''')
+                        help='''[%(default)s]file type to be parser, MAP
+                        (GEM-mapper), SAM or BAM''')
 
     glopts.add_argument('--read', dest='read', metavar="INT",
                         type=int, default=None, 
@@ -263,7 +263,9 @@ def populate_args(parser):
 
     glopts.add_argument('--compress_input', dest='compress_input',
                         action='store_true', default=False,
-                        help='Compress input mapped files when parsing is done')
+                        help='''Compress input mapped files when parsing is 
+                        done. This is done in background, while next MAP file is
+                        processed, or while reads are sorted.''')
 
     glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
                         type=str,

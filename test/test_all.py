@@ -25,13 +25,11 @@ from pytadbit.mapping.filter              import filter_reads, apply_filter
 from random                               import random, seed
 from os                                   import system, path, chdir
 from re                                   import finditer
-from warnings                             import warn
+from warnings                             import warn, catch_warnings, simplefilter
 from distutils.spawn                      import find_executable
 
-CHKTIME = False
+import sys
 
-if CHKTIME:
-    from time import time
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
@@ -984,5 +982,13 @@ def generate_random_ali(ali='map'):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    if len(sys.argv) > 1:
+        CHKTIME = bool(int(sys.argv.pop()))
+        from time import time
+    else:
+        CHKTIME = False
+
+    with catch_warnings():
+        simplefilter("ignore")
+        unittest.main()
     
