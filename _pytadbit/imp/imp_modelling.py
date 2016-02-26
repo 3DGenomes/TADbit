@@ -140,7 +140,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     
 
     if CONFIG['lowrdist'] > CONFIG['maxdist']:
-        raise Exception(
+        raise TADbitModelingOutOfBound(
             ('ERROR: we must prevent you from doing this for the safe of our' +
              'universe...\nIn this case, maxdist must be higher than %s\n' +
              '   -> resolution times scale -- %s*%s)') % (
@@ -644,3 +644,5 @@ def kForce(freq):
     return power(fabs(freq), 0.5 )
 
 
+class TADbitModelingOutOfBound(Exception):
+    pass

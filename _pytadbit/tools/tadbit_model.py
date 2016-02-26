@@ -8,7 +8,7 @@ information needed
 
 from argparse                       import HelpFormatter
 from os                             import path
-from pytadbit.imp.imp_modelling import generate_3d_models
+from pytadbit.imp.imp_modelling import generate_3d_models, TADbitModelingOutOfBound
 from pytadbit import Chromosome
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
@@ -29,18 +29,12 @@ def run(opts):
 
     launch_time = time.localtime()
 
-    if opts.xname:
-        xnames = opts.xname
-    elif opts.data[0]:
-        xnames = [path.split(d)[-1] for d in opts.data]
-    else:
-        xnames = [path.split(d)[-1] for d in opts.norm]
-
     # load data
     print 'loading data'
-    crm = load_hic_data(opts, xnames)
+    crm = load_hic_data(opts)
     exp = crm.experiments[0]
     
+    mkdir(path.join(opts.workdir, '06_model'))
 
     beg, end = opts.beg or 1, opts.end or exp.size
     zscores, values, zeros = exp._sub_experiment_zscore(beg, end)
@@ -50,8 +44,17 @@ def run(opts):
               "end"  : opts.end}
     
     print 'Start modeling'
+    print ('# %3s %6s %7s %7s %6s %7s\n' % (
+        "num", "upfrq", "lowfrq", "maxdist",
+        "scale", "cutoff"))
+
+    if opts.job_list:
+        job_file_handler = open(path.join(opts.workdir, '06_model', 'job_list.q'), 'w')
     for m, u, l, d, s in product(opts.maxdist, opts.upfreq, opts.lowfreq,
                                  opts.dcutoff, opts.scale):
+        
+        print('%5s %6s %7s %7s %6s %7s  ' % ('x', u, l, m, s, d))
+        mkdir(path.join(opts.workdir, '06_model', 'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d)))
 
         optpar = {'maxdist': m,
                   'upfreq' : u,
@@ -59,20 +62,36 @@ def run(opts):
                   'dcutoff': d,
                   'scale'  : s,
                   'kforce' : 5}
-        
-        # compute models
-        models =  generate_3d_models(zscores, opts.res, nloci,
-                                     values=values, n_models=opts.nmodels_mod,
-                                     n_keep=opts.nkeep_mod,
-                                     n_cpus=opts.ncpus, keep_all=True,
-                                     first=opts.first, container=opts.container,
-                                     config=optpar, coords=coords, zeros=zeros)
 
-        # Save models
-        models.save_models(
-            path.join(opts.outdir, "%s", "%s" + ".models"))
-    
+        for rand in xrange(opts.nmodels_run):
+            if opts.job_list:
+                job_file_handler.write(('tadbit model --input_matrix %s '
+                                        '--maxdist %s --upfreq %s --lowfreq=%s '
+                                        '--dcutoff %s --scale %s --rand %s '
+                                        '--nmodels_run') % (
+                                           opts.matrix, m, u, l, d, s, rand))
 
+            # compute models
+            try:
+                models =  generate_3d_models(zscores, opts.reso, nloci,
+                                             values=values, n_models=opts.nmodels,
+                                             n_keep=opts.nkeep,
+                                             n_cpus=opts.cpus, keep_all=True,
+                                             first=opts.rand, container=None,
+                                             config=optpar, coords=coords, zeros=zeros)
+            except TADbitModelingOutOfBound:
+                warn('WARNING: scale (here %s) x resolution (here %d) should be '
+                     'lower than maxdist (here %d instead of at least: %d)' % (
+                         s, opts.reso, m, s * opts.reso))
+                continue
+
+            # Save models
+            models.save_models(
+                path.join(opts.workdir, '06_model',
+                          'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d),
+                          ('models_%s-%s.pick' % (opts.rand, opts.rand + opts.nmodels))
+                          if opts.nmodels > 1 else 
+                          ('model_%s.pick' % (opts.rand))))
 
     finish_time = time.localtime()
 
@@ -211,9 +230,10 @@ def populate_args(parser):
 
     glopts = parser.add_argument_group('General options')
 
-    # glopts.add_argument('--qc_plot', dest='quality_plot', action='store_true',
-    #                   default=False,
-    #                   help='generate a quality plot of FASTQ and exits')
+    glopts.add_argument('--job_list', dest='job_list', action='store_true',
+                      default=False,
+                      help='generate a a file with a list of jobs to be run in '
+                        'a cluster')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str,
@@ -244,7 +264,7 @@ def populate_args(parser):
     glopts.add_argument('--end', dest='end', metavar="INT", type=float,
                         help='genomic coordinate where to end modeling')
 
-    glopts.add_argument('--res', dest='res', metavar="INT", type=int,
+    glopts.add_argument('-r', '--reso', dest='reso', metavar="INT", type=int,
                         help='resolution of the Hi-C experiment')
 
     glopts.add_argument('--input_matrix', dest='matrix', metavar="PATH",
@@ -256,12 +276,12 @@ def populate_args(parser):
                         default=None, type=int,
                         help='[ALL] number of models to run with this call')
 
-    glopts.add_argument('--nmodels_mod', dest='nmodels_mod', metavar="INT",
+    glopts.add_argument('--nmodels', dest='nmodels', metavar="INT",
                         default='5000', type=int,
                         help=('[%(default)s] number of models to generate for' +
                               ' modeling'))
 
-    glopts.add_argument('--nkeep_mod', dest='nkeep_mod', metavar="INT",
+    glopts.add_argument('--nkeep', dest='nkeep', metavar="INT",
                         default='1000', type=int,
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
@@ -290,28 +310,25 @@ def populate_args(parser):
                         'number of beads, from which to consider 2 beads as ' +
                         'being close), i.e. 1:5:0.5 -- Can also pass only one' +
                         ' number')
-    glopts.add_argument('--nmodels_opt', dest='nmodels_opt', metavar="INT",
-                        default='500', type=int,
-                        help='[%(default)s] number of models to generate for ' +
-                        'optimization')
-    glopts.add_argument('--nkeep_opt', dest='nkeep_opt', metavar="INT",
-                        default='100', type=int,
-                        help='[%(default)s] number of models to keep for ' +
-                        'optimization')
+    glopts.add_argument("-C", "--cpu", dest="cpus", type=int,
+                        default=0, help='''[%(default)s] Maximum number of CPU
+                        cores  available in the execution host. If higher
+                        than 1, tasks with multi-threading
+                        capabilities will enabled (if 0 all available)
+                        cores will be used''')
 
     parser.add_argument_group(glopts)
 
 def check_options(opts):
     # do the division to bins
-    if not opts.tad_only:
-        try:
-            opts.beg = int(float(opts.beg) / opts.res)
-            opts.end = int(float(opts.end) / opts.res)
-            if opts.end - opts.beg <= 2:
-                raise Exception('"beg" and "end" parameter should be given in ' +
-                                'genomic coordinates, not bin')
-        except TypeError:
-            pass
+    try:
+        opts.beg = int(float(opts.beg) / opts.reso)
+        opts.end = int(float(opts.end) / opts.reso)
+        if opts.end - opts.beg <= 2:
+            raise Exception('"beg" and "end" parameter should be given in ' +
+                            'genomic coordinates, not bin')
+    except TypeError:
+        pass
 
     # turn options into lists
     opts.scale   = (tuple([float(i) for i in opts.scale.split(':')  ])
@@ -329,37 +346,22 @@ def check_options(opts):
     opts.dcutoff = (tuple([float(i) for i in opts.dcutoff.split(':')])
                     if ':' in opts.dcutoff else [float(opts.dcutoff)])
 
+    mkdir(opts.workdir)
 
-def load_hic_data(opts, xnames):
+def load_hic_data(opts):
     """
     Load Hi-C data
     """
     # Start reading the data
-    crm = Chromosome(opts.crm, species=(
-        opts.species.split('_')[0].capitalize() + opts.species.split('_')[1]
-                          if '_' in opts.species else opts.species),
-                          centromere_search=opts.centromere,
-                          assembly=opts.assembly) # Create chromosome object
+    crm = Chromosome(opts.crm) # Create chromosome object
 
-    logging.info("\tReading input data...")
-    for xnam, xpath, xnorm in zip(xnames, opts.data, opts.norm):
-        crm.add_experiment(
-            xnam, exp_type='Hi-C', enzyme=opts.enzyme,
-            cell_type=opts.cell,
-            identifier=opts.identifier, # general descriptive fields
-            project=opts.project, # user descriptions
-            resolution=opts.res,
-            hic_data=xpath,
-            norm_data=xnorm)
-        if not xnorm:
-            crm.experiments[xnam].filter_columns(diagonal=not opts.nodiag)
-            logging.info("\tNormalizing HiC data of %s...", xnam)
-            crm.experiments[xnam].normalize_hic(iterations=10, max_dev=0.1)
+    crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
+                       norm_data=opts.matrix)
     if opts.beg > crm.experiments[-1].size:
         raise Exception('ERROR: beg parameter is larger than chromosome size.')
     if opts.end > crm.experiments[-1].size:
-        logging.info('WARNING: end parameter is larger than chromosome ' +
-                     'size. Setting end to %s.\n' % (crm.experiments[-1].size *
-                                                     opts.res))
+        print ('WARNING: end parameter is larger than chromosome ' +
+               'size. Setting end to %s.\n' % (crm.experiments[-1].size *
+                                               opts.reso))
         opts.end = crm.experiments[-1].size
     return crm

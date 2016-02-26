@@ -18,7 +18,7 @@ import logging
 import sqlite3 as lite
 import time
 
-DESC = "Parse mapped Hi-C reads and get the intersection"
+DESC = "Filter parsed Hi-C reads and get valid pair of reads to work with"
 
 def run(opts):
     check_options(opts)
