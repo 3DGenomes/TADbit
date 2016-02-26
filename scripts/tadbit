@@ -9,6 +9,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from pytadbit.tools import tadbit_map
 from pytadbit.tools import tadbit_clean
 from pytadbit.tools import tadbit_parse
+from pytadbit.tools import tadbit_model
 from pytadbit.tools import tadbit_filter
 from pytadbit.tools import tadbit_describe
 from pytadbit.tools import tadbit_normalize
@@ -67,6 +68,13 @@ def main(arguments):
                                              formatter_class=RawDescriptionHelpFormatter)
     args_pp["normalize"].set_defaults(func=tadbit_normalize.run)
     tadbit_normalize.populate_args(args_pp["normalize"])
+
+    # - MODEL -
+    args_pp["model"] = subparser.add_parser("model",
+                                             description=tadbit_model.DESC,
+                                             formatter_class=RawDescriptionHelpFormatter)
+    args_pp["model"].set_defaults(func=tadbit_model.run)
+    tadbit_model.populate_args(args_pp["model"])
 
     if len(arguments) == 1:
         parser.print_usage()

@@ -351,12 +351,42 @@ def estimate_cardinality(values, k):
 
 
 def main():
+
+    import sys
+    from matplotlib import pyplot as plt
+
     fnam = '/scratch/Projects/tadbit_paper/fastqs/SRR1658525_1.fastq.dsrc'
     proc = Popen(['dsrc', 'd', '-t8', '-s', fnam], stdout=PIPE)
     fhandler = proc.stdout
+    values  = []
+    results = {}
+    for i, nreads in enumerate([10000]  * 1000 + [50000]   * 200 +
+                               [100000] * 100  + [500000]  * 20 +
+                               [1000000]* 10   + [5000000] * 2 +
+                               [10000000]* 1, 1):
+        num = sum([1   for _ in range(i)][    :1000] +
+                  [5   for _ in range(i)][1000:1200] +
+                  [10  for _ in range(i)][1200:1300] +
+                  [50  for _ in range(i)][1300:1320] +
+                  [100 for _ in range(i)][1320:1322] +
+                  [100 for _ in range(i)][1322:])
+        sys.stdout.write('\r%3d/%d' % (num, 500))
+        sys.stdout.flush()
+        for line in fhandler:
+            if line.startswith('@'):
+                values.append(fhandler.next()[:50])
+                if len(values) > nreads:
+                    break
+        results.setdefault(nreads, []).append(estimate_cardinality(values, 16) / nreads)
+
+    x, y = zip(*[(k, sum(v) / len(v)) for k, v in sorted(results.iteritems(), key=lambda x:x[0])])
+    plt.plot(x, y, 'ro')
+    plt.xscale('log')
+    # plt.yscale('log')
+    plt.grid()
+    plt.show()
+
     values = []
     for line in fhandler:
         if line.startswith('@'):
-            values.append(fhandler.next()[:30])
-            if len(values) > 1000000:
-                break
+            values.append(fhandler.next()[:50])
