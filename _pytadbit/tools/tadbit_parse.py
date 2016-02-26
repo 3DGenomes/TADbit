@@ -63,7 +63,7 @@ def run(opts):
         logging.info('parsing reads in %s project', name)
         counts, multis = parse_map(f_names1, f_names2, out_file1=out_file1,
                                    out_file2=out_file2, re_name=renz, verbose=True,
-                                   genome_seq=genome)
+                                   genome_seq=genome, compress=opts.compress_input)
     else:
         counts = {}
         counts[0] = {}
@@ -260,6 +260,10 @@ def populate_args(parser):
     glopts.add_argument('--skip', dest='skip', action='store_true',
                       default=False,
                       help='[DEBUG] in case already mapped.')
+
+    glopts.add_argument('--compress_input', dest='compress_input',
+                        action='store_true', default=False,
+                        help='Compress input mapped files when parsing is done')
 
     glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
                         type=str,

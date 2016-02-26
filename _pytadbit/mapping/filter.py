@@ -58,8 +58,8 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False,
     return count
 
 
-def apply_filter_new(fnam, outfile, masked, filters=None, reverse=False, 
-                 verbose=True, cpus=None):
+def apply_filter_dev(fnam, outfile, masked, filters=None, reverse=False, 
+                 verbose=True):
     """
     Create a new file with reads filtered
 
