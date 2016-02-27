@@ -37,6 +37,11 @@ def run(opts):
     mkdir(path.join(opts.workdir, '06_model'))
 
     beg, end = opts.beg or 1, opts.end or exp.size
+
+    outdir = path.join(opts.workdir, '06_model',
+		       'chr%s_%s-%s' % (opts.crm, beg, end))
+    mkdir(outdir)
+
     zscores, values, zeros = exp._sub_experiment_zscore(beg, end)
     nloci = end - beg + 1
     coords = {"crm"  : opts.crm,
@@ -49,12 +54,12 @@ def run(opts):
         "scale", "cutoff"))
 
     if opts.job_list:
-        job_file_handler = open(path.join(opts.workdir, '06_model', 'job_list.q'), 'w')
+        job_file_handler = open(path.join(outdir, 'job_list.q'), 'w')
     for m, u, l, d, s in product(opts.maxdist, opts.upfreq, opts.lowfreq,
                                  opts.dcutoff, opts.scale):
         
         print('%5s %6s %7s %7s %6s %7s  ' % ('x', u, l, m, s, d))
-        mkdir(path.join(opts.workdir, '06_model', 'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d)))
+        mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d)))
 
         optpar = {'maxdist': m,
                   'upfreq' : u,
@@ -63,24 +68,26 @@ def run(opts):
                   'scale'  : s,
                   'kforce' : 5}
 
+	# write list of jobs to be run separately
         if opts.job_list:
             for rand in xrange(1, opts.nmodels + 1, opts.nmodels_run):
                 job_file_handler.write(('tadbit model --input_matrix %s '
                                         '--maxdist %s --upfreq %s --lowfreq=%s '
                                         '--dcutoff %s --scale %s --rand %s '
-                                        '--nmodels_run') % (
-                                           opts.matrix, m, u, l, d, s, rand))
+                                        '--nmodels_run %s\n') % (
+                                           opts.matrix, m, u, l, d, s, rand,
+					   opts.nmodels_run))
             continue
 
         # compute models
         try:
-            print opts.cpus, opts.nmodels
             models =  generate_3d_models(zscores, opts.reso, nloci,
                                          values=values, n_models=opts.nmodels,
                                          n_keep=opts.nkeep,
                                          n_cpus=opts.cpus, keep_all=True,
                                          first=opts.rand, container=None,
-                                         config=optpar, coords=coords, zeros=zeros)
+                                         config=optpar, coords=coords,
+					 zeros=zeros)
         except TADbitModelingOutOfBound:
             warn('WARNING: scale (here %s) x resolution (here %d) should be '
                  'lower than maxdist (here %d instead of at least: %d)' % (
@@ -88,12 +95,19 @@ def run(opts):
             continue
 
         # Save models
+	print 'saving models'
         models.save_models(
-            path.join(opts.workdir, '06_model',
-                      'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d),
+            path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d),
                       ('models_%s-%s.pick' % (opts.rand, opts.rand + opts.nmodels))
                       if opts.nmodels > 1 else 
                       ('model_%s.pick' % (opts.rand))))
+
+    if opts.optimize:
+	finish_time = time.localtime()
+	return
+
+
+
 
     finish_time = time.localtime()
 
