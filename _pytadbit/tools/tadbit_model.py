@@ -63,35 +63,37 @@ def run(opts):
                   'scale'  : s,
                   'kforce' : 5}
 
-        for rand in xrange(opts.nmodels_run):
-            if opts.job_list:
+        if opts.job_list:
+            for rand in xrange(1, opts.nmodels + 1, opts.nmodels_run):
                 job_file_handler.write(('tadbit model --input_matrix %s '
                                         '--maxdist %s --upfreq %s --lowfreq=%s '
                                         '--dcutoff %s --scale %s --rand %s '
                                         '--nmodels_run') % (
                                            opts.matrix, m, u, l, d, s, rand))
+            continue
 
-            # compute models
-            try:
-                models =  generate_3d_models(zscores, opts.reso, nloci,
-                                             values=values, n_models=opts.nmodels,
-                                             n_keep=opts.nkeep,
-                                             n_cpus=opts.cpus, keep_all=True,
-                                             first=opts.rand, container=None,
-                                             config=optpar, coords=coords, zeros=zeros)
-            except TADbitModelingOutOfBound:
-                warn('WARNING: scale (here %s) x resolution (here %d) should be '
-                     'lower than maxdist (here %d instead of at least: %d)' % (
-                         s, opts.reso, m, s * opts.reso))
-                continue
+        # compute models
+        try:
+            print opts.cpus, opts.nmodels
+            models =  generate_3d_models(zscores, opts.reso, nloci,
+                                         values=values, n_models=opts.nmodels,
+                                         n_keep=opts.nkeep,
+                                         n_cpus=opts.cpus, keep_all=True,
+                                         first=opts.rand, container=None,
+                                         config=optpar, coords=coords, zeros=zeros)
+        except TADbitModelingOutOfBound:
+            warn('WARNING: scale (here %s) x resolution (here %d) should be '
+                 'lower than maxdist (here %d instead of at least: %d)' % (
+                     s, opts.reso, m, s * opts.reso))
+            continue
 
-            # Save models
-            models.save_models(
-                path.join(opts.workdir, '06_model',
-                          'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d),
-                          ('models_%s-%s.pick' % (opts.rand, opts.rand + opts.nmodels))
-                          if opts.nmodels > 1 else 
-                          ('model_%s.pick' % (opts.rand))))
+        # Save models
+        models.save_models(
+            path.join(opts.workdir, '06_model',
+                      'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d),
+                      ('models_%s-%s.pick' % (opts.rand, opts.rand + opts.nmodels))
+                      if opts.nmodels > 1 else 
+                      ('model_%s.pick' % (opts.rand))))
 
     finish_time = time.localtime()
 
@@ -236,37 +238,29 @@ def populate_args(parser):
                         'a cluster')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
-                        action='store', default=None, type=str,
+                        action='store', default=None, type=str, required=True,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
-
     glopts.add_argument('--optimize', dest='optimize', 
                         default=False, action="store_true",
                         help='''optimization run, store less info about models''')
-
     glopts.add_argument('--rand', dest='rand', metavar="INT",
                         type=int, default=1, 
                         help='''[%(default)s] random initial number. NOTE:
                         when running single model at the time, should be
                         different for each run''')
-
     glopts.add_argument('--skip', dest='skip', action='store_true',
                       default=False,
                       help='[DEBUG] in case already mapped.')
-
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
-
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
                         default=None,
                         help='genomic coordinate from which to start modeling')
-
     glopts.add_argument('--end', dest='end', metavar="INT", type=float,
                         help='genomic coordinate where to end modeling')
-
     glopts.add_argument('-r', '--reso', dest='reso', metavar="INT", type=int,
                         help='resolution of the Hi-C experiment')
-
     glopts.add_argument('--input_matrix', dest='matrix', metavar="PATH",
                         type=str,
                         help='''In case input was not generated with the TADbit
@@ -277,12 +271,12 @@ def populate_args(parser):
                         help='[ALL] number of models to run with this call')
 
     glopts.add_argument('--nmodels', dest='nmodels', metavar="INT",
-                        default='5000', type=int,
+                        default=5000, type=int,
                         help=('[%(default)s] number of models to generate for' +
                               ' modeling'))
 
     glopts.add_argument('--nkeep', dest='nkeep', metavar="INT",
-                        default='1000', type=int,
+                        default=1000, type=int,
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
 
@@ -311,7 +305,7 @@ def populate_args(parser):
                         'being close), i.e. 1:5:0.5 -- Can also pass only one' +
                         ' number')
     glopts.add_argument("-C", "--cpu", dest="cpus", type=int,
-                        default=0, help='''[%(default)s] Maximum number of CPU
+                        default=1, help='''[%(default)s] Maximum number of CPU
                         cores  available in the execution host. If higher
                         than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
@@ -345,6 +339,9 @@ def check_options(opts):
 
     opts.dcutoff = (tuple([float(i) for i in opts.dcutoff.split(':')])
                     if ':' in opts.dcutoff else [float(opts.dcutoff)])
+
+
+    opts.nmodels_run = opts.nmodels_run or opts.nmodels
 
     mkdir(opts.workdir)
 
