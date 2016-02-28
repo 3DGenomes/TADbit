@@ -7,8 +7,9 @@ information needed
 """
 
 from argparse                       import HelpFormatter
-from os                             import path
+from os                             import path, listdir
 from pytadbit.imp.imp_modelling import generate_3d_models, TADbitModelingOutOfBound
+from pytadbit import load_structuralmodels
 from pytadbit import Chromosome
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
@@ -19,6 +20,8 @@ import logging
 import fcntl
 import sqlite3 as lite
 from warnings import warn
+from numpy import arange
+from cPickle import load
 
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
@@ -42,6 +45,9 @@ def run(opts):
 		       'chr%s_%s-%s' % (opts.crm, beg, end))
     mkdir(outdir)
 
+    models = compile_models(outdir)
+    print models
+
     zscores, values, zeros = exp._sub_experiment_zscore(beg, end)
     nloci = end - beg + 1
     coords = {"crm"  : opts.crm,
@@ -59,7 +65,7 @@ def run(opts):
                                  opts.dcutoff, opts.scale):
         
         print('%5s %6s %7s %7s %6s %7s  ' % ('x', u, l, m, s, d))
-        mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d)))
+        mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (m, u, l, d, s)))
 
         optpar = {'maxdist': m,
                   'upfreq' : u,
@@ -88,6 +94,7 @@ def run(opts):
                                          first=opts.rand, container=None,
                                          config=optpar, coords=coords,
 					 zeros=zeros)
+
         except TADbitModelingOutOfBound:
             warn('WARNING: scale (here %s) x resolution (here %d) should be '
                  'lower than maxdist (here %d instead of at least: %d)' % (
@@ -95,9 +102,8 @@ def run(opts):
             continue
 
         # Save models
-	print 'saving models'
         models.save_models(
-            path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (u, l, m, s, d),
+            path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (m, u, l, d, s),
                       ('models_%s-%s.pick' % (opts.rand, opts.rand + opts.nmodels))
                       if opts.nmodels > 1 else 
                       ('model_%s.pick' % (opts.rand))))
@@ -108,13 +114,32 @@ def run(opts):
 
 
 
-
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
     # save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
     #            launch_time, finish_time)
 
+def compile_models(outdir):
+    models = {}
+    for cfg_dir in listdir(outdir):
+        if not cfg_dir.startswith('cfg_'):
+            continue
+        _, m, u, l, d, s = cfg_dir.split('_')
+        m, u, l, d, s = int(m), float(u), float(l), float(d), float(s)
+        for fmodel in listdir(path.join(outdir, cfg_dir)):
+            if not fmodel.startswith('models_'):
+                continue
+            if not (m, u, l, d, s) in models:
+                models[(m, u, l, d, s)] = load_structuralmodels(path.join(
+                    outdir, cfg_dir, fmodel))
+            else:
+                sm = load(path.join(outdir, cfg_dir, fmodel))
+                if models[(m, u, l, d, s)]._config != sm['config']:
+                    raise Exception('ERROR: clean directory, hetergoneous data')
+                models[(m, u, l, d, s)]._extend_models(sm['models'])
+                models[(m, u, l, d, s)]._bad_models.extend(sm['bad_models'])
+    return models
 
 def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                launch_time, finish_time):
@@ -339,21 +364,20 @@ def check_options(opts):
         pass
 
     # turn options into lists
-    opts.scale   = (tuple([float(i) for i in opts.scale.split(':')  ])
+    opts.scale   = (tuple(arange(*[float(s) for s in opts.scale.split(':')  ]))
                     if ':' in opts.scale   else [float(opts.scale  )])
     
-    opts.maxdist = (tuple([int  (i) for i in opts.maxdist.split(':')])
+    opts.maxdist = (tuple(range (*[int  (i) for i in opts.maxdist.split(':')]))
                     if ':' in opts.maxdist else [int  (opts.maxdist)])
 
-    opts.upfreq  = (tuple([float(i) for i in opts.upfreq.split(':') ])
+    opts.upfreq  = (tuple(arange(*[float(i) for i in opts.upfreq.split(':') ]))
                     if ':' in opts.upfreq  else [float(opts.upfreq )])
 
-    opts.lowfreq = (tuple([float(i) for i in opts.lowfreq.split(':')])
+    opts.lowfreq = (tuple(arange(*[float(i) for i in opts.lowfreq.split(':')]))
                     if ':' in opts.lowfreq else [float(opts.lowfreq)])
 
-    opts.dcutoff = (tuple([float(i) for i in opts.dcutoff.split(':')])
+    opts.dcutoff = (tuple(arange(*[float(i) for i in opts.dcutoff.split(':')]))
                     if ':' in opts.dcutoff else [float(opts.dcutoff)])
-
 
     opts.nmodels_run = opts.nmodels_run or opts.nmodels
 

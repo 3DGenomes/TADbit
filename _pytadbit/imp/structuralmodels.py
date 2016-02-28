@@ -126,15 +126,12 @@ class StructuralModels(object):
                     return self.__models[key]
             raise KeyError('Model %s not found\n' % (i))
 
-
     def __iter__(self):
         for m in self.__models:
             yield self.__models[m]
 
-
     def __len__(self):
         return len(self.__models)
-
 
     def __repr__(self):
         return ('StructuralModels with %s models of %s particles\n' +
@@ -152,6 +149,8 @@ class StructuralModels(object):
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
 
+    def _extend_models(self, models):
+        self.__models.extend(models)
 
     def align_models(self, models=None, cluster=None, in_place=False,
                      reference_model=None, **kwargs):
