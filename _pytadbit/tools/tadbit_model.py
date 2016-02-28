@@ -46,7 +46,6 @@ def run(opts):
     mkdir(outdir)
 
     models = compile_models(outdir)
-    print models
 
     zscores, values, zeros = exp._sub_experiment_zscore(beg, end)
     nloci = end - beg + 1
@@ -54,17 +53,20 @@ def run(opts):
               "start": opts.beg,
               "end"  : opts.end}
     
-    print 'Start modeling'
-    print ('# %3s %6s %7s %7s %6s %7s\n' % (
-        "num", "upfrq", "lowfrq", "maxdist",
-        "scale", "cutoff"))
-
     if opts.job_list:
         job_file_handler = open(path.join(outdir, 'job_list.q'), 'w')
+    if opts.optimize:
+        print 'Optimizing parameters...'
+        print ('# %3s %6s %7s %7s %6s %7s\n' % (
+            "num", "upfrq", "lowfrq", "maxdist",
+            "scale", "cutoff"))
     for m, u, l, d, s in product(opts.maxdist, opts.upfreq, opts.lowfreq,
                                  opts.dcutoff, opts.scale):
-        
-        print('%5s %6s %7s %7s %6s %7s  ' % ('x', u, l, m, s, d))
+        if (m, u, l, d, s) in models:
+            print('%5s %6s %7s %7s %6s %7s  ' % ('x', u, l, m, s, d))
+            continue
+        else:
+            print('%5s %6s %7s %7s %6s %7s  ' % ('-', u, l, m, s, d))
         mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (m, u, l, d, s)))
 
         optpar = {'maxdist': m,
@@ -111,8 +113,6 @@ def run(opts):
     if opts.optimize:
 	finish_time = time.localtime()
 	return
-
-
 
     finish_time = time.localtime()
 

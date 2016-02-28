@@ -150,7 +150,17 @@ class StructuralModels(object):
             len(self.clusters))
 
     def _extend_models(self, models):
-        self.__models.extend(models)
+        ids = set(m['rand_init'] for m in self.__models)
+        for m in models:
+            if m['rand_init'] in ids:
+                warn('WARNING: found model with same random seed number, '
+                     'SKIPPPING')
+                del(models[m])
+        new_models = {}
+        for i, m in enumerate(sorted(models + self.__models.values(),
+                                     key=lambda x: x['objfun'])):
+            new_models[i] = m
+        self.__models = new_models
 
     def align_models(self, models=None, cluster=None, in_place=False,
                      reference_model=None, **kwargs):
