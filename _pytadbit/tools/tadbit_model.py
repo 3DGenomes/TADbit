@@ -26,93 +26,198 @@ from cPickle import load
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
 
+def write_one_job(opts, rand, m, u, l, s, job_file_handler):
+    job_file_handler.write(
+        'tadbit model -w %s -r %d -C %d --input_matrix %s '
+        '--maxdist %s --upfreq %s --lowfreq=%s '
+        '--scale %s --rand %s --nmodels %s --nkeep %s '
+        '--beg %d --end %d %s\n' % (
+            opts.workdir, opts.reso,
+            min(opts.cpus, opts.nmodels_run), opts.matrix,
+            m, u, l, s, rand,
+            opts.nmodels_run, # equal to nmodels if not defined
+            opts.nkeep, # keep, equal to nmodel_run if defined
+            opts.beg * opts.reso, opts.end * opts.reso,
+            '--optimize ' if opts.optimize else ''))
 
-def run(opts):
-    check_options(opts)
-
-    launch_time = time.localtime()
-
-    # load data
-    print 'loading data'
-    crm = load_hic_data(opts)
-    exp = crm.experiments[0]
-    
-    mkdir(path.join(opts.workdir, '06_model'))
-
-    beg, end = opts.beg or 1, opts.end or exp.size
-
-    outdir = path.join(opts.workdir, '06_model',
-		       'chr%s_%s-%s' % (opts.crm, beg, end))
-    mkdir(outdir)
-
-    models = compile_models(outdir)
-
-    zscores, values, zeros = exp._sub_experiment_zscore(beg, end)
-    nloci = end - beg + 1
+def run_batch_job(exp, opts, m, u, l, s, outdir):
+    zscores, values, zeros = exp._sub_experiment_zscore(opts.beg, opts.end)
+    zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg + 1)])
+    nloci = opts.end - opts.beg + 1
     coords = {"crm"  : opts.crm,
               "start": opts.beg,
               "end"  : opts.end}
-    
-    if opts.job_list:
-        job_file_handler = open(path.join(outdir, 'job_list.q'), 'w')
-    if opts.optimize:
-        print 'Optimizing parameters...'
-        print ('# %3s %6s %7s %7s %6s %7s\n' % (
-            "num", "upfrq", "lowfrq", "maxdist",
-            "scale", "cutoff"))
-    for m, u, l, d, s in product(opts.maxdist, opts.upfreq, opts.lowfreq,
-                                 opts.dcutoff, opts.scale):
-        if (m, u, l, d, s) in models:
-            print('%5s %6s %7s %7s %6s %7s  ' % ('x', u, l, m, s, d))
+
+    optpar = {'maxdist': m,
+              'upfreq' : u,
+              'lowfreq': l,
+              'scale'  : s,
+              'kforce' : 5}
+
+    models = generate_3d_models(zscores, opts.reso, nloci,
+                                values=values, n_models=opts.nmodels,
+                                n_keep=opts.nkeep,
+                                n_cpus=opts.cpus, keep_all=True,
+                                start=int(opts.rand), container=None,
+                                config=optpar, coords=coords,
+                                zeros=zeros)
+    # Save models
+    models.save_models(
+        path.join(outdir, 'cfg_%s_%s_%s_%s' % (m, u, l, s),
+                  ('models_%s-%s.pick' % (opts.rand, int(opts.rand) + opts.nmodels))
+                  if opts.nmodels > 1 else 
+                  ('model_%s.pick' % (opts.rand))))
+
+def optimization(exp, opts, job_file_handler, outdir):
+    models = compile_models(opts, outdir)
+    print 'Optimizing parameters...'
+    print ('# %3s %6s %7s %7s %6s\n' % (
+        "num", "upfrq", "lowfrq", "maxdist",
+        "scale"))
+    for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
+        if (m, u, l, s) in models:
+            print('%5s %6s %7s %7s %6s  ' % ('x', u, l, m, s))
             continue
+        elif opts.job_list:
+            print('%5s %6s %7s %7s %6s  ' % ('o', u, l, m, s))
         else:
-            print('%5s %6s %7s %7s %6s %7s  ' % ('-', u, l, m, s, d))
-        mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (m, u, l, d, s)))
+            print('%5s %6s %7s %7s %6s  ' % ('-', u, l, m, s))
+        mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s' % (m, u, l, s)))
 
-        optpar = {'maxdist': m,
-                  'upfreq' : u,
-                  'lowfreq': l,
-                  'dcutoff': d,
-                  'scale'  : s,
-                  'kforce' : 5}
-
-	# write list of jobs to be run separately
+        # write list of jobs to be run separately
         if opts.job_list:
             for rand in xrange(1, opts.nmodels + 1, opts.nmodels_run):
-                job_file_handler.write(('tadbit model --input_matrix %s '
-                                        '--maxdist %s --upfreq %s --lowfreq=%s '
-                                        '--dcutoff %s --scale %s --rand %s '
-                                        '--nmodels_run %s\n') % (
-                                           opts.matrix, m, u, l, d, s, rand,
-					   opts.nmodels_run))
+                write_one_job(opts, rand, m, u, l, s, job_file_handler)
             continue
 
         # compute models
         try:
-            models =  generate_3d_models(zscores, opts.reso, nloci,
-                                         values=values, n_models=opts.nmodels,
-                                         n_keep=opts.nkeep,
-                                         n_cpus=opts.cpus, keep_all=True,
-                                         first=opts.rand, container=None,
-                                         config=optpar, coords=coords,
-					 zeros=zeros)
-
+            run_batch_job(exp, opts, m, u, l, s, outdir)
         except TADbitModelingOutOfBound:
             warn('WARNING: scale (here %s) x resolution (here %d) should be '
                  'lower than maxdist (here %d instead of at least: %d)' % (
                      s, opts.reso, m, s * opts.reso))
             continue
 
-        # Save models
-        models.save_models(
-            path.join(outdir, 'cfg_%s_%s_%s_%s_%s' % (m, u, l, d, s),
-                      ('models_%s-%s.pick' % (opts.rand, opts.rand + opts.nmodels))
-                      if opts.nmodels > 1 else 
-                      ('model_%s.pick' % (opts.rand))))
+    if opts.job_list:
+        job_file_handler.close()
 
+def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
+                     verbose=True):
+    models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
+    results = {}
+    if verbose:
+        print ('# %7s %6s %7s %7s %6s %7s\n' % (
+            "num", "upfrq", "lowfrq", "maxdist",
+            "scale", "cutoff"))
+    for num, (m, u, l, s) in enumerate(models, 1):
+        result = 0
+        d = float('nan')
+        for cutoff in opts.dcutoff:
+            sub_result = models[(m, u, l, s)].correlate_with_real_data(
+                cutoff=(int(cutoff * opts.reso * float(s))),
+                corr=corr, off_diag=off_diag)[0]
+            try:
+                sub_result = models[(m, u, l, s)].correlate_with_real_data(
+                    cutoff=(int(cutoff * opts.reso * float(s))),
+                    corr=corr, off_diag=off_diag)[0]
+                if result < sub_result:
+                    result = sub_result
+                    d = cutoff
+            except Exception, e:
+                print '  SKIPPING: %s' % e
+                result = 0
+        if verbose:
+            print('%5s/%-5s %6s %7s %7s %6s %6s %.4f' % (num, len(models),
+                                                        u, l, m, s, d, result))
+        results[(m, u, l, d, s)] = result
+    # get the best combination
+    best= (None, [None, None, None, None, None])
+    for m, u, l, d, s in results:
+        if results[(m, u, l, d, s)] > best[0]:
+            best = results[(m, u, l, d, s)], [u, l, m, s, d]
+    if verbose:
+        print 'Best combination:'
+        print('  %5s     %6s %7s %7s %6s %6s %.4f' % tuple(['=>'] + best[1] + [best[0]]))
+
+    u, l, m, s, d = best[1]
+    optpar = {'maxdist': m,
+              'upfreq' : u,
+              'lowfreq': l,
+              'scale'  : s,
+              'kforce' : 5}
+    return optpar, d
+    
+def big_run(exp, opts, job_file_handler, outdir, optpar):
+    m, u, l, s = (optpar['maxdist'], 
+                  optpar['upfreq' ],
+                  optpar['lowfreq'],
+                  optpar['scale'  ])
+    # this to take advantage of previously runned models
+    models = compile_models(opts, outdir, wanted=(m, u, l, s))[(m, u, l, s)]
+    models.define_best_models(len(models) + len(models._bad_models))
+    runned = [int(mod['rand_init']) for mod in models]
+    start = str(max(runned))
+    # reduce number of models to run
+    opts.nmodels -= len(runned)
+    
+    if opts.rand == '1':
+        print 'Using %s precalculated models with m:%s u:%s l:%s s:%s ' % (start, m, u, l, s)
+        opts.rand = str(int(start) + 1)
+    elif opts.rand != '1' and int(opts.rand) < int(start):
+        raise Exception('ERROR: found %s precomputed models, use a higher '
+                        'rand. init. number or delete the files')
+    
+    print 'Computing %s models' % len(opts.nmodels)
+    if opts.job_list:
+        # write jobs
+        for rand in xrange(start, opts.nmodels + start, opts.nmodels_run):
+            write_one_job(opts, rand, m, u, l, s, job_file_handler)
+        job_file_handler.close()
+        return
+    
+    # compute models
+    try:
+        run_batch_job(exp, opts, m, u, l, s, outdir)
+    except TADbitModelingOutOfBound:
+        warn('WARNING: scale (here %s) x resolution (here %d) should be '
+             'lower than maxdist (here %d instead of at least: %d)' % (
+                 s, opts.reso, m, s * opts.reso))
+
+def run(opts):
+    check_options(opts)
+
+    launch_time = time.localtime()
+
+    # prepare output folders
+    mkdir(path.join(opts.workdir, '06_model'))
+    outdir = path.join(opts.workdir, '06_model',
+                       'chr%s_%s-%s' % (opts.crm, opts.beg, opts.end))
+    mkdir(outdir)
+
+    # load data
+    print 'loading data'
+    crm = load_hic_data(opts)
+    exp = crm.experiments[0]
+    opts.beg, opts.end = opts.beg or 1, opts.end or exp.size
+
+    # in case we are not going to run
+    if opts.job_list:
+        job_file_handler = open(path.join(outdir, 'job_list.q'), 'w')
+    else:
+        job_file_handler = None
+
+    # optimization
     if opts.optimize:
-	finish_time = time.localtime()
-	return
+        optimization(exp, opts, job_file_handler, outdir)
+        finish_time = time.localtime()
+        return
+
+    # correlate all optimizations and get best set of parqameters
+    optpar, dcutoff = correlate_models(opts, outdir, exp)
+
+    # run good mmodels
+    big_run(exp, opts, job_file_handler, outdir, optpar)
 
     finish_time = time.localtime()
 
@@ -120,25 +225,38 @@ def run(opts):
     # save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
     #            launch_time, finish_time)
 
-def compile_models(outdir):
+def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
+    if exp:
+        zscores, _, zeros = exp._sub_experiment_zscore(opts.beg, opts.end)
+        zeros = tuple([i not in zeros for i in xrange(opts.end - opts.beg + 1)])
     models = {}
     for cfg_dir in listdir(outdir):
         if not cfg_dir.startswith('cfg_'):
             continue
-        _, m, u, l, d, s = cfg_dir.split('_')
-        m, u, l, d, s = int(m), float(u), float(l), float(d), float(s)
+        _, m, u, l, s = cfg_dir.split('_')
+        m, u, l, s = int(m), float(u), float(l), float(s)
+        if wanted and (m, u, l, s) != wanted:
+            continue
         for fmodel in listdir(path.join(outdir, cfg_dir)):
             if not fmodel.startswith('models_'):
                 continue
-            if not (m, u, l, d, s) in models:
-                models[(m, u, l, d, s)] = load_structuralmodels(path.join(
+            if not (m, u, l, s) in models:
+                # print 'create new optimization entry', m, u, l, s, fmodel
+                models[(m, u, l, s)] = load_structuralmodels(path.join(
                     outdir, cfg_dir, fmodel))
             else:
-                sm = load(path.join(outdir, cfg_dir, fmodel))
-                if models[(m, u, l, d, s)]._config != sm['config']:
+                # print 'populate optimization entry', m, u, l, s, fmodel
+                sm = load(open(path.join(outdir, cfg_dir, fmodel)))
+                if models[(m, u, l, s)]._config != sm['config']:
                     raise Exception('ERROR: clean directory, hetergoneous data')
-                models[(m, u, l, d, s)]._extend_models(sm['models'])
-                models[(m, u, l, d, s)]._bad_models.extend(sm['bad_models'])
+                models[(m, u, l, s)]._extend_models(sm['models'])
+                models[(m, u, l, s)]._extend_models(sm['bad_models'])
+            if exp:
+                models[(m, u, l, s)].experiment = exp
+                models[(m, u, l, s)]._zscores   = zscores
+                models[(m, u, l, s)]._zeros     = zeros
+            if ngood:
+                models[(m, u, l, s)].define_best_models(ngood)
     return models
 
 def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
@@ -284,7 +402,7 @@ def populate_args(parser):
                         default=False, action="store_true",
                         help='''optimization run, store less info about models''')
     glopts.add_argument('--rand', dest='rand', metavar="INT",
-                        type=int, default=1, 
+                        type=str, default='1', 
                         help='''[%(default)s] random initial number. NOTE:
                         when running single model at the time, should be
                         different for each run''')

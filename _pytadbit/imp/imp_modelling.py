@@ -354,7 +354,7 @@ def generate_IMPmodel(rand_init):
     model['pps']  = IMP.kernel.ParticlePairsTemp()
 
     # CALL BIG FUNCTION
-    if rand_init == 1 and verbose == 0.5:
+    if rand_init == START and verbose == 0.5:
         verbose = 1
         stdout.write("# Harmonic\tpart1\tpart2\tdist\tkforce\n")
 

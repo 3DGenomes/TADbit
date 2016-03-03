@@ -37,7 +37,6 @@ def model_header(model):
         outstr += '# %-15s :  %s\n' % (desc.upper(), model['description'][desc])
     return outstr
     
-
 def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
     '''
     Loads an IMPmodel object using an cmm file of the form:
@@ -73,7 +72,6 @@ def load_impmodel_from_cmm(f_name, rand_init=None, radius=None):
     if not model['radius']:
         model['radius'] = float(radius)
     return model
-
 
 def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
     """
@@ -119,7 +117,6 @@ def load_impmodel_from_xyz(f_name, rand_init=None, radius=None):
         model['z'].append(float(zzz))
     return model
 
-
 def load_impmodel_from_xyz_OLD(f_name, rand_init=None, radius=None,
                                chromosome='UNKNOWN', start=0, resolution=1):
     """
@@ -153,7 +150,6 @@ def load_impmodel_from_xyz_OLD(f_name, rand_init=None, radius=None,
                             'start': start, 'resolution': resolution}
 
     return model
-
 
 class IMPmodel(dict):
     """
@@ -194,7 +190,6 @@ class IMPmodel(dict):
 
     def __len__(self):
         return len(self['x'])
-
 
     def objective_function(self, log=False, smooth=True,
                            axe=None, savefig=None):

@@ -685,6 +685,7 @@ class TestTadbit(unittest.TestCase):
         hic_map(hic_data1, savedata='lala-map.tsv~', savefig='lala.pdf~')
         hic_map(hic_data1, by_chrom='intra', savedata='lala-maps~', savefig='lalalo~')
         hic_map(hic_data1, by_chrom='inter', savedata='lala-maps~', savefig='lalala~')
+        # slowest part of the all test:
         hic_data2 = read_matrix('lala-map.tsv~', resolution=10000)
         self.assertEqual(hic_data1, hic_data2)
         vals = plot_distance_vs_interactions(hic_data1)

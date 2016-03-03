@@ -150,17 +150,25 @@ class StructuralModels(object):
             len(self.clusters))
 
     def _extend_models(self, models):
-        ids = set(m['rand_init'] for m in self.__models)
-        for m in models:
-            if m['rand_init'] in ids:
+        """
+        add new models to structural models
+        """
+        nbest = len(self.__models)
+        nall  = len(self.__models) + len(self._bad_models)
+        self.define_best_models(nall)
+        ids = set(self.__models[m]['rand_init'] for m in self.__models)
+        for m in models.keys():
+            if models[m]['rand_init'] in ids:
                 warn('WARNING: found model with same random seed number, '
                      'SKIPPPING')
                 del(models[m])
         new_models = {}
-        for i, m in enumerate(sorted(models + self.__models.values(),
+        for i, m in enumerate(sorted(models.values() + self.__models.values(),
                                      key=lambda x: x['objfun'])):
             new_models[i] = m
         self.__models = new_models
+        # keep the same number of best models
+        self.define_best_models(nbest)
 
     def align_models(self, models=None, cluster=None, in_place=False,
                      reference_model=None, **kwargs):
@@ -584,7 +592,6 @@ class StructuralModels(object):
         self.__models = dict([(i, tmp_models[i]) for i in xrange(nbest)])
         self._bad_models = dict([(i, tmp_models[i]) for i in
                                  xrange(nbest, len(tmp_models))])
-
 
     def deconvolve(self, fact=0.75, dcutoff=None, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
