@@ -20,7 +20,8 @@ def run(opts):
         cur = con.cursor()
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
         for table in cur.fetchall():
-            print_db(cur, table[0])
+            if table[0].lower() in opts.tables:
+                print_db(cur, table[0])
 
 def populate_args(parser):
     """
@@ -36,7 +37,35 @@ def populate_args(parser):
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
 
+    glopts.add_argument('-t', '--table', dest='tables', metavar='',
+                        action='store', nargs='+', type=str,
+                        choices=['1', 'paths', '2', 'jobs',
+                                 '3', 'mapped_outputs',
+                                 '4', 'mapped_inputs', '5', 'parsed_outputs',
+                                 '6', 'intersection_outputs',
+                                 '7', 'filter_outputs', '8', 'normalize_outputs'],
+                        default=tuple(range(1, 8)),
+                        help='''[%(default)s] what tables to show, wrte either the sequence of
+                        names or indexes, according to this list:
+                        1: paths, 2: jobs, 3: mapped_outputs,
+                        4: mapped_inputs, 5: parsed_outputs,
+                        6: intersection_outputs, 7: filter_outputs,
+                        8: normalize_outputs''')
+
     parser.add_argument_group(glopts)
 
 def check_options(opts):
     if not opts.workdir: raise Exception('ERROR: output option required.')
+
+    table_idx = {
+        '1': 'paths',
+        '2': 'jobs',
+        '3': 'mapped_outputs',
+        '4': 'mapped_inputs',
+        '5': 'parsed_outputs',
+        '6': 'intersection_outputs',
+        '7': 'filter_outputs',
+        '8': 'normalize_outputs'}
+    for t in range(len(opts.tables)):
+        opts.tables[t] = table_idx.get(opts.tables[t].lower(),
+                                         opts.tables[t].lower())
