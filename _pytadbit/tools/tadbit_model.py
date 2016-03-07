@@ -27,6 +27,7 @@ DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
 
 def write_one_job(opts, rand, m, u, l, s, job_file_handler):
+    (m, u, l, s) = tuple(map(my_round, (m, u, l, s)))
     job_file_handler.write(
         'tadbit model -w %s -r %d -C %d --input_matrix %s '
         '--maxdist %s --upfreq %s --lowfreq=%s '
@@ -62,11 +63,16 @@ def run_batch_job(exp, opts, m, u, l, s, outdir):
                                 config=optpar, coords=coords,
                                 zeros=zeros)
     # Save models
+    muls = tuple(map(my_round, (m, u, l, s)))
     models.save_models(
-        path.join(outdir, 'cfg_%s_%s_%s_%s' % (m, u, l, s),
+        path.join(outdir, 'cfg_%s_%s_%s_%s' % muls,
                   ('models_%s-%s.pick' % (opts.rand, int(opts.rand) + opts.nmodels))
                   if opts.nmodels > 1 else 
                   ('model_%s.pick' % (opts.rand))))
+
+def my_round(num, val=4):
+    num = round(float(num), val)
+    return str(int(num) if num == int(num) else num)
 
 def optimization(exp, opts, job_file_handler, outdir):
     models = compile_models(opts, outdir)
@@ -75,14 +81,15 @@ def optimization(exp, opts, job_file_handler, outdir):
         "num", "upfrq", "lowfrq", "maxdist",
         "scale"))
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
-        if (m, u, l, s) in models:
+        muls = tuple(map(my_round, (m, u, l, s)))
+        if muls in models:
             print('%5s %6s %7s %7s %6s  ' % ('x', u, l, m, s))
             continue
         elif opts.job_list:
             print('%5s %6s %7s %7s %6s  ' % ('o', u, l, m, s))
         else:
             print('%5s %6s %7s %7s %6s  ' % ('-', u, l, m, s))
-        mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s' % (m, u, l, s)))
+        mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s' % muls))
 
         # write list of jobs to be run separately
         if opts.job_list:
@@ -111,14 +118,15 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
             "num", "upfrq", "lowfrq", "maxdist",
             "scale", "cutoff"))
     for num, (m, u, l, s) in enumerate(models, 1):
+        muls = tuple(map(my_round, (m, u, l, s)))
         result = 0
         d = float('nan')
         for cutoff in opts.dcutoff:
-            sub_result = models[(m, u, l, s)].correlate_with_real_data(
+            sub_result = models[muls].correlate_with_real_data(
                 cutoff=(int(cutoff * opts.reso * float(s))),
                 corr=corr, off_diag=off_diag)[0]
             try:
-                sub_result = models[(m, u, l, s)].correlate_with_real_data(
+                sub_result = models[muls].correlate_with_real_data(
                     cutoff=(int(cutoff * opts.reso * float(s))),
                     corr=corr, off_diag=off_diag)[0]
                 if result < sub_result:
@@ -130,12 +138,13 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
         if verbose:
             print('%5s/%-5s %6s %7s %7s %6s %6s %.4f' % (num, len(models),
                                                         u, l, m, s, d, result))
-        results[(m, u, l, d, s)] = result
+        results[muls] = result
     # get the best combination
     best= (None, [None, None, None, None, None])
     for m, u, l, d, s in results:
-        if results[(m, u, l, d, s)] > best[0]:
-            best = results[(m, u, l, d, s)], [u, l, m, s, d]
+        mulds = tuple(map(my_round, (m, u, l, d, s)))
+        if results[mulds] > best[0]:
+            best = results[mulds], [u, l, m, s, d]
     if verbose:
         print 'Best combination:'
         print('  %5s     %6s %7s %7s %6s %6s %.4f' % tuple(['=>'] + best[1] + [best[0]]))
@@ -153,8 +162,9 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
                   optpar['upfreq' ],
                   optpar['lowfreq'],
                   optpar['scale'  ])
+    muls = tuple(map(my_round, (m, u, l, s)))
     # this to take advantage of previously runned models
-    models = compile_models(opts, outdir, wanted=(m, u, l, s))[(m, u, l, s)]
+    models = compile_models(opts, outdir, wanted=muls)[muls]
     models.define_best_models(len(models) + len(models._bad_models))
     runned = [int(mod['rand_init']) for mod in models]
     start = str(max(runned))
@@ -234,29 +244,30 @@ def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
         if not cfg_dir.startswith('cfg_'):
             continue
         _, m, u, l, s = cfg_dir.split('_')
+        muls = m, u, l, s
         m, u, l, s = int(m), float(u), float(l), float(s)
-        if wanted and (m, u, l, s) != wanted:
+        if wanted and muls != wanted:
             continue
         for fmodel in listdir(path.join(outdir, cfg_dir)):
             if not fmodel.startswith('models_'):
                 continue
-            if not (m, u, l, s) in models:
+            if not muls in models:
                 # print 'create new optimization entry', m, u, l, s, fmodel
-                models[(m, u, l, s)] = load_structuralmodels(path.join(
+                models[muls] = load_structuralmodels(path.join(
                     outdir, cfg_dir, fmodel))
             else:
                 # print 'populate optimization entry', m, u, l, s, fmodel
                 sm = load(open(path.join(outdir, cfg_dir, fmodel)))
-                if models[(m, u, l, s)]._config != sm['config']:
+                if models[muls]._config != sm['config']:
                     raise Exception('ERROR: clean directory, hetergoneous data')
-                models[(m, u, l, s)]._extend_models(sm['models'])
-                models[(m, u, l, s)]._extend_models(sm['bad_models'])
+                models[muls]._extend_models(sm['models'])
+                models[muls]._extend_models(sm['bad_models'])
             if exp:
-                models[(m, u, l, s)].experiment = exp
-                models[(m, u, l, s)]._zscores   = zscores
-                models[(m, u, l, s)]._zeros     = zeros
+                models[muls].experiment = exp
+                models[muls]._zscores   = zscores
+                models[muls]._zeros     = zeros
             if ngood:
-                models[(m, u, l, s)].define_best_models(ngood)
+                models[muls].define_best_models(ngood)
     return models
 
 def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
@@ -499,6 +510,9 @@ def check_options(opts):
 
     opts.nmodels_run = opts.nmodels_run or opts.nmodels
 
+    opts.matrix  = path.abspath(opts.matrix)
+    opts.workdir = path.abspath(opts.workdir)
+
     mkdir(opts.workdir)
 
 def load_hic_data(opts):
@@ -510,6 +524,8 @@ def load_hic_data(opts):
 
     crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
                        norm_data=opts.matrix)
+    # TODO: if not bad columns:...
+    crm.experiments[-1].filter_columns()
     if opts.beg > crm.experiments[-1].size:
         raise Exception('ERROR: beg parameter is larger than chromosome size.')
     if opts.end > crm.experiments[-1].size:
