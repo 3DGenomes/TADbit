@@ -32,13 +32,14 @@ def write_one_job(opts, rand, m, u, l, s, job_file_handler):
         'tadbit model -w %s -r %d -C %d --input_matrix %s '
         '--maxdist %s --upfreq %s --lowfreq=%s '
         '--scale %s --rand %s --nmodels %s --nkeep %s '
-        '--beg %d --end %d %s\n' % (
+        '--beg %d --end %d --perc_zero %f %s\n' % (
             opts.workdir, opts.reso,
             min(opts.cpus, opts.nmodels_run), opts.matrix,
             m, u, l, s, rand,
             opts.nmodels_run, # equal to nmodels if not defined
             opts.nkeep, # keep, equal to nmodel_run if defined
             opts.beg * opts.reso, opts.end * opts.reso,
+            opts.perc_zero,
             '--optimize ' if opts.optimize else ''))
 
 def run_batch_job(exp, opts, m, u, l, s, outdir):
