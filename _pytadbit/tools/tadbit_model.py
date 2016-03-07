@@ -447,6 +447,8 @@ def populate_args(parser):
                         default=1000, type=int,
                         help=('[%(default)s] number of models to keep for ' +
                         'modeling'))
+    glopts.add_argument('--perc_zero', dest='perc_zero', metavar="FLOAT",
+                        type=float, default=90)
 
     glopts.add_argument('--maxdist', action='store', metavar="LIST",
                         default='400', dest='maxdist',
@@ -525,7 +527,7 @@ def load_hic_data(opts):
     crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
                        norm_data=opts.matrix)
     # TODO: if not bad columns:...
-    crm.experiments[-1].filter_columns()
+    crm.experiments[-1].filter_columns(perc_zero=opts.perc_zero)
     if opts.beg > crm.experiments[-1].size:
         raise Exception('ERROR: beg parameter is larger than chromosome size.')
     if opts.end > crm.experiments[-1].size:
