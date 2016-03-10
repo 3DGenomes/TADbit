@@ -44,7 +44,7 @@ def populate_args(parser):
                                  '4', 'mapped_inputs', '5', 'parsed_outputs',
                                  '6', 'intersection_outputs',
                                  '7', 'filter_outputs', '8', 'normalize_outputs'],
-                        default=tuple(range(1, 8)),
+                        default=[str(t) for t in range(1, 9)],
                         help='''[%(default)s] what tables to show, wrte either the sequence of
                         names or indexes, according to this list:
                         1: paths, 2: jobs, 3: mapped_outputs,

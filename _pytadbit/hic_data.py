@@ -236,7 +236,7 @@ class HiC_data(dict):
                 self, draw_hist=draw_hist, silent=silent,
                 savefig=savefig, bads=self.bads))
 
-    def normalize_hic(self, iterations=0, max_dev=0.1, silent=False):
+    def normalize_hic(self, iterations=0, max_dev=0.1, silent=False, factor=1):
         """
         Normalize the Hi-C data.
 
@@ -247,10 +247,19 @@ class HiC_data(dict):
         :param 0.1 max_dev: iterative process stops when the maximum deviation
            between the sum of row is equal to this number (0.1 means 10%)
         :param False silent: does not warn when overwriting weights
+        :param 1 factor: final mean number of normalized interactions wanted
+           per cell
         """
-        self.bias = iterative(self, iterations=iterations,
-                              max_dev=max_dev, bads=self.bads,
-                              verbose=not silent)
+        bias = iterative(self, iterations=iterations,
+                         max_dev=max_dev, bads=self.bads,
+                         verbose=not silent)
+        if factor:
+            N = self.__size
+            norm_sum = sum(self[i, j] / (bias[i] * bias[j])
+                           for j in xrange(N) for i in xrange(N))
+            target = (norm_sum / float(N * N * factor))**0.5
+            bias = dict([(b, bias[b] * target) for b in bias])
+        self.bias = bias
 
     def get_as_tuple(self):
         return tuple([self[i, j]

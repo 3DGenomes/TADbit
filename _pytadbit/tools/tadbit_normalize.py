@@ -46,7 +46,8 @@ def run(opts):
 
     # Identify biases
     print 'Get biases using ICE...'
-    hic_data.normalize_hic(silent=False, max_dev=0.1, iterations=0)
+    hic_data.normalize_hic(silent=False, max_dev=0.1, iterations=0,
+                           factor=opts.factor)
 
     cis_trans = hic_data.cis_trans_ratio(normalized=True)
         
@@ -111,7 +112,7 @@ def run(opts):
                 inter_dir_txt, genome_map_fig, genome_map_txt,
                 launch_time, finish_time)
 
-def save_to_db(opts, cis_trans, a2, bad_columns_file, 
+def save_to_db(opts, cis_trans, a2, bad_columns_file,
                inter_vs_gcoord, intra_dir_fig, intra_dir_txt, inter_dir_fig,
                inter_dir_txt, genome_map_fig, genome_map_txt,
                launch_time, finish_time):
@@ -128,6 +129,7 @@ def save_to_db(opts, cis_trans, a2, bad_columns_file,
                 CisTrans real,
                 Slope_700kb_10Mb real,
                 Resolution int,
+                Factor int,
                 unique (JOBid))""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
@@ -136,7 +138,7 @@ def save_to_db(opts, cis_trans, a2, bad_columns_file,
             insert into JOBs
             (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
             values
-            (NULL,       '%s',        '%s',        '%s', 'Map',           '%s')
+            (NULL,       '%s',        '%s',        '%s', 'Normalize',           '%s')
             """ % (parameters,
                    time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
                    time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
@@ -154,10 +156,10 @@ def save_to_db(opts, cis_trans, a2, bad_columns_file,
 
         cur.execute("""
         insert into NORMALIZE_OUTPUTs
-        (Id  , JOBid, CisTrans, Slope_700kb_10Mb, Resolution)
+        (Id  , JOBid, CisTrans, Slope_700kb_10Mb, Resolution,      Factor)
         values
-        (NULL,    %d,        %f,             %f,          %d)
-        """ % (jobid, cis_trans,             a2,   opts.reso))
+        (NULL,    %d,        %f,             %f,          %d,          %f)
+        """ % (jobid, cis_trans,             a2,   opts.reso, opts.factor))
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
@@ -213,6 +215,12 @@ def populate_args(parser):
                         action='store', default='ICE', nargs='+', type=str,
                         choices=['ICE', 'EXP'],
                         help='''[%(default)s] normalization(s) to apply. Order matters.''')
+
+    glopts.add_argument('--factor', dest='factor', metavar="NUM",
+                        action='store', default=1, type=float,
+                        help='''[%(default)s] target mean value of a cell after
+                        normalization (can be used to weight experiments before
+                        merging)''')
 
     glopts.add_argument('--save', dest='save', metavar="STR",
                         action='store', default='genome', nargs='+', type=str,
