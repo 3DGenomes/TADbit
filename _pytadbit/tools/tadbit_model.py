@@ -23,6 +23,7 @@ from warnings import warn
 from numpy import arange
 from cPickle import load
 
+
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
 
@@ -207,7 +208,6 @@ def run(opts):
     mkdir(outdir)
 
     # load data
-    print 'loading data'
     crm = load_hic_data(opts)
     exp = crm.experiments[0]
     opts.beg, opts.end = opts.beg or 1, opts.end or exp.size

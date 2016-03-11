@@ -235,6 +235,9 @@ class HiC_data(dict):
             self.bads.update(filter_by_mean(
                 self, draw_hist=draw_hist, silent=silent,
                 savefig=savefig, bads=self.bads))
+        if not silent:
+            print 'Found %d of %d columnswith poor signal' % (len(self.bads),
+                                                              len(self))
 
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False, factor=1):
         """
@@ -254,9 +257,12 @@ class HiC_data(dict):
                          max_dev=max_dev, bads=self.bads,
                          verbose=not silent)
         if factor:
+            if not silent:
+                print 'rescaling to factor %d' % factor
             N = self.__size
             norm_sum = sum(self[i, j] / (bias[i] * bias[j])
-                           for j in xrange(N) for i in xrange(N))
+                           for j in xrange(N) for i in xrange(N)
+                           if not i in self.bads and not j in self.bads)
             target = (norm_sum / float(N * N * factor))**0.5
             bias = dict([(b, bias[b] * target) for b in bias])
         self.bias = bias
