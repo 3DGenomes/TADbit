@@ -23,17 +23,27 @@ def run(opts):
 
 
     param_hash = digest_parameters(opts)
-
-    mreads = path.join(opts.workdir, load_parameters_fromdb(opts))
+    if opts.bed:
+        mreads = path.realpath(opts.bed)
+    else:
+        mreads = path.join(opts.workdir, load_parameters_fromdb(opts))
 
     print 'loading', mreads
     hic_data = load_hic_data_from_reads(mreads, opts.reso)
 
     print 'Get poor bins...'
     try:
-        hic_data.filter_columns(perc_zero=99)
+        hic_data.filter_columns(perc_zero=opts.perc_zeros, draw_hist=True,
+                                by_mean=not opts.fast_filter, savefig=path.join(
+                                    opts.workdir, '04_normalization',
+                                    'bad_columns_%d_.pdf' % opts.perc_zeros) if
+                                not opts.fast_filter else None)
     except ValueError:
-        hic_data.filter_columns(perc_zero=100)
+        hic_data.filter_columns(perc_zero=100, draw_hist=True,
+                                by_mean=not opts.fast_filter, savefig=path.join(
+                                    opts.workdir, '04_normalization',
+                                    'bad_columns_%d_.pdf' % opts.perc_zeros) if
+                                not opts.fast_filter else None)
 
     mkdir(path.join(opts.workdir, '04_normalization'))
 
@@ -207,9 +217,19 @@ def populate_args(parser):
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
 
+    glopts.add_argument('--bed', dest='bed', metavar="PATH",
+                        action='store', default=None, type=str, 
+                        help='''path to a TADbit-generated BED file with
+                        filtered reads (other wise the tool will guess from the
+                        working directory database)''')
+
     glopts.add_argument('-r', '--resolution', dest='reso', metavar="INT",
                         action='store', default=None, type=int, required=True,
                         help='''resolution at which to output matrices''')
+
+    glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
+                        action='store', default=99, type=float, 
+                        help='maximum percentage of zeroes allowed per column')
 
     glopts.add_argument('--normalization', dest='resolution', metavar="STR",
                         action='store', default='ICE', nargs='+', type=str,
@@ -243,6 +263,10 @@ def populate_args(parser):
     glopts.add_argument('--only_txt', dest='only_txt', action='store_true',
                       default=False,
                       help='Save only text file for matrices, not images')
+
+    glopts.add_argument('--fast_filter', dest='fast_filter', action='store_true',
+                      default=False,
+                      help='only filter according to the percentage of zero count')
 
     glopts.add_argument('--force', dest='force', action='store_true',
                       default=False,
