@@ -251,7 +251,7 @@ class HiC_data(dict):
            between the sum of row is equal to this number (0.1 means 10%)
         :param False silent: does not warn when overwriting weights
         :param 1 factor: final mean number of normalized interactions wanted
-           per cell
+           per cell (excludes filtered, or bad, out columns)
         """
         bias = iterative(self, iterations=iterations,
                          max_dev=max_dev, bads=self.bads,
@@ -260,9 +260,9 @@ class HiC_data(dict):
             if not silent:
                 print 'rescaling to factor %d' % factor
             N = self.__size
+            valids = [i for i in xrange(N) if not i in self.bads]
             norm_sum = sum(self[i, j] / (bias[i] * bias[j])
-                           for j in xrange(N) for i in xrange(N)
-                           if not i in self.bads and not j in self.bads)
+                           for j in valids for i in valids)
             target = (norm_sum / float(N * N * factor))**0.5
             bias = dict([(b, bias[b] * target) for b in bias])
         self.bias = bias
