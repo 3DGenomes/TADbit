@@ -117,15 +117,16 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
         print "  - copying matrix"
 
     W = copy_matrix(hic_data, bads)
-    
     B = dict([(b, 1.) for b in W])
-    if len(W) == 0:
+    if len(B) == 0:
         raise ZeroDivisionError('ERROR: normalization failed, all bad columns')
     if verbose:
         print "  - computing baises"
     for it in xrange(iterations + 1):
         S, meanS = _update_S(W)
         DB = _updateDB(S, meanS, B)
+        if iterations == 0: # exit before, we do not need to update W
+            break
         _update_W(W, DB)
         S = sorted(S.values())
         dev = max(abs(S[0]  / meanS - 1), abs(S[-1] / meanS - 1))

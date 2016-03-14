@@ -180,7 +180,7 @@ class HiC_data(dict):
             exclude = []
         if equals == None:
             equals = lambda x, y: x == y
-        intra = inter = 0
+        intra = 0
         if not self.chromosomes:
             return float('nan')
         for crm1 in self.chromosomes:
@@ -190,24 +190,12 @@ class HiC_data(dict):
                 if crm1 == crm2:
                     mtrx = self.get_matrix(
                         focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)
-                    val = sum([sum([mtrx[i][j] for j in xrange(len(mtrx))])
-                               for i in xrange(len(mtrx))])
+                    val = sum(mtrx[i][j] for j in xrange(len(mtrx))
+                              for i in xrange(len(mtrx)))
                     if verbose:
                         print 'INTRA', crm1, crm2, val
                     intra += val
-                else:
-                    val = sum([sum(d) for d in self.get_matrix(
-                        focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)])
-                    if equals(crm1, crm2):
-                        if verbose:
-                            print '  INTRA', crm1, crm2, val
-                        intra += val
-                    else:
-                        if verbose:
-                            print '  INTER', crm1, crm2, val
-                        inter += val
-        return float(intra) / (intra + inter)
-    
+        return float(intra) / self.sum(bias=self.bias if normalized else None)
 
     def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
                        by_mean=True, silent=False):
