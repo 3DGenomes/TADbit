@@ -232,6 +232,13 @@ def check_options(opts):
     else:
         opts.cpus = min(opts.cpus, cpu_count())
 
+    # check paths
+    if not path.exists(opts.index):
+        raise IOError('ERROR: index file not found at ' + opts.index)
+
+    if not path.exists(opts.fastq):
+        raise IOError('ERROR: FASTQ file not found at ' + opts.fastq)
+    
     # create tmp directory
     if not opts.tmp:
         opts.tmp = opts.workdir + '_tmp_r%d' % opts.read

@@ -8,7 +8,7 @@ from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
 from tempfile import gettempdir, mkstemp
-from subprocess import Popen, PIPE
+from subprocess import check_call, CalledProcessError, PIPE
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                     min_seq_len=15, fastq=True, verbose=True, **kwargs):
@@ -280,8 +280,10 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
             warn('WARNING: %s not in usual keywords, misspelled?' % kw)
 
     print ' '.join(gem_cmd)
-    out, err = Popen(gem_cmd, stdout=PIPE, stderr=PIPE).communicate()
-    return out, err
+    try:
+        check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
+    except CalledProcessError as e:
+        raise Exception(e.output)
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=None, add_site=True, clean=False,
@@ -374,7 +376,7 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             print 'Mapping full reads...', curr_map
 
         if not skip:
-            out, err = gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
+            gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
             # parse map file to extract not uniquely mapped reads
             print 'Parsing result...'
             _gem_filter(out_map_path, curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
