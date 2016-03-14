@@ -77,6 +77,20 @@ def _update_W(W, DB):
             except ZeroDivisionError: # whole row is empty
                 continue
 
+def copy_matrix(hic_data, bads):
+    W = {}
+    N = len(hic_data)
+    for k, v in hic_data.iteritems():
+        i, j = divmod(k, N)
+        if i in bads or j in bads:
+            continue
+        try:
+            W[i][j] = v
+        except KeyError:
+            W[i] = {}
+            W[i][j] = v
+    return W
+
 def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
               verbose=False, **kwargs):
     """
@@ -98,16 +112,17 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
         bads = {}
     remove = [i in bads for i in xrange(size)]
     remove = remove or tuple([int(hic_data[i+i*size]==0) for i in xrange(size)])
-    W = {}
-    valids = [i for i in xrange(size) if not remove[i]]
-    for i in valids:
-        W[i] = {}
-        for j in valids:
-            if hic_data[i, j]:
-                W[i][j] = hic_data[i, j]
+
+    if verbose:
+        print "  - copying matrix"
+
+    W = copy_matrix(hic_data, bads)
+    
     B = dict([(b, 1.) for b in W])
     if len(W) == 0:
         raise ZeroDivisionError('ERROR: normalization failed, all bad columns')
+    if verbose:
+        print "  - computing baises"
     for it in xrange(iterations + 1):
         S, meanS = _update_S(W)
         DB = _updateDB(S, meanS, B)

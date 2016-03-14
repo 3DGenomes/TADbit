@@ -59,6 +59,9 @@ def run(opts):
     hic_data.normalize_hic(silent=False, max_dev=0.1, iterations=0,
                            factor=opts.factor)
 
+    exit()
+    
+    print 'Getting cis/trans...'
     cis_trans = hic_data.cis_trans_ratio(normalized=True)
         
     print 'Cis/Trans ratio of normalized matrix including the diagonal', cis_trans

@@ -239,6 +239,26 @@ class HiC_data(dict):
             print 'Found %d of %d columnswith poor signal' % (len(self.bads),
                                                               len(self))
 
+    def sum(self, bias=None):
+        """
+        :returns: the sum of the Hi-C matrix skipping bad columns
+        """
+        N = self.__size
+        norm_sum = 0
+        if bias:
+            for k, v in self.iteritems():
+                i, j = divmod(k, N)
+                if i in self.bads or j in self.bads:
+                    continue
+                norm_sum += v / (bias[i] * bias[j])
+        else:
+            for k, v in self.iteritems():
+                i, j = divmod(k, N)
+                if i in self.bads or j in self.bads:
+                    continue
+                norm_sum += v
+        return norm_sum
+
     def normalize_hic(self, iterations=0, max_dev=0.1, silent=False, factor=1):
         """
         Normalize the Hi-C data.
@@ -259,11 +279,10 @@ class HiC_data(dict):
         if factor:
             if not silent:
                 print 'rescaling to factor %d' % factor
-            N = self.__size
-            valids = [i for i in xrange(N) if not i in self.bads]
-            norm_sum = sum(self[i, j] / (bias[i] * bias[j])
-                           for j in valids for i in valids)
-            target = (norm_sum / float(N * N * factor))**0.5
+            # get the sum on half of the matrix
+            norm_sum = self.sum(bias)
+            # divide biases
+            target = (norm_sum / float(len(self) * len(self) * factor))**0.5
             bias = dict([(b, bias[b] * target) for b in bias])
         self.bias = bias
 
