@@ -18,7 +18,7 @@ from pytadbit.utils.tadmaths        import calinski_harabasz
 from scipy.stats                    import ttest_ind
 from collections                    import OrderedDict
 from warnings                       import warn
-
+from bisect                         import bisect_right as bisect
 
 class HiC_data(dict):
     """
@@ -159,7 +159,7 @@ class HiC_data(dict):
         self._size2 = size**2
 
     def cis_trans_ratio(self, normalized=False, exclude=None, diagonal=True,
-                        equals=None, verbose=False):
+                        equals=None):
         """
         Counts the number of interactions occuring within chromosomes (cis) with
         respect to the total number of interactions
@@ -170,12 +170,15 @@ class HiC_data(dict):
         :param False diagonal: replace values in the diagonal by 0 or 1
         :param None equals: can pass a function that would decide if 2 chromosomes
            have to be considered as the same. e.g. lambda x, y: x[:4]==y[:4] will
-           consider chr2L and chr2R as being the same chromosome
+           consider chr2L and chr2R as being the same chromosome. WARNING: only
+           working on consecutive chromosomes.
 
         :returns: the ratio of cis interactions over the total number of
            interactions. This number is expected to be between at least 40-60%
            in Human classic dilution Hi-C with HindIII as restriction enzyme.
         """
+        if normalized and not self.bias:
+            raise Exception('ERROR: experiment not normalized yet')
         if exclude == None:
             exclude = []
         if equals == None:
@@ -183,19 +186,40 @@ class HiC_data(dict):
         intra = 0
         if not self.chromosomes:
             return float('nan')
-        for crm1 in self.chromosomes:
-            for crm2 in self.chromosomes:
-                if crm1 in exclude or crm2 in exclude:
-                    continue
-                if crm1 == crm2:
-                    mtrx = self.get_matrix(
-                        focus=(crm1, crm2), normalized=normalized, diagonal=diagonal)
-                    val = sum(mtrx[i][j] for j in xrange(len(mtrx))
-                              for i in xrange(len(mtrx)))
-                    if verbose:
-                        print 'INTRA', crm1, crm2, val
-                    intra += val
-        return float(intra) / self.sum(bias=self.bias if normalized else None)
+        # define chromosomes to be merged
+        to_skip = set()
+        c_prev = ''
+        for c in self.chromosomes:
+            if equals(c, c_prev):
+                to_skip.add(c_prev)
+            c_prev = c
+        sections = sorted([-1] + [self.section_pos[c][1]
+                                  for c in self.section_pos
+                                  if not c in to_skip])
+        # defines columns to be skipped
+        bads = set(self.bads.keys())
+        for c in exclude:
+            bads.update(i for i in xrange(*self.section_pos[c]))
+        # diagonal
+        if diagonal:
+            valid = lambda x, y: True
+        else:
+            valid = lambda x, y: x != y
+        # normalization
+        if normalized:
+            transform = lambda x, y, z: x / self.bias[y] / self.bias[z]
+        else:
+            transform = lambda x, y, z: x
+        # compute ratio
+        for k, v in self.iteritems():
+            i, j = divmod(k, self.__size)
+            if bisect(sections, i) != bisect(sections, j):
+                continue
+            if i in bads or j in bads:
+                continue
+            if valid(i, j): # diagonal thing
+                intra += transform(v, i, j)
+        return float(intra) / self.sum(bias=self.bias if normalized else None, bads=bads)
 
     def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
                        by_mean=True, silent=False):
@@ -227,22 +251,29 @@ class HiC_data(dict):
             print 'Found %d of %d columnswith poor signal' % (len(self.bads),
                                                               len(self))
 
-    def sum(self, bias=None):
+    def sum(self, bias=None, bads=None):
         """
+        Sum Hi-C data matrix
+        WARNING: parameters are not meant to be used by external users
+
+        :params None bias: expects a dictionary of biases to use normalized matrix
+        :params None bads: extends computed bad columns
+        
         :returns: the sum of the Hi-C matrix skipping bad columns
         """
         N = self.__size
         norm_sum = 0
+        bads = bads or self.bads
         if bias:
             for k, v in self.iteritems():
                 i, j = divmod(k, N)
-                if i in self.bads or j in self.bads:
+                if i in bads or j in bads:
                     continue
                 norm_sum += v / (bias[i] * bias[j])
         else:
             for k, v in self.iteritems():
                 i, j = divmod(k, N)
-                if i in self.bads or j in self.bads:
+                if i in bads or j in bads:
                     continue
                 norm_sum += v
         return norm_sum

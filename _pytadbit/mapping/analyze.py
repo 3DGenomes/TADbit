@@ -177,8 +177,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      hic_data.cis_trans_ratio(normalized,
                                               kwargs.get('exclude', None),
                                               kwargs.get('diagonal', True),
-                                              kwargs.get('equals', None),
-                                              kwargs.get('verbose', False)))
+                                              kwargs.get('equals', None)))
 
 
 def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
