@@ -11,6 +11,7 @@ from pytadbit.tools import tadbit_clean
 from pytadbit.tools import tadbit_parse
 from pytadbit.tools import tadbit_model
 from pytadbit.tools import tadbit_filter
+from pytadbit.tools import tadbit_segment
 from pytadbit.tools import tadbit_describe
 from pytadbit.tools import tadbit_normalize
 
@@ -74,6 +75,14 @@ def main(arguments):
                                              formatter_class=RawDescriptionHelpFormatter)
     args_pp["normalize"].set_defaults(func=tadbit_normalize.run)
     tadbit_normalize.populate_args(args_pp["normalize"])
+
+    # - SEGMENT -
+    args_pp["segment"] = subparser.add_parser("segment",
+                                             description=tadbit_segment.DESC,
+                                             help=tadbit_segment.DESC,
+                                             formatter_class=RawDescriptionHelpFormatter)
+    args_pp["segment"].set_defaults(func=tadbit_segment.run)
+    tadbit_segment.populate_args(args_pp["segment"])
 
     # - MODEL -
     args_pp["model"] = subparser.add_parser("model",

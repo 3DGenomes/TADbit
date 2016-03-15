@@ -7,6 +7,7 @@ information needed
 """
 from argparse                     import HelpFormatter
 from pytadbit                     import load_hic_data_from_reads
+from pytadbit                     import Chromosome
 from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling import mkdir
@@ -15,13 +16,13 @@ from os                           import path
 import sqlite3 as lite
 import time
 
-DESC = 'normalize Hi-C data and write results to file as matrices'
+DESC = 'Finds TAD or compartment segmentation in Hi-C data.'
 
 def run(opts):
     check_options(opts)
     launch_time = time.localtime()
-
     param_hash = digest_parameters(opts)
+
     if opts.bed:
         mreads = path.realpath(opts.bed)
     else:
@@ -30,95 +31,16 @@ def run(opts):
     print 'loading', mreads
     hic_data = load_hic_data_from_reads(mreads, opts.reso)
 
-    print 'Get poor bins...'
-    try:
-        hic_data.filter_columns(perc_zero=opts.perc_zeros, draw_hist=True,
-                                by_mean=not opts.fast_filter, savefig=path.join(
-                                    opts.workdir, '04_normalization',
-                                    'bad_columns_%d_.pdf' % opts.perc_zeros) if
-                                not opts.fast_filter else None)
-    except ValueError:
-        hic_data.filter_columns(perc_zero=100, draw_hist=True,
-                                by_mean=not opts.fast_filter, savefig=path.join(
-                                    opts.workdir, '04_normalization',
-                                    'bad_columns_%d_.pdf' % opts.perc_zeros) if
-                                not opts.fast_filter else None)
-
-    mkdir(path.join(opts.workdir, '04_normalization'))
-
-    # bad columns
-    bad_columns_file = path.join(opts.workdir, '04_normalization',
-                                 'bad_columns_%s.tsv' %param_hash)
-    out_bad = open(bad_columns_file, 'w')
-    out_bad.write('\n'.join([str(i) for i in hic_data.bads.keys()]))
-    out_bad.close()
-
-    # Identify biases
-    print 'Get biases using ICE...'
-    hic_data.normalize_hic(silent=False, max_dev=0.1, iterations=0,
-                           factor=opts.factor)
-
-    print 'Getting cis/trans...'
-    cis_trans = hic_data.cis_trans_ratio(normalized=True)
-        
-    print 'Cis/Trans ratio of normalized matrix including the diagonal', cis_trans
-
-    # Plot genomic distance vs interactions
-    print 'Plot genomic distance vs interactions...'
-    inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
-                                'interactions_vs_genomic-coords.pdf_%s.pdf' % (
-                                    param_hash))
-    (_, _, _), (a2, _, _), (_, _, _) = plot_distance_vs_interactions(
-        hic_data, max_diff=10000, resolution=opts.reso, normalized=True,
-        savefig=inter_vs_gcoord)
-    
-    print 'Decay slope 0.7-10 Mb\t%s' % a2
-    
-    if "intra" in opts.keep:
-        print "  Saving normalized intra chromosomal matrix..."
-        if opts.only_txt:
-            intra_dir_fig = path.join(opts.workdir, '04_normalization',
-                                      'intra_chromosome_map_images_%s' % (param_hash))
-        else:
-            intra_dir_fig = None
-        intra_dir_txt = path.join(opts.workdir, '04_normalization',
-                                  'intra_chromosome_map_matrices_%s' % (param_hash))
-        hic_map(hic_data, normalized=True, by_chrom='intra', cmap='jet',
-                name = path.split(opts.workdir)[-1],
-                savefig =intra_dir_fig, savedata=intra_dir_txt)
-
-    if "inter" in opts.keep:
-        print "  Saving normalized inter chromosomal matrix..."
-        if opts.only_txt:
-            inter_dir_fig = path.join(opts.workdir, '04_normalization',
-                                      'inter_chromosome_map_images_%s' % (param_hash))
-        else:
-            inter_dir_fig = None
-        inter_dir_txt = path.join(opts.workdir, '04_normalization',
-                                  'inter_chromosome_map_matrices_%s' % (param_hash))
-        hic_map(hic_data, normalized=True, by_chrom='inter', cmap='jet',
-                name = path.split(opts.workdir)[-1],
-                savefig =inter_dir_fig, savedata=intra_dir_txt)
-
-    if "genome" in opts.keep:
-        print "  Saving normalized genomic matrix..."
-        if opts.only_txt:
-            genome_map_fig = path.join(opts.workdir, '04_normalization',
-                                       'genomic_maps_%s.pdf' % (param_hash))
-        else:
-            genome_map_fig = None
-        genome_map_txt = path.join(opts.workdir, '04_normalization',
-                                   'genomic_maps_%s.tsv' % (param_hash))
-        hic_map(hic_data, normalized=True, cmap='jet',
-                name = path.split(opts.workdir)[-1],
-                savefig =genome_map_fig, savedata=genome_map_txt)
-
-    finish_time = time.localtime()
-
-    save_to_db (opts, cis_trans, a2, bad_columns_file,
-                inter_vs_gcoord, intra_dir_fig, intra_dir_txt, inter_dir_fig,
-                inter_dir_txt, genome_map_fig, genome_map_txt,
-                launch_time, finish_time)
+    for crm_name in hic_data.chromosomes:
+        crm = Chromosome('crm_name')
+        crm.add_experiment(
+            xnam, exp_type='Hi-C', enzyme=opts.enzyme,
+            cell_type=opts.cell,
+            identifier=opts.identifier, # general descriptive fields
+            project=opts.project, # user descriptions
+            resolution=opts.res,
+            hic_data=xpath,
+            norm_data=xnorm)
 
 def save_to_db(opts, cis_trans, a2, bad_columns_file,
                inter_vs_gcoord, intra_dir_fig, intra_dir_txt, inter_dir_fig,
@@ -221,8 +143,18 @@ def populate_args(parser):
                         filtered reads (other wise the tool will guess from the
                         working directory database)''')
 
+    glopts.add_argument('--norm_matrix', dest='norm_matrix', metavar="PATH",
+                        action='store', default=None, type=str, 
+                        help='''path to a matrix file with normalized read
+                        counts''')
+    
+    glopts.add_argument('--raw_matrix', dest='raw_matrix', metavar="PATH",
+                        action='store', default=None, type=str, 
+                        help='''path to a matrix file with raw read
+                        counts''')
+
     glopts.add_argument('-r', '--resolution', dest='reso', metavar="INT",
-                        action='store', default=None, type=int, required=True,
+                        action='store', default=None, type=int,
                         help='''resolution at which to output matrices''')
 
     glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
