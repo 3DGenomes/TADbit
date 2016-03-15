@@ -39,11 +39,6 @@ def populate_args(parser):
 
     glopts.add_argument('-t', '--table', dest='tables', metavar='',
                         action='store', nargs='+', type=str,
-                        choices=['1', 'paths', '2', 'jobs',
-                                 '3', 'mapped_outputs',
-                                 '4', 'mapped_inputs', '5', 'parsed_outputs',
-                                 '6', 'intersection_outputs',
-                                 '7', 'filter_outputs', '8', 'normalize_outputs'],
                         default=[str(t) for t in range(1, 9)],
                         help='''[%(default)s] what tables to show, wrte either the sequence of
                         names or indexes, according to this list:
@@ -57,6 +52,11 @@ def populate_args(parser):
 def check_options(opts):
     if not opts.workdir: raise Exception('ERROR: output option required.')
 
+    choices=['1', 'paths', '2', 'jobs',
+             '3', 'mapped_outputs',
+             '4', 'mapped_inputs', '5', 'parsed_outputs',
+             '6', 'intersection_outputs',
+             '7', 'filter_outputs', '8', 'normalize_outputs']
     table_idx = {
         '1': 'paths',
         '2': 'jobs',
@@ -67,5 +67,8 @@ def check_options(opts):
         '7': 'filter_outputs',
         '8': 'normalize_outputs'}
     for t in range(len(opts.tables)):
-        opts.tables[t] = table_idx.get(opts.tables[t].lower(),
-                                         opts.tables[t].lower())
+        opts.tables[t] = opts.tables[t].lower()
+        if not opts.tables[t] in choices:
+            raise Exception(('error: argument -t/--table: invalid choice: %s'
+                             '(choose from %s )') % (opts.tables[t], str(choices)))
+        opts.tables[t] = table_idx.get(opts.tables[t], opts.tables[t])
