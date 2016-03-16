@@ -23,15 +23,10 @@ def run(opts):
     launch_time = time.localtime()
     param_hash = digest_parameters(opts)
 
-    if opts.bed:
-        mreads = path.realpath(opts.bed)
-    else:
-        mreads = path.join(opts.workdir, load_parameters_fromdb(opts))
+    raw_matrices, raw_matrix, nrm_matrices, nrm_matrix = path.join(
+        opts.workdir, load_parameters_fromdb(opts))
 
-    print 'loading', mreads
-    hic_data = load_hic_data_from_reads(mreads, opts.reso)
-
-    for crm_name in hic_data.chromosomes:
+    for crm_name in raw_matrices:
         crm = Chromosome('crm_name')
         crm.add_experiment(
             xnam, exp_type='Hi-C', enzyme=opts.enzyme,
@@ -114,14 +109,27 @@ def load_parameters_fromdb(opts):
                 raise Exception('ERROR: more than one possible input found, use'
                                 '"tadbit describe" and select corresponding '
                                 'jobid with --jobid')
-        parse_jobid = jobids[0][0]
+            parse_jobid = jobids[0][0]
+        else:
+            parse_jobid = opts.jobid
         # fetch path to parsed BED files
         cur.execute("""
-        select distinct path from paths
-        inner join normalize_outputs on normalize_outputs.pathid = paths.id
-        where filter_outputs.name = 'valid-pairs' and paths.jobid = %s
+        select distinct path from paths where paths.jobid = %s and paths.Type = 'RAW_MATRICES'
         """ % parse_jobid)
-        return cur.fetchall()[0][0]
+        raw_matrices = cur.fetchall()[0][0]
+        cur.execute("""
+        select distinct path from paths where paths.jobid = %s and paths.Type = 'RAW_MATRIX'
+        """ % parse_jobid)
+        raw_matrix = cur.fetchall()[0][0]
+        cur.execute("""
+        select distinct path from paths where paths.jobid = %s and paths.Type = 'NRM_MATRICES'
+        """ % parse_jobid)
+        nrm_matrices = cur.fetchall()[0][0]
+        cur.execute("""
+        select distinct path from paths where paths.jobid = %s and paths.Type = 'NRM_MATRIX'
+        """ % parse_jobid)
+        nrm_matrix = cur.fetchall()[0][0]
+        return raw_matrices, raw_matrix, nrm_matrices, nrm_matrix
 
 def populate_args(parser):
     """

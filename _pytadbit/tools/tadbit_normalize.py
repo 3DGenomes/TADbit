@@ -80,6 +80,13 @@ def run(opts):
     
     print 'Decay slope 0.7-10 Mb\t%s' % a2
 
+    # write biases
+    bias_file = path.join(opts.workdir, '04_normalization',
+                          'bias_%s_%s.tsv' % (opts.reso, param_hash))
+    out_bias = open(bias_file, 'w')
+    out_bias.write('\n'.join([str(i) for i in hic_data.bias]))
+    out_bias.close()
+
     # to feed the save_to_db funciton
     intra_dir_nrm_fig = intra_dir_nrm_txt = None
     inter_dir_nrm_fig = inter_dir_nrm_txt = None
@@ -154,7 +161,7 @@ def run(opts):
     finish_time = time.localtime()
 
     save_to_db (opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
-                a2, bad_columns_file, inter_vs_gcoord,
+                a2, bad_columns_file, bias_file, inter_vs_gcoord,
                 intra_dir_nrm_fig, intra_dir_nrm_txt,
                 inter_dir_nrm_fig, inter_dir_nrm_txt,
                 genom_map_nrm_fig, genom_map_nrm_txt,
@@ -164,7 +171,7 @@ def run(opts):
                 launch_time, finish_time)
 
 def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
-               a2, bad_columns_file, inter_vs_gcoord,
+               a2, bad_columns_file, bias_file, inter_vs_gcoord,
                intra_dir_nrm_fig, intra_dir_nrm_txt,
                inter_dir_nrm_fig, inter_dir_nrm_txt,
                genom_map_nrm_fig, genom_map_nrm_txt,
@@ -204,8 +211,9 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
         except lite.IntegrityError:
             pass
         jobid = get_jobid(cur)
-        add_path(cur, bad_columns_file, 'TSV', jobid, opts.workdir)
-        add_path(cur, inter_vs_gcoord, 'FIGURE', jobid, opts.workdir)
+        add_path(cur, bad_columns_file, 'BAD_COLUMNS', jobid, opts.workdir)
+        add_path(cur, bias_file       , 'BIASES'     , jobid, opts.workdir)
+        add_path(cur, inter_vs_gcoord , 'FIGURE'     , jobid, opts.workdir)
         if intra_dir_nrm_fig:
             add_path(cur, intra_dir_nrm_fig, 'FIGURES', jobid, opts.workdir)
         if intra_dir_nrm_fig:
@@ -261,7 +269,9 @@ def load_parameters_fromdb(opts):
                 raise Exception('ERROR: more than one possible input found, use'
                                 '"tadbit describe" and select corresponding '
                                 'jobid with --jobid')
-        parse_jobid = jobids[0][0]
+            parse_jobid = jobids[0][0]
+        else:
+            parse_jobid = opts.jobid
         # fetch path to parsed BED files
         cur.execute("""
         select distinct path from paths
