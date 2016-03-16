@@ -77,7 +77,7 @@ def populate_args(parser):
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
 
-    glopts.add_argument('--jobids', dest='jobids', metavar="INT",
+    glopts.add_argument('-j', '--jobids', dest='jobids', metavar="INT",
                         action='store', default=None, nargs='+', type=int,
                         help='jobids of the files and entries to be removed')
 

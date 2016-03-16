@@ -23,6 +23,8 @@ def run(opts):
             if table[0].lower() in opts.tables:
                 print_db(cur, table[0])
 
+
+
 def populate_args(parser):
     """
     parse option from call

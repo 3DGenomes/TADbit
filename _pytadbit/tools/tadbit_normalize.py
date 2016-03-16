@@ -30,25 +30,25 @@ def run(opts):
     print 'loading', mreads
     hic_data = load_hic_data_from_reads(mreads, opts.reso)
 
+    mkdir(path.join(opts.workdir, '04_normalization'))
+
     print 'Get poor bins...'
     try:
         hic_data.filter_columns(perc_zero=opts.perc_zeros, draw_hist=True,
                                 by_mean=not opts.fast_filter, savefig=path.join(
                                     opts.workdir, '04_normalization',
-                                    'bad_columns_%d_.pdf' % opts.perc_zeros) if
+                                    'bad_columns_%s_%d_%s.pdf' % (opts.reso, opts.perc_zeros, param_hash)) if
                                 not opts.fast_filter else None)
     except ValueError:
         hic_data.filter_columns(perc_zero=100, draw_hist=True,
                                 by_mean=not opts.fast_filter, savefig=path.join(
                                     opts.workdir, '04_normalization',
-                                    'bad_columns_%d_.pdf' % opts.perc_zeros) if
+                                    'bad_columns_%s_%d_%s.pdf' % (opts.reso, opts.perc_zeros, param_hash)) if
                                 not opts.fast_filter else None)
-
-    mkdir(path.join(opts.workdir, '04_normalization'))
 
     # bad columns
     bad_columns_file = path.join(opts.workdir, '04_normalization',
-                                 'bad_columns_%s.tsv' %param_hash)
+                                 'bad_columns_%s_%s.tsv' % (opts.reso, param_hash))
     out_bad = open(bad_columns_file, 'w')
     out_bad.write('\n'.join([str(i) for i in hic_data.bads.keys()]))
     out_bad.close()
@@ -59,70 +59,118 @@ def run(opts):
                            factor=opts.factor)
 
     print 'Getting cis/trans...'
-    cis_trans = hic_data.cis_trans_ratio(normalized=True)
+    cis_trans_N_D = hic_data.cis_trans_ratio(normalized=True , diagonal=True )
+    cis_trans_N_d = hic_data.cis_trans_ratio(normalized=False, diagonal=True )
+    cis_trans_n_D = hic_data.cis_trans_ratio(normalized=True , diagonal=False)
+    cis_trans_n_d = hic_data.cis_trans_ratio(normalized=False, diagonal=False)
         
-    print 'Cis/Trans ratio of normalized matrix including the diagonal', cis_trans
+    print 'Cis/Trans ratio of normalized matrix including the diagonal', cis_trans_N_D
+    print 'Cis/Trans ratio of normalized matrix excluding the diagonal', cis_trans_N_d
+    print 'Cis/Trans ratio of raw matrix including the diagonal', cis_trans_n_D
+    print 'Cis/Trans ratio of raw matrix excluding the diagonal', cis_trans_n_d
 
     # Plot genomic distance vs interactions
     print 'Plot genomic distance vs interactions...'
     inter_vs_gcoord = path.join(opts.workdir, '04_normalization',
-                                'interactions_vs_genomic-coords.pdf_%s.pdf' % (
-                                    param_hash))
+                                'interactions_vs_genomic-coords.pdf_%s_%s.pdf' % (
+                                    opts.reso, param_hash))
     (_, _, _), (a2, _, _), (_, _, _) = plot_distance_vs_interactions(
         hic_data, max_diff=10000, resolution=opts.reso, normalized=True,
         savefig=inter_vs_gcoord)
     
     print 'Decay slope 0.7-10 Mb\t%s' % a2
-    
+
+    # to feed the save_to_db funciton
+    intra_dir_nrm_fig = intra_dir_nrm_txt = None
+    inter_dir_nrm_fig = inter_dir_nrm_txt = None
+    genom_map_nrm_fig = genom_map_nrm_txt = None
+    intra_dir_raw_fig = intra_dir_raw_txt = None
+    inter_dir_raw_fig = inter_dir_raw_txt = None
+    genom_map_raw_fig = genom_map_raw_txt = None
+
     if "intra" in opts.keep:
-        print "  Saving normalized intra chromosomal matrix..."
+        print "  Saving intra chromosomal raw and normalized matrices..."
         if opts.only_txt:
-            intra_dir_fig = path.join(opts.workdir, '04_normalization',
-                                      'intra_chromosome_map_images_%s' % (param_hash))
+            intra_dir_nrm_fig = None
+            intra_dir_raw_fig = None
         else:
-            intra_dir_fig = None
-        intra_dir_txt = path.join(opts.workdir, '04_normalization',
-                                  'intra_chromosome_map_matrices_%s' % (param_hash))
+            intra_dir_nrm_fig = path.join(opts.workdir, '04_normalization',
+                                          'intra_chromosome_nrm_images_%s_%s' % (opts.reso, param_hash))
+            intra_dir_raw_fig = path.join(opts.workdir, '04_normalization',
+                                          'intra_chromosome_raw_images_%s_%s' % (opts.reso, param_hash))
+        intra_dir_nrm_txt = path.join(opts.workdir, '04_normalization',
+                                      'intra_chromosome_nrm_matrices_%s_%s' % (opts.reso, param_hash))
+        intra_dir_raw_txt = path.join(opts.workdir, '04_normalization',
+                                      'intra_chromosome_raw_matrices_%s_%s' % (opts.reso, param_hash))
         hic_map(hic_data, normalized=True, by_chrom='intra', cmap='jet',
-                name = path.split(opts.workdir)[-1],
-                savefig =intra_dir_fig, savedata=intra_dir_txt)
+                name=path.split(opts.workdir)[-1],
+                savefig=intra_dir_nrm_fig, savedata=intra_dir_nrm_txt)
+        hic_map(hic_data, normalized=False, by_chrom='intra', cmap='jet',
+                name=path.split(opts.workdir)[-1],
+                savefig=intra_dir_raw_fig, savedata=intra_dir_raw_txt)
 
     if "inter" in opts.keep:
-        print "  Saving normalized inter chromosomal matrix..."
+        print "  Saving inter chromosomal raw and normalized matrices..."
         if opts.only_txt:
-            inter_dir_fig = path.join(opts.workdir, '04_normalization',
-                                      'inter_chromosome_map_images_%s' % (param_hash))
+            inter_dir_nrm_fig = None
+            inter_dir_raw_fig = None
         else:
-            inter_dir_fig = None
-        inter_dir_txt = path.join(opts.workdir, '04_normalization',
-                                  'inter_chromosome_map_matrices_%s' % (param_hash))
+            inter_dir_nrm_fig = path.join(opts.workdir, '04_normalization',
+                                          'inter_chromosome_nrm_images_%s_%s' % (opts.reso, param_hash))
+            inter_dir_raw_fig = path.join(opts.workdir, '04_normalization',
+                                      'inter_chromosome_raw_images_%s_%s' % (opts.reso, param_hash))
+        inter_dir_nrm_txt = path.join(opts.workdir, '04_normalization',
+                                  'inter_chromosome_nrm_matrices_%s_%s' % (opts.reso, param_hash))
+        inter_dir_raw_txt = path.join(opts.workdir, '04_normalization',
+                                  'inter_chromosome_raw_matrices_%s_%s' % (opts.reso, param_hash))
         hic_map(hic_data, normalized=True, by_chrom='inter', cmap='jet',
-                name = path.split(opts.workdir)[-1],
-                savefig =inter_dir_fig, savedata=intra_dir_txt)
+                name=path.split(opts.workdir)[-1],
+                savefig=inter_dir_nrm_fig, savedata=inter_dir_nrm_txt)
+        hic_map(hic_data, normalized=False, by_chrom='inter', cmap='jet',
+                name=path.split(opts.workdir)[-1],
+                savefig=inter_dir_raw_fig, savedata=inter_dir_raw_txt)
 
     if "genome" in opts.keep:
         print "  Saving normalized genomic matrix..."
         if opts.only_txt:
-            genome_map_fig = path.join(opts.workdir, '04_normalization',
-                                       'genomic_maps_%s.pdf' % (param_hash))
+            genom_map_nrm_fig = path.join(opts.workdir, '04_normalization',
+                                          'genomic_maps_nrm_%s_%s.pdf' % (opts.reso, param_hash))
+            genom_map_raw_fig = path.join(opts.workdir, '04_normalization',
+                                          'genomic_maps_raw_%s_%s.pdf' % (opts.reso, param_hash))
         else:
-            genome_map_fig = None
-        genome_map_txt = path.join(opts.workdir, '04_normalization',
-                                   'genomic_maps_%s.tsv' % (param_hash))
+            genom_map_nrm_fig = None
+            genom_map_raw_fig = None
+        genom_map_nrm_txt = path.join(opts.workdir, '04_normalization',
+                                      'genomic_nrm_%s_%s.tsv' % (opts.reso, param_hash))
+        genom_map_raw_txt = path.join(opts.workdir, '04_normalization',
+                                      'genomic_raw_%s_%s.tsv' % (opts.reso, param_hash))
         hic_map(hic_data, normalized=True, cmap='jet',
-                name = path.split(opts.workdir)[-1],
-                savefig =genome_map_fig, savedata=genome_map_txt)
+                name=path.split(opts.workdir)[-1],
+                savefig=genom_map_nrm_fig, savedata=genom_map_nrm_txt)
+        hic_map(hic_data, normalized=False, cmap='jet',
+                name=path.split(opts.workdir)[-1],
+                savefig=genom_map_raw_fig, savedata=genom_map_raw_txt)
 
     finish_time = time.localtime()
 
-    save_to_db (opts, cis_trans, a2, bad_columns_file,
-                inter_vs_gcoord, intra_dir_fig, intra_dir_txt, inter_dir_fig,
-                inter_dir_txt, genome_map_fig, genome_map_txt,
+    save_to_db (opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
+                a2, bad_columns_file, inter_vs_gcoord,
+                intra_dir_nrm_fig, intra_dir_nrm_txt,
+                inter_dir_nrm_fig, inter_dir_nrm_txt,
+                genom_map_nrm_fig, genom_map_nrm_txt,
+                intra_dir_raw_fig, intra_dir_raw_txt,
+                inter_dir_raw_fig, inter_dir_raw_txt,
+                genom_map_raw_fig, genom_map_raw_txt,
                 launch_time, finish_time)
 
-def save_to_db(opts, cis_trans, a2, bad_columns_file,
-               inter_vs_gcoord, intra_dir_fig, intra_dir_txt, inter_dir_fig,
-               inter_dir_txt, genome_map_fig, genome_map_txt,
+def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
+               a2, bad_columns_file, inter_vs_gcoord,
+               intra_dir_nrm_fig, intra_dir_nrm_txt,
+               inter_dir_nrm_fig, inter_dir_nrm_txt,
+               genom_map_nrm_fig, genom_map_nrm_txt,
+               intra_dir_raw_fig, intra_dir_raw_txt,
+               inter_dir_raw_fig, inter_dir_raw_txt,
+               genom_map_raw_fig, genom_map_raw_txt,
                launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
@@ -134,7 +182,10 @@ def save_to_db(opts, cis_trans, a2, bad_columns_file,
             create table NORMALIZE_OUTPUTs
                (Id integer primary key,
                 JOBid int,
-                CisTrans real,
+                CisTrans_nrm_all real,
+                CisTrans_nrm_out real,
+                CisTrans_raw_all real,
+                CisTrans_raw_out real,
                 Slope_700kb_10Mb real,
                 Resolution int,
                 Factor int,
@@ -153,21 +204,39 @@ def save_to_db(opts, cis_trans, a2, bad_columns_file,
         except lite.IntegrityError:
             pass
         jobid = get_jobid(cur)
-        add_path(cur, bad_columns_file, 'TSV', jobid)
-        add_path(cur, inter_vs_gcoord, 'FIGURE', jobid)
-        add_path(cur, intra_dir_fig, 'FIGURE_DIR', jobid)
-        add_path(cur, intra_dir_txt, 'MATRiX_DIR', jobid)
-        add_path(cur, inter_dir_fig, 'FIGURE_DIR', jobid)
-        add_path(cur, inter_dir_txt, 'MATRIX_DIR', jobid)
-        add_path(cur, genome_map_fig, 'FIGURE', jobid)
-        add_path(cur, genome_map_txt, 'MATRIX', jobid)
+        add_path(cur, bad_columns_file, 'TSV', jobid, opts.workdir)
+        add_path(cur, inter_vs_gcoord, 'FIGURE', jobid, opts.workdir)
+        if intra_dir_nrm_fig:
+            add_path(cur, intra_dir_nrm_fig, 'FIGURES', jobid, opts.workdir)
+        if intra_dir_nrm_fig:
+            add_path(cur, intra_dir_nrm_txt, 'NRM_MATRICES', jobid, opts.workdir)
+        if inter_dir_nrm_fig:
+            add_path(cur, inter_dir_nrm_fig, 'FIGURES', jobid, opts.workdir)
+        if inter_dir_nrm_fig:
+            add_path(cur, inter_dir_nrm_txt, 'NRM_MATRICES', jobid, opts.workdir)
+        if genom_map_nrm_fig:
+            add_path(cur, genom_map_nrm_fig, 'FIGURE', jobid, opts.workdir)
+        if genom_map_nrm_txt:
+            add_path(cur, genom_map_nrm_txt, 'NRM_MATRIX', jobid, opts.workdir)
+        if intra_dir_raw_fig:
+            add_path(cur, intra_dir_raw_fig, 'FIGURES', jobid, opts.workdir)
+        if intra_dir_raw_fig:
+            add_path(cur, intra_dir_raw_txt, 'RAW_MATRICES', jobid, opts.workdir)
+        if inter_dir_raw_fig:
+            add_path(cur, inter_dir_raw_fig, 'FIGURES', jobid, opts.workdir)
+        if inter_dir_raw_fig:
+            add_path(cur, inter_dir_raw_txt, 'RAW_MATRICES', jobid, opts.workdir)
+        if genom_map_raw_fig:
+            add_path(cur, genom_map_raw_fig, 'FIGURE', jobid, opts.workdir)
+        if genom_map_raw_txt:
+            add_path(cur, genom_map_raw_txt, 'RAW_MATRIX', jobid, opts.workdir)
 
         cur.execute("""
         insert into NORMALIZE_OUTPUTs
-        (Id  , JOBid, CisTrans, Slope_700kb_10Mb, Resolution,      Factor)
+        (Id  , JOBid,   CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
         values
-        (NULL,    %d,        %f,             %f,          %d,          %f)
-        """ % (jobid, cis_trans,             a2,   opts.reso, opts.factor))
+        (NULL,    %d,            %f,            %f,            %f,            %f,               %f,          %d,          %f)
+        """ % (jobid, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,               a2,   opts.reso, opts.factor))
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
@@ -227,12 +296,14 @@ def populate_args(parser):
 
     glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
                         action='store', default=95, type=float, 
-                        help='maximum percentage of zeroes allowed per column')
+                        help=('[%(default)s%%] maximum percentage of zeroes '
+                              'allowed per column.'))
 
     glopts.add_argument('--normalization', dest='resolution', metavar="STR",
                         action='store', default='ICE', nargs='+', type=str,
                         choices=['ICE', 'EXP'],
-                        help='''[%(default)s] normalization(s) to apply. Order matters.''')
+                        help='''[%(default)s] normalization(s) to apply.
+                        Order matters.''')
 
     glopts.add_argument('--factor', dest='factor', metavar="NUM",
                         action='store', default=1, type=float,
@@ -245,7 +316,7 @@ def populate_args(parser):
                         choices=['genome', 'chromosomes'],
                         help='''[%(default)s] save genomic or chromosomic matrix.''')
 
-    glopts.add_argument('--jobid', dest='jobid', metavar="INT",
+    glopts.add_argument('-j', '--jobid', dest='jobid', metavar="INT",
                         action='store', default=None, type=int,
                         help='''Use as input data generated by a job with a given
                         jobid. Use tadbit describe to find out which.''')    
@@ -275,9 +346,13 @@ def populate_args(parser):
 def check_options(opts):
 
     # check resume
-    if not path.exists(opts.workdir) and opts.resume:
-        print ('WARNING: can use output files, found, not resuming...')
-        opts.resume = False
+    if not path.exists(opts.workdir):
+        raise IOError('ERROR: wordir not found.')
 
     if already_run(opts) and not opts.force:
         exit('WARNING: exact same job already computed, see JOBs table above')
+
+def nice(reso):
+    if reso >= 1000000:
+        return '%dMb' % (reso / 1000000)
+    return '%dkb' % (reso / 1000)
