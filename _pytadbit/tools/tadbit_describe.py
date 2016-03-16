@@ -66,9 +66,25 @@ def check_options(opts):
         '6': 'intersection_outputs',
         '7': 'filter_outputs',
         '8': 'normalize_outputs'}
+    recovered = []
+    bads = []
     for t in range(len(opts.tables)):
         opts.tables[t] = opts.tables[t].lower()
         if not opts.tables[t] in choices:
-            raise Exception(('error: argument -t/--table: invalid choice: %s'
-                             '(choose from %s )') % (opts.tables[t], str(choices)))
+            # check if the begining of the input string matches any of
+            # the possible choices
+            found = False
+            for choice in table_idx.values():
+                if choice.startswith(opts.tables[t]):
+                    recovered.append(choice)
+                    found = True
+            if not found:
+                print(('error: argument -t/--table: invalid choice: %s'
+                       '(choose from %s )') % (opts.tables[t], str(choices)))
+                exit()
+            bads.append(t)
         opts.tables[t] = table_idx.get(opts.tables[t], opts.tables[t])
+    for bad in bads[::-1]:
+        del(opts.tables[bad])
+    for rec in recovered:
+        opts.tables.append(rec)
