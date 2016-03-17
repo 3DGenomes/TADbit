@@ -161,7 +161,7 @@ def run(opts):
     finish_time = time.localtime()
 
     save_to_db (opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
-                a2, bad_columns_file, bias_file, inter_vs_gcoord,
+                a2, bad_columns_file, bias_file, inter_vs_gcoord, mreads,
                 intra_dir_nrm_fig, intra_dir_nrm_txt,
                 inter_dir_nrm_fig, inter_dir_nrm_txt,
                 genom_map_nrm_fig, genom_map_nrm_txt,
@@ -171,7 +171,7 @@ def run(opts):
                 launch_time, finish_time)
 
 def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
-               a2, bad_columns_file, bias_file, inter_vs_gcoord,
+               a2, bad_columns_file, bias_file, inter_vs_gcoord, mreads,
                intra_dir_nrm_fig, intra_dir_nrm_txt,
                inter_dir_nrm_fig, inter_dir_nrm_txt,
                genom_map_nrm_fig, genom_map_nrm_txt,
@@ -189,6 +189,7 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
             create table NORMALIZE_OUTPUTs
                (Id integer primary key,
                 JOBid int,
+                Input int,
                 CisTrans_nrm_all real,
                 CisTrans_nrm_out real,
                 CisTrans_raw_all real,
@@ -214,6 +215,10 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
         add_path(cur, bad_columns_file, 'BAD_COLUMNS', jobid, opts.workdir)
         add_path(cur, bias_file       , 'BIASES'     , jobid, opts.workdir)
         add_path(cur, inter_vs_gcoord , 'FIGURE'     , jobid, opts.workdir)
+        add_path(cur, mreads          , '2D_BED'     , jobid, opts.workdir)
+        # get pathid of input
+        cur.execute("select id from paths where path = '%s'" % (path.relpath(mreads, opts.workdir)))
+        input_bed = cur.fetchall()[0][0]
         if intra_dir_nrm_fig:
             add_path(cur, intra_dir_nrm_fig, 'FIGURES', jobid, opts.workdir)
         if intra_dir_nrm_fig:
@@ -241,10 +246,10 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
 
         cur.execute("""
         insert into NORMALIZE_OUTPUTs
-        (Id  , JOBid,   CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
+        (Id  , JOBid,     Input, CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
         values
-        (NULL,    %d,            %f,            %f,            %f,            %f,               %f,          %d,          %f)
-        """ % (jobid, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,               a2,   opts.reso, opts.factor))
+        (NULL,    %d,        %d,               %f,                 %f,                 %f,                 %f,               %f,           %d,          %f)
+        """ % (jobid, input_bed,    cis_trans_N_D,      cis_trans_N_d,      cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')

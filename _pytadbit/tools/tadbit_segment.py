@@ -114,22 +114,14 @@ def load_parameters_fromdb(opts):
             parse_jobid = opts.jobid
         # fetch path to parsed BED files
         cur.execute("""
-        select distinct path from paths where paths.jobid = %s and paths.Type = 'RAW_MATRICES'
+        select distinct path from paths where paths.jobid = %s and paths.Type = 'BAD_COLUMNS'
         """ % parse_jobid)
-        raw_matrices = cur.fetchall()[0][0]
+        bad_columns = cur.fetchall()[0][0]
         cur.execute("""
-        select distinct path from paths where paths.jobid = %s and paths.Type = 'RAW_MATRIX'
+        select distinct path from paths where paths.jobid = %s and paths.Type = 'BIASES'
         """ % parse_jobid)
-        raw_matrix = cur.fetchall()[0][0]
-        cur.execute("""
-        select distinct path from paths where paths.jobid = %s and paths.Type = 'NRM_MATRICES'
-        """ % parse_jobid)
-        nrm_matrices = cur.fetchall()[0][0]
-        cur.execute("""
-        select distinct path from paths where paths.jobid = %s and paths.Type = 'NRM_MATRIX'
-        """ % parse_jobid)
-        nrm_matrix = cur.fetchall()[0][0]
-        return raw_matrices, raw_matrix, nrm_matrices, nrm_matrix
+        biases = cur.fetchall()[0][0]
+        return bad_columns, biases
 
 def populate_args(parser):
     """
