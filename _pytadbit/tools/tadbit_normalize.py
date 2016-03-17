@@ -37,18 +37,21 @@ def run(opts):
         hic_data.filter_columns(perc_zero=opts.perc_zeros, draw_hist=True,
                                 by_mean=not opts.fast_filter, savefig=path.join(
                                     opts.workdir, '04_normalization',
-                                    'bad_columns_%s_%d_%s.pdf' % (opts.reso, opts.perc_zeros, param_hash)) if
+                                    'bad_columns_%s_%d_%s.pdf' % (
+                                        opts.reso, opts.perc_zeros, param_hash)) if
                                 not opts.fast_filter else None)
     except ValueError:
         hic_data.filter_columns(perc_zero=100, draw_hist=True,
                                 by_mean=not opts.fast_filter, savefig=path.join(
                                     opts.workdir, '04_normalization',
-                                    'bad_columns_%s_%d_%s.pdf' % (opts.reso, opts.perc_zeros, param_hash)) if
+                                    'bad_columns_%s_%d_%s.pdf' % (
+                                        opts.reso, opts.perc_zeros, param_hash)) if
                                 not opts.fast_filter else None)
 
     # bad columns
     bad_columns_file = path.join(opts.workdir, '04_normalization',
-                                 'bad_columns_%s_%s.tsv' % (opts.reso, param_hash))
+                                 'bad_columns_%s_%d_%s.tsv' % (
+                                     opts.reso, opts.perc_zeros, param_hash))
     out_bad = open(bad_columns_file, 'w')
     out_bad.write('\n'.join([str(i) for i in hic_data.bads.keys()]))
     out_bad.close()
@@ -84,7 +87,9 @@ def run(opts):
     bias_file = path.join(opts.workdir, '04_normalization',
                           'bias_%s_%s.tsv' % (opts.reso, param_hash))
     out_bias = open(bias_file, 'w')
-    out_bias.write('\n'.join([str(i) for i in hic_data.bias]))
+    out_bias.write('\n'.join(['%d\t%f' % (i, hic_data.bias[i])
+                              for i in hic_data.bias])
+                   + '\n')
     out_bias.close()
 
     # to feed the save_to_db funciton

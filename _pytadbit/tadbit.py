@@ -36,7 +36,7 @@ def tadbit(x, remove=None, n_cpus=1, verbose=True,
     :param 1 n_cpus: The number of CPUs to allocate to TADbit. If
        n_cpus='max' the total number of CPUs will be used
     :param auto max_tad_size: an integer defining maximum size of TAD. Default
-       (auto) defines it as the number of rows/columns
+       (auto or max) defines it as the number of rows/columns
     :param False no_heuristic: whether to use or not some heuristics
     :param False get_weights: either to return the weights corresponding to the
        Hi-C count (weights are a normalization dependent of the count of each
