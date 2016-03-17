@@ -189,6 +189,8 @@ def _meandiag(hic_data, dist, diag, min_n, size, bads):
                 continue
             diag.append(hic_data[i, i + dist])
     sum_diag = sum(diag)
+    if len(diag) == 0:
+        return dist + 1, 0.
     if sum_diag > min_n:
         return dist + 1, float(sum_diag) / len(diag)
     elif dist >= size:
