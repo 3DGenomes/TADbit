@@ -459,11 +459,17 @@ class HiC_data(dict):
         
         """
         if not self.bads:
+            if kwargs.get('verbose', True):
+                print 'Filtering bad columns %d' % 99
             self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
                                 by_mean=False, silent=True)
         if not self.expected:
+            if kwargs.get('verbose', True):
+                print 'Normalizing by expected values'
             self.expected = expected(self, bads=self.bads, **kwargs)
         if not self.bias:
+            if kwargs.get('verbose', True):
+                print 'Normalizing by ICE (1 round)'
             self.normalize_hic(iterations=0)
         if savefig:
             mkdir(savefig)
@@ -537,7 +543,7 @@ class HiC_data(dict):
                 gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
                                                       breaks, cmprts[sec],
                                                       save=False)
-                print gamma, gammas[gamma]
+                # print gamma, gammas[gamma]
             gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
             _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
                                       cmprts[sec], save=True)
@@ -568,7 +574,7 @@ class HiC_data(dict):
         out.write('#CHR\tstart\tend\tdensity\ttype\n')
         try:
             out.write('\n'.join(['\n'.join(['%s\t%d\t%d\t%.2f\t%s' % (
-                sec, c['start'], c['end'], c['dens'], c['type'])
+                sec, c['start'] + 1, c['end'] + 1, c['dens'], c['type'])
                                             for c in self.compartments[sec]])
                                  for sec in self.compartments]) + '\n')
         except KeyError:
@@ -694,12 +700,10 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=Fa
             solutions, key=lambda x: solutions[x]['score'])
                     if solutions[s]['score']>0][-1]['out']
     except IndexError:
-        print('WARNING: compartment clustering is not clear. Skipping')
-        warn('WARNING: compartment clustering is not clear. Skipping')
+        #warn('WARNING: compartment clustering is not clear. Skipping')
         return (0,0,0,0)
     if len(clusters) != 2:
-        print('WARNING: compartment clustering is too clear. Skipping')
-        warn('WARNING: compartment clustering is too clear. Skipping')
+        #warn('WARNING: compartment clustering is too clear. Skipping')
         return (0,0,0,0)
     # labelling compartments. A compartments shall have lower
     # mean intra-interactions
