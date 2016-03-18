@@ -106,6 +106,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         print '    * enzyme: %s, ligation site: %s, RE site: %s' % (r_enz, enz_pattern, enzyme)
         split_read = _split_read_re
     else:
+        enzyme = ''
         enz_pattern = ''
         split_read = lambda x, y, z, after_z, after_after_z: (yield x, y , 1)
 
