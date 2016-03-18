@@ -23,7 +23,11 @@ def run(opts):
     launch_time = time.localtime()
     param_hash = digest_parameters(opts)
 
-    bad_co, biases, mreads, reso = load_parameters_fromdb(opts)
+    (bad_co, bad_co_id, biases, biases_id,
+     mreads, mreads_id, reso) = load_parameters_fromdb(opts)
+
+    # store path ids to be saved in database
+    inputs = bad_co_id, biases_id, mreads_id
 
     mreads = path.join(opts.workdir, mreads)
     bad_co = path.join(opts.workdir, bad_co)
@@ -38,18 +42,30 @@ def run(opts):
                          for l in open(biases))
 
     # compartments
+    cmp_result = {}
     if not opts.only_tads:
         print 'Searching compartments'
         hic_data.find_compartments()
 
-        cmprt_file = path.join(opts.workdir, '05_segmentation',
-                               'compartments_%s_%s.tsv' % (
+        cmprt_dir = path.join(opts.workdir, '05_segmentation',
+                              'compartments_%s_%s' % (
             nice(reso), param_hash))
-        hic_data.write_compartments(cmprt_file)
+        mkdir(cmprt_dir)
+        for crm in hic_data.chromosomes:
+            cmprt_file = path.join(cmprt_dir, '%s.tsv' % crm)
+            hic_data.write_compartments(cmprt_file,
+                                        chrom=crm)
+            cmp_result[crm] = {'path': cmprt_file,
+                               'num' : len(hic_data.compartments[crm])}
 
+    # TADs
+    tad_result = {}
     if not opts.only_compartments:
         print 'Searching TADs'
-        out_tads = []
+        tad_dir = path.join(opts.workdir, '05_segmentation',
+                             'tads_%s_%s' % (
+                                 nice(reso), param_hash))
+        mkdir(tad_dir)
         for crm in hic_data.chromosomes:
             if opts.crms and not crm in opts.crms:
                 continue
@@ -76,20 +92,20 @@ def run(opts):
                     tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),
                     abs(tads[tad]['score']), '\t%s' % (round(
                         float(tads[tad]['height']), 3)))
-            out_tad = path.join(opts.workdir, '05_segmentation',
-                                'tads_%s_%s_%s.tsv' % (
-                                    crm, nice(reso), param_hash))
+            out_tad = path.join(tad_dir, '%s.tsv' % (crm))
             out = open(out_tad, 'w')
             out.write(table)
             out.close()
-            out_tads.append(out_tad)
+            tad_result[crm] = {'path' : out_tad,
+                               'num': len(tads)}
 
     finish_time = time.localtime()
 
-    save_to_db(opts, cmprt_file, out_tads, reso, launch_time, finish_time)
+    save_to_db(opts, cmp_result, tad_result, reso, inputs, 
+               launch_time, finish_time)
 
-
-def save_to_db(opts, cmprt_file, out_tads, reso, launch_time, finish_time):
+def save_to_db(opts, cmp_result, tad_result, reso, inputs,
+               launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         cur = con.cursor()
@@ -100,8 +116,11 @@ def save_to_db(opts, cmprt_file, out_tads, reso, launch_time, finish_time):
             create table SEGMENT_OUTPUTs
                (Id integer primary key,
                 JOBid int,
-                Resolution int,
-                unique (JOBid))""")
+                Inputs text,
+                TADs int,
+                Compartments int,
+                Chromosome text,
+                Resolution int)""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
             param_hash = digest_parameters(opts, get_md5=True )
@@ -116,19 +135,27 @@ def save_to_db(opts, cmprt_file, out_tads, reso, launch_time, finish_time):
         except lite.IntegrityError:
             pass
         jobid = get_jobid(cur)
-        add_path(cur, cmprt_file, 'COMPARTMENT', jobid, opts.workdir)
-        for tad_file in out_tads:
-            add_path(cur, tad_file, 'TAD', jobid, opts.workdir)
-
-        cur.execute("""
-        insert into SEGMENT_OUTPUTs
-        (Id  , JOBid, Resolution)
-        values
-        (NULL,    %d,        %d)
-        """ % (jobid, reso))
-        print_db(cur, 'PATHs')
-        print_db(cur, 'JOBs')
-        print_db(cur, 'SEGMENT_OUTPUTs')
+        for crm in max(cmp_result.keys(), tad_result.keys(),
+                       key=lambda x: len(x)):
+            if crm in cmp_result:
+                add_path(cur, cmp_result[crm]['path'], 'COMPARTMENT',
+                         jobid, opts.workdir)
+            if crm in tad_result:
+                add_path(cur, tad_result[crm]['path'], 'TAD', jobid, opts.workdir)
+            cur.execute("""
+            insert into SEGMENT_OUTPUTs
+            (Id  , JOBid, Inputs, TADs, Compartments, Chromosome, Resolution)
+            values
+            (NULL,    %d,   '%s',   %d,           %d,       '%s',         %d)
+            """ % (jobid,
+                   ','.join([str(i) for i in inputs]),
+                   cmp_result[crm]['num'] if crm in cmp_result else 0,
+                   tad_result[crm]['num'] if crm in tad_result else 0,
+                   crm,
+                   reso))
+            print_db(cur, 'PATHs')
+            print_db(cur, 'JOBs')
+            print_db(cur, 'SEGMENT_OUTPUTs')
 
 def load_parameters_fromdb(opts):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
@@ -150,27 +177,28 @@ def load_parameters_fromdb(opts):
             parse_jobid = opts.jobid
         # fetch path to parsed BED files
         cur.execute("""
-        select distinct path from paths
+        select distinct Path, PATHs.Id from PATHs
         where paths.jobid = %s and paths.Type = 'BAD_COLUMNS'
         """ % parse_jobid)
-        bad_columns = cur.fetchall()[0][0]
+        bad_co, bad_co_id  = cur.fetchall()[0]
         cur.execute("""
-        select distinct path from paths
+        select distinct Path, PATHs.Id from PATHs
         where paths.jobid = %s and paths.Type = 'BIASES'
         """ % parse_jobid)
-        biases = cur.fetchall()[0][0]
+        biases, biases_id = cur.fetchall()[0]
         cur.execute("""
-        select distinct Path from PATHs
+        select distinct Path, PATHs.Id from PATHs
         inner join NORMALIZE_OUTPUTs on PATHs.Id = NORMALIZE_OUTPUTs.Input
         where NORMALIZE_OUTPUTs.JOBid = %d;
         """ % parse_jobid)
-        mreads = cur.fetchall()[0][0]
+        mreads, mreads_id = cur.fetchall()[0]
         cur.execute("""
         select distinct Resolution from NORMALIZE_OUTPUTs
         where NORMALIZE_OUTPUTs.JOBid = %d;
         """ % parse_jobid)
         reso = int(cur.fetchall()[0][0])
-        return bad_columns, biases, mreads, reso
+        return (bad_co, bad_co_id, biases, biases_id,
+                mreads, mreads_id, reso)
 
 def populate_args(parser):
     """

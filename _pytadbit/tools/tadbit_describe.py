@@ -41,7 +41,7 @@ def populate_args(parser):
 
     glopts.add_argument('-t', '--table', dest='tables', metavar='',
                         action='store', nargs='+', type=str,
-                        default=[str(t) for t in range(1, 9)],
+                        default=[str(t) for t in range(1, 10)],
                         help='''[%(default)s] what tables to show, wrte either the sequence of
                         names or indexes, according to this list:
                         1: paths, 2: jobs, 3: mapped_outputs,
@@ -58,7 +58,7 @@ def check_options(opts):
              '3', 'mapped_outputs',
              '4', 'mapped_inputs', '5', 'parsed_outputs',
              '6', 'intersection_outputs',
-             '7', 'filter_outputs', '8', 'normalize_outputs'
+             '7', 'filter_outputs', '8', 'normalize_outputs',
              '9', 'segment_outputs']
     table_idx = {
         '1': 'paths',
