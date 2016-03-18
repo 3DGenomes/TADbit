@@ -45,28 +45,47 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         """
         Recursive generator that splits reads according to the
         predefined restriction enzyme.
-        RE fragments yielded are followed by the RE site if a ligation
-        site was found after the fragment.
-        The RE site before the fragment is added outside this function
+        RE fragments yielded are followed and preceded by the RE site if a
+        ligation site was found after the fragment.
+
+        EXAMPLE:
+
+           seq = '-------oGATCo========oGATCGATCo_____________oGATCGATCo~~~~~~~~~~~~'
+           qal = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+        should yield these fragments:
+        
+            -------oGATCo========oGATC
+            xxxxxxxxxxxxxxxxxxxxxxHHHH
+
+            GATCo_____________oGATC
+            HHHHxxxxxxxxxxxxxxxHHHH
+
+            GATCo~~~~~~~~~~~~
+            HHHHxxxxxxxxxxxxx
+        
         """
+        cnt += 1
         try:
-            cnt += 1
             pos = seq.index(pattern)
-            if pos < min_seq_len:
-                split_read(seq[pos + len_relg:], qal[pos + len_relg:],
-                           pattern, max_seq_len, cnt=cnt)
-            else:
-                yield seq[:pos] + site, qal[:pos] + ('H' * len(site)), cnt
-            for subseq, subqal, cnt in split_read(seq[pos + len_relg:],
-                                             qal[pos + len_relg:],
-                                             pattern,
-                                             max_seq_len, cnt=cnt):
-                yield subseq, subqal, cnt
         except ValueError:
             if len(seq) == max_seq_len:
                 raise ValueError
             if len(seq) > min_seq_len:
                 yield seq, qal, cnt
+            return
+        xqal = ('H' * len(site))
+        if pos < min_seq_len:
+            split_read(site + seq[pos + len_relg:],
+                       xqal + qal[pos + len_relg:],
+                       pattern, max_seq_len, cnt=cnt)
+        else:
+            yield seq[:pos] + site, qal[:pos] + xqal, cnt
+        new_pos = pos + len_relg
+        for sseq, sqal, cnt in split_read(site + seq[new_pos:],
+                                          xqal + qal[new_pos:], pattern,
+                                          max_seq_len, site=site, cnt=cnt):
+            yield sseq, sqal, cnt
 
     # Define function for stripping lines according to ficus
     if isinstance(trim, tuple):
@@ -115,7 +134,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     out_name = out_fastq
     out = open(out_fastq, 'w')
     # iterate over reads and strip them
-    site = '' if add_site else enzyme
+    site = enzyme if add_site else ''
     for header in fhandler:
         header, seq, qal = get_seq(header)
         counter += 1
@@ -147,8 +166,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         # continue
         for seq, qal, cnt in  iter_frags:
             out.write(_map2fastq('\t'.join((insert_mark(header, cnt),
-                                            seq + site, qal + 'H' * (len(site)),
-                                            '0', '-\n'))))
+                                            seq, qal, '0', '-\n'))))
     out.close()
     return out_name, counter
 
