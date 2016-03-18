@@ -63,8 +63,8 @@ def run(opts):
 
     print 'Getting cis/trans...'
     cis_trans_N_D = hic_data.cis_trans_ratio(normalized=True , diagonal=True )
-    cis_trans_N_d = hic_data.cis_trans_ratio(normalized=False, diagonal=True )
-    cis_trans_n_D = hic_data.cis_trans_ratio(normalized=True , diagonal=False)
+    cis_trans_n_D = hic_data.cis_trans_ratio(normalized=False, diagonal=True )
+    cis_trans_N_d = hic_data.cis_trans_ratio(normalized=True , diagonal=False)
     cis_trans_n_d = hic_data.cis_trans_ratio(normalized=False, diagonal=False)
         
     print 'Cis/Trans ratio of normalized matrix including the diagonal', cis_trans_N_D

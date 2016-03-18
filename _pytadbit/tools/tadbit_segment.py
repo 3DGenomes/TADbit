@@ -8,7 +8,6 @@ information needed
 from argparse                     import HelpFormatter
 from pytadbit                     import load_hic_data_from_reads
 from pytadbit                     import tadbit
-from pytadbit.tadbit              import print_result_r
 from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling import mkdir
@@ -32,14 +31,14 @@ def run(opts):
 
     mkdir(path.join(opts.workdir, '05_segmentation'))
 
-    print 'loading', mreads
+    print 'loading %s at resolution %s' % (mreads, nice(reso))
     hic_data = load_hic_data_from_reads(mreads, reso)
     hic_data.bads = dict((int(l.strip()), True) for l in open(bad_co))
     hic_data.bias = dict((int(l.split()[0]), float(l.split()[1]))
                          for l in open(biases))
 
     # compartments
-    if opts.compartments:
+    if not opts.only_tads:
         print 'Searching compartments'
         hic_data.find_compartments()
 
@@ -48,60 +47,60 @@ def run(opts):
             nice(reso), param_hash))
         hic_data.write_compartments(cmprt_file)
 
-    print 'Searching TADs'
-    out_tads = []
-    for crm in hic_data.chromosomes:
-        if opts.crms and not crm in opts.crms:
-            continue
-        print '  - %s' % crm
-        matrix = hic_data.get_matrix(focus=crm)
-        beg, end = hic_data.section_pos[crm]
-        size = len(matrix)
-        if size < 10:
-            print "     Chromosome too short (%d bins), skipping..." % size
-            continue
-        # transform bad column in chromosome referential
-        remove = tuple([1 if i in hic_data.bads else 0 for i in xrange(beg, end)])
-        # maximum size of a TAD
-        max_tad_size = size if opts.max_tad_size is None else opts.max_tad_size
-        result = tadbit([matrix], remove=remove,
-                        n_cpus=opts.cpus, verbose=True,
-                        max_tad_size=max_tad_size,
-                        no_heuristic=True)
-        tads = load_tad_height(result, size, beg, end, hic_data)
-        table = ''
-        table += '%s\t%s\t%s\t%s%s\n' % ('#', 'start', 'end', 'score', 'density')
-        for tad in tads:
-            table += '%s\t%s\t%s\t%s%s\n' % (
-                tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),
-                abs(tads[tad]['score']), '\t%s' % (round(
-                    float(tads[tad]['height']), 3)))
-        out_tad = path.join(opts.workdir, '05_segmentation',
-                            'tads_%s_%s_%s.tsv' % (
-                                crm, nice(reso), param_hash))
-        out = open(out_tad, 'w')
-        out.write(table)
-        out.close()
-        out_tads.append(out_tad)
+    if not opts.only_compartments:
+        print 'Searching TADs'
+        out_tads = []
+        for crm in hic_data.chromosomes:
+            if opts.crms and not crm in opts.crms:
+                continue
+            print '  - %s' % crm
+            matrix = hic_data.get_matrix(focus=crm)
+            beg, end = hic_data.section_pos[crm]
+            size = len(matrix)
+            if size < 10:
+                print "     Chromosome too short (%d bins), skipping..." % size
+                continue
+            # transform bad column in chromosome referential
+            remove = tuple([1 if i in hic_data.bads else 0 for i in xrange(beg, end)])
+            # maximum size of a TAD
+            max_tad_size = size if opts.max_tad_size is None else opts.max_tad_size
+            result = tadbit([matrix], remove=remove,
+                            n_cpus=opts.cpus, verbose=True,
+                            max_tad_size=max_tad_size,
+                            no_heuristic=True)
+            tads = load_tad_height(result, size, beg, end, hic_data)
+            table = ''
+            table += '%s\t%s\t%s\t%s%s\n' % ('#', 'start', 'end', 'score', 'density')
+            for tad in tads:
+                table += '%s\t%s\t%s\t%s%s\n' % (
+                    tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),
+                    abs(tads[tad]['score']), '\t%s' % (round(
+                        float(tads[tad]['height']), 3)))
+            out_tad = path.join(opts.workdir, '05_segmentation',
+                                'tads_%s_%s_%s.tsv' % (
+                                    crm, nice(reso), param_hash))
+            out = open(out_tad, 'w')
+            out.write(table)
+            out.close()
+            out_tads.append(out_tad)
 
-def save_to_db(opts, cis_trans, a2, bad_columns_file,
-               inter_vs_gcoord, intra_dir_fig, intra_dir_txt, inter_dir_fig,
-               inter_dir_txt, genome_map_fig, genome_map_txt,
-               launch_time, finish_time):
+    finish_time = time.localtime()
+
+    save_to_db(opts, cmprt_file, out_tads, reso, launch_time, finish_time)
+
+
+def save_to_db(opts, cmprt_file, out_tads, reso, launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='NORMALIZE_OUTPUTs'""")
+                       type='table' AND name='SEGMENT_OUTPUTs'""")
         if not cur.fetchall():
             cur.execute("""
-            create table NORMALIZE_OUTPUTs
+            create table SEGMENT_OUTPUTs
                (Id integer primary key,
                 JOBid int,
-                CisTrans real,
-                Slope_700kb_10Mb real,
                 Resolution int,
-                Factor int,
                 unique (JOBid))""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
@@ -110,36 +109,26 @@ def save_to_db(opts, cis_trans, a2, bad_columns_file,
             insert into JOBs
             (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
             values
-            (NULL,       '%s',        '%s',        '%s', 'Normalize',           '%s')
+            (NULL,       '%s',        '%s',        '%s', 'Segment',           '%s')
             """ % (parameters,
                    time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
                    time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
         except lite.IntegrityError:
             pass
         jobid = get_jobid(cur)
-        add_path(cur, bad_columns_file, 'TSV', jobid)
-        add_path(cur, inter_vs_gcoord, 'FIGURE', jobid)
-        add_path(cur, intra_dir_fig, 'FIGURE_DIR', jobid)
-        add_path(cur, intra_dir_txt, 'MATRiX_DIR', jobid)
-        add_path(cur, inter_dir_fig, 'FIGURE_DIR', jobid)
-        add_path(cur, inter_dir_txt, 'MATRIX_DIR', jobid)
-        add_path(cur, genome_map_fig, 'FIGURE', jobid)
-        add_path(cur, genome_map_txt, 'MATRIX', jobid)
+        add_path(cur, cmprt_file, 'COMPARTMENT', jobid, opts.workdir)
+        for tad_file in out_tads:
+            add_path(cur, tad_file, 'TAD', jobid, opts.workdir)
 
         cur.execute("""
-        insert into NORMALIZE_OUTPUTs
-        (Id  , JOBid, CisTrans, Slope_700kb_10Mb, Resolution,      Factor)
+        insert into SEGMENT_OUTPUTs
+        (Id  , JOBid, Resolution)
         values
-        (NULL,    %d,        %f,             %f,          %d,          %f)
-        """ % (jobid, cis_trans,             a2,   opts.reso, opts.factor))
-        print_db(cur, 'MAPPED_INPUTs')
+        (NULL,    %d,        %d)
+        """ % (jobid, reso))
         print_db(cur, 'PATHs')
-        print_db(cur, 'MAPPED_OUTPUTs')
-        print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
-        print_db(cur, 'INTERSECTION_OUTPUTs')        
-        print_db(cur, 'FILTER_OUTPUTs')
-        print_db(cur, 'NORMALIZE_OUTPUTs')
+        print_db(cur, 'SEGMENT_OUTPUTs')
 
 def load_parameters_fromdb(opts):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
@@ -207,10 +196,15 @@ def populate_args(parser):
                         help='''path to a matrix file with raw read
                         counts''')
 
-    glopts.add_argument('--compartments', dest='compartments',
+    glopts.add_argument('--only_compartments', dest='only_compartments',
                         action='store_true', default=False, 
                         help='''search A/B compartments using first eigen vector
                         of the correlation matrix''')
+
+    glopts.add_argument('--only_tads', dest='only_tads',
+                        action='store_true', default=False, 
+                        help='''search TAD boundaries break-point detection
+                        algorithm''')
 
     glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
                         action='store', default=95, type=float, 

@@ -47,7 +47,7 @@ def populate_args(parser):
                         1: paths, 2: jobs, 3: mapped_outputs,
                         4: mapped_inputs, 5: parsed_outputs,
                         6: intersection_outputs, 7: filter_outputs,
-                        8: normalize_outputs''')
+                        8: normalize_outputs, 9: segment_outputs''')
 
     parser.add_argument_group(glopts)
 
@@ -58,7 +58,8 @@ def check_options(opts):
              '3', 'mapped_outputs',
              '4', 'mapped_inputs', '5', 'parsed_outputs',
              '6', 'intersection_outputs',
-             '7', 'filter_outputs', '8', 'normalize_outputs']
+             '7', 'filter_outputs', '8', 'normalize_outputs'
+             '9', 'segment_outputs']
     table_idx = {
         '1': 'paths',
         '2': 'jobs',
@@ -67,7 +68,8 @@ def check_options(opts):
         '5': 'parsed_outputs',
         '6': 'intersection_outputs',
         '7': 'filter_outputs',
-        '8': 'normalize_outputs'}
+        '8': 'normalize_outputs',
+        '9': 'segment_outputs'}
     recovered = []
     bads = []
     for t in range(len(opts.tables)):
