@@ -11,6 +11,29 @@ from warnings  import warn
 import numpy as np
 
 
+def mad(arr):
+    """ Median Absolute Deviation: a "Robust" version of standard deviation.
+        Indices variabililty of the sample.
+        https://en.wikipedia.org/wiki/Median_absolute_deviation 
+    """
+    if not isinstance(arr, np.ndarray):
+        arr = np.array(arr)
+    arr  = np.ma.array(arr).compressed() # should be faster to not use masked arrays.
+    med  = np.median(arr)
+    return np.median(np.abs(arr - med))
+
+def right_double_mad(arr):
+    """ Double Median Absolute Deviation: a 'Robust' version of standard deviation.
+        Indices variabililty of the sample.
+        http://eurekastatistics.com/using-the-median-absolute-deviation-to-find-outliers
+    """
+    if not isinstance(arr, np.ndarray):
+        arr = np.array(arr)
+    arr = np.ma.array(arr).compressed() # should be faster to not use masked arrays.
+    med  = np.median(arr)
+    right_mad = np.median(np.abs(arr[arr >  med] - med))
+    return right_mad
+
 def newton_raphson (guess, contour, sq_length, jmax=2000, xacc=1e-12):
     """
     Newton-Raphson method as defined in:

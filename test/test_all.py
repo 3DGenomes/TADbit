@@ -6,6 +6,7 @@ unittest for pytadbit functions
 
 import matplotlib
 matplotlib.use('Agg')
+
 import unittest
 from pytadbit                             import Chromosome, load_chromosome
 from pytadbit                             import tadbit, batch_tadbit
@@ -24,13 +25,11 @@ from pytadbit.mapping.filter              import filter_reads, apply_filter
 from random                               import random, seed
 from os                                   import system, path, chdir
 from re                                   import finditer
-from warnings                             import warn
+from warnings                             import warn, catch_warnings, simplefilter
 from distutils.spawn                      import find_executable
 
-CHKTIME = False
+import sys
 
-if CHKTIME:
-    from time import time
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
@@ -649,7 +648,7 @@ class TestTadbit(unittest.TestCase):
                    re_name='DPNII', mapper='GEM')
 
             # GET INTERSECTION
-            from pytadbit.mapping.mapper import get_intersection
+            from pytadbit.mapping import get_intersection
             get_intersection('lala1-%s~' % (ali), 'lala2-%s~' % (ali),
                              'lala-%s~' % (ali))
             # FILTER
@@ -683,9 +682,10 @@ class TestTadbit(unittest.TestCase):
         if CHKTIME:
             t0 = time()
         hic_data1 = load_hic_data_from_reads('lala-map~', resolution=10000)
-        hic_map(hic_data1, savedata='lala-map.tsv~')
-        hic_map(hic_data1, by_chrom='intra', savedata='lala-maps~')
-        hic_map(hic_data1, by_chrom='inter', savedata='lala-maps~')
+        hic_map(hic_data1, savedata='lala-map.tsv~', savefig='lala.pdf~')
+        hic_map(hic_data1, by_chrom='intra', savedata='lala-maps~', savefig='lalalo~')
+        hic_map(hic_data1, by_chrom='inter', savedata='lala-maps~', savefig='lalala~')
+        # slowest part of the all test:
         hic_data2 = read_matrix('lala-map.tsv~', resolution=10000)
         self.assertEqual(hic_data1, hic_data2)
         vals = plot_distance_vs_interactions(hic_data1)
@@ -983,5 +983,13 @@ def generate_random_ali(ali='map'):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    if len(sys.argv) > 1:
+        CHKTIME = bool(int(sys.argv.pop()))
+        from time import time
+    else:
+        CHKTIME = False
+
+    with catch_warnings():
+        simplefilter("ignore")
+        unittest.main()
     

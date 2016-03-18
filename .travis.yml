@@ -28,14 +28,13 @@ install:
     - yes | python setup.py install
     - conda install -y -q -c https://conda.anaconda.org/bcbio pysam
     - conda install -y -q -c https://conda.anaconda.org/salilab imp
-    - pip install gemtools
     - pip install coveralls
 
 before_script:
   - python --version
 
 # command to run tests, e.g. python setup.py test
-script: cd test; coverage run --source=pytadbit test_all.py
+script: cd test; coverage run --source=pytadbit test_all.py; coverage report
 
 after_success:
     coveralls

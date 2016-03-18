@@ -126,15 +126,12 @@ class StructuralModels(object):
                     return self.__models[key]
             raise KeyError('Model %s not found\n' % (i))
 
-
     def __iter__(self):
         for m in self.__models:
             yield self.__models[m]
 
-
     def __len__(self):
         return len(self.__models)
-
 
     def __repr__(self):
         return ('StructuralModels with %s models of %s particles\n' +
@@ -152,6 +149,26 @@ class StructuralModels(object):
                        for k, v in self._config.iteritems()]),
             len(self.clusters))
 
+    def _extend_models(self, models):
+        """
+        add new models to structural models
+        """
+        nbest = len(self.__models)
+        nall  = len(self.__models) + len(self._bad_models)
+        self.define_best_models(nall)
+        ids = set(self.__models[m]['rand_init'] for m in self.__models)
+        for m in models.keys():
+            if models[m]['rand_init'] in ids:
+                warn('WARNING: found model with same random seed number, '
+                     'SKIPPPING')
+                del(models[m])
+        new_models = {}
+        for i, m in enumerate(sorted(models.values() + self.__models.values(),
+                                     key=lambda x: x['objfun'])):
+            new_models[i] = m
+        self.__models = new_models
+        # keep the same number of best models
+        self.define_best_models(nbest)
 
     def align_models(self, models=None, cluster=None, in_place=False,
                      reference_model=None, **kwargs):
@@ -576,7 +593,6 @@ class StructuralModels(object):
         self._bad_models = dict([(i, tmp_models[i]) for i in
                                  xrange(nbest, len(tmp_models))])
 
-
     def deconvolve(self, fact=0.75, dcutoff=None, method='mcl',
                    mcl_bin='mcl', tmp_file=None, verbose=True, n_cpus=1,
                    mclargs=None, what='dRMSD', n_best_clusters=10,
@@ -826,7 +842,7 @@ class StructuralModels(object):
                 for j in xrange(i+1, len(matrix)):
                     out.write('%s\t%s\t%s\n' % (i, j, matrix[i][j]))
             out.close()
-        if not savefig and not show:
+        if not savefig and not show and not axe:
             return # stop here, we do not want to display anything
         if not axe:
             fig = plt.figure(figsize=(8, 6))
@@ -983,17 +999,19 @@ class StructuralModels(object):
         self._plot_polymer(ax)
         scat1 = plt.Line2D((0,1),(0,0), color=(0.15,0.15,0.15), marker='o', linestyle='')
         scat2 = plt.Line2D((0,1),(0,0), color=(0.7,0.7,0.7), marker='o', linestyle='')
-        
+        if error:
+            plot_labels = ['mean accessibility', '2*stddev of accessibility',
+                           'particles with restraints',
+                           'particles without restraints']
+        else:
+            plot_labels = ['mean accessibility', 'particles with restraints',
+                           'particles without restraints']
         try:
-            ax.legend(plots + [scat1, scat2],
-                      ['mean accessibility', '2*stddev of accessibility'] + ['particles with restraints',
-                                                                             'particles without restraints'],
+            ax.legend(plots + [scat1, scat2], plot_labels,
                       fontsize='small', numpoints=1,
                       bbox_to_anchor=(1, 0.5), loc='center left')
         except TypeError:
-            ax.legend(plots + [scat1, scat2],
-                      ['mean accessibility', '2*stddev of accessibility'] + ['particles with restraints',
-                                                                             'particles without restraints'],
+            ax.legend(plots + [scat1, scat2], plot_labels,
                       numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
         ax.set_title('Accesibility per particle')
@@ -1005,11 +1023,11 @@ class StructuralModels(object):
         plt.close('all')
 
 
-    def _get_density(self, models, interval, mass_center):
-        dists = [[None] * len(models)]
+    def _get_density(self, models, interval, use_mass_center):
+        dists = [[None] * len(models)] * interval
         for p in range(interval, self.nloci - interval):
             part1, part2, part3 = p - interval, p, p + interval
-            if mass_center:
+            if use_mass_center:
                 subdists = []
                 for m in models:
                     coord1 = get_center_of_mass(
@@ -1035,7 +1053,7 @@ class StructuralModels(object):
         return dists
 
     def density_plot(self, models=None, cluster=None, steps=(1, 2, 3, 4, 5),
-                     interval=1, mass_center=False, error=False, axe=None,
+                     interval=1, use_mass_center=False, error=False, axe=None,
                      savefig=None, savedata=None, plot=True):
         """
         Plots the number of nucleotides per nm of chromatin vs the modeled
@@ -1053,7 +1071,7 @@ class StructuralModels(object):
            appearance
         :param 1 interval: distance are measure with this given interval
            between two bins.
-        :param False mass_center: if interval is higher than one, calculates the
+        :param False use_mass_center: if interval is higher than one, calculates the
            distance between the center of mass of the particles *n* to
            *n+interval* and the center of mass of the particles *n+interval* and
            *n+2interval*
@@ -1069,7 +1087,7 @@ class StructuralModels(object):
             steps = (steps, )
 
         models = self._get_models(models, cluster)
-        dists = self._get_density(models, interval, mass_center)
+        dists = self._get_density(models, interval, use_mass_center)
         distsk, errorn, errorp = self._windowize(dists, steps, interval=interval,
                                                  average=False)
 
@@ -1666,7 +1684,9 @@ class StructuralModels(object):
                      + 'contact maps (correlation=%.4f)' % (corr[0]),
                      size='x-large')
         ax = fig.add_subplot(131)
+        # imshow of the modeled data
         self.contact_map(models, cluster, cutoff, axe=ax)
+        # correlation
         ax = fig.add_subplot(132)
         try:
             if log_corr:

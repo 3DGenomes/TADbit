@@ -4,19 +4,20 @@
 
 """
 
-from pytadbit.parsers.hic_parser   import read_matrix, HiC_data
-from pytadbit.utils.extraviews     import nicer
-from pytadbit.utils.extraviews     import tadbit_savefig
-from pytadbit.utils.tadmaths       import zscore, nozero_log_matrix
-from pytadbit.utils.normalize_hic  import iterative
-from pytadbit.utils.hic_filtering  import hic_filtering_for_modelling
-from pytadbit.parsers.tad_parser   import parse_tads
-from math                          import isnan
-from numpy                         import log2, array
-from pytadbit.imp.CONFIG           import CONFIG
-from copy                          import deepcopy as copy
-from sys                           import stderr
-from warnings                      import warn
+from pytadbit                     import HiC_data
+from pytadbit.parsers.hic_parser  import read_matrix
+from pytadbit.utils.extraviews    import nicer
+from pytadbit.utils.extraviews    import tadbit_savefig
+from pytadbit.utils.tadmaths      import zscore, nozero_log_matrix
+from pytadbit.utils.normalize_hic import iterative
+from pytadbit.utils.hic_filtering import hic_filtering_for_modelling
+from pytadbit.parsers.tad_parser  import parse_tads
+from math                         import isnan
+from numpy                        import log2, array
+from pytadbit.imp.CONFIG          import CONFIG
+from copy                         import deepcopy as copy
+from sys                          import stderr
+from warnings                     import warn
 
 try:
     from pytadbit.imp.impoptimizer  import IMPoptimizer
@@ -575,7 +576,7 @@ class Experiment(object):
                 s_k = siz * k
                 diags.append(sum([norms[i * sp1 + s_k]
                                  if not (i in zeros
-                                         or (i + k) in zeros) else 0.
+                                         or (i + k) in zeros) else 1. # 1 is the mean
                                   for i in xrange(siz - k)]) / (siz - k))
         for tad in tads:
             start, end = (int(tads[tad]['start']) + 1,
@@ -583,7 +584,7 @@ class Experiment(object):
             if norms:
                 matrix = sum([norms[i + siz * j]
                              if not (i in zeros
-                                     or j in zeros) else 0.
+                                     or j in zeros) else 1. 
                               for i in xrange(start - 1, end - 1)
                               for j in xrange(i + 1, end - 1)])
             try:

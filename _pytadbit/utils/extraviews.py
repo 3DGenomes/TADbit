@@ -37,7 +37,11 @@ def setup_plot(axe, figsize=None):
     return ax
 
 def tadbit_savefig(savefig):
-    form = savefig[-4:].split('.')[1]
+    try:
+        form = savefig[-4:].split('.')[1]
+    except IndexError: # no dot in file name
+        warn('WARNING: file extension not found saving in png')
+        form = 'png'
     if not form in ['png', 'pdf', 'ps', 'eps', 'svg']:
         raise NotImplementedError('File extension must be one of %s' %(
             ['png', 'pdf', 'ps', 'eps', 'svg']))
@@ -939,7 +943,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                     if a * b < 0] + [len(first)]
     axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
                 color='red' , linewidth=4, alpha=0.7)
-    axex.hlines([0]*(len(breaks)/2), breaks[1:-1:2], breaks[2::2],
+    axex.hlines([0]*((len(breaks) - 1)/2), breaks[1:-1:2], breaks[2::2],
                 color='blue', linewidth=4, alpha=0.7)
     axex.grid()
     axex.minorticks_on()

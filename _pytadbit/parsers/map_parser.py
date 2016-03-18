@@ -6,8 +6,9 @@ from pytadbit.utils.file_handling         import magic_open
 from bisect                               import bisect_right as bisect
 from pytadbit.mapping.restriction_enzymes import map_re_sites
 from warnings                             import warn
+from sys                                  import stdout
+from subprocess                           import Popen
 import os
-from sys import stdout
 
 def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
               genome_seq=None, re_name=None, verbose=False, clean=True,
@@ -36,6 +37,8 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
     :param re_name: name of the restriction enzyme used
     :param True clean: remove temporary files required for indentification of
        multiple-contacts
+    :param False compress: compress (gzip) input map files. This is done in the
+       background while next MAP files are parsed, or while files are sorted.
     """
     # not nice, dirty fix in order to allow this function to only parse
     # one SAM file
@@ -70,6 +73,7 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
     
     windows = {}
     multis  = {}
+    procs   = []
     for read in range(len(fnames)):
         if verbose:
             print 'Loading read' + str(read + 1)
@@ -112,6 +116,9 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
                 nfile += 1
                 write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
             windows[read][num] = read_count
+            if kwargs.get('compress', False) and fnam.endswith('.map'):
+                print 'compressing input MAP file'
+                procs.append(Popen(['gzip', fnam]))
         nfile += 1
         write_reads_to_file(reads, outfiles[read], tmp_files, nfile)
 
@@ -173,6 +180,9 @@ def parse_map(f_names1, f_names2=None, out_file1=None, out_file2=None,
         reads_fh.close()
         if clean:
             os.system('rm -rf ' + tmp_name)
+    # wait for compression to finish
+    for p in procs:
+        p.communicate()
     return windows, multis
 
 def write_reads_to_file(reads, outfiles, tmp_files, nfile):

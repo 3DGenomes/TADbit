@@ -7,18 +7,18 @@ information needed
 """
 
 from argparse                    import HelpFormatter
-from pytadbit.mapping.mapper     import get_intersection
-from os                          import path, system
+from pytadbit.mapping            import get_intersection
+from pytadbit.utils.file_handling import mkdir
+from os                          import path
 from pytadbit.utils.sqlite_utils import get_jobid, add_path, get_path_id, print_db
-from pytadbit.utils.sqlite_utils import already_run
+from pytadbit.utils.sqlite_utils import already_run, digest_parameters
 from pytadbit.mapping.analyze    import insert_sizes
 from pytadbit.mapping.filter     import filter_reads, apply_filter
-from hashlib                     import md5
 import logging
 import sqlite3 as lite
 import time
 
-DESC = "Parse mapped Hi-C reads and get the intersection"
+DESC = "Filter parsed Hi-C reads and get valid pair of reads to work with"
 
 def run(opts):
     check_options(opts)
@@ -26,47 +26,57 @@ def run(opts):
 
     fname1, fname2 = load_parameters_fromdb(opts)
 
-    jobid = get_jobid(workdir=opts.workdir) + 1
+    param_hash = digest_parameters(opts)
 
-    reads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
-                      'all_r1-r2_intersection.tsv')
-    mreads = path.join(opts.workdir, '%03d_filtered_reads' % jobid,
-                       'valid_r1-r2_intersection.tsv')
+    reads = path.join(opts.workdir, '03_filtered_reads',
+                      'all_r1-r2_intersection_%s.tsv' % param_hash)
+    mreads = path.join(opts.workdir, '03_filtered_reads',
+                       'valid_r1-r2_intersection_%s.tsv' % param_hash)
 
     if not opts.resume:
-        system('mkdir -p ' + path.join(opts.workdir, '%03d_filtered_reads' % jobid))
+        mkdir(path.join(opts.workdir, '03_filtered_reads'))
 
         # compute the intersection of the two read ends
+        print 'Getting intersection between read 1 and read 2'
         count, multiples = get_intersection(fname1, fname2, reads)
 
         # compute insert size
         print 'Get insert size...'
-        median, ori_max_mol = insert_sizes(reads, nreads=1000000)
+        hist_path = path.join(opts.workdir,
+                              'histogram_fragment_sizes_%s.pdf' % param_hash)
+        median, max_f, mad = insert_sizes(
+            reads, nreads=1000000, stats=('median', 'first_decay', 'MAD'),
+            savefig=hist_path)
         
         print '  - median insert size =', median
-        print '  - max (99.9%) insert size =', ori_max_mol
+        print '  - double median absolution of insert size =', mad
+        print '  - max insert size (when a gap in continuity of > 10 bp is found in fragment lengths) =', max_f
     
-        max_mol = 4 * median
-        print ('   Using 4 times median insert size (%d bp) to check '
-               'for random breaks') % max_mol
+        max_mole = max_f # pseudo DEs
+        min_dist = max_f + mad # random breaks
+        print ('   Using the maximum continuous fragment size'
+               '(%d bp) to check '
+               'for pseudo-dangling ends') % max_mole
+        print ('   Using maximum continuous fragment size plus the MAD '
+               '(%d bp) to check for random breaks') % min_dist
     
         print "identify pairs to filter..."
-        masked = filter_reads(reads, max_molecule_length=max_mol,
+        masked = filter_reads(reads, max_molecule_length=max_mole,
                               over_represented=0.001, max_frag_size=100000,
                               min_frag_size=50, re_proximity=5,
-                              min_dist_to_re=max_mol, fast=True)
+                              min_dist_to_re=min_dist, fast=True)
 
     n_valid_pairs = apply_filter(reads, mreads, masked,
                                  filters=opts.apply)
 
     finish_time = time.localtime()
-
+    print median, max_f, mad
     # save all job information to sqlite DB
-    save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
-               launch_time, finish_time)
+    save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
+               hist_path, median, max_f, mad, launch_time, finish_time)
 
-def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
-               launch_time, finish_time):
+def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
+               hist_path, median, max_f, mad, launch_time, finish_time):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
     with con:
         cur = con.cursor()
@@ -79,6 +89,9 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
             PATHid int,
             Total_interactions int,
             Multiple_interactions text,
+            Median_fragment_length,
+            MAD_fragment_length,
+            Max_fragment_length,
             unique (PATHid))""")
             cur.execute("""
         create table FILTER_OUTPUTs
@@ -89,16 +102,8 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
             JOBid int,
             unique (PATHid))""")
         try:
-            parameters = ' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in opts.__dict__.iteritems()
-                 if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                              'func', 'tmp'] and not v is None])
-            parameters = parameters.replace("'", '"')
-            param_hash = md5(' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['force', 'workdir', 'func', 'tmp']])).hexdigest()
+            parameters = digest_parameters(opts, get_md5=False)
+            param_hash = digest_parameters(opts, get_md5=True )            
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
@@ -113,17 +118,33 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
         jobid = get_jobid(cur)
         
         add_path(cur, mreads, '2D_BED', jobid, opts.workdir)
+        add_path(cur,  reads, '2D_BED', jobid, opts.workdir)
+        add_path(cur, hist_path, 'FIGURE', jobid, opts.workdir)
         try:
             cur.execute("""
             insert into INTERSECTION_OUTPUTs
-            (Id  , PATHid, Total_interactions, Multiple_interactions)
+            (Id  , PATHid, Total_interactions, Multiple_interactions, Median_fragment_length, MAD_fragment_length, Max_fragment_length)
             values
-            (NULL,    %d,     %d,      '%s')
+            (NULL,    %d,                  %d,                  '%s',                     %d,                  %d,                  %d)
             """ % (get_path_id(cur, mreads, opts.workdir),
                    count, ' '.join(['%s:%d' % (k, multiples[k])
-                                    for k in sorted(multiples)])))
+                                    for k in sorted(multiples)]),
+                   median, mad, max_f))
         except lite.IntegrityError:
-            print 'WARNING: already parsed'
+            print 'WARNING: already filtered'
+            if opts.force:
+                cur.execute(
+                    'delete from INTERSECTION_OUTPUTs where PATHid = %d' % (
+                        get_path_id(cur, mreads, opts.workdir)))
+                cur.execute("""
+                insert into INTERSECTION_OUTPUTs
+                (Id  , PATHid, Total_interactions, Multiple_interactions, Median_fragment_length, MAD_fragment_length, Max_fragment_length)
+                values
+                (NULL,    %d,                  %d,                  '%s',                     %d,                  %d,                  %d)
+                """ % (get_path_id(cur, mreads, opts.workdir),
+                       count, ' '.join(['%s:%d' % (k, multiples[k])
+                                        for k in sorted(multiples)]),
+                       median, mad, max_f))
         for f in masked:
             add_path(cur, masked[f]['fnam'], 'FILTER', jobid, opts.workdir)
             try:
@@ -136,6 +157,17 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
                        masked[f]['name'], masked[f]['reads'], jobid))
             except lite.IntegrityError:
                 print 'WARNING: already filtered'
+                if opts.force:
+                    cur.execute(
+                        'delete from FILTER_OUTPUTs where PATHid = %d' % (
+                            get_path_id(cur, masked[f]['fnam'], opts.workdir)))
+                    cur.execute("""
+                insert into FILTER_OUTPUTs
+                (Id  , PATHid, Name, Count, JOBid)
+                values
+                (NULL,    %d,     '%s',      '%s', %d)
+                    """ % (get_path_id(cur, masked[f]['fnam'], opts.workdir),
+                           masked[f]['name'], masked[f]['reads'], jobid))
         try:
             cur.execute("""
         insert into FILTER_OUTPUTs
@@ -143,9 +175,20 @@ def save_to_db(opts, count, multiples, mreads, n_valid_pairs, masked,
         values
         (NULL,    %d,     '%s',      '%s', %d)
             """ % (get_path_id(cur, mreads, opts.workdir),
-                   'Valid-pairs', n_valid_pairs, jobid))
+                   'valid-pairs', n_valid_pairs, jobid))
         except lite.IntegrityError:
             print 'WARNING: already filtered'
+            if opts.force:
+                cur.execute(
+                    'delete from FILTER_OUTPUTs where PATHid = %d' % (
+                        get_path_id(cur, mreads, opts.workdir)))
+                cur.execute("""
+                insert into FILTER_OUTPUTs
+                (Id  , PATHid, Name, Count, JOBid)
+                values
+                (NULL,    %d,     '%s',      '%s', %d)
+                """ % (get_path_id(cur, mreads, opts.workdir),
+                       'valid-pairs', n_valid_pairs, jobid))
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
@@ -211,6 +254,7 @@ def populate_args(parser):
 
     glopts.add_argument('--apply', dest='apply', nargs='+',
                         type=int, metavar='INT', default=[1, 2, 3, 4, 6, 7, 8, 9, 10],
+                        choices = range(1, 11),
                         help=("""[%(default)s] Use filters to define a set os valid pair of reads
                         e.g.: '--apply 1 2 3 4 6 7 8 9'. Where these numbers""" + 
                         "correspond to: %s" % (', '.join(
@@ -220,7 +264,6 @@ def populate_args(parser):
                         action='store', default=None, type=str,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
-
 
     glopts.add_argument('--pathids', dest='pathids', metavar="INT",
                         action='store', default=None, nargs='+', type=int,
@@ -245,7 +288,7 @@ def check_options(opts):
         opts.apply.sort()
 
     # check if job already run using md5 digestion of parameters
-    if already_run(opts):
+    if already_run(opts) and not opts.force:
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 

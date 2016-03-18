@@ -3,21 +3,53 @@ some utils relative to sqlite
 """
 import sqlite3 as lite
 from os.path import abspath, relpath, join
+from os import system
 from hashlib import md5
 
-def already_run(opts):
-    con = lite.connect(join(opts.workdir, 'trace.db'))
-    with con:
-        # check if table exists
-        cur = con.cursor()
+def digest_parameters(opts, get_md5=True):
+    if get_md5:
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
              if not k in ['force', 'workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
-        cur.execute("select * from JOBs where Parameters_md5 = '%s'" % param_hash)
-        found = len(cur.fetchall()) == 1
-        if found:
-            print_db(cur, 'JOBs')
+        return param_hash
+    parameters = ' '.join(
+        ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+         for k, v in opts.__dict__.iteritems()
+         if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
+                      'func', 'tmp', 'keep_tmp'] and not v is None])
+    parameters = parameters.replace("'", "")
+    return parameters
+
+def delete_entries(cur, table, col, val):
+    try:
+        cur.execute("select %s from %s where %s.%s = %d" % (
+            col, table, table, col, val))
+        elts = [e[0] for e in cur.fetchall()]
+        if len(elts) == 0:
+            return
+    except lite.OperationalError:
+        return
+    try:
+        cur.execute("delete from %s where %s.%s = %d" % (
+            table, table, col, val))
+        print ' - deleted %d elements with %s = %s' % (len(elts), col, val)
+    except lite.OperationalError:
+        pass
+
+def already_run(opts):
+    con = lite.connect(join(opts.workdir, 'trace.db'))
+    try:
+        with con:
+            # check if table exists
+            cur = con.cursor()
+            param_hash = digest_parameters(opts, get_md5=True)
+            cur.execute("select * from JOBs where Parameters_md5 = '%s'" % param_hash)
+            found = len(cur.fetchall()) == 1
+            if found:
+                print_db(cur, 'JOBs')
+    except lite.OperationalError:
+        return False
     return found
 
 def get_jobid(cur=None, workdir=None):
@@ -43,6 +75,8 @@ def get_path_id(cur, path, workdir=None):
     return cur.fetchall()[0][0]
 
 def add_path(cur, path, typ, jobid, workdir=None):
+    if not path: # case where path is None
+        return
     path    = abspath(path)
     if workdir:
         workdir = abspath(workdir)

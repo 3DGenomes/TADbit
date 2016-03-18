@@ -7,8 +7,11 @@ import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from pytadbit.tools import tadbit_map
+from pytadbit.tools import tadbit_clean
 from pytadbit.tools import tadbit_parse
+from pytadbit.tools import tadbit_model
 from pytadbit.tools import tadbit_filter
+from pytadbit.tools import tadbit_segment
 from pytadbit.tools import tadbit_describe
 from pytadbit.tools import tadbit_normalize
 
@@ -28,6 +31,7 @@ def main(arguments):
     # - MAP -
     args_pp["map"] = subparser.add_parser("map",
                                           description=tadbit_map.DESC,
+                                          help=tadbit_map.DESC,
                                           formatter_class=RawDescriptionHelpFormatter)
     args_pp["map"].set_defaults(func=tadbit_map.run)
     tadbit_map.populate_args(args_pp["map"])
@@ -35,6 +39,7 @@ def main(arguments):
     # - PARSE -
     args_pp["parse"] = subparser.add_parser("parse",
                                             description=tadbit_parse.DESC,
+                                            help=tadbit_parse.DESC,
                                             formatter_class=RawDescriptionHelpFormatter)
     args_pp["parse"].set_defaults(func=tadbit_parse.run)
     tadbit_parse.populate_args(args_pp["parse"])
@@ -42,6 +47,7 @@ def main(arguments):
     # - FILTER -
     args_pp["filter"] = subparser.add_parser("filter",
                                              description=tadbit_filter.DESC,
+                                             help=tadbit_filter.DESC,
                                              formatter_class=RawDescriptionHelpFormatter)
     args_pp["filter"].set_defaults(func=tadbit_filter.run)
     tadbit_filter.populate_args(args_pp["filter"])
@@ -49,30 +55,56 @@ def main(arguments):
     # - DESCRIBE -
     args_pp["describe"] = subparser.add_parser("describe",
                                              description=tadbit_describe.DESC,
+                                             help=tadbit_describe.DESC,
                                              formatter_class=RawDescriptionHelpFormatter)
     args_pp["describe"].set_defaults(func=tadbit_describe.run)
     tadbit_describe.populate_args(args_pp["describe"])
 
+    # - CLEAN -
+    args_pp["clean"] = subparser.add_parser("clean",
+                                             description=tadbit_clean.DESC,
+                                             help=tadbit_clean.DESC,
+                                             formatter_class=RawDescriptionHelpFormatter)
+    args_pp["clean"].set_defaults(func=tadbit_clean.run)
+    tadbit_clean.populate_args(args_pp["clean"])
+
     # - NORMALIZE -
     args_pp["normalize"] = subparser.add_parser("normalize",
                                              description=tadbit_normalize.DESC,
+                                             help=tadbit_normalize.DESC,
                                              formatter_class=RawDescriptionHelpFormatter)
     args_pp["normalize"].set_defaults(func=tadbit_normalize.run)
     tadbit_normalize.populate_args(args_pp["normalize"])
+
+    # - SEGMENT -
+    args_pp["segment"] = subparser.add_parser("segment",
+                                             description=tadbit_segment.DESC,
+                                             help=tadbit_segment.DESC,
+                                             formatter_class=RawDescriptionHelpFormatter)
+    args_pp["segment"].set_defaults(func=tadbit_segment.run)
+    tadbit_segment.populate_args(args_pp["segment"])
+
+    # - MODEL -
+    args_pp["model"] = subparser.add_parser("model",
+                                             description=tadbit_model.DESC,
+                                             help=tadbit_model.DESC,
+                                             formatter_class=RawDescriptionHelpFormatter)
+    args_pp["model"].set_defaults(func=tadbit_model.run)
+    tadbit_model.populate_args(args_pp["model"])
 
     if len(arguments) == 1:
         parser.print_usage()
         return
 
-    if not arguments[2].startswith('-'):
+    if len(arguments) > 2 and not arguments[2].startswith('-'):
         arguments.insert(2, '-w')
 
     if len(arguments) == 2:
         try:
             args_pp[arguments[1]].print_help()
+            return
         except KeyError:
-            parser.print_usage()
-        return
+            pass
 
     # Call main program
     args = parser.parse_args(arguments[1:])

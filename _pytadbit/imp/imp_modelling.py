@@ -20,6 +20,7 @@ from IMP.container import ListSingletonContainer
 from IMP import Model
 from IMP import FloatKey
 
+
 IMP.set_check_level(IMP.NONE)
 IMP.set_log_level(IMP.SILENT)
 
@@ -140,7 +141,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     
 
     if CONFIG['lowrdist'] > CONFIG['maxdist']:
-        raise Exception(
+        raise TADbitModelingOutOfBound(
             ('ERROR: we must prevent you from doing this for the safe of our' +
              'universe...\nIn this case, maxdist must be higher than %s\n' +
              '   -> resolution times scale -- %s*%s)') % (
@@ -354,7 +355,7 @@ def generate_IMPmodel(rand_init):
     model['pps']  = IMP.kernel.ParticlePairsTemp()
 
     # CALL BIG FUNCTION
-    if rand_init == 1 and verbose == 0.5:
+    if rand_init == START and verbose == 0.5:
         verbose = 1
         stdout.write("# Harmonic\tpart1\tpart2\tdist\tkforce\n")
 
@@ -644,3 +645,5 @@ def kForce(freq):
     return power(fabs(freq), 0.5 )
 
 
+class TADbitModelingOutOfBound(Exception):
+    pass

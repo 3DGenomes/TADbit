@@ -21,12 +21,12 @@ mapping strategy
 from argparse                             import HelpFormatter
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from pytadbit.utils.fastq_utils           import quality_plot
+from pytadbit.utils.file_handling         import which, mkdir
 from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
-from pytadbit.utils.sqlite_utils          import get_jobid, already_run
+from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
 from os                                   import system, path
-from hashlib                              import md5
 from multiprocessing                      import cpu_count
 import logging
 import fcntl
@@ -40,7 +40,8 @@ def run(opts):
 
     launch_time = time.localtime()
 
-    jobid = get_jobid(workdir=opts.workdir) + 1
+    # hash that gonna be append to output file names
+    param_hash = digest_parameters(opts, get_md5=True)
 
     if opts.quality_plot:
         logging.info('Generating Hi-C QC plot at:\n  ' +
@@ -57,10 +58,11 @@ def run(opts):
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.workdir,
-                                      '%03d_mapped_r%d' % (jobid, opts.read)),
+                                      '01_mapped_r%d' % (opts.read)),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
                             frag_map=not opts.iterative, clean=opts.keep_tmp,
-                            windows=opts.windows, get_nread=True, skip=opts.skip)
+                            windows=opts.windows, get_nread=True, skip=opts.skip,
+                            suffix=param_hash, **opts.gem_param)
 
     # adjust line count
     if opts.skip:
@@ -110,20 +112,20 @@ def populate_args(parser):
                         help='path to an output folder.')
 
     glopts.add_argument('--fastq', dest='fastq', metavar="PATH", action='store',
-                      default=None, type=str,
+                      default=None, type=str, required=True,
                       help='path to a FASTQ files (can be compressed files)')
 
     glopts.add_argument('--index', dest='index', metavar="PATH",
-                        type=str,
+                        type=str, required=True,
                         help='''paths to file(s) with indexed FASTA files of the
                         reference genome.''')
 
     glopts.add_argument('--read', dest='read', metavar="INT", 
-                        type=int,
+                        type=int, required=True,
                         help='read number')
 
     glopts.add_argument('--renz', dest='renz', metavar="STR", 
-                        type=str,
+                        type=str, required=True,
                         help='restriction enzyme name')
 
     glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
@@ -179,9 +181,35 @@ def populate_args(parser):
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
 
+    mapper.add_argument('--gem_binary', dest='gem_binary', metavar="STR", 
+                        type=str, default='gem-mapper',
+                        help='[%(default)s] path to GEM mapper binary')
+
+    mapper.add_argument('--gem_param', dest="gem_param", type=str, default=0,
+                        nargs='+',
+                        help='''any parameter that could be passed to the GEM
+                        mapper. e.g. if we want to set the proportion of
+                        mismatches to 0.05 and the maximum indel length to 10,
+                        (in GEM it would be: -e 0.05 --max-big-indel-length 10),
+                        here we could write: "--gem_param e:0.05
+                        max-big-indel-length:10". IMPORTANT: some options are
+                        incompatible with 3C-derived experiments.''')
+
 def check_options(opts):
     if opts.cfg:
         get_options_from_cfg(opts.cfg, opts)
+
+    opts.gem_binary = which(opts.gem_binary)
+    if not opts.gem_binary:
+        raise Exception('\n\nERROR: GEM binary not found, install it from:'
+                        '\nhttps://sourceforge.net/projects/gemlibrary/files/gem-library/Binary%20pre-release%202/'
+                        '\n - Download the GEM-binaries-Linux-x86_64-core_i3 if'
+                        'have a recent computer, the '
+                        'GEM-binaries-Linux-x86_64-core_2 otherwise\n - '
+                        'Uncompress with "tar xjvf GEM-binaries-xxx.tbz2"\n - '
+                        'Copy the binary gem-mapper to /usr/local/bin/ for '
+                        'example (somewhere in your PATH).\n\nNOTE: GEM does '
+                        'not provide any binary for MAC-OS.')
 
     # check RE name
     try:
@@ -204,13 +232,13 @@ def check_options(opts):
     else:
         opts.cpus = min(opts.cpus, cpu_count())
 
-    # check compulsory options
-    if not opts.quality_plot:
-        if not opts.index: raise Exception('ERROR: index  parameter required.')
-    if not opts.workdir:   raise Exception('ERROR: workdir parameter required.')
-    if not opts.fastq  :   raise Exception('ERROR: fastq  parameter required.')
-    if not opts.renz   :   raise Exception('ERROR: renz   parameter required.')
+    # check paths
+    if not path.exists(opts.index):
+        raise IOError('ERROR: index file not found at ' + opts.index)
 
+    if not path.exists(opts.fastq):
+        raise IOError('ERROR: FASTQ file not found at ' + opts.fastq)
+    
     # create tmp directory
     if not opts.tmp:
         opts.tmp = opts.workdir + '_tmp_r%d' % opts.read
@@ -221,7 +249,7 @@ def check_options(opts):
     except TypeError:
         pass
         
-    system('mkdir -p ' + opts.workdir)
+    mkdir(opts.workdir)
     # write log
     # if opts.mapping_only:
     log_format = '[MAPPING {} READ{}]   %(message)s'.format(opts.fastq, opts.read)
@@ -232,7 +260,7 @@ def check_options(opts):
     logging.getLogger().handlers = []
 
     try:
-        print 'Writting log to ' + path.join(opts.workdir, 'process.log')
+        print 'Writing log to ' + path.join(opts.workdir, 'process.log')
         logging.basicConfig(level=logging.INFO,
                             format=log_format,
                             filename=path.join(opts.workdir, 'process.log'),
@@ -250,11 +278,30 @@ def check_options(opts):
     vlog_path = path.join(opts.workdir, 'TADbit_and_dependencies_versions.log')
     dependencies = get_dependencies_version()
     if not path.exists(vlog_path) or open(vlog_path).readlines() != dependencies:
-        logging.info('Writting versions of TADbit and dependencies')
+        logging.info('Writing versions of TADbit and dependencies')
         vlog = open(vlog_path, 'w')
         vlog.write(dependencies)
         vlog.close()
 
+    # check GEM mapper extra options
+    if opts.gem_param:
+        opts.gem_param = dict([o.split(':') for o in opts.gem_param])
+    else:
+        opts.gem_param = {}
+    gem_valid_option = set(["granularity", "q", "quality-format",
+                            "gem-quality-threshold", "mismatch-alphabet",
+                            "m", "e", "min-matched-bases",
+                            "max-big-indel-length", "s", "strata-after-best",
+                            "fast-mapping", "unique-mapping", "d", "D",
+                            "allow-incomplete-strata", "max-decoded-matches",
+                            "min-decoded-strata", "p", "paired-end-alignment",
+                            "b", "map-both-ends", "min-insert-size",
+                            "max-insert-size", "E", "max-extendable-matches",
+                            "max-extensions-per-match", "unique-pairing"])
+    for k in opts.gem_param:
+        if not k in gem_valid_option:
+            raise NotImplementedError(('ERROR: option "%s" not a valid GEM option'
+                                       'or not suported by this tool.') % k)
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         exit('WARNING: exact same job already computed, see JOBs table above')
@@ -298,15 +345,8 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
                 unique (PATHid,Entries,Read,Enzyme,WRKDIRid,MAPPED_OUTPUTid,INDEXid))""")
 
         try:
-            parameters = ' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in opts.__dict__.iteritems()
-                 if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                              'func', 'tmp', 'keep_tmp'] and not v is None])
-            param_hash = md5(' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+            parameters = digest_parameters(opts, get_md5=False)
+            param_hash = digest_parameters(opts, get_md5=True)
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)

@@ -5,9 +5,8 @@
 """
 from pytadbit.mapping.restriction_enzymes import count_re_fragments
 import multiprocessing as mu
-from subprocess import Popen, PIPE
 
-def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
+def apply_filter(fnam, outfile, masked, filters=None, reverse=False, 
                  verbose=True):
     """
     Create a new file with reads filtered
@@ -24,44 +23,69 @@ def apply_filter(fnam, outfile, masked, filters=None, reverse=False, old=False,
 
     :returns: number of reads kept
     """
-    masked_reads = set()
     filters = filters or masked.keys()
     filter_names = []
-    if old:
-        for filt in filters:
-            masked_reads.update(masked[filt]['reads'])
-    else:
-        for k in masked:
-            if k in filters:
-                masked_reads.update(open(masked[k]['fnam']).read().split())
-                filter_names.append(masked[k]['name'])
+    filter_handlers = {}
+    for k in filters:
+        try:
+            fh = open(masked[k]['fnam'])
+            val = fh.next().strip()
+            filter_handlers[k] = [val, fh]
+        except StopIteration:
+            pass
+
     out = open(outfile, 'w')
     fhandler = open(fnam)
+    # get the header
+    pos = 0
     while True:
         line = next(fhandler)
         if not line.startswith('#'):
             break
+        pos += len(line)
         out.write(line)
-    if reverse:
-        cond = lambda x, y: x in y
-    else:
-        cond = lambda x, y: x not in y
+    fhandler.seek(pos)
+
+    current = set([v for v, _ in filter_handlers.values()])
     count = 0
-    try:
-        while True:
+    if reverse:
+        for line in fhandler:
             read = line.split('\t', 1)[0]
-            if cond(read, masked_reads):
+            if read in current:
                 count += 1
                 out.write(line)
-            line = next(fhandler)
-    except StopIteration:
-        pass
+            else:
+                continue
+            # iterate over different filters to update current filters
+            for k in filter_handlers.keys():
+                if read != filter_handlers[k][0]:
+                    continue
+                try: # get next line from filter file
+                    filter_handlers[k][0] = filter_handlers[k][1].next().strip()
+                except StopIteration:
+                    del filter_handlers[k]
+            current = set([v for v, _ in filter_handlers.values()])
+    else:
+        for line in fhandler:
+            read = line.split('\t', 1)[0]
+            if read not in current:
+                count += 1
+                out.write(line)
+                continue
+            # iterate over different filters to update current filters
+            for k in filter_handlers.keys():
+                if read != filter_handlers[k][0]:
+                    continue
+                try: # get next line from filter file
+                    filter_handlers[k][0] = filter_handlers[k][1].next().strip()
+                except StopIteration:
+                    del filter_handlers[k]
+            current = set([v for v, _ in filter_handlers.values()])
     if verbose:
         print '    saving to file %d reads %s %s.' % (
             count, 'with' if reverse else 'without', ', '.join(filter_names))
     out.close()
     return count
-
 
 def filter_reads(fnam, output=None, max_molecule_length=500,
                  over_represented=0.005, max_frag_size=100000,
@@ -238,68 +262,29 @@ def _filter_duplicates(fnam, output):
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k] = open(masked[k]['fnam'], 'w')
-    uniq_check = set() # huge set
     fhandler = open(fnam)
     line = fhandler.next()
     while line.startswith('#'):
         line = fhandler.next()
-    try:
-        while True:
-            (read,
-             cr1, pos1, sd1, ln1 , _, _,
-             cr2, pos2, sd2, ln2 , _, _) = line.split('\t')
-            uniq_key = '_'.join(sorted((cr1, pos1, cr2, pos2, sd1, sd2,
-                                        ln1, ln2)))
-            if uniq_key in uniq_check:
-                masked[9]["reads"] += 1
-                outfil[9].write(read + '\n')
-            else:
-                uniq_check.add(uniq_key)
-            total += 1
-            line = fhandler.next()
-    except StopIteration:
-        pass
-    del uniq_check
-    # print 'done 4', time() - t0
-    for k in masked:
-        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
-        outfil[k].close()
-    return masked, total
-
-
-def _filter_duplicates_DEV(fnam, output):
-    # TODO: use mkfifo to create a named pipe that wold hold reads sorted by
-    #       columns 2,3 and 8,9. Check redundancy on this file by reading it.
-    # t0 = time()
-    total = 0
-    masked = {9 : {'name': 'duplicated'        , 'reads': 0}}
-    outfil = {}
-    for k in masked:
-        masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
-        outfil[k] = open(masked[k]['fnam'], 'w')
-
-    proc = Popen(["sort", "-k", "2,9", "-t", "\t", fnam], stdout=PIPE)
-    previous = (None, None)
-    for line in proc.stdout:
-        try:
-            (read,
-             cr1, pos1, _, _, _, _,
-             cr2, pos2, _, _, _, _) = line.split('\t')
-        except ValueError:
-            continue
-        current = sorted((cr1 + pos1, cr2 + pos2))
-        if current == previous:
+    (read,
+     cr1, pos1, sd1, _ , _, _,
+     cr2, pos2, sd2, _ , _, _) = line.split('\t')
+    prev_elts = cr1, pos1, cr2, pos2, sd1, sd2
+    for line in fhandler:
+        (read,
+         cr1, pos1, sd1, _ , _, _,
+         cr2, pos2, sd2, _ , _, _) = line.split('\t')
+        new_elts = cr1, pos1, cr2, pos2, sd1, sd2
+        if prev_elts == new_elts:
             masked[9]["reads"] += 1
             outfil[9].write(read + '\n')
-        previous = current
         total += 1
-    proc.wait()
+        prev_elts = new_elts
     # print 'done 4', time() - t0
     for k in masked:
         masked[k]['fnam'] = output + '_' + masked[k]['name'].replace(' ', '_') + '.tsv'
         outfil[k].close()
     return masked, total
-
 
 def _filter_from_res(fnam, max_frag_size, min_dist_to_re,
                      re_proximity, min_frag_size, output):

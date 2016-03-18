@@ -8,7 +8,7 @@ from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
 from tempfile import gettempdir, mkstemp
-from subprocess import Popen
+from subprocess import check_call, CalledProcessError, PIPE
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                     min_seq_len=15, fastq=True, verbose=True, **kwargs):
@@ -45,28 +45,47 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         """
         Recursive generator that splits reads according to the
         predefined restriction enzyme.
-        RE fragments yielded are followed by the RE site if a ligation
-        site was found after the fragment.
-        The RE site before the fragment is added outside this function
+        RE fragments yielded are followed and preceded by the RE site if a
+        ligation site was found after the fragment.
+
+        EXAMPLE:
+
+           seq = '-------oGATCo========oGATCGATCo_____________oGATCGATCo~~~~~~~~~~~~'
+           qal = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+        should yield these fragments:
+        
+            -------oGATCo========oGATC
+            xxxxxxxxxxxxxxxxxxxxxxHHHH
+
+            GATCo_____________oGATC
+            HHHHxxxxxxxxxxxxxxxHHHH
+
+            GATCo~~~~~~~~~~~~
+            HHHHxxxxxxxxxxxxx
+        
         """
+        cnt += 1
         try:
-            cnt += 1
             pos = seq.index(pattern)
-            if pos < min_seq_len:
-                split_read(seq[pos + len_relg:], qal[pos + len_relg:],
-                           pattern, max_seq_len, cnt=cnt)
-            else:
-                yield seq[:pos] + site, qal[:pos] + ('H' * len(site)), cnt
-            for subseq, subqal, cnt in split_read(seq[pos + len_relg:],
-                                             qal[pos + len_relg:],
-                                             pattern,
-                                             max_seq_len, cnt=cnt):
-                yield subseq, subqal, cnt
         except ValueError:
             if len(seq) == max_seq_len:
                 raise ValueError
             if len(seq) > min_seq_len:
                 yield seq, qal, cnt
+            return
+        xqal = ('H' * len(site))
+        if pos < min_seq_len:
+            split_read(site + seq[pos + len_relg:],
+                       xqal + qal[pos + len_relg:],
+                       pattern, max_seq_len, cnt=cnt)
+        else:
+            yield seq[:pos] + site, qal[:pos] + xqal, cnt
+        new_pos = pos + len_relg
+        for sseq, sqal, cnt in split_read(site + seq[new_pos:],
+                                          xqal + qal[new_pos:], pattern,
+                                          max_seq_len, site=site, cnt=cnt):
+            yield sseq, sqal, cnt
 
     # Define function for stripping lines according to ficus
     if isinstance(trim, tuple):
@@ -87,6 +106,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         print '    * enzyme: %s, ligation site: %s, RE site: %s' % (r_enz, enz_pattern, enzyme)
         split_read = _split_read_re
     else:
+        enzyme = ''
         enz_pattern = ''
         split_read = lambda x, y, z, after_z, after_after_z: (yield x, y , 1)
 
@@ -110,12 +130,12 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             print '            ' + fastq_path, counter, fastq
         return out_fastq, counter
     # open input file
-    fhandler = magic_open(fastq_path)
+    fhandler = magic_open(fastq_path, cpus=kwargs.get('nthreads'))
     # create output file
     out_name = out_fastq
     out = open(out_fastq, 'w')
     # iterate over reads and strip them
-    site = '' if add_site else enzyme
+    site = enzyme if add_site else ''
     for header in fhandler:
         header, seq, qal = get_seq(header)
         counter += 1
@@ -147,8 +167,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         # continue
         for seq, qal, cnt in  iter_frags:
             out.write(_map2fastq('\t'.join((insert_mark(header, cnt),
-                                            seq + site, qal + 'H' * (len(site)),
-                                            '0', '-\n'))))
+                                            seq, qal, '0', '-\n'))))
     out.close()
     return out_name, counter
 
@@ -213,13 +232,6 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
     max_edit_distance = kwargs.get('max_edit_distance'   , 0.04)
     mismatches        = kwargs.get('mismatches'          , 0.04)
 
-    # check kwargs
-    for kw in kwargs:
-        if not kw in ['nthreads', 'max_edit_distance',
-                      'mismatches', 'max_reads_per_chunk',
-                      'out_files', 'temp_dir', 'skip']:
-            warn('WARNING: %s not in usual keywords, misspelled?' % kw)
-
     # check that we have the GEM binary:
     gem_binary = which(gem_binary)
     if not gem_binary:
@@ -232,15 +244,65 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
                         'Copy the binary gem-mapper to /usr/local/bin/ for '
                         'example (somewhere in your PATH).\n\nNOTE: GEM does '
                         'not provide any binary for MAC-OS.')
+
     # mapping
     print 'TO GEM', fastq_path
-    Popen([gem_binary, '-I', gem_index_path, '-q', 'offset-33',
-           '-m', str(max_edit_distance), '-s', '0',
-           '--max-decoded-matches', '1', '--min-decoded-strata', '0',
-           '--min-matched-bases', '0.8', '--gem-quality-threshold', '26',
-           '--max-big-indel-length', '15', '--mismatch-alphabet', 'ACGT',
-           '-T', str(nthreads), '-e', str(mismatches), '-i', fastq_path,
-           '-o', out_map_path.replace('.map', '')]).communicate()
+    kgt = kwargs.get
+    gem_cmd = [
+        gem_binary, '-I', gem_index_path,
+        '-q'                        , kgt('q', 'offset-33'                     ),
+        '-m'                        , kgt('m', str(max_edit_distance          )),
+        '-s'                        , kgt('s', kgt('strata-after-best', '0'   )),
+        '--allow-incomplete-strata' , kgt('allow-incomplete-strata', '0.00'    ),
+        '--granularity'             , kgt('granularity', '10000'               ),
+        '--max-decoded-matches'     , kgt('max-decoded-matches', kgt('d', '1' )),
+        '--min-decoded-strata'      , kgt('min-decoded-strata', kgt('D', '0'  )),
+        '--min-insert-size'         , kgt('min-insert-size', '0'               ),
+        '--max-insert-size'         , kgt('max-insert-size', '0'               ),
+        '--min-matched-bases'       , kgt('min-matched-bases', '0.8'           ),
+        '--gem-quality-threshold'   , kgt('gem-quality-threshold', '26'        ),
+        '--max-big-indel-length'    , kgt('max-big-indel-length', '15'         ),
+        '--mismatch-alphabet'       , kgt('mismatch-alphabet', 'ACGT'          ),
+        '-E'                        , kgt('E', '0.30'                          ),
+        '--max-extendable-matches'  , kgt('max-extendable-matches', '20'       ),
+        '--max-extensions-per-match', kgt('max-extensions-per-match', '1'      ),
+        '-e'                        , kgt('e', str(mismatches                 )),
+        '-T'                        , str(nthreads),
+        '-i'                        , fastq_path,
+        '-o', out_map_path.replace('.map', '')]
+
+    if 'paired-end-alignment' in kwargs or 'p' in kwargs:
+        gem_cmd.append('--paired-end-alignment')
+    if 'map-both-ends' in kwargs or 'b' in kwargs:
+        gem_cmd.append('--map-both-ends')
+    if 'fast-mapping' in kwargs:
+        gem_cmd.append('--fast-mapping')
+    if 'unique-mapping' in kwargs:
+        gem_cmd.append('--unique-mapping')
+    if 'unique-pairing' in kwargs:
+        gem_cmd.append('--unique-pairing')
+
+    # check kwargs
+    for kw in kwargs:
+        if not kw in ['nthreads', 'max_edit_distance',
+                      'mismatches', 'max_reads_per_chunk',
+                      'out_files', 'temp_dir', 'skip', 'q', 'm', 's',
+                      'strata-after-best', 'allow-incomplete-strata',
+                      'granularity', 'max-decoded-matches',
+                      'min-decoded-strata', 'min-insert-size',
+                      'max-insert-size', 'min-matched-bases',
+                      'gem-quality-threshold', 'max-big-indel-length',
+                      'mismatch-alphabet', 'E', 'max-extendable-matches',
+                      'max-extensions-per-match', 'e', 'paired-end-alignment',
+                      'p', 'map-both-ends', 'fast-mapping', 'unique-mapping',
+                      'unique-pairing', 'suffix']:
+            warn('WARNING: %s not in usual keywords, misspelled?' % kw)
+
+    print ' '.join(gem_cmd)
+    try:
+        check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
+    except CalledProcessError as e:
+        raise Exception(e.output)
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
                  min_seq_len=15, windows=None, add_site=True, clean=False,
@@ -284,6 +346,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     """
 
     skip = kwargs.get('skip', False)
+    suffix = kwargs.get('suffix', '')
+    suffix = ('_' * (suffix != '')) + suffix
     nthreads = kwargs.get('nthreads', 8)
     outfiles = []
     temp_dir = os.path.abspath(os.path.expanduser(
@@ -324,20 +388,19 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             beg, end = 1, 'end'
         else:
             beg, end = win
-        out_map_path = curr_map + '_full_%s-%s.map' % (beg, end)
+        out_map_path = curr_map + '_full_%s-%s%s.map' % (beg, end, suffix)
         if end:
-            print 'Mapping reads in window %s-%s...' % (beg, end)
+            print 'Mapping reads in window %s-%s%s...' % (beg, end, suffix)
         else:
             print 'Mapping full reads...', curr_map
 
         if not skip:
             gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
-
             # parse map file to extract not uniquely mapped reads
             print 'Parsing result...'
-            _gem_filter(out_map_path, curr_map + '_filt_%s-%s.map' % (beg, end),
+            _gem_filter(out_map_path, curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
                         os.path.join(out_map_dir,
-                                     base_name + '_full_%s-%s.map' % (beg, end)))
+                                     base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
             # clean
             if clean:
                 print '   x removing GEM input %s' % curr_map
@@ -345,10 +408,10 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
                 print '   x removing map %s' % out_map_path
                 os.system('rm -f %s' % (out_map_path))
             # for next round, we will use remaining unmapped reads
-            input_reads = curr_map + '_filt_%s-%s.map' % (beg, end)
+            input_reads = curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix)
         outfiles.append(
             (os.path.join(out_map_dir,
-                          base_name + '_full_%s-%s.map' % (beg, end)),
+                          base_name + '_full_%s-%s%s.map' % (beg, end, suffix)),
              counter))
 
     # map again splitting unmapped reads into RE fragments
@@ -364,16 +427,16 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             beg, end = 1, 'end'
         else:
             beg, end = win
-        out_map_path = frag_map + '_frag_%s-%s.map' % (beg, end)
+        out_map_path = frag_map + '_frag_%s-%s%s.map' % (beg, end, suffix)
         if not skip:
             print 'Mapping fragments of remaining reads...'
             gem_mapping(gem_index_path, frag_map, out_map_path, **kwargs)
             print 'Parsing result...'
-            _gem_filter(out_map_path, curr_map + '_fail.map',
+            _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
                         os.path.join(out_map_dir,
-                                     base_name + '_frag_%s-%s.map' % (beg, end)))
+                                     base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
         outfiles.append((os.path.join(out_map_dir,
-                                      base_name + '_frag_%s-%s.map' % (beg, end)),
+                                      base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)),
                          counter))
     if get_nread:
         return outfiles

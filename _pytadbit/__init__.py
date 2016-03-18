@@ -12,12 +12,17 @@ except:
     environ["LANG"] = "en_US.UTF-8"
     locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
 
-## Check if we have X display
-try:
-    check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"', shell=True)
-except CalledProcessError:
+## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib
+if not "DISPLAY" in environ:
     import matplotlib
     matplotlib.use('Agg')
+else:
+    try:
+        check_call('python -c "import matplotlib.pyplot as plt; plt.figure()"',
+                   shell=True, stdout=PIPE, stderr=PIPE)
+    except CalledProcessError:
+        import matplotlib
+        matplotlib.use('Agg')
 
 def get_dependencies_version(dico=False):
     """
@@ -73,18 +78,18 @@ def get_dependencies_version(dico=False):
         versions['MCL'] = mcl.split()[1]
     except:
         versions['MCL'] = 'Not found'
-    try:
-        chi, err = Popen(['chimera', '--version'], stdout=PIPE,
-                         stderr=PIPE).communicate()
-        versions['Chimera'] = chi.strip()
-    except:
-        versions['Chimera'] = 'Not found'
-    try:
-        chi, err = Popen(['chimera', '--version'], stdout=PIPE,
-                         stderr=PIPE).communicate()
-        versions['Chimera'] = chi.strip()
-    except:
-        versions['Chimera'] = 'Not found'
+    # try:
+    #     chi, err = Popen(['chimera', '--version'], stdout=PIPE,
+    #                      stderr=PIPE).communicate()
+    #     versions['Chimera'] = chi.strip()
+    # except:
+    #     versions['Chimera'] = 'Not found'
+    # try:
+    #     chi, err = Popen(['chimera', '--version'], stdout=PIPE,
+    #                      stderr=PIPE).communicate()
+    #     versions['Chimera'] = chi.strip()
+    # except:
+    #     versions['Chimera'] = 'Not found'
     try:
         uname, err = Popen(['uname', '-rom'], stdout=PIPE,
                            stderr=PIPE).communicate()
@@ -99,20 +104,21 @@ def get_dependencies_version(dico=False):
                           sorted(versions.keys())])
 
 
-from pytadbit.tadbit import tadbit, batch_tadbit
-from pytadbit.chromosome import Chromosome
-from pytadbit.experiment import Experiment, load_experiment_from_reads
-from pytadbit.chromosome import load_chromosome
+from pytadbit.hic_data             import HiC_data
+from pytadbit.tadbit               import tadbit, batch_tadbit
+from pytadbit.chromosome           import Chromosome
+from pytadbit.experiment           import Experiment, load_experiment_from_reads
+from pytadbit.chromosome           import load_chromosome
 from pytadbit.imp.structuralmodels import StructuralModels
 from pytadbit.imp.structuralmodels import load_structuralmodels
-from pytadbit.parsers.hic_parser import load_hic_data_from_reads
-from pytadbit.imp.impmodel import load_impmodel_from_cmm
-from pytadbit.imp.impmodel import load_impmodel_from_xyz
-from pytadbit.imp.impmodel import IMPmodel
-from pytadbit.parsers.hic_parser import read_matrix
+from pytadbit.parsers.hic_parser   import load_hic_data_from_reads
+from pytadbit.imp.impmodel         import load_impmodel_from_cmm
+from pytadbit.imp.impmodel         import load_impmodel_from_xyz
+from pytadbit.imp.impmodel         import IMPmodel
+from pytadbit.parsers.hic_parser   import read_matrix
 try:
     from pytadbit.imp.impoptimizer import IMPoptimizer
 except ImportError:
-    from warnings import warn
+    from warnings                  import warn
     warn('IMP not found, check PYTHONPATH\n')
 

@@ -2,9 +2,10 @@
 18 Nov 2014
 """
 
+from pytadbit                     import HiC_data
 from pytadbit.utils.extraviews    import tadbit_savefig, setup_plot
 from pytadbit.utils.tadmaths      import nozero_log_matrix as nozero_log
-from pytadbit.parsers.hic_parser  import HiC_data
+from pytadbit.utils.tadmaths      import right_double_mad as mad
 from warnings                     import warn
 from collections                  import OrderedDict
 from pytadbit.parsers.hic_parser  import load_hic_data_from_reads
@@ -60,6 +61,8 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
        chromosomes
     :param True decay: plot the correlation between genomic distance and
        interactions (usually a decay).
+    :param False force_image: force to generate an image even if resolution is
+       crazy...
     :param None clim: cutoff for the upper and lower bound in the coloring scale
        of the heatmap
     :param False pdf: when using the bny_chrom option, to specify the format of
@@ -120,6 +123,11 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                               focus=(crm1, crm2),
                                               normalized=normalized)
                     if show or savefig:
+                        if (len(subdata) > 10000
+                            and not kwargs.get('force_image', False)):
+                            warn('WARNING: Matrix image not created, more than '
+                                 '10000 rows, use a lower resolution to create images')
+                            continue
                         draw_map(subdata, 
                                  OrderedDict([(k, hic_data.chromosomes[k])
                                               for k in hic_data.chromosomes.keys()
@@ -143,6 +151,10 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                                   normalized=normalized)
         if show or savefig:
             subdata = hic_data.get_matrix(focus=focus, normalized=normalized)
+            if (len(subdata) > 10000 and not kwargs.get('force_image', False)):
+                warn('WARNING: Matrix image not created, more than '
+                     '10000 rows, use a lower resolution to create images')
+                return
             if focus and masked:
                 # rescale masked
                 masked = dict([(m - focus[0], masked[m]) for m in masked])
@@ -165,8 +177,7 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                      hic_data.cis_trans_ratio(normalized,
                                               kwargs.get('exclude', None),
                                               kwargs.get('diagonal', True),
-                                              kwargs.get('equals', None),
-                                              kwargs.get('verbose', False)))
+                                              kwargs.get('equals', None)))
 
 
 def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
@@ -613,7 +624,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
 
 
 def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
-                 xlog=False):
+                 xlog=False, stats=('median', 'perc_max')):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
@@ -621,6 +632,15 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     :param 99.9 max_size: top percentage of distances to consider, within the
        top 0.01% are usually found very long outliers.
     :param False xlog: represent x axis in logarithmic scale
+    :param ('median', 'perc_max') stats: returns this set of values calculated from the
+       distribution of insert/fragment sizes. Possible values are:
+        - 'median' median of the distribution
+        - 'perc_max' percentil defined by the other parameter 'max_size'
+        - 'first_deacay' starting from the median of the distribution to the
+            first window where 10 consecutive insert sizes are counted less than
+            a given value (this given value is equal to the sum of all
+            sizes divided by 100 000)
+        - 'MAD' Double Median Adjusted Deviation
 
     :returns: the median value and the percentile inputed as max_size.
     """
@@ -656,8 +676,23 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     perc50   = np.percentile(des, 50)
     perc95   = np.percentile(des, 95)
     perc05   = np.percentile(des, 5)
+    to_return = {'median': perc50}
+    cutoff = len(des) / 100000.
+    count  = 0
+    for v in xrange(int(perc50), int(max(des))):
+        if des.count(v) < cutoff:
+            count += 1
+        else:
+            count = 0
+        if count >= 10:
+            to_return['first_decay'] = v - 10
+            break
+    else:
+        raise Exception('ERROR: not found')
+    to_return['perc_max'] = max_perc
+    to_return['MAD'] = mad(des)
     if not savefig and not axe:
-        return perc50, max_perc
+        return [to_return[k] for k in stats]
     
     ax = setup_plot(axe, figsize=(10, 5.5))
     desapan = ax.axvspan(perc95, perc99, facecolor='darkolivegreen', alpha=.3,
@@ -684,7 +719,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     elif not axe:
         plt.show()
     plt.close('all')
-    return perc50, max_perc
+    return [to_return[k] for k in stats]
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               axe=None, ylim=None, savefig=None,

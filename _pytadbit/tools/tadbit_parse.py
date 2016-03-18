@@ -10,15 +10,16 @@ from argparse                       import HelpFormatter
 from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
-from os                             import system, path
+from os                             import path
+from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
-from pytadbit.utils.sqlite_utils    import already_run
-from hashlib                        import md5
+from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
 import time
 import logging
 import fcntl
 from cPickle import load, UnpicklingError
 import sqlite3 as lite
+from warnings import warn
 
 DESC = "Parse mapped Hi-C reads and get the intersection"
 
@@ -32,24 +33,24 @@ def run(opts):
 
     name = path.split(opts.workdir)[-1]
 
-    jobid = get_jobid(workdir=opts.workdir) + 1
+    param_hash = digest_parameters(opts)
 
-    outdir = '%03d_parsed_reads' % jobid
+    outdir = '02_parsed_reads'
 
-    system('mkdir -p ' + path.join(opts.workdir, outdir))
+    mkdir(path.join(opts.workdir, outdir))
 
     if not opts.read:
-        out_file1 = path.join(opts.workdir, outdir, '%s_r1.tsv' % name)
-        out_file2 = path.join(opts.workdir, outdir, '%s_r2.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r1_%s.tsv' % (name, param_hash))
+        out_file2 = path.join(opts.workdir, outdir, '%s_r2_%s.tsv' % (name, param_hash))
     elif opts.read == 1:
-        out_file1 = path.join(opts.workdir, outdir, '%s_r1.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r1_%s.tsv' % (name, param_hash))
         out_file2 = None
         f_names2  = None
     elif opts.read == 2:
         out_file2 = None
         f_names1  = f_names2
         f_names2  = None
-        out_file1 = path.join(opts.workdir, outdir, '%s_r2.tsv' % name)
+        out_file1 = path.join(opts.workdir, outdir, '%s_r2_%s.tsv' % (name, param_hash))
         
     logging.info('parsing genomic sequence')
     try:
@@ -62,7 +63,7 @@ def run(opts):
         logging.info('parsing reads in %s project', name)
         counts, multis = parse_map(f_names1, f_names2, out_file1=out_file1,
                                    out_file2=out_file2, re_name=renz, verbose=True,
-                                   genome_seq=genome)
+                                   genome_seq=genome, compress=opts.compress_input)
     else:
         counts = {}
         counts[0] = {}
@@ -114,7 +115,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='MAPPED_OUTPUTs'""")
+                       type='table' AND name='PARSED_OUTPUTs'""")
         if not cur.fetchall():
             cur.execute("""
         create table MAPPED_OUTPUTs
@@ -131,16 +132,8 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
             Multiples int,
             unique (PATHid))""")
         try:
-            parameters = ' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in opts.__dict__.iteritems()
-                 if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                              'func', 'tmp'] and not v is None])
-            parameters = parameters.replace("'", '"')
-            param_hash = md5(' '.join(
-                ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
-                 for k, v in sorted(opts.__dict__.iteritems())
-                 if not k in ['workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+            parameters = digest_parameters(opts, get_md5=False)
+            param_hash = digest_parameters(opts, get_md5=True )
             cur.execute("""
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
@@ -172,6 +165,9 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                            get_path_id(cur, outfiles[count], opts.workdir),
                            counts[count][item]))
                     sum_reads += counts[count][item]
+            except lite.IntegrityError:
+                print 'WARNING: already parsed (MAPPED_OUTPUTs)'
+            try:
                 cur.execute("""
                 insert into PARSED_OUTPUTs
                 (Id  , PATHid, Total_interactions, Multiples)
@@ -180,7 +176,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                 """ % (get_path_id(cur, outfiles[count], opts.workdir),
                        sum_reads, multis[count]))
             except lite.IntegrityError:
-                print 'WARNING: already parsed'
+                print 'WARNING: already parsed (PARSED_OUTPUTs)'
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
@@ -189,14 +185,13 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
 
 def load_parameters_fromdb(workdir, reads=None, jobids=None):
     con = lite.connect(path.join(workdir, 'trace.db'))
-    fnames1 = []
-    fnames2 = []
+    fnames = {1: [], 2: []}
     ids = []
     with con:
         cur = con.cursor()
         # fetch file names to parse
         if not jobids:
-            jobids = []
+            jobids = {}
             for read in reads:
                 cur.execute("""
                 select distinct JOBs.Id from JOBs
@@ -204,31 +199,22 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                    inner join MAPPED_INPUTs on (PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid)
                  where MAPPED_INPUTs.Read = %d
                 """ % read)
-                jobids.append([j[0] for j in cur.fetchall()])
-                if len(jobids[-1]) > 1:
-                    raise Exception(('ERROR: more than one possible input found for read %d '
-                                     '(jobids: %s), use "tadbit describe" and select corresponding '
-                                     'jobid with --jobids option') % (
-                                        read, ', '.join([str(j) for j in jobids[-1]])))
-            jobids = [j[0] for j in jobids]
-        if 1 in reads:
-            cur.execute("""
-            select distinct PATHs.Id,PATHs.Path from PATHs
-            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
-            where MAPPED_INPUTs.Read = 1 and PATHs.JOBid = %d
-            """ % jobids.pop(0))
-            for fname in cur.fetchall():
-                ids.append(fname[0])
-                fnames1.append(path.join(workdir, fname[1]))
-        if 2 in reads:
-            cur.execute("""
-            select distinct PATHs.Id,PATHs.Path from PATHs
-            inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
-            where MAPPED_INPUTs.Read = 2 and PATHs.JOBid = %d 
-           """ % jobids.pop(0))
-            for fname in cur.fetchall():
-                ids.append(fname[0])
-                fnames2.append(path.join(workdir, fname[1]))
+                jobids[read] = [j[0] for j in cur.fetchall()]
+                if len(jobids[read]) > 1:
+                    warn(('WARNING: more than one possible input found for read %d '
+                          '(jobids: %s), use "tadbit describe" and select corresponding '
+                          'jobid with --jobids option') % (
+                             read, ', '.join([str(j) for j in jobids[read]])))
+        for read in reads:
+            for jobid in jobids[read]:
+                cur.execute("""
+                select distinct PATHs.Id,PATHs.Path from PATHs
+                inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
+                where MAPPED_INPUTs.Read = %d and PATHs.JOBid = %d
+                """ % (read, jobid))
+                for fname in cur.fetchall():
+                    ids.append(fname[0])
+                    fnames[read].append(path.join(workdir, fname[1]))
         # GET enzyme name
         enzymes = []
         for fid in ids:
@@ -241,7 +227,7 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
             raise Exception(
                 'ERROR: different enzymes used to generate these files')
         renz = enzymes[0][0]
-    return fnames1, fnames2, renz
+    return fnames[1], fnames[2], renz
         
 
 def populate_args(parser):
@@ -264,8 +250,8 @@ def populate_args(parser):
 
     glopts.add_argument('--type', dest='type', metavar="STR", 
                         type=str, default='map', choices=['map', 'sam', 'bam'], 
-                        help='''[%(default)s]file type to be parser, map
-                        (GEM-mapper), sam or bam''')
+                        help='''[%(default)s]file type to be parser, MAP
+                        (GEM-mapper), SAM or BAM''')
 
     glopts.add_argument('--read', dest='read', metavar="INT",
                         type=int, default=None, 
@@ -274,6 +260,12 @@ def populate_args(parser):
     glopts.add_argument('--skip', dest='skip', action='store_true',
                       default=False,
                       help='[DEBUG] in case already mapped.')
+
+    glopts.add_argument('--compress_input', dest='compress_input',
+                        action='store_true', default=False,
+                        help='''Compress input mapped files when parsing is 
+                        done. This is done in background, while next MAP file is
+                        processed, or while reads are sorted.''')
 
     glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
                         type=str,
