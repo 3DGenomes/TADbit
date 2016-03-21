@@ -32,6 +32,7 @@ def run(opts):
         bad_co = opts.bad_co
         biases = opts.biases
         mreads = opts.mreads
+        reso   = opts.reso
         
 
     mreads = path.join(opts.workdir, mreads)
@@ -236,6 +237,10 @@ def populate_args(parser):
                         action='store', default=None, type=str,
                         help='''path to file with precalculated biases by
                         columns''')
+
+    glopts.add_argument('-r', '--resolution', dest='reso', metavar="INT",
+                        action='store', default=None, type=int, required=True,
+                        help='''resolution at which to output matrices''')
 
     glopts.add_argument('--norm_matrix', dest='norm_matrix', metavar="PATH",
                         action='store', default=None, type=str, 
