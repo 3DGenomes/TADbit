@@ -38,7 +38,11 @@ def delete_entries(cur, table, col, val):
         pass
 
 def already_run(opts):
-    con = lite.connect(join(opts.workdir, 'trace.db'))
+    if 'tmp' in opts and opts.tmp:
+        dbpath = opts.tmp
+    else:
+        dbpath = join(opts.workdir, 'trace.db')
+    con = lite.connect(dbpath)
     try:
         with con:
             # check if table exists

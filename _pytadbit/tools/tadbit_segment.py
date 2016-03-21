@@ -12,7 +12,11 @@ from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling import mkdir
 from pytadbit.parsers.tad_parser  import parse_tads
-from os                           import path
+from os                           import path, remove
+from time                         import sleep
+from shutil                       import copyfile
+from string                       import ascii_letters
+from random                       import random
 import sqlite3 as lite
 import time
 
@@ -113,7 +117,18 @@ def run(opts):
 
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                launch_time, finish_time):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmp' in opts and opts.tmp:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'wa').close()
+        # tmp file
+        dbfile = opts.tmp
+        copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
@@ -163,6 +178,12 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
             print_db(cur, 'PATHs')
             print_db(cur, 'JOBs')
             print_db(cur, 'SEGMENT_OUTPUTs')
+    if 'tmp' in opts and opts.tmp:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+        # release lock
+        remove(path.join(opts.workdir, '__lock_db'))
 
 def load_parameters_fromdb(opts):
     con = lite.connect(path.join(opts.workdir, 'trace.db'))
@@ -220,6 +241,11 @@ def populate_args(parser):
                         action='store', default=None, type=str, required=True,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
+
+    glopts.tmp_dir('--tmp', dest='tmp', action='store', default=None,
+                   metavar='PATH', type=str,
+                   help='''if provided uses this directory to manipulate the
+                   database''')
 
     glopts.add_argument('--nosql', dest='nosql',
                         action='store_true', default=False, 
@@ -301,7 +327,16 @@ def check_options(opts):
         print ('WARNING: can use output files, found, not resuming...')
         opts.resume = False
 
+    if 'tmp' in opts and opts.tmp:
+        dbdir = opts.tmp
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmp = path.join(dbdir, dbfile)
+        copyfile(path.join(opts.workdir, 'trace.db'), opts.tmp)
+
     if already_run(opts) and not opts.force:
+        remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 def nice(reso):
