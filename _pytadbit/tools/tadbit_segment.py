@@ -23,11 +23,16 @@ def run(opts):
     launch_time = time.localtime()
     param_hash = digest_parameters(opts)
 
-    (bad_co, bad_co_id, biases, biases_id,
-     mreads, mreads_id, reso) = load_parameters_fromdb(opts)
-
-    # store path ids to be saved in database
-    inputs = bad_co_id, biases_id, mreads_id
+    if not opts.nosql:
+        (bad_co, bad_co_id, biases, biases_id,
+         mreads, mreads_id, reso) = load_parameters_fromdb(opts)
+        # store path ids to be saved in database
+        inputs = bad_co_id, biases_id, mreads_id
+    else:
+        bad_co = opts.bad_co
+        biases = opts.biases
+        mreads = opts.mreads
+        
 
     mreads = path.join(opts.workdir, mreads)
     bad_co = path.join(opts.workdir, bad_co)
@@ -101,8 +106,9 @@ def run(opts):
 
     finish_time = time.localtime()
 
-    save_to_db(opts, cmp_result, tad_result, reso, inputs, 
-               launch_time, finish_time)
+    if not opts.nosql:
+        save_to_db(opts, cmp_result, tad_result, reso, inputs, 
+                   launch_time, finish_time)
 
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                launch_time, finish_time):
@@ -213,6 +219,23 @@ def populate_args(parser):
                         action='store', default=None, type=str, required=True,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
+
+    glopts.add_argument('--nosql', dest='nosql',
+                        action='store_true', default=False, 
+                        help='do not load/store data from/in sqlite database')
+
+    glopts.add_argument('--mreads', dest='mreads', metavar="PATH",
+                        action='store', default=None, type=str,
+                        help='''path valid-pairs file''')
+
+    glopts.add_argument('--bad_cols', dest='bad_co', metavar="PATH",
+                        action='store', default=None, type=str,
+                        help='''path to file with bad columns''')
+
+    glopts.add_argument('--biases',   dest='biases', metavar="PATH",
+                        action='store', default=None, type=str,
+                        help='''path to file with precalculated biases by
+                        columns''')
 
     glopts.add_argument('--norm_matrix', dest='norm_matrix', metavar="PATH",
                         action='store', default=None, type=str, 

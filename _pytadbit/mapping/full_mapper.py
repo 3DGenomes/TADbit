@@ -8,7 +8,7 @@ from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
 from tempfile import gettempdir, mkstemp
-from subprocess import check_call, CalledProcessError, PIPE
+from subprocess import check_call, CalledProcessError, PIPE, Popen
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                     min_seq_len=15, fastq=True, verbose=True, **kwargs):
@@ -300,8 +300,11 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
 
     print ' '.join(gem_cmd)
     try:
-        check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
+        # check_call(gem_cmd, stdout=PIPE, stderr=PIPE)
+        out, err = Popen(gem_cmd, stdout=PIPE, stderr=PIPE).communicate()
     except CalledProcessError as e:
+        print out
+        print err
         raise Exception(e.output)
 
 def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=True,
