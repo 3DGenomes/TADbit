@@ -37,7 +37,6 @@ def run(opts):
         biases = opts.biases
         mreads = opts.mreads
         reso   = opts.reso
-        
 
     mreads = path.join(opts.workdir, mreads)
     bad_co = path.join(opts.workdir, bad_co)
@@ -58,13 +57,12 @@ def run(opts):
         hic_data.find_compartments(crms=opts.crms)
 
         cmprt_dir = path.join(opts.workdir, '05_segmentation',
-                              'compartments_%s_%s' % (
-            nice(reso), param_hash))
+                              'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
-        for crm in hic_data.chromosomes:
-            cmprt_file = path.join(cmprt_dir, '%s.tsv' % crm)
+        for crm in opts.crms or hic_data.chromosomes:
+            cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
             hic_data.write_compartments(cmprt_file,
-                                        chrom=crm)
+                                        chroms=[crm])
             cmp_result[crm] = {'path': cmprt_file,
                                'num' : len(hic_data.compartments[crm])}
 
@@ -73,8 +71,7 @@ def run(opts):
     if not opts.only_compartments:
         print 'Searching TADs'
         tad_dir = path.join(opts.workdir, '05_segmentation',
-                             'tads_%s_%s' % (
-                                 nice(reso), param_hash))
+                             'tads_%s' % (nice(reso)))
         mkdir(tad_dir)
         for crm in hic_data.chromosomes:
             if opts.crms and not crm in opts.crms:
@@ -87,10 +84,10 @@ def run(opts):
                 print "     Chromosome too short (%d bins), skipping..." % size
                 continue
             # transform bad column in chromosome referential
-            remove = tuple([1 if i in hic_data.bads else 0 for i in xrange(beg, end)])
+            to_rm = tuple([1 if i in hic_data.bads else 0 for i in xrange(beg, end)])
             # maximum size of a TAD
             max_tad_size = size if opts.max_tad_size is None else opts.max_tad_size
-            result = tadbit([matrix], remove=remove,
+            result = tadbit([matrix], remove=to_rm,
                             n_cpus=opts.cpus, verbose=True,
                             max_tad_size=max_tad_size,
                             no_heuristic=True)
@@ -102,7 +99,7 @@ def run(opts):
                     tad, int(tads[tad]['start'] + 1), int(tads[tad]['end'] + 1),
                     abs(tads[tad]['score']), '\t%s' % (round(
                         float(tads[tad]['height']), 3)))
-            out_tad = path.join(tad_dir, '%s.tsv' % (crm))
+            out_tad = path.join(tad_dir, '%s_%s.tsv' % (crm, param_hash))
             out = open(out_tad, 'w')
             out.write(table)
             out.close()
@@ -171,8 +168,8 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
             (NULL,    %d,   '%s',   %d,           %d,       '%s',         %d)
             """ % (jobid,
                    ','.join([str(i) for i in inputs]),
-                   cmp_result[crm]['num'] if crm in tad_result else 0,
-                   tad_result[crm]['num'] if crm in cmp_result else 0,
+                   tad_result[crm]['num'] if crm in tad_result else 0,
+                   cmp_result[crm]['num'] if crm in cmp_result else 0,
                    crm,
                    reso))
             print_db(cur, 'PATHs')
@@ -340,7 +337,8 @@ def check_options(opts):
         copyfile(path.join(opts.workdir, 'trace.db'), opts.tmp)
 
     if already_run(opts) and not opts.force:
-        remove(path.join(dbdir, dbfile))
+        if 'tmp' in opts and opts.tmp:
+            remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 def nice(reso):

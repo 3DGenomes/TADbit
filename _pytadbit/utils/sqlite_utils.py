@@ -3,22 +3,25 @@ some utils relative to sqlite
 """
 import sqlite3 as lite
 from os.path import abspath, relpath, join
-from os import system
 from hashlib import md5
 
-def digest_parameters(opts, get_md5=True):
+def digest_parameters(opts, get_md5=True, extra=None):
+    """
+    :param None extra: extra parameter to remove from digestion
+    """
+    extra = extra or []
     if get_md5:
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
              if not k in ['force', 'workdir', 'func', 'tmp',
-                          'keep_tmp', 'crms']])).hexdigest()
+                          'keep_tmp'] + extra])).hexdigest()
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
          for k, v in opts.__dict__.iteritems()
          if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                      'func', 'tmp', 'keep_tmp'] and not v is None])
+                      'func', 'tmp', 'keep_tmp'] + extra and not v is None])
     parameters = parameters.replace("'", "")
     return parameters
 

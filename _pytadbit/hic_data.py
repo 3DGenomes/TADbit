@@ -564,28 +564,28 @@ class HiC_data(dict):
             self.write_compartments(savedata)
 
 
-    def write_compartments(self, savedata, chrom=None):
+    def write_compartments(self, savedata, chroms=None):
         """
         Write compartments to a file.
 
         :param savedata: path to a file.
-        :param None chrom: write only a given chromosome (default all
-        chromosomes are written, note that the first column corresponding to
-        chromosome name will disappear in non default case)
+        :param None chroms: write only the given list of chromosomes (default
+           all chromosomes are written, note that the first column corresponding
+           to chromosome name will disappear in non default case)
         """
         out = open(savedata, 'w')
-        out.write('#%sstart\tend\tdensity\ttype\n'% ('CHR\t' if chrom else ''))
-        sections = [chrom] if chrom else self.compartments.keys()
+        out.write('#%sstart\tend\tdensity\ttype\n'% ('CHR\t' if chroms else ''))
+        sections = chroms if chroms else self.compartments.keys()
         try:
             out.write('\n'.join(['\n'.join(['%s%d\t%d\t%.2f\t%s' % (
-                (sec + '\t') if chrom else '',
+                (sec + '\t') if chroms else '',
                 c['start'] + 1, c['end'] + 1,
                 c['dens'], c['type'])
                                             for c in self.compartments[sec]])
                                  for sec in sections]) + '\n')
         except KeyError:
             out.write('\n'.join(['\n'.join(['%s%d\t%d\t%.2f\t%s' % (
-                (sec + '\t') if chrom else '',
+                (sec + '\t') if chroms else '',
                 c['start'], c['end'], c['dens'], '')
                                             for c in self.compartments[sec]])
                                  for sec in sections]) + '\n')
