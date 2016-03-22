@@ -55,7 +55,7 @@ def run(opts):
     cmp_result = {}
     if not opts.only_tads:
         print 'Searching compartments'
-        hic_data.find_compartments()
+        hic_data.find_compartments(crms=opts.crms)
 
         cmprt_dir = path.join(opts.workdir, '05_segmentation',
                               'compartments_%s_%s' % (
@@ -171,8 +171,8 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
             (NULL,    %d,   '%s',   %d,           %d,       '%s',         %d)
             """ % (jobid,
                    ','.join([str(i) for i in inputs]),
-                   cmp_result[crm]['num'] if crm in cmp_result else 0,
-                   tad_result[crm]['num'] if crm in tad_result else 0,
+                   cmp_result[crm]['num'] if crm in tad_result else 0,
+                   tad_result[crm]['num'] if crm in cmp_result else 0,
                    crm,
                    reso))
             print_db(cur, 'PATHs')

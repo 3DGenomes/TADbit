@@ -425,7 +425,7 @@ class HiC_data(dict):
                         mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx
 
-    def find_compartments(self, crm=None, savefig=None, savedata=None,
+    def find_compartments(self, crms=None, savefig=None, savedata=None,
                           show=False, **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
@@ -442,7 +442,7 @@ class HiC_data(dict):
            if not enough reads are observed at a given distance the observations
            of the distance+1 are summed. a signal to noise ratio of < 0.05
            corresponds to > 400 reads.
-        :param None crm: only runs this given chromosome
+        :param None crms: only runs these given list of chromosomes
         :param None savefig: path to a directory to store matrices with
            compartment predictions, one image per chromosome, stored under
            'chromosome-name.png'.
@@ -476,7 +476,7 @@ class HiC_data(dict):
 
         cmprts = {}
         for sec in self.section_pos:
-            if crm and crm != sec:
+            if crms and sec not in crms:
                 continue
             if kwargs.get('verbose', False):
                 print 'Processing chromosome', sec

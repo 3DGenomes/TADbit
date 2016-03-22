@@ -11,7 +11,8 @@ def digest_parameters(opts, get_md5=True):
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
-             if not k in ['force', 'workdir', 'func', 'tmp', 'keep_tmp']])).hexdigest()
+             if not k in ['force', 'workdir', 'func', 'tmp',
+                          'keep_tmp', 'crms']])).hexdigest()
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
