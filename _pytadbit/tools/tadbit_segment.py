@@ -186,7 +186,11 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
         remove(path.join(opts.workdir, '__lock_db'))
 
 def load_parameters_fromdb(opts):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmp' in opts and opts.tmp:
+        dbfile = opts.tmp
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         if not opts.jobid:
@@ -242,10 +246,10 @@ def populate_args(parser):
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
 
-    glopts.tmp_dir('--tmp', dest='tmp', action='store', default=None,
-                   metavar='PATH', type=str,
-                   help='''if provided uses this directory to manipulate the
-                   database''')
+    glopts.add_argument('--tmp', dest='tmp', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
 
     glopts.add_argument('--nosql', dest='nosql',
                         action='store_true', default=False, 
@@ -265,7 +269,7 @@ def populate_args(parser):
                         columns''')
 
     glopts.add_argument('-r', '--resolution', dest='reso', metavar="INT",
-                        action='store', default=None, type=int, required=True,
+                        action='store', default=None, type=int,
                         help='''resolution at which to output matrices''')
 
     glopts.add_argument('--norm_matrix', dest='norm_matrix', metavar="PATH",

@@ -6,22 +6,33 @@ information needed
 
 """
 
-from argparse                       import HelpFormatter
-from pytadbit.utils.sqlite_utils    import print_db
+from argparse                    import HelpFormatter
+from pytadbit.utils.sqlite_utils import print_db
 import sqlite3 as lite
-from os import path
+from os                          import path, remove
+from string                      import ascii_letters
+from random                      import random
+from shutil                      import copyfile
 
 DESC = "Describe jobs and results in a given working directory"
 
 def run(opts):
     check_options(opts)
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmp' in opts and opts.tmp:
+        dbfile = opts.tmp
+        copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
         for table in cur.fetchall():
             if table[0].lower() in opts.tables:
                 print_db(cur, table[0])
+    if 'tmp' in opts and opts.tmp:
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
 
 
 
@@ -48,6 +59,11 @@ def populate_args(parser):
                         4: mapped_inputs, 5: parsed_outputs,
                         6: intersection_outputs, 7: filter_outputs,
                         8: normalize_outputs, 9: segment_outputs''')
+
+    glopts.add_argument('--tmp', dest='tmp', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
 
     parser.add_argument_group(glopts)
 
@@ -92,3 +108,10 @@ def check_options(opts):
         del(opts.tables[bad])
     for rec in recovered:
         opts.tables.append(rec)
+
+    if 'tmp' in opts and opts.tmp:
+        dbdir = opts.tmp
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmp = path.join(dbdir, dbfile)
