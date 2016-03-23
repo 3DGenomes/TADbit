@@ -549,6 +549,8 @@ class HiC_data(dict):
             _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
                                       cmprts[sec], save=True)
             if savefig or show:
+                if suffix != '':
+                    suffix = '_' + suffix
                 vmin = kwargs.get('vmin', -1)
                 vmax = kwargs.get('vmax',  1)
                 if vmin == 'auto' == vmax:
