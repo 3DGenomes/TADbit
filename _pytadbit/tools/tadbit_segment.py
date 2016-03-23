@@ -324,9 +324,8 @@ def populate_args(parser):
 def check_options(opts):
 
     # check resume
-    if not path.exists(opts.workdir) and opts.resume:
-        print ('WARNING: can use output files, found, not resuming...')
-        opts.resume = False
+    if not path.exists(opts.workdir):
+        raise IOError('ERROR: %s does not exists' % opts.workdir)
 
     if 'tmp' in opts and opts.tmp:
         dbdir = opts.tmp
