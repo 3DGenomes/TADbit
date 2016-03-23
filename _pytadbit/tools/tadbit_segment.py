@@ -54,11 +54,11 @@ def run(opts):
     cmp_result = {}
     if not opts.only_tads:
         print 'Searching compartments'
-        hic_data.find_compartments(crms=opts.crms)
-
         cmprt_dir = path.join(opts.workdir, '05_segmentation',
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
+        hic_data.find_compartments(crms=opts.crms, savefig=cmprt_dir,
+                                   suffix=param_hash)
         for crm in opts.crms or hic_data.chromosomes:
             cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
             hic_data.write_compartments(cmprt_file,

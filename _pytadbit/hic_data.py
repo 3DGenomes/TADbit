@@ -426,7 +426,7 @@ class HiC_data(dict):
                 return mtrx
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
-                          show=False, **kwargs):
+                          show=False, suffix='', **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -451,6 +451,7 @@ class HiC_data(dict):
            predictions, one file only.
         :param -1 vmin: for the color scale of the plotted map
         :param 1 vmax: for the color scale of the plotted map
+        :param '' suffix: to be placed after file names of compartment images
 
         TODO: this is really slow...
 
@@ -554,10 +555,10 @@ class HiC_data(dict):
                     vmax = max([abs(npmin(matrix)), abs(npmax(matrix))])
                     vmin = -vmax
                 plot_compartments(sec, first, cmprts, matrix, show,
-                                  savefig + '/chr' + sec + '.pdf',
+                                  savefig + '/chr' + sec + suffix + '.pdf',
                                   vmin=vmin, vmax=vmax)
                 plot_compartments_summary(sec, cmprts, show,
-                                          savefig + '/chr' + sec + '_summ.pdf')
+                                          savefig + '/chr' + sec + suffix + '_summ.pdf')
             
         self.compartments = cmprts
         if savedata:
