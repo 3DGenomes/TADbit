@@ -88,9 +88,9 @@ def run(opts):
             # maximum size of a TAD
             max_tad_size = size if opts.max_tad_size is None else opts.max_tad_size
             result = tadbit([matrix], remove=to_rm,
-                            n_cpus=opts.cpus, verbose=True,
+                            n_cpus=opts.cpus, verbose=False,
                             max_tad_size=max_tad_size,
-                            no_heuristic=True)
+                            no_heuristic=False)
             tads = load_tad_height(result, size, beg, end, hic_data)
             table = ''
             table += '%s\t%s\t%s\t%s%s\n' % ('#', 'start', 'end', 'score', 'density')
