@@ -145,7 +145,7 @@ def iterative(hic_data, bads=None, iterations=0, max_dev=0.00001,
     return B
 
 
-def expected(hic_data, bads=None, signal_to_noise=0.05, **kwargs):
+def expected(hic_data, bads=None, signal_to_noise=0.05, inter_chrom=False, **kwargs):
     """
     Computes the expected values by averaging observed interactions at a given
     distance in a given HiC matrix.
@@ -161,10 +161,16 @@ def expected(hic_data, bads=None, signal_to_noise=0.05, **kwargs):
     """
     min_n = signal_to_noise ** -2. # equals 400 when default
 
+    size = len(hic_data)
     try:
-        size = max(hic_data.chromosomes.values())
+        if not inter_chrom:
+            size = max(hic_data.chromosomes.values())
     except AttributeError:
-        size = len(hic_data)
+        pass
+
+    if size > 1200:
+        import sys
+        sys.setrecursionlimit(size + 100)
 
     expc = {}
     dist = 0
