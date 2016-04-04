@@ -22,6 +22,13 @@ def run(opts):
     with con:
         cur = con.cursor()
 
+        # change working directory
+        if opts.new_workdir:
+            new_workdir = path.abspath(opts.new_workdir)
+            update_wordir_path(cur, new_workdir)
+            print 'Updated working directory to %s' % (new_workdir)
+            return
+
         # get PATHids corresponding to JOBid:
         paths = []
         protected_types = ['INDEX', 'FASTA', 'MAPPED_FASTQ', 'WORKDIR']
@@ -29,11 +36,6 @@ def run(opts):
             cur.execute("SELECT Id, Path, Type FROM PATHs WHERE JOBid=%s" % jobid)
             paths.extend([p for p in cur.fetchall()])
 
-        # change working directory
-        if opts.new_workdir:
-            update_wordir_path(path.join(opts.workdir, 'trace.db'),
-                               path.abspath(opts.new_workdir))
-            return
 
 
         # delete files and directories
