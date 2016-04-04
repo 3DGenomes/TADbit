@@ -106,14 +106,10 @@ def main(arguments):
         except KeyError:
             pass
 
-    # Call main program
     args = parser.parse_args(arguments[1:])
 
+    # Call main program
     args.func(args)
-
-
-
-
 
 if __name__ == "__main__":
     main(sys.argv)

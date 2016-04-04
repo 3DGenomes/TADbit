@@ -316,8 +316,8 @@ def populate_args(parser):
                         cores will be used''')
 
     glopts.add_argument('--force', dest='force', action='store_true',
-                      default=False,
-                      help='overwrite previously run job')
+                        default=False,
+                        help='overwrite previously run job')
 
     parser.add_argument_group(glopts)
 

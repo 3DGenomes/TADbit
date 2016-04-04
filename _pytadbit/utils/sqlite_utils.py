@@ -25,6 +25,16 @@ def digest_parameters(opts, get_md5=True, extra=None):
     parameters = parameters.replace("'", "")
     return parameters
 
+def update_wordir_path(dbpath, new_path):
+    con = lite.connect(dbpath)
+    try:
+        with con:
+            cur = con.cursor()
+            cur.execute("update paths set path='%s' where type='WORKDIR'" % (
+                new_path))
+    except lite.OperationalError:
+        return False
+
 def delete_entries(cur, table, col, val):
     try:
         cur.execute("select %s from %s where %s.%s = %d" % (

@@ -6,8 +6,9 @@ information needed
 
 """
 
-from argparse                       import HelpFormatter
-from pytadbit.utils.sqlite_utils    import delete_entries
+from argparse                    import HelpFormatter
+from pytadbit.utils.sqlite_utils import delete_entries
+from pytadbit.utils.sqlite_utils import update_wordir_path
 import sqlite3 as lite
 from os import path, system
 
@@ -27,6 +28,13 @@ def run(opts):
         for jobid in opts.jobids:
             cur.execute("SELECT Id, Path, Type FROM PATHs WHERE JOBid=%s" % jobid)
             paths.extend([p for p in cur.fetchall()])
+
+        # change working directory
+        if opts.new_workdir:
+            update_wordir_path(path.join(opts.workdir, 'trace.db'),
+                               path.abspath(opts.new_workdir))
+            return
+
 
         # delete files and directories
         if opts.delete:
@@ -88,6 +96,10 @@ def populate_args(parser):
     glopts.add_argument('--compress', dest='compress', action="store_true",
                         default=False,
                         help='compress files and update paths accordingly')
+
+    parser.add_argument('--change_workdir', dest='new_workdir', metavar="PATH",
+                        action='store', default=None, type=str,
+                        help='''In case folder was moved, input the new path''')
 
     parser.add_argument_group(glopts)
 
