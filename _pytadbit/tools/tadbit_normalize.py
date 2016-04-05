@@ -167,6 +167,7 @@ def run(opts):
 
     save_to_db (opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
                 a2, bad_columns_file, bias_file, inter_vs_gcoord, mreads,
+                len(hic_data.bads.keys()), len(hic_data),
                 intra_dir_nrm_fig, intra_dir_nrm_txt,
                 inter_dir_nrm_fig, inter_dir_nrm_txt,
                 genom_map_nrm_fig, genom_map_nrm_txt,
@@ -177,6 +178,7 @@ def run(opts):
 
 def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
                a2, bad_columns_file, bias_file, inter_vs_gcoord, mreads,
+               nbad_columns, ncolumns,
                intra_dir_nrm_fig, intra_dir_nrm_txt,
                inter_dir_nrm_fig, inter_dir_nrm_txt,
                genom_map_nrm_fig, genom_map_nrm_txt,
@@ -195,6 +197,8 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
                (Id integer primary key,
                 JOBid int,
                 Input int,
+                N_columns int,
+                N_filtered int,
                 CisTrans_nrm_all real,
                 CisTrans_nrm_out real,
                 CisTrans_raw_all real,
@@ -251,10 +255,10 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
 
         cur.execute("""
         insert into NORMALIZE_OUTPUTs
-        (Id  , JOBid,     Input, CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
+        (Id  , JOBid,     Input, N_columns,   N_filtered, CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
         values
-        (NULL,    %d,        %d,               %f,                 %f,                 %f,                 %f,               %f,           %d,          %f)
-        """ % (jobid, input_bed,    cis_trans_N_D,      cis_trans_N_d,      cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
+        (NULL,    %d,        %d,        %d,           %d,               %f,                 %f,                 %f,                 %f,               %f,           %d,          %f)
+        """ % (jobid, input_bed,  ncolumns, nbad_columns,    cis_trans_N_D,      cis_trans_N_d,      cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
