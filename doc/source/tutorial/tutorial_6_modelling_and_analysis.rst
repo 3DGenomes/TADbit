@@ -14,6 +14,7 @@ Recover data from previous tutorial by loading the previously saved chromosome.
     # Load the chromosome
     my_chrom = load_chromosome('some_path.tdb')
 
+
 Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromosome objects because of their size):
 
 .. code:: python
@@ -37,6 +38,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
     exp.normalize_hic()
     exp.filter_columns()
     print my_chrom.experiments
+
 
 
 .. ansi-block::
@@ -80,6 +82,7 @@ All models are based on specific sets of experimental data for which TADbit mode
 
 
 
+
 .. ansi-block::
 
     {'dmel_01': {'kforce': 5,
@@ -114,6 +117,7 @@ To set the values for the parameters, one can create an array and use it for moo
     print models
 
 
+
 .. ansi-block::
 
     Preparing to model 101 particles
@@ -141,6 +145,7 @@ To set the values for the parameters, one can create an array and use it for moo
 
 
 
+
 .. ansi-block::
 
     Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility_factor:1)
@@ -164,6 +169,7 @@ Once finished, the IMP generated models are stored in a dictionary which keys ar
     # Get the data for the lowest IMP OF model (number 0) in the set of models
     model = models[0]
     print model
+
 
 
 .. ansi-block::
@@ -214,6 +220,7 @@ One measure to check whether the IMP optimization has reached equilibrium is to 
 
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_16_0.png
 
 
@@ -225,6 +232,7 @@ One important aspect is to identfy whether the set of models has a good correlat
     models.define_best_models(100)
     # Calculate the correlation coefficient between a set of kept models and the original HiC matrix
     models.correlate_with_real_data(plot=True, cutoff=1000)
+
 
 
 
@@ -244,6 +252,7 @@ One important aspect is to identfy whether the set of models has a good correlat
     models.zscore_plot()
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_19_0.png
 
 
@@ -251,6 +260,7 @@ One important aspect is to identfy whether the set of models has a good correlat
 
     models.align_models(in_place=True)
     models.deconvolve(fact=0.6, dcutoff=1000, represent_models='best', n_best_clusters=5)
+
 
 .. ansi-block::
 
@@ -279,6 +289,7 @@ First we are going to cluster the 3D models based on their structural similarity
     # Cluster models based on structural similarity
     models.cluster_models(fact=0.95, dcutoff=2000)
     print models.clusters
+
 
 
 .. ansi-block::
@@ -325,6 +336,7 @@ Once a cluster is generated, one can plot it for easy visualization. The "y" axi
 
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_27_0.png
 
 
@@ -334,6 +346,7 @@ One can also show the similarity betwen clusters for a limited number of them (5
 
     # Show de dendogram for only the 5 top clusters and no colors
     cl = models.cluster_analysis_dendrogram(n_best_clusters=5)
+
 
 
 
@@ -349,6 +362,7 @@ To assess how "deterministic" a cluster is, one can calculate for each particle 
 
     # Calculate the consistency plot for all models in the first cluster (cluster 0)
     models.model_consistency(cluster=1, cutoffs=(1000,2000))
+
 
 
 
@@ -369,6 +383,7 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_36_0.png
 
 
@@ -376,6 +391,7 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
     # Get a similar plot for only the top cluster and show the standar deviation for a specific(s) running window (steps)
     models.density_plot(cluster=1,error=True, steps=(5))
+
 
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_37_0.png
@@ -386,12 +402,14 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
     models.walking_angle(steps=(3, 5, 7), signed=False)
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_38_0.png
 
 
 .. code:: python
 
     models.interactions(cutoff=2000)
+
 
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_39_0.png
@@ -407,6 +425,7 @@ Given a set of selected models (either from a cluster or a list) one can calcula
     # Get a contact map for the top 50 models at a distance cut-off of 300nm
     models.contact_map(models=range(5,10), cutoff=1200, savedata="contact.txt")
 
+
 The goal of TADbit is to find a 3D structure (or ensemble of structures) that best satisfies the original Hi-C matrix. Therefore, we can compare the contact map produced above to the original HiC input matrix for parts of the models.
 
 .. code:: python
@@ -417,6 +436,7 @@ The goal of TADbit is to find a 3D structure (or ensemble of structures) that be
     models.correlate_with_real_data(cluster=2, plot=True, cutoff=1500)
     # Correlate the contact map with the original input HiC matrix for cluster 10
     models.correlate_with_real_data(cluster=10, plot=True, cutoff=1500)
+
 
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_44_0.png
@@ -450,6 +470,7 @@ Sometimes is useful to get a distribution of distances between pairs of particle
 
 
 
+
 .. ansi-block::
 
     1507.9106832517446
@@ -464,6 +485,7 @@ Lets plot the distribution used to get this median value.
     models.median_3d_dist(15, 20, plot=True)
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_49_0.png
 
 
@@ -475,6 +497,7 @@ We may also want to use only the 10 first models (lowest energy), or the models 
     models.median_3d_dist(13, 30, models=range(100))
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_51_0.png
 
 
@@ -482,6 +505,7 @@ We may also want to use only the 10 first models (lowest energy), or the models 
 
     # Plot the distance distributions between particles 13 and 30 in the models from cluster 0
     models.median_3d_dist(0, 54, plot=True, cluster=1)
+
 
 
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_52_0.png
@@ -497,6 +521,7 @@ By saving your analysis, you won't need to repeat some of the most expensive cal
     # Save your entire analysis and models
     models.save_models('gm_01.models')
 
+
 And to load them:
 
 .. code:: python
@@ -504,6 +529,7 @@ And to load them:
     # Load the models
     loaded_models = load_structuralmodels('gm_01.models')
     print loaded_models
+
 
 
 .. ansi-block::
@@ -539,6 +565,7 @@ Specific 3D models can be saved in two formats:
     # Write a XYZ file for the cluster 1 models
     models.write_xyz(directory="./", cluster=1)
 
+
 Related Software
 ----------------
 
@@ -556,6 +583,7 @@ To properly insert the images/videos in this tutorial, we need to import librari
     models.view_models(stress='centroid', tool='plot', figsize=(10,10), azimuth=-60, elevation=100)
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_63_0.png
 
 
@@ -571,6 +599,7 @@ visualization:
     models.view_models(highlight='centroid', show='highlighted', tool='plot', figsize=(10,10), azimuth=-60, elevation=100, color='tad')
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_66_0.png
 
 
@@ -582,12 +611,14 @@ according to their score:
     models.view_models(highlight='centroid', show='highlighted', tool='plot', figsize=(10,10), azimuth=-60, elevation=100, color='border')
 
 
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_68_0.png
 
 
 .. code:: python
 
     print models[0models.centroid_model(cluster=1)]
+
 
 .. ansi-block::
 
@@ -611,6 +642,8 @@ according to their score:
 
 
 
+
+
 .. image:: ../nbpictures/tutorial_6_modelling_and_analysis_71_0.png
 
 
@@ -620,6 +653,8 @@ according to their score:
     # Generate the video using Chimera in batch mode. That takes SIGNIFICANT time, wait a bit before running next command.
     # You can check in your home directory whether this has finished.
     models.view_models(models=[0], tool='chimera_nogui', savefig='/tmp/image_model_1.webm')
+
+
 
 
 

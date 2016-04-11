@@ -41,6 +41,7 @@ loaded as this *(note: this example loads human chromosome 19 from*
                             hic_data="../../scripts/sample_data/HIC_gm06690_chr19_chr19_100000_obs.txt", resolution=100000)
 
 
+
 .. ansi-block::
 
     /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
@@ -84,6 +85,7 @@ the ``add_experiment`` function:
             nums.append([int(v) for v in values])
         return tuple([nums[j][i] for i in xrange(len(nums)) for j in xrange(len(nums))]), len(nums)
 
+
 And call it as follow:
 
 .. code:: python
@@ -91,6 +93,7 @@ And call it as follow:
     other_chrom = Chromosome(name='An other chromosome')
     other_chrom.add_experiment('First Hi-C experiment', hic_data='../../src/test/data/hESC_chr19-rep1.txt',
                                parser=read_strange_file, resolution=20000)
+
 
 Experiment objects
 ------------------
@@ -101,6 +104,7 @@ to chromosome objects:
 .. code:: python
 
     my_chrom.experiments
+
 
 
 
@@ -117,6 +121,7 @@ position in :class:``pytadbit.chromosome.ExperimentList`` :
 .. code:: python
 
     my_chrom.experiments[0] == my_chrom.experiments["k562"]
+
 
 
 
@@ -142,6 +147,7 @@ experiments:
 
     exp = my_chrom.experiments["k562"] + my_chrom.experiments["gm06690"]
     print exp
+
 
 
 .. ansi-block::
@@ -178,6 +184,7 @@ chromosome.
     print my_chrom.experiments
 
 
+
 .. ansi-block::
 
     [Experiment k562 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None)]
@@ -191,6 +198,7 @@ To quickly view how does the interaction matrix look like, experiment objects ha
 .. code:: python
 
     exp.view()
+
 
 .. ansi-block::
 
@@ -219,6 +227,7 @@ the chromosome object.
     my_chrom.visualize([('k562', 'gm06690'), 'k562+gm06690'])
 
 
+
 .. image:: ../nbpictures/tutorial_1_general_29_0.png
 
 
@@ -236,6 +245,7 @@ Once an experiment has been loaded, the location of Topologically Associating Do
     my_chrom.find_tad('k562', n_cpus=8)
     my_chrom.find_tad('gm06690', n_cpus=8)
 
+
 :func:`pytadbit.chromosome.Chromosome.find_tad` is called from our Chromosome object but is applied to a 
 specific experiment. Therefore, TADs found by TADBbit will be associated to this specific experiment. 
 They can be accessed as following:
@@ -244,6 +254,7 @@ They can be accessed as following:
 
     exp = my_chrom.experiments["k562"]
     exp.tads
+
 
 
 
@@ -308,6 +319,7 @@ TADs can also be seen or saved to a file using this write function:
 
     exp.write_tad_borders()
 
+
 .. ansi-block::
 
     #      start   end score
@@ -361,6 +373,7 @@ TADs in interaction matrices
     my_chrom.visualize(exp.name, paint_tads=True)
 
 
+
 .. image:: ../nbpictures/tutorial_1_general_43_0.png
 
 
@@ -370,6 +383,7 @@ use nrmalized data instead of the log2 of raw data:
 .. code:: python
 
     my_chrom.visualize([('k562', 'gm06690')], paint_tads=True, focus=(490,620), normalized=True)
+
 
 .. ansi-block::
 
@@ -398,6 +412,7 @@ Finally TAD bourders can be seen using the density plot summary:
     my_chrom.tad_density_plot('k562')
 
 
+
 .. image:: ../nbpictures/tutorial_1_general_50_0.png
 
 
@@ -423,6 +438,7 @@ TADbit also allows to search for TADs in a chromosome using the information of s
     print my_chrom.experiments
 
 
+
 .. ansi-block::
 
     [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: visibility), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: None), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: visibility)]
@@ -442,12 +458,14 @@ By default TADbit does not put limitation in sizes of TADs, owever it may make s
 .. code:: python
 
     my_chrom.set_max_tad_size(3000000)
+
 Once TADs are detected by the core :func:`pytadbit.tadbit.tadbit` function, TADbit checks that they are not larger than a given value (5 Mb here). If a TAD is larger than this value, it will be marked with a 
 **negative score**, and will be automatically excluded from the main TADbit functions.
 
 .. code:: python
 
     my_chrom.visualize('k562', paint_tads=True)
+
 
 
 .. image:: ../nbpictures/tutorial_1_general_61_0.png
@@ -476,6 +494,7 @@ objects, with all the associated experiments. To save a Chromosome object:
 
     my_chrom.save_chromosome("some_path.tdb", force=True)
 
+
 And to load it:
 
 .. code:: python
@@ -485,6 +504,7 @@ And to load it:
     my_chrom = load_chromosome("some_path.tdb")
     
     print my_chrom.experiments
+
 
 
 .. ansi-block::

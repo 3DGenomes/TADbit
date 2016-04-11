@@ -12,12 +12,14 @@ Import the necessary libraries.
     from pytadbit import load_chromosome # to load chromosomes
     from pytadbit.imp.impoptimizer import IMPoptimizer
 
+
 First, load the chromosome from previous tutorial (:ref:`run_tadbit`).
 
 .. code:: python
 
     # Load the chromosome
     my_chrom = load_chromosome('some_path.tdb')
+
 
 Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromosome objects because of their size):
 
@@ -35,6 +37,7 @@ Next, load Hi-C data for each experiment (Hi-C data is not saved inside chromoso
             print 'file not found for experiment: ' + exp.name
             continue
         print exp
+
 
 
 .. ansi-block::
@@ -74,6 +77,7 @@ The log indicates that experiment "k562+gm06690" had no file. Such experiment wa
 .. code:: python
 
     my_chrom.experiments['k562+gm06690'] = my_chrom.experiments['k562'] + my_chrom.experiments['gm06690']
+
 We are now going to use the experiment "gm06690" for the modelling. The
 first thing we need to do is to filter columns with low counts:
 
@@ -83,6 +87,7 @@ first thing we need to do is to filter columns with low counts:
     exp.filter_columns(draw_hist=True)
     
     print my_chrom.experiments
+
 
 .. ansi-block::
 
@@ -123,6 +128,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
 
     optimizer = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=2000)
 
+
 .. ansi-block::
 
     Preparing to optimize 101 particles
@@ -137,6 +143,7 @@ Next, we will optimize the three IMP parameters for this TAD. The IMP parameters
     # Optimize parameters. Be aware that this step is CPU intensive. If you want to se the progress, set verbose=True.
     optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1, 0, 0.2), upfreq_range=(0.2, 0.8, 0.2), 
                               maxdist_range=(2000, 3500, 500), verbose=True)
+
 
 
 .. ansi-block::
@@ -258,16 +265,19 @@ The exact same as above can be done from Experiment objects directly:
     #                                       maxdist_range=(2000, 3500, 500), 
     #                                       verbose=False)
 
+
 Visualize the results
 ---------------------
 
 .. code:: python
 
     optimizer.write_result('results.log')
+
 .. code:: python
 
     # Visualize the results of the optimization.
     optimizer.plot_2d()
+
 
 
 
@@ -280,6 +290,7 @@ We can also ask to mark on the plot the best N combination of parameters with th
 
     # Visualize the results of the optimization and mark the best 10 parameter sets
     optimizer.plot_2d(show_best=20)
+
 
 
 
@@ -310,6 +321,7 @@ We can also ask to mark on the plot the best N combination of parameters with th
                                  reverse=True)[0]
     print sort_result
 
+
 .. ansi-block::
 
     [[0.01], [2000.0, 2500.0, 3000.0, 3500.0], [0.2, 0.4, 0.6, 0.8], [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0]]
@@ -325,12 +337,14 @@ One can also visualize the parameter optimization according to ne of the three o
 
 
 
+
 .. image:: ../nbpictures/tutorial_5_parameter_optimization_28_0.png
 
 
 .. code:: python
 
     optimizer.plot_2d(skip={"scale":0.01}, show_best=10)
+
 
 
 
@@ -346,6 +360,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 
 
 
+
 .. image:: ../nbpictures/tutorial_5_parameter_optimization_31_0.png
 
 
@@ -354,9 +369,11 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     optimizer.run_grid_search(n_cpus=8, lowfreq_range=(-1., -0.0, 0.2), upfreq_range=(0.6, 1, 0.1), 
                               scale_range=[0.01], maxdist_range=[2000,2250,2500,2750,3000], verbose=False)
 
+
 .. code:: python
 
     optimizer.plot_2d()
+
 
 
 .. image:: ../nbpictures/tutorial_5_parameter_optimization_33_0.png
@@ -367,15 +384,18 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
     optimizer.plot_2d(show_best=100)
 
 
+
 .. image:: ../nbpictures/tutorial_5_parameter_optimization_34_0.png
 
 
 .. code:: python
 
     optimizer.write_result('results.log')
+
 .. code:: python
 
     optimizer2 = IMPoptimizer(exp, 100, 200, n_models=50, n_keep=25, cutoff=2000)
+
 
 .. ansi-block::
 
@@ -385,9 +405,11 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 .. code:: python
 
     optimizer2.load_from_file('results.log')
+
 .. code:: python
 
     optimizer2.results.keys()[105]
+
 
 
 
@@ -400,6 +422,7 @@ TADbit also provides the possibility to view it all together in a 3D plot (note 
 .. code:: python
 
     optimizer2.plot_2d(show_best=20)
+
 
 
 .. image:: ../nbpictures/tutorial_5_parameter_optimization_39_0.png
@@ -415,6 +438,7 @@ Once done, best results can be returned as a dictionary to be used for modeling 
     config = optimizer.get_best_parameters_dict(reference='gm cell from Job Dekker 2009')
     
     print config
+
 
 
 .. ansi-block::

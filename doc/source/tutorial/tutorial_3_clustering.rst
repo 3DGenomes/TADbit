@@ -32,6 +32,7 @@ in :ref:`getting_start` (following the example up to :ref:`run_tadbit`), these r
     
 
 
+
 .. ansi-block::
 
     /usr/local/lib/python2.7/dist-packages/pytadbit/parsers/hic_parser.py:93: UserWarning: WARNING: non integer values
@@ -47,6 +48,7 @@ Once done, all the TADs for this chromosome will be defined. To select two TADs:
     tad2 = list(my_chrom.iter_tads('First Hi-C experiment'))[35]
 
 
+
 And to align them:
 
 
@@ -58,6 +60,7 @@ And to align them:
     align1, align2, score = optimal_cmo(tad1[1], tad2[1], max_num_v=8, long_nw=True, long_dist=True, method='frobenius')
 
 
+
 The optimal_cmo function returns two alignments corresponding to the sequence of gaps needed for each TAD to 
 be aligned with the other. The score element contains three values, an alignment score that depends on the 
 method used to align, and the p-value and rho value of the Spearman correlation between the two Hi-C matrices.
@@ -66,6 +69,7 @@ method used to align, and the p-value and rho value of the Spearman correlation 
 .. code:: python
 
     from pytadbit.tad_clustering.tad_cmo import optimal_cmo
+
 
 Following is the output of the example script *'clustering.py'*:
 

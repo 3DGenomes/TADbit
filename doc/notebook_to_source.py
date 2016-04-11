@@ -18,8 +18,8 @@ def main():
     for fname in os.listdir('.'):
         if not fname.endswith('.ipynb'):
             continue
-        # os.system('ipython nbconvert --format=rst ' + fname)
-        os.system('ipython nbconvert --to rst ' + fname)
+        # os.system('jupyter nbconvert --format=rst ' + fname)
+        os.system('jupyter nbconvert --to rst ' + fname)
         extra = (fname.split('_')[0] + '/') if '_' in fname else ''
         passing = False
         lines = []
