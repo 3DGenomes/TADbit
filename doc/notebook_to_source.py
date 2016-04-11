@@ -6,24 +6,24 @@
 
 import os, re
 
-PATH = 'notebooks'
+CURPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])
+PATH = os.path.realpath(os.path.join(CURPATH, 'notebooks'))
 
 def main():
     """
     main function
-    """
-    
-    os.chdir(PATH)
-    os.system('mkdir -p ../source/nbpictures')
-    for fname in os.listdir('.'):
+    """    
+    global CURPATH, PATH
+    os.system('mkdir -p ' + os.path.join(CURPATH, 'source', 'nbpictures'))
+    for fname in os.listdir(PATH):
         if not fname.endswith('.ipynb'):
             continue
         # os.system('jupyter nbconvert --format=rst ' + fname)
-        os.system('jupyter nbconvert --to rst ' + fname)
+        os.system('jupyter nbconvert --to rst ' + os.path.join(PATH, fname))
         extra = (fname.split('_')[0] + '/') if '_' in fname else ''
         passing = False
         lines = []
-        for line in open(fname[:-6] + '.rst'):
+        for line in open(os.path.join(PATH, fname[:-6] + '.rst')):
             if '## REMOVE' in line:
                 lines = lines[:-2]
                 passing=True
@@ -41,19 +41,25 @@ def main():
             else:
                 line = re.sub(fname[:-6] + '_files/', 'nbpictures/', line)
             lines.append(line)
-        out = open('../source/' + extra + fname[:-6] + '.rst', 'w')
+        out = open(os.path.join(CURPATH, 'source', extra + fname[:-6] + '.rst'), 'w')
         out.write(''.join(lines))
         out.close()
-        os.system('rm -f ' + fname[:-6] + '.rst')
+        os.system('rm -f ' + os.path.join(PATH, fname[:-6] + '.rst'))
         try:
-            for iname in os.listdir(fname[:-6] + '_files'):
+            for iname in os.listdir(os.path.join(PATH, fname[:-6] + '_files')):
                 if not iname.endswith('.png'):
                     continue
-                os.system('cp '+ fname[:-6] + '_files/' + iname + ' ../source/nbpictures/')
-            os.system('rm -rf '+ fname[:-6] + '_files')
+                os.system('cp %s %s' % (
+                    os.path.join(
+                        PATH, fname[:-6] + '_files', iname),
+                    os.path.join(
+                        CURPATH, 'source', 'nbpictures')))
+            os.system('rm -rf ' + os.path.join(PATH, fname[:-6] + '_files'))
         except OSError:
             pass
-    os.system('cd ..; make html')
+        
+    PATH = os.path.realpath('notebooks')
+    os.system('cd %s; make html' % CURPATH)
     
 if __name__ == "__main__":
     exit(main())
