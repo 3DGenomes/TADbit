@@ -4,7 +4,7 @@ Installing TADbit on GNU/Linux
 
 .. contents::
 
-*Note: at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
+.. note::  at the moment the installation has been tested only under Ubuntu-linux and MacOS (tested under OSX 10.9 with MacPorts www.macports.org).*
 
 
 **TADbit requires python >= 2.6 as well as several dependencies that are
@@ -56,10 +56,9 @@ Install the required libraries:
     sudo apt-get install libcgal-dev
     sudo apt-get install python-dev
 
-.. note::
-
-For Ubuntu 13.10 *libboost1.53-all-dev* should be installed instead. For
-Ubuntu 14.04 *libboost1.54-all-dev* should be installed instead.
+.. note:: For Ubuntu 13.10 *libboost1.53-all-dev* should be installed
+instead. For Ubuntu 14.04 *libboost1.54-all-dev* should be installed
+instead.
 
 Download the IMP tarball file from http://salilab.org/imp/ and
 uncompress it:
@@ -92,10 +91,10 @@ These lines should look like:
     PYTHONPATH="/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/lib:/SOMETHING/imp-2.0.1/src/dependency/RMF/:$PYTHONPATH"
     export PYTHONPATH
 
-.. note:: Important note:
-          Do not copy the lines above, copy them 
-          from ``setup_environment.sh``, where *SOMETHING* 
-          is replaced by your real path to IMP.
+.. note::  Important note:
+           Do not copy the lines above, copy them 
+           from ``setup_environment.sh``, where *SOMETHING* 
+           is replaced by your real path to IMP.
 
 MCL - clustering
 ~~~~~~~~~~~~~~~~

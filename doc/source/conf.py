@@ -136,8 +136,7 @@ html_favicon = 'pictures/TADbit_icon.ico'
 
 # INSTALL ANSI color support:
 # easy_install sphinxcontrib-ansi
-html_static_path = ['_static',
-                    '/usr/local/lib/python2.7/dist-packages/sphinxcontrib_ansi-0.6-py2.7.egg/sphinxcontrib/']
+html_static_path = ['_static']
 
 def setup(app):
     app.add_stylesheet('black-on-white.css')
