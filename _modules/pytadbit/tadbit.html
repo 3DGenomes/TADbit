@@ -47,7 +47,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.tadbit</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">24 Oct 2012</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -57,7 +57,7 @@
 
 
 <div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-           <span class="n">max_tad_size</span><span class="o">=</span><span class="s">&quot;max&quot;</span><span class="p">,</span> <span class="n">no_heuristic</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+           <span class="n">max_tad_size</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">no_heuristic</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The TADbit algorithm works on raw chromosome interaction count data.</span>
 <span class="sd">    The normalization is neither necessary nor recommended,</span>
@@ -85,7 +85,7 @@
 <span class="sd">    :param 1 n_cpus: The number of CPUs to allocate to TADbit. If</span>
 <span class="sd">       n_cpus=&#39;max&#39; the total number of CPUs will be used</span>
 <span class="sd">    :param auto max_tad_size: an integer defining maximum size of TAD. Default</span>
-<span class="sd">       (auto) defines it as the number of rows/columns</span>
+<span class="sd">       (auto or max) defines it as the number of rows/columns</span>
 <span class="sd">    :param False no_heuristic: whether to use or not some heuristics</span>
 <span class="sd">    :param False get_weights: either to return the weights corresponding to the</span>
 <span class="sd">       Hi-C count (weights are a normalization dependent of the count of each</span>
@@ -99,34 +99,34 @@
     <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">get_as_tuple</span><span class="p">()</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">remove</span><span class="p">:</span>
-        <span class="c"># if not given just remove columns with zero in diagonal</span>
+        <span class="c1"># if not given just remove columns with zero in diagonal</span>
         <span class="n">remove</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">0</span> <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)])</span>
-    <span class="n">n_cpus</span> <span class="o">=</span> <span class="n">n_cpus</span> <span class="k">if</span> <span class="n">n_cpus</span> <span class="o">!=</span> <span class="s">&#39;max&#39;</span> <span class="k">else</span> <span class="mi">0</span>
-    <span class="n">max_tad_size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="n">max_tad_size</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;max&quot;</span><span class="p">,</span> <span class="s">&quot;auto&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">max_tad_size</span>
+    <span class="n">n_cpus</span> <span class="o">=</span> <span class="n">n_cpus</span> <span class="k">if</span> <span class="n">n_cpus</span> <span class="o">!=</span> <span class="s1">&#39;max&#39;</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">max_tad_size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="n">max_tad_size</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">max_tad_size</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">nbks</span><span class="p">,</span> <span class="n">passages</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bkpts</span> <span class="o">=</span> \
-       <span class="n">_tadbit_wrapper</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span>             <span class="c"># list of lists of Hi-C data</span>
-                       <span class="n">remove</span><span class="p">,</span>           <span class="c"># list of columns marking filtered</span>
-                       <span class="n">size</span><span class="p">,</span>             <span class="c"># size of one row/column</span>
-                       <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">),</span>        <span class="c"># number of matrices</span>
-                       <span class="n">n_cpus</span><span class="p">,</span>           <span class="c"># number of threads</span>
-                       <span class="nb">int</span><span class="p">(</span><span class="n">verbose</span><span class="p">),</span>     <span class="c"># verbose 0/1</span>
-                       <span class="n">max_tad_size</span><span class="p">,</span>     <span class="c"># max_tad_size</span>
-                       <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;ntads&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                       <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span><span class="c"># heuristic 0/1</span>
+       <span class="n">_tadbit_wrapper</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span>             <span class="c1"># list of lists of Hi-C data</span>
+                       <span class="n">remove</span><span class="p">,</span>           <span class="c1"># list of columns marking filtered</span>
+                       <span class="n">size</span><span class="p">,</span>             <span class="c1"># size of one row/column</span>
+                       <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">),</span>        <span class="c1"># number of matrices</span>
+                       <span class="n">n_cpus</span><span class="p">,</span>           <span class="c1"># number of threads</span>
+                       <span class="nb">int</span><span class="p">(</span><span class="n">verbose</span><span class="p">),</span>     <span class="c1"># verbose 0/1</span>
+                       <span class="n">max_tad_size</span><span class="p">,</span>     <span class="c1"># max_tad_size</span>
+                       <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ntads&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                       <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span><span class="c1"># heuristic 0/1</span>
                        <span class="p">)</span>
 
     <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">bkpts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">nbks</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">passages</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
 
-    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">[],</span> <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="p">[]}</span>
     <span class="k">for</span> <span class="n">brk</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">result</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">result</span><span class="p">[</span><span class="s">&#39;end&#39;</span>  <span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">result</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span>  <span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="n">result</span></div>
 
-</div>
+
 <div class="viewcode-block" id="batch_tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.batch_tadbit">[docs]</a><span class="k">def</span> <span class="nf">batch_tadbit</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Use tadbit on directories of data files.</span>
@@ -165,7 +165,7 @@
 
     <span class="n">matrix</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">f_name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">f_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">f_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
             <span class="k">continue</span>
         <span class="n">f_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">parser</span><span class="p">:</span>
@@ -174,9 +174,9 @@
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">f_name</span><span class="p">):</span>
             <span class="k">continue</span>
         <span class="n">matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tadbit</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="print_result_r"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.print_result_r">[docs]</a><span class="k">def</span> <span class="nf">print_result_r</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Print a table summarizing the TADs found by tadbit. This function outputs</span>
@@ -188,12 +188,12 @@
 <span class="sd">    :returns: if write is False, returns a string corresponding to the table of</span>
 <span class="sd">       results</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">table</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
-    <span class="n">table</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%-6s%6s%6s%6s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">,</span> <span class="s">&#39;start&#39;</span><span class="p">,</span> <span class="s">&#39;end&#39;</span><span class="p">,</span> <span class="s">&#39;score&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])):</span>
-        <span class="n">table</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%-6s%6s%6s%6s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
-                                      <span class="n">result</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
-                                      <span class="n">result</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">table</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%-6s%6s%6s%6s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])):</span>
+        <span class="n">table</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">%-6s%6s%6s%6s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                                      <span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+                                      <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">write</span><span class="p">:</span>
         <span class="k">print</span> <span class="n">table</span>
     <span class="k">else</span><span class="p">:</span>
@@ -224,9 +224,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -246,8 +243,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Sep 27, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

@@ -46,104 +46,130 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit</h1><div class="highlight"><pre>
+<span></span>
 <span class="kn">from</span> <span class="nn">pytadbit._version</span> <span class="kn">import</span> <span class="n">__version__</span>
 <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">environ</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">check_call</span><span class="p">,</span> <span class="n">CalledProcessError</span>
 <span class="kn">import</span> <span class="nn">locale</span>
 
-<span class="c"># make sure that we are comparing strings in the same way as the bash sort</span>
-<span class="c"># command used in mapping</span>
+<span class="c1"># make sure that we are comparing strings in the same way as the bash sort</span>
+<span class="c1"># command used in mapping</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">getdefaultlocale</span><span class="p">()))</span>
+    <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">getdefaultlocale</span><span class="p">()))</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="n">environ</span><span class="p">[</span><span class="s">&quot;LANG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;en_US.UTF-8&quot;</span>
-    <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">getdefaultlocale</span><span class="p">()))</span>
+    <span class="n">environ</span><span class="p">[</span><span class="s2">&quot;LANG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en_US.UTF-8&quot;</span>
+    <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">getdefaultlocale</span><span class="p">()))</span>
 
+<span class="c1">## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;DISPLAY&quot;</span> <span class="ow">in</span> <span class="n">environ</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">matplotlib</span>
+    <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">check_call</span><span class="p">(</span><span class="s1">&#39;python -c &quot;import matplotlib.pyplot as plt; plt.figure()&quot;&#39;</span><span class="p">,</span>
+                   <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">CalledProcessError</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">matplotlib</span>
+        <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">get_dependencies_version</span><span class="p">(</span><span class="n">dico</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-<div class="viewcode-block" id="get_dependencies_version"><a class="viewcode-back" href="../reference/reference_utils.html#pytadbit.get_dependencies_version">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="get_dependencies_version"><a class="viewcode-back" href="../reference/reference_utils.html#pytadbit.get_dependencies_version">[docs]</a><span class="k">def</span> <span class="nf">get_dependencies_version</span><span class="p">(</span><span class="n">dico</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check versions of TADbit and all dependencies, as well and retieves system</span>
 <span class="sd">    info. May be used to ensure reproductibility.</span>
 <span class="sd">    </span>
 <span class="sd">    :returns: string with description of versions installed</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">versions</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;  TADbit&#39;</span><span class="p">:</span> <span class="n">__version__</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">}</span>
+    <span class="n">versions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;  TADbit&#39;</span><span class="p">:</span> <span class="n">__version__</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">}</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">IMP</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">versions</span><span class="p">[</span><span class="s">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">get_module_version</span><span class="p">()</span>
-            <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">random_number_generator</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">seed</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">random_number_generator</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="n">versions</span><span class="p">[</span><span class="s">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">get_module_version</span><span class="p">()</span>
+            <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">get_module_version</span><span class="p">()</span>
             <span class="n">IMP</span><span class="o">.</span><span class="n">random_number_generator</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">seed</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">random_number_generator</span><span class="p">()</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s">&#39; (random seed indexed at 1 = </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">get_module_version</span><span class="p">()</span>
+            <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">random_number_generator</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">random_number_generator</span><span class="p">()</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39; (random seed indexed at 1 = </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;IMP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">scipy</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;scipy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;scipy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">__version__</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;scipy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;scipy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">gem</span> <span class="kn">import</span> <span class="n">commands</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;gemtools&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commands</span><span class="o">.</span><span class="n">__VERSION__</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;gemtools&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">gem</span> <span class="kn">import</span> <span class="n">executables</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">executables</span><span class="p">[</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">],</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+                    <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; - &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;build &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;gem-mapper&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">numpy</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;numpy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;numpy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">__version__</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;numpy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;numpy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">matplotlib</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;matplotlib&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;matplotlib&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">__version__</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;matplotlib&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
-    <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;matplotlib&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">mcl</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;mcl&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="n">mcl</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;mcl&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
                          <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mcl</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mcl</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39;MCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
+    <span class="c1"># try:</span>
+    <span class="c1">#     chi, err = Popen([&#39;chimera&#39;, &#39;--version&#39;], stdout=PIPE,</span>
+    <span class="c1">#                      stderr=PIPE).communicate()</span>
+    <span class="c1">#     versions[&#39;Chimera&#39;] = chi.strip()</span>
+    <span class="c1"># except:</span>
+    <span class="c1">#     versions[&#39;Chimera&#39;] = &#39;Not found&#39;</span>
+    <span class="c1"># try:</span>
+    <span class="c1">#     chi, err = Popen([&#39;chimera&#39;, &#39;--version&#39;], stdout=PIPE,</span>
+    <span class="c1">#                      stderr=PIPE).communicate()</span>
+    <span class="c1">#     versions[&#39;Chimera&#39;] = chi.strip()</span>
+    <span class="c1"># except:</span>
+    <span class="c1">#     versions[&#39;Chimera&#39;] = &#39;Not found&#39;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">chi</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;chimera&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
-                         <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;Chimera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;Chimera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">chi</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;chimera&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
-                         <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;Chimera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39;Chimera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">uname</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s">&#39;uname&#39;</span><span class="p">,</span> <span class="s">&#39;-rom&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="n">uname</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;uname&#39;</span><span class="p">,</span> <span class="s1">&#39;-rom&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span>
                            <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uname</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uname</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="n">versions</span><span class="p">[</span><span class="s">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Not found&#39;</span>
+        <span class="n">versions</span><span class="p">[</span><span class="s1">&#39; Machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Not found&#39;</span>
 
     <span class="k">if</span> <span class="n">dico</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">versions</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%15s</span><span class="s"> : </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">versions</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
-                          <span class="nb">sorted</span><span class="p">(</span><span class="n">versions</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%15s</span><span class="s1"> : </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">versions</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
+                          <span class="nb">sorted</span><span class="p">(</span><span class="n">versions</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span></div>
 
 
-<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span> <span class="kn">import</span> <span class="n">tadbit</span><span class="p">,</span> <span class="n">batch_tadbit</span></div>
-<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span> <span class="kn">import</span> <span class="n">Chromosome</span>
-<span class="kn">from</span> <span class="nn">pytadbit.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">load_experiment_from_reads</span>
-<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span> <span class="kn">import</span> <span class="n">load_chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.hic_data</span>             <span class="kn">import</span> <span class="n">HiC_data</span>
+<span class="kn">from</span> <span class="nn">pytadbit.tadbit</span>               <span class="kn">import</span> <span class="n">tadbit</span><span class="p">,</span> <span class="n">batch_tadbit</span>
+<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span>           <span class="kn">import</span> <span class="n">Chromosome</span>
+<span class="kn">from</span> <span class="nn">pytadbit.experiment</span>           <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">load_experiment_from_reads</span>
+<span class="kn">from</span> <span class="nn">pytadbit.chromosome</span>           <span class="kn">import</span> <span class="n">load_chromosome</span>
 <span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">StructuralModels</span>
 <span class="kn">from</span> <span class="nn">pytadbit.imp.structuralmodels</span> <span class="kn">import</span> <span class="n">load_structuralmodels</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">load_hic_data_from_reads</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">load_impmodel_from_cmm</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">load_impmodel_from_xyz</span>
-<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span> <span class="kn">import</span> <span class="n">IMPmodel</span>
-<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span> <span class="kn">import</span> <span class="n">read_matrix</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>   <span class="kn">import</span> <span class="n">load_hic_data_from_reads</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span>         <span class="kn">import</span> <span class="n">load_impmodel_from_cmm</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span>         <span class="kn">import</span> <span class="n">load_impmodel_from_xyz</span>
+<span class="kn">from</span> <span class="nn">pytadbit.imp.impmodel</span>         <span class="kn">import</span> <span class="n">IMPmodel</span>
+<span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>   <span class="kn">import</span> <span class="n">read_matrix</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pytadbit.imp.impoptimizer</span> <span class="kn">import</span> <span class="n">IMPoptimizer</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
-    <span class="n">warn</span><span class="p">(</span><span class="s">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">warnings</span>                  <span class="kn">import</span> <span class="n">warn</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;IMP not found, check PYTHONPATH</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
 </pre></div>
 
           </div>
@@ -170,9 +196,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -191,8 +214,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Sep 27, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

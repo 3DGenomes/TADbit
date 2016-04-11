@@ -113,7 +113,7 @@ optimization.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>result</strong> &#8211; 3D numpy array contating correlation values</li>
-<li><strong>axes</strong> (<em>&#8216;scale&#8217;,&#8217;maxdist&#8217;,&#8217;upfreq&#8217;,&#8217;lowfreq&#8217;</em>) &#8211; tuple of axes to
+<li><strong>axes</strong> (<em>'scale','maxdist','upfreq','lowfreq'</em>) &#8211; tuple of axes to
 represent. The order will define which parameter will be placed on the
 w, z, y or x axe.</li>
 </ul>
@@ -133,7 +133,7 @@ w, z, y or x axe.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>result</strong> &#8211; 3D numpy array contating correlation values</li>
-<li><strong>axes</strong> (<em>&#8216;scale&#8217;,&#8217;maxdist&#8217;,&#8217;upfreq&#8217;,&#8217;lowfreq&#8217;</em>) &#8211; tuple of axes to
+<li><strong>axes</strong> (<em>'scale','maxdist','upfreq','lowfreq'</em>) &#8211; tuple of axes to
 represent. The order will define which parameter will be placed on the
 w, z, y or x axe.</li>
 <li><strong>show_best</strong> (<em>0</em>) &#8211; number of best correlation value to identifie.</li>
@@ -257,7 +257,7 @@ if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 <li><strong>azimuth</strong> (<em>-90</em>) &#8211; angle to rotate camera along the y axis</li>
 <li><strong>elevation</strong> (<em>0</em>) &#8211; angle to rotate camera along the x axis</li>
-<li><strong>color</strong> (<em>&#8216;index&#8217;</em>) &#8211; <p>can be:</p>
+<li><strong>color</strong> (<em>'index'</em>) &#8211; <p>can be:</p>
 <ul>
 <li><dl class="first docutils">
 <dt>a string as:</dt>
@@ -297,7 +297,7 @@ to view models.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>cmm_files</strong> &#8211; list of .cmm files</li>
-<li><strong>chimera_bin</strong> (<em>&#8216;chimera&#8217;</em>) &#8211; path to chimera binary</li>
+<li><strong>chimera_bin</strong> (<em>'chimera'</em>) &#8211; path to chimera binary</li>
 <li><strong>chimera_cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of command lines for chimera</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save generated image</li>
 <li><strong>center_of_mass</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True, draws the center of mass</li>
@@ -305,7 +305,7 @@ to view models.</p>
 value of the radius of girations given.</li>
 <li><strong>align</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; align models</li>
 <li><strong>grid</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; tile models</li>
-<li><strong>higlight</strong> (<em>&#8216;all&#8217;</em>) &#8211; higlights a given model, or group of models.
+<li><strong>higlight</strong> (<em>'all'</em>) &#8211; higlights a given model, or group of models.
 Can be either &#8216;all&#8217;, or a model number</li>
 </ul>
 </td>
@@ -366,7 +366,7 @@ that two particles are separated.</li>
 <li><strong>fact</strong> (<em>0.75</em>) &#8211; Factor for equivalent positions</li>
 <li><strong>one</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; if True assumes that only two models are passed, and
 returns the rmsd of their comparison</li>
-<li><strong>what</strong> (<em>&#8216;score&#8217;</em>) &#8211; values to return. Can be one of &#8216;score&#8217;, &#8216;rmsd&#8217;,
+<li><strong>what</strong> (<em>'score'</em>) &#8211; values to return. Can be one of &#8216;score&#8217;, &#8216;rmsd&#8217;,
 &#8216;drmsd&#8217; or &#8216;eqv&#8217;</li>
 <li><strong>normed</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; normalize result by maximum value (only applies to rmsd
 and drmsd)</li>
@@ -433,19 +433,19 @@ pairwise model comparison.</p>
 <code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">angle_between_3_points</code><span class="sig-paren">(</span><em>point1</em>, <em>point2</em>, <em>point3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#angle_between_3_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.angle_between_3_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the angle between 3 particles</p>
 <p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
-<div class="highlight-python"><div class="highlight"><pre>      A
-     /|
-    /i|
-  c/  |
-  /   |
- /    |
-B )g  |b
- \    |
-  \   |
-  a\  |
-    \h|
-     \|
-      C
+<div class="highlight-default"><div class="highlight"><pre><span></span>      <span class="n">A</span>
+     <span class="o">/|</span>
+    <span class="o">/</span><span class="n">i</span><span class="o">|</span>
+  <span class="n">c</span><span class="o">/</span>  <span class="o">|</span>
+  <span class="o">/</span>   <span class="o">|</span>
+ <span class="o">/</span>    <span class="o">|</span>
+<span class="n">B</span> <span class="p">)</span><span class="n">g</span>  <span class="o">|</span><span class="n">b</span>
+ \    <span class="o">|</span>
+  \   <span class="o">|</span>
+  <span class="n">a</span>\  <span class="o">|</span>
+    \<span class="n">h</span><span class="o">|</span>
+     \<span class="o">|</span>
+      <span class="n">C</span>
 </pre></div>
 </div>
 <p>is given by the theorem of Al-Kashi:</p>
@@ -508,66 +508,6 @@ for details</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.mass_center">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">mass_center</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>zeros</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#mass_center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.mass_center" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transforms coordinates according to the center of mass</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> &#8211; list of x coordinates</li>
-<li><strong>y</strong> &#8211; list of y coordinates</li>
-<li><strong>z</strong> &#8211; list of z coordinates</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.rotate_among_y_axis">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">rotate_among_y_axis</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>angle</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#rotate_among_y_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.rotate_among_y_axis" title="Permalink to this definition">¶</a></dt>
-<dd><p>Rotate and object with a list of x, y, z coordinates among its center of
-mass</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.get_center_of_mass">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">get_center_of_mass</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>zeros</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#get_center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
-<dd><p>get the center of mass of a given object with list of x, y, z coordinates</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">find_angle_rotation_improve_x</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>center_of_mass</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#find_angle_rotation_improve_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds the rotation angle needed to face the longest edge of the molecule</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.generate_sphere_points">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">generate_sphere_points</code><span class="sig-paren">(</span><em>n=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#generate_sphere_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.generate_sphere_points" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of 3d coordinates of points on a sphere using the
-Golden Section Spiral algorithm.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> &#8211; number of points in the sphere</td>
-</tr>
-</tbody>
-</table>
-<p>:returns a sphere of radius 1, centered in the origin</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytadbit.utils.three_dim_stats.build_mesh">
-<code class="descclassname">pytadbit.utils.three_dim_stats.</code><code class="descname">build_mesh</code><span class="sig-paren">(</span><em>xis</em>, <em>yis</em>, <em>zis</em>, <em>nloci</em>, <em>nump</em>, <em>radius</em>, <em>superradius</em>, <em>include_edges</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/utils/three_dim_stats.html#build_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.utils.three_dim_stats.build_mesh" title="Permalink to this definition">¶</a></dt>
-<dd><p>Main function for the calculation of the accessibility of a model.</p>
-</dd></dl>
-
 </div>
 
 
@@ -595,7 +535,7 @@ Golden Section Spiral algorithm.</p>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_model.html">IMPmodel class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_structuralmodels.html">StructuralModels class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Utilities</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
@@ -615,9 +555,6 @@ Golden Section Spiral algorithm.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -642,8 +579,8 @@ Golden Section Spiral algorithm.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Sep 27, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

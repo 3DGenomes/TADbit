@@ -31,7 +31,7 @@ Optional packages (but **highly** recommended):
 
 .. note:: **Alternative install**, you can install *python-setuptools*
 and use easy\_install to get these packages (e.g.
-"``easy_install scipy``\ ").
+"``easy_install scipy``").
 
 IMP - 3D modeling
 ~~~~~~~~~~~~~~~~~
@@ -96,14 +96,6 @@ These lines should look like:
           Do not copy the lines above, copy them 
           from ``setup_environment.sh``, where *SOMETHING* 
           is replaced by your real path to IMP.
-
-GEM - mapping
-~~~~~~~~~~~~~
-
-Needed to map reads from next generation seqiencing data. GEM, can be
-downloaded from: https://github.com/gemtools/gemtools
-
-*GEM is only available for linux machines*
 
 MCL - clustering
 ~~~~~~~~~~~~~~~~

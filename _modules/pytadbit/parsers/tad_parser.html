@@ -47,7 +47,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.parsers.tad_parser</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">02 Dec 2012</span>
 
 
@@ -65,7 +65,7 @@
 <span class="sd">    :param handler: path to file</span>
 <span class="sd">    :param 1 bin_size: resolution of the experiment</span>
 
-<span class="sd">    :returns: list of TADs, each TAD being a dict of type:</span>
+<span class="sd">    :returns: list of TADs and list of weights, each TAD being a dict of type:</span>
 
 <span class="sd">    ::</span>
 <span class="sd">    </span>
@@ -80,44 +80,50 @@
         <span class="n">handler</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">handler</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">])):</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s">&#39;start&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
-                <span class="n">end</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s">&#39;end&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
+                <span class="n">end</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
-                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="c"># missing</span>
+                    <span class="n">score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">handler</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="c1"># missing</span>
                     <span class="n">score</span> <span class="o">=</span> <span class="mf">10.0</span>
-                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span> <span class="c"># last one</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span> <span class="c1"># last one</span>
                     <span class="n">score</span> <span class="o">=</span> <span class="mf">10.0</span>
-                <span class="n">tads</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
-                                 <span class="s">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
-                                 <span class="s">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
-                                 <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="c"># the other dict format</span>
+                <span class="n">tads</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+                                 <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+                                 <span class="s1">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+                                 <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="c1"># the other dict format</span>
             <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s">&#39;start&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
-                        <span class="ow">or</span> <span class="ow">not</span> <span class="s">&#39;end&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
-                        <span class="ow">or</span> <span class="ow">not</span> <span class="s">&#39;brk&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
-                        <span class="ow">or</span> <span class="ow">not</span> <span class="s">&#39;score&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">[</span><span class="n">pos</span><span class="p">]):</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;ERROR: bad format</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;start&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+                        <span class="ow">or</span> <span class="ow">not</span> <span class="s1">&#39;end&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+                        <span class="ow">or</span> <span class="ow">not</span> <span class="s1">&#39;brk&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+                        <span class="ow">or</span> <span class="ow">not</span> <span class="s1">&#39;score&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="p">[</span><span class="n">pos</span><span class="p">]):</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: bad format</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">tads</span> <span class="o">=</span> <span class="n">handler</span>
     <span class="k">elif</span> <span class="n">isfile</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span> <span class="k">continue</span>
-            <span class="n">pos</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-            <span class="n">end</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span> <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pos</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">dens</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">pos</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">dens</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">dens</span>  <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dens</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">end</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>   <span class="o">-</span> <span class="mi">1</span>
             <span class="n">pos</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="c"># last one</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="c1"># last one</span>
                 <span class="n">score</span> <span class="o">=</span> <span class="mf">10.0</span>
-            <span class="n">tads</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
-                         <span class="s">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
-                         <span class="s">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
-                         <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
+            <span class="n">tads</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span> <span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+                         <span class="s1">&#39;end&#39;</span>   <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+                         <span class="s1">&#39;brk&#39;</span>   <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+                         <span class="s1">&#39;score&#39;</span> <span class="p">:</span> <span class="n">score</span><span class="p">,</span>
+                         <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="n">dens</span><span class="p">}</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;File </span><span class="si">%s</span><span class="s"> not found</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">handler</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;File </span><span class="si">%s</span><span class="s1"> not found</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">handler</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">tads</span><span class="p">,</span> <span class="n">weights</span></div>
 </pre></div>
 
@@ -145,9 +151,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -167,8 +170,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Sep 27, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

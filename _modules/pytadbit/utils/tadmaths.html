@@ -47,7 +47,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.utils.tadmaths</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">06 Aug 2013</span>
 
 
@@ -59,6 +59,29 @@
 <span class="kn">from</span> <span class="nn">warnings</span>  <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
+
+<span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Median Absolute Deviation: a &quot;Robust&quot; version of standard deviation.</span>
+<span class="sd">        Indices variabililty of the sample.</span>
+<span class="sd">        https://en.wikipedia.org/wiki/Median_absolute_deviation </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">arr</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span> <span class="c1"># should be faster to not use masked arrays.</span>
+    <span class="n">med</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arr</span> <span class="o">-</span> <span class="n">med</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">right_double_mad</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Double Median Absolute Deviation: a &#39;Robust&#39; version of standard deviation.</span>
+<span class="sd">        Indices variabililty of the sample.</span>
+<span class="sd">        http://eurekastatistics.com/using-the-median-absolute-deviation-to-find-outliers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span> <span class="c1"># should be faster to not use masked arrays.</span>
+    <span class="n">med</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">right_mad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">arr</span> <span class="o">&gt;</span>  <span class="n">med</span><span class="p">]</span> <span class="o">-</span> <span class="n">med</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">right_mad</span>
 
 <span class="k">def</span> <span class="nf">newton_raphson</span> <span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">contour</span><span class="p">,</span> <span class="n">sq_length</span><span class="p">,</span> <span class="n">jmax</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xacc</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -77,17 +100,17 @@
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">jmax</span><span class="p">):</span>
         <span class="n">contour_guess</span> <span class="o">=</span> <span class="n">contour</span> <span class="o">/</span> <span class="n">guess</span>
         <span class="n">expcx</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">contour_guess</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="c"># function</span>
+        <span class="c1"># function</span>
         <span class="n">fx</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">contour_guess</span> <span class="o">+</span> <span class="n">expcx</span><span class="p">)</span> <span class="o">-</span> <span class="n">sq_length</span>
-        <span class="c"># derivative</span>
+        <span class="c1"># derivative</span>
         <span class="n">df</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">contour</span> <span class="o">*</span> <span class="n">expcx</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">guess</span> <span class="o">*</span> <span class="p">(</span><span class="n">expcx</span> <span class="o">+</span> <span class="n">contour_guess</span><span class="p">)</span>
 
         <span class="n">dx</span> <span class="o">=</span> <span class="o">-</span><span class="n">fx</span> <span class="o">/</span> <span class="n">df</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">xacc</span><span class="p">:</span>
-            <span class="c"># print (&quot;found root after %d attempts, at %f\n&quot; % (j, x))</span>
+            <span class="c1"># print (&quot;found root after %d attempts, at %f\n&quot; % (j, x))</span>
             <span class="k">return</span> <span class="n">guess</span>
         <span class="n">guess</span> <span class="o">+=</span> <span class="n">dx</span>
-    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;ERROR: exceeded max tries no root</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: exceeded max tries no root</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">Interpolate</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -98,12 +121,12 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_list</span><span class="p">,</span> <span class="n">y_list</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x_list</span><span class="p">,</span> <span class="n">x_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:])):</span>
             <span class="k">if</span> <span class="n">y</span> <span class="o">-</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;x must be in strictly ascending&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;x must be in strictly ascending&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">y</span> <span class="o">-</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_list</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">:</span>
                 <span class="n">x_list</span> <span class="o">=</span> <span class="n">x_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">y_list</span> <span class="o">=</span> <span class="n">y_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x_list</span><span class="p">,</span> <span class="n">x_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:])):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;x must be in strictly ascending&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;x must be in strictly ascending&quot;</span><span class="p">)</span>
         <span class="n">x_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">x_list</span><span class="p">)</span>
         <span class="n">y_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">y_list</span><span class="p">)</span>
         <span class="n">intervals</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x_list</span><span class="p">,</span> <span class="n">x_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">y_list</span><span class="p">,</span> <span class="n">y_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
@@ -118,11 +141,11 @@
     <span class="k">return</span> <span class="n">log10</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">nozero_log</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
-    <span class="c"># Set the virtual minimum of the matrix to half the non-null real minimum</span>
+    <span class="c1"># Set the virtual minimum of the matrix to half the non-null real minimum</span>
     <span class="n">minv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">2</span>
-    <span class="c"># if minv &gt; 1:</span>
-    <span class="c">#     warn(&#39;WARNING: probable problem with normalization, check.\n&#39;)</span>
-    <span class="c">#     minv /= 2  # TODO: something better</span>
+    <span class="c1"># if minv &gt; 1:</span>
+    <span class="c1">#     warn(&#39;WARNING: probable problem with normalization, check.\n&#39;)</span>
+    <span class="c1">#     minv /= 2  # TODO: something better</span>
     <span class="n">logminv</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">minv</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
@@ -131,7 +154,7 @@
             <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">logminv</span>
 
 <span class="k">def</span> <span class="nf">nozero_log_list</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
-    <span class="c"># Set the virtual minimum of the matrix to half the non-null real minimum</span>
+    <span class="c1"># Set the virtual minimum of the matrix to half the non-null real minimum</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">transform</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">minv</span> <span class="o">=</span> <span class="mf">0.</span>
@@ -140,14 +163,14 @@
             <span class="n">minv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span><span class="p">]))</span> <span class="o">/</span> <span class="mi">2</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="n">minv</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="c"># if minv &gt; 1:</span>
-    <span class="c">#     warn(&#39;WARNING: probable problem with normalization, check.\n&#39;)</span>
-    <span class="c">#     minv /= 2  # TODO: something better</span>
+    <span class="c1"># if minv &gt; 1:</span>
+    <span class="c1">#     warn(&#39;WARNING: probable problem with normalization, check.\n&#39;)</span>
+    <span class="c1">#     minv /= 2  # TODO: something better</span>
     <span class="n">logminv</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">minv</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">transform</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="k">else</span> <span class="n">logminv</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">nozero_log_matrix</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">transformation</span><span class="p">):</span>
-    <span class="c"># Set the virtual minimum of the matrix to half the non-null real minimum</span>
+    <span class="c1"># Set the virtual minimum of the matrix to half the non-null real minimum</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">transform</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">minv</span> <span class="o">=</span> <span class="mf">0.</span>
@@ -185,11 +208,11 @@
 <span class="sd">              /</span>
 <span class="sd">  </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># get the log trasnform values</span>
+    <span class="c1"># get the log trasnform values</span>
     <span class="n">nozero_log</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
     <span class="n">mean_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="n">std_v</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span> <span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="c"># replace values by z-score</span>
+    <span class="c1"># replace values by z-score</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
         <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean_v</span><span class="p">)</span> <span class="o">/</span> <span class="n">std_v</span>
 
@@ -237,10 +260,10 @@
     
     <span class="k">return</span> <span class="p">((</span><span class="n">between_cluster</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
             <span class="o">/</span>
-            <span class="p">(</span><span class="n">within_cluster</span> <span class="o">/</span> <span class="p">(</span><span class="n">nmodels</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">))))</span>
+            <span class="p">(</span><span class="n">within_cluster</span> <span class="o">/</span> <span class="p">(</span><span class="n">nmodels</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster_list</span><span class="p">))))</span></div>
 
 
-</div>
+
 <span class="k">def</span> <span class="nf">mean_none</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the mean of a list of values without taking into account the None</span>
@@ -282,9 +305,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -304,8 +324,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Sep 27, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

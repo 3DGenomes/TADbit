@@ -85,11 +85,11 @@ inferred from the distribution of TADs</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
 representing the data matrix and the length of a row/column. With
 the file example.tsv:</p>
-<div class="highlight-python"><div class="highlight"><pre>chrT_001       chrT_002        chrT_003        chrT_004
-chrT_001       629     164     88      105
-chrT_002       164     612     175     110
-chrT_003       88      175     437     100
-chrT_004       105     110     100     278
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>       <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
+<span class="n">chrT_001</span>       <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
+<span class="n">chrT_002</span>       <span class="mi">164</span>     <span class="mi">612</span>     <span class="mi">175</span>     <span class="mi">110</span>
+<span class="n">chrT_003</span>       <span class="mi">88</span>      <span class="mi">175</span>     <span class="mi">437</span>     <span class="mi">100</span>
+<span class="n">chrT_004</span>       <span class="mi">105</span>     <span class="mi">110</span>     <span class="mi">100</span>     <span class="mi">278</span>
 </pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be be:
@@ -98,18 +98,18 @@ chrT_004       105     110     100     278
 </li>
 <li><strong>kw_descr</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>any other argument passed would be stored as
 complementary descriptive field. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">crm</span>  <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="s">&#39;19&#39;</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="s">&#39;mus musculus&#39;</span><span class="p">,</span>
-                  <span class="n">subspecies</span><span class="o">=</span><span class="s">&#39;musculus musculus&#39;</span><span class="p">,</span>
-                  <span class="n">skin_color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">crm</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">crm</span>  <span class="o">=</span> <span class="n">Chromosome</span><span class="p">(</span><span class="s1">&#39;19&#39;</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="s1">&#39;mus musculus&#39;</span><span class="p">,</span>
+                  <span class="n">subspecies</span><span class="o">=</span><span class="s1">&#39;musculus musculus&#39;</span><span class="p">,</span>
+                  <span class="n">skin_color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">crm</span>
 
-<span class="c"># Chromosome 19:</span>
-<span class="c">#    0  experiment loaded: </span>
-<span class="c">#    0  alignment loaded: </span>
-<span class="c">#    species         : mus musculus</span>
-<span class="c">#    assembly version: UNKNOWN</span>
-<span class="c">#    subspecies      : musculus musculus</span>
-<span class="c">#    skin_color      : black</span>
+<span class="c1"># Chromosome 19:</span>
+<span class="c1">#    0  experiment loaded: </span>
+<span class="c1">#    0  alignment loaded: </span>
+<span class="c1">#    species         : mus musculus</span>
+<span class="c1">#    assembly version: UNKNOWN</span>
+<span class="c1">#    subspecies      : musculus musculus</span>
+<span class="c1">#    skin_color      : black</span>
 </pre></div>
 </div>
 <p><em>note that these fields may appear in the header of generated out files</em></p>
@@ -143,11 +143,11 @@ name</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
 representing the data matrix and the length of a row/column. With 
 a file example.tsv containing:</p>
-<div class="highlight-python"><div class="highlight"><pre>chrT_001   chrT_002        chrT_003        chrT_004
-chrT_001   629     164     88      105
-chrT_002   164     612     175     110
-chrT_003   88      175     437     100
-chrT_004   105     110     100     278
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
+<span class="n">chrT_001</span>   <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
+<span class="n">chrT_002</span>   <span class="mi">164</span>     <span class="mi">612</span>     <span class="mi">175</span>     <span class="mi">110</span>
+<span class="n">chrT_003</span>   <span class="mi">88</span>      <span class="mi">175</span>     <span class="mi">437</span>     <span class="mi">100</span>
+<span class="n">chrT_004</span>   <span class="mi">105</span>     <span class="mi">110</span>     <span class="mi">100</span>     <span class="mi">278</span>
 </pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be:
@@ -163,7 +163,7 @@ chrT_004   105     110     100     278
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.align_experiments">
-<code class="descname">align_experiments</code><span class="sig-paren">(</span><em>names=None</em>, <em>verbose=False</em>, <em>randomize=False</em>, <em>rnd_method='interpolate'</em>, <em>rnd_num=1000</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.align_experiments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.align_experiments" title="Permalink to this definition">¶</a></dt>
+<code class="descname">align_experiments</code><span class="sig-paren">(</span><em>names=None</em>, <em>verbose=False</em>, <em>randomize=False</em>, <em>rnd_method='interpolate'</em>, <em>rnd_num=1000</em>, <em>get_score=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.align_experiments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.align_experiments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Align the predicted boundaries of two different experiments. The 
 resulting alignment will be stored in the self.experiment list.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -184,6 +184,8 @@ alignments</li>
 randomized boundaries over Chromosomes of the same size. This will
 return a extra value, the p-value of accepting that the observed
 alignment is not better than a random alignment</li>
+<li><strong>get_score</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; returns alignemnt object, alignment score and
+percentage of identity from one side and from the other</li>
 <li><strong>rnd_method</strong> (<em>interpolate</em>) &#8211; by default uses the interpolation of TAD
 distribution. The alternative method is &#8216;shuffle&#8217;, where TADs are
 simply shuffled</li>
@@ -204,7 +206,7 @@ used (see <a class="reference internal" href="reference_aligner.html#pytadbit.bo
 
 <dl class="method">
 <dt id="pytadbit.chromosome.Chromosome.find_tad">
-<code class="descname">find_tad</code><span class="sig-paren">(</span><em>experiments</em>, <em>weights=None</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='max'</em>, <em>heuristic=True</em>, <em>batch_mode=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_tad</code><span class="sig-paren">(</span><em>experiments</em>, <em>name=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='max'</em>, <em>heuristic=True</em>, <em>batch_mode=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/chromosome.html#Chromosome.find_tad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.chromosome.Chromosome.find_tad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call the <a class="reference internal" href="reference_tadbit.html#pytadbit.tadbit.tadbit" title="pytadbit.tadbit.tadbit"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.tadbit.tadbit()</span></code></a> function to calculate the
 position of Topologically Associated Domain boundaries</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -355,10 +357,10 @@ alignment between these genomic bins</li>
 <li><strong>extras</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; list of coordinates (genomic bin) where to draw a
 red cross</li>
 <li><strong>ymax</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; limit the y axis up to a given value</li>
-<li><strong>)</strong> (<em>(&#8216;grey&#8217;,</em>) &#8211; successive colors for alignment</li>
+<li><strong>)</strong> (<em>('grey',</em>) &#8211; successive colors for alignment</li>
 <li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; normalized Hi-C count are plotted instead of raw
 data.</li>
-<li><strong>shape</strong> (<em>&#8216;ellipse&#8217;</em>) &#8211; which kind of shape to use as schematic
+<li><strong>shape</strong> (<em>'ellipse'</em>) &#8211; which kind of shape to use as schematic
 representation of TADs. Implemented: &#8216;ellipse&#8217;, &#8216;rectangle&#8217;,
 &#8216;triangle&#8217;</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
@@ -383,10 +385,10 @@ of the file name will determine the desired format).</li>
 <li><strong>names</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; name of the experiment to visualize, or list of
 experiment names. If None, all experiments will be shown</li>
 <li><strong>tad</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a given TAD in the form:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
- <span class="s">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
- <span class="s">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
- <span class="s">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+ <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+ <span class="s1">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+ <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Alternatively</strong> a list of the TADs can be passed (all the TADs
@@ -483,7 +485,7 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Chromosome class</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Chromosome class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#load-chromosome">Load chromosome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#experimentlist-class">ExperimentList class</a></li>
 </ul>
@@ -517,9 +519,6 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -544,8 +543,8 @@ experiments simply using Chromosome.experiments.append(Experiment).</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on May 07, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"

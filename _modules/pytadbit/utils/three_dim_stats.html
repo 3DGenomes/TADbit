@@ -47,7 +47,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.utils.three_dim_stats</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">30 Oct 2013</span>
 
 
@@ -60,7 +60,7 @@
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">acos</span>
 
 
-<div class="viewcode-block" id="generate_sphere_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_sphere_points">[docs]</a><span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns list of 3d coordinates of points on a sphere using the</span>
 <span class="sd">    Golden Section Spiral algorithm.</span>
@@ -76,12 +76,12 @@
         <span class="n">y</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">offset</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">offset</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="p">)</span>
         <span class="n">phi</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">inc</span>
-        <span class="c"># points.append(dict(((&#39;x&#39;, cos(phi) * r),(&#39;y&#39;, y),(&#39;z&#39;, sin(phi) * r))))</span>
+        <span class="c1"># points.append(dict(((&#39;x&#39;, cos(phi) * r),(&#39;y&#39;, y),(&#39;z&#39;, sin(phi) * r))))</span>
         <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">points</span>
 
-</div>
-<div class="viewcode-block" id="get_center_of_mass"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.get_center_of_mass">[docs]</a><span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get the center of mass of a given object with list of x, y, z coordinates</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -100,8 +100,8 @@
     <span class="n">zm</span> <span class="o">/=</span> <span class="n">subsize</span>
     <span class="k">return</span> <span class="n">xm</span><span class="p">,</span> <span class="n">ym</span><span class="p">,</span> <span class="n">zm</span>
 
-</div>
-<div class="viewcode-block" id="mass_center"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.mass_center">[docs]</a><span class="k">def</span> <span class="nf">mass_center</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">mass_center</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms coordinates according to the center of mass</span>
 
@@ -116,58 +116,58 @@
         <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">zm</span>
     
 
-<span class="c"># def generate_circle_points(x, y, z, a, b, c, u, v, w, n):</span>
-<span class="c">#     &quot;&quot;&quot;</span>
-<span class="c">#     Returns list of 3d coordinates of points on a circle using the</span>
-<span class="c">#     Rodrigues rotation formula.</span>
-<span class="c">#    </span>
-<span class="c">#     see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*</span>
-<span class="c">#     for details</span>
-<span class="c">#</span>
-<span class="c">#     :param x: x coordinate of a point somewhere on the circle</span>
-<span class="c">#     :param y: y coordinate of a point somewhere on the circle</span>
-<span class="c">#     :param z: z coordinate of a point somewhere on the circle</span>
-<span class="c">#     :param a: x coordinate of the center</span>
-<span class="c">#     :param b: y coordinate of the center</span>
-<span class="c">#     :param c: z coordinate of the center</span>
-<span class="c">#     :param u: 1st element of a vector in the same plane as the circle</span>
-<span class="c">#     :param v: 2nd element of a vector in the same plane as the circle</span>
-<span class="c">#     :param w: 3rd element of a vector in the same plane as the circle</span>
-<span class="c">#     :param n: number of points in the circle</span>
-<span class="c">#</span>
-<span class="c">#     TODO: try simplification for a=b=c=0 (and do the translation in the main</span>
-<span class="c">#           function)</span>
-<span class="c">#     &quot;&quot;&quot;</span>
-<span class="c">#     points = []</span>
-<span class="c">#     offset = 2 * pi / float(n)</span>
-<span class="c">#     u_2 = u**2</span>
-<span class="c">#     v_2 = v**2</span>
-<span class="c">#     w_2 = w**2</span>
-<span class="c">#     dst = u_2 + v_2 + w_2</span>
-<span class="c">#     sqrtdst = sqrt(dst)</span>
-<span class="c">#     uxvywz =  - u*x - v*y - w*z</span>
-<span class="c">#     b_v = b*v</span>
-<span class="c">#     c_w = c*w</span>
-<span class="c">#     a_u = a*u</span>
-<span class="c">#     one = (a * (v_2 + w_2) - u*(b_v + c_w + uxvywz))</span>
-<span class="c">#     two = (b * (u_2 + w_2) - v*(a_u + c_w + uxvywz))</span>
-<span class="c">#     tre = (c * (u_2 + v_2) - w*(a_u + b_v + uxvywz))</span>
-<span class="c">#     onep = sqrtdst * (-c*v + b*w - w*y + v*z)</span>
-<span class="c">#     twop = sqrtdst * ( c*u - a*w + w*x - u*z)</span>
-<span class="c">#     trep = sqrtdst * (-b*u + a*v - v*x + u*y)</span>
-<span class="c">#     for k in range(int(n)):</span>
-<span class="c">#         ang = k * offset</span>
-<span class="c">#         cosang = cos(ang)</span>
-<span class="c">#         dcosang = cosang * dst</span>
-<span class="c">#         sinang = sin(ang)</span>
-<span class="c">#         points.append([(one * (1 - cosang) + x * dcosang + onep * sinang) / dst,</span>
-<span class="c">#                        (two * (1 - cosang) + y * dcosang + twop * sinang) / dst,</span>
-<span class="c">#                        (tre * (1 - cosang) + z * dcosang + trep * sinang) / dst]</span>
-<span class="c">#                       )</span>
-<span class="c">#     return points</span>
+<span class="c1"># def generate_circle_points(x, y, z, a, b, c, u, v, w, n):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Returns list of 3d coordinates of points on a circle using the</span>
+<span class="c1">#     Rodrigues rotation formula.</span>
+<span class="c1">#    </span>
+<span class="c1">#     see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*</span>
+<span class="c1">#     for details</span>
+<span class="c1">#</span>
+<span class="c1">#     :param x: x coordinate of a point somewhere on the circle</span>
+<span class="c1">#     :param y: y coordinate of a point somewhere on the circle</span>
+<span class="c1">#     :param z: z coordinate of a point somewhere on the circle</span>
+<span class="c1">#     :param a: x coordinate of the center</span>
+<span class="c1">#     :param b: y coordinate of the center</span>
+<span class="c1">#     :param c: z coordinate of the center</span>
+<span class="c1">#     :param u: 1st element of a vector in the same plane as the circle</span>
+<span class="c1">#     :param v: 2nd element of a vector in the same plane as the circle</span>
+<span class="c1">#     :param w: 3rd element of a vector in the same plane as the circle</span>
+<span class="c1">#     :param n: number of points in the circle</span>
+<span class="c1">#</span>
+<span class="c1">#     TODO: try simplification for a=b=c=0 (and do the translation in the main</span>
+<span class="c1">#           function)</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     points = []</span>
+<span class="c1">#     offset = 2 * pi / float(n)</span>
+<span class="c1">#     u_2 = u**2</span>
+<span class="c1">#     v_2 = v**2</span>
+<span class="c1">#     w_2 = w**2</span>
+<span class="c1">#     dst = u_2 + v_2 + w_2</span>
+<span class="c1">#     sqrtdst = sqrt(dst)</span>
+<span class="c1">#     uxvywz =  - u*x - v*y - w*z</span>
+<span class="c1">#     b_v = b*v</span>
+<span class="c1">#     c_w = c*w</span>
+<span class="c1">#     a_u = a*u</span>
+<span class="c1">#     one = (a * (v_2 + w_2) - u*(b_v + c_w + uxvywz))</span>
+<span class="c1">#     two = (b * (u_2 + w_2) - v*(a_u + c_w + uxvywz))</span>
+<span class="c1">#     tre = (c * (u_2 + v_2) - w*(a_u + b_v + uxvywz))</span>
+<span class="c1">#     onep = sqrtdst * (-c*v + b*w - w*y + v*z)</span>
+<span class="c1">#     twop = sqrtdst * ( c*u - a*w + w*x - u*z)</span>
+<span class="c1">#     trep = sqrtdst * (-b*u + a*v - v*x + u*y)</span>
+<span class="c1">#     for k in range(int(n)):</span>
+<span class="c1">#         ang = k * offset</span>
+<span class="c1">#         cosang = cos(ang)</span>
+<span class="c1">#         dcosang = cosang * dst</span>
+<span class="c1">#         sinang = sin(ang)</span>
+<span class="c1">#         points.append([(one * (1 - cosang) + x * dcosang + onep * sinang) / dst,</span>
+<span class="c1">#                        (two * (1 - cosang) + y * dcosang + twop * sinang) / dst,</span>
+<span class="c1">#                        (tre * (1 - cosang) + z * dcosang + trep * sinang) / dst]</span>
+<span class="c1">#                       )</span>
+<span class="c1">#     return points</span>
 
-</div>
-<div class="viewcode-block" id="rotate_among_y_axis"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.rotate_among_y_axis">[docs]</a><span class="k">def</span> <span class="nf">rotate_among_y_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">rotate_among_y_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rotate and object with a list of x, y, z coordinates among its center of</span>
 <span class="sd">    mass</span>
@@ -176,18 +176,18 @@
     <span class="n">yj</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">zj</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)):</span>
-        <span class="c">#dist = square_distance((xi, yi, zi), center_of_mass)</span>
+        <span class="c1">#dist = square_distance((xi, yi, zi), center_of_mass)</span>
         <span class="n">xj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xi</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">+</span> <span class="n">zi</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
         <span class="n">yj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
         <span class="n">zj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xi</span><span class="o">*-</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span><span class="o">+</span><span class="n">zi</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="n">yj</span><span class="p">,</span> <span class="n">zj</span>
 
-</div>
-<div class="viewcode-block" id="find_angle_rotation_improve_x"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x">[docs]</a><span class="k">def</span> <span class="nf">find_angle_rotation_improve_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">find_angle_rotation_improve_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Finds the rotation angle needed to face the longest edge of the molecule</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># find most distant point from center of mass:</span>
+    <span class="c1"># find most distant point from center of mass:</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
     <span class="n">xdst</span><span class="p">,</span> <span class="n">ydst</span><span class="p">,</span> <span class="n">zdst</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">square_distance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">))</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">distance</span><span class="p">((</span><span class="n">xdst</span><span class="p">,</span> <span class="n">ydst</span><span class="p">,</span> <span class="n">zdst</span><span class="p">),</span> <span class="n">center_of_mass</span><span class="p">)</span>
@@ -195,7 +195,7 @@
                  <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dist</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">angle</span>
 
-</div>
+
 <div class="viewcode-block" id="generate_circle_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points">[docs]</a><span class="k">def</span> <span class="nf">generate_circle_points</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns list of 3d coordinates of points on a circle using the</span>
@@ -241,9 +241,9 @@
                        <span class="p">(</span><span class="n">two</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cosang</span><span class="p">)</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">dcosang</span> <span class="o">+</span> <span class="n">twop</span> <span class="o">*</span> <span class="n">sinang</span><span class="p">)</span> <span class="o">/</span> <span class="n">dst</span><span class="p">,</span>
                        <span class="p">(</span><span class="n">tre</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cosang</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">dcosang</span> <span class="o">+</span> <span class="n">trep</span> <span class="o">*</span> <span class="n">sinang</span><span class="p">)</span> <span class="o">/</span> <span class="n">dst</span><span class="p">]</span>
                       <span class="p">)</span>
-    <span class="k">return</span> <span class="n">points</span>
+    <span class="k">return</span> <span class="n">points</span></div>
 
-</div>
+
 <div class="viewcode-block" id="square_distance"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.square_distance">[docs]</a><span class="k">def</span> <span class="nf">square_distance</span><span class="p">(</span><span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the square distance between two particles.</span>
@@ -255,8 +255,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">part1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
             <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-            <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-</div>
+            <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
 <span class="k">def</span> <span class="nf">fast_square_distance</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">z2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the square distance between two coordinates.</span>
@@ -282,9 +282,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">part1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
                 <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="angle_between_3_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.angle_between_3_points">[docs]</a><span class="k">def</span> <span class="nf">angle_between_3_points</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">,</span> <span class="n">point3</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the angle between 3 particles</span>
@@ -329,15 +329,15 @@
         <span class="n">g</span> <span class="o">=</span> <span class="n">acos</span><span class="p">((</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">a</span> <span class="o">*</span> <span class="n">c</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="n">g</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="k">return</span> <span class="n">g</span>
+    <span class="k">return</span> <span class="n">g</span></div>
 
-</div>
+
 <span class="k">def</span> <span class="nf">calc_consistency</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
     <span class="n">combines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)]</span>
-    <span class="k">for</span> <span class="n">pm</span> <span class="ow">in</span> <span class="n">consistency_wrapper</span><span class="p">([</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
-                                  <span class="p">[</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;y&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
-                                  <span class="p">[</span><span class="n">model</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
+    <span class="k">for</span> <span class="n">pm</span> <span class="ow">in</span> <span class="n">consistency_wrapper</span><span class="p">([</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
+                                  <span class="p">[</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
+                                  <span class="p">[</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">],</span>
                                   <span class="n">zeros</span><span class="p">,</span>
                                   <span class="n">nloci</span><span class="p">,</span> <span class="n">dcutoff</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)),</span>
                                   <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)):</span>
@@ -346,7 +346,7 @@
     <span class="k">return</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">combines</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="calc_eqv_rmsd"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd">[docs]</a><span class="k">def</span> <span class="nf">calc_eqv_rmsd</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s">&#39;score&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="calc_eqv_rmsd"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd">[docs]</a><span class="k">def</span> <span class="nf">calc_eqv_rmsd</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">,</span>
                   <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the RMSD, dRMSD, the number of equivalent positions and a score</span>
@@ -377,24 +377,24 @@
 <span class="sd">       </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">what</span> <span class="o">=</span> <span class="n">what</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">what</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;score&#39;</span><span class="p">,</span> <span class="s">&#39;rmsd&#39;</span><span class="p">,</span> <span class="s">&#39;drmsd&#39;</span><span class="p">,</span> <span class="s">&#39;eqv&#39;</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;Only &#39;score&#39;, &#39;rmsd&#39;, &#39;drmsd&#39; or &#39;eqv&#39; &quot;</span> <span class="o">+</span>
-                                  <span class="s">&quot;features are available</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
-    <span class="c"># remove particles with zeros from calculation</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">what</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="s1">&#39;rmsd&#39;</span><span class="p">,</span> <span class="s1">&#39;drmsd&#39;</span><span class="p">,</span> <span class="s1">&#39;eqv&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Only &#39;score&#39;, &#39;rmsd&#39;, &#39;drmsd&#39; or &#39;eqv&#39; &quot;</span> <span class="o">+</span>
+                                  <span class="s2">&quot;features are available</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># remove particles with zeros from calculation</span>
     <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">z</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)):</span>
-        <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-        <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-        <span class="n">z</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">z</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)</span> <span class="k">if</span> <span class="n">zeros</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
     <span class="n">zeros</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">True</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))])</span>
     <span class="n">scores</span> <span class="o">=</span> <span class="n">rmsdRMSD_wrapper</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
                               <span class="n">dcutoff</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">),</span>
                               <span class="nb">int</span><span class="p">(</span><span class="n">one</span><span class="p">),</span> <span class="n">what</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">normed</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">scores</span>
+    <span class="k">return</span> <span class="n">scores</span></div>
 
-</div>
+
 <div class="viewcode-block" id="dihedral"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.dihedral">[docs]</a><span class="k">def</span> <span class="nf">dihedral</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates dihedral angle between 4 points in 3D (array with x,y,z)</span>
@@ -408,9 +408,9 @@
     <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">([</span><span class="n">v2</span><span class="p">,</span> <span class="n">v1v2</span><span class="p">,</span> <span class="n">v2v3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
     <span class="n">angle</span> <span class="o">=</span> <span class="n">getAngle</span><span class="p">(</span><span class="n">v1v2</span><span class="p">,</span> <span class="n">v2v3</span><span class="p">)</span>
     <span class="n">angle</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">sign</span><span class="p">)</span> <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;=</span> <span class="mi">90</span> <span class="k">else</span> <span class="p">(</span><span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span><span class="p">,</span> <span class="o">-</span> <span class="n">sign</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">angle</span>
+    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">angle</span></div>
 
-</div>
+
 <span class="k">def</span> <span class="nf">getNormedVector</span><span class="p">(</span><span class="n">dif</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">dif</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dif</span><span class="p">)</span>
 
@@ -423,26 +423,26 @@
         <span class="p">)</span>
 
 
-<div class="viewcode-block" id="build_mesh"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.build_mesh">[docs]</a><span class="k">def</span> <span class="nf">build_mesh</span><span class="p">(</span><span class="n">xis</span><span class="p">,</span> <span class="n">yis</span><span class="p">,</span> <span class="n">zis</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">nump</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">build_mesh</span><span class="p">(</span><span class="n">xis</span><span class="p">,</span> <span class="n">yis</span><span class="p">,</span> <span class="n">zis</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">nump</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main function for the calculation of the accessibility of a model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">superradius</span> <span class="o">=</span> <span class="n">superradius</span> <span class="ow">or</span> <span class="mi">1</span>
-    <span class="c"># number of dots in a circle is dependent the ones in a sphere</span>
+    <span class="c1"># number of dots in a circle is dependent the ones in a sphere</span>
     <span class="n">numc</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">nump</span><span class="p">)</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
     <span class="n">right_angle</span> <span class="o">=</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">pi</span> <span class="o">/</span> <span class="n">numc</span>
-    <span class="c"># keeps the remaining of integer conversion, to correct</span>
+    <span class="c1"># keeps the remaining of integer conversion, to correct</span>
     <span class="n">remaining</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">numc</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">numc</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
     <span class="n">c_count</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="c"># number of circles per sphere needed to get previous equality are</span>
-    <span class="c"># dependent of:</span>
+    <span class="c1"># number of circles per sphere needed to get previous equality are</span>
+    <span class="c1"># dependent of:</span>
     <span class="n">fact</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">nump</span><span class="p">)</span><span class="o">/</span><span class="n">numc</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">radius</span><span class="p">)</span>
-    <span class="c"># starts big loop</span>
-    <span class="n">points</span>    <span class="o">=</span> <span class="p">[]</span> <span class="c"># stores the particle coordinates and,</span>
-                   <span class="c"># if include_edges is True, the edge segments</span>
-    <span class="n">subpoints</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># store the coordinates of each dot in the mesh</span>
-    <span class="n">supersubpoints</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># store the coordinates of each dot in the mesh</span>
-    <span class="n">positions</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># a dict to get dots belonging to a given point</span>
+    <span class="c1"># starts big loop</span>
+    <span class="n">points</span>    <span class="o">=</span> <span class="p">[]</span> <span class="c1"># stores the particle coordinates and,</span>
+                   <span class="c1"># if include_edges is True, the edge segments</span>
+    <span class="n">subpoints</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># store the coordinates of each dot in the mesh</span>
+    <span class="n">supersubpoints</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># store the coordinates of each dot in the mesh</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># a dict to get dots belonging to a given point</span>
     <span class="n">sphere</span>    <span class="o">=</span> <span class="n">generate_sphere_points</span><span class="p">(</span><span class="n">nump</span><span class="p">)</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
@@ -462,10 +462,10 @@
             <span class="n">modelz_1</span> <span class="o">=</span> <span class="n">zis</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>            
         <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="n">modelx</span><span class="p">,</span> <span class="n">modely</span><span class="p">,</span> <span class="n">modelz</span><span class="p">]</span>
         <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
-        <span class="c"># get minimum length from next particle to display the sphere dot</span>
+        <span class="c1"># get minimum length from next particle to display the sphere dot</span>
         <span class="n">adj1</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="p">[</span><span class="n">modelx1</span><span class="p">,</span> <span class="n">modely1</span><span class="p">,</span> <span class="n">modelz1</span><span class="p">])</span>
 
-        <span class="c"># find a vector orthogonal to the axe between particle i and i+1</span>
+        <span class="c1"># find a vector orthogonal to the axe between particle i and i+1</span>
         <span class="n">difx</span> <span class="o">=</span> <span class="n">modelx</span> <span class="o">-</span> <span class="n">modelx1</span>
         <span class="n">dify</span> <span class="o">=</span> <span class="n">modely</span> <span class="o">-</span> <span class="n">modely1</span>
         <span class="n">difz</span> <span class="o">=</span> <span class="n">modelz</span> <span class="o">-</span> <span class="n">modelz1</span>
@@ -473,22 +473,22 @@
             <span class="n">orthox</span> <span class="o">=</span> <span class="mf">1.</span>
             <span class="n">orthoy</span> <span class="o">=</span> <span class="mf">1.</span>
             <span class="n">orthoz</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">difx</span> <span class="o">+</span> <span class="n">dify</span><span class="p">)</span> <span class="o">/</span> <span class="n">difz</span>
-            <span class="c">#normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius</span>
-            <span class="n">normer</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">orthoz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="c"># / radius</span>
+            <span class="c1">#normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius</span>
+            <span class="n">normer</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">orthoz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="c1"># / radius</span>
         <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">orthox</span> <span class="o">=</span> <span class="mf">1.</span>
                 <span class="n">orthoy</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">difx</span> <span class="o">+</span> <span class="n">difz</span><span class="p">)</span> <span class="o">/</span> <span class="n">dify</span>
                 <span class="n">orthoz</span> <span class="o">=</span> <span class="mf">1.</span>
-                <span class="c">#normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius</span>
-                <span class="n">normer</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">orthoz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="c"># / radius</span>
+                <span class="c1">#normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius</span>
+                <span class="n">normer</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">orthoz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="c1"># / radius</span>
             <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">orthox</span> <span class="o">=</span> <span class="mf">1.</span>
                     <span class="n">orthoy</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">difx</span> <span class="o">+</span> <span class="n">difz</span><span class="p">)</span> <span class="o">/</span> <span class="n">dify</span>
                     <span class="n">orthoz</span> <span class="o">=</span> <span class="mf">1.</span>
-                    <span class="c">#normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius</span>
-                    <span class="n">normer</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">orthoz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="c"># / radius</span>
+                    <span class="c1">#normer = sqrt(orthox**2 + orthoy**2 + orthoz**2) / radius</span>
+                    <span class="n">normer</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">orthoz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="c1"># / radius</span>
                 <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
                     <span class="n">orthox</span> <span class="o">=</span> <span class="mf">1.</span>
                     <span class="n">orthoy</span> <span class="o">=</span> <span class="mf">1.</span>
@@ -496,7 +496,7 @@
         <span class="n">orthox</span> <span class="o">/=</span> <span class="n">normer</span>
         <span class="n">orthoy</span> <span class="o">/=</span> <span class="n">normer</span>
         <span class="n">orthoz</span> <span class="o">/=</span> <span class="n">normer</span>
-        <span class="c"># define the number of circle to draw in this section</span>
+        <span class="c1"># define the number of circle to draw in this section</span>
         <span class="n">between</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fact</span> <span class="o">*</span> <span class="n">adj1</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">stepx</span> <span class="o">=</span> <span class="n">difx</span> <span class="o">/</span> <span class="n">between</span>
@@ -506,27 +506,27 @@
             <span class="n">stepx</span> <span class="o">=</span> <span class="n">stepy</span> <span class="o">=</span> <span class="n">stepz</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">hyp1</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">adj1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">radius</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-        <span class="c"># this is an attempt of correction for the integrity of dots</span>
-        <span class="c"># uses intercept theorem</span>
+        <span class="c1"># this is an attempt of correction for the integrity of dots</span>
+        <span class="c1"># uses intercept theorem</span>
         <span class="n">hyp1</span> <span class="o">=</span> <span class="p">(</span><span class="n">hyp1</span> <span class="o">-</span> <span class="n">hyp1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">between</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span>
 
-        <span class="c"># get minimum length from prev particle to display the sphere dot</span>
+        <span class="c1"># get minimum length from prev particle to display the sphere dot</span>
         <span class="k">if</span> <span class="n">i</span><span class="p">:</span>
             <span class="n">adj2</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="p">[</span><span class="n">modelx_1</span><span class="p">,</span> <span class="n">modely_1</span><span class="p">,</span> <span class="n">modelz_1</span><span class="p">])</span>
             <span class="n">hyp2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">adj2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">radius</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-            <span class="c"># this is an attempt of correction for the integrity of dots</span>
+            <span class="c1"># this is an attempt of correction for the integrity of dots</span>
             <span class="n">hyp2</span> <span class="o">=</span> <span class="p">(</span><span class="n">hyp2</span> <span class="o">-</span> <span class="n">hyp2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">between</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span>
 
-        <span class="c"># set sphere around each particle</span>
+        <span class="c1"># set sphere around each particle</span>
         <span class="k">for</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">zzz</span> <span class="ow">in</span> <span class="n">sphere</span><span class="p">:</span>
             <span class="n">thing</span> <span class="o">=</span> <span class="p">[</span><span class="n">xxx</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="n">modelx</span><span class="p">,</span>
                      <span class="n">yyy</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="n">modely</span><span class="p">,</span>
                      <span class="n">zzz</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="n">modelz</span><span class="p">]</span>
-            <span class="c"># same for super mesh</span>
+            <span class="c1"># same for super mesh</span>
             <span class="n">superthing</span> <span class="o">=</span> <span class="p">[</span><span class="n">xxx</span> <span class="o">*</span> <span class="n">superradius</span> <span class="o">+</span> <span class="n">modelx</span><span class="p">,</span>
                           <span class="n">yyy</span> <span class="o">*</span> <span class="n">superradius</span> <span class="o">+</span> <span class="n">modely</span><span class="p">,</span>
                           <span class="n">zzz</span> <span class="o">*</span> <span class="n">superradius</span> <span class="o">+</span> <span class="n">modelz</span><span class="p">]</span>
-            <span class="c"># only place mesh outside torsion angle</span>
+            <span class="c1"># only place mesh outside torsion angle</span>
             <span class="k">if</span> <span class="n">fast_square_distance</span><span class="p">(</span><span class="n">modelx1</span><span class="p">,</span> <span class="n">modely1</span><span class="p">,</span> <span class="n">modelz1</span><span class="p">,</span>
                                     <span class="n">thing</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">thing</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">thing</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">hyp1</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="p">:</span>
@@ -543,7 +543,7 @@
         <span class="k">def</span> <span class="nf">_add_circle</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">ptx</span><span class="p">,</span> <span class="n">pty</span><span class="p">,</span> <span class="n">ptz</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">spoint</span> <span class="ow">in</span> <span class="n">generate_circle_points</span><span class="p">(</span>
                 <span class="n">orthox</span><span class="p">,</span> <span class="n">orthoy</span><span class="p">,</span> <span class="n">orthoz</span><span class="p">,</span> <span class="n">difx</span> <span class="p">,</span><span class="n">dify</span><span class="p">,</span> <span class="n">difz</span><span class="p">,</span>
-                <span class="c"># correction for integer of numc</span>
+                <span class="c1"># correction for integer of numc</span>
                 <span class="n">numc</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">c_count</span><span class="o">%</span><span class="mi">100</span> <span class="o">&lt;</span> <span class="n">remaining</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)):</span>
                 <span class="n">dot</span> <span class="o">=</span> <span class="p">[</span><span class="n">spoint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="n">ptx</span><span class="p">,</span>
                        <span class="n">spoint</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="n">pty</span><span class="p">,</span>
@@ -551,7 +551,7 @@
                 <span class="n">superdot</span> <span class="o">=</span> <span class="p">[</span><span class="n">spoint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">superradius</span> <span class="o">+</span> <span class="n">ptx</span><span class="p">,</span>
                             <span class="n">spoint</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">superradius</span> <span class="o">+</span> <span class="n">pty</span><span class="p">,</span>
                             <span class="n">spoint</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">superradius</span> <span class="o">+</span> <span class="n">ptz</span><span class="p">]</span>
-                <span class="c"># check that dot in circle is not too close from next edge</span>
+                <span class="c1"># check that dot in circle is not too close from next edge</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nloci</span> <span class="o">-</span> <span class="mi">2</span><span class="p">:</span>
                     <span class="n">hyp</span> <span class="o">=</span> <span class="n">distance</span><span class="p">((</span><span class="n">modelx1</span><span class="p">,</span> <span class="n">modely1</span><span class="p">,</span> <span class="n">modelz1</span><span class="p">),</span> <span class="n">dot</span><span class="p">)</span>
                     <span class="n">ang</span> <span class="o">=</span> <span class="n">angle_between_3_points</span><span class="p">(</span><span class="n">dot</span><span class="p">,</span>
@@ -560,7 +560,7 @@
                     <span class="k">if</span> <span class="n">ang</span> <span class="o">&lt;</span> <span class="n">right_angle</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span> <span class="o">*</span> <span class="n">hyp</span> <span class="o">&lt;</span> <span class="n">radius</span><span class="p">:</span>
                             <span class="k">continue</span>
-                <span class="c"># check that dot in circle is not too close from previous edge</span>
+                <span class="c1"># check that dot in circle is not too close from previous edge</span>
                 <span class="k">if</span> <span class="n">i</span><span class="p">:</span>
                     <span class="n">hyp</span> <span class="o">=</span> <span class="n">distance</span><span class="p">((</span><span class="n">modelx</span><span class="p">,</span> <span class="n">modely</span><span class="p">,</span> <span class="n">modelz</span><span class="p">),</span> <span class="n">dot</span><span class="p">)</span>
                     <span class="n">ang</span> <span class="o">=</span> <span class="n">angle_between_3_points</span><span class="p">(</span><span class="n">dot</span><span class="p">,</span>
@@ -569,13 +569,13 @@
                     <span class="k">if</span> <span class="n">ang</span> <span class="o">&lt;</span> <span class="n">right_angle</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">sin</span><span class="p">(</span><span class="n">ang</span><span class="p">)</span> <span class="o">*</span> <span class="n">hyp</span> <span class="o">&lt;</span> <span class="n">radius</span><span class="p">:</span>
                             <span class="k">continue</span>
-                <span class="c"># print &#39;here&#39;</span>
+                <span class="c1"># print &#39;here&#39;</span>
                 <span class="n">subpoints</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dot</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dot</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dot</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
                 <span class="n">supersubpoints</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">superdot</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">superdot</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">superdot</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
                 <span class="n">positions</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">/</span><span class="n">between</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="c"># define slices</span>
+        <span class="c1"># define slices</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">between</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="n">modelx</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="n">stepx</span><span class="p">,</span> <span class="n">modely</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="n">stepy</span><span class="p">,</span> <span class="n">modelz</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="n">stepz</span><span class="p">]</span>
             <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
@@ -583,14 +583,14 @@
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">include_edges</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="c"># define circles</span>
+            <span class="c1"># define circles</span>
             <span class="n">_add_circle</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">pointx</span><span class="p">,</span> <span class="n">pointy</span><span class="p">,</span> <span class="n">pointz</span><span class="p">)</span>
             <span class="n">c_count</span> <span class="o">+=</span> <span class="mi">1</span>
 
-    <span class="c"># add last point!!</span>
+    <span class="c1"># add last point!!</span>
     <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="n">xis</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">yis</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">zis</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span>
     <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
-    <span class="c"># and its sphere</span>
+    <span class="c1"># and its sphere</span>
     <span class="n">adj</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="p">[</span><span class="n">modelx</span><span class="p">,</span> <span class="n">modely</span><span class="p">,</span> <span class="n">modelz</span><span class="p">])</span>
     <span class="n">hyp2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">adj</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">radius</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">hyp2</span> <span class="o">=</span> <span class="p">(</span><span class="n">hyp2</span> <span class="o">-</span> <span class="n">hyp2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">between</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span>
@@ -608,7 +608,10 @@
         <span class="n">positions</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subpoints</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">subpoints</span><span class="p">,</span> <span class="n">supersubpoints</span><span class="p">,</span> <span class="n">positions</span>
-</pre></div></div>
+
+
+
+</pre></div>
 
           </div>
         </div>
@@ -634,9 +637,6 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -656,8 +656,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Sep 27, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
             style="position: absolute; top: 0; right: 0; border: 0;"
