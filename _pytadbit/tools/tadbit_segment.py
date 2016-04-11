@@ -40,15 +40,17 @@ def run(opts):
 
     mreads = path.join(opts.workdir, mreads)
     bad_co = path.join(opts.workdir, bad_co)
-    biases = path.join(opts.workdir, biases)
+    if not opts.only_tads:
+        biases = path.join(opts.workdir, biases)
 
     mkdir(path.join(opts.workdir, '05_segmentation'))
 
     print 'loading %s at resolution %s' % (mreads, nice(reso))
     hic_data = load_hic_data_from_reads(mreads, reso)
     hic_data.bads = dict((int(l.strip()), True) for l in open(bad_co))
-    hic_data.bias = dict((int(l.split()[0]), float(l.split()[1]))
-                         for l in open(biases))
+    if not opts.only_tads:
+        hic_data.bias = dict((int(l.split()[0]), float(l.split()[1]))
+                             for l in open(biases))
 
     # compartments
     cmp_result = {}

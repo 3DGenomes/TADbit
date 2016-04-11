@@ -57,18 +57,21 @@ def run(opts):
     out_bad.close()
 
     # Identify biases
-    print 'Get biases using ICE...'
-    hic_data.normalize_hic(silent=False, max_dev=0.1, iterations=0,
-                           factor=opts.factor)
+    if not opts.filter_only:
+        print 'Get biases using ICE...'
+        hic_data.normalize_hic(silent=False, max_dev=0.1, iterations=0,
+                               factor=opts.factor)
 
     print 'Getting cis/trans...'
-    cis_trans_N_D = hic_data.cis_trans_ratio(normalized=True , diagonal=True )
+    if not opts.filter_only:
+        cis_trans_N_D = hic_data.cis_trans_ratio(normalized=True , diagonal=True )
+        cis_trans_N_d = hic_data.cis_trans_ratio(normalized=True , diagonal=False)
     cis_trans_n_D = hic_data.cis_trans_ratio(normalized=False, diagonal=True )
-    cis_trans_N_d = hic_data.cis_trans_ratio(normalized=True , diagonal=False)
     cis_trans_n_d = hic_data.cis_trans_ratio(normalized=False, diagonal=False)
         
-    print 'Cis/Trans ratio of normalized matrix including the diagonal', cis_trans_N_D
-    print 'Cis/Trans ratio of normalized matrix excluding the diagonal', cis_trans_N_d
+    if not opts.filter_only:
+        print 'Cis/Trans ratio of normalized matrix including the diagonal', cis_trans_N_D
+        print 'Cis/Trans ratio of normalized matrix excluding the diagonal', cis_trans_N_d
     print 'Cis/Trans ratio of raw matrix including the diagonal', cis_trans_n_D
     print 'Cis/Trans ratio of raw matrix excluding the diagonal', cis_trans_n_d
 
@@ -78,7 +81,7 @@ def run(opts):
                                 'interactions_vs_genomic-coords.pdf_%s_%s.pdf' % (
                                     opts.reso, param_hash))
     (_, _, _), (a2, _, _), (_, _, _) = plot_distance_vs_interactions(
-        hic_data, max_diff=10000, resolution=opts.reso, normalized=True,
+        hic_data, max_diff=10000, resolution=opts.reso, normalized=not opts.filter_only,
         savefig=inter_vs_gcoord)
     
     print 'Decay slope 0.7-10 Mb\t%s' % a2
@@ -86,11 +89,13 @@ def run(opts):
     # write biases
     bias_file = path.join(opts.workdir, '04_normalization',
                           'bias_%s_%s.tsv' % (opts.reso, param_hash))
-    out_bias = open(bias_file, 'w')
-    out_bias.write('\n'.join(['%d\t%f' % (i, hic_data.bias[i])
-                              for i in hic_data.bias])
-                   + '\n')
-    out_bias.close()
+    out_bias = 'NA'
+    if not opts.filter_only:
+        out_bias = open(bias_file, 'w')
+        out_bias.write('\n'.join(['%d\t%f' % (i, hic_data.bias[i])
+                                  for i in hic_data.bias])
+                       + '\n')
+        out_bias.close()
 
     # to feed the save_to_db funciton
     intra_dir_nrm_fig = intra_dir_nrm_txt = None
@@ -114,9 +119,10 @@ def run(opts):
                                       'intra_chromosome_nrm_matrices_%s_%s' % (opts.reso, param_hash))
         intra_dir_raw_txt = path.join(opts.workdir, '04_normalization',
                                       'intra_chromosome_raw_matrices_%s_%s' % (opts.reso, param_hash))
-        hic_map(hic_data, normalized=True, by_chrom='intra', cmap='jet',
-                name=path.split(opts.workdir)[-1],
-                savefig=intra_dir_nrm_fig, savedata=intra_dir_nrm_txt)
+        if not opts.filter_only:
+            hic_map(hic_data, normalized=True, by_chrom='intra', cmap='jet',
+                    name=path.split(opts.workdir)[-1],
+                    savefig=intra_dir_nrm_fig, savedata=intra_dir_nrm_txt)
         hic_map(hic_data, normalized=False, by_chrom='intra', cmap='jet',
                 name=path.split(opts.workdir)[-1],
                 savefig=intra_dir_raw_fig, savedata=intra_dir_raw_txt)
@@ -127,17 +133,20 @@ def run(opts):
             inter_dir_nrm_fig = None
             inter_dir_raw_fig = None
         else:
-            inter_dir_nrm_fig = path.join(opts.workdir, '04_normalization',
-                                          'inter_chromosome_nrm_images_%s_%s' % (opts.reso, param_hash))
+            if not opts.filter_only:
+                inter_dir_nrm_fig = path.join(opts.workdir, '04_normalization',
+                                              'inter_chromosome_nrm_images_%s_%s' % (opts.reso, param_hash))
             inter_dir_raw_fig = path.join(opts.workdir, '04_normalization',
                                       'inter_chromosome_raw_images_%s_%s' % (opts.reso, param_hash))
-        inter_dir_nrm_txt = path.join(opts.workdir, '04_normalization',
-                                  'inter_chromosome_nrm_matrices_%s_%s' % (opts.reso, param_hash))
+        if not opts.filter_only:
+            inter_dir_nrm_txt = path.join(opts.workdir, '04_normalization',
+                                          'inter_chromosome_nrm_matrices_%s_%s' % (opts.reso, param_hash))
         inter_dir_raw_txt = path.join(opts.workdir, '04_normalization',
                                   'inter_chromosome_raw_matrices_%s_%s' % (opts.reso, param_hash))
-        hic_map(hic_data, normalized=True, by_chrom='inter', cmap='jet',
-                name=path.split(opts.workdir)[-1],
-                savefig=inter_dir_nrm_fig, savedata=inter_dir_nrm_txt)
+        if not opts.filter_only:
+            hic_map(hic_data, normalized=True, by_chrom='inter', cmap='jet',
+                    name=path.split(opts.workdir)[-1],
+                    savefig=inter_dir_nrm_fig, savedata=inter_dir_nrm_txt)
         hic_map(hic_data, normalized=False, by_chrom='inter', cmap='jet',
                 name=path.split(opts.workdir)[-1],
                 savefig=inter_dir_raw_fig, savedata=inter_dir_raw_txt)
@@ -145,19 +154,22 @@ def run(opts):
     if "genome" in opts.keep:
         print "  Saving normalized genomic matrix..."
         if opts.only_txt:
-            genom_map_nrm_fig = path.join(opts.workdir, '04_normalization',
-                                          'genomic_maps_nrm_%s_%s.pdf' % (opts.reso, param_hash))
+            if not opts.filter_only:
+                genom_map_nrm_fig = path.join(opts.workdir, '04_normalization',
+                                              'genomic_maps_nrm_%s_%s.pdf' % (opts.reso, param_hash))
             genom_map_raw_fig = path.join(opts.workdir, '04_normalization',
                                           'genomic_maps_raw_%s_%s.pdf' % (opts.reso, param_hash))
         else:
             genom_map_nrm_fig = None
             genom_map_raw_fig = None
-        genom_map_nrm_txt = path.join(opts.workdir, '04_normalization',
-                                      'genomic_nrm_%s_%s.tsv' % (opts.reso, param_hash))
+        if not opts.filter_only:
+            genom_map_nrm_txt = path.join(opts.workdir, '04_normalization',
+                                          'genomic_nrm_%s_%s.tsv' % (opts.reso, param_hash))
         genom_map_raw_txt = path.join(opts.workdir, '04_normalization',
                                       'genomic_raw_%s_%s.tsv' % (opts.reso, param_hash))
-        hic_map(hic_data, normalized=True, cmap='jet',
-                name=path.split(opts.workdir)[-1],
+        if not opts.filter_only:
+            hic_map(hic_data, normalized=True, cmap='jet',
+                    name=path.split(opts.workdir)[-1],
                 savefig=genom_map_nrm_fig, savedata=genom_map_nrm_txt)
         hic_map(hic_data, normalized=False, cmap='jet',
                 name=path.split(opts.workdir)[-1],
