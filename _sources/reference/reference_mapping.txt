@@ -6,11 +6,9 @@ Mapping
 -------
 
 
-.. currentmodule:: pytadbit.mapping.mapper
+.. currentmodule:: pytadbit.mapping.full_mapper
 
-.. autofunction:: get_intersection
-
-.. autofunction:: iterative_mapping
+.. autofunction:: full_mapping
 
 
 Quality check and plotting
@@ -39,6 +37,10 @@ Quality check and plotting
 
 Filtering
 ---------
+
+.. currentmodule:: pytadbit.mapping
+
+.. autofunction:: get_intersection
 
 .. currentmodule:: pytadbit.mapping.filter
 
