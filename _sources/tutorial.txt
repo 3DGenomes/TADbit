@@ -2,6 +2,15 @@
 Tutorials
 =========
 
+From FASTQ files to interaction matrices
+----------------------------------------
+
+.. toctree::
+   :maxdepth: 2
+   
+   tutorial/tutorial_0_mapping
+
+
 Identification and Analysis of TADs
 -----------------------------------
 
@@ -23,4 +32,3 @@ Three-dimentional modelling
    tutorial/tutorial_5_parameter_optimization
    tutorial/tutorial_6_modelling_and_analysis
    tutorial/tutorial_7_single_model_analysis
-

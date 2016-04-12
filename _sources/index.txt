@@ -10,17 +10,28 @@
 Welcome to TADbit's documentation!
 ==================================
 
+TADbit is a computational package that deals with 3C-based data (more
+specifically Hi-C data). It handles all the steps from the alignment of
+paired-end reads to the detection of Topologically Associating Domain
+(TAD) borders, compartments and three-dimensional modeling of chromatin
+based on interaction matrices. The different steps:
 
-TADbit is a computational package that deals with 3C-based data (more specifically Hi-C data) to detect Topologically A
-ssociating Domain (TAD) borders and to further analyze TADs by: i) the identification of conserved TAD borders and ii) 
-the definition of sets of TADs sharing structural features iii) the three-dimensional modeling of the chromatin.
+-  preprocessing of paired-end reads from Hi-C experiment
+-  alignment of the reads using
+   `GEM <http://algorithms.cnag.cat/wiki/The_GEM_library>`__
+-  fitering of the mapped reads
+-  construction of interaction matrices and normalization
+-  the identification of TAD borders and compartments
+-  the 1D and 2D comparison of TADs
+-  the three-dimensional modeling of the chromatin
 
-Hi-C experiments generate genomic interaction data that is usually summarized at the chromosome level. TADbit is built 
-around the concept of chromosome, and uses it as a central item to compare different Hi-C experiments. The library has 
-been designed to be used by researchers with minimal level of expertise in computer science; the all-in-one scripts pro
-vided in TADbit allow to run a full analysis in one single command line, while advanced users may produce their own pro
-grams using TADbit as a complementary tool.
+The library has been designed to be used by researchers with minimal
+level of expertise in computer science. A set of the all-in-one scripts
+(called **TADbit tools**) allow to run a full analysis in one single
+command line.
 
+On the other hand, advanced users may produce their own scripts using
+the TADbit API.
 
 Documentation index:
 ~~~~~~~~~~~~~~~~~~~~

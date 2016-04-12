@@ -49,14 +49,27 @@
             
   <div class="section" id="welcome-to-tadbit-s-documentation">
 <h1>Welcome to TADbit&#8217;s documentation!<a class="headerlink" href="#welcome-to-tadbit-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>TADbit is a computational package that deals with 3C-based data (more specifically Hi-C data) to detect Topologically A
-ssociating Domain (TAD) borders and to further analyze TADs by: i) the identification of conserved TAD borders and ii)
-the definition of sets of TADs sharing structural features iii) the three-dimensional modeling of the chromatin.</p>
-<p>Hi-C experiments generate genomic interaction data that is usually summarized at the chromosome level. TADbit is built
-around the concept of chromosome, and uses it as a central item to compare different Hi-C experiments. The library has
-been designed to be used by researchers with minimal level of expertise in computer science; the all-in-one scripts pro
-vided in TADbit allow to run a full analysis in one single command line, while advanced users may produce their own pro
-grams using TADbit as a complementary tool.</p>
+<p>TADbit is a computational package that deals with 3C-based data (more
+specifically Hi-C data). It handles all the steps from the alignment of
+paired-end reads to the detection of Topologically Associating Domain
+(TAD) borders, compartments and three-dimensional modeling of chromatin
+based on interaction matrices. The different steps:</p>
+<ul class="simple">
+<li>preprocessing of paired-end reads from Hi-C experiment</li>
+<li>alignment of the reads using
+<a class="reference external" href="http://algorithms.cnag.cat/wiki/The_GEM_library">GEM</a></li>
+<li>fitering of the mapped reads</li>
+<li>construction of interaction matrices and normalization</li>
+<li>the identification of TAD borders and compartments</li>
+<li>the 1D and 2D comparison of TADs</li>
+<li>the three-dimensional modeling of the chromatin</li>
+</ul>
+<p>The library has been designed to be used by researchers with minimal
+level of expertise in computer science. A set of the all-in-one scripts
+(called <strong>TADbit tools</strong>) allow to run a full analysis in one single
+command line.</p>
+<p>On the other hand, advanced users may produce their own scripts using
+the TADbit API.</p>
 <div class="section" id="documentation-index">
 <h2>Documentation index:<a class="headerlink" href="#documentation-index" title="Permalink to this headline">¶</a></h2>
 <blockquote class="epigraph">
@@ -75,6 +88,10 @@ grams using TADbit as a complementary tool.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#from-fastq-files-to-interaction-matrices">From FASTQ files to interaction matrices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_0_mapping.html">Mapping paired-end reads from NGS experiment (with GEM)</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial.html#identification-and-analysis-of-tads">Identification and Analysis of TADs</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_1_general.html">Getting started</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tutorial/tutorial_2_boundary_alignment.html">Alignment of TAD boundaries</a></li>
