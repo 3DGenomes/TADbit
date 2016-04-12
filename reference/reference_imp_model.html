@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!doctype html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -8,7 +7,7 @@
     
     <title>IMPmodel class &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
@@ -29,13 +28,25 @@
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="StructuralModels class" href="reference_imp_structuralmodels.html" />
-    <link rel="prev" title="IMPoptimizer class" href="reference_imp_optimizer.html" />
-   
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="prev" title="IMPoptimizer class" href="reference_imp_optimizer.html" /> 
   </head>
-  <body role="document">  
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_imp_structuralmodels.html" title="StructuralModels class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_imp_optimizer.html" title="IMPoptimizer class"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -46,11 +57,11 @@
 <dt id="pytadbit.imp.impmodel.load_impmodel_from_cmm">
 <code class="descclassname">pytadbit.imp.impmodel.</code><code class="descname">load_impmodel_from_cmm</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an cmm file of the form:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">marker_set</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">marker</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;7347.50964739&quot;</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;-7743.92836303&quot;</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;-8283.39749204&quot;</span> <span class="n">r</span><span class="o">=</span><span class="s2">&quot;0.00990099009901&quot;</span> <span class="n">g</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> <span class="n">b</span><span class="o">=</span><span class="s2">&quot;0.990099009901&quot;</span> <span class="n">radius</span><span class="o">=</span><span class="s2">&quot;500.0&quot;</span> <span class="n">note</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">/&gt;</span>
-  <span class="o">&lt;</span><span class="n">marker</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;2&quot;</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;7647.90254377&quot;</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;-7308.1816344&quot;</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;-7387.75932893&quot;</span> <span class="n">r</span><span class="o">=</span><span class="s2">&quot;0.019801980198&quot;</span> <span class="n">g</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> <span class="n">b</span><span class="o">=</span><span class="s2">&quot;0.980198019802&quot;</span> <span class="n">radius</span><span class="o">=</span><span class="s2">&quot;500.0&quot;</span> <span class="n">note</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="o">/&gt;</span>
-  <span class="o">&lt;</span><span class="n">link</span> <span class="n">id1</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">id2</span><span class="o">=</span><span class="s2">&quot;2&quot;</span> <span class="n">r</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">g</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">b</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="n">radius</span><span class="o">=</span><span class="s2">&quot;250.0&quot;</span><span class="o">/&gt;</span>
-<span class="o">&lt;/</span><span class="n">marker_set</span><span class="o">&gt;</span>
+<div class="highlight-python"><div class="highlight"><pre>&lt;marker_set name=&quot;1&quot;&gt;
+  &lt;marker id=&quot;1&quot; x=&quot;7347.50964739&quot; y=&quot;-7743.92836303&quot; z=&quot;-8283.39749204&quot; r=&quot;0.00990099009901&quot; g=&quot;0&quot; b=&quot;0.990099009901&quot; radius=&quot;500.0&quot; note=&quot;1&quot;/&gt;
+  &lt;marker id=&quot;2&quot; x=&quot;7647.90254377&quot; y=&quot;-7308.1816344&quot; z=&quot;-7387.75932893&quot; r=&quot;0.019801980198&quot; g=&quot;0&quot; b=&quot;0.980198019802&quot; radius=&quot;500.0&quot; note=&quot;2&quot;/&gt;
+  &lt;link id1=&quot;1&quot; id2=&quot;2&quot; r=&quot;1&quot; g=&quot;1&quot; b=&quot;1&quot; radius=&quot;250.0&quot;/&gt;
+&lt;/marker_set&gt;
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -74,17 +85,17 @@
 <dt id="pytadbit.imp.impmodel.load_impmodel_from_xyz">
 <code class="descclassname">pytadbit.imp.impmodel.</code><code class="descname">load_impmodel_from_xyz</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an xyz file of the form:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ID              : some identifier</span>
-<span class="c1"># SPECIES         : None</span>
-<span class="c1"># CELL TYPE       : None</span>
-<span class="c1"># EXPERIMENT TYPE : Hi-C</span>
-<span class="c1"># RESOLUTION      : 10000</span>
-<span class="c1"># ASSEMBLY        : None</span>
-<span class="c1"># CHROMOSOME      : 19</span>
-<span class="c1"># START           : 1</span>
-<span class="c1"># END             : 50</span>
-<span class="mi">1</span>  <span class="mi">19</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">10000</span>        <span class="mf">44.847</span>     <span class="mf">412.828</span>    <span class="o">-</span><span class="mf">162.673</span>
-<span class="mi">2</span>  <span class="mi">19</span><span class="p">:</span><span class="mi">10001</span><span class="o">-</span><span class="mi">20000</span>   <span class="o">-</span><span class="mf">55.574</span>     <span class="mf">396.869</span>    <span class="o">-</span><span class="mf">129.782</span>
+<div class="highlight-python"><div class="highlight"><pre># ID              : some identifier
+# SPECIES         : None
+# CELL TYPE       : None
+# EXPERIMENT TYPE : Hi-C
+# RESOLUTION      : 10000
+# ASSEMBLY        : None
+# CHROMOSOME      : 19
+# START           : 1
+# END             : 50
+1  19:1-10000        44.847     412.828    -162.673
+2  19:10001-20000   -55.574     396.869    -129.782
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -362,7 +373,7 @@ of the file name will determine the desired format).</li>
 <dd><p>Calculates the persistence length (Lp) of given section of the model.
 Persistence length is calculated according to <a class="reference internal" href="../biblio.html#bystricky2004" id="id1">[Bystricky2004]</a> :</p>
 <div class="math">
-\[&lt;r^2&gt; = 2 \times Lp^2 \times (\frac{Lc}{Lp} - 1 + e^{\frac{-Lc}{Lp}})\]</div>
+\[\begin{split}&lt;r^2&gt; = 2 \times Lp^2 \times (\frac{Lc}{Lp} - 1 + e^{\frac{-Lc}{Lp}})\end{split}\]</div>
 <p>with the contour length as <span class="math">\(Lc = \frac{d}{c}\)</span> where <span class="math">\(d\)</span> is
 the genomic dstance in bp and <span class="math">\(c\)</span> the linear mass density of the
 chromatin (in bp/nm).</p>
@@ -468,36 +479,36 @@ mass of the model</li>
 with radius equal to the radius of gyration of the model</li>
 <li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer.
 The chimera list is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">focus</span>
-<span class="nb">set</span> <span class="n">bg_color</span> <span class="n">white</span>
-<span class="n">windowsize</span> <span class="mi">800</span> <span class="mi">600</span>
-<span class="n">bonddisplay</span> <span class="n">never</span> <span class="c1">#0</span>
-<span class="n">represent</span> <span class="n">wire</span>
-<span class="n">shape</span> <span class="n">tube</span> <span class="c1">#0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on</span>
-<span class="n">clip</span> <span class="n">yon</span> <span class="o">-</span><span class="mi">500</span>
-<span class="o">~</span><span class="n">label</span>
-<span class="nb">set</span> <span class="n">subdivision</span> <span class="mi">1</span>
-<span class="nb">set</span> <span class="n">depth_cue</span>
-<span class="nb">set</span> <span class="n">dc_color</span> <span class="n">black</span>
-<span class="nb">set</span> <span class="n">dc_start</span> <span class="mf">0.5</span>
-<span class="nb">set</span> <span class="n">dc_end</span> <span class="mi">1</span>
-<span class="n">scale</span> <span class="mf">0.8</span>
+<div class="highlight-python"><div class="highlight"><pre>focus
+set bg_color white
+windowsize 800 600
+bonddisplay never #0
+represent wire
+shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+clip yon -500
+~label
+set subdivision 1
+set depth_cue
+set dc_color black
+set dc_start 0.5
+set dc_end 1
+scale 0.8
 </pre></div>
 </div>
 <p>Followed by the movie command to record movies:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">movie</span> <span class="n">record</span> <span class="n">supersample</span> <span class="mi">1</span>
-<span class="n">turn</span> <span class="n">y</span> <span class="mi">3</span> <span class="mi">120</span>
-<span class="n">wait</span> <span class="mi">120</span>
-<span class="n">movie</span> <span class="n">stop</span>
-<span class="n">movie</span> <span class="n">encode</span> <span class="n">output</span> <span class="n">SAVEFIG</span>
+<div class="highlight-python"><div class="highlight"><pre>movie record supersample 1
+turn y 3 120
+wait 120
+movie stop
+movie encode output SAVEFIG
 </pre></div>
 </div>
 <p>Or the copy command for images:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">copy</span> <span class="n">file</span> <span class="n">SAVEFIG</span> <span class="n">png</span>
+<div class="highlight-python"><div class="highlight"><pre>copy file SAVEFIG png
 </pre></div>
 </div>
 <p>Passing as the following list as &#8216;cmd&#8217; parameter:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s1">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s1">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
        <span class="s1">&#39;bonddisplay never #0&#39;</span><span class="p">,</span>
        <span class="s1">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span>
        <span class="s1">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s1">&#39;~label&#39;</span><span class="p">,</span> <span class="s1">&#39;set subdivision 1&#39;</span><span class="p">,</span>
@@ -711,24 +722,20 @@ the file has been written</li>
 <li class="toctree-l2"><a class="reference internal" href="reference_aligner.html">Boundary Aligner</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">IMPmodel class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">IMPmodel class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_structuralmodels.html">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
 </ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">Reference Guide</a><ul>
-      <li>Previous: <a href="reference_imp_optimizer.html" title="previous chapter">IMPoptimizer class</a></li>
-      <li>Next: <a href="reference_imp_structuralmodels.html" title="next chapter">StructuralModels class</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_imp_optimizer.html"
+                        title="previous chapter">IMPoptimizer class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_imp_structuralmodels.html"
+                        title="next chapter">StructuralModels class</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -737,23 +744,38 @@ the file has been written</li>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_imp_structuralmodels.html" title="StructuralModels class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_imp_optimizer.html" title="IMPoptimizer class"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &copy; Copyright .
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>

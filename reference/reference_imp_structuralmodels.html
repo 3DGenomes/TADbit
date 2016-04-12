@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!doctype html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -8,7 +7,7 @@
     
     <title>StructuralModels class &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
@@ -29,13 +28,25 @@
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="Utilities" href="reference_utils.html" />
-    <link rel="prev" title="IMPmodel class" href="reference_imp_model.html" />
-   
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="prev" title="IMPmodel class" href="reference_imp_model.html" /> 
   </head>
-  <body role="document">  
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_utils.html" title="Utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_imp_model.html" title="IMPmodel class"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -61,7 +72,7 @@ zscores)</li>
 <li><strong>experiment</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; experiment from which to do the modelling (used only
 for descriptive purpose)</li>
 <li><strong>coords</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a dictionary like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;crm&#39;</span>  <span class="p">:</span> <span class="s1">&#39;19&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;crm&#39;</span>  <span class="p">:</span> <span class="s1">&#39;19&#39;</span><span class="p">,</span>
  <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">14637</span><span class="p">,</span>
  <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="mi">15689</span><span class="p">}</span>
 </pre></div>
@@ -86,37 +97,37 @@ to a square matrix)</li>
 parameters used to generate the models. The dictionary should contain
 the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
 seen by doing:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span> <span class="k">import</span> <span class="n">CONFIG</span>
+<div class="highlight-python"><div class="highlight"><pre>from pytadbit.imp.CONFIG import CONFIG
 
-<span class="n">where</span> <span class="n">CONFIG</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">dictionary</span> <span class="n">of</span> <span class="n">dictionaries</span> <span class="n">to</span> <span class="n">be</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">this</span> <span class="n">function</span><span class="p">:</span>
+where CONFIG is a dictionary of dictionaries to be passed to this function:
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CONFIG</span> <span class="o">=</span> <span class="p">{</span>
- <span class="s1">&#39;dmel_01&#39;</span><span class="p">:</span> <span class="p">{</span>
-     <span class="c1"># Paramaters for the Hi-C dataset from:</span>
-     <span class="s1">&#39;reference&#39;</span> <span class="p">:</span> <span class="s1">&#39;victor corces dataset 2013&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre>CONFIG = {
+ &#39;dmel_01&#39;: {
+     # Paramaters for the Hi-C dataset from:
+     &#39;reference&#39; : &#39;victor corces dataset 2013&#39;,
 
-     <span class="c1"># Force applied to the restraints inferred to neighbor particles</span>
-     <span class="s1">&#39;kforce&#39;</span>    <span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+     # Force applied to the restraints inferred to neighbor particles
+     &#39;kforce&#39;    : 5,
 
-     <span class="c1"># Maximum experimental contact distance</span>
-     <span class="s1">&#39;maxdist&#39;</span>   <span class="p">:</span> <span class="mi">600</span><span class="p">,</span> <span class="c1"># OPTIMIZATION: 500-1200</span>
+     # Maximum experimental contact distance
+     &#39;maxdist&#39;   : 600, # OPTIMIZATION: 500-1200
 
-     <span class="c1"># Maximum threshold used to decide which experimental values have to be</span>
-     <span class="c1"># included in the computation of restraints. Z-score values greater than upfreq</span>
-     <span class="c1"># and less than lowfreq will be included, while all the others will be rejected</span>
-     <span class="s1">&#39;upfreq&#39;</span>    <span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="c1"># OPTIMIZATION: min/max Z-score</span>
+     # Maximum threshold used to decide which experimental values have to be
+     # included in the computation of restraints. Z-score values greater than upfreq
+     # and less than lowfreq will be included, while all the others will be rejected
+     &#39;upfreq&#39;    : 0.3, # OPTIMIZATION: min/max Z-score
 
-     <span class="c1"># Minimum thresholds used to decide which experimental values have to be</span>
-     <span class="c1"># included in the computation of restraints. Z-score values bigger than upfreq</span>
-     <span class="c1"># and less that lowfreq will be include, whereas all the others will be rejected</span>
-     <span class="s1">&#39;lowfreq&#39;</span>   <span class="p">:</span> <span class="o">-</span><span class="mf">0.7</span> <span class="c1"># OPTIMIZATION: min/max Z-score</span>
+     # Minimum thresholds used to decide which experimental values have to be
+     # included in the computation of restraints. Z-score values bigger than upfreq
+     # and less that lowfreq will be include, whereas all the others will be rejected
+     &#39;lowfreq&#39;   : -0.7 # OPTIMIZATION: min/max Z-score
 
-     <span class="c1"># Space occupied by a nucleotide (nm)</span>
-     <span class="s1">&#39;scale&#39;</span>     <span class="p">:</span> <span class="mf">0.005</span>
+     # Space occupied by a nucleotide (nm)
+     &#39;scale&#39;     : 0.005
 
-     <span class="p">}</span>
- <span class="p">}</span>
+     }
+ }
 </pre></div>
 </div>
 </li>
@@ -302,19 +313,19 @@ each model</li>
 <code class="descname">angle_between_3_particles</code><span class="sig-paren">(</span><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>models=None</em>, <em>cluster=None</em>, <em>radian=False</em>, <em>all_angles=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.angle_between_3_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the angle between 3 particles.</p>
 <p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>      <span class="n">A</span>
-     <span class="o">/|</span>
-    <span class="o">/</span><span class="n">i</span><span class="o">|</span>
-  <span class="n">c</span><span class="o">/</span>  <span class="o">|</span>
-  <span class="o">/</span>   <span class="o">|</span>
- <span class="o">/</span>    <span class="o">|</span>
-<span class="n">B</span> <span class="p">)</span><span class="n">g</span>  <span class="o">|</span><span class="n">b</span>
- \    <span class="o">|</span>
-  \   <span class="o">|</span>
-  <span class="n">a</span>\  <span class="o">|</span>
-    \<span class="n">h</span><span class="o">|</span>
-     \<span class="o">|</span>
-      <span class="n">C</span>
+<div class="highlight-python"><div class="highlight"><pre>      A
+     /|
+    /i|
+  c/  |
+  /   |
+ /    |
+B )g  |b
+ \    |
+  \   |
+  a\  |
+    \h|
+     \|
+      C
 </pre></div>
 </div>
 <p>is given by the theorem of Al-Kashi:</p>
@@ -990,36 +1001,36 @@ with the lowest IMP objective function value</li>
 <li><strong>show</strong> (<em>'all'</em>) &#8211; models to be displayed. Can be either &#8216;all&#8217;, &#8216;grid&#8217;
 or &#8216;highlighted&#8217;.</li>
 <li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer. The chimera list is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">focus</span>
-<span class="nb">set</span> <span class="n">bg_color</span> <span class="n">white</span>
-<span class="n">windowsize</span> <span class="mi">800</span> <span class="mi">600</span>
-<span class="n">bonddisplay</span> <span class="n">never</span> <span class="c1">#0</span>
-<span class="n">represent</span> <span class="n">wire</span>
-<span class="n">shape</span> <span class="n">tube</span> <span class="c1">#0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on</span>
-<span class="n">clip</span> <span class="n">yon</span> <span class="o">-</span><span class="mi">500</span>
-<span class="o">~</span><span class="n">label</span>
-<span class="nb">set</span> <span class="n">subdivision</span> <span class="mi">1</span>
-<span class="nb">set</span> <span class="n">depth_cue</span>
-<span class="nb">set</span> <span class="n">dc_color</span> <span class="n">black</span>
-<span class="nb">set</span> <span class="n">dc_start</span> <span class="mf">0.5</span>
-<span class="nb">set</span> <span class="n">dc_end</span> <span class="mi">1</span>
-<span class="n">scale</span> <span class="mf">0.8</span>
+<div class="highlight-python"><div class="highlight"><pre>focus
+set bg_color white
+windowsize 800 600
+bonddisplay never #0
+represent wire
+shape tube #0 radius 5 bandLength 100 segmentSubdivisions 1 followBonds on
+clip yon -500
+~label
+set subdivision 1
+set depth_cue
+set dc_color black
+set dc_start 0.5
+set dc_end 1
+scale 0.8
 </pre></div>
 </div>
 <p>Followed by the movie command to record movies:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">movie</span> <span class="n">record</span> <span class="n">supersample</span> <span class="mi">1</span>
-<span class="n">turn</span> <span class="n">y</span> <span class="mi">3</span> <span class="mi">120</span>
-<span class="n">wait</span> <span class="mi">120</span>
-<span class="n">movie</span> <span class="n">stop</span>
-<span class="n">movie</span> <span class="n">encode</span> <span class="n">output</span> <span class="n">SAVEFIG</span>
+<div class="highlight-python"><div class="highlight"><pre>movie record supersample 1
+turn y 3 120
+wait 120
+movie stop
+movie encode output SAVEFIG
 </pre></div>
 </div>
 <p>Or the copy command for images:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">copy</span> <span class="n">file</span> <span class="n">SAVEFIG</span> <span class="n">png</span>
+<div class="highlight-python"><div class="highlight"><pre>copy file SAVEFIG png
 </pre></div>
 </div>
 <p>Passing as the following list as &#8216;cmd&#8217; parameter:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s1">&#39;windowsize 800 600&#39;</span><span class="p">,</span> <span class="s1">&#39;bonddisplay never #0&#39;</span><span class="p">,</span> <span class="s1">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span> <span class="s1">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s1">&#39;~label&#39;</span><span class="p">,</span> <span class="s1">&#39;set subdivision 1&#39;</span><span class="p">,</span> <span class="s1">&#39;set depth_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_start 0.5&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_end 1&#39;</span><span class="p">,</span> <span class="s1">&#39;scale 0.8&#39;</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s1">&#39;windowsize 800 600&#39;</span><span class="p">,</span> <span class="s1">&#39;bonddisplay never #0&#39;</span><span class="p">,</span> <span class="s1">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span> <span class="s1">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s1">&#39;~label&#39;</span><span class="p">,</span> <span class="s1">&#39;set subdivision 1&#39;</span><span class="p">,</span> <span class="s1">&#39;set depth_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_start 0.5&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_end 1&#39;</span><span class="p">,</span> <span class="s1">&#39;scale 0.8&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>will return the default image (other commands can be passed to
@@ -1069,16 +1080,16 @@ generated (1 column per step + 1 for particle number).</li>
 </tr>
 </tbody>
 </table>
-<div class="highlight-default"><div class="highlight"><pre><span></span>                      <span class="n">C</span><span class="o">..........</span><span class="n">D</span>
-                   <span class="o">...</span>            <span class="o">...</span>
-                <span class="o">...</span>                 <span class="o">...</span>
-             <span class="o">...</span>                       <span class="o">...</span>
-  <span class="n">A</span><span class="o">..........</span><span class="n">B</span>                            <span class="o">.</span><span class="n">E</span>
- <span class="o">..</span>                                        <span class="o">.</span>
-<span class="o">.</span>                                          <span class="o">.</span>
-                                           <span class="o">.</span>                 <span class="o">.</span>
-                                           <span class="o">.</span>                <span class="o">.</span>
-                                           <span class="n">F</span><span class="o">...............</span><span class="n">G</span>
+<div class="highlight-python"><div class="highlight"><pre>                      C..........D
+                   ...            ...
+                ...                 ...
+             ...                       ...
+  A..........B                            .E
+ ..                                        .
+.                                          .
+                                           .                 .
+                                           .                .
+                                           F...............G
 </pre></div>
 </div>
 </dd></dl>
@@ -1114,16 +1125,16 @@ generated (1 column per step + 1 for particle number).</li>
 </tr>
 </tbody>
 </table>
-<div class="highlight-default"><div class="highlight"><pre><span></span>                      <span class="n">C</span><span class="o">..........</span><span class="n">D</span>
-                   <span class="o">...</span>            <span class="o">...</span>
-                <span class="o">...</span>                 <span class="o">...</span>
-             <span class="o">...</span>                       <span class="o">...</span>
-  <span class="n">A</span><span class="o">..........</span><span class="n">B</span>                            <span class="o">.</span><span class="n">E</span>
- <span class="o">..</span>                                        <span class="o">.</span>
-<span class="o">.</span>                                          <span class="o">.</span>
-                                           <span class="o">.</span>                 <span class="o">.</span>
-                                           <span class="o">.</span>                <span class="o">.</span>
-                                           <span class="n">F</span><span class="o">...............</span><span class="n">G</span>
+<div class="highlight-python"><div class="highlight"><pre>                      C..........D
+                   ...            ...
+                ...                 ...
+             ...                       ...
+  A..........B                            .E
+ ..                                        .
+.                                          .
+                                           .                 .
+                                           .                .
+                                           F...............G
 </pre></div>
 </div>
 </dd></dl>
@@ -1323,23 +1334,19 @@ of the file name will determine the desired format).</li>
 <li class="toctree-l2"><a class="reference internal" href="reference_boundary_alignment.html">Alignment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_optimizer.html">IMPoptimizer class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_imp_model.html">IMPmodel class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">StructuralModels class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">StructuralModels class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_utils.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
 </ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">Reference Guide</a><ul>
-      <li>Previous: <a href="reference_imp_model.html" title="previous chapter">IMPmodel class</a></li>
-      <li>Next: <a href="reference_utils.html" title="next chapter">Utilities</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_imp_model.html"
+                        title="previous chapter">IMPmodel class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_utils.html"
+                        title="next chapter">Utilities</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -1348,23 +1355,38 @@ of the file name will determine the desired format).</li>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_utils.html" title="Utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_imp_model.html" title="IMPmodel class"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &copy; Copyright .
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>

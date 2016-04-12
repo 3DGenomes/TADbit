@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!doctype html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -8,7 +7,7 @@
     
     <title>Experiment class &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
@@ -29,13 +28,25 @@
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="TAD detection functions" href="reference_tadbit.html" />
-    <link rel="prev" title="Chromosome class" href="reference_chromosome.html" />
-   
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="prev" title="Chromosome class" href="reference_chromosome.html" /> 
   </head>
-  <body role="document">  
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_tadbit.html" title="TAD detection functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reference_chromosome.html" title="Chromosome class"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -68,11 +79,11 @@ experiment</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists 
 representing the data matrix and the length of a row/column. With
 the file example.tsv:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>       <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
-<span class="n">chrT_001</span>       <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
-<span class="n">chrT_002</span>       <span class="mi">164</span>     <span class="mi">612</span>     <span class="mi">175</span>     <span class="mi">110</span>
-<span class="n">chrT_003</span>       <span class="mi">88</span>      <span class="mi">175</span>     <span class="mi">437</span>     <span class="mi">100</span>
-<span class="n">chrT_004</span>       <span class="mi">105</span>     <span class="mi">110</span>     <span class="mi">100</span>     <span class="mi">278</span>
+<div class="highlight-python"><div class="highlight"><pre>chrT_001       chrT_002        chrT_003        chrT_004
+chrT_001       629     164     88      105
+chrT_002       164     612     175     110
+chrT_003       88      175     437     100
+chrT_004       105     110     100     278
 </pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be be:
@@ -87,10 +98,10 @@ the TADs</li>
 content of low values</li>
 <li><strong>kw_descr</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>any other argument passed would be stored as
 complementary descriptive field. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">exp</span>  <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s1">&#39;k562_rep2&#39;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">exp</span>  <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s1">&#39;k562_rep2&#39;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
                   <span class="n">identifier</span><span class="o">=</span><span class="s1">&#39;SRX015263&#39;</span><span class="p">,</span> <span class="n">cell_type</span><span class="o">=</span><span class="s1">&#39;K562&#39;</span><span class="p">,</span>
                   <span class="n">enzyme</span><span class="o">=</span><span class="s1">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">cylce</span><span class="o">=</span><span class="s1">&#39;synchronized&#39;</span><span class="p">)</span>
-<span class="nb">print</span> <span class="n">exp</span>
+<span class="k">print</span> <span class="n">exp</span>
 
 <span class="c1"># Experiment k562_rep2:</span>
 <span class="c1">#    resolution        : 100Kb</span>
@@ -211,11 +222,11 @@ name</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. 
 With the file example.tsv:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
-<span class="n">chrT_001</span>   <span class="mi">629</span>     <span class="mi">164</span>     <span class="mi">88</span>      <span class="mi">105</span>
-<span class="n">chrT_002</span>   <span class="mi">86</span>      <span class="mi">612</span>     <span class="mi">175</span>     <span class="mi">110</span>
-<span class="n">chrT_003</span>   <span class="mi">159</span>     <span class="mi">216</span>     <span class="mi">437</span>     <span class="mi">105</span>
-<span class="n">chrT_004</span>   <span class="mi">100</span>     <span class="mi">111</span>     <span class="mi">146</span>     <span class="mi">278</span>
+<div class="highlight-python"><div class="highlight"><pre>chrT_001   chrT_002        chrT_003        chrT_004
+chrT_001   629     164     88      105
+chrT_002   86      612     175     110
+chrT_003   159     216     437     105
+chrT_004   100     111     146     278
 </pre></div>
 </div>
 <p>the output of parser(&#8216;example.tsv&#8217;) would be:
@@ -253,11 +264,11 @@ name</li>
 <li><strong>parser</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a parser function that returns a tuple of lists
 representing the data matrix and the length of a row/column. 
 With the file example.tsv:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chrT_001</span>   <span class="n">chrT_002</span>        <span class="n">chrT_003</span>        <span class="n">chrT_004</span>
-<span class="n">chrT_001</span>   <span class="mf">12.5</span>    <span class="mi">164</span>     <span class="mf">8.8</span>     <span class="mf">0.5</span>
-<span class="n">chrT_002</span>   <span class="mf">8.6</span>     <span class="mf">61.2</span>    <span class="mf">1.5</span>     <span class="mf">1.1</span>
-<span class="n">chrT_003</span>   <span class="mf">15.9</span>    <span class="mf">21.6</span>    <span class="mf">3.7</span>     <span class="mf">0.5</span>
-<span class="n">chrT_004</span>   <span class="mf">0.0</span>     <span class="mf">1.1</span>     <span class="mf">1.6</span>     <span class="mf">2.8</span>
+<div class="highlight-python"><div class="highlight"><pre>chrT_001   chrT_002        chrT_003        chrT_004
+chrT_001   12.5    164     8.8     0.5
+chrT_002   8.6     61.2    1.5     1.1
+chrT_003   15.9    21.6    3.7     0.5
+chrT_004   0.0     1.1     1.6     2.8
 </pre></div>
 </div>
 </li>
@@ -337,33 +348,33 @@ used: [&#8216;cylinder&#8217;, 250, 1500, 50], and for a typical mammalian nucle
 parameters used to generate the models. The dictionary should
 contain the keys kforce, maxdist, upfreq and lowfreq.
 Examples can be seen by doing:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span> <span class="k">import</span> <span class="n">CONFIG</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.imp.CONFIG</span> <span class="kn">import</span> <span class="n">CONFIG</span>
 </pre></div>
 </div>
 <p>where CONFIG is a dictionarry of dictionnaries to be passed to this
 function:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CONFIG</span> <span class="o">=</span> <span class="p">{</span>
- <span class="s1">&#39;dmel_01&#39;</span><span class="p">:</span> <span class="p">{</span>
-     <span class="c1"># use these paramaters with the Hi-C data from:</span>
-     <span class="s1">&#39;reference&#39;</span> <span class="p">:</span> <span class="s1">&#39;victor corces dataset 2013&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre>CONFIG = {
+ &#39;dmel_01&#39;: {
+     # use these paramaters with the Hi-C data from:
+     &#39;reference&#39; : &#39;victor corces dataset 2013&#39;,
 
-     <span class="c1"># Force applied to the restraints inferred to neighbor particles</span>
-     <span class="s1">&#39;kforce&#39;</span>    <span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+     # Force applied to the restraints inferred to neighbor particles
+     &#39;kforce&#39;    : 5,
 
-     <span class="c1"># Maximum experimental contact distance</span>
-     <span class="s1">&#39;maxdist&#39;</span>   <span class="p">:</span> <span class="mi">600</span><span class="p">,</span> <span class="c1"># OPTIMIZATION: 500-1200</span>
+     # Maximum experimental contact distance
+     &#39;maxdist&#39;   : 600, # OPTIMIZATION: 500-1200
 
-     <span class="c1"># Minimum and maximum thresholds used to decide which experimental values have to be</span>
-     <span class="c1"># included in the computation of restraints. Z-score values bigger than upfreq</span>
-     <span class="c1"># and less that lowfreq will be include, whereas all the others will be rejected</span>
-     <span class="s1">&#39;upfreq&#39;</span>    <span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="c1"># OPTIMIZATION: min/max Z-score</span>
+     # Minimum and maximum thresholds used to decide which experimental values have to be
+     # included in the computation of restraints. Z-score values bigger than upfreq
+     # and less that lowfreq will be include, whereas all the others will be rejected
+     &#39;upfreq&#39;    : 0.3, # OPTIMIZATION: min/max Z-score
 
-     <span class="s1">&#39;lowfreq&#39;</span>   <span class="p">:</span> <span class="o">-</span><span class="mf">0.7</span> <span class="c1"># OPTIMIZATION: min/max Z-score</span>
+     &#39;lowfreq&#39;   : -0.7 # OPTIMIZATION: min/max Z-score
 
-     <span class="c1"># How much space (radius in nm) ocupies a nucleotide</span>
-     <span class="s1">&#39;scale&#39;</span>     <span class="p">:</span> <span class="mf">0.005</span>
-     <span class="p">}</span>
- <span class="p">}</span>
+     # How much space (radius in nm) ocupies a nucleotide
+     &#39;scale&#39;     : 0.005
+     }
+ }
 </pre></div>
 </div>
 </li>
@@ -546,7 +557,7 @@ must be a multiple of the original resolution, and higher than it</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>tad</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a given TAD in the form:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
  <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
  <span class="s1">&#39;brk&#39;</span>  <span class="p">:</span> <span class="n">end</span><span class="p">,</span>
  <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">}</span>
@@ -655,7 +666,7 @@ a table.</li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Experiment class</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Experiment class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_tadbit.html">TAD detection functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">TAD clustering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_parser.html">Parsers</a></li>
@@ -669,17 +680,13 @@ a table.</li>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
 </ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">Reference Guide</a><ul>
-      <li>Previous: <a href="reference_chromosome.html" title="previous chapter">Chromosome class</a></li>
-      <li>Next: <a href="reference_tadbit.html" title="next chapter">TAD detection functions</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reference_chromosome.html"
+                        title="previous chapter">Chromosome class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_tadbit.html"
+                        title="next chapter">TAD detection functions</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -688,23 +695,38 @@ a table.</li>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_tadbit.html" title="TAD detection functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reference_chromosome.html" title="Chromosome class"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &copy; Copyright .
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>

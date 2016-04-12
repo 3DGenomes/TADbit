@@ -31,7 +31,7 @@ Optional packages (but **highly** recommended):
 
 .. note:: **Alternative install**, you can install *python-setuptools*
 and use easy\_install to get these packages (e.g.
-"``easy_install scipy``").
+"``easy_install scipy``\ ").
 
 IMP - 3D modeling
 ~~~~~~~~~~~~~~~~~

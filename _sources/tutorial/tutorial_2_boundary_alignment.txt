@@ -187,7 +187,7 @@ Alignment can also be viewed using matplotlib (already mention in :ref:`density_
 
 
 
-.. image:: ../nbpictures/tutorial_2_boundary_alignment_17_0.png
+.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_2_boundary_alignment_17_0.png
 
 
 *Note that this function can also be zoomed in.*
@@ -198,7 +198,7 @@ Alignment can also be viewed using matplotlib (already mention in :ref:`density_
 
 
 
-.. image:: ../nbpictures/tutorial_2_boundary_alignment_19_0.png
+.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_2_boundary_alignment_19_0.png
 
 
 .. code:: python
@@ -208,7 +208,7 @@ Alignment can also be viewed using matplotlib (already mention in :ref:`density_
 
 
 
-.. image:: ../nbpictures/tutorial_2_boundary_alignment_20_0.png
+.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_2_boundary_alignment_20_0.png
 
 
 The get\_column function

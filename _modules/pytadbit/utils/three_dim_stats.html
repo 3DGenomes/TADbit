@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!doctype html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -8,7 +7,7 @@
     
     <title>pytadbit.utils.three_dim_stats &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/black-on-white.css" type="text/css" />
     
@@ -27,13 +26,20 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/TADbit_icon.ico"/>
     <link rel="top" title="Tadbit 0.1 documentation" href="../../../index.html" />
-    <link rel="up" title="pytadbit" href="../../pytadbit.html" />
-   
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="up" title="pytadbit" href="../../pytadbit.html" /> 
   </head>
-  <body role="document">  
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" accesskey="U">pytadbit</a> &raquo;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -41,7 +47,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.utils.three_dim_stats</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">30 Oct 2013</span>
 
 
@@ -54,7 +60,7 @@
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">acos</span>
 
 
-<span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_sphere_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_sphere_points">[docs]</a><span class="k">def</span> <span class="nf">generate_sphere_points</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns list of 3d coordinates of points on a sphere using the</span>
 <span class="sd">    Golden Section Spiral algorithm.</span>
@@ -74,8 +80,8 @@
         <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">points</span>
 
-
-<span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="get_center_of_mass"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.get_center_of_mass">[docs]</a><span class="k">def</span> <span class="nf">get_center_of_mass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get the center of mass of a given object with list of x, y, z coordinates</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -94,8 +100,8 @@
     <span class="n">zm</span> <span class="o">/=</span> <span class="n">subsize</span>
     <span class="k">return</span> <span class="n">xm</span><span class="p">,</span> <span class="n">ym</span><span class="p">,</span> <span class="n">zm</span>
 
-
-<span class="k">def</span> <span class="nf">mass_center</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="mass_center"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.mass_center">[docs]</a><span class="k">def</span> <span class="nf">mass_center</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms coordinates according to the center of mass</span>
 
@@ -160,8 +166,8 @@
 <span class="c1">#                       )</span>
 <span class="c1">#     return points</span>
 
-
-<span class="k">def</span> <span class="nf">rotate_among_y_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="rotate_among_y_axis"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.rotate_among_y_axis">[docs]</a><span class="k">def</span> <span class="nf">rotate_among_y_axis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rotate and object with a list of x, y, z coordinates among its center of</span>
 <span class="sd">    mass</span>
@@ -176,8 +182,8 @@
         <span class="n">zj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xi</span><span class="o">*-</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span><span class="o">+</span><span class="n">zi</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="n">yj</span><span class="p">,</span> <span class="n">zj</span>
 
-
-<span class="k">def</span> <span class="nf">find_angle_rotation_improve_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="find_angle_rotation_improve_x"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x">[docs]</a><span class="k">def</span> <span class="nf">find_angle_rotation_improve_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">center_of_mass</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Finds the rotation angle needed to face the longest edge of the molecule</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -189,7 +195,7 @@
                  <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dist</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">angle</span>
 
-
+</div>
 <div class="viewcode-block" id="generate_circle_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points">[docs]</a><span class="k">def</span> <span class="nf">generate_circle_points</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns list of 3d coordinates of points on a circle using the</span>
@@ -235,9 +241,9 @@
                        <span class="p">(</span><span class="n">two</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cosang</span><span class="p">)</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">dcosang</span> <span class="o">+</span> <span class="n">twop</span> <span class="o">*</span> <span class="n">sinang</span><span class="p">)</span> <span class="o">/</span> <span class="n">dst</span><span class="p">,</span>
                        <span class="p">(</span><span class="n">tre</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cosang</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">dcosang</span> <span class="o">+</span> <span class="n">trep</span> <span class="o">*</span> <span class="n">sinang</span><span class="p">)</span> <span class="o">/</span> <span class="n">dst</span><span class="p">]</span>
                       <span class="p">)</span>
-    <span class="k">return</span> <span class="n">points</span></div>
+    <span class="k">return</span> <span class="n">points</span>
 
-
+</div>
 <div class="viewcode-block" id="square_distance"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.square_distance">[docs]</a><span class="k">def</span> <span class="nf">square_distance</span><span class="p">(</span><span class="n">part1</span><span class="p">,</span> <span class="n">part2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the square distance between two particles.</span>
@@ -249,8 +255,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">part1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
             <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-            <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
-
+            <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+</div>
 <span class="k">def</span> <span class="nf">fast_square_distance</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">z2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the square distance between two coordinates.</span>
@@ -276,9 +282,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">part1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
                 <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
-                <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+                <span class="p">(</span><span class="n">part1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">part2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
-
+</div>
 <div class="viewcode-block" id="angle_between_3_points"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.angle_between_3_points">[docs]</a><span class="k">def</span> <span class="nf">angle_between_3_points</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">,</span> <span class="n">point3</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the angle between 3 particles</span>
@@ -323,9 +329,9 @@
         <span class="n">g</span> <span class="o">=</span> <span class="n">acos</span><span class="p">((</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">a</span> <span class="o">*</span> <span class="n">c</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="n">g</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="k">return</span> <span class="n">g</span></div>
+    <span class="k">return</span> <span class="n">g</span>
 
-
+</div>
 <span class="k">def</span> <span class="nf">calc_consistency</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">dcutoff</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
     <span class="n">combines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nloci</span><span class="p">)]</span>
@@ -386,9 +392,9 @@
     <span class="n">scores</span> <span class="o">=</span> <span class="n">rmsdRMSD_wrapper</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
                               <span class="n">dcutoff</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">),</span>
                               <span class="nb">int</span><span class="p">(</span><span class="n">one</span><span class="p">),</span> <span class="n">what</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">normed</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">scores</span></div>
+    <span class="k">return</span> <span class="n">scores</span>
 
-
+</div>
 <div class="viewcode-block" id="dihedral"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.dihedral">[docs]</a><span class="k">def</span> <span class="nf">dihedral</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates dihedral angle between 4 points in 3D (array with x,y,z)</span>
@@ -402,9 +408,9 @@
     <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">([</span><span class="n">v2</span><span class="p">,</span> <span class="n">v1v2</span><span class="p">,</span> <span class="n">v2v3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
     <span class="n">angle</span> <span class="o">=</span> <span class="n">getAngle</span><span class="p">(</span><span class="n">v1v2</span><span class="p">,</span> <span class="n">v2v3</span><span class="p">)</span>
     <span class="n">angle</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">sign</span><span class="p">)</span> <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;=</span> <span class="mi">90</span> <span class="k">else</span> <span class="p">(</span><span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span><span class="p">,</span> <span class="o">-</span> <span class="n">sign</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">angle</span></div>
+    <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">angle</span>
 
-
+</div>
 <span class="k">def</span> <span class="nf">getNormedVector</span><span class="p">(</span><span class="n">dif</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">dif</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dif</span><span class="p">)</span>
 
@@ -417,7 +423,7 @@
         <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">build_mesh</span><span class="p">(</span><span class="n">xis</span><span class="p">,</span> <span class="n">yis</span><span class="p">,</span> <span class="n">zis</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">nump</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="p">):</span>
+<div class="viewcode-block" id="build_mesh"><a class="viewcode-back" href="../../../reference/reference_utils.html#pytadbit.utils.three_dim_stats.build_mesh">[docs]</a><span class="k">def</span> <span class="nf">build_mesh</span><span class="p">(</span><span class="n">xis</span><span class="p">,</span> <span class="n">yis</span><span class="p">,</span> <span class="n">zis</span><span class="p">,</span> <span class="n">nloci</span><span class="p">,</span> <span class="n">nump</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">superradius</span><span class="p">,</span> <span class="n">include_edges</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Main function for the calculation of the accessibility of a model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -604,7 +610,7 @@
     <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">subpoints</span><span class="p">,</span> <span class="n">supersubpoints</span><span class="p">,</span> <span class="n">positions</span>
 
 
-
+</div>
 </pre></div>
 
           </div>
@@ -622,17 +628,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../biblio.html">Bibliography</a></li>
 </ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../../../index.html">Documentation overview</a><ul>
-  <li><a href="../../index.html">Module code</a><ul>
-  <li><a href="../../pytadbit.html">pytadbit</a><ul>
-  </ul></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
@@ -641,23 +637,33 @@
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../pytadbit.html" >pytadbit</a> &raquo;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &copy; Copyright .
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>

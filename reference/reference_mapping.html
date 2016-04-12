@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!doctype html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -8,7 +7,7 @@
     
     <title>From FASTQ to matrix &mdash; Tadbit 0.1 documentation</title>
     
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/forkme_nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/black-on-white.css" type="text/css" />
     
@@ -29,13 +28,25 @@
     <link rel="top" title="Tadbit 0.1 documentation" href="../index.html" />
     <link rel="up" title="Reference Guide" href="index.html" />
     <link rel="next" title="Chromosome class" href="reference_chromosome.html" />
-    <link rel="prev" title="Reference Guide" href="index.html" />
-   
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="prev" title="Reference Guide" href="index.html" /> 
   </head>
-  <body role="document">  
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference_chromosome.html" title="Chromosome class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Reference Guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Reference Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -385,30 +396,30 @@ dangling-ends, self-circle, PCR artifacts...)</p>
 <dl class="docutils">
 <dt>Applied filters are:    </dt>
 <dd><dl class="first last docutils">
-<dt>1- self-circle</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span><dd>point to the outside (&#8212;-&lt;===&#8212;===&gt;&#8212;)</dd>
-<dt>2- dangling-end</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span><dd>point to the inside (&#8212;-===&gt;&#8212;&lt;===&#8212;)</dd>
-<dt>3- error</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span><dd>point in the same direction</dd>
-<dt>4- extra dangling-end</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from different RE fragment but</span><dd>are close enough (&lt; max_molecule length) and point to the inside</dd>
-<dt>5- too close from RES</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">semi-dangling-end filter, start position of one</span><dd>of the read is too close (5 bp by default) from RE cutting site. This
+<dt>1- self-circle <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
+<dd>point to the outside (&#8212;-&lt;===&#8212;===&gt;&#8212;)</dd>
+<dt>2- dangling-end <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
+<dd>point to the inside (&#8212;-===&gt;&#8212;&lt;===&#8212;)</dd>
+<dt>3- error <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from a single RE fragment and</span></dt>
+<dd>point in the same direction</dd>
+<dt>4- extra dangling-end <span class="classifier-delimiter">:</span> <span class="classifier">reads are coming from different RE fragment but</span></dt>
+<dd>are close enough (&lt; max_molecule length) and point to the inside</dd>
+<dt>5- too close from RES <span class="classifier-delimiter">:</span> <span class="classifier">semi-dangling-end filter, start position of one</span></dt>
+<dd>of the read is too close (5 bp by default) from RE cutting site. This
 filter is skipped in case read is involved in multi-contact. This
 filter may be too conservative for 4bp cutter REs.</dd>
-<dt>6- too short</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">remove reads coming from small restriction less</span><dd>than 100 bp (default) because they are comparable to the read length</dd>
-<dt>7- too large</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">remove reads coming from large restriction</span><dd>fragments (default: 100 Kb, P &lt; 10-5 to occur in a randomized genome)
+<dt>6- too short <span class="classifier-delimiter">:</span> <span class="classifier">remove reads coming from small restriction less</span></dt>
+<dd>than 100 bp (default) because they are comparable to the read length</dd>
+<dt>7- too large <span class="classifier-delimiter">:</span> <span class="classifier">remove reads coming from large restriction</span></dt>
+<dd>fragments (default: 100 Kb, P &lt; 10-5 to occur in a randomized genome)
 as they likely represent poorly assembled or repeated regions</dd>
-<dt>8- over-represented</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">reads coming from the top 0.5% most frequently</span><dd>detected restriction fragments, they may be prone to PCR artifacts or
+<dt>8- over-represented <span class="classifier-delimiter">:</span> <span class="classifier">reads coming from the top 0.5% most frequently</span></dt>
+<dd>detected restriction fragments, they may be prone to PCR artifacts or
 represent fragile regions of the genome or genome assembly errors</dd>
-<dt>9- duplicated</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">the combination of the start positions of the</span><dd>reads is repeated -&gt; PCR artifact (only keep one copy)</dd>
-<dt>10- random breaks</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">start position of one of the read is too far (</span><dd>more than min_dist_to_re) from RE cutting site. Non-canonical
+<dt>9- duplicated <span class="classifier-delimiter">:</span> <span class="classifier">the combination of the start positions of the</span></dt>
+<dd>reads is repeated -&gt; PCR artifact (only keep one copy)</dd>
+<dt>10- random breaks <span class="classifier-delimiter">:</span> <span class="classifier">start position of one of the read is too far (</span></dt>
+<dd>more than min_dist_to_re) from RE cutting site. Non-canonical
 enzyme activity or random physical breakage of the chromatin.</dd>
 </dl>
 </dd>
@@ -494,7 +505,7 @@ reads filtered, not the valid pairs.</li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">From FASTQ to matrix</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="">From FASTQ to matrix</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#mapping">Mapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#quality-check-and-plotting">Quality check and plotting</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#filtering">Filtering</a></li>
@@ -515,17 +526,13 @@ reads filtered, not the valid pairs.</li>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../biblio.html">Bibliography</a></li>
 </ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">Reference Guide</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">Reference Guide</a></li>
-      <li>Next: <a href="reference_chromosome.html" title="next chapter">Chromosome class</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Reference Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference_chromosome.html"
+                        title="next chapter">Chromosome class</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -534,23 +541,38 @@ reads filtered, not the valid pairs.</li>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference_chromosome.html" title="Chromosome class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Reference Guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Tadbit 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Reference Guide</a> &raquo;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &copy; Copyright .
+      Last updated on Apr 12, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div><style>div.related ul {padding-right:150px;}</style>
+        <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
+            style="position: absolute; top: 0; right: 0; border: 0;"
+            src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   </body>
 </html>
