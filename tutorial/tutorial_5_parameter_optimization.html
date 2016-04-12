@@ -126,7 +126,7 @@ first thing we need to do is to filter columns with low counts:</p>
 /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
   return array(a, dtype, copy=False, order=order)
 </pre>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_11_1.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_11_1.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_11_1.png" src="../_images/tutorial_5_parameter_optimization_11_1.png" />
 <pre class="ansi-block literal-block">
 [Experiment k562 (resolution: 100Kb, TADs: 37, Hi-C rows: 639, normalized: visibility_factor:1), Experiment gm06690 (resolution: 100Kb, TADs: 34, Hi-C rows: 639, normalized: visibility_factor:1), Experiment k562+gm06690 (resolution: 100Kb, TADs: None, Hi-C rows: 639, normalized: visibility_factor:2), Experiment batch_gm06690_k562 (resolution: 100Kb, TADs: 35, Hi-C rows: 639, normalized: None)]
 </pre>
@@ -283,13 +283,13 @@ Preparing to optimize 101 particles
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_23_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_23_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_23_0.png" src="../_images/tutorial_5_parameter_optimization_23_0.png" />
 <p>We can also ask to mark on the plot the best N combination of parameters with the &#8220;show_best&#8221; parameter.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c1"># Visualize the results of the optimization and mark the best 10 parameter sets</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_25_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_25_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_25_0.png" src="../_images/tutorial_5_parameter_optimization_25_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">axes_range</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">scale_range</span><span class="p">],</span>
                     <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">maxdist_range</span><span class="p">],</span>
                     <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">upfreq_range</span><span class="p">],</span>
@@ -322,17 +322,17 @@ Preparing to optimize 101 particles
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s1">&#39;lowfreq&#39;</span><span class="p">,</span> <span class="s1">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">),</span><span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_28_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_28_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_28_0.png" src="../_images/tutorial_5_parameter_optimization_28_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;scale&quot;</span><span class="p">:</span><span class="mf">0.01</span><span class="p">},</span> <span class="n">show_best</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_29_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_29_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_29_0.png" src="../_images/tutorial_5_parameter_optimization_29_0.png" />
 <p>TADbit also provides the possibility to view it all together in a 3D plot (note that, while here its a static image, inside matplotlib GUI you would be able to turn around and zoom):</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c1"># Visualize the results of the optimization using a 3D representation with the three optimization parameters in the axis.</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">plot_3d</span><span class="p">(</span><span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;maxdist&#39;</span><span class="p">,</span> <span class="s1">&#39;upfreq&#39;</span><span class="p">,</span> <span class="s1">&#39;lowfreq&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_31_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_31_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_31_0.png" src="../_images/tutorial_5_parameter_optimization_31_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">run_grid_search</span><span class="p">(</span><span class="n">n_cpus</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lowfreq_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="n">upfreq_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
                           <span class="n">scale_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">],</span> <span class="n">maxdist_range</span><span class="o">=</span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span><span class="mi">2250</span><span class="p">,</span><span class="mi">2500</span><span class="p">,</span><span class="mi">2750</span><span class="p">,</span><span class="mi">3000</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
@@ -340,11 +340,11 @@ Preparing to optimize 101 particles
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_33_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_33_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_33_0.png" src="../_images/tutorial_5_parameter_optimization_33_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_34_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_34_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_34_0.png" src="../_images/tutorial_5_parameter_optimization_34_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer</span><span class="o">.</span><span class="n">write_result</span><span class="p">(</span><span class="s1">&#39;results.log&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -366,7 +366,7 @@ Preparing to optimize 101 particles
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">optimizer2</span><span class="o">.</span><span class="n">plot_2d</span><span class="p">(</span><span class="n">show_best</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_39_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_5_parameter_optimization_39_0.png" />
+<img alt="../_images/tutorial_5_parameter_optimization_39_0.png" src="../_images/tutorial_5_parameter_optimization_39_0.png" />
 </div>
 <div class="section" id="retrieve-best-parameters">
 <h2>Retrieve best parameters<a class="headerlink" href="#retrieve-best-parameters" title="Permalink to this headline">¶</a></h2>

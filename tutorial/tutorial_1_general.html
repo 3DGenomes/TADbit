@@ -205,7 +205,7 @@ chromosome.</p>
 /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:1090: RuntimeWarning: divide by zero encountered in log2
   img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
 </pre>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_27_1.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_27_1.png" />
+<img alt="../_images/tutorial_1_general_27_1.png" src="../_images/tutorial_1_general_27_1.png" />
 <pre class="ansi-block literal-block">
 &lt;matplotlib.image.AxesImage at 0x7f6fa312e7d0&gt;
 </pre>
@@ -215,7 +215,7 @@ the chromosome object.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;k562&#39;</span><span class="p">,</span> <span class="s1">&#39;gm06690&#39;</span><span class="p">),</span> <span class="s1">&#39;k562+gm06690&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_29_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_29_0.png" />
+<img alt="../_images/tutorial_1_general_29_0.png" src="../_images/tutorial_1_general_29_0.png" />
 <p>Note how we pass the list of experiments to show to the <a class="reference internal" href="../reference/reference_chromosome.html#pytadbit.chromosome.Chromosome.visualize" title="pytadbit.chromosome.Chromosome.visualize"><code class="xref py py-func docutils literal"><span class="pre">pytadbit.chromosome.Chromosome.visualize()</span></code></a> we ask to view 3 experiments, the first two being grouped in a single matrix. This view is useful to compare experiments, and do not suppose a lose of information as Hi-C matrices are symetric.</p>
 </div>
 </div>
@@ -333,7 +333,7 @@ have to be multiplied by the resolution of the experiment,
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_43_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_43_0.png" />
+<img alt="../_images/tutorial_1_general_43_0.png" src="../_images/tutorial_1_general_43_0.png" />
 <p>In this case we can also put them side by side, view a given region, and
 use nrmalized data instead of the log2 of raw data:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">([(</span><span class="s1">&#39;k562&#39;</span><span class="p">,</span> <span class="s1">&#39;gm06690&#39;</span><span class="p">)],</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">490</span><span class="p">,</span><span class="mi">620</span><span class="p">),</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -343,7 +343,7 @@ use nrmalized data instead of the log2 of raw data:</p>
 /usr/local/lib/python2.7/dist-packages/pytadbit/experiment.py:1090: RuntimeWarning: invalid value encountered in log2
   img = axe.imshow(fun(matrix), origin='lower', vmin=vmin, vmax=vmax,
 </pre>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_45_1.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_45_1.png" />
+<img alt="../_images/tutorial_1_general_45_1.png" src="../_images/tutorial_1_general_45_1.png" />
 <p><em>Note that the width of the line is proportional to the score of the TAD
 border.</em></p>
 </div>
@@ -353,7 +353,7 @@ border.</em></p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">tad_density_plot</span><span class="p">(</span><span class="s1">&#39;k562&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_50_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_50_0.png" />
+<img alt="../_images/tutorial_1_general_50_0.png" src="../_images/tutorial_1_general_50_0.png" />
 <p>In this plot, each grey-filled-arc represents a TAD. The eight of the
 TAD is proportional to the relative amount of interactions in this TAD.
 If this relative amount of interactions is higher than 1 (dark grey
@@ -391,7 +391,7 @@ identification of the border.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">my_chrom</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s1">&#39;k562&#39;</span><span class="p">,</span> <span class="n">paint_tads</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_61_0.png" src="home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_1_general_61_0.png" />
+<img alt="../_images/tutorial_1_general_61_0.png" src="../_images/tutorial_1_general_61_0.png" />
 <p>Another optional inspection performed by TADbit is the presence of
 centromeric regions. TADbit assumes that the larger gap found in a Hi-C
 matrix corresponds to the centromere. In the case of this example we set

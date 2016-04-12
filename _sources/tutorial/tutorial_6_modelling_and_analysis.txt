@@ -221,7 +221,7 @@ One measure to check whether the IMP optimization has reached equilibrium is to 
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_16_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_16_0.png
 
 
 One important aspect is to identfy whether the set of models has a good correlation with the input HiC data. This can be done with a single function that affects the models.
@@ -236,7 +236,7 @@ One important aspect is to identfy whether the set of models has a good correlat
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_18_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_18_0.png
 
 
 
@@ -253,7 +253,7 @@ One important aspect is to identfy whether the set of models has a good correlat
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_19_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_19_0.png
 
 
 .. code:: python
@@ -273,7 +273,7 @@ One important aspect is to identfy whether the set of models has a good correlat
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_20_1.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_20_1.png
 
 
 Model analysis
@@ -337,7 +337,7 @@ Once a cluster is generated, one can plot it for easy visualization. The "y" axi
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_27_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_27_0.png
 
 
 One can also show the similarity betwen clusters for a limited number of them (5 in this example)
@@ -350,7 +350,7 @@ One can also show the similarity betwen clusters for a limited number of them (5
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_29_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_29_0.png
 
 
 Models consistency
@@ -366,7 +366,7 @@ To assess how "deterministic" a cluster is, one can calculate for each particle 
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_32_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_32_0.png
 
 
 Be aware that this measure makes sense using only models within a cluster and not models from different clusters.
@@ -384,7 +384,7 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_36_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_36_0.png
 
 
 .. code:: python
@@ -394,7 +394,7 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_37_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_37_0.png
 
 
 .. code:: python
@@ -403,7 +403,7 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_38_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_38_0.png
 
 
 .. code:: python
@@ -412,7 +412,7 @@ From the 3D models, the DNA density (or local compactness) can be calculated as 
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_39_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_39_0.png
 
 
 Models contact map
@@ -439,15 +439,15 @@ The goal of TADbit is to find a 3D structure (or ensemble of structures) that be
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_44_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_44_0.png
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_44_1.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_44_1.png
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_44_2.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_44_2.png
 
 
 
@@ -486,7 +486,7 @@ Lets plot the distribution used to get this median value.
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_49_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_49_0.png
 
 
 We may also want to use only the 10 first models (lowest energy), or the models belonging to a cluster (example cluster 1).
@@ -498,7 +498,7 @@ We may also want to use only the 10 first models (lowest energy), or the models 
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_51_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_51_0.png
 
 
 .. code:: python
@@ -508,7 +508,7 @@ We may also want to use only the 10 first models (lowest energy), or the models 
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_52_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_52_0.png
 
 
 Save and load models and analysis
@@ -584,7 +584,7 @@ To properly insert the images/videos in this tutorial, we need to import librari
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_63_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_63_0.png
 
 
 *Note that we represent with colors, only 1 model, the centromere. An
@@ -600,7 +600,7 @@ visualization:
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_66_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_66_0.png
 
 
 We can also color only the border, and in this view, borders are colored
@@ -612,7 +612,7 @@ according to their score:
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_68_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_68_0.png
 
 
 .. code:: python
@@ -644,7 +644,7 @@ according to their score:
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_6_modelling_and_analysis_71_0.png
+.. image:: ../nbpictures//tutorial_6_modelling_and_analysis_71_0.png
 
 
 

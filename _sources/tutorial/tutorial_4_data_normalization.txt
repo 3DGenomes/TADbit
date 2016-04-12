@@ -41,7 +41,7 @@ human's 19th chromosome:
 
 
 
-.. image:: /home/fransua/Box/tadbits/tadbit/doc/notebooks/tutorial_4_data_normalization_4_1.png
+.. image:: ../nbpictures//tutorial_4_data_normalization_4_1.png
 
 
 .. ansi-block::
