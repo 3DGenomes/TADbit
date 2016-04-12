@@ -58,15 +58,7 @@ Each of this replica consists of severa SRA files:
 
 .. ansi-block::
 
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400260/SRR400260.sra
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400261/SRR400261.sra
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400262/SRR400262.sra
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400263/SRR400263.sra
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400264/SRR400264.sra
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400265/SRR400265.sra
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400266/SRR400266.sra
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400267/SRR400267.sra
-    /home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400268/SRR400268.sra
+    ls: cannot access /home/fransua/db/FASTQs/hsap/dixon_2012/*/*/*.sra: No such file or directory
 
 
 First quality check on the data
@@ -78,8 +70,18 @@ the SRA-toolkit from the NCBI (https://github.com/ncbi/sratoolkit). We
 finally shall endup with a single FASTQ file per experimental replica,
 with commands like (can last for hours):
 
-``fastq-dump -A SRX116345 --gzip SRX116345/*/*.sra``
-``fastq-dump -A SRX116344 --gzip SRX116344/*/*.sra``
+.. code:: python
+
+    %%bash
+    fastq-dump -DQ '+' --defline-seq '@$ac.$si' --split-files -A SRX116345 --gzip -O /scratch/db/FASTQs/hsap/dixon_2012/
+
+
+.. ansi-block::
+
+    2016-04-12T13:43:58 fastq-dump.2.5.7 err: item not found while constructing within virtual database module - the path 'SRX116345' cannot be opened as database or table
+
+
+fastq-dump -A SRX116344 --gzip SRX116344/\ */*.sra
 
 the compressed FASTQ files should be:
 
@@ -105,7 +107,7 @@ experiment with TADbit:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_12_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_15_0.png
 
 
 .. code:: python
@@ -117,7 +119,7 @@ experiment with TADbit:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_13_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_16_0.png
 
 
 Iterative mapping
@@ -402,7 +404,7 @@ Plot iterative mapping
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_30_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_33_0.png
 
 
 Merging mapped "read1" and "read2"
@@ -446,7 +448,7 @@ the filtering process.
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_38_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_41_0.png
 
 
 Simple descriptive stats
@@ -471,7 +473,7 @@ regions that, each, spans over 10 kb (resolution parameter).
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_42_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_45_0.png
 
 
 Genomic coverage of our reads
@@ -492,7 +494,7 @@ with falls around centromeres and telomeres.
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_46_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_49_0.png
 
 
 *The picks in the plot correspond to PCR artifact that we will remove in
@@ -509,7 +511,7 @@ of chromosomes
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_49_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_52_0.png
 
 
 Interaction matrix
@@ -542,7 +544,7 @@ matrices eigen-vectors are not very informative however).
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_53_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_56_1.png
 
 
 Filter reads
@@ -665,7 +667,7 @@ dangling-ends and self-circle along the genome
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_66_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_69_0.png
 
 
 Once filtered the peaks previously seen should disapeear:
@@ -677,7 +679,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_68_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_71_0.png
 
 
 .. code:: python
@@ -687,7 +689,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_69_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_72_0.png
 
 
 .. code:: python
@@ -696,7 +698,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_70_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_73_0.png
 
 
 These maps can be zoomed to a given region, like first chromosome:
@@ -707,7 +709,7 @@ These maps can be zoomed to a given region, like first chromosome:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_72_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_75_0.png
 
 
 Same as above, calling the focus using directly chromosome name and
@@ -719,7 +721,7 @@ using a smaller resolution (100 kb):
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_74_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_77_0.png
 
 
 Filtering and normalization
@@ -761,7 +763,7 @@ file of reads:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_82_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_85_0.png
 
 
 .. code:: python
@@ -789,7 +791,7 @@ file of reads:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_83_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_86_1.png
 
 
 .. ansi-block::
@@ -830,7 +832,7 @@ representation:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_85_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_88_1.png
 
 
 Normalization
@@ -860,6 +862,6 @@ basically consists constructing a new in dividing each cell
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_89_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_92_0.png
 
 

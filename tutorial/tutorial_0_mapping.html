@@ -94,15 +94,7 @@ conducted on <em>Homo sapiens</em> IMR90 and ESC (replicate 1 in both cases).</p
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400260/SRR400260.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400261/SRR400261.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400262/SRR400262.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116344/SRR400263/SRR400263.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400264/SRR400264.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400265/SRR400265.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400266/SRR400266.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400267/SRR400267.sra
-/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345/SRR400268/SRR400268.sra
+ls: cannot access /home/fransua/db/FASTQs/hsap/dixon_2012/*/*/*.sra: No such file or directory
 </pre>
 </div>
 <div class="section" id="first-quality-check-on-the-data">
@@ -112,8 +104,14 @@ support reading directly from SRA. For this purpose we may want to use
 the SRA-toolkit from the NCBI (<a class="reference external" href="https://github.com/ncbi/sratoolkit">https://github.com/ncbi/sratoolkit</a>). We
 finally shall endup with a single FASTQ file per experimental replica,
 with commands like (can last for hours):</p>
-<p><code class="docutils literal"><span class="pre">fastq-dump</span> <span class="pre">-A</span> <span class="pre">SRX116345</span> <span class="pre">--gzip</span> <span class="pre">SRX116345/*/*.sra</span></code>
-<code class="docutils literal"><span class="pre">fastq-dump</span> <span class="pre">-A</span> <span class="pre">SRX116344</span> <span class="pre">--gzip</span> <span class="pre">SRX116344/*/*.sra</span></code></p>
+<div class="code python highlight-python"><div class="highlight"><pre>%%bash
+fastq-dump -DQ &#39;+&#39; --defline-seq &#39;@$ac.$si&#39; --split-files -A SRX116345 --gzip -O /scratch/db/FASTQs/hsap/dixon_2012/
+</pre></div>
+</div>
+<pre class="ansi-block literal-block">
+2016-04-12T13:43:58 fastq-dump.2.5.7 err: item not found while constructing within virtual database module - the path 'SRX116345' cannot be opened as database or table
+</pre>
+<p>fastq-dump -A SRX116344 &#8211;gzip SRX116344/<em>/</em>.sra</p>
 <p>the compressed FASTQ files should be:</p>
 <div class="code python highlight-python"><div class="highlight"><pre>! ls ~/db/FASTQs/hsap/dixon_2012/
 </pre></div>
@@ -129,14 +127,14 @@ experiment with TADbit:</p>
              <span class="n">nreads</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">paired</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_12_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_12_0.png" />
+<img alt="../_images/tutorial_0_mapping_15_0.png" src="../_images/tutorial_0_mapping_15_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pytadbit.utils.fastq_utils</span> <span class="kn">import</span> <span class="n">quality_plot</span>
 
 <span class="n">quality_plot</span><span class="p">(</span><span class="s1">&#39;/home/fransua/db/FASTQs/hsap/dixon_2012/SRX116345.fastq.gz&#39;</span><span class="p">,</span>
              <span class="n">nreads</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="s1">&#39;HindIII&#39;</span><span class="p">,</span> <span class="n">paired</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_13_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_13_0.png" />
+<img alt="../_images/tutorial_0_mapping_16_0.png" src="../_images/tutorial_0_mapping_16_0.png" />
 </div>
 <div class="section" id="iterative-mapping">
 <h3>Iterative mapping<a class="headerlink" href="#iterative-mapping" title="Permalink to this headline">¶</a></h3>
@@ -384,7 +382,7 @@ loading GEM file: /scratch/mapped_reads/SRX116344_200_r2.sam.2.1:102-121
 <span class="n">lengths</span> <span class="o">=</span> <span class="n">plot_iterative_mapping</span><span class="p">(</span><span class="n">reads1</span><span class="p">,</span> <span class="n">reads2</span><span class="p">,</span> <span class="n">total_reads</span><span class="o">=</span><span class="mi">51493359</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_30_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_30_0.png" />
+<img alt="../_images/tutorial_0_mapping_33_0.png" src="../_images/tutorial_0_mapping_33_0.png" />
 </div>
 <div class="section" id="merging-mapped-read1-and-read2">
 <h3>Merging mapped &#8220;read1&#8221; and &#8220;read2&#8221;<a class="headerlink" href="#merging-mapped-read1-and-read2" title="Permalink to this headline">¶</a></h3>
@@ -414,7 +412,7 @@ the filtering process.</p>
 <span class="n">insert_sizes</span><span class="p">(</span><span class="n">reads</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_38_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_38_0.png" />
+<img alt="../_images/tutorial_0_mapping_41_0.png" src="../_images/tutorial_0_mapping_41_0.png" />
 </div>
 </div>
 <div class="section" id="simple-descriptive-stats">
@@ -432,7 +430,7 @@ regions that, each, spans over 10 kb (resolution parameter).</p>
 <span class="n">plot_distance_vs_interactions</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">max_diff</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_42_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_42_0.png" />
+<img alt="../_images/tutorial_0_mapping_45_0.png" src="../_images/tutorial_0_mapping_45_0.png" />
 </div>
 <div class="section" id="genomic-coverage-of-our-reads">
 <h4>Genomic coverage of our reads<a class="headerlink" href="#genomic-coverage-of-our-reads" title="Permalink to this headline">¶</a></h4>
@@ -446,7 +444,7 @@ with falls around centromeres and telomeres.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_46_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_46_0.png" />
+<img alt="../_images/tutorial_0_mapping_49_0.png" src="../_images/tutorial_0_mapping_49_0.png" />
 <p><em>The picks in the plot correspond to PCR artifact that we will remove in
 the filtering step (see bellow)</em></p>
 <p>This plot can be zoomed in the y axis in order to avoid depending on
@@ -456,7 +454,7 @@ of chromosomes</p>
                           <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">],</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_49_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_49_0.png" />
+<img alt="../_images/tutorial_0_mapping_52_0.png" src="../_images/tutorial_0_mapping_52_0.png" />
 </div>
 <div class="section" id="interaction-matrix">
 <h4>Interaction matrix<a class="headerlink" href="#interaction-matrix" title="Permalink to this headline">¶</a></h4>
@@ -480,7 +478,7 @@ matrices eigen-vectors are not very informative however).</p>
 /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
   ret = ret.dtype.type(ret / rcount)
 </pre>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_53_1.png" src="tutorial/../nbpictures//tutorial_0_mapping_53_1.png" />
+<img alt="../_images/tutorial_0_mapping_56_1.png" src="../_images/tutorial_0_mapping_56_1.png" />
 </div>
 </div>
 </div>
@@ -578,33 +576,33 @@ dangling-ends and self-circle along the genome</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">sc_de</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_66_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_66_0.png" />
+<img alt="../_images/tutorial_0_mapping_69_0.png" src="../_images/tutorial_0_mapping_69_0.png" />
 <p>Once filtered the peaks previously seen should disapeear:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">],</span>
                          <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_68_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_68_0.png" />
+<img alt="../_images/tutorial_0_mapping_71_0.png" src="../_images/tutorial_0_mapping_71_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">],</span>
                          <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_69_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_69_0.png" />
+<img alt="../_images/tutorial_0_mapping_72_0.png" src="../_images/tutorial_0_mapping_72_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_70_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_70_0.png" />
+<img alt="../_images/tutorial_0_mapping_73_0.png" src="../_images/tutorial_0_mapping_73_0.png" />
 <p>These maps can be zoomed to a given region, like first chromosome:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_72_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_72_0.png" />
+<img alt="../_images/tutorial_0_mapping_75_0.png" src="../_images/tutorial_0_mapping_75_0.png" />
 <p>Same as above, calling the focus using directly chromosome name and
 using a smaller resolution (100 kb):</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_74_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_74_0.png" />
+<img alt="../_images/tutorial_0_mapping_77_0.png" src="../_images/tutorial_0_mapping_77_0.png" />
 </div>
 <div class="section" id="filtering-and-normalization">
 <h2>Filtering and normalization<a class="headerlink" href="#filtering-and-normalization" title="Permalink to this headline">¶</a></h2>
@@ -634,7 +632,7 @@ file of reads:</p>
 <span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_82_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_82_0.png" />
+<img alt="../_images/tutorial_0_mapping_85_0.png" src="../_images/tutorial_0_mapping_85_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_data</span><span class="o">.</span><span class="n">filter_columns</span><span class="p">(</span><span class="n">draw_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -654,7 +652,7 @@ WARNING: removing columns having more than 2327 zeroes:
 /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
   return array(a, dtype, copy=False, order=order)
 </pre>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_83_1.png" src="tutorial/../nbpictures//tutorial_0_mapping_83_1.png" />
+<img alt="../_images/tutorial_0_mapping_86_1.png" src="../_images/tutorial_0_mapping_86_1.png" />
 <pre class="ansi-block literal-block">
 /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:145: ComplexWarning: Casting complex values to real discards the imaginary part
   round(root, 3), ' '.join(
@@ -685,7 +683,7 @@ representation:</p>
 /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
   ret = ret.dtype.type(ret / rcount)
 </pre>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_85_1.png" src="tutorial/../nbpictures//tutorial_0_mapping_85_1.png" />
+<img alt="../_images/tutorial_0_mapping_88_1.png" src="../_images/tutorial_0_mapping_88_1.png" />
 </div>
 <div class="section" id="normalization">
 <h3>Normalization<a class="headerlink" href="#normalization" title="Permalink to this headline">¶</a></h3>
@@ -705,7 +703,7 @@ iterative correction
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_89_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_89_0.png" />
+<img alt="../_images/tutorial_0_mapping_92_0.png" src="../_images/tutorial_0_mapping_92_0.png" />
 </div>
 </div>
 </div>
