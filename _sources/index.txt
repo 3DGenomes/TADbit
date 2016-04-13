@@ -44,6 +44,8 @@ Documentation index:
      install
   
      tutorial
+     
+     tools
   
      reference/index
   
