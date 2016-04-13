@@ -1,7 +1,5 @@
 """
 24 Oct 2013
-
-
 """
 
 import os, re
@@ -18,8 +16,8 @@ def main():
     for fname in os.listdir(PATH):
         if not fname.endswith('.ipynb'):
             continue
-        # os.system('jupyter nbconvert --format=rst ' + fname)
-        os.system('jupyter nbconvert --to rst ' + os.path.join(PATH, fname))
+        os.system('jupyter nbconvert --to rst %s --output %s' % (
+            os.path.join(PATH, fname), os.path.join(PATH, fname[:-6] + '.rst')))
         extra = (fname.split('_')[0] + '/') if '_' in fname else ''
         passing = False
         lines = []
@@ -38,8 +36,10 @@ def main():
             line = re.sub('parsed-literal', 'ansi-block', line)
             if extra:
                 line = re.sub(fname[:-6] + '_files/', '../nbpictures/', line)
+                line = re.sub(os.path.join(PATH), '../nbpictures/', line)
             else:
                 line = re.sub(fname[:-6] + '_files/', 'nbpictures/', line)
+                line = re.sub(os.path.join(PATH), 'nbpictures/', line)
             lines.append(line)
         out = open(os.path.join(CURPATH, 'source', extra + fname[:-6] + '.rst'), 'w')
         out.write(''.join(lines))
