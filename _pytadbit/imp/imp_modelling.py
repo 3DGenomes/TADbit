@@ -178,6 +178,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
     # verbose
     global VERBOSE
     VERBOSE = verbose
+    #VERBOSE = 3
 
     models, bad_models = multi_process_model_generation(
         n_cpus, n_models, n_keep, keep_all)
@@ -229,12 +230,17 @@ def _get_restraints():
     """
     model = {'rk'    : IMP.FloatKey("radius"),
              'model' : Model(),
+             'rs'    : None, # 2.6.1 compat 
              'ps'    : None}
     model['ps'] = ListSingletonContainer(IMP.core.create_xyzr_particles(
         model['model'], len(LOCI), RADIUS, 100000))
     model['ps'].set_name("")
 
     # set container
+    try:
+        model['rs'] = IMP.RestraintSet(model['model']) # 2.6.1 compat 
+    except:
+        pass
     model['container'] = CONFIG['container']
     if model['container']['shape'] == 'cylinder':
          # define a segment of a given size
@@ -247,7 +253,10 @@ def _get_restraints():
                 IMP.core.HarmonicUpperBound(model['container']['radius'],
                                             model['container']['cforce']), bb),
             model['ps'])
-        model['model'].add_restraint(rb)
+	try:
+	       model['model'].add_restraint(rb)
+	except:
+	       model['rs'].add_restraint(rb) # 2.6.1 compat
         rb.evaluate(False)
     # elif model['container']['shape']:
     #     raise noti
@@ -266,7 +275,10 @@ def _get_restraints():
             ss  = IMP.core.DistanceToSingletonScore(
                 ub, model['container']['center'])
             rss = IMP.core.SingletonRestraint(ss, p1)
-            model['model'].add_restraint(rss)
+            try:
+	            model['model'].add_restraint(rss) 
+            except:
+	            model['rs'].add_restraint(rss) # 2.6.1 compat
             rss.evaluate(False)
         for j in range(i+1, len(LOCI)):
             p2 = model['ps'].get_particle(j)
@@ -338,6 +350,7 @@ def generate_IMPmodel(rand_init):
     log_energies = []
     model = {'rk'    : IMP.FloatKey("radius"),
              'model' : Model(),
+             'rs'    : None, # 2.6.1 compat
              'ps'    : None,
              'pps'   : None}
     model['ps'] = ListSingletonContainer(IMP.core.create_xyzr_particles(
@@ -352,7 +365,10 @@ def generate_IMPmodel(rand_init):
         #p.set_value(model['rk'], RADIUS)
 
     # Restraints between pairs of LOCI proportional to the PDIST
-    model['pps']  = IMP.kernel.ParticlePairsTemp()
+    try:
+        model['pps']  = IMP.kernel.ParticlePairsTemp()
+    except:
+        model['pps']  = IMP.ParticlePairsTemp() # 2.6.1 compat
 
     # CALL BIG FUNCTION
     if rand_init == START and verbose == 0.5:
@@ -360,6 +376,11 @@ def generate_IMPmodel(rand_init):
         stdout.write("# Harmonic\tpart1\tpart2\tdist\tkforce\n")
 
     # set container
+    try:
+        model['rs'] = IMP.RestraintSet(model['model']) # 2.6.1 compat
+    except:
+        pass
+    restraints = [] # 2.6.1 compat
     model['container'] = CONFIG['container']
     if model['container']['shape'] == 'cylinder':
          # define a segment of a given size
@@ -372,8 +393,12 @@ def generate_IMPmodel(rand_init):
                 IMP.core.HarmonicUpperBound(model['container']['radius'],
                                             model['container']['cforce']), bb),
             model['ps'])
-        model['model'].add_restraint(rb)
+        try:
+	        model['model'].add_restraint(rb)
+        except:
+	        model['rs'].add_restraint(rb) # 2.6.1 compat
         rb.evaluate(False)
+        
     # elif model['container']['shape']:
     #     raise noti
 
@@ -382,11 +407,20 @@ def generate_IMPmodel(rand_init):
     # Setup an excluded volume restraint between a bunch of particles
     # with radius
     r = IMP.core.ExcludedVolumeRestraint(model['ps'], CONFIG['kforce'])
-    model['model'].add_restraint(r)
+    try:
+        model['model'].add_restraint(r)
+    except:
+        model['rs'].add_restraint(r) # 2.6.1 compat
+        restraints.append(model['rs'])
+        scoring_function = IMP.core.RestraintsScoringFunction(restraints)
 
     if verbose == 3:
-        print "Total number of restraints: %i" % (
-            model['model'].get_number_of_restraints())
+	   try:
+	       "Total number of restraints: %i" % (
+		      model['model'].get_number_of_restraints())
+	   except:
+	       "Total number of restraints: %i" % (
+		      model['rs'].get_number_of_restraints()) # 2.6.1 compat
 
     # Set up optimizer
     try:
@@ -394,7 +428,15 @@ def generate_IMPmodel(rand_init):
         lo.set_model(model['model'])
     except: # since version 2.5, IMP goes this way
         lo = IMP.core.ConjugateGradients(model['model'])
+    try:
+        lo.set_scoring_function(scoring_function) # 2.6.1 compat
+    except:
+        pass
     o = IMP.core.MonteCarloWithLocalOptimization(lo, LSTEPS)
+    try:
+        o.set_scoring_function(scoring_function) # 2.6.1 compat
+    except:
+        pass
     o.set_return_best(True)
     fk = IMP.core.XYZ.get_xyz_keys()
     ptmp = model['ps'].get_particles()
@@ -404,12 +446,15 @@ def generate_IMPmodel(rand_init):
 
     # Optimizer's parameters
     if verbose == 3:
-        print "nrounds: %i, steps: %i, lsteps: %i" % (NROUNDS, STEPS, LSTEPS)
+         "nrounds: %i, steps: %i, lsteps: %i" % (NROUNDS, STEPS, LSTEPS)
 
     # Start optimization and save an VRML after 100 MC moves
-    log_energies.append(model['model'].evaluate(False))
+    try:
+	     log_energies.append(model['model'].evaluate(False))
+    except:
+	     log_energies.append(model['rs'].evaluate(False)) # 2.6.1 compat
     if verbose == 3:
-        print "Start", log_energies[-1]
+         "Start", log_energies[-1]
 
     #"""simulated_annealing: preform simulated annealing for at most nrounds
     # iterations. The optimization stops if the score does not change more than
@@ -436,7 +481,7 @@ def generate_IMPmodel(rand_init):
         o.set_kt(temperature)
         log_energies.append(o.optimize(STEPS))
         if verbose == 3:
-            print i, log_energies[-1], o.get_kt()
+             i, log_energies[-1], o.get_kt()
     # After the firsts hightemp iterations, stop the optimization if the score
     # does not change by more than a value defined by endLoopValue and
     # for stopCount iterations
@@ -471,7 +516,10 @@ def generate_IMPmodel(rand_init):
     #    e = o.optimize(steps)
     #    print str(i) + " " + str(e) + " " + str(o.get_kt())
 
-    log_energies.append(model['model'].evaluate(False))
+    try:
+        log_energies.append(model['model'].evaluate(False))
+    except:
+        log_energies.append(model['rs'].evaluate(False)) # 2.6.1 compat
     if verbose >=1:
         if verbose >= 2 or not rand_init % 100:
             print 'Model %s IMP Objective Function: %s' % (
@@ -613,28 +661,40 @@ def distance(freq):
 def addHarmonicNeighborsRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)
     model['pps'].append(p)
-    dr = IMP.core.DistanceRestraint(IMP.core.Harmonic(dist, kforce),p1, p2)
-    model['model'].add_restraint(dr)
+    dr = IMP.core.DistanceRestraint(model['model'],IMP.core.Harmonic(dist, kforce),p1, p2)
+    try:
+        model['model'].add_restraint(dr)
+    except:
+        model['rs'].add_restraint(dr) # 2.6.1 compat
 
 def addHarmonicUpperBoundRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)
     model['pps'].append(p)
-    dr = IMP.core.DistanceRestraint(IMP.core.HarmonicUpperBound(dist, kforce),
+    dr = IMP.core.DistanceRestraint(model['model'], IMP.core.HarmonicUpperBound(dist, kforce),
                                     p1, p2)
-    model['model'].add_restraint(dr)
+    try:
+        model['model'].add_restraint(dr)
+    except:
+        model['rs'].add_restraint(dr) # 2.6.1 compat
 
 def addHarmonicRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)
     model['pps'].append(p)
-    dr = IMP.core.DistanceRestraint(IMP.core.Harmonic(dist, kforce),p1, p2)
-    model['model'].add_restraint(dr)
+    dr = IMP.core.DistanceRestraint(model['model'], IMP.core.Harmonic(dist, kforce),p1, p2)
+    try:
+        model['model'].add_restraint(dr)
+    except:
+        model['rs'].add_restraint(dr) # 2.6.1 compat
 
 def addHarmonicLowerBoundRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)
     model['pps'].append(p)
-    dr = IMP.core.DistanceRestraint(IMP.core.HarmonicLowerBound(dist, kforce),
+    dr = IMP.core.DistanceRestraint(model['model'], IMP.core.HarmonicLowerBound(dist, kforce),
                                     p1, p2)
-    model['model'].add_restraint(dr)
+    try:
+        model['model'].add_restraint(dr)
+    except:
+        model['rs'].add_restraint(dr) # 2.6.1 compat
 
 
 def kForce(freq):
