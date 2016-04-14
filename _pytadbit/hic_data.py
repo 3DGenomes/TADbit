@@ -458,7 +458,7 @@ class HiC_data(dict):
         Notes: building the distance matrix using the amount of interactions
                instead of the mean correlation, gives generally worse results.
 
-        :returns: first eigen vector used to define compartment borders
+        :yields: first eigen vector used to define compartment borders
         """
         if not self.bads:
             if kwargs.get('verbose', True):
@@ -562,12 +562,10 @@ class HiC_data(dict):
                                   vmin=vmin, vmax=vmax)
                 plot_compartments_summary(sec, cmprts, show,
                                           savefig + '/chr' + sec + suffix + '_summ.pdf')
-            
+            yield first
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata)
-        return first
-
 
     def write_compartments(self, savedata, chroms=None):
         """
