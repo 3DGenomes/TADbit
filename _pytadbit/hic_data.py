@@ -451,6 +451,8 @@ class HiC_data(dict):
            predictions, one file only.
         :param -1 vmin: for the color scale of the plotted map
         :param 1 vmax: for the color scale of the plotted map
+        :param False yield_ev1: if True yields one list per chromosome with the
+           first eigenvector used to compute compartments.
         :param '' suffix: to be placed after file names of compartment images
 
         TODO: this is really slow...
@@ -458,13 +460,18 @@ class HiC_data(dict):
         Notes: building the distance matrix using the amount of interactions
                instead of the mean correlation, gives generally worse results.
 
-        :yields: first eigen vector used to define compartment borders
+        :returns: a dictionary with the first eigen vector used to define
+           compartment borders for each chromosome (keys are chromosome names)
         """
         if not self.bads:
             if kwargs.get('verbose', True):
                 print 'Filtering bad columns %d' % 99
             self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
                                 by_mean=False, silent=True)
+            if len(self.bads) == len(self):
+                self.bads = {}
+                warn('WARNING: all columns would have been filtered out, '
+                     'filtering disabled')
         if not self.expected:
             if kwargs.get('verbose', True):
                 print 'Normalizing by expected values'
@@ -479,6 +486,7 @@ class HiC_data(dict):
             suffix = '_' + suffix
 
         cmprts = {}
+        firsts = {}
         for sec in self.section_pos:
             if crms and sec not in crms:
                 continue
@@ -521,6 +529,7 @@ class HiC_data(dict):
                       for i, b in enumerate(breaks[: -1])]
             cmprts[sec] = breaks
             
+            firsts[sec] = first
             # calculate compartment internal density
             for k, cmprt in enumerate(cmprts[sec]):
                 beg = self.section_pos[sec][0]
@@ -562,10 +571,10 @@ class HiC_data(dict):
                                   vmin=vmin, vmax=vmax)
                 plot_compartments_summary(sec, cmprts, show,
                                           savefig + '/chr' + sec + suffix + '_summ.pdf')
-            yield first
         self.compartments = cmprts
         if savedata:
-            self.write_compartments(savedata)
+            self.write_compartments(savedata, chroms=self.compartments.keys())
+        return firsts
 
     def write_compartments(self, savedata, chroms=None):
         """
@@ -577,8 +586,9 @@ class HiC_data(dict):
            to chromosome name will disappear in non default case)
         """
         out = open(savedata, 'w')
-        out.write('#%sstart\tend\tdensity\ttype\n'% ('CHR\t' if chroms else ''))
         sections = chroms if chroms else self.compartments.keys()
+        out.write('#%sstart\tend\tdensity\ttype\n'% (
+            'CHR\t' if len(sections) > 1 else ''))
         try:
             out.write('\n'.join(['\n'.join(['%s%d\t%d\t%.2f\t%s' % (
                 (sec + '\t') if chroms else '',
