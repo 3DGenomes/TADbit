@@ -19,6 +19,7 @@ from scipy.stats                    import ttest_ind
 from collections                    import OrderedDict
 from warnings                       import warn
 from bisect                         import bisect_right as bisect
+import os
 
 class HiC_data(dict):
     """
@@ -426,7 +427,7 @@ class HiC_data(dict):
                 return mtrx
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
-                          show=False, suffix='', **kwargs):
+                          savecorr=None, show=False, suffix='', **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -449,6 +450,8 @@ class HiC_data(dict):
         :param False show: show the plot
         :param None savedata: path to a new file to store compartment
            predictions, one file only.
+        :param None savecorr: path to a directory where to save correlation
+           matrices of each chromosome
         :param -1 vmin: for the color scale of the plotted map
         :param 1 vmax: for the color scale of the plotted map
         :param False yield_ev1: if True yields one list per chromosome with the
@@ -482,6 +485,8 @@ class HiC_data(dict):
             self.normalize_hic(iterations=0)
         if savefig:
             mkdir(savefig)
+        if savecorr:
+            mkdir(savecorr)
         if suffix != '':
             suffix = '_' + suffix
 
@@ -507,6 +512,12 @@ class HiC_data(dict):
                 for j in xrange(i+1, len(matrix)):
                     matrix[i][j] = matrix[j][i]
             matrix = [list(m) for m in corrcoef(matrix)]
+            if savecorr:
+                out = open(os.path.join(savecorr, '%s_corr-matrix.tsv' % (sec)),
+                           'w')
+                out.write('\n'.join(['\t'.join([str(v) for v in l])
+                                     for l in matrix]))
+                out.close()
             try:
                 # This eighs is very very fast, only ask for one eigvector
                 _, evect = eigsh(array(matrix), k=1)
@@ -566,11 +577,13 @@ class HiC_data(dict):
                 if vmin == 'auto' == vmax:
                     vmax = max([abs(npmin(matrix)), abs(npmax(matrix))])
                     vmin = -vmax
-                plot_compartments(sec, first, cmprts, matrix, show,
-                                  savefig + '/chr' + sec + suffix + '.pdf',
-                                  vmin=vmin, vmax=vmax)
-                plot_compartments_summary(sec, cmprts, show,
-                                          savefig + '/chr' + sec + suffix + '_summ.pdf')
+                plot_compartments(
+                    sec, first, cmprts, matrix, show,
+                    savefig + '/chr' + sec + suffix + '.pdf' if savefig else None,
+                    vmin=vmin, vmax=vmax)
+                plot_compartments_summary(
+                    sec, cmprts, show,
+                    savefig + '/chr' + sec + suffix + '_summ.pdf' if savefig else None)
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata, chroms=self.compartments.keys())
