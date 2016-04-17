@@ -512,11 +512,27 @@ class HiC_data(dict):
                 for j in xrange(i+1, len(matrix)):
                     matrix[i][j] = matrix[j][i]
             matrix = [list(m) for m in corrcoef(matrix)]
+            # write correlation matrix to file. replaces filtered row/columns by NaN
             if savecorr:
                 out = open(os.path.join(savecorr, '%s_corr-matrix.tsv' % (sec)),
                            'w')
-                out.write('\n'.join(['\t'.join([str(v) for v in l])
-                                     for l in matrix]))
+                length = self.section_pos[sec][1] - self.section_pos[sec][0]
+                empty = 'NaN\t' * (length - 1) + 'NaN\n'
+                badrows = 0
+                for row in xrange(length):
+                    if row in self.bads:
+                        out.write(empty)
+                        badrows += 1
+                        continue
+                    vals = []
+                    badcols = 0
+                    for col in xrange(length):
+                        if col in self.bads:
+                            vals.append('NaN')
+                            badcols += 1
+                            continue
+                        vals.append(str(matrix[row-badrows][col-badcols]))
+                    out.write('\t'.join(vals) + '\n')
                 out.close()
             try:
                 # This eighs is very very fast, only ask for one eigvector
