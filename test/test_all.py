@@ -191,7 +191,7 @@ class TestTadbit(unittest.TestCase):
                               experiment_resolutions=[20000,20000],
                               silent=True)
         all_tads = []
-        for _, tad in test_chr.iter_tads('exp1'):
+        for _, tad in test_chr.iter_tads('exp1', normed=False):
             all_tads.append(tad)
         #align1, align2, _ = optimal_cmo(all_tads[7], all_tads[10], 7,
         #                                method='score')
