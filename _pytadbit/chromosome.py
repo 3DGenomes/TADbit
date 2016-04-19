@@ -721,9 +721,9 @@ class Chromosome(object):
             tadi = tadi * size
             for j, tadj in enumerate(xrange(beg, end)):
                 if normed:
-                    matrix[j][i] = xpr.hic_data[matrix_num][tadi + tadj]
-                else:
                     matrix[j][i] = xpr.norm[0][tadi + tadj]
+                else:
+                    matrix[j][i] = xpr.hic_data[matrix_num][tadi + tadj]
         return matrix
 
 
