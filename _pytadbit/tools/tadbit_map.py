@@ -56,6 +56,7 @@ def run(opts):
         return
 
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
+
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.workdir,
                                       '01_mapped_r%d' % (opts.read)),
@@ -240,6 +241,7 @@ def check_options(opts):
         raise IOError('ERROR: FASTQ file not found at ' + opts.fastq)
     
     # create tmp directory
+
     if not opts.tmp:
         opts.tmp = opts.workdir + '_tmp_r%d' % opts.read
 
@@ -305,7 +307,7 @@ def check_options(opts):
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         exit('WARNING: exact same job already computed, see JOBs table above')
-        
+
 
 def save_to_db(opts, outfiles, launch_time, finish_time):
     # write little DB to keep track of processes and options

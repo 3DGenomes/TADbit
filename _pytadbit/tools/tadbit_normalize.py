@@ -63,6 +63,7 @@ def run(opts):
                                factor=opts.factor)
 
     print 'Getting cis/trans...'
+    cis_trans_N_D = cis_trans_N_d = float('nan')
     if not opts.filter_only:
         cis_trans_N_D = hic_data.cis_trans_ratio(normalized=True , diagonal=True )
         cis_trans_N_d = hic_data.cis_trans_ratio(normalized=True , diagonal=False)
@@ -368,6 +369,10 @@ def populate_args(parser):
     glopts.add_argument('--only_txt', dest='only_txt', action='store_true',
                       default=False,
                       help='Save only text file for matrices, not images')
+
+    glopts.add_argument('--filter_only', dest='filter_only', action='store_true',
+                      default=False,
+                      help='skip normalization')
 
     glopts.add_argument('--fast_filter', dest='fast_filter', action='store_true',
                       default=False,
