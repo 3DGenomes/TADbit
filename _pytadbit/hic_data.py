@@ -516,12 +516,22 @@ class HiC_data(dict):
             if savecorr:
                 out = open(os.path.join(savecorr, '%s_corr-matrix.tsv' % (sec)),
                            'w')
+                start1, end1 = self.section_pos[sec]
+                out.write('# MASKED %s\n' % (' '.join([str(k - start1)
+                                                       for k in self.bads.keys()
+                                                       if start1 <= k <= end1])))
+                rownam = ['%s\t%d-%d' % (k[0],
+                                         k[1] * self.resolution,
+                                         (k[1] + 1) * self.resolution)
+                          for k in sorted(self.sections,
+                                          key=lambda x: self.sections[x])
+                          if k[0] == sec]
                 length = self.section_pos[sec][1] - self.section_pos[sec][0]
                 empty = 'NaN\t' * (length - 1) + 'NaN\n'
                 badrows = 0
                 for row in xrange(length):
                     if row in self.bads:
-                        out.write(empty)
+                        out.write(rownam.pop(0) + '\t' +empty)
                         badrows += 1
                         continue
                     vals = []
@@ -532,7 +542,7 @@ class HiC_data(dict):
                             badcols += 1
                             continue
                         vals.append(str(matrix[row-badrows][col-badcols]))
-                    out.write('\t'.join(vals) + '\n')
+                    out.write(rownam.pop(0) + '\t' +'\t'.join(vals) + '\n')
                 out.close()
             try:
                 # This eighs is very very fast, only ask for one eigvector
