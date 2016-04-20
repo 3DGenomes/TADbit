@@ -227,6 +227,7 @@
     <span class="c1"># verbose</span>
     <span class="k">global</span> <span class="n">VERBOSE</span>
     <span class="n">VERBOSE</span> <span class="o">=</span> <span class="n">verbose</span>
+    <span class="c1">#VERBOSE = 3</span>
 
     <span class="n">models</span><span class="p">,</span> <span class="n">bad_models</span> <span class="o">=</span> <span class="n">multi_process_model_generation</span><span class="p">(</span>
         <span class="n">n_cpus</span><span class="p">,</span> <span class="n">n_models</span><span class="p">,</span> <span class="n">n_keep</span><span class="p">,</span> <span class="n">keep_all</span><span class="p">)</span>
@@ -278,12 +279,17 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;rk&#39;</span>    <span class="p">:</span> <span class="n">IMP</span><span class="o">.</span><span class="n">FloatKey</span><span class="p">(</span><span class="s2">&quot;radius&quot;</span><span class="p">),</span>
              <span class="s1">&#39;model&#39;</span> <span class="p">:</span> <span class="n">Model</span><span class="p">(),</span>
+             <span class="s1">&#39;rs&#39;</span>    <span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="c1"># 2.6.1 compat </span>
              <span class="s1">&#39;ps&#39;</span>    <span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ListSingletonContainer</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">create_xyzr_particles</span><span class="p">(</span>
         <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">),</span> <span class="n">RADIUS</span><span class="p">,</span> <span class="mi">100000</span><span class="p">))</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
     <span class="c1"># set container</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">RestraintSet</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span> <span class="c1"># 2.6.1 compat </span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">][</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cylinder&#39;</span><span class="p">:</span>
          <span class="c1"># define a segment of a given size</span>
@@ -296,7 +302,10 @@
                 <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicUpperBound</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">][</span><span class="s1">&#39;radius&#39;</span><span class="p">],</span>
                                             <span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">][</span><span class="s1">&#39;cforce&#39;</span><span class="p">]),</span> <span class="n">bb</span><span class="p">),</span>
             <span class="n">model</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">])</span>
-        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rb</span><span class="p">)</span>
+	<span class="k">try</span><span class="p">:</span>
+	       <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rb</span><span class="p">)</span>
+	<span class="k">except</span><span class="p">:</span>
+	       <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rb</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
         <span class="n">rb</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
     <span class="c1"># elif model[&#39;container&#39;][&#39;shape&#39;]:</span>
     <span class="c1">#     raise noti</span>
@@ -315,7 +324,10 @@
             <span class="n">ss</span>  <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceToSingletonScore</span><span class="p">(</span>
                 <span class="n">ub</span><span class="p">,</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">][</span><span class="s1">&#39;center&#39;</span><span class="p">])</span>
             <span class="n">rss</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">SingletonRestraint</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span> <span class="n">p1</span><span class="p">)</span>
-            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rss</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+	            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rss</span><span class="p">)</span> 
+            <span class="k">except</span><span class="p">:</span>
+	            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rss</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
             <span class="n">rss</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">LOCI</span><span class="p">)):</span>
             <span class="n">p2</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particle</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
@@ -387,6 +399,7 @@
     <span class="n">log_energies</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">model</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;rk&#39;</span>    <span class="p">:</span> <span class="n">IMP</span><span class="o">.</span><span class="n">FloatKey</span><span class="p">(</span><span class="s2">&quot;radius&quot;</span><span class="p">),</span>
              <span class="s1">&#39;model&#39;</span> <span class="p">:</span> <span class="n">Model</span><span class="p">(),</span>
+             <span class="s1">&#39;rs&#39;</span>    <span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="c1"># 2.6.1 compat</span>
              <span class="s1">&#39;ps&#39;</span>    <span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
              <span class="s1">&#39;pps&#39;</span>   <span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ListSingletonContainer</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">create_xyzr_particles</span><span class="p">(</span>
@@ -401,7 +414,10 @@
         <span class="c1">#p.set_value(model[&#39;rk&#39;], RADIUS)</span>
 
     <span class="c1"># Restraints between pairs of LOCI proportional to the PDIST</span>
-    <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">ParticlePairsTemp</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">ParticlePairsTemp</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePairsTemp</span><span class="p">()</span> <span class="c1"># 2.6.1 compat</span>
 
     <span class="c1"># CALL BIG FUNCTION</span>
     <span class="k">if</span> <span class="n">rand_init</span> <span class="o">==</span> <span class="n">START</span> <span class="ow">and</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mf">0.5</span><span class="p">:</span>
@@ -409,6 +425,11 @@
         <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;# Harmonic</span><span class="se">\t</span><span class="s2">part1</span><span class="se">\t</span><span class="s2">part2</span><span class="se">\t</span><span class="s2">dist</span><span class="se">\t</span><span class="s2">kforce</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># set container</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">RestraintSet</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span> <span class="c1"># 2.6.1 compat</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">restraints</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># 2.6.1 compat</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">][</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cylinder&#39;</span><span class="p">:</span>
          <span class="c1"># define a segment of a given size</span>
@@ -421,8 +442,12 @@
                 <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicUpperBound</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">][</span><span class="s1">&#39;radius&#39;</span><span class="p">],</span>
                                             <span class="n">model</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">][</span><span class="s1">&#39;cforce&#39;</span><span class="p">]),</span> <span class="n">bb</span><span class="p">),</span>
             <span class="n">model</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">])</span>
-        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rb</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+	        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rb</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+	        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">rb</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
         <span class="n">rb</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        
     <span class="c1"># elif model[&#39;container&#39;][&#39;shape&#39;]:</span>
     <span class="c1">#     raise noti</span>
 
@@ -431,11 +456,20 @@
     <span class="c1"># Setup an excluded volume restraint between a bunch of particles</span>
     <span class="c1"># with radius</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">ExcludedVolumeRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">],</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s1">&#39;kforce&#39;</span><span class="p">])</span>
-    <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
+        <span class="n">restraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">])</span>
+        <span class="n">scoring_function</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">RestraintsScoringFunction</span><span class="p">(</span><span class="n">restraints</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s2">&quot;Total number of restraints: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_number_of_restraints</span><span class="p">())</span>
+	   <span class="k">try</span><span class="p">:</span>
+	       <span class="s2">&quot;Total number of restraints: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+		      <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_number_of_restraints</span><span class="p">())</span>
+	   <span class="k">except</span><span class="p">:</span>
+	       <span class="s2">&quot;Total number of restraints: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+		      <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_number_of_restraints</span><span class="p">())</span> <span class="c1"># 2.6.1 compat</span>
 
     <span class="c1"># Set up optimizer</span>
     <span class="k">try</span><span class="p">:</span>
@@ -443,7 +477,15 @@
         <span class="n">lo</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span>
     <span class="k">except</span><span class="p">:</span> <span class="c1"># since version 2.5, IMP goes this way</span>
         <span class="n">lo</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">ConjugateGradients</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">lo</span><span class="o">.</span><span class="n">set_scoring_function</span><span class="p">(</span><span class="n">scoring_function</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
     <span class="n">o</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">MonteCarloWithLocalOptimization</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">LSTEPS</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">o</span><span class="o">.</span><span class="n">set_scoring_function</span><span class="p">(</span><span class="n">scoring_function</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
     <span class="n">o</span><span class="o">.</span><span class="n">set_return_best</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">fk</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">XYZ</span><span class="o">.</span><span class="n">get_xyz_keys</span><span class="p">()</span>
     <span class="n">ptmp</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_particles</span><span class="p">()</span>
@@ -453,12 +495,15 @@
 
     <span class="c1"># Optimizer&#39;s parameters</span>
     <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s2">&quot;nrounds: </span><span class="si">%i</span><span class="s2">, steps: </span><span class="si">%i</span><span class="s2">, lsteps: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">NROUNDS</span><span class="p">,</span> <span class="n">STEPS</span><span class="p">,</span> <span class="n">LSTEPS</span><span class="p">)</span>
+         <span class="s2">&quot;nrounds: </span><span class="si">%i</span><span class="s2">, steps: </span><span class="si">%i</span><span class="s2">, lsteps: </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">NROUNDS</span><span class="p">,</span> <span class="n">STEPS</span><span class="p">,</span> <span class="n">LSTEPS</span><span class="p">)</span>
 
     <span class="c1"># Start optimization and save an VRML after 100 MC moves</span>
-    <span class="n">log_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+	     <span class="n">log_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+	     <span class="n">log_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span> <span class="c1"># 2.6.1 compat</span>
     <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s2">&quot;Start&quot;</span><span class="p">,</span> <span class="n">log_energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+         <span class="s2">&quot;Start&quot;</span><span class="p">,</span> <span class="n">log_energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="c1">#&quot;&quot;&quot;simulated_annealing: preform simulated annealing for at most nrounds</span>
     <span class="c1"># iterations. The optimization stops if the score does not change more than</span>
@@ -485,7 +530,7 @@
         <span class="n">o</span><span class="o">.</span><span class="n">set_kt</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span>
         <span class="n">log_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">STEPS</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">log_energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">o</span><span class="o">.</span><span class="n">get_kt</span><span class="p">()</span>
+             <span class="n">i</span><span class="p">,</span> <span class="n">log_energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">o</span><span class="o">.</span><span class="n">get_kt</span><span class="p">()</span>
     <span class="c1"># After the firsts hightemp iterations, stop the optimization if the score</span>
     <span class="c1"># does not change by more than a value defined by endLoopValue and</span>
     <span class="c1"># for stopCount iterations</span>
@@ -520,7 +565,10 @@
     <span class="c1">#    e = o.optimize(steps)</span>
     <span class="c1">#    print str(i) + &quot; &quot; + str(e) + &quot; &quot; + str(o.get_kt())</span>
 
-    <span class="n">log_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">log_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">log_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span> <span class="c1"># 2.6.1 compat</span>
     <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;=</span><span class="mi">1</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">rand_init</span> <span class="o">%</span> <span class="mi">100</span><span class="p">:</span>
             <span class="k">print</span> <span class="s1">&#39;Model </span><span class="si">%s</span><span class="s1"> IMP Objective Function: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
@@ -662,28 +710,40 @@
 <span class="k">def</span> <span class="nf">addHarmonicNeighborsRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
-    <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
 
 <span class="k">def</span> <span class="nf">addHarmonicUpperBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicUpperBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicUpperBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span>
                                     <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
-    <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
 
 <span class="k">def</span> <span class="nf">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
-    <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
 
 <span class="k">def</span> <span class="nf">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicLowerBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicLowerBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span>
                                     <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
-    <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">model</span><span class="p">[</span><span class="s1">&#39;rs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="c1"># 2.6.1 compat</span>
 
 
 <span class="k">def</span> <span class="nf">kForce</span><span class="p">(</span><span class="n">freq</span><span class="p">):</span>
@@ -745,7 +805,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 13, 2016.
+      Last updated on Apr 20, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

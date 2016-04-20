@@ -214,7 +214,7 @@ defining the windows over which to do the iterations:
     print 'Mapping the first end of the read\n'
     mapped_r1 = full_mapping('/scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem', 
                              '/scratch/test/rao2014/HiC003/SRR1658572.fastq',
-                             '/scratch/test/rao2014/HiC003/01_mapped_read1', 
+                             '/scratch/test/rao2014/HiC003/01_it-mapped_read1', 
                              windows=((1,25), (1,50), (1,75),(1,100)),
                              frag_map=False, nthreads=8, clean=True, 
                              temp_dir='/scratch/test/rao2014/tmp_HiC003')
@@ -267,7 +267,7 @@ defining the windows over which to do the iterations:
     print 'Mapping the first end of the read\n'
     mapped_r2 = full_mapping('/scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem', 
                              '/scratch/test/rao2014/HiC003/SRR1658572.fastq',
-                             '/scratch/test/rao2014/HiC003/01_mapped_read2',
+                             '/scratch/test/rao2014/HiC003/01_it-mapped_read2',
                              windows=((101,125), (101,150), (101,175),(101,200)),
                              frag_map=False, nthreads=8, clean=True, 
                              temp_dir='/scratch/test/rao2014/tmp_HiC003')
@@ -281,6 +281,39 @@ defining the windows over which to do the iterations:
       - conversion to MAP format
       - trimming reads 101-125
     Mapping reads in window 101-125...
+    TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ
+    /usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ_full_101-125
+    Parsing result...
+       x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ
+       x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ_full_101-125.map
+    Preparing MAP file
+      - trimming reads 101-150
+       x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_L3K0wQ_filt_101-125.map
+    Mapping reads in window 101-150...
+    TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK
+    /usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK_full_101-150
+    Parsing result...
+       x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK
+       x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK_full_101-150.map
+    Preparing MAP file
+      - trimming reads 101-175
+       x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_0AfFmK_filt_101-150.map
+    Mapping reads in window 101-175...
+    TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx
+    /usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx_full_101-175
+    Parsing result...
+       x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx
+       x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx_full_101-175.map
+    Preparing MAP file
+      - trimming reads 101-200
+       x removing original input /scratch/test/rao2014/tmp_HiC003/SRR1658572_pYEcnx_filt_101-175.map
+    Mapping reads in window 101-200...
+    TO GEM /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc
+    /usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc -o /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc_full_101-200
+    Parsing result...
+       x removing GEM input /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc
+       x removing map /scratch/test/rao2014/tmp_HiC003/SRR1658572_lEDzwc_full_101-200.map
+
 
 Fragment-based mapping
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -292,16 +325,72 @@ only used for defining which part of read should be used.
 .. code:: python
 
     print 'Mapping the first end of the read\n'
-    mapped_r1 = full_mapping('ref_genome/hg38.gem', 'HiC003/SRR1658572.fastq',
-                             'mapped_read1', windows=(1,100),
+    mapped_r1 = full_mapping('/scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem', 
+                             '/scratch/test/rao2014/HiC003/SRR1658572.fastq',
+                             '/scratch/test/rao2014/HiC003/01_mapped_read1',
+                             windows=(1,100),
                              r_enz='MboI', frag_map=True, nthreads=8, clean=True, temp_dir='tmp')
+
+
+.. ansi-block::
+
+    Mapping the first end of the read
+    
+    Preparing FASTQ file
+      - conversion to MAP format
+      - trimming reads 1-100
+    Mapping reads in window 1-100...
+    TO GEM ../nbpictures//tmp/SRR1658572_eQYIHW
+    /usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i ../nbpictures//tmp/SRR1658572_eQYIHW -o ../nbpictures//tmp/SRR1658572_eQYIHW_full_1-100
+    Parsing result...
+       x removing GEM input ../nbpictures//tmp/SRR1658572_eQYIHW
+       x removing map ../nbpictures//tmp/SRR1658572_eQYIHW_full_1-100.map
+      - splitting into restriction enzyme (RE) fragments using ligation sites
+      - ligation sites are replaced by RE sites to match the reference genome
+        * enzyme: MboI, ligation site: GATCGATC, RE site: GATC
+    Preparing MAP file
+      - trimming reads 1-100
+    Mapping fragments of remaining reads...
+    TO GEM ../nbpictures//tmp/SRR1658572_Sj_OYP
+    /usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i ../nbpictures//tmp/SRR1658572_Sj_OYP -o ../nbpictures//tmp/SRR1658572_Sj_OYP_frag_1-100
+    Parsing result...
+
 
 .. code:: python
 
     print '\n\nMapping the second end of the read\n'
-    mapped_r2 = full_mapping('ref_genome/hg38.gem', 'HiC003/SRR1658572.fastq',
-                             'mapped_read2', windows=(101,200),
+    mapped_r2 = full_mapping('/scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem', 
+                             '/scratch/test/rao2014/HiC003/SRR1658572.fastq',
+                             '/scratch/test/rao2014/HiC003/01_mapped_read2',
+                             windows=(101,200),
                              r_enz='MboI', frag_map=True, nthreads=8, clean=True, temp_dir='tmp')
+
+
+.. ansi-block::
+
+    
+    
+    Mapping the second end of the read
+    
+    Preparing FASTQ file
+      - conversion to MAP format
+      - trimming reads 101-200
+    Mapping reads in window 101-200...
+    TO GEM ../nbpictures//tmp/SRR1658572_3OpPDr
+    /usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i ../nbpictures//tmp/SRR1658572_3OpPDr -o ../nbpictures//tmp/SRR1658572_3OpPDr_full_101-200
+    Parsing result...
+       x removing GEM input ../nbpictures//tmp/SRR1658572_3OpPDr
+       x removing map ../nbpictures//tmp/SRR1658572_3OpPDr_full_101-200.map
+      - splitting into restriction enzyme (RE) fragments using ligation sites
+      - ligation sites are replaced by RE sites to match the reference genome
+        * enzyme: MboI, ligation site: GATCGATC, RE site: GATC
+    Preparing MAP file
+      - trimming reads 101-200
+    Mapping fragments of remaining reads...
+    TO GEM ../nbpictures//tmp/SRR1658572_IgIT9e
+    /usr/local/bin/gem-mapper -I /scratch/db/Genomes/index_files/Homo_sapiens-79/Homo_sapiens.gem -q offset-33 -m 0.04 -s 0 --allow-incomplete-strata 0.00 --granularity 10000 --max-decoded-matches 1 --min-decoded-strata 0 --min-insert-size 0 --max-insert-size 0 --min-matched-bases 0.8 --gem-quality-threshold 26 --max-big-indel-length 15 --mismatch-alphabet ACGT -E 0.30 --max-extendable-matches 20 --max-extensions-per-match 1 -e 0.04 -T 8 -i ../nbpictures//tmp/SRR1658572_IgIT9e -o ../nbpictures//tmp/SRR1658572_IgIT9e_frag_101-200
+    Parsing result...
+
 
 The Fragment based mapping works in 2 steps: - First read ends are
 aligned entirely, assuming that no ligation occured in them. - Second,
@@ -341,8 +430,7 @@ and
 Map parsing
 ~~~~~~~~~~~
 
-In case we lost the sams1/sams2 lists of paths we can "reload" them like
-this:
+In case we lost the lists of paths we can "reload" them like this:
 
 .. code:: python
 
@@ -355,7 +443,9 @@ this:
     r2_dir = '/scratch/test/rao2014/HiC003/01_mapped_read2'
     
     for mapped in os.listdir(r1_dir):
-        sams1.append('/scratch/mapped_reads/' + sam)
+        mapped_r1.append(os.path.join(r1_dir, mapped))
+    for mapped in os.listdir(r2_dir):
+        mapped_r2.append(os.path.join(r2_dir, mapped))
     
     print 'Output files of the maping of the first end of the reads:\n - ' + '\n - '.join(mapped_r1)
     print 'Output files of the maping of the second end of the reads:\n - ' + '\n - '.join(mapped_r2)
@@ -364,12 +454,13 @@ this:
 
 .. ansi-block::
 
-    ['/scratch/mapped_reads/SRX116344_200_r1.sam.1.3:1-30', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.6:1-45', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.7:1-50', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.8:1-55', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.12:1-75', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.12:1-75', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.6:1-45', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.1:1-20', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.1:1-20', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.9:1-60', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.4:1-35', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.10:1-65', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.4:1-35', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.9:1-60', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.5:1-40', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.2:1-25', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.8:1-55', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.7:1-50', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.11:1-70', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.2:1-25', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.3:1-30', '/scratch/mapped_reads/SRX116344_200_r1.sam.1.5:1-40', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.11:1-70', '/scratch/mapped_reads/SRX116344_200_r1.sam.2.10:1-65']
-    ['/scratch/mapped_reads/SRX116344_200_r2.sam.1.11:102-171', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.2:102-126', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.9:102-161', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.12:102-176', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.5:102-141', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.2:102-126', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.8:102-156', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.10:102-166', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.5:102-141', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.9:102-161', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.7:102-151', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.6:102-146', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.4:102-136', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.1:102-121', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.11:102-171', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.4:102-136', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.7:102-151', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.6:102-146', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.3:102-131', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.8:102-156', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.10:102-166', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.3:102-131', '/scratch/mapped_reads/SRX116344_200_r2.sam.2.1:102-121', '/scratch/mapped_reads/SRX116344_200_r2.sam.1.12:102-176']
+    Output files of the maping of the first end of the reads:
+     - /scratch/test/rao2014/HiC003/01_mapped_read1/SRR1658572_frag_1-100.map
+     - /scratch/test/rao2014/HiC003/01_mapped_read1/SRR1658572_full_1-100.map
+    Output files of the maping of the second end of the reads:
+     - /scratch/test/rao2014/HiC003/01_mapped_read2/SRR1658572_frag_101-200.map
+     - /scratch/test/rao2014/HiC003/01_mapped_read2/SRR1658572_full_101-200.map
 
-
-Mapping analysis
-^^^^^^^^^^^^^^^^
 
 We collect mapped reads at all window sizes into a single file (a single
 file for read1, and a single file for read2). These 2 files also contain
@@ -383,37 +474,36 @@ the placement of the restriction enzyme sites in the genome.
 .. code:: python
 
     # loads the genome
-    genome_seq = parse_fasta('/scratch/db/index_files/Homo_sapiens-79/Homo_sapiens.fa', 
-                             chr_names=['chr' + str(c) for c in range(1, 23) + ['X', 'Y', 'MT']])
+    genome_seq = parse_fasta('/scratch/db/Genomes/genomes/Homo_sapiens-79/Homo_sapiens.fa')
 
 
 .. ansi-block::
 
-    Parsing 1 as chr1
-    Parsing 2 as chr2
-    Parsing 3 as chr3
-    Parsing 4 as chr4
-    Parsing 5 as chr5
-    Parsing 6 as chr6
-    Parsing 7 as chr7
-    Parsing 8 as chr8
-    Parsing 9 as chr9
-    Parsing 10 as chr10
-    Parsing 11 as chr11
-    Parsing 12 as chr12
-    Parsing 13 as chr13
-    Parsing 14 as chr14
-    Parsing 15 as chr15
-    Parsing 16 as chr16
-    Parsing 17 as chr17
-    Parsing 18 as chr18
-    Parsing 19 as chr19
-    Parsing 20 as chr20
-    Parsing 21 as chr21
-    Parsing 22 as chr22
-    Parsing X as chrX
-    Parsing Y as chrY
-    Parsing MT as chrMT
+    Parsing 1
+    Parsing 2
+    Parsing 3
+    Parsing 4
+    Parsing 5
+    Parsing 6
+    Parsing 7
+    Parsing 8
+    Parsing 9
+    Parsing 10
+    Parsing 11
+    Parsing 12
+    Parsing 13
+    Parsing 14
+    Parsing 15
+    Parsing 16
+    Parsing 17
+    Parsing 18
+    Parsing 19
+    Parsing 20
+    Parsing 21
+    Parsing 22
+    Parsing X
+    Parsing Y
+    Parsing MT
 
 
 .. warning::
@@ -421,31 +511,94 @@ the placement of the restriction enzyme sites in the genome.
     - Make sure that your renaming corresponds to the chromosomes in the files (same order)
     - The chromosome names should be the same as the one used to generate the index file used by the mapper. Otherwise you will endup with no read mapped.
 
+.. note::
+
+   TADbit comes with a list of file utilities like `mkdir` to ease the handling of files and folders.
+
+.. code:: python
+
+    from pytadbit.utils.file_handling import mkdir
+    
+    mkdir('/scratch/test/rao2014/HiC003/02_parsed_reads/')
+
 .. code:: python
 
     # new file with info of each "read1" and its placement with respect to RE sites
-    reads1 = '/scratch/results/%s_r1_map.tsv' % name
+    reads1 = '/scratch/test/rao2014/HiC003/02_parsed_reads/read1.tsv'
     # new file with info of each "read2" and its placement with respect to RE sites
-    reads2 = '/scratch/results/%s_r2_map.tsv' % name
+    reads2 = '/scratch/test/rao2014/HiC003/02_parsed_reads/read2.tsv'
+
+.. warning ::
+
+   Parsing MAP files is a slow process because reads have to be placed in between the closest RE sites, and they also need to be sorted in order to ease the computation of the intersection.
 
 .. code:: python
 
     print 'Parse MAP files...'
-    parse_sam(sams1, sams2, reads1, reads2, genome_seq, 'HindIII', verbose=True, ncpus=8)
+    parse_map(mapped_r1, mapped_r2, out_file1=reads1, out_file2=reads2, genome_seq=genome_seq, 
+              re_name='MboI', verbose=True, ncpus=8)
 
-Plot iterative mapping
-~~~~~~~~~~~~~~~~~~~~~~
+
+.. ansi-block::
+
+    Parse MAP files...
+    Searching and mapping RE sites to the reference genome
+    Found 7191117 RE sites
+    Loading read1
+    loading file: /scratch/test/rao2014/HiC003/01_mapped_read1/SRR1658572_frag_1-100.map
+    loading file: /scratch/test/rao2014/HiC003/01_mapped_read1/SRR1658572_full_1-100.map
+    Merge sort.....................................................
+    Getting Multiple contacts
+    Loading read2
+    loading file: /scratch/test/rao2014/HiC003/01_mapped_read2/SRR1658572_frag_101-200.map
+    loading file: /scratch/test/rao2014/HiC003/01_mapped_read2/SRR1658572_full_101-200.map
+    Merge sort...................................................
+    Getting Multiple contacts
+
+
+
+
+.. ansi-block::
+
+    ({0: {1: 14363191, 2: 38080970}, 1: {1: 13755441, 2: 37571439}},
+     {0: 5361490, 1: 4879802})
+
+
+
+The output files generated here are BED-like files, with a header with
+the size of the chromosomes used, followed by the list of reads mapped.
+
+The column for each read are:
+
+-  Read Id
+-  Chromosome name
+-  genomic position
+-  strand (1: positive strand, 0: negative strand)
+-  mapped read length (this length can be extended when the fragment is
+   found to be spanning over the insert paired-end read)
+-  upstream RE site position
+-  downstream RE site position
+
+Mapping analysis
+~~~~~~~~~~~~~~~~
+
+Plot mapping efficiency
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
 
     from pytadbit.mapping.analyze import plot_iterative_mapping
     
-    lengths = plot_iterative_mapping(reads1, reads2, total_reads=51493359)
+    lengths = plot_iterative_mapping(reads1, reads2, total_reads=50000000)
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_45_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_49_0.png
 
+
+.. note ::
+
+   in some cases the mapping efficiency might be above 100% as fragment based mapping split the original reads into fragments and map them independently.
 
 Merging mapped "read1" and "read2"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -455,11 +608,11 @@ ends ("read1" and "read2" uniquely mapped)
 
 .. code:: python
 
-    from pytadbit.mapping.mapper import get_intersection
+    from pytadbit.mapping import get_intersection
 
 .. code:: python
 
-    reads  = '/scratch/results/%s_both_map.tsv' % name
+    reads  = '/scratch/test/rao2014/HiC003/02_parsed_reads/both_map.tsv'
 
 .. code:: python
 
@@ -468,8 +621,26 @@ ends ("read1" and "read2" uniquely mapped)
 
 .. ansi-block::
 
-    Found 41123290 pair of reads mapping uniquely
+    Getting intersection of reads 1 and reads 2:
+     
+      .......... .......... .......... .......... ........
+    Found 44674766 pair of reads mapping uniquely
+    Sorting easch temporary file by genomic coordinate
+        1025/1025 sorted files
+    Removing temporary files...
 
+
+
+
+.. ansi-block::
+
+    (44674766, {2: 7044121, 3: 20910, 4: 51})
+
+
+
+.. note ::
+
+   the numbers returned by the function corresponds to the total number of mapped reads, and the number of time multiple contact where found (in this case ~7M contacts to occur between 3 fragments at the same time, ~20k between 4 and 51 between 5).
 
 Descriptive statistics
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -484,11 +655,19 @@ the filtering process.
 
     from pytadbit.mapping.analyze import insert_sizes
     
-    insert_sizes(reads)
+    insert_sizes(reads, show=True)
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_53_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_59_0.png
+
+
+
+
+.. ansi-block::
+
+    [355.0, 610.0]
+
 
 
 Simple descriptive stats
@@ -509,11 +688,21 @@ regions that, each, spans over 10 kb (resolution parameter).
 
     from pytadbit.mapping.analyze import plot_distance_vs_interactions
     
-    plot_distance_vs_interactions(reads, max_diff=10000, resolution=10000)
+    plot_distance_vs_interactions(reads, max_diff=10000, resolution=100000)
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_57_0.png
+
+.. ansi-block::
+
+    ((-1.0699233238000596, 15.456024589131042, -0.9992506172369725),
+     (-1.1471902596970704, 15.335536453854143, -0.99565698091932198),
+     (-2.4979074477418139, 23.753684595554244, -0.92419616437542085))
+
+
+
+
+.. image:: ../nbpictures//tutorial_0_mapping_63_1.png
 
 
 Genomic coverage of our reads
@@ -534,7 +723,7 @@ with falls around centromeres and telomeres.
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_61_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_67_0.png
 
 
 *The picks in the plot correspond to PCR artifact that we will remove in
@@ -546,13 +735,12 @@ of chromosomes
 
 .. code:: python
 
-    plot_genomic_distribution(reads, resolution=50000, first_read=True, ylim=(1, 100), 
-                              chr_names=['chr8'], nreads=1000000)
+    import matplotlib.pyplot as plt
 
+.. code:: python
 
-
-.. image:: ../nbpictures//tutorial_0_mapping_64_0.png
-
+    plot_genomic_distribution(reads, resolution=50000, first_read=True, ylim=(0, 1000), 
+                              chr_names=['1'], nreads=1000000)
 
 Interaction matrix
 ^^^^^^^^^^^^^^^^^^
@@ -575,16 +763,8 @@ matrices eigen-vectors are not very informative however).
     hic_map(reads, resolution=1000000, show=True)
 
 
-.. ansi-block::
 
-    /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:55: RuntimeWarning: Mean of empty slice.
-      warnings.warn("Mean of empty slice.", RuntimeWarning)
-    /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
-      ret = ret.dtype.type(ret / rcount)
-
-
-
-.. image:: ../nbpictures//tutorial_0_mapping_68_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_75_0.png
 
 
 Filter reads
@@ -707,7 +887,7 @@ dangling-ends and self-circle along the genome
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_81_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_88_0.png
 
 
 Once filtered the peaks previously seen should disapeear:
@@ -719,7 +899,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_83_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_90_0.png
 
 
 .. code:: python
@@ -729,7 +909,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_84_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_91_0.png
 
 
 .. code:: python
@@ -738,7 +918,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_85_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_92_0.png
 
 
 These maps can be zoomed to a given region, like first chromosome:
@@ -749,7 +929,7 @@ These maps can be zoomed to a given region, like first chromosome:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_87_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_94_0.png
 
 
 Same as above, calling the focus using directly chromosome name and
@@ -761,7 +941,7 @@ using a smaller resolution (100 kb):
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_89_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_96_0.png
 
 
 Filtering and normalization
@@ -803,7 +983,7 @@ file of reads:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_97_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_104_0.png
 
 
 .. code:: python
@@ -831,7 +1011,7 @@ file of reads:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_98_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_105_1.png
 
 
 .. ansi-block::
@@ -872,7 +1052,7 @@ representation:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_100_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_107_1.png
 
 
 Normalization
@@ -902,6 +1082,6 @@ basically consists constructing a new in dividing each cell
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_104_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_111_0.png
 
 

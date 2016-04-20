@@ -770,9 +770,9 @@
             <span class="n">tadi</span> <span class="o">=</span> <span class="n">tadi</span> <span class="o">*</span> <span class="n">size</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">tadj</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">xrange</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="n">normed</span><span class="p">:</span>
-                    <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="n">matrix_num</span><span class="p">][</span><span class="n">tadi</span> <span class="o">+</span> <span class="n">tadj</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
                     <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">tadi</span> <span class="o">+</span> <span class="n">tadj</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpr</span><span class="o">.</span><span class="n">hic_data</span><span class="p">[</span><span class="n">matrix_num</span><span class="p">][</span><span class="n">tadi</span> <span class="o">+</span> <span class="n">tadj</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">matrix</span></div>
 
 
@@ -1093,7 +1093,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 13, 2016.
+      Last updated on Apr 20, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
