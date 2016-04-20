@@ -584,7 +584,7 @@ the filtering process.</p>
 <span class="n">insert_sizes</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_59_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_59_0.png" />
+<img alt="../_images/tutorial_0_mapping_59_0.png" src="../_images/tutorial_0_mapping_59_0.png" />
 <pre class="ansi-block literal-block">
 [355.0, 610.0]
 </pre>
@@ -610,7 +610,7 @@ regions that, each, spans over 10 kb (resolution parameter).</p>
  (-1.1471902596970704, 15.335536453854143, -0.99565698091932198),
  (-2.4979074477418139, 23.753684595554244, -0.92419616437542085))
 </pre>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_63_1.png" src="tutorial/../nbpictures//tutorial_0_mapping_63_1.png" />
+<img alt="../_images/tutorial_0_mapping_63_1.png" src="../_images/tutorial_0_mapping_63_1.png" />
 </div>
 <div class="section" id="genomic-coverage-of-our-reads">
 <h4>Genomic coverage of our reads<a class="headerlink" href="#genomic-coverage-of-our-reads" title="Permalink to this headline">¶</a></h4>
@@ -763,7 +763,7 @@ dangling-ends and self-circle along the genome</p>
                          <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_91_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_91_0.png" />
+<img alt="../_images/tutorial_0_mapping_91_0.png" src="../_images/tutorial_0_mapping_91_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -772,13 +772,13 @@ dangling-ends and self-circle along the genome</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_94_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_94_0.png" />
+<img alt="../_images/tutorial_0_mapping_94_0.png" src="../_images/tutorial_0_mapping_94_0.png" />
 <p>Same as above, calling the focus using directly chromosome name and
 using a smaller resolution (100 kb):</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_96_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_96_0.png" />
+<img alt="../_images/tutorial_0_mapping_96_0.png" src="../_images/tutorial_0_mapping_96_0.png" />
 </div>
 <div class="section" id="filtering-and-normalization">
 <h2>Filtering and normalization<a class="headerlink" href="#filtering-and-normalization" title="Permalink to this headline">¶</a></h2>
@@ -808,7 +808,7 @@ file of reads:</p>
 <span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_104_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_104_0.png" />
+<img alt="../_images/tutorial_0_mapping_104_0.png" src="../_images/tutorial_0_mapping_104_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_data</span><span class="o">.</span><span class="n">filter_columns</span><span class="p">(</span><span class="n">draw_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -828,7 +828,7 @@ WARNING: removing columns having more than 2327 zeroes:
 /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
   return array(a, dtype, copy=False, order=order)
 </pre>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_105_1.png" src="tutorial/../nbpictures//tutorial_0_mapping_105_1.png" />
+<img alt="../_images/tutorial_0_mapping_105_1.png" src="../_images/tutorial_0_mapping_105_1.png" />
 <pre class="ansi-block literal-block">
 /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:145: ComplexWarning: Casting complex values to real discards the imaginary part
   round(root, 3), ' '.join(
@@ -859,7 +859,7 @@ representation:</p>
 /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
   ret = ret.dtype.type(ret / rcount)
 </pre>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_107_1.png" src="tutorial/../nbpictures//tutorial_0_mapping_107_1.png" />
+<img alt="../_images/tutorial_0_mapping_107_1.png" src="../_images/tutorial_0_mapping_107_1.png" />
 </div>
 <div class="section" id="normalization">
 <h3>Normalization<a class="headerlink" href="#normalization" title="Permalink to this headline">¶</a></h3>
@@ -879,7 +879,7 @@ iterative correction
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_111_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_111_0.png" />
+<img alt="../_images/tutorial_0_mapping_111_0.png" src="../_images/tutorial_0_mapping_111_0.png" />
 </div>
 </div>
 </div>
