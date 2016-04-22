@@ -735,7 +735,7 @@ of chromosomes
 
 .. code:: python
 
-    plot_genomic_distribution(reads, resolution=50000, first_read=True, ylim=(0, 4000), 
+    plot_genomic_distribution(reads, resolution=50000, first_read=True, ylim=(0, 5000), 
                               chr_names=['1'], nreads=1000000)
 
 
@@ -872,7 +872,8 @@ applied.
 
 As mentioned, it is usually a good idea not to consider the filter
 number 5: "too close form REs". To do so, we can just use the
-``filters`` parameter as:
+``filters`` parameter as (the less conservative approach would be to use
+only the filters 1, 2, 3, 9 and 10):
 
 .. code:: python
 
@@ -898,13 +899,23 @@ Filters can also be applied in a "reverse" way in order to select only
 .. code:: python
 
     sc_de  = '/scratch/test/rao2014/HiC003/self_circles_and_dangling-ends.tsv'
-    
+
+.. code:: python
+
     apply_filter(reads, sc_de, masked, filters=[1,2], reverse=True)
 
 
 .. ansi-block::
 
-       17707117 reads written to file
+        saving to file 1637033 reads with .
+
+
+
+
+.. ansi-block::
+
+    1637033
+
 
 
 This can be used for example to analyze the distribution of
@@ -912,29 +923,19 @@ dangling-ends and self-circle along the genome
 
 .. code:: python
 
-    plot_genomic_distribution(sc_de, resolution=50000, first_read=True, chr_names=['1'])
+    plot_genomic_distribution(sc_de, resolution=50000, first_read=True, chr_names=['1'], ylim=(0,300))
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_87_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_88_0.png
 
 
 Once filtered the peaks previously seen should disapeear:
 
 .. code:: python
 
-    plot_genomic_distribution(reads, resolution=50000, first_read=True, chr_names=['chr8'],
-                             nreads=1000000, ylim=(0,250))
-
-
-
-.. image:: ../nbpictures//tutorial_0_mapping_89_0.png
-
-
-.. code:: python
-
-    plot_genomic_distribution(filt_reads, resolution=50000, first_read=True, chr_names=['chr8'],
-                             nreads=1000000, ylim=(0,250))
+    plot_genomic_distribution(reads, resolution=50000, first_read=True, chr_names=['1'],
+                              nreads=1000000, ylim=(0,6000))
 
 
 
@@ -943,11 +944,21 @@ Once filtered the peaks previously seen should disapeear:
 
 .. code:: python
 
-    hic_map(filt_reads, resolution=1000000, show=True)
+    plot_genomic_distribution(filt_reads, resolution=50000, first_read=True, chr_names=['1'],
+                              nreads=1000000, ylim=(0,6000))
 
 
 
 .. image:: ../nbpictures//tutorial_0_mapping_91_0.png
+
+
+.. code:: python
+
+    hic_map(filt_reads, resolution=1000000, show=True)
+
+
+
+.. image:: ../nbpictures//tutorial_0_mapping_92_0.png
 
 
 These maps can be zoomed to a given region, like first chromosome:
@@ -956,22 +967,12 @@ These maps can be zoomed to a given region, like first chromosome:
 
     hic_map(filt_reads, resolution=1000000, show=True, focus=(1, 250))
 
-
-
-.. image:: ../nbpictures//tutorial_0_mapping_93_0.png
-
-
 Same as above, calling the focus using directly chromosome name and
 using a smaller resolution (100 kb):
 
 .. code:: python
 
-    hic_map(filt_reads, resolution=100000, show=True, focus='chr1')
-
-
-
-.. image:: ../nbpictures//tutorial_0_mapping_95_0.png
-
+    hic_map(filt_reads, resolution=100000, show=True, focus='1')
 
 Filtering and normalization
 ---------------------------
@@ -1012,7 +1013,7 @@ file of reads:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_103_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_104_0.png
 
 
 .. code:: python
@@ -1040,7 +1041,7 @@ file of reads:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_104_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_105_1.png
 
 
 .. ansi-block::
@@ -1081,7 +1082,7 @@ representation:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_106_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_107_1.png
 
 
 Normalization
@@ -1111,6 +1112,6 @@ basically consists constructing a new in dividing each cell
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_110_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_111_0.png
 
 
