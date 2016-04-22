@@ -735,12 +735,13 @@ of chromosomes
 
 .. code:: python
 
-    import matplotlib.pyplot as plt
-
-.. code:: python
-
-    plot_genomic_distribution(reads, resolution=50000, first_read=True, ylim=(0, 1000), 
+    plot_genomic_distribution(reads, resolution=50000, first_read=True, ylim=(0, 4000), 
                               chr_names=['1'], nreads=1000000)
+
+
+
+.. image:: ../nbpictures//tutorial_0_mapping_70_0.png
+
 
 Interaction matrix
 ^^^^^^^^^^^^^^^^^^
@@ -749,10 +750,10 @@ The plot above is probablythe most informative, in order to infer the
 qualtity of an Hi-C experiment. This plot represents the matrix of
 interaction, the distribution of these interaction as an histogram or as
 a function of genomic distance. Some statistics on the specificity of
-these interaction, like the cis-to-trans ratio (expected to be between
-40 and 60%), and the 3 first eigen vectors of the matrix highlighting
-the principal structural features of the matrix (in non-normalized
-matrices eigen-vectors are not very informative however).
+these interaction, like the cis-to-trans ratio (expected to be at least
+between 40 and 60%), and the 3 first eigen vectors of the matrix
+highlighting the principal structural features of the matrix (in
+non-normalized matrices eigen-vectors are not very informative however).
 
 .. code:: python
 
@@ -764,7 +765,7 @@ matrices eigen-vectors are not very informative however).
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_75_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_74_0.png
 
 
 Filter reads
@@ -782,22 +783,32 @@ applied:
     same direction
 4.  extra dangling-end : reads are comming from different RE fragment
     but are close enough (< max\_molecule length) and point to the
-    inside
+    inside. Maximum molecule length parameter can be set at 1.5 or 2
+    times the 99.9 percentile returned by insert\_size function above.
 5.  too close from RES : semi-dangling-end filter, start position of one
-    of the read is too close (5 bp by default) from RE cutting site.
+    of the read is too close (5 bp by default) from RE cutting site
+    (with 4 base-pair-cutter enzyme it can be set to 4nt). This filter
+    is in general not taken into account in *in situ* Hi-C experiments,
+    and with 4bp cutters as the ligation may happen only one side of the
+    DNA fragments.
 6.  too short : remove reads comming from small restriction less than
-    100 bp (default) because they are comparable to the read length
+    100 bp (default) because they are comparable to the read length, and
+    are thus probably artifacts.
 7.  too large : remove reads comming from large restriction fragments
     (default: 100 Kb, P < 10-5 to occur in a randomized genome) as they
     likely represent poorly assembled or repeated regions
 8.  over-represented : reads coming from the top 0.5% most frequently
     detected restriction fragments, they may be prone to PCR artifacts
     or represent fragile regions of the genome or genome assembly errors
-9.  duplicated : the combination of the start positions of the reads is
-    repeated -> PCR artifact (only keep one copy)
+9.  duplicated : the combination of the start positions (and direction)
+    of the reads is repeated -> PCR artifact (only keep one copy)
 10. random breaks : start position of one of the read is too far (more
     than min\_dist\_to\_re) from RE cutting site. Non-canonical enzyme
-    activity or random physical breakage of the chromatin.
+    activity or random physical breakage of the chromatin. The
+    min\_dist\_to\_re parameter can be set as the 99.9 percentile of the
+    distribution of insert sizes, as this parameter is important it is
+    recommended to try different combinations and observe how it may
+    affect the quality of the resulting interaction matrix
 
 The function ``filter_reads`` works in parallel (4 threads), and creates
 one file per filter (10 files, which path are an extension of the input
@@ -807,27 +818,27 @@ file containing the reads).
 
     from pytadbit.mapping.filter import filter_reads
     
-    masked = filter_reads(reads, max_molecule_length=505, min_dist_to_re=760,
+    masked = filter_reads(reads, max_molecule_length=610, min_dist_to_re=915,
                           over_represented=0.005, max_frag_size=100000,
-                          min_frag_size=100, re_proximity=5)
+                          min_frag_size=100, re_proximity=4)
 
 
 .. ansi-block::
 
     Filtered reads (and percentage of total):
     
-         TOTAL mapped              :     41123290 (100.00%)
+         Mapped both                :     58868016 (100.00%)
       -----------------------------------------------------
-       1- self-circle               :       653029 (  1.59%)
-       2- dangling-end              :     17054088 ( 41.47%)
-       3- error                     :       250158 (  0.61%)
-       4- extra dangling-end        :      4115590 ( 10.01%)
-       5- too close from RES        :      5761851 ( 14.01%)
-       6- too short                 :       307169 (  0.75%)
-       7- too large                 :        63151 (  0.15%)
-       8- over-represented          :      1334209 (  3.24%)
-       9- duplicated                :      9132048 ( 22.21%)
-      10- random breaks             :     18282481 ( 44.46%)
+       1- self-circle               :        19763 (  0.03%)
+       2- dangling-end              :      1617270 (  2.75%)
+       3- error                     :         7907 (  0.01%)
+       4- extra dangling-end        :     11123319 ( 18.90%)
+       5- too close from RES        :     15365731 ( 26.10%)
+       6- too short                 :      6742667 ( 11.45%)
+       7- too large                 :          917 (  0.00%)
+       8- over-represented          :      2111005 (  3.59%)
+       9- duplicated                :       274430 (  0.47%)
+      10- random breaks             :        36700 (  0.06%)
 
 
 Previous function creates one file per filter. Each containing the list
@@ -839,7 +850,7 @@ applied.
 .. code:: python
 
     from pytadbit.mapping.filter import apply_filter
-    filt_reads  = '/scratch/results/%s_filtered_map.tsv' % name
+    filt_reads  = '/scratch/test/rao2014/HiC003/filtered_map.tsv'
 
 .. code:: python
 
@@ -848,19 +859,37 @@ applied.
 
 .. ansi-block::
 
-       9403143 reads written to file
+        saving to file 33541378 reads without .
 
 
-An example to apply only the 9 first filters:
-
-.. code:: python
-
-    apply_filter(reads, filt_reads, masked, filters=[1,2,3,4,5,6,7,8,9])
 
 
 .. ansi-block::
 
-       13666735 reads written to file
+    33541378
+
+
+
+As mentioned, it is usually a good idea not to consider the filter
+number 5: "too close form REs". To do so, we can just use the
+``filters`` parameter as:
+
+.. code:: python
+
+    apply_filter(reads, filt_reads, masked, filters=[1,2,3,4,6,7,8,9,10])
+
+
+.. ansi-block::
+
+        saving to file 40026192 reads without .
+
+
+
+
+.. ansi-block::
+
+    40026192
+
 
 
 Filters can also be applied in a "reverse" way in order to select only
@@ -868,7 +897,7 @@ Filters can also be applied in a "reverse" way in order to select only
 
 .. code:: python
 
-    sc_de  = '/scratch/results/%s_self_circles_and_dangling-ends.tsv' % name
+    sc_de  = '/scratch/test/rao2014/HiC003/self_circles_and_dangling-ends.tsv'
     
     apply_filter(reads, sc_de, masked, filters=[1,2], reverse=True)
 
@@ -883,11 +912,11 @@ dangling-ends and self-circle along the genome
 
 .. code:: python
 
-    plot_genomic_distribution(sc_de, resolution=50000, first_read=True, chr_names=['chr8'])
+    plot_genomic_distribution(sc_de, resolution=50000, first_read=True, chr_names=['1'])
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_88_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_87_0.png
 
 
 Once filtered the peaks previously seen should disapeear:
@@ -899,7 +928,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_90_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_89_0.png
 
 
 .. code:: python
@@ -909,7 +938,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_91_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_90_0.png
 
 
 .. code:: python
@@ -918,7 +947,7 @@ Once filtered the peaks previously seen should disapeear:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_92_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_91_0.png
 
 
 These maps can be zoomed to a given region, like first chromosome:
@@ -929,7 +958,7 @@ These maps can be zoomed to a given region, like first chromosome:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_94_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_93_0.png
 
 
 Same as above, calling the focus using directly chromosome name and
@@ -941,7 +970,7 @@ using a smaller resolution (100 kb):
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_96_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_95_0.png
 
 
 Filtering and normalization
@@ -983,7 +1012,7 @@ file of reads:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_104_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_103_0.png
 
 
 .. code:: python
@@ -1011,7 +1040,7 @@ file of reads:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_105_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_104_1.png
 
 
 .. ansi-block::
@@ -1052,7 +1081,7 @@ representation:
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_107_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_106_1.png
 
 
 Normalization
@@ -1082,6 +1111,6 @@ basically consists constructing a new in dividing each cell
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_111_0.png
+.. image:: ../nbpictures//tutorial_0_mapping_110_0.png
 
 
