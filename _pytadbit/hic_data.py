@@ -43,7 +43,10 @@ class HiC_data(dict):
             for crm in self.chromosomes:
                 self.section_pos[crm] = (total, total + self.chromosomes[crm])
                 total += self.chromosomes[crm]
-
+        if self.sections == {}:
+            self.section_pos = {None: (0, self.__size)}
+            self.sections = dict([((None, i), i)
+                                  for i in xrange(0, self.__size)])
 
     def _update_size(self, size):
         self.__size +=  size
@@ -427,7 +430,8 @@ class HiC_data(dict):
                 return mtrx
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
-                          savecorr=None, show=False, suffix='', **kwargs):
+                          savecorr=None, show=False, suffix='',
+                          ev_index=None, **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -457,6 +461,9 @@ class HiC_data(dict):
         :param False yield_ev1: if True yields one list per chromosome with the
            first eigenvector used to compute compartments.
         :param '' suffix: to be placed after file names of compartment images
+        :param None ev_index: a list of number refering to the index of the
+           eigenvector to be used. By default the first eigenvector is used.
+           WARNING: index starts at 1, default is thus a list of ones.
 
         TODO: this is really slow...
 
@@ -467,7 +474,7 @@ class HiC_data(dict):
            compartment borders for each chromosome (keys are chromosome names)
         """
         if not self.bads:
-            if kwargs.get('verbose', True):
+            if kwargs.get('verbose', False):
                 print 'Filtering bad columns %d' % 99
             self.filter_columns(perc_zero=kwargs.get('perc_zero', 99),
                                 by_mean=False, silent=True)
@@ -476,13 +483,14 @@ class HiC_data(dict):
                 warn('WARNING: all columns would have been filtered out, '
                      'filtering disabled')
         if not self.expected:
-            if kwargs.get('verbose', True):
+            if kwargs.get('verbose', False):
                 print 'Normalizing by expected values'
             self.expected = expected(self, bads=self.bads, **kwargs)
         if not self.bias:
-            if kwargs.get('verbose', True):
+            if kwargs.get('verbose', False):
                 print 'Normalizing by ICE (1 round)'
-            self.normalize_hic(iterations=0)
+            self.normalize_hic(iterations=0,
+                               silent=not kwargs.get('verbose', False))
         if savefig:
             mkdir(savefig)
         if savecorr:
@@ -492,6 +500,7 @@ class HiC_data(dict):
 
         cmprts = {}
         firsts = {}
+        count = 0
         for sec in self.section_pos:
             if crms and sec not in crms:
                 continue
@@ -507,6 +516,7 @@ class HiC_data(dict):
             if not matrix: # MT chromosome will fall there
                 warn('Chromosome %s is probably MT :)' % (sec))
                 cmprts[sec] = []
+                count += 1
                 continue
             for i in xrange(len(matrix)):
                 for j in xrange(i+1, len(matrix)):
@@ -550,8 +560,10 @@ class HiC_data(dict):
             except LinAlgError:
                 warn('Chromosome %s too small to compute PC1' % (sec))
                 cmprts[sec] = [] # Y chromosome, or so...
+                count += 1
                 continue
-            first = list(evect[:, -1])
+            index = ev_index[count] if ev_index else 1
+            first = list(evect[:, -index])
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]
             _ = [first.insert(b, 0) for b in bads]
@@ -610,6 +622,7 @@ class HiC_data(dict):
                 plot_compartments_summary(
                     sec, cmprts, show,
                     savefig + '/chr' + sec + suffix + '_summ.pdf' if savefig else None)
+            count += 1
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata, chroms=self.compartments.keys())

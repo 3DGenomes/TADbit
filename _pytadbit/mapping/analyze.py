@@ -787,7 +787,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
 
     max_y = max([max(distr[c].values()) for c in distr])
     max_x = max([len(distr[c].values()) for c in distr])
-    ncrms = len(genome_seq if genome_seq else distr)
+    ncrms = len(chr_names if chr_names else genome_seq if genome_seq else distr)
     for i, crm in enumerate(chr_names if chr_names else genome_seq
                             if genome_seq else distr):
         plt.subplot(ncrms, 1, i + 1)
@@ -807,10 +807,11 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
 
     if savefig:
         tadbit_savefig(savefig)
+        plt.close('all')
     elif not axe:
         plt.show()
-    plt.close('all')
-
+    else:
+        plt.close('all')
 
 def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
                        savefig=None, show=False, savedata=None, axe=None):

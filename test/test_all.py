@@ -301,6 +301,25 @@ class TestTadbit(unittest.TestCase):
             print '9', time() - t0
 
 
+    def test_10_compartments(self):
+        """
+        """
+        if CHKTIME:
+            t0 = time()
+        test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
+        test_chr.add_experiment('exp1', 20000, tad_def=exp4,
+                                hic_data=PATH + '/20Kb/chrT/chrT_D.tsv',
+                                silent=True)
+        exp = test_chr.experiments[0]
+        exp.load_hic_data(PATH + '/20Kb/chrT/chrT_A.tsv', silent=True)
+        hic_data = exp.hic_data[0]
+        hic_data.find_compartments()
+        self.assertEqual(len(hic_data.compartments[None]), 39)
+        self.assertEqual(round(hic_data.compartments[None][25]['dens'], 5), 0.77091)
+        if CHKTIME:
+            print '10', time() - t0
+        
+
     # def test_10_generate_weights(self):
     #     """
     #     """
