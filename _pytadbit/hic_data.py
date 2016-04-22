@@ -431,7 +431,7 @@ class HiC_data(dict):
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='',
-                          ev_index=None, **kwargs):
+                          ev_index=None, rich_in_A=None, **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -464,6 +464,13 @@ class HiC_data(dict):
         :param None ev_index: a list of number refering to the index of the
            eigenvector to be used. By default the first eigenvector is used.
            WARNING: index starts at 1, default is thus a list of ones.
+        :param None rich_in_A: by default compartments are identified using mean
+           number of intra-interactions (A compartments are expected to have
+           less). However this measure is not very accurate. Using this
+           parameter a dictionary of gene coordinates or active epigenetic marks
+           coordinates can be passed (dictionary with chromosome names as keys,
+           and list of positions as values), and used instead of the mean
+           interactions.
 
         TODO: this is really slow...
 
@@ -497,6 +504,12 @@ class HiC_data(dict):
             mkdir(savecorr)
         if suffix != '':
             suffix = '_' + suffix
+        if rich_in_A:
+            for sec in rich_in_A:
+                rich_in_A[sec] = [int(p) / self.resolution
+                                  for p in rich_in_A[sec]]
+                rich_in_A[sec] = dict([(v, rich_in_A[sec].count(v))
+                                  for v in set(rich_in_A[sec])])
 
         cmprts = {}
         firsts = {}
@@ -579,36 +592,16 @@ class HiC_data(dict):
             cmprts[sec] = breaks
             
             firsts[sec] = first
-            # calculate compartment internal density
-            for k, cmprt in enumerate(cmprts[sec]):
-                beg = self.section_pos[sec][0]
-                beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg
-                sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
-                               / self.bias[i] / self.bias[j])
-                              for i in xrange(beg1, end1) if not i in self.bads
-                              for j in xrange(i, end1) if not j in self.bads]
-                try:
-                    cmprt['dens'] = sum(sec_matrix) / len(sec_matrix)
-                except ZeroDivisionError:
-                    cmprt['dens'] = 0.
-            try:
-                meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
-            except ZeroDivisionError:
-                meanh = 1.
-            for cmprt in cmprts[sec]:
-                try:
-                    cmprt['dens'] /= meanh
-                except ZeroDivisionError:
-                    cmprt['dens'] = 1.
+            self.__apply_metric(cmprts, sec, rich_in_A)
             gammas = {}
             for gamma in range(101):
                 gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
                                                       breaks, cmprts[sec],
-                                                      save=False)
+                                                      rich_in_A, save=False)
                 # print gamma, gammas[gamma]
             gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
             _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
-                                      cmprts[sec], save=True)
+                                      cmprts[sec], rich_in_A, save=True)
             if savefig or show:
                 vmin = kwargs.get('vmin', -1)
                 vmax = kwargs.get('vmax',  1)
@@ -627,6 +620,41 @@ class HiC_data(dict):
         if savedata:
             self.write_compartments(savedata, chroms=self.compartments.keys())
         return firsts
+
+    def __apply_metric(self, cmprts, sec, rich_in_A):
+        """
+        calculate compartment internal density if no rich_in_A, otherwise
+        sum this list
+        """
+        for cmprt in cmprts[sec]:
+            beg = self.section_pos[sec][0]
+            beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg
+            if rich_in_A:
+                sec_matrix = sum(rich_in_A[sec][i] for i in xrange(beg1, end1)
+                                 if not i in self.bads)
+                try:
+                    cmprt['dens'] = float(sum(sec_matrix)) / len(sec_matrix)
+                except ZeroDivisionError:
+                    cmprt['dens'] = 0.
+            else:
+                sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
+                               / self.bias[i] / self.bias[j])
+                              for i in xrange(beg1, end1) if not i in self.bads
+                              for j in xrange(i, end1) if not j in self.bads]
+                try:
+                    cmprt['dens'] = sum(sec_matrix) / len(sec_matrix)
+                except ZeroDivisionError:
+                    cmprt['dens'] = 0.
+        try:
+            meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+        except ZeroDivisionError:
+            meanh = 1.
+        for cmprt in cmprts[sec]:
+            try:
+                cmprt['dens'] /= meanh
+            except ZeroDivisionError:
+                cmprt['dens'] = 1.
+
 
     def write_compartments(self, savedata, chroms=None):
         """
@@ -727,7 +755,8 @@ class HiC_data(dict):
                            [0] + 
                            [self[i, j] for j in xrange(i + 1, end1)])
 
-def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=False):
+def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
+                          verbose=False):
     # function to convert correlation into distances
 
     gamma += 1
@@ -780,21 +809,25 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, save=True, verbose=Fa
     # labelling compartments. A compartments shall have lower
     # mean intra-interactions
     dens = {}
+    if rich_in_A:
+        test = lambda x: x >= 1
+    else:
+        test = lambda x: x < 1
     for k in clusters:
         val = sum([cmprtsec[c]['dens']
                    for c in clusters[k]]) / len(clusters[k])
-        dens['A' if val < 1 else 'B'] = [
+        dens['A' if test(val) else 'B'] = [
             cmprtsec[c]['dens'] for c in clusters[k]
             if cmprtsec[c]['end'] - cmprtsec[c]['start'] > 2]
         if save:
             for c in clusters[k]:
-                cmprtsec[c]['type'] = 'A' if val < 1 else 'B'
+                cmprtsec[c]['type'] = 'A' if test(val) else 'B'
     try:
         tt, pval = ttest_ind(dens['A'], dens['B'])
     except ZeroDivisionError:
         return (0,0,0,0)
     prop = float(len(dens['A'])) / (len(dens['A']) + len(dens['B']))
-    score = 5000*(prop- 0.5)**4 - 2
+    score = 5000 * (prop - 0.5)**4 - 2
     if verbose:
         print 'g:%5s %5s%% pen:%7s tt:%7s score:%7s pv:%s' % (
             gamma - 1, round(prop*100, 1), round(score, 3), round(tt, 3),

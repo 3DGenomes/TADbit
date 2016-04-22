@@ -783,7 +783,8 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         pass
     fhandler.close()
     if not axe:
-        _ = plt.figure(figsize=(15, 3 + 3 * len(distr.keys())))
+        _ = plt.figure(figsize=(15, 1 + 3 * len(
+                              chr_names if chr_names else distr.keys())))
 
     max_y = max([max(distr[c].values()) for c in distr])
     max_x = max([len(distr[c].values()) for c in distr])
