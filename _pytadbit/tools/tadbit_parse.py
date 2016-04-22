@@ -205,6 +205,8 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                           '(jobids: %s), use "tadbit describe" and select corresponding '
                           'jobid with --jobids option') % (
                              read, ', '.join([str(j) for j in jobids[read]])))
+        else:
+            jobids = dict([(read, jobids) for read in reads])
         for read in reads:
             for jobid in jobids[read]:
                 cur.execute("""
