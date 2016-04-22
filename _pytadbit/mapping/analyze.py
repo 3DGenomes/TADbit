@@ -624,7 +624,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
 
 
 def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
-                 xlog=False, stats=('median', 'perc_max')):
+                 show=False, xlog=False, stats=('median', 'perc_max')):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
@@ -691,7 +691,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
         raise Exception('ERROR: not found')
     to_return['perc_max'] = max_perc
     to_return['MAD'] = mad(des)
-    if not savefig and not axe:
+    if not savefig and not axe and not show:
         return [to_return[k] for k in stats]
     
     ax = setup_plot(axe, figsize=(10, 5.5))
@@ -716,7 +716,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     ax.legend(bbox_to_anchor=(1.4, 1), frameon=False)
     if savefig:
         tadbit_savefig(savefig)
-    elif not axe:
+    elif show and not axe:
         plt.show()
     plt.close('all')
     return [to_return[k] for k in stats]

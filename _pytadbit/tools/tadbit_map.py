@@ -61,7 +61,7 @@ def run(opts):
                             path.join(opts.workdir,
                                       '01_mapped_r%d' % (opts.read)),
                             opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
-                            frag_map=not opts.iterative, clean=opts.keep_tmp,
+                            frag_map=not opts.iterative, clean=not opts.keep_tmp,
                             windows=opts.windows, get_nread=True, skip=opts.skip,
                             suffix=param_hash, **opts.gem_param)
 
