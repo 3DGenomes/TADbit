@@ -630,7 +630,7 @@ the filtering step (see bellow)</em></p>
 <p>This plot can be zoomed in the y axis in order to avoid depending on
 these artifacts. The plot can also be generated only for a given number
 of chromosomes</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4000</span><span class="p">),</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span>
                           <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -743,7 +743,8 @@ saving to file 33541378 reads without .
 </pre>
 <p>As mentioned, it is usually a good idea not to consider the filter
 number 5: &#8220;too close form REs&#8221;. To do so, we can just use the
-<code class="docutils literal"><span class="pre">filters</span></code> parameter as:</p>
+<code class="docutils literal"><span class="pre">filters</span></code> parameter as (the less conservative approach would be to use
+only the filters 1, 2, 3, 9 and 10):</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">filt_reads</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -756,45 +757,47 @@ saving to file 40026192 reads without .
 <p>Filters can also be applied in a &#8220;reverse&#8221; way in order to select only
 &#8220;bad&#8221; reads.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">sc_de</span>  <span class="o">=</span> <span class="s1">&#39;/scratch/test/rao2014/HiC003/self_circles_and_dangling-ends.tsv&#39;</span>
-
-<span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">sc_de</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">apply_filter</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">sc_de</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <pre class="ansi-block literal-block">
-17707117 reads written to file
+saving to file 1637033 reads with .
+</pre>
+<pre class="ansi-block literal-block">
+1637033
 </pre>
 <p>This can be used for example to analyze the distribution of
 dangling-ends and self-circle along the genome</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">sc_de</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">])</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">sc_de</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">300</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_87_0.png" src="../_images/tutorial_0_mapping_87_0.png" />
+<img alt="../_images/tutorial_0_mapping_88_0.png" src="../_images/tutorial_0_mapping_88_0.png" />
 <p>Once filtered the peaks previously seen should disapeear:</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">],</span>
-                         <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">))</span>
-</pre></div>
-</div>
-<img alt="../_images/tutorial_0_mapping_89_0.png" src="../_images/tutorial_0_mapping_89_0.png" />
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chr8&#39;</span><span class="p">],</span>
-                         <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">))</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span>
+                          <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6000</span><span class="p">))</span>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_0_mapping_90_0.png" src="../_images/tutorial_0_mapping_90_0.png" />
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot_genomic_distribution</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">first_read</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chr_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span>
+                          <span class="n">nreads</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6000</span><span class="p">))</span>
 </pre></div>
 </div>
 <img alt="../_images/tutorial_0_mapping_91_0.png" src="../_images/tutorial_0_mapping_91_0.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/tutorial_0_mapping_92_0.png" src="../_images/tutorial_0_mapping_92_0.png" />
 <p>These maps can be zoomed to a given region, like first chromosome:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/tutorial_0_mapping_93_0.png" src="../_images/tutorial_0_mapping_93_0.png" />
 <p>Same as above, calling the focus using directly chromosome name and
 using a smaller resolution (100 kb):</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;chr1&#39;</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">filt_reads</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_95_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_95_0.png" />
 </div>
 <div class="section" id="filtering-and-normalization">
 <h2>Filtering and normalization<a class="headerlink" href="#filtering-and-normalization" title="Permalink to this headline">¶</a></h2>
@@ -824,7 +827,7 @@ file of reads:</p>
 <span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_103_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_103_0.png" />
+<img alt="../_images/tutorial_0_mapping_104_0.png" src="../_images/tutorial_0_mapping_104_0.png" />
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_data</span><span class="o">.</span><span class="n">filter_columns</span><span class="p">(</span><span class="n">draw_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -844,7 +847,7 @@ WARNING: removing columns having more than 2327 zeroes:
 /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
   return array(a, dtype, copy=False, order=order)
 </pre>
-<img alt="../_images/tutorial_0_mapping_104_1.png" src="../_images/tutorial_0_mapping_104_1.png" />
+<img alt="../_images/tutorial_0_mapping_105_1.png" src="../_images/tutorial_0_mapping_105_1.png" />
 <pre class="ansi-block literal-block">
 /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:145: ComplexWarning: Casting complex values to real discards the imaginary part
   round(root, 3), ' '.join(
@@ -875,7 +878,7 @@ representation:</p>
 /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
   ret = ret.dtype.type(ret / rcount)
 </pre>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_106_1.png" src="tutorial/../nbpictures//tutorial_0_mapping_106_1.png" />
+<img alt="../_images/tutorial_0_mapping_107_1.png" src="../_images/tutorial_0_mapping_107_1.png" />
 </div>
 <div class="section" id="normalization">
 <h3>Normalization<a class="headerlink" href="#normalization" title="Permalink to this headline">¶</a></h3>
@@ -895,7 +898,7 @@ iterative correction
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">hic_map</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="tutorial/../nbpictures//tutorial_0_mapping_110_0.png" src="tutorial/../nbpictures//tutorial_0_mapping_110_0.png" />
+<img alt="../_images/tutorial_0_mapping_111_0.png" src="../_images/tutorial_0_mapping_111_0.png" />
 </div>
 </div>
 </div>
