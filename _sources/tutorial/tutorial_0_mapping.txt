@@ -967,12 +967,22 @@ These maps can be zoomed to a given region, like first chromosome:
 
     hic_map(filt_reads, resolution=1000000, show=True, focus=(1, 250))
 
+
+
+.. image:: ../nbpictures//tutorial_0_mapping_94_0.png
+
+
 Same as above, calling the focus using directly chromosome name and
 using a smaller resolution (100 kb):
 
 .. code:: python
 
     hic_map(filt_reads, resolution=100000, show=True, focus='1')
+
+
+
+.. image:: ../nbpictures//tutorial_0_mapping_96_0.png
+
 
 Filtering and normalization
 ---------------------------
