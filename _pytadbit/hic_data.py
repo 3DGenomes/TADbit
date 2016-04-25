@@ -431,6 +431,7 @@ class HiC_data(dict):
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='',
+                          label_compartments=True,
                           ev_index=None, rich_in_A=None, **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
@@ -471,6 +472,8 @@ class HiC_data(dict):
            coordinates can be passed (dictionary with chromosome names as keys,
            and list of positions as values), and used instead of the mean
            interactions.
+        :param True label_compartments: label compartments into A/B categories,
+           otherwise just find borders (faster).
 
         TODO: this is really slow...
 
@@ -593,18 +596,19 @@ class HiC_data(dict):
             
             firsts[sec] = first
             self.__apply_metric(cmprts, sec, rich_in_A)
-            gammas = {}
-            for gamma in range(101):
-                gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
-                                                      breaks, cmprts[sec],
-                                                      rich_in_A, save=False)
+            if label_compartments:
+                gammas = {}
+                for gamma in range(101):
+                    gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
+                                                          breaks, cmprts[sec],
+                                                          rich_in_A, save=False)
+                    if kwargs.get('verbose', False):
+                        print gamma, gammas[gamma]
+                gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
                 if kwargs.get('verbose', False):
-                    print gamma, gammas[gamma]
-            gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
-            if kwargs.get('verbose', False):
-                print '   ====>  minimum:', gamma
-            _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
-                                      cmprts[sec], rich_in_A, save=True)
+                    print '   ====>  minimum:', gamma
+                _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
+                                          cmprts[sec], rich_in_A, save=True)
             if savefig or show:
                 vmin = kwargs.get('vmin', -1)
                 vmax = kwargs.get('vmax',  1)
@@ -676,14 +680,14 @@ class HiC_data(dict):
             'CHR\t' if len(sections) > 1 else ''))
         try:
             out.write('\n'.join(['\n'.join(['%s%d\t%d\t%.2f\t%s' % (
-                (sec + '\t') if chroms else '',
+                (sec + '\t') if sections else '',
                 c['start'] + 1, c['end'] + 1,
                 c['dens'], c['type'])
                                             for c in self.compartments[sec]])
                                  for sec in sections]) + '\n')
         except KeyError:
             out.write('\n'.join(['\n'.join(['%s%d\t%d\t%.2f\t%s' % (
-                (sec + '\t') if chroms else '',
+                (sec + '\t') if sections else '',
                 c['start'], c['end'], c['dens'], '')
                                             for c in self.compartments[sec]])
                                  for sec in sections]) + '\n')
