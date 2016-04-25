@@ -315,7 +315,8 @@ class TestTadbit(unittest.TestCase):
         hic_data = exp.hic_data[0]
         hic_data.find_compartments()
         self.assertEqual(len(hic_data.compartments[None]), 39)
-        self.assertEqual(round(hic_data.compartments[None][25]['dens'], 5), 0.77091)
+        self.assertEqual(round(hic_data.compartments[None][24]['dens'], 5),
+                         0.75434)
         if CHKTIME:
             print '10', time() - t0
         

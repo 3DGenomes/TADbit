@@ -887,7 +887,6 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
         
 def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                       vmin=-1, vmax=1):
-    plt.close('all')
     heights = []
     val = 0
     for i in xrange(len(matrix)):

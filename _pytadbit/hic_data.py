@@ -540,7 +540,14 @@ class HiC_data(dict):
             for i in xrange(len(matrix)):
                 for j in xrange(i+1, len(matrix)):
                     matrix[i][j] = matrix[j][i]
-            matrix = [list(m) for m in corrcoef(matrix)]
+            try:
+                matrix = [list(m) for m in corrcoef(matrix)]
+            except TypeError:
+                # very small chromosome?
+                warn('Chromosome %s is probably MT :)' % (sec))
+                cmprts[sec] = []
+                count += 1
+                continue
             # write correlation matrix to file. replaces filtered row/columns by NaN
             if savecorr:
                 out = open(os.path.join(savecorr, '%s_corr-matrix.tsv' % (sec)),
@@ -590,11 +597,11 @@ class HiC_data(dict):
                  for b in bads]
             _ = [matrix[i].insert(b, float('nan'))
                  for b in bads for i in xrange(len(first))]
-            breaks = [0] + [i for i, (a, b) in
-                            enumerate(zip(first[1:], first[:-1]))
-                            if a * b < 0] + [len(first)]
-            breaks = [{'start': b, 'end': breaks[i+1]}
-                      for i, b in enumerate(breaks[: -1])]
+            breaks = [i for i, (a, b) in
+                      enumerate(zip(first[1:], first[:-1]))
+                      if a * b < 0] + [len(first) - 1]
+            breaks = [{'start': breaks[i-1] + 1 if i else 0, 'end': b}
+                      for i, b in enumerate(breaks)]
             cmprts[sec] = breaks
             
             firsts[sec] = first
@@ -638,7 +645,7 @@ class HiC_data(dict):
         """
         for cmprt in cmprts[sec]:
             if rich_in_A:
-                beg1, end1 = cmprt['start'], cmprt['end']
+                beg1, end1 = cmprt['start'], cmprt['end'] + 1
                 sec_matrix = [rich_in_A.get(sec, {None: 0}).get(i, 0)
                               for i in xrange(beg1, end1)
                               if not i in self.bads]
@@ -648,7 +655,7 @@ class HiC_data(dict):
                     cmprt['dens'] = 0.
             else:
                 beg = self.section_pos[sec][0]
-                beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg
+                beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg + 1
                 sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
                                / self.bias[i] / self.bias[j])
                               for i in xrange(beg1, end1) if not i in self.bads
@@ -779,11 +786,11 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
                    for _ in xrange(len(breaks))]
     scores = {}
     for k, cmprt in enumerate(cmprtsec):
-        beg1, end1 = cmprt['start'], cmprt['end']
+        beg1, end1 = cmprt['start'], cmprt['end'] + 1
         diff1 = end1 - beg1
         scores[(k,k)] = dist_matrix[k][k] = -1
         for l in xrange(k + 1, len(cmprtsec)):
-            beg2, end2 = cmprtsec[l]['start'], cmprtsec[l]['end']
+            beg2, end2 = cmprtsec[l]['start'], cmprtsec[l]['end'] + 1
             val = nansum([matrix[i][j] for i in xrange(beg1, end1)
                           for j in xrange(beg2, end2)]) / (end2 - beg2) / diff1
             try:
@@ -830,7 +837,7 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
                    for c in clusters[k]]) / len(clusters[k])
         dens['A' if test(val) else 'B'] = [
             cmprtsec[c]['dens'] for c in clusters[k]
-            if cmprtsec[c]['end'] - cmprtsec[c]['start'] > 2]
+            if cmprtsec[c]['end'] + 1 - cmprtsec[c]['start'] > 2]
         if save:
             for c in clusters[k]:
                 cmprtsec[c]['type'] = 'A' if test(val) else 'B'
