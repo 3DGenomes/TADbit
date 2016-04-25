@@ -179,15 +179,15 @@ HiC_data class
 
       - `cis_trans_ratio <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.cis_trans_ratio>`_: Counts the number of interactions occuring within chromosomes (cis) with                                             respect to the total number of interactions
 
-      - find_compartments [#first]_ [#second]_: Search for A/B copartments in each chromsome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromsome names.
+      - `find_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.find_compartments>`_ [#first]_ [#second]_: Search for A/B copartments in each chromsome of the Hi-C matrix.                                             Hi-C matrix is normalized by the number interaction expected at a given                                             distance, and by visibility (one iteration of ICE). A correlation matrix                                             is then calculated from this normalized matrix, and its first                                             eigenvector is used to identify compartments. Changes in sign marking                                             boundaries between compartments.                                             Result is stored as a dictionary of compartment boundaries, keys being                                             chromsome names.
 
       - `get_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.get_matrix>`_: returns a matrix.
 
-      - sum:                                 Sum Hi-C data matrix                                             WARNING: parameters are not meant to be used by external users
+      - `sum <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.sum>`_: Sum Hi-C data matrix                                             WARNING: parameters are not meant to be used by external users
 
-      - write_compartments [#second]_:       Write compartments to a file.
+      - `write_compartments <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_compartments>`_ [#second]_: Write compartments to a file.
 
-      - `write_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_matrix>`_: writes the matrix to a file
+      - `write_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.write_matrix>`_: writes the matrix to a file.
 
       - `yield_matrix <http://3dgenomes.github.io/TADbit/reference/reference_hic_data.html#pytadbit.parsers.hic_parser.HiC_data.yield_matrix>`_: Yields a matrix line by line.                                             Bad row/columns are returned as null row/columns.
 
@@ -343,7 +343,7 @@ Mapping analyze module
 
    - `correlate_matrices <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.correlate_matrices>`_ [#first]_ [#second]_: Compare the iteractions of two Hi-C matrices at a given distance,                                             with spearman rank correlation
 
-   - `insert_sizes <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.analyze.insert_sizes>`_ [#first]_: Plots the distribution of dangling-ends lengths
+   - insert_sizes [#first]_:                 Plots the distribution of dangling-ends lengths
 
 Mapping filter module
 ---------------------
@@ -352,21 +352,30 @@ Mapping filter module
 
    - `filter_reads <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.filter.filter_reads>`_ [#second]_: Filter mapped pair of reads in order to remove experimental artifacts (e.g.                                             dangling-ends, self-circle, PCR artifacts
 
+Mapping full_mapper module
+--------------------------
+
+   - `full_mapping <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.full_mapper.full_mapping>`_: Do the mapping
+
+   - transform_fastq:                        Given a FASTQ file it can split it into chunks of a given number of reads,                                             trim each read according to a start/end positions or split them into                                             restriction enzyme fragments
+
+   - gem_mapping:                            
+
 Mapping restriction_enzymes module
 ----------------------------------
 
    - map_re_sites_nochunk:                   map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                             In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
 
-   - `repaired <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.repaired>`_: returns the resulting sequence after reparation of two digested and repaired                                             ends, marking dangling ends.
+   - repaired:                               returns the resulting sequence after reparation of two digested and repaired                                             ends, marking dangling ends.
 
-   - `map_re_sites <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.map_re_sites>`_: map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                             In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
+   - map_re_sites:                           map all restriction enzyme (RE) sites of a given enzyme in a genome.                                             Position of a RE site is defined as the genomic coordinate of the first                                             nucleotide after the first cut (genomic coordinate starts at 1).                                             In the case of HindIII the genomic coordinate is this one:                                                                                          123456 789
 
-   - `religated <http://3dgenomes.github.io/TADbit/reference/reference_mapping.html#pytadbit.mapping.restriction_enzymes.religated>`_: returns the resulting sequence after religation of two digested and repaired                                             ends.
+   - religated:                              returns the resulting sequence after religation of two digested and repaired                                             ends.
 
 Parsers genome_parser module
 ----------------------------
 
-   - `parse_fasta <http://3dgenomes.github.io/TADbit/reference/reference_parser.html#pytadbit.parsers.genome_parser.parse_fasta>`_: Parse a list of fasta files, or just one fasta.                                                                                          WARNING: The order is important
+   - parse_fasta:                            Parse a list of fasta files, or just one fasta.                                                                                          WARNING: The order is important
 
 Parsers hic_parser module
 -------------------------
@@ -481,23 +490,23 @@ Utils three_dim_stats module
 
    - `generate_circle_points <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_circle_points>`_: Returns list of 3d coordinates of points on a circle using the                                             Rodrigues rotation formula.                                                                                          see *Murray, G. (2013). Rotation About an Arbitrary Axis in 3 Dimensions*                                             for details
 
-   - `mass_center <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.mass_center>`_: Transforms coordinates according to the center of mass
+   - mass_center:                            Transforms coordinates according to the center of mass
 
-   - `generate_sphere_points <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.generate_sphere_points>`_: Returns list of 3d coordinates of points on a sphere using the                                             Golden Section Spiral algorithm.
+   - generate_sphere_points:                 Returns list of 3d coordinates of points on a sphere using the                                             Golden Section Spiral algorithm.
 
-   - `rotate_among_y_axis <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.rotate_among_y_axis>`_: Rotate and object with a list of x, y, z coordinates among its center of                                             mass
+   - rotate_among_y_axis:                    Rotate and object with a list of x, y, z coordinates among its center of                                             mass
 
    - `calc_eqv_rmsd <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.calc_eqv_rmsd>`_: Calculates the RMSD, dRMSD, the number of equivalent positions and a score                                             combining these three measures. The measure are done between a group of                                             models in a one against all manner.
 
-   - `get_center_of_mass <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.get_center_of_mass>`_: get the center of mass of a given object with list of x, y, z coordinates
+   - get_center_of_mass:                     get the center of mass of a given object with list of x, y, z coordinates
 
-   - `find_angle_rotation_improve_x <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.find_angle_rotation_improve_x>`_: Finds the rotation angle needed to face the longest edge of the molecule
+   - find_angle_rotation_improve_x:          Finds the rotation angle needed to face the longest edge of the molecule
 
    - fast_square_distance:                   Calculates the square distance between two coordinates.
 
    - `angle_between_3_points <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.angle_between_3_points>`_: Calculates the angle between 3 particles                                                                                          Given three particles A, B and C, the angle g (angle ACB, shown below):
 
-   - `build_mesh <http://3dgenomes.github.io/TADbit/reference/reference_utils.html#pytadbit.utils.three_dim_stats.build_mesh>`_: Main function for the calculation of the accessibility of a model.
+   - build_mesh:                             Main function for the calculation of the accessibility of a model.
 
 
 .. [#first] functions generating plots

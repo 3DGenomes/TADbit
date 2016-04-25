@@ -316,7 +316,8 @@ class HiC_data(dict):
 
     def write_matrix(self, fname, focus=None, diagonal=True, normalized=False):
         """
-        writes the matrix to a file
+        writes the matrix to a file.
+        
         :param None focus: a tuple with the (start, end) position of the desired
            window of data (start, starting at 1, and both start and end are
            inclusive). Alternatively a chromosome name can be input or a tuple
@@ -457,8 +458,10 @@ class HiC_data(dict):
            predictions, one file only.
         :param None savecorr: path to a directory where to save correlation
            matrices of each chromosome
-        :param -1 vmin: for the color scale of the plotted map
-        :param 1 vmax: for the color scale of the plotted map
+        :param -1 vmin: for the color scale of the plotted map (use vmin='auto',
+           and vmax='auto' to color according to the absolute maximum found).
+        :param 1 vmax: for the color scale of the plotted map (use vmin='auto',
+           and vmax='auto' to color according to the absolute maximum found).
         :param False yield_ev1: if True yields one list per chromosome with the
            first eigenvector used to compute compartments.
         :param '' suffix: to be placed after file names of compartment images
