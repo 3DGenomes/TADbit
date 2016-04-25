@@ -598,8 +598,11 @@ class HiC_data(dict):
                 gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
                                                       breaks, cmprts[sec],
                                                       rich_in_A, save=False)
-                # print gamma, gammas[gamma]
+                if kwargs.get('verbose', False):
+                    print gamma, gammas[gamma]
             gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
+            if kwargs.get('verbose', False):
+                print '   ====>  minimum:', gamma
             _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
                                       cmprts[sec], rich_in_A, save=True)
             if savefig or show:
@@ -627,16 +630,18 @@ class HiC_data(dict):
         sum this list
         """
         for cmprt in cmprts[sec]:
-            beg = self.section_pos[sec][0]
-            beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg
             if rich_in_A:
-                sec_matrix = sum(rich_in_A[sec][i] for i in xrange(beg1, end1)
-                                 if not i in self.bads)
+                beg1, end1 = cmprt['start'], cmprt['end']
+                sec_matrix = [rich_in_A.get(sec, {None: 0}).get(i, 0)
+                              for i in xrange(beg1, end1)
+                              if not i in self.bads]
                 try:
                     cmprt['dens'] = float(sum(sec_matrix)) / len(sec_matrix)
                 except ZeroDivisionError:
                     cmprt['dens'] = 0.
             else:
+                beg = self.section_pos[sec][0]
+                beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg
                 sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
                                / self.bias[i] / self.bias[j])
                               for i in xrange(beg1, end1) if not i in self.bads
@@ -772,8 +777,8 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
         scores[(k,k)] = dist_matrix[k][k] = -1
         for l in xrange(k + 1, len(cmprtsec)):
             beg2, end2 = cmprtsec[l]['start'], cmprtsec[l]['end']
-            val = nansum([matrix[i][j] for i in xrange(beg1, end1)
-                          for j in xrange(beg2, end2)]) / (end2 - beg2) / diff1
+            val = nansum(matrix[i][j] for i in xrange(beg1, end1)
+                         for j in xrange(beg2, end2)) / (end2 - beg2) / diff1
             try:
                 scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = func(val)
             except ZeroDivisionError:
@@ -786,7 +791,7 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
     except UnboundLocalError:
         print('WARNING: Chromosome probably too small. Skipping')
         warn('WARNING: Chromosome probably too small. Skipping')
-        return (0,0,0,0)
+        return (float('inf'), float('inf'), float('inf'))
     # find best place to divide dendrogram (only check 1, 2, 3 or 4 clusters)
     solutions = {}
     for k in clust[:,2][-3:]:
@@ -802,10 +807,10 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
                     if solutions[s]['score']>0][-1]['out']
     except IndexError:
         #warn('WARNING: compartment clustering is not clear. Skipping')
-        return (0,0,0,0)
+        return (float('inf'), float('inf'), float('inf'))
     if len(clusters) != 2:
         #warn('WARNING: compartment clustering is too clear. Skipping')
-        return (0,0,0,0)
+        return (float('inf'), float('inf'), float('inf'))
     # labelling compartments. A compartments shall have lower
     # mean intra-interactions
     dens = {}
@@ -825,7 +830,7 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
     try:
         tt, pval = ttest_ind(dens['A'], dens['B'])
     except ZeroDivisionError:
-        return (0,0,0,0)
+        return (float('inf'), float('inf'), float('inf'))
     prop = float(len(dens['A'])) / (len(dens['A']) + len(dens['B']))
     score = 5000 * (prop - 0.5)**4 - 2
     if verbose:

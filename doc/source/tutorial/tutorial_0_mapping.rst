@@ -967,12 +967,22 @@ These maps can be zoomed to a given region, like first chromosome:
 
     hic_map(filt_reads, resolution=1000000, show=True, focus=(1, 250))
 
+
+
+.. image:: ../nbpictures//tutorial_0_mapping_94_0.png
+
+
 Same as above, calling the focus using directly chromosome name and
 using a smaller resolution (100 kb):
 
 .. code:: python
 
     hic_map(filt_reads, resolution=100000, show=True, focus='1')
+
+
+
+.. image:: ../nbpictures//tutorial_0_mapping_96_0.png
+
 
 Filtering and normalization
 ---------------------------
@@ -993,8 +1003,7 @@ we just need to load the name of the saved file with the filtered reads:
 
 .. code:: python
 
-    name = 'SRX116344_200'
-    filt_reads  = '/scratch/results/%s_filtered_map.tsv' % name
+    filt_reads  = '/scratch/test/rao2014/HiC003/filtered_map.tsv'
 
 .. code:: python
 
@@ -1026,17 +1035,18 @@ file of reads:
     
     WARNING: removing columns having more than 2327 zeroes:
        123   124   125   126   127   128   129   130   131   132   133   134   135   136   137   138   139   140   141   142
-       143   145   340   492   585   742   882   930   931   932   953  1124  1294  1295  1296  1440  1441  1541  1585  1586
-      1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1603  1607  1680  1721
-      1866  1867  1868  1950  1986  2085  2086  2087  2088  2089  2090  2091  2092  2093  2094  2095  2096  2097  2098  2099
-      2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210  2211  2212  2213  2214  2215  2216
-      2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318  2319  2320  2321  2322  2323  2324
-      2325  2326  2327  2329  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455  2500  2525  2601  2602  2603  2604
-      2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801  2802  2837  2838  2839  2840  2841  2842
-      2843  2844  2845  2846  2847  2850  2851  2852  2888  2889  2890  2947  2948  2949  3044  3045  3046  3055  3067  3068
-      3069  3070  3071  3072  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082  3083  3084  3085  3086  3087  3088
-      3089  3090  3091  3092  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102  3103
-    /usr/lib/python2.7/dist-packages/numpy/core/numeric.py:460: ComplexWarning: Casting complex values to real discards the imaginary part
+       143   342   343   584   585   742   882   929   930   931   932   953  1124  1294  1295  1296  1297  1440  1441  1541
+      1585  1586  1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1720  1721
+      1722  1866  1867  1868  1950  1986  1987  2085  2086  2087  2088  2089  2090  2091  2092  2093  2094  2095  2096  2097
+      2098  2099  2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210  2211  2212  2213  2214
+      2215  2216  2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318  2319  2320  2321  2322
+      2323  2324  2325  2326  2327  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455  2524  2525  2526  2601  2602
+      2603  2604  2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801  2802  2837  2838  2839  2840
+      2841  2842  2843  2844  2845  2846  2850  2851  2946  2947  2948  2949  3044  3045  3046  3047  3048  3049  3050  3051
+      3052  3053  3054  3055  3057  3058  3059  3060  3061  3062  3063  3064  3065  3066  3067  3068  3069  3070  3071  3072
+      3073  3074  3075  3076  3077  3078  3079  3080  3081  3082  3083  3084  3085  3086  3087  3088  3089  3090  3091  3092
+      3093  3094  3095  3096  3097  3098  3099  3100  3101  3102  3103
+    /home/fransua/.miniconda2/lib/python2.7/site-packages/numpy/core/numeric.py:474: ComplexWarning: Casting complex values to real discards the imaginary part
       return array(a, dtype, copy=False, order=order)
 
 
@@ -1046,22 +1056,27 @@ file of reads:
 
 .. ansi-block::
 
-    /usr/local/lib/python2.7/dist-packages/pytadbit/utils/hic_filtering.py:145: ComplexWarning: Casting complex values to real discards the imaginary part
+    Found 237 of 3103 columnswith poor signal
+
+
+.. ansi-block::
+
+    /home/fransua/.miniconda2/lib/python2.7/site-packages/pytadbit/utils/hic_filtering.py:149: ComplexWarning: Casting complex values to real discards the imaginary part
       round(root, 3), ' '.join(
     
-    WARNING: removing columns having less than 1381.618 counts:
+    WARNING: removing columns having less than 2886.461 counts:
        123   124   125   126   127   128   129   130   131   132   133   134   135   136   137   138   139   140   141   142
-       143   144   145   340   492   585   691   742   882   930   931   932   953  1124  1294  1295  1296  1440  1441  1541
-      1585  1586  1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1603  1604
-      1607  1609  1680  1721  1866  1867  1868  1950  1986  2085  2086  2087  2088  2089  2090  2091  2092  2093  2094  2095
-      2096  2097  2098  2099  2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210  2211  2212
-      2213  2214  2215  2216  2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318  2319  2320
-      2321  2322  2323  2324  2325  2326  2327  2329  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455  2500  2525
-      2584  2601  2602  2603  2604  2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801  2802  2837
-      2838  2839  2840  2841  2842  2843  2844  2845  2846  2847  2850  2851  2852  2888  2889  2890  2947  2948  2949  3044
-      3045  3046  3047  3055  3067  3068  3069  3070  3071  3072  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082
-      3083  3084  3085  3086  3087  3088  3089  3090  3091  3092  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102
-      3103
+       143   145   342   343   584   585   742   882   929   930   931   932   953  1124  1294  1295  1296  1297  1440  1441
+      1541  1585  1586  1587  1588  1589  1590  1591  1592  1593  1594  1595  1596  1597  1598  1599  1600  1601  1602  1603
+      1608  1609  1720  1721  1722  1866  1867  1868  1950  1986  1987  2085  2086  2087  2088  2089  2090  2091  2092  2093
+      2094  2095  2096  2097  2098  2099  2100  2101  2102  2200  2201  2202  2203  2204  2205  2206  2207  2208  2209  2210
+      2211  2212  2213  2214  2215  2216  2217  2218  2307  2308  2309  2310  2311  2312  2313  2314  2315  2316  2317  2318
+      2319  2320  2321  2322  2323  2324  2325  2326  2327  2329  2446  2447  2448  2449  2450  2451  2452  2453  2454  2455
+      2524  2525  2526  2601  2602  2603  2604  2605  2691  2692  2752  2790  2791  2792  2793  2794  2795  2796  2797  2801
+      2802  2837  2838  2839  2840  2841  2842  2843  2844  2845  2846  2850  2851  2852  2946  2947  2948  2949  3044  3045
+      3046  3047  3048  3049  3050  3051  3052  3053  3054  3055  3057  3058  3059  3060  3061  3062  3063  3064  3065  3066
+      3067  3068  3069  3070  3071  3072  3073  3074  3075  3076  3077  3078  3079  3080  3081  3082  3083  3084  3085  3086
+      3087  3088  3089  3090  3091  3092  3093  3094  3095  3096  3097  3098  3099  3100  3101  3102  3103
 
 
 Filtered columns (to high count of zeroes, or to low mean value) will be
@@ -1073,16 +1088,8 @@ representation:
     hic_map(hic_data, show=True)
 
 
-.. ansi-block::
 
-    /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:55: RuntimeWarning: Mean of empty slice.
-      warnings.warn("Mean of empty slice.", RuntimeWarning)
-    /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:67: RuntimeWarning: invalid value encountered in double_scalars
-      ret = ret.dtype.type(ret / rcount)
-
-
-
-.. image:: ../nbpictures//tutorial_0_mapping_107_1.png
+.. image:: ../nbpictures//tutorial_0_mapping_107_0.png
 
 
 Normalization
@@ -1093,18 +1100,28 @@ basically consists constructing a new in dividing each cell
 
 .. code:: python
 
-    hic_data.normalize_hic(iterations=10, max_dev=0.1)
+    hic_data.normalize_hic(iterations=9, max_dev=0.1)
 
 
 .. ansi-block::
 
     iterative correction
-              1392.000        9454.176       13609.000    0   0.85276
-              8583.102        9678.681       18479.813    1   0.90933
-              7057.620        9725.242       10177.855    2   0.27430
-              9531.512        9733.579       11274.686    3   0.15833
-              9076.352        9735.375        9827.806    4   0.06769
+      - copying matrix
+      - computing baises
+              2836.000       27884.987       44592.000    0   0.89830
+             20089.022       30027.383       85246.499    1   1.83896
+             15842.132       31075.219       40561.598    2   0.49020
+             25400.491       31543.690       47025.449    3   0.49080
+             24496.468       31783.468       37210.830    4   0.22927
+             28213.858       31908.415       37511.228    5   0.17559
+             28468.121       31976.815       35032.068    6   0.10973
+             29843.664       32015.253       34841.364    7   0.08827
+    rescaling to factor 1
 
+
+.. note::
+
+   For a faster normalization like the one used in [Rao2014]_ just set the iterations parameter to 0
 
 .. code:: python
 
@@ -1112,6 +1129,5 @@ basically consists constructing a new in dividing each cell
 
 
 
-.. image:: ../nbpictures//tutorial_0_mapping_111_0.png
-
+.. image:: ../nbpictures//tutorial_0_mapping_112_0.png
 
