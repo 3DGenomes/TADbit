@@ -777,8 +777,8 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
         scores[(k,k)] = dist_matrix[k][k] = -1
         for l in xrange(k + 1, len(cmprtsec)):
             beg2, end2 = cmprtsec[l]['start'], cmprtsec[l]['end']
-            val = nansum(matrix[i][j] for i in xrange(beg1, end1)
-                         for j in xrange(beg2, end2)) / (end2 - beg2) / diff1
+            val = nansum([matrix[i][j] for i in xrange(beg1, end1)
+                          for j in xrange(beg2, end2)]) / (end2 - beg2) / diff1
             try:
                 scores[(k,l)] = dist_matrix[k][l] = scores[(l,k)] = dist_matrix[l][k] = func(val)
             except ZeroDivisionError:
