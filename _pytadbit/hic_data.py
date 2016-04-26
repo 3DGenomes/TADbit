@@ -8,6 +8,7 @@ from pytadbit.utils.extraviews      import plot_compartments_summary
 from pytadbit.utils.hic_filtering   import filter_by_mean, filter_by_zero_count
 from pytadbit.utils.normalize_hic   import iterative, expected
 from pytadbit.parsers.genome_parser import parse_fasta
+from pytadbit.parsers.bed_parser    import parse_bed
 from pytadbit.utils.file_handling   import mkdir
 from numpy.linalg                   import LinAlgError
 from numpy                          import corrcoef, nansum, array, isnan
@@ -471,9 +472,8 @@ class HiC_data(dict):
         :param None rich_in_A: by default compartments are identified using mean
            number of intra-interactions (A compartments are expected to have
            less). However this measure is not very accurate. Using this
-           parameter a dictionary of gene coordinates or active epigenetic marks
-           coordinates can be passed (dictionary with chromosome names as keys,
-           and list of positions as values), and used instead of the mean
+           parameter a path to a BED or BED-Graph file with a list of genes or
+           active epigenetic marks can be passed, and used instead of the mean
            interactions.
         :param True label_compartments: label compartments into A/B categories,
            otherwise just find borders (faster).
@@ -510,13 +510,9 @@ class HiC_data(dict):
             mkdir(savecorr)
         if suffix != '':
             suffix = '_' + suffix
+        # parse bed file
         if rich_in_A:
-            for sec in rich_in_A:
-                rich_in_A[sec] = [int(p) / self.resolution
-                                  for p in rich_in_A[sec]]
-                rich_in_A[sec] = dict([(v, rich_in_A[sec].count(v))
-                                  for v in set(rich_in_A[sec])])
-
+            rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
         cmprts = {}
         firsts = {}
         count = 0

@@ -60,7 +60,7 @@ def run(opts):
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
         hic_data.find_compartments(crms=opts.crms, savefig=cmprt_dir,
-                                   suffix=param_hash)
+                                   suffix=param_hash, rich_in_A=opts.rich_in_A)
         for crm in opts.crms or hic_data.chromosomes:
             cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
             hic_data.write_compartments(cmprt_file,
@@ -280,6 +280,13 @@ def populate_args(parser):
                         action='store', default=None, type=str, 
                         help='''path to a matrix file with raw read
                         counts''')
+
+    glopts.add_argument('--rich_in_A', dest='rich_in_A', metavar="PATH",
+                        action='store', default=None, type=str, 
+                        help='''path to a BAD or bedGraph file with list of
+                        protein coding gene or other active epigenetic mark,
+                        to be used to label compartments instead of using
+                        the relative interaction count.''')
 
     glopts.add_argument('--only_compartments', dest='only_compartments',
                         action='store_true', default=False, 

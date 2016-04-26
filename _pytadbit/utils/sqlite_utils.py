@@ -46,7 +46,7 @@ def delete_entries(cur, table, col, val):
         pass
 
 def already_run(opts):
-    if 'tmpdb' in opts and opts.tmp:
+    if 'tmpdb' in opts and 'tmp' in opts and opts.tmp:
         dbpath = opts.tmpdb
     else:
         dbpath = join(opts.workdir, 'trace.db')
