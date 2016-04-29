@@ -59,8 +59,18 @@ def run(opts):
         cmprt_dir = path.join(opts.workdir, '05_segmentation',
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
-        hic_data.find_compartments(crms=opts.crms, savefig=cmprt_dir,
-                                   suffix=param_hash, rich_in_A=opts.rich_in_A)
+        firsts = hic_data.find_compartments(crms=opts.crms, savefig=cmprt_dir,
+                                            suffix=param_hash, log=cmprt_dir,
+                                            rich_in_A=opts.rich_in_A)
+
+        for crm in opts.crms or hic_data.chromosomes:
+            if not crm in firsts:
+                continue
+            ev_file = open(path.join(cmprt_dir,
+                                     '%s_EigVect_%s.tsv' % (crm, param_hash)), 'w')
+            ev_file.write('\n'.join([str(v) for v in firsts[crm]]))
+            ev_file.close()
+
         for crm in opts.crms or hic_data.chromosomes:
             cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
             hic_data.write_compartments(cmprt_file,
@@ -163,6 +173,8 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                          jobid, opts.workdir)
             if crm in tad_result:
                 add_path(cur, tad_result[crm]['path'], 'TAD', jobid, opts.workdir)
+            if opts.rich_in_A:
+                add_path(cur, opts.rich_in_A, 'BED', jobid, opts.workdir)
             cur.execute("""
             insert into SEGMENT_OUTPUTs
             (Id  , JOBid, Inputs, TADs, Compartments, Chromosome, Resolution)

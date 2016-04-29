@@ -886,7 +886,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
             plt.show()
         
 def plot_compartments(crm, first, cmprts, matrix, show, savefig,
-                      vmin=-1, vmax=1):
+                      vmin=-1, vmax=1, whichpc=1):
     heights = []
     val = 0
     for i in xrange(len(matrix)):
@@ -918,11 +918,13 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axim = plt.axes(rect_scatter)
     axex = plt.axes(rect_histx, sharex=axim)
     axey = plt.axes(rect_histy)
-    
+    axey.set_ylabel('density (orange)')
+
     im = axim.imshow(matrix, interpolation='nearest', cmap='coolwarm',
                      vmin=vmin, vmax=vmax)
     axim.minorticks_on()
-    plt.colorbar(im, cax=axey)
+    cb = plt.colorbar(im, cax=axey)
+    cb.set_label('Pearson product-moment correlation coefficients')
     axim.grid()
 
     # scale first PC
@@ -937,6 +939,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
                       where=np.array(first) < 0, color='darkgreen', alpha=0.5)
     axex.set_yticks([0])
+    axex.set_ylabel('%s PC (green)\ndensity (orange)' % ('First' if whichpc==1 else 'Second'))
     breaks = [0] + [i + 0.5 for i, (a, b) in
                     enumerate(zip(first[1:], first[:-1]))
                     if a * b < 0] + [len(first)]

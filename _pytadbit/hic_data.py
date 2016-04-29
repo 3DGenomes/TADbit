@@ -12,7 +12,7 @@ from pytadbit.parsers.bed_parser    import parse_bed
 from pytadbit.utils.file_handling   import mkdir
 from numpy.linalg                   import LinAlgError
 from numpy                          import corrcoef, nansum, array, isnan
-from numpy                          import min as npmin, max as npmax
+from numpy                          import nanpercentile as npperc
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.sparse.linalg            import eigsh
 from pytadbit.utils.tadmaths        import calinski_harabasz
@@ -433,7 +433,7 @@ class HiC_data(dict):
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='',
-                          label_compartments=True,
+                          label_compartments=True, log=None, max_mean_size=10000,
                           ev_index=None, rich_in_A=None, **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
@@ -475,6 +475,8 @@ class HiC_data(dict):
            parameter a path to a BED or BED-Graph file with a list of genes or
            active epigenetic marks can be passed, and used instead of the mean
            interactions.
+        :param None log: path to a folder where to save log of the assignment
+           of A/B compartments
         :param True label_compartments: label compartments into A/B categories,
            otherwise just find borders (faster).
 
@@ -483,7 +485,7 @@ class HiC_data(dict):
         Notes: building the distance matrix using the amount of interactions
                instead of the mean correlation, gives generally worse results.
 
-        :returns: a dictionary with the first eigen vector used to define
+        :returns: a dictionary with the two first eigen vectors used to define
            compartment borders for each chromosome (keys are chromosome names)
         """
         if not self.bads:
@@ -515,6 +517,7 @@ class HiC_data(dict):
             rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
         cmprts = {}
         firsts = {}
+        ev_nums = {}
         count = 0
         for sec in self.section_pos:
             if crms and sec not in crms:
@@ -578,14 +581,28 @@ class HiC_data(dict):
                 out.close()
             try:
                 # This eighs is very very fast, only ask for one eigvector
-                _, evect = eigsh(array(matrix), k=1)
+                _, evect = eigsh(array(matrix), k=ev_index[count] if ev_index else 2)
             except LinAlgError:
                 warn('Chromosome %s too small to compute PC1' % (sec))
                 cmprts[sec] = [] # Y chromosome, or so...
                 count += 1
                 continue
             index = ev_index[count] if ev_index else 1
-            first = list(evect[:, -index])
+            two_first = [evect[:, -1], evect[:, -2]]
+            for ev_num in range(index, 3):
+                first = list(evect[:, -ev_num])
+                breaks = [i for i, (a, b) in
+                          enumerate(zip(first[1:], first[:-1]))
+                          if a * b < 0] + [len(first) - 1]
+                breaks = [{'start': breaks[i-1] + 1 if i else 0, 'end': b}
+                          for i, b in enumerate(breaks)]
+                if self.resolution * float(len(breaks)) / len(matrix) > max_mean_size:
+                    warn('WARNING: number of compartments found with the '
+                         'EigenVector number %d is too low (%d compartments)'
+                         % (ev_num, len(breaks)))
+                else:
+                    break
+            ev_nums[sec] = ev_num
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]
             _ = [first.insert(b, 0) for b in bads]
@@ -600,38 +617,46 @@ class HiC_data(dict):
                       for i, b in enumerate(breaks)]
             cmprts[sec] = breaks
             
-            firsts[sec] = first
+            firsts[sec] = two_first
             self.__apply_metric(cmprts, sec, rich_in_A)
             if label_compartments:
+                if log:
+                    logf = os.path.join(log, sec + suffix + '.log')
+                else:
+                    logf = None
                 gammas = {}
                 for gamma in range(101):
                     gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
                                                           breaks, cmprts[sec],
-                                                          rich_in_A, save=False)
+                                                          rich_in_A, ev_num=ev_num,
+                                                          log=logf, save=False)
                     if kwargs.get('verbose', False):
                         print gamma, gammas[gamma]
                 gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
                 if kwargs.get('verbose', False):
                     print '   ====>  minimum:', gamma
                 _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
-                                          cmprts[sec], rich_in_A, save=True)
+                                          cmprts[sec], rich_in_A, save=True,
+                                          log=logf, ev_num=ev_num)
             if savefig or show:
                 vmin = kwargs.get('vmin', -1)
                 vmax = kwargs.get('vmax',  1)
                 if vmin == 'auto' == vmax:
-                    vmax = max([abs(npmin(matrix)), abs(npmax(matrix))])
+                    vmax = max([abs(npperc(matrix, 99.5)),
+                                abs(npperc(matrix, 0.5))])
                     vmin = -vmax
                 plot_compartments(
                     sec, first, cmprts, matrix, show,
                     savefig + '/chr' + sec + suffix + '.pdf' if savefig else None,
-                    vmin=vmin, vmax=vmax)
+                    vmin=vmin, vmax=vmax, whichpc=ev_num)
                 plot_compartments_summary(
                     sec, cmprts, show,
                     savefig + '/chr' + sec + suffix + '_summ.pdf' if savefig else None)
             count += 1
         self.compartments = cmprts
         if savedata:
-            self.write_compartments(savedata, chroms=self.compartments.keys())
+            self.write_compartments(savedata, chroms=self.compartments.keys(),
+                                    ev_nums=ev_nums)
         return firsts
 
     def __apply_metric(self, cmprts, sec, rich_in_A):
@@ -671,7 +696,7 @@ class HiC_data(dict):
                 cmprt['dens'] = 1.
 
 
-    def write_compartments(self, savedata, chroms=None):
+    def write_compartments(self, savedata, chroms=None, ev_nums=None):
         """
         Write compartments to a file.
 
@@ -682,6 +707,9 @@ class HiC_data(dict):
         """
         out = open(savedata, 'w')
         sections = chroms if chroms else self.compartments.keys()
+        if ev_nums:
+            for sec in sections:
+                out.write('## CHR %s\tEigenvector: %d\n' % (sec, ev_nums[sec]))
         out.write('#%sstart\tend\tdensity\ttype\n'% (
             'CHR\t' if len(sections) > 1 else ''))
         try:
@@ -771,7 +799,7 @@ class HiC_data(dict):
                            [self[i, j] for j in xrange(i + 1, end1)])
 
 def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
-                          verbose=False):
+                          ev_num=1, log=None, verbose=False):
     # function to convert correlation into distances
 
     gamma += 1
@@ -842,10 +870,32 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
     except ZeroDivisionError:
         return (float('inf'), float('inf'), float('inf'))
     prop = float(len(dens['A'])) / (len(dens['A']) + len(dens['B']))
-    score = 5000 * (prop - 0.5)**4 - 2
+    # to avoid having all A or all B
+    score1 = 5000 * (prop - 0.5)**4 - 2
+    # to avoid having  consecutive As or Bs
+    score2 = 0
+    prev = None
+    for cmprt in cmprtsec:
+        if cmprt.get('type', None) == prev:
+            score2 += 1
+        prev = cmprt.get('type', prev)
+    score2 /= float(len(cmprtsec))
+    score = score1 + score2
     if verbose:
-        print 'g:%5s %5s%% pen:%7s tt:%7s score:%7s pv:%s' % (
-            gamma - 1, round(prop*100, 1), round(score, 3), round(tt, 3),
-            round(score + tt, 3), pval)
+        print ('[EV%d] g:%5s %5s%% tt:%7s '
+               'score-proportion:%7s score-interleave:%7s '
+               'final: %7s pv:%s' % (
+                   ev_num, gamma - 1, round(prop * 100, 1),
+                   round(tt, 3), round(score1, 3), round(score2, 3), 
+                   round(score + tt, 3), pval))
+    if log:
+        log = open(log, 'a')
+        log.write('[EV%d] g:%5s %5s%% tt:%7s '
+                  'score-proportion:%7s score-interleave:%7s '
+                  'final: %7s pv:%s\n' % (
+                      ev_num, gamma - 1, round(prop * 100, 1),
+                      round(tt, 3), round(score1, 3), round(score2, 3), 
+                      round(score + tt, 3), pval))
+        log.close()
     return score + tt, tt, prop
 

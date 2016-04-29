@@ -266,12 +266,24 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
         if genom_map_raw_txt:
             add_path(cur, genom_map_raw_txt, 'RAW_MATRIX', jobid, opts.workdir)
 
-        cur.execute("""
-        insert into NORMALIZE_OUTPUTs
-        (Id  , JOBid,     Input, N_columns,   N_filtered, CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
-        values
-        (NULL,    %d,        %d,        %d,           %d,               %f,                 %f,                 %f,                 %f,               %f,           %d,          %f)
-        """ % (jobid, input_bed,  ncolumns, nbad_columns,    cis_trans_N_D,      cis_trans_N_d,      cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
+        try:
+            cur.execute("""
+            insert into NORMALIZE_OUTPUTs
+            (Id  , JOBid,     Input, N_columns,   N_filtered, CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
+            values
+            (NULL,    %d,        %d,        %d,           %d,               %f,                 %f,                 %f,                 %f,               %f,           %d,          %f)
+            """ % (jobid, input_bed,  ncolumns, nbad_columns,    cis_trans_N_D,      cis_trans_N_d,      cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
+        except lite.OperationalError:
+            try:
+                cur.execute("""
+                insert into NORMALIZE_OUTPUTs
+                (Id  , JOBid,     Input, N_columns,   N_filtered,  CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
+                values
+                (NULL,    %d,        %d,        %d,           %d,                %f,                 %f,               %f,           %d,          %f)
+                """ % (jobid, input_bed,  ncolumns, nbad_columns,     cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
+            except lite.OperationalError:
+                print 'WANRING: Normalized table not written!!!'
+            
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
         print_db(cur, 'MAPPED_OUTPUTs')
