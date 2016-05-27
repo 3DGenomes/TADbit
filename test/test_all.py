@@ -33,6 +33,8 @@ import sys
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
+ONLY = '10'
+
 def check_hic(hic, size):
     """
     check if hi-c data is symmetric
@@ -43,6 +45,7 @@ def check_hic(hic, size):
                 raise AttributeError('ERROR: matrix should be symmetric.\n')
     return True
 
+
 class TestTadbit(unittest.TestCase):
     """
     test main tadbit functions
@@ -52,6 +55,9 @@ class TestTadbit(unittest.TestCase):
 
         print 'PYTHON SIDE'
         print '-----------'
+
+        # if ONLY and ONLY != '01':
+        #     return
         
         if CHKTIME:
             t0 = time()
@@ -81,6 +87,8 @@ class TestTadbit(unittest.TestCase):
 
 
     def test_02_batch_tadbit(self):
+        if ONLY and ONLY != '02':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -99,6 +107,8 @@ class TestTadbit(unittest.TestCase):
 
     def test_03_tad_multi_aligner(self):
 
+        if ONLY and ONLY != '03':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -136,6 +146,8 @@ class TestTadbit(unittest.TestCase):
 
                               
     def test_04_chromosome_batch(self):
+        if ONLY and ONLY != '04':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -162,6 +174,8 @@ class TestTadbit(unittest.TestCase):
 
 
     def test_05_save_load(self):
+        if ONLY and ONLY != '05':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -180,6 +194,8 @@ class TestTadbit(unittest.TestCase):
 
 
     def test_06_tad_clustering(self):
+        if ONLY and ONLY != '06':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -207,6 +223,8 @@ class TestTadbit(unittest.TestCase):
         
 
     def test_07_forbidden_regions(self):
+        if ONLY and ONLY != '07':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -242,6 +260,8 @@ class TestTadbit(unittest.TestCase):
 
 
     def test_08_changing_resolution(self):
+        if ONLY and ONLY != '08':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -282,6 +302,8 @@ class TestTadbit(unittest.TestCase):
         """
         writes interaction pair file.
         """
+        if ONLY and ONLY != '09':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -304,6 +326,8 @@ class TestTadbit(unittest.TestCase):
     def test_10_compartments(self):
         """
         """
+        if ONLY and ONLY != '10':
+            return
         if CHKTIME:
             t0 = time()
         test_chr = Chromosome(name='Test Chromosome', max_tad_size=260000)
@@ -343,6 +367,8 @@ class TestTadbit(unittest.TestCase):
 
 
     def test_11_write_interaction_pairs(self):
+        if ONLY and ONLY != '11':
+            return
         """
         writes interaction pair file.
         """
@@ -371,6 +397,8 @@ class TestTadbit(unittest.TestCase):
         """
         quick test to generate 3D coordinates from 3? simple models???
         """
+        if ONLY and ONLY != '12':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -408,6 +436,8 @@ class TestTadbit(unittest.TestCase):
         """
         quick test to generate 3D coordinates from 3? simple models???
         """
+        if ONLY and ONLY != '13':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -452,6 +482,8 @@ class TestTadbit(unittest.TestCase):
     def test_14_3d_clustering(self):
         """
         """
+        if ONLY and ONLY != '14':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -483,6 +515,8 @@ class TestTadbit(unittest.TestCase):
     def test_15_3d_modelling(self):
         """
         """
+        if ONLY and ONLY != '15':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -585,6 +619,8 @@ class TestTadbit(unittest.TestCase):
 
 
     def test_16_models_stats(self):
+        if ONLY and ONLY != '16':
+            return
         if CHKTIME:
             t0 = time()
 
@@ -623,6 +659,8 @@ class TestTadbit(unittest.TestCase):
         """
         test fasta parsing and mapping re sites
         """
+        if ONLY and ONLY != '17':
+            return
         if CHKTIME:
             t0 = time()
         ref_genome = parse_fasta(PATH + '/ref_genome/chr2L_chr4_dm3.bz2',
@@ -641,6 +679,8 @@ class TestTadbit(unittest.TestCase):
             print '17', time() - t0
 
     def test_18_filter_reads(self):
+        if ONLY and ONLY != '18':
+            return
         if CHKTIME:
             t0 = time()
         for ali in ['map', 'sam']:
@@ -699,6 +739,8 @@ class TestTadbit(unittest.TestCase):
             print '18', time() - t0
 
     def test_19_matrix_manip(self):
+        if ONLY and ONLY != '19':
+            return
         if CHKTIME:
             t0 = time()
         hic_data1 = load_hic_data_from_reads('lala-map~', resolution=10000)
@@ -742,6 +784,8 @@ class TestTadbit(unittest.TestCase):
         """
         Runs tests written in c, around the detection of TADs
         """
+        if ONLY and ONLY != '20':
+            return
         if CHKTIME:
             t0 = time()
 
