@@ -7,6 +7,9 @@ from hashlib import md5
 
 def digest_parameters(opts, get_md5=True, extra=None):
     """
+    digestion is truncated at 10 characters. More than a 1000 runs are not
+    expected on a same sample (usually ~10).
+    
     :param None extra: extra parameter to remove from digestion
     """
     extra = extra or []
@@ -15,7 +18,7 @@ def digest_parameters(opts, get_md5=True, extra=None):
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
              if not k in ['force', 'workdir', 'func', 'tmp',
-                          'keep_tmp'] + extra])).hexdigest()
+                          'keep_tmp'] + extra])).hexdigest()[:10]
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
@@ -100,7 +103,7 @@ def add_path(cur, path, typ, jobid, workdir=None):
     except lite.IntegrityError:
         pass
 
-def print_db(cur, name, no_print='Parameters_md5'):
+def print_db(cur, name, no_print=''):
     cur.execute('select * from %s' % name)
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()

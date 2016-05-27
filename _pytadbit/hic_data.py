@@ -950,7 +950,7 @@ def _training(x, n, verbose):
         x[c] = [v - this_mean for v in x[c]]
         x[c] = [v / this_std  for v in x[c]]
 
-    train(pi, T, E, x.values(), verbose=verbose, threshold=1e-6, n_iter=400)
+    train(pi, T, E, x.values(), verbose=verbose, threshold=1e-6, n_iter=1000)
     return E, pi, T
     
 def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
