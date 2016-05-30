@@ -202,20 +202,24 @@ def _process_lines(line1, line2, buf, multiples, lchunk):
                 # take first and last
                 map1, map2 = sorted(
                     elts[elt], key=lambda x: int(x[2]))[::len(elts[elt])-1]
+                strand = map1[3]
+                # if the 2 strands are different keep the longest fragment
+                if strand != map2[3]:
+                    map1 = tuple(max(elts[elt], key=lambda x: int(x[4])))
+                    elts[elt] = map1
+                    continue
                 elts[elt] = map1
                 # sum up read-frags in the RE fragment  by putting
                 # them on the same strand
-                if map1[3] == '1':
+                # use the strand of the first fragment as reference
+                if strand == '1':
                     beg = int(map1[2])
+                    nts = int(map2[2]) + int(map2[4]) - beg
                 else:
-                    beg = int(map1[2]) - int(map1[4]) - 1
-                if map2[3] == '0':
-                    nts = int(map2[2]) - beg
-                else:
-                    nts = int(map2[2]) + int(map2[4]) + 1 - beg
-                elts[elt] = tuple(list(elts[elt][:2]) +
-                                  [str(beg), '1', str(nts)] +
-                                  list(elts[elt][5:]))
+                    beg = int(map2[2])
+                    nts = int(map1[2]) - (int(map1[4])) - beg + 2
+                elts[elt] = tuple(list(map1[:2]) + [str(beg), strand, str(nts)]
+                                  + list(map1[5:]))
         contacts = len(elts) - 1
         if contacts > 1:
             multiples.setdefault(contacts, 0)
