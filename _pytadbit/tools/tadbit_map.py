@@ -72,12 +72,12 @@ def run(opts):
     if opts.skip:
         for i, (out, _) in enumerate(outfiles[1:], 1):
             outfiles[i] = out, outfiles[i-1][1] - sum(1 for _ in open(outfiles[i-1][0]))
-    
+
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
     save_to_db(opts, outfiles, launch_time, finish_time)
-    
+
     # write machine log
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
         fcntl.flock(mlog, fcntl.LOCK_EX)
@@ -229,11 +229,6 @@ def check_options(opts):
         opts.tmpdb = path.join(dbdir, dbfile)
         copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
 
-    if already_run(opts) and not opts.force:
-        if 'tmpdb' in opts and opts.tmpdb:
-            remove(path.join(dbdir, dbfile))
-        exit('WARNING: exact same job already computed, see JOBs table above')
-
     # check RE name
     try:
         _ = RESTRICTION_ENZYMES[opts.renz]
@@ -261,7 +256,7 @@ def check_options(opts):
 
     if not path.exists(opts.fastq):
         raise IOError('ERROR: FASTQ file not found at ' + opts.fastq)
-    
+
     # create tmp directory
 
     if not opts.tmp:
@@ -272,7 +267,7 @@ def check_options(opts):
                         for win in opts.windows]
     except TypeError:
         pass
-        
+
     mkdir(opts.workdir)
     # write log
     # if opts.mapping_only:
@@ -328,6 +323,8 @@ def check_options(opts):
                                        'or not suported by this tool.') % k)
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
+        if 'tmpdb' in opts and opts.tmpdb:
+            remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 
@@ -340,12 +337,13 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         while path.exists(path.join(opts.workdir, '__lock_db')):
             time.sleep(0.5)
         # close lock
-        open(path.join(opts.workdir, '__lock_db'), 'wa').close()
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
         # tmp file
         dbfile = opts.tmpdb
         copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
+    print 'HOOOOLLLLAAAAAA', dbfile
     con = lite.connect(dbfile)
     with con:
         # check if table exists

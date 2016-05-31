@@ -18,7 +18,7 @@ def digest_parameters(opts, get_md5=True, extra=None):
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
              if not k in ['force', 'workdir', 'func', 'tmp',
-                          'keep_tmp'] + extra])).hexdigest()[:10]
+                          'keep_tmp', 'tmpdb'] + extra])).hexdigest()[:10]
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
@@ -49,10 +49,11 @@ def delete_entries(cur, table, col, val):
         pass
 
 def already_run(opts):
-    if 'tmpdb' in opts and 'tmp' in opts and opts.tmp:
+    if 'tmpdb' in opts and 'tmp' in opts and opts.tmp and opts.tmpdb:
         dbpath = opts.tmpdb
     else:
         dbpath = join(opts.workdir, 'trace.db')
+    print 'HOlaaa', dbpath, opts.tmpdb
     con = lite.connect(dbpath)
     try:
         with con:

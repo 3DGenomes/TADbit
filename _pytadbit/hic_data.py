@@ -436,7 +436,7 @@ class HiC_data(dict):
                 return mtrx
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
-                          savecorr=None, show=False, suffix='',
+                          savecorr=None, show=False, suffix='', how='',
                           label_compartments='hmm', log=None, max_mean_size=10000,
                           ev_index=None, rich_in_A=None, **kwargs):
         """

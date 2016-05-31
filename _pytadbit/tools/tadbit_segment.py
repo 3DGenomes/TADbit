@@ -131,7 +131,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
         while path.exists(path.join(opts.workdir, '__lock_db')):
             sleep(0.5)
         # close lock
-        open(path.join(opts.workdir, '__lock_db'), 'wa').close()
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
         # tmp file
         dbfile = opts.tmpdb
         copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
