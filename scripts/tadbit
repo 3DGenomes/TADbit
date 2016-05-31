@@ -9,7 +9,11 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from pytadbit.tools import tadbit_map
 from pytadbit.tools import tadbit_clean
 from pytadbit.tools import tadbit_parse
-from pytadbit.tools import tadbit_model
+try:
+    from pytadbit.tools import tadbit_model
+    model_av = True
+except ImportError:
+    model_av = False
 from pytadbit.tools import tadbit_filter
 from pytadbit.tools import tadbit_segment
 from pytadbit.tools import tadbit_describe
@@ -85,12 +89,13 @@ def main(arguments):
     tadbit_segment.populate_args(args_pp["segment"])
 
     # - MODEL -
-    args_pp["model"] = subparser.add_parser("model",
-                                             description=tadbit_model.DESC,
-                                             help=tadbit_model.DESC,
-                                             formatter_class=RawDescriptionHelpFormatter)
-    args_pp["model"].set_defaults(func=tadbit_model.run)
-    tadbit_model.populate_args(args_pp["model"])
+    if model_av:
+        args_pp["model"] = subparser.add_parser("model",
+                                                description=tadbit_model.DESC,
+                                                help=tadbit_model.DESC,
+                                                formatter_class=RawDescriptionHelpFormatter)
+        args_pp["model"].set_defaults(func=tadbit_model.run)
+        tadbit_model.populate_args(args_pp["model"])
 
     if len(arguments) == 1:
         parser.print_usage()

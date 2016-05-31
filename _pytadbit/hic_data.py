@@ -484,6 +484,9 @@ class HiC_data(dict):
         :param hmm label_compartments: label compartments into A/B categories,
            otherwise just find borders (faster). Can be either hmm (default), or
            cluster.
+        :param 'ratio' how: ratio divide by column, subratio divide by
+           compartment, diagonal only uses diagonal
+           
 
         TODO: this is really slow...
 
@@ -633,7 +636,7 @@ class HiC_data(dict):
             cmprts[sec] = breaks
             
             firsts[sec] = two_first
-            self._apply_metric(cmprts, sec, rich_in_A)
+            self._apply_metric(cmprts, sec, rich_in_A, how=how)
             
             if label_compartments == 'cluster':
                 if log:
@@ -749,7 +752,7 @@ class HiC_data(dict):
                                     ev_nums=ev_nums)
         return firsts
 
-    def _apply_metric(self, cmprts, sec, rich_in_A):
+    def _apply_metric(self, cmprts, sec, rich_in_A, how='ratio'):
         """
         calculate compartment internal density if no rich_in_A, otherwise
         sum this list
@@ -767,18 +770,27 @@ class HiC_data(dict):
             else:
                 beg, end = self.section_pos[sec]
                 beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg + 1
-                # sec_matrix = [(self[i,i] / self.expected[0] / self.bias[i]**2)
-                #               for i in xrange(beg1, end1) if not i in self.bads]
-                sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
-                               / self.bias[i] / self.bias[j])
-                              for i in xrange(beg1, end1) if not i in self.bads
-                              for j in xrange(beg1, end1) if not j in self.bads]
-                sec_column = [(self[i,j] / self.expected[abs(j-i)]
-                               / self.bias[i] / self.bias[j])
-                              for i in xrange(beg1, end1) if not i in self.bads
-                              for j in range(beg, end)
-                              if not j in self.bads]
-                # sec_column = [1.]
+                if 'diagonal' in how:
+                    sec_matrix = [(self[i,i] / self.expected[0] / self.bias[i]**2)
+                                  for i in xrange(beg1, end1) if not i in self.bads]
+                elif 'compartment' in how:
+                    sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
+                                   / self.bias[i] / self.bias[j])
+                                  for i in xrange(beg1, end1) if not i in self.bads
+                                  for j in xrange(beg1, end1) if not j in self.bads]
+                if '/compartment' in how: # diagonal / compartment
+                    sec_column = [(self[i,j] / self.expected[abs(j-i)]
+                                   / self.bias[i] / self.bias[j])
+                                  for i in xrange(beg1, end1) if not i in self.bads
+                                  for j in xrange(beg1, end1) if not j in self.bads]
+                elif '/column' in how:
+                    sec_column = [(self[i,j] / self.expected[abs(j-i)]
+                                   / self.bias[i] / self.bias[j])
+                                  for i in xrange(beg1, end1) if not i in self.bads
+                                  for j in range(beg, end)
+                                  if not j in self.bads]
+                else:
+                    sec_column = [1.]
                 try:
                     cmprt['dens'] = float(sum(sec_matrix)) / sum(sec_column)
                 except ZeroDivisionError:
