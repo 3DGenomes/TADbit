@@ -26,7 +26,10 @@ from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
-from os                                   import system, path
+from os                                   import system, path, remove
+from string                               import ascii_letters
+from random                               import random
+from shutil                               import copyfile
 from multiprocessing                      import cpu_count
 import logging
 import fcntl
@@ -139,6 +142,11 @@ def populate_args(parser):
                       help='''path to a temporary directory (default next to
                       "workdir" directory)''')
 
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
+
     mapper.add_argument('--iterative', dest='iterative', default=False,
                         action='store_true',
                         help='''default mapping strategy is fragment based
@@ -211,6 +219,20 @@ def check_options(opts):
                         'Copy the binary gem-mapper to /usr/local/bin/ for '
                         'example (somewhere in your PATH).\n\nNOTE: GEM does '
                         'not provide any binary for MAC-OS.')
+
+    # for lustre file system....
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+        copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
+
+    if already_run(opts) and not opts.force:
+        if 'tmpdb' in opts and opts.tmpdb:
+            remove(path.join(dbdir, dbfile))
+        exit('WARNING: exact same job already computed, see JOBs table above')
 
     # check RE name
     try:
@@ -310,8 +332,21 @@ def check_options(opts):
 
 
 def save_to_db(opts, outfiles, launch_time, finish_time):
-    # write little DB to keep track of processes and options
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    """
+    write little DB to keep track of processes and options
+    """
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'wa').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         # check if table exists
         cur = con.cursor()
@@ -388,6 +423,12 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs' )
         print_db(cur, 'JOBs'  )
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+        # release lock
+        remove(path.join(opts.workdir, '__lock_db'))
 
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
