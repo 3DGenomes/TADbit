@@ -636,7 +636,8 @@ class HiC_data(dict):
             cmprts[sec] = breaks
             
             firsts[sec] = two_first
-            self._apply_metric(cmprts, sec, rich_in_A, how=how)
+            if label_compartments != 'hmm':
+                self._apply_metric(cmprts, sec, rich_in_A, how=how)
             
             if label_compartments == 'cluster':
                 if log:
@@ -716,7 +717,7 @@ class HiC_data(dict):
                     x, sec, models, bads, kwargs.get('verbose', False))
                 results[sec] = n_states, breaks
                 cmprts[sec] = breaks
-                self._apply_metric(cmprts, sec, rich_in_A)
+                self._apply_metric(cmprts, sec, rich_in_A, how=how)
                 
                 if rich_in_A:
                     test = lambda x: x >= 1
