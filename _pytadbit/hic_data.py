@@ -636,8 +636,8 @@ class HiC_data(dict):
             cmprts[sec] = breaks
             
             firsts[sec] = two_first
-            if label_compartments != 'hmm':
-                self._apply_metric(cmprts, sec, rich_in_A, how=how)
+            # needed for the plotting
+            self._apply_metric(cmprts, sec, rich_in_A, how=how)
             
             if label_compartments == 'cluster':
                 if log:
@@ -774,7 +774,7 @@ class HiC_data(dict):
                 if 'diagonal' in how:
                     sec_matrix = [(self[i,i] / self.expected[0] / self.bias[i]**2)
                                   for i in xrange(beg1, end1) if not i in self.bads]
-                elif 'compartment' in how:
+                else: #if 'compartment' in how:
                     sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
                                    / self.bias[i] / self.bias[j])
                                   for i in xrange(beg1, end1) if not i in self.bads

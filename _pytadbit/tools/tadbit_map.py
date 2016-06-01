@@ -220,15 +220,6 @@ def check_options(opts):
                         'example (somewhere in your PATH).\n\nNOTE: GEM does '
                         'not provide any binary for MAC-OS.')
 
-    # for lustre file system....
-    if 'tmpdb' in opts and opts.tmpdb:
-        dbdir = opts.tmpdb
-        # tmp file
-        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
-                                        for _ in range(10)]))
-        opts.tmpdb = path.join(dbdir, dbfile)
-        copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
-
     # check RE name
     try:
         _ = RESTRICTION_ENZYMES[opts.renz]
@@ -321,6 +312,15 @@ def check_options(opts):
         if not k in gem_valid_option:
             raise NotImplementedError(('ERROR: option "%s" not a valid GEM option'
                                        'or not suported by this tool.') % k)
+
+    # for lustre file system....
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         if 'tmpdb' in opts and opts.tmpdb:
