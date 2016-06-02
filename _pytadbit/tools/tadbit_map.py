@@ -63,7 +63,7 @@ def run(opts):
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.workdir,
                                       '01_mapped_r%d' % (opts.read)),
-                            opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
+                            r_enz=opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
                             frag_map=not opts.iterative, clean=not opts.keep_tmp,
                             windows=opts.windows, get_nread=True, skip=opts.skip,
                             suffix=param_hash, **opts.gem_param)
@@ -320,6 +320,10 @@ def check_options(opts):
         dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
                                         for _ in range(10)]))
         opts.tmpdb = path.join(dbdir, dbfile)
+        try:
+            copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
+        except IOError:
+            pass
 
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
@@ -340,7 +344,10 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         open(path.join(opts.workdir, '__lock_db'), 'a').close()
         # tmp file
         dbfile = opts.tmpdb
-        copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        try: # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
     con = lite.connect(dbfile)

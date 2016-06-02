@@ -401,9 +401,11 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
             # parse map file to extract not uniquely mapped reads
             print 'Parsing result...'
-            _gem_filter(out_map_path, curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
+            _gem_filter(out_map_path,
+                        curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
                         os.path.join(out_map_dir,
-                                     base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
+                                     base_name + '_full_%s-%s%s.map' % (
+                                         beg, end, suffix)))
             # clean
             if clean:
                 print '   x removing GEM input %s' % curr_map
