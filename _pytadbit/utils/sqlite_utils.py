@@ -53,7 +53,6 @@ def already_run(opts):
         dbpath = opts.tmpdb
     else:
         dbpath = join(opts.workdir, 'trace.db')
-    print 'HOlaaa', dbpath, opts.tmpdb
     con = lite.connect(dbpath)
     try:
         with con:

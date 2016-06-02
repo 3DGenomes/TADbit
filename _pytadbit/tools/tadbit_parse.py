@@ -10,7 +10,10 @@ from argparse                       import HelpFormatter
 from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
-from os                             import path
+from os                             import path, remove
+from string                         import ascii_letters
+from random                         import random
+from shutil                         import copyfile
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
 from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
@@ -111,7 +114,21 @@ def run(opts):
 
 def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                launch_time, finish_time):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        try: # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
@@ -182,6 +199,15 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
         print_db(cur, 'MAPPED_OUTPUTs')
         print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
 def load_parameters_fromdb(workdir, reads=None, jobids=None):
     con = lite.connect(path.join(workdir, 'trace.db'))
@@ -269,6 +295,11 @@ def populate_args(parser):
                         done. This is done in background, while next MAP file is
                         processed, or while reads are sorted.''')
 
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
+
     glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
                         type=str,
                         help='''paths to file(s) with FASTA files of the
@@ -333,6 +364,20 @@ def check_options(opts):
         vlog.write(dependencies)
         vlog.close()
 
+    # for lustre file system....
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+        try:
+            copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
+        except IOError:
+            pass
+
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
+        if 'tmpdb' in opts and opts.tmpdb:
+            remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
