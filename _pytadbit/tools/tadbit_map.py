@@ -343,7 +343,6 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
-    print 'HOOOOLLLLAAAAAA', dbfile
     con = lite.connect(dbfile)
     with con:
         # check if table exists
@@ -425,8 +424,11 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         # copy back file
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
         remove(dbfile)
-        # release lock
+    # release lock
+    try:
         remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
