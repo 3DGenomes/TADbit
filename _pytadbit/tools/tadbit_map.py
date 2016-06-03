@@ -92,9 +92,9 @@ def run(opts):
         pass
 
     # clean
-    if not opts.keep_tmp:
-        logging.info('cleaning temporary files')
-        system('rm -rf ' + opts.tmp)
+    # if not opts.keep_tmp:
+    #     logging.info('cleaning temporary files')
+    #     system('rm -rf ' + opts.tmp)
 
 def populate_args(parser):
     """
