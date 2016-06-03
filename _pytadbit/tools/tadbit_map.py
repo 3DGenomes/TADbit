@@ -32,7 +32,6 @@ from random                               import random
 from shutil                               import copyfile
 from multiprocessing                      import cpu_count
 import logging
-import fcntl
 import sqlite3 as lite
 import time
 
@@ -79,12 +78,18 @@ def run(opts):
     save_to_db(opts, outfiles, launch_time, finish_time)
 
     # write machine log
+    while path.exists(path.join(opts.workdir, '__lock_log')):
+        time.sleep(0.5)
+    open(path.join(opts.workdir, '__lock_log'), 'a').close()
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
-        fcntl.flock(mlog, fcntl.LOCK_EX)
         mlog.write('\n'.join([
             ('# MAPPED READ%s\t%d\t%s' % (opts.read, num, out))
             for out, num in outfiles]) + '\n')
-        fcntl.flock(mlog, fcntl.LOCK_UN)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_log'))
+    except OSError:
+        pass
 
     # clean
     if not opts.keep_tmp:
