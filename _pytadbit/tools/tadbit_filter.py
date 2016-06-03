@@ -198,7 +198,11 @@ def save_to_db(opts, count, multiples, reads, mreads, n_valid_pairs, masked,
         print_db(cur, 'FILTER_OUTPUTs')
 
 def load_parameters_fromdb(opts):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         # get the JOBid of the parsing job

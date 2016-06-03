@@ -8,7 +8,7 @@ from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
 from tempfile import gettempdir, mkstemp
-from subprocess import check_call, CalledProcessError, PIPE, Popen
+from subprocess import CalledProcessError, PIPE, Popen
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                     min_seq_len=15, fastq=True, verbose=True,
@@ -129,8 +129,10 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     # function to yield reads from input file
     if light_storage:
         get_seq = _get_fastq_read_light if fastq else _get_map_read_light
+        insert_mark = insert_mark_light
     else:
         get_seq = _get_fastq_read_heavy if fastq else _get_map_read_heavy
+        insert_mark = insert_mark_heavy
         
     ## Start processing the input file
     if verbose:
@@ -190,11 +192,16 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     out.close()
     return out_name, counter
 
-def insert_mark(header, num):
+def insert_mark_heavy(header, num):
     if num == 1 :
         return header
     h, s, q = header.rsplit(' ', 2)
     return '%s~%d~ %s %s' % (h, num, s, q)
+
+def insert_mark_light(header, num):
+    if num == 1 :
+        return header
+    return '%s~%d~' % (header, num)
 
 def _map2fastq(read):
     return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
@@ -378,8 +385,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     for rep in [temp_dir, out_map_dir]:
         mkdir(rep)
     # check space
-    if get_free_space_mb(temp_dir, div=3) < 50:
-        warn('WARNING: less than 50 Gb left on tmp_dir: %s\n' % temp_dir)
+    if get_free_space_mb(temp_dir, div=3) < 200:
+        warn('WARNING: less than 200 Gb left on tmp_dir: %s\n' % temp_dir)
 
     # iterative mapping
     base_name = os.path.split(fastq_path)[-1].replace('.gz', '')
@@ -452,7 +459,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         frag_map, counter = transform_fastq(
             input_reads, mkstemp(prefix=base_name + '_', dir=temp_dir)[1],
             min_seq_len=min_seq_len, trim=win, fastq=False, r_enz=r_enz,
-            add_site=add_site, skip=skip, nthreads=nthreads)
+            add_site=add_site, skip=skip, nthreads=nthreads,
+            light_storage=light_storage)
         if not win:
             beg, end = 1, 'end'
         else:
