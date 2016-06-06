@@ -32,7 +32,7 @@ def run(opts):
     launch_time = time.localtime()
 
     reads = [1] if opts.read == 1 else [2] if opts.read == 2 else [1, 2]
-    f_names1, f_names2, renz = load_parameters_fromdb(opts.workdir, reads, opts.jobids)
+    f_names1, f_names2, renz = load_parameters_fromdb(opts, reads, opts.jobids)
 
     name = path.split(opts.workdir)[-1]
 
@@ -209,8 +209,12 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
     except OSError:
         pass
 
-def load_parameters_fromdb(workdir, reads=None, jobids=None):
-    con = lite.connect(path.join(workdir, 'trace.db'))
+def load_parameters_fromdb(opts, reads=None, jobids=None):
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     fnames = {1: [], 2: []}
     ids = []
     with con:
@@ -242,7 +246,7 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                 """ % (read, jobid))
                 for fname in cur.fetchall():
                     ids.append(fname[0])
-                    fnames[read].append(path.join(workdir, fname[1]))
+                    fnames[read].append(path.join(opts.workdir, fname[1]))
         # GET enzyme name
         enzymes = []
         for fid in ids:
