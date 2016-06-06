@@ -722,7 +722,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     return [to_return[k] for k in stats]
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
-                              axe=None, ylim=None, savefig=None,
+                              axe=None, ylim=None, savefig=None, show=False,
                               savedata=None, chr_names=None, nreads=None):
     """
     :param fnam: input file name
@@ -739,7 +739,6 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
        them the need to be plotted (this option may last even more than default)
     
     """
-
     distr = {}
     idx1, idx2 = (1, 3) if first_read else (7, 9)
     genome_seq = OrderedDict()
@@ -789,30 +788,39 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     max_y = max([max(distr[c].values()) for c in distr])
     max_x = max([len(distr[c].values()) for c in distr])
     ncrms = len(chr_names if chr_names else genome_seq if genome_seq else distr)
+    data = {}
     for i, crm in enumerate(chr_names if chr_names else genome_seq
                             if genome_seq else distr):
-        plt.subplot(ncrms, 1, i + 1)
         try:
-            plt.plot(range(max(distr[crm])),
-                     [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))],
-                     color='red', lw=1.5, alpha=0.7)
+            data[crm] = [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))]
+            if savefig:
+                plt.subplot(ncrms, 1, i + 1)
+                plt.plot(range(max(distr[crm])), data[crm],
+                         color='red', lw=1.5, alpha=0.7)
         except KeyError:
             pass
-        if ylim:
-            plt.vlines(genome_seq[crm] / resolution, ylim[0], ylim[1])
-        else:
-            plt.vlines(genome_seq[crm] / resolution, 0, max_y)
-        plt.xlim((0, max_x))
-        plt.ylim(ylim or (0, max_y))
-        plt.title(crm)
+        if savefig:
+            if ylim:
+                plt.vlines(genome_seq[crm] / resolution, ylim[0], ylim[1])
+            else:
+                plt.vlines(genome_seq[crm] / resolution, 0, max_y)
+            plt.xlim((0, max_x))
+            plt.ylim(ylim or (0, max_y))
+            plt.title(crm)
 
     if savefig:
         tadbit_savefig(savefig)
         plt.close('all')
-    elif not axe:
+    elif show:
         plt.show()
-    else:
-        plt.close('all')
+
+    if savedata:
+        out = open(savedata, 'w')
+        out.write('# CRM\tstart-end\tcount\n')
+        out.write('\n'.join('%s\t%d-%d\t%d' % (c, (i * resolution) + 1, ((i + 1) * resolution), v) for c in data
+                            for i, v in enumerate(data[c])))
+        out.write('\n')
+        out.close()
 
 def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
                        savefig=None, show=False, savedata=None, axe=None):
