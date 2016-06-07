@@ -217,7 +217,7 @@ def _process_lines(line1, line2, buf, multiples, lchunk):
                     nts = int(map2[2]) + int(map2[4]) - beg
                 else:
                     beg = int(map2[2])
-                    nts = int(map1[2]) - (int(map1[4])) - beg + 2
+                    nts = beg - (int(map1[2]) - (int(map1[4])))
                 elts[elt] = tuple(list(map1[:2]) + [str(beg), strand, str(nts)]
                                   + list(map1[5:]))
         contacts = len(elts) - 1

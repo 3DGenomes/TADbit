@@ -723,12 +723,27 @@ class HiC_data(dict):
                     test = lambda x: x >= 1
                 else:
                     test = lambda x: x < 1
-                type0 = set([i for i, c in enumerate(cmprts[sec])
-                             if c['type'] == 0])
                 max_type = nanmax([c['type'] for c in cmprts[sec]])
-                dens0 = sum(cmprts[sec][c]['dens'] for c in type0)
-                leng0 = sum(1 for c in type0)
-                val = float(dens0) / leng0 if leng0 else 0.
+
+                # find which category of compartment has the highest "density"
+                atyp = 0.
+                alen = 0.
+                btyp = 0.
+                blen = 0.
+                for typ in range(5):
+                    subset = set([i for i, c in enumerate(cmprts[sec])
+                                 if c['type'] == typ])
+                    max_type = nanmax([c['type'] for c in cmprts[sec]])
+                    dens = sum(cmprts[sec][c]['dens'] for c in subset)
+                    leng = sum(1 for c in subset)
+                    val = float(dens) / leng if leng else 0.
+                    if typ < max_type / 2.:
+                        alen += leng
+                        atyp += val * leng
+                    else:
+                        blen += leng
+                        btyp += val * leng
+                print atyp / alen, btyp / blen
 
                 for i, comp in enumerate(cmprts[sec]):
                     if comp['type'] < max_type / 2.:
@@ -798,7 +813,7 @@ class HiC_data(dict):
                     cmprt['dens'] = 0.
         # normalize to 1.0
         try:
-            meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+            meanh = sum(cmprt['dens'] for cmprt in cmprts[sec]) / len(cmprts[sec])
         except ZeroDivisionError:
             meanh = 1.
         for cmprt in cmprts[sec]:
