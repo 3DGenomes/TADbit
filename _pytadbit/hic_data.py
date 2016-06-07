@@ -789,7 +789,7 @@ class HiC_data(dict):
                 if 'diagonal' in how:
                     sec_matrix = [(self[i,i] / self.expected[0] / self.bias[i]**2)
                                   for i in xrange(beg1, end1) if not i in self.bads]
-                elif : #if 'compartment' in how:
+                else: #if 'compartment' in how:
                     sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
                                    / self.bias[i] / self.bias[j])
                                   for i in xrange(beg1, end1) if not i in self.bads
