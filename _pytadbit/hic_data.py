@@ -834,9 +834,11 @@ class HiC_data(dict):
                     cmprt['dens'] = 1.
         # normalize to 1.0
         try:
-            if 'type' in cmprt:
-                meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec] if not isnan(cmprt['type'])) /
-                         sum(1 for cmprt in cmprts[sec] if not isnan(cmprt['type'])))
+            if 'type' in cmprt: # hmm already run and have the types definded
+                meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec]
+                             if not isnan(cmprt['type'])) /
+                         sum(1 for cmprt in cmprts[sec]
+                             if not isnan(cmprt['type'])))
             else:
                 meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec]) /
                          sum(1 for cmprt in cmprts[sec]))
