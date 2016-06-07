@@ -385,8 +385,9 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     for rep in [temp_dir, out_map_dir]:
         mkdir(rep)
     # check space
-    if get_free_space_mb(temp_dir, div=3) < 200:
-        warn('WARNING: less than 200 Gb left on tmp_dir: %s\n' % temp_dir)
+    fspace = int(get_free_space_mb(temp_dir, div=3))
+    if fspace < 200:
+        warn('WARNING: only %d Gb left on tmp_dir: %s\n' % (fspace, temp_dir))
 
     # iterative mapping
     base_name = os.path.split(fastq_path)[-1].replace('.gz', '')
@@ -461,6 +462,10 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             min_seq_len=min_seq_len, trim=win, fastq=False, r_enz=r_enz,
             add_site=add_site, skip=skip, nthreads=nthreads,
             light_storage=light_storage)
+        # clean
+        if clean:
+            print '   x removing pre-GEM input %s' % input_reads
+            os.system('rm -f %s' % (input_reads))
         if not win:
             beg, end = 1, 'end'
         else:
@@ -473,6 +478,14 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
                         os.path.join(out_map_dir,
                                      base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
+        # clean
+        if clean:
+            print '   x removing GEM input %s' % frag_map
+            os.system('rm -f %s' % (frag_map))
+            print '   x removing failed to map ' + curr_map + '_fail%s.map' % (suffix)
+            os.system('rm -f %s' % (curr_map + '_fail%s.map' % (suffix)))
+            print '   x removing tmp mapped %s' % out_map_path
+            os.system('rm -f %s' % (out_map_path))
         outfiles.append((os.path.join(out_map_dir,
                                       base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)),
                          counter))
