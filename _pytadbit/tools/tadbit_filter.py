@@ -14,7 +14,6 @@ from pytadbit.utils.sqlite_utils import get_jobid, add_path, get_path_id, print_
 from pytadbit.utils.sqlite_utils import already_run, digest_parameters
 from pytadbit.mapping.analyze    import insert_sizes
 from pytadbit.mapping.filter     import filter_reads, apply_filter
-import logging
 import sqlite3 as lite
 import time
 
@@ -62,8 +61,10 @@ def run(opts):
     
         print "identify pairs to filter..."
         masked = filter_reads(reads, max_molecule_length=max_mole,
-                              over_represented=0.001, max_frag_size=100000,
-                              min_frag_size=50, re_proximity=5,
+                              over_represented=opts.over_represented,
+                              max_frag_size=opts.max_frag_size,
+                              min_frag_size=opts.min_frag_size,
+                              re_proximity=opts.re_proximity,
                               min_dist_to_re=min_dist, fast=True)
 
     n_valid_pairs = apply_filter(reads, mreads, masked,
@@ -268,6 +269,28 @@ def populate_args(parser):
                         action='store', default=None, type=str,
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
+
+    glopts.add_argument('--over_represented', dest='over_represented', metavar="NUM",
+                        action='store', default=0.001, type=float,
+                        help='''[%(default)s%%] percentage of restriction-enzyme
+                        (RE) genomic fragments with more coverage to exclude
+                        (possible PCR artifact).''')
+
+    glopts.add_argument('--max_frag_size', dest='max_frag_size', metavar="NUM",
+                        action='store', default=100000, type=int,
+                        help='''[%(default)s] to exclude large genomic RE
+                        fragments (probably resulting from gaps in the reference
+                        genome)''')
+
+    glopts.add_argument('--min_frag_size', dest='min_frag_size', metavar="NUM",
+                        action='store', default=50, type=int,
+                        help='''[%(default)s] to exclude small genomic RE
+                        fragments (smaller than sequenced reads)''')
+
+    glopts.add_argument('--re_proximity', dest='re_proximity', metavar="NUM",
+                        action='store', default=5, type=int,
+                        help='''[%(default)s] to exclude read-ends falling too
+                        close from RE site (pseudo-dangling-ends)''')
 
     glopts.add_argument('--pathids', dest='pathids', metavar="INT",
                         action='store', default=None, nargs='+', type=int,

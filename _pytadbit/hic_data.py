@@ -24,6 +24,7 @@ from scipy.stats                    import ttest_ind
 from collections                    import OrderedDict
 from warnings                       import warn
 from bisect                         import bisect_right as bisect
+from scipy.sparse                   import csr_matrix
 import os
 
 class HiC_data(dict):
@@ -97,7 +98,24 @@ class HiC_data(dict):
                     'ERROR: position %d larger than %s^2' % (row_col,
                                                              self.__size))
             super(HiC_data, self).__setitem__(row_col, val)
+    
+    def get_hic_data_as_csr(self):
+        """
+        Returns a scipy sparse matrix in Compressed Sparse Row format of the HiC data in the dictionary
 
+        :returns: scipy sparse matrix in Compressed Sparse Row format
+        """
+        values = []
+        cols = []
+        rows = []
+        for key, value in self.iteritems():
+            row, col = round(key / self.__size), key % self.__size
+            values.append(float(value))
+            cols.append(col)
+            rows.append(row)
+                
+        return csr_matrix((values, (rows, cols)), shape=(self.__size,self.__size))
+        
     def add_sections_from_fasta(self, fasta):
         """
         Add genomic coordinate to HiC_data object by getting them from a fasta
@@ -808,7 +826,7 @@ class HiC_data(dict):
                 else:
                     sec_column = [1.]
                 try:
-                    if isnan(cmprt['type']):
+                    if 'type' in cmprt and isnan(cmprt['type']):
                         cmprt['dens'] = 1.
                     else:
                         cmprt['dens'] = float(sum(sec_matrix)) / sum(sec_column)
@@ -816,8 +834,14 @@ class HiC_data(dict):
                     cmprt['dens'] = 1.
         # normalize to 1.0
         try:
-            meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec] if not isnan(cmprt['type'])) /
-                     sum(1 for cmprt in cmprts[sec] if not isnan(cmprt['type'])))
+            if 'type' in cmprt: # hmm already run and have the types definded
+                meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec]
+                             if not isnan(cmprt['type'])) /
+                         sum(1 for cmprt in cmprts[sec]
+                             if not isnan(cmprt['type'])))
+            else:
+                meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec]) /
+                         sum(1 for cmprt in cmprts[sec]))
         except ZeroDivisionError:
             meanh = 1.
         for cmprt in cmprts[sec]:
