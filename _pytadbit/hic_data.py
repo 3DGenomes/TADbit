@@ -789,7 +789,7 @@ class HiC_data(dict):
                 if 'diagonal' in how:
                     sec_matrix = [(self[i,i] / self.expected[0] / self.bias[i]**2)
                                   for i in xrange(beg1, end1) if not i in self.bads]
-                else: #if 'compartment' in how:
+                elif : #if 'compartment' in how:
                     sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
                                    / self.bias[i] / self.bias[j])
                                   for i in xrange(beg1, end1) if not i in self.bads
@@ -808,12 +808,16 @@ class HiC_data(dict):
                 else:
                     sec_column = [1.]
                 try:
-                    cmprt['dens'] = float(sum(sec_matrix)) / sum(sec_column)
+                    if isnan(cmprt['type']):
+                        cmprt['dens'] = 1.
+                    else:
+                        cmprt['dens'] = float(sum(sec_matrix)) / sum(sec_column)
                 except ZeroDivisionError:
-                    cmprt['dens'] = 0.
+                    cmprt['dens'] = 1.
         # normalize to 1.0
         try:
-            meanh = sum(cmprt['dens'] for cmprt in cmprts[sec]) / len(cmprts[sec])
+            meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec] if not isnan(cmprt['type'])) /
+                     sum(1 for cmprt in cmprts[sec] if not isnan(cmprt['type'])))
         except ZeroDivisionError:
             meanh = 1.
         for cmprt in cmprts[sec]:
