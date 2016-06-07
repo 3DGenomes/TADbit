@@ -19,7 +19,6 @@ from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_
 from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
 import time
 import logging
-import fcntl
 from cPickle import load, UnpicklingError
 import sqlite3 as lite
 from warnings import warn
