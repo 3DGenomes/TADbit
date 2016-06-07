@@ -97,14 +97,20 @@ def run(opts):
                     multis[1] += line.count('|||')                
 
     # write machine log
+    while path.exists(path.join(opts.workdir, '__lock_log')):
+        time.sleep(0.5)
+    open(path.join(opts.workdir, '__lock_log'), 'a').close()
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
-        fcntl.flock(mlog, fcntl.LOCK_EX)
         for read in counts:
             for item in counts[read]:
                 mlog.write('# PARSED READ%s PATH\t%d\t%s\n' % (
                     read, counts[read][item],
                     out_file1 if read == 1 else out_file2))
-        fcntl.flock(mlog, fcntl.LOCK_UN)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_log'))
+    except OSError:
+        pass
 
     finish_time = time.localtime()
 
