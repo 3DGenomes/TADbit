@@ -36,7 +36,8 @@ fg(
   const int    _j,
   const int    diag,
   const int    *k,
-  const double *d,
+  //const double *d,
+  const int    *dp,
   const double *w,
   const double a,
   const double b,
@@ -53,7 +54,7 @@ fg(
 //                                                                      
 // ARGUMENTS:                                                           
 //   See the function 'll' for the description of 'n', 'i_', '_i',      
-//      'j_', '_j', 'diag', 'k', 'd', and 'w'.                          
+//      'j_', '_j', 'diag', 'k', 'dp', and 'w'.
 //   'a': parameter 'a' of the Poisson regression (see 'poiss_reg').    
 //   'b': parameter 'b' of the Poisson regression (see 'poiss_reg').    
 //   'da': computed differential of 'a' (see 'poiss_reg').              
@@ -93,11 +94,14 @@ fg(
          // Retrieve value of the exponential from cache.
          index = _cache_index[i+j*n];
          if (c[index] != c[index]) {
-            c[index] = exp(a+da+(b+db)*d[i+j*n]);
+            //c[index] = exp(a+da+(b+db)*d[i+j*n]);
+        	c[index] = exp(a+da+(b+db)*log(abs(dp[i]-dp[j])));
          }
-         tmp  =  w[i+j*n] * c[index] - k[i+j*n];
+         //tmp  =  w[i+j*n] * c[index] - k[i+j*n];
+         tmp  =  w[i]*w[j] * c[index] - k[i+j*n];
          *f  +=  tmp;
-         *g  +=  tmp * d[i+j*n];
+         //*g  +=  tmp * d[i+j*n];
+         *g  +=  tmp * log(abs(dp[i]-dp[j]));
       }
    }
 
@@ -114,9 +118,10 @@ ll(
   const int    _j,
   const int    diag,
   const int    *k,
-  const double *d,
+  //const double *d,
+  const int    *dp,
   const double *w,
-  const double *lg,
+  //const double *lg,
         double *c
 ){
 // SYNOPSIS:                                                            
@@ -134,8 +139,8 @@ ll(
 //   '_j': last value of index j (column).                              
 //   'diag': whether the block is half-diagonal (middle block).         
 //   'k': raw hiC counts.                                               
-//   'd': distances from diagonal in log.                               
-//   'w': weights measuring hiC bias.                                   
+//   'dp': array with the index of columns that are not removed.
+//   'w': array of row and column (by symmetry) sums. Weights measuring hiC bias are w[i]*w[j]
 //   'lg': log-gamma terms.                                             
 //   'c': address of an array of double for caching.                    
 //                                                                      
@@ -175,7 +180,13 @@ ll(
    // See the comment about 'tmp' in 'fg'.
    long double tmp; 
 
-   fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+   fg(n, i_, _i, j_, _j, diag, k, dp, w, a, b, da, db, c, &f, &g);
+   //fg(n, i_, _i, j_, _j, diag, k, w, a, b, da, db, c, &f, &g);
+	  if((j_+_j*n)==40) {
+	          	 printf("lilmat");
+	           }
+   //printf("f:%f",f);
+      //printf("g:%f",g);
 
    // Newton-Raphson until gradient function is less than TOLERANCE.
    // The gradient function is the square norm 'f*f + g*g'.
@@ -191,13 +202,17 @@ ll(
             index = _cache_index[i+j*n];
             // Retrieve value of the exponential from cache.
             if (c[index] != c[index]) { // ERROR.
-               c[index] = exp(a+b*d[i+j*n]);
+               //c[index] = exp(a+b*d[i+j*n]);
+               c[index] = exp(a+b*log(abs(dp[i]-dp[j])));
             }
-            tmp   =   w[i+j*n] * c[index];
+            //tmp   =   w[i+j*n] * c[index];
+            tmp   =   w[i]*w[j] * c[index];
             dfda +=   tmp;
-            tmp  *=   d[i+j*n];
+            //tmp  *=   d[i+j*n];
+            tmp  *=   log(abs(dp[i]-dp[j]));
             dgda +=   tmp;
-            tmp  *=   d[i+j*n];
+            //tmp  *=   d[i+j*n];
+            tmp  *=   log(abs(dp[i]-dp[j]));
             dgdb +=   tmp;
          }
       }
@@ -207,7 +222,8 @@ ll(
       da = (f*dgdb - g*dfdb) / denom;
       db = (g*dfda - f*dgda) / denom;
 
-      fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+      fg(n, i_, _i, j_, _j, diag, k, dp, w, a, b, da, db, c, &f, &g);
+      //fg(n, i_, _i, j_, _j, diag, k, w, a, b, da, db, c, &f, &g);
 
       // Traceback if we are not going down the gradient. Cut the
       // length of the steps in half until this step goes down
@@ -215,7 +231,8 @@ ll(
       for (i = 0 ; (i < 20) && (f*f + g*g > oldgrad) ; i++) {
          da /= 2;
          db /= 2;
-         fg(n, i_, _i, j_, _j, diag, k, d, w, a, b, da, db, c, &f, &g);
+         fg(n, i_, _i, j_, _j, diag, k, dp, w, a, b, da, db, c, &f, &g);
+         //fg(n, i_, _i, j_, _j, diag, k, w, a, b, da, db, c, &f, &g);
       }
 
       // Update 'a' and 'b'.
@@ -239,7 +256,9 @@ ll(
       for (i = i_low ; i < i_high ; i++) {
          index = _cache_index[i+j*n];
          // Retrieve value of the exponential from cache.
-         llik += c[index] + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
+         //llik += c[index] + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
+         llik += c[index] + k[i+j*n]*(a+b*log(abs(dp[i]-dp[j]))) - lgamma(k[i+j*n]+1);
+
       }
    }
 
@@ -466,9 +485,10 @@ fill_llikmat(
    const int n = myargs->n;
    const int m = myargs->m;
    const int **k = (const int **) myargs->k;
-   const double *d = (const double*) myargs->d;
+   //const double *d = (const double*) myargs->d;
+   const int *dp = (const int*) myargs->dp;
    const double **w = (const double **) myargs->w;
-   const double **lg= (const double **) myargs->lg;
+   //const double **lg= (const double **) myargs->lg;
    const char *skip = (const char *) myargs->skip;
    double *llikmat = myargs->llikmat;
    const int verbose = myargs->verbose;
@@ -514,10 +534,15 @@ fill_llikmat(
       llikmat[i+j*n] = 0.0;
       for (l = 0 ; l < m ; l++) {
          // LABEL: slice ll summation.
-         llikmat[i+j*n] += 
-            ll(n,   0, i-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2 +
-            ll(n,   i,   j, i, j, 1, k[l], d, w[l], lg[l], c) +
-            ll(n, j+1, n-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2;
+         llikmat[i+j*n] +=
+            ll(n,   0, i-1, i, j, 0, k[l], dp, w[l], c) / 2 +
+        	ll(n,   i,   j, i, j, 1, k[l], dp, w[l], c) +
+        	ll(n, j+1, n-1, i, j, 0, k[l], dp, w[l], c) / 2;
+            //ll(n,   0, i-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2 +
+            //ll(n,   i,   j, i, j, 1, k[l], d, w[l], lg[l], c) +
+            //ll(n, j+1, n-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2;
+
+
       }
 
       n_processed++;
@@ -751,21 +776,21 @@ tadbit
       n -= remove[i];
    }
 
-   double *init_dist = (double *) malloc(N*N * sizeof(double));
-
-   for (l = 0, i = 0; i < N ; i++) {
-   for (j = 0; j < N ; j++) {
-      init_dist[l] = log(abs(i-j));
-      l++;
-   }
-   }
+//   double *init_dist = (double *) malloc(N*N * sizeof(double));
+//
+//   for (l = 0, i = 0; i < N ; i++) {
+//   for (j = 0; j < N ; j++) {
+//      init_dist[l] = log(abs(i-j));
+//      l++;
+//   }
+//   }
 
    // Exit if there are too few rows/columns after removal.
    if (n < 6) {
       // Signal failure.
       seg->maxbreaks = -1;
       // Clean before exit.
-      free(init_dist);
+      //free(init_dist);
       free(remove);
       // Bye-bye.
       return;
@@ -776,32 +801,36 @@ tadbit
    _cache_index = (int *) malloc(n*n * sizeof(int));
    _max_cache_index = N+1;
    // Allocate and copy.
-   double **log_gamma  = (double **) malloc(m * sizeof(double *));
+   //double **log_gamma  = (double **) malloc(m * sizeof(double *));
    int    **new_obs    = (int **) malloc(m * sizeof(int *));
-   double *dist = (double *) malloc(n*n * sizeof(double));
+   //double *dist = (double *) malloc(n*n * sizeof(double));
+   int *dp = (int *) malloc(n * sizeof(int));
    for (k = 0 ; k < m ; k++) {
-      l = 0;
-      log_gamma[k] = (double *) malloc(n*n * sizeof(double));
+      l = i0 = 0;
+      //log_gamma[k] = (double *) malloc(n*n * sizeof(double));
       new_obs[k] = (int *) malloc(n*n * sizeof(int));
       for (j = 0 ; j < N ; j++) {
-      for (i = 0 ; i < N ; i++) {
-         if (remove[i] || remove[j]) continue;
-         _cache_index[l] = i > j ? i-j : j-i;
-         log_gamma [k][l] = lgamma(obs[k][i+j*N]+1);
-         new_obs[k][l]    = obs[k][i+j*N];
-         dist[l] = init_dist[i+j*N];
-         l++;
-      }
+    	  if (!remove[j]) {
+    		  dp[i0] = j;
+    		  i0++;
+    	  }
+		  for (i = 0 ; i < N ; i++) {
+			 if (remove[i] || remove[j]) continue;
+			 _cache_index[l] = i > j ? i-j : j-i;
+			 //log_gamma [k][l] = lgamma(obs[k][i+j*N]+1);
+			 new_obs[k][l]    = obs[k][i+j*N];
+			 //dist[l] = init_dist[i+j*N];
+			 l++;
+		  }
       }
    }
-
    /* fprintf(stderr, "WEIGHTS FROM INSIDE ME "); */
    /* for (i = 0; i < 50; i++) */
    /*   fprintf(stderr, "%f ", weights[0][i]); */
    /* fprintf(stderr, "\n"); */
 
    // We will not need the initial observations any more.
-   free(init_dist);
+   //free(init_dist);
    obs = new_obs;
 
    // Make sure the data is symmetric.
@@ -821,21 +850,21 @@ tadbit
       rowsums[k][i] += obs[k][i+j*n];
 
    // compute the weights.
-   double **weights = (double **) malloc(m * sizeof(double *));
-   for (k = 0 ; k < m ; k++) {
-      weights[k] = (double *) malloc(n*n * sizeof(double));
-      for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0;
-      // Compute product.
-      for (j = 0 ; j < n ; j++) {
-      for (i = 0 ; i < n ; i++) {
-         weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j];
-      }
-      }
-   }
+//   double **weights = (double **) malloc(m * sizeof(double *));
+//   for (k = 0 ; k < m ; k++) {
+//      weights[k] = (double *) malloc(n*n * sizeof(double));
+//      for (i = 0 ; i < n*n ; i++) weights[k][i] = 0.0;
+//      // Compute product.
+//      for (j = 0 ; j < n ; j++) {
+//      for (i = 0 ; i < n ; i++) {
+//         weights[k][i+j*n] = rowsums[k][i]*rowsums[k][j];
+//      }
+//      }
+//   }
 
    // We don't need the row/column sums any more.
-   for (l = 0 ; l < m ; l++) free(rowsums[l]);
-   free(rowsums);
+   //for (l = 0 ; l < m ; l++) free(rowsums[l]);
+   //free(rowsums);
 
    double *mllik = (double *) malloc(MAXBREAKS * sizeof(double));
    int *bkpts = (int *) malloc(MAXBREAKS*n * sizeof(int));
@@ -870,8 +899,10 @@ tadbit
       for (j = 1 ; j < n ; j++) {
       for (i = 0 ; i < n-j ; i++) {
          double weighted_value = 0.0;
-         for (l = 0 ; l < m ; l++)
-            weighted_value += obs[l][i+(i+j)*n]/weights[l][i+(i+j)*n];
+         for (l = 0 ; l < m ; l++) {
+        	weighted_value += obs[l][i+(i+j)*n]/(rowsums[l][i]*rowsums[l][(i+j)]);
+            //weighted_value += obs[l][i+(i+j)*n]/weights[l][i+(i+j)*n];
+         }
          S[i+(i+j)*n] = S[i+(i+j-1)*n] + S[i+1+(i+j)*n] -
             S[i+1+(i+j-1)*n] + weighted_value;
       }
@@ -940,9 +971,11 @@ tadbit
       .n = n,
       .m = m,
       .k = (const int **) obs,
-      .d = dist,
-      .w = (const double **) weights,
-      .lg = (const double **) log_gamma,
+      //.d = dist,
+	  .dp = dp,
+      //.w = (const double **) weights,
+	  .w = (const double *) rowsums,
+      //.lg = (const double **) log_gamma,
       .skip = skip,
       .llikmat = llikmat,
       .verbose = verbose,
@@ -1059,23 +1092,23 @@ tadbit
 
    
    // Resize output to match original.
-   int p;
-   double **resized_weights = (double **) malloc(m * sizeof(double *));
-   for (l = 0 ; l < m ; l++) {
-      resized_weights[l] = (double *) malloc(N*N * sizeof(double));
-      for (i = 0 ; i < N*N ; i++) resized_weights[l][i] = 0.0;
-   }
-   for (k = 0 ; k < m ; k++) {
-      for (l = 0, i = 0 ; i < N ; i++) {
-         if (remove[i]) continue;
-         for (p = 0, j = 0 ; j < N ; j++) {
-            if (remove[j]) continue;
-            resized_weights[k][i+j*N] = weights[k][l+p*n];
-	    p++;
-	 }
-	 l++;
-      }
-   }
+//   int p;
+//   double **resized_weights = (double **) malloc(m * sizeof(double *));
+//   for (l = 0 ; l < m ; l++) {
+//      resized_weights[l] = (double *) malloc(N*N * sizeof(double));
+//      for (i = 0 ; i < N*N ; i++) resized_weights[l][i] = 0.0;
+//   }
+//   for (k = 0 ; k < m ; k++) {
+//      for (l = 0, i = 0 ; i < N ; i++) {
+//         if (remove[i]) continue;
+//         for (p = 0, j = 0 ; j < N ; j++) {
+//            if (remove[j]) continue;
+//            resized_weights[k][i+j*N] = weights[k][l+p*n];
+//	    p++;
+//	 }
+//	 l++;
+//      }
+//   }
 
    int *resized_bkpts = (int *) malloc(N*MAXBREAKS * sizeof(int));
    int *resized_passages = (int *) malloc(N * sizeof(int));
@@ -1111,11 +1144,12 @@ tadbit
 
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
-      free(log_gamma[k]);
+      //free(log_gamma[k]);
    }
    free(new_obs);
-   free(log_gamma);
-   free(dist);
+   //free(log_gamma);
+   //free(dist);
+   free(dp);
    free(remove);
 
    // Update output struct.
