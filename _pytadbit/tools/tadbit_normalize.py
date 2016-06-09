@@ -11,7 +11,10 @@ from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling import mkdir
 from pytadbit.mapping.analyze     import plot_distance_vs_interactions, hic_map
-from os                           import path
+from os                           import path, remove
+from string                       import ascii_letters
+from random                       import random
+from shutil                       import copyfile
 import sqlite3 as lite
 import time
 
@@ -199,7 +202,21 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
                inter_dir_raw_fig, inter_dir_raw_txt,
                genom_map_raw_fig, genom_map_raw_txt,
                launch_time, finish_time):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        try: # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
@@ -292,9 +309,22 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
         print_db(cur, 'INTERSECTION_OUTPUTs')        
         print_db(cur, 'FILTER_OUTPUTs')
         print_db(cur, 'NORMALIZE_OUTPUTs')
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
 def load_parameters_fromdb(opts):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         if not opts.jobid:
@@ -394,6 +424,11 @@ def populate_args(parser):
                       default=False,
                       help='overwrite previously run job')
 
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
+
     parser.add_argument_group(glopts)
 
 def check_options(opts):
@@ -402,7 +437,22 @@ def check_options(opts):
     if not path.exists(opts.workdir):
         raise IOError('ERROR: wordir not found.')
 
-    if already_run(opts) and not opts.force:
+    # for lustre file system....
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+        try:
+            copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
+        except IOError:
+            pass
+
+    # check if job already run using md5 digestion of parameters
+    if already_run(opts):
+        if 'tmpdb' in opts and opts.tmpdb:
+            remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 def nice(reso):

@@ -552,7 +552,6 @@ class HiC_data(dict):
                 continue
             if kwargs.get('verbose', False):
                 print 'Processing chromosome', sec
-                warn('Processing chromosome %s' % (sec))
             matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
                        / self.bias[i] / self.bias[j])
                       for i in xrange(*self.section_pos[sec])
@@ -748,17 +747,17 @@ class HiC_data(dict):
                 alen = 0.
                 btyp = 0.
                 blen = 0.
+                max_type = nanmax([c['type'] for c in cmprts[sec]])
                 for typ in range(5):
                     subset = set([i for i, c in enumerate(cmprts[sec])
                                  if c['type'] == typ])
-                    max_type = nanmax([c['type'] for c in cmprts[sec]])
                     dens = sum(cmprts[sec][c]['dens'] for c in subset)
                     leng = sum(1 for c in subset)
                     val = float(dens) / leng if leng else 0.
                     if typ < max_type / 2.:
                         alen += leng
                         atyp += val * leng
-                    else:
+                    elif typ > max_type / 2.:
                         blen += leng
                         btyp += val * leng
                 print atyp / alen, btyp / blen
@@ -846,7 +845,10 @@ class HiC_data(dict):
             meanh = 1.
         for cmprt in cmprts[sec]:
             try:
-                cmprt['dens'] /= meanh
+                if 'type' in cmprt and isnan(cmprt['type']):
+                    cmprt['dens'] = 1.0
+                else:
+                    cmprt['dens'] /= meanh
             except ZeroDivisionError:
                 cmprt['dens'] = 1.
 
@@ -980,7 +982,7 @@ def _hmm_refine_compartments(x, sec, models, bads, verbose):
     n_states = min(results, key=lambda x: results[x]['BIC'])
     for n in range(2, 6):
         results[n]['PATH'] = list(results[n_states]['PATH'])
-        _ = [results[n]['PATH'].insert(b, float('nan')) for b in bads]
+        _ = [results[n]['PATH'].insert(b, float('nan')) for b in sorted(bads)]
     breaks = [(i, b) for i, (a, b) in
               enumerate(zip(results[n_states]['PATH'][1:],
                             results[n_states]['PATH'][:-1]))
