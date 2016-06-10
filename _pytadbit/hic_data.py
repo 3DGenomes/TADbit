@@ -754,10 +754,10 @@ class HiC_data(dict):
                     dens = sum(cmprts[sec][c]['dens'] for c in subset)
                     leng = sum(1 for c in subset)
                     val = float(dens) / leng if leng else 0.
-                    if typ < max_type / 2.:
+                    if typ == 0:#typ < max_type / 2.:
                         alen += leng
                         atyp += val * leng
-                    elif typ > max_type / 2.:
+                    elif typ == max_type: #typ > max_type / 2.:
                         blen += leng
                         btyp += val * leng
                 print atyp / alen, btyp / blen

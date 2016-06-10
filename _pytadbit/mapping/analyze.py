@@ -822,8 +822,9 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         out.write('\n')
         out.close()
 
-def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
-                       savefig=None, show=False, savedata=None, axe=None):
+def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
+                       savefig=None, show=False, savedata=None,
+                       normalized=False, remove_bad_columns=True):
     """
     Compare the iteractions of two Hi-C matrices at a given distance,
     with spearman rank correlation
@@ -836,21 +837,43 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
     :param None savefig: path to save the plot
     :param False intra: only takes into account intra-chromosomal contacts
     :param False show: displays the plot
+    :param False normalized: use normalized data
+    :param True remove_bads: computes the union of bad columns between samples
+       and exclude them from the comparison
 
     :returns: list of correlations and list of genomic distances
     """
     corr = []
     dist = []
+
+    if normalized:
+        get_the_guy1 = lambda i, j: (hic_data1[j, i + j] / hic_data1.bias[i] /
+                                     hic_data1.bias[j])
+        get_the_guy2 = lambda i, j: (hic_data2[j, i + j] / hic_data2.bias[i] /
+                                     hic_data2.bias[j])
+    else:
+        get_the_guy1 = lambda i, j: hic_data1[j, i + j]
+        get_the_guy2 = lambda i, j: hic_data2[j, i + j]
+    
+    if remove_bad_columns:
+        # union of bad columns
+        bads = hic_data1.bads.copy()
+        bads.update(hic_data2.bads)
+
     if (intra and hic_data1.sections and hic_data2.sections and 
         hic_data1.sections == hic_data2.sections):
         for i in xrange(1, max_dist + 1):
+            if i in bads:
+                continue
             diag1 = []
             diag2 = []
             for crm in hic_data1.section_pos:
                 for j in xrange(hic_data1.section_pos[crm][0],
                                 hic_data1.section_pos[crm][1] - i):
-                    diag1.append(hic_data1[j, i + j])
-                    diag2.append(hic_data2[j, i + j])
+                    if j in bads:
+                        continue
+                    diag1.append(get_the_guy1(i, j))
+                    diag2.append(get_the_guy1(i, j))
             corr.append(spearmanr(diag1, diag2)[0])
             dist.append(i)
     else:
@@ -858,11 +881,15 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
             warn('WARNING: hic_dta does not contain chromosome coordinates, ' +
                  'intra set to False')
         for i in xrange(1, max_dist + 1):
+            if i in bads:
+                continue
             diag1 = []
             diag2 = []
             for j in xrange(len(hic_data1) - i):
-                diag1.append(hic_data1[j, i + j])
-                diag2.append(hic_data2[j, i + j])
+                if j in bads:
+                    continue
+                diag1.append(get_the_guy1(i, j))
+                diag2.append(get_the_guy2(i, j))
             corr.append(spearmanr(diag1, diag2)[0])
             dist.append(i)
     if show or savefig or axe:
@@ -890,9 +917,9 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
         out.close()
     return corr, dist
 
-
-def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
-                           savefig=None, show=False, savedata=None, **kwargs):
+def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False, 
+                           savefig=None, show=False, savedata=None,
+                           remove_bad_columns=True, **kwargs):
     """
     Compare the iteractions of two Hi-C matrices using their 6 first
     eigenvectors, with pearson correlation
@@ -902,12 +929,27 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
     :param 6 nvect: number of eigenvectors to compare
     :param None savefig: path to save the plot
     :param False show: displays the plot
+    :param False normalized: use normalized data
+    :param True remove_bads: computes the union of bad columns between samples
+       and exclude them from the comparison
     :param kwargs: any argument to pass to matplotlib imshow function
 
     :returns: matrix of correlations
     """
-    data1 = hic_data1.get_matrix()
-    data2 = hic_data2.get_matrix()
+    data1 = hic_data1.get_matrix(normalized=normalized)
+    data2 = hic_data2.get_matrix(normalized=normalized)
+    ## reduce matrices to remove bad columns
+    if remove_bad_columns:
+        # union of bad columns
+        bads = hic_data1.bads.copy()
+        bads.update(hic_data2.bads)
+        # remove them form both matrices
+        for bad in sorted(bads, reverse=True):
+            del(data1[bad])
+            del(data2[bad])
+            for i in xrange(len(data1)):
+                _ = data1[i].pop(bad)
+                _ = data2[i].pop(bad)
     # get the log
     size = len(data1)
     data1 = nozero_log(data1, np.log2)
