@@ -709,7 +709,6 @@ class HiC_data(dict):
                 except KeyError:
                     continue
                 
-            
             # train two HMMs on the genomic data:
             #  - one with 2 states A B
             #  - one with 3 states A B I 
@@ -751,8 +750,9 @@ class HiC_data(dict):
                 for typ in range(5):
                     subset = set([i for i, c in enumerate(cmprts[sec])
                                  if c['type'] == typ])
-                    dens = sum(cmprts[sec][c]['dens'] for c in subset)
-                    leng = sum(1 for c in subset)
+                    dens = sum(cmprts[sec][c]['dens'] * (cmprts[sec][c]['end'] - cmprts[sec][c]['start']) for c in subset)
+                    leng = sum(cmprts[sec][c]['end'] - cmprts[sec][c]['start'] for c in subset)
+                    # leng = sum(1 for c in subset)
                     val = float(dens) / leng if leng else 0.
                     if typ == 0:#typ < max_type / 2.:
                         alen += leng
