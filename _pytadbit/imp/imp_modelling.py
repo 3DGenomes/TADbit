@@ -661,7 +661,12 @@ def distance(freq):
 def addHarmonicNeighborsRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)
     model['pps'].append(p)
-    dr = IMP.core.DistanceRestraint(model['model'],IMP.core.Harmonic(dist, kforce),p1, p2)
+    try:
+        dr = IMP.core.DistanceRestraint(
+            model['model'], IMP.core.Harmonic(dist, kforce),p1, p2)
+    except TypeError:
+        dr = IMP.core.DistanceRestraint(
+            IMP.core.Harmonic(dist, kforce),p1, p2) # older versions
     try:
         model['model'].add_restraint(dr)
     except:
@@ -670,8 +675,12 @@ def addHarmonicNeighborsRestraints(model, p1, p2, dist, kforce):
 def addHarmonicUpperBoundRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)
     model['pps'].append(p)
-    dr = IMP.core.DistanceRestraint(model['model'], IMP.core.HarmonicUpperBound(dist, kforce),
-                                    p1, p2)
+    try:
+        dr = IMP.core.DistanceRestraint(
+            model['model'], IMP.core.HarmonicUpperBound(dist, kforce), p1, p2)
+    except TypeError:
+        dr = IMP.core.DistanceRestraint(
+            IMP.core.HarmonicUpperBound(dist, kforce), p1, p2) # older versions
     try:
         model['model'].add_restraint(dr)
     except:
@@ -680,7 +689,12 @@ def addHarmonicUpperBoundRestraints(model, p1, p2, dist, kforce):
 def addHarmonicRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)
     model['pps'].append(p)
-    dr = IMP.core.DistanceRestraint(model['model'], IMP.core.Harmonic(dist, kforce),p1, p2)
+    try:
+        dr = IMP.core.DistanceRestraint(
+            model['model'], IMP.core.Harmonic(dist, kforce), p1, p2)
+    except TypeError:
+        dr = IMP.core.DistanceRestraint(
+            IMP.core.Harmonic(dist, kforce), p1, p2) # older versions
     try:
         model['model'].add_restraint(dr)
     except:
@@ -689,8 +703,12 @@ def addHarmonicRestraints(model, p1, p2, dist, kforce):
 def addHarmonicLowerBoundRestraints(model, p1, p2, dist, kforce):
     p = IMP.ParticlePair(p1, p2)
     model['pps'].append(p)
-    dr = IMP.core.DistanceRestraint(model['model'], IMP.core.HarmonicLowerBound(dist, kforce),
-                                    p1, p2)
+    try:
+        dr = IMP.core.DistanceRestraint(
+            model['model'], IMP.core.HarmonicLowerBound(dist, kforce), p1, p2)
+    except TypeError:
+        dr = IMP.core.DistanceRestraint(
+            IMP.core.HarmonicLowerBound(dist, kforce), p1, p2) # older versions
     try:
         model['model'].add_restraint(dr)
     except:
