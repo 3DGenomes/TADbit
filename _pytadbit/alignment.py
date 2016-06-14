@@ -333,8 +333,8 @@ class Alignment(object):
                                   for i in range(1, int(maxy + .5) * 2)])
             if ymax:
                 axes[iex].set_ylim((0, ymax))
-        # axes[iex].set_xlim((starting, max(maxxs)))
-        # 
+            axes[iex].set_xlim(xmin=starting, xmax=max(maxxs))
+
         pos = {'ha': 'center', 'va': 'bottom'}
         for i, col in enumerate(self.itercolumns()):
             ends = sorted([(t['end'], j) for j, t in enumerate(col) if t['end']])
