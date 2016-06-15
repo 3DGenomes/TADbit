@@ -9,15 +9,16 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from pytadbit.tools import tadbit_map
 from pytadbit.tools import tadbit_clean
 from pytadbit.tools import tadbit_parse
+from pytadbit.tools import tadbit_merge
+from pytadbit.tools import tadbit_filter
+from pytadbit.tools import tadbit_segment
+from pytadbit.tools import tadbit_describe
+from pytadbit.tools import tadbit_normalize
 try:
     from pytadbit.tools import tadbit_model
     model_av = True
 except ImportError:
     model_av = False
-from pytadbit.tools import tadbit_filter
-from pytadbit.tools import tadbit_segment
-from pytadbit.tools import tadbit_describe
-from pytadbit.tools import tadbit_normalize
 
 def main(arguments):
     if len(arguments) > 1:
@@ -79,6 +80,14 @@ def main(arguments):
                                              formatter_class=RawDescriptionHelpFormatter)
     args_pp["normalize"].set_defaults(func=tadbit_normalize.run)
     tadbit_normalize.populate_args(args_pp["normalize"])
+
+    # - MERGE -
+    args_pp["merge"] = subparser.add_parser("merge",
+                                            description=tadbit_merge.DESC,
+                                            help=tadbit_merge.DESC,
+                                            formatter_class=RawDescriptionHelpFormatter)
+    args_pp["merge"].set_defaults(func=tadbit_merge.run)
+    tadbit_merge.populate_args(args_pp["merge"])
 
     # - SEGMENT -
     args_pp["segment"] = subparser.add_parser("segment",

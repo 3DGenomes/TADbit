@@ -8,9 +8,11 @@ information needed
 from argparse                     import HelpFormatter
 from pytadbit                     import load_hic_data_from_reads
 from pytadbit.mapping.analyze     import correlate_matrices
+from pytadbit.mapping             import merge_2d_beds
 from pytadbit.mapping.analyze     import eig_correlate_matrices
 from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
+from pytadbit.utils.sqlite_utils  import get_path_id
 from pytadbit.utils.file_handling import mkdir
 from os                           import path, remove
 from string                       import ascii_letters
@@ -54,26 +56,34 @@ def run(opts):
     eigen_corr_fig = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.png' % (opts.reso, param_hash))
 
     print 'correlation between equidistant loci'
-    correlate_matrices(hic_data1, hic_data2, normalized=True,
-                       remove_bad_columns=True,
-                       savefig=decay_corr_fig,
-                       savedata=decay_corr_dat)
+    corr, dist, bads = correlate_matrices(hic_data1, hic_data2, normalized=False,
+                                          remove_bad_columns=True,
+                                          savefig=decay_corr_fig,
+                                          savedata=decay_corr_dat, get_bads=True)
 
-    print 'correlation between equidistant loci'
-    eig_correlate_matrices(hic_data1, hic_data2, normalized=True,
-                           remove_bad_columns=True,
-                           savefig=eigen_corr_fig,
-                           savedata=eigen_corr_dat)
+    print 'correlation between eigenvectors'
+    eig_corr = eig_correlate_matrices(hic_data1, hic_data2, normalized=False,
+                                      remove_bad_columns=True,
+                                      savefig=eigen_corr_fig,
+                                      savedata=eigen_corr_dat)
 
+    # merge inputs
+    mkdir(path.join(opts.workdir, '03_filtered_reads'))
+    outbed = path.join(opts.workdir, '03_filtered_reads', 'valid_r1-r2_intersection_%s.tsv' % (
+        param_hash))
+
+    nreads = merge_2d_beds(mreads1, mreads2, outbed)
 
     finish_time = time.localtime()
-    save_to_db (opts, decay_corr_dat, decay_corr_fig,
-                eigen_corr_dat, eigen_corr_fig,
+    save_to_db (opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
+                len(bads.keys()), len(hic_data1), nreads,
+                eigen_corr_dat, eigen_corr_fig, outbed, 
                 launch_time, finish_time)
 
-
-def save_to_db(opts, decay_corr_dat, decay_corr_fig,
-               eigen_corr_dat, eigen_corr_fig, launch_time, finish_time):
+def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
+               nbad_columns, ncolumns, nreads,
+               eigen_corr_dat, eigen_corr_fig, outbed,
+               launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -95,24 +105,50 @@ def save_to_db(opts, decay_corr_dat, decay_corr_fig,
                        type='table' AND name='NORMALIZE_OUTPUTs'""")
         if not cur.fetchall():
             cur.execute("""
-            create table MERGED_OUTPUTs
+            create table PATHs
+               (Id integer primary key,
+                JOBid int, Path text, Type text,
+                unique (Path))""")
+            cur.execute("""
+            create table JOBs
+               (Id integer primary key,
+                Parameters text,
+                Launch_time text,
+                Finish_time text,
+                Type text,
+                Parameters_md5 text,
+                unique (Parameters_md5))""")
+            cur.execute("""
+            create table FILTER_OUTPUTs
+               (Id integer primary key,
+                PATHid int,
+                Name text,
+                Count int,
+                JOBid int,
+                unique (PATHid))""")
+            cur.execute("""
+            create table MERGE_OUTPUTs
                (Id integer primary key,
                 JOBid int,
-                Workdir1_PathId int,
-                Workdir2_PathId int,
+                Wrkd1_PathId int,
+                Wrkd2_PathId int,
+                Bed1_PathId int,
+                Bed2_PathId int,
+                Merge_PathId int,
                 decay_corr text,
                 eigen_corr text,
+                N_columns int,
+                N_filtered int,
                 Resolution int,
-                Factor int,
                 unique (JOBid))""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
             param_hash = digest_parameters(opts, get_md5=True )
             cur.execute("""
             insert into JOBs
-            (Id  , Parameters, Launch_time, Finish_time, Type , Parameters_md5)
+            (Id  , Parameters, Launch_time, Finish_time, Type   , Parameters_md5)
             values
-            (NULL,       '%s',        '%s',        '%s', 'Normalize',           '%s')
+            (NULL,       '%s',        '%s',        '%s', 'Merge',           '%s')
             """ % (parameters,
                    time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
                    time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
@@ -120,37 +156,89 @@ def save_to_db(opts, decay_corr_dat, decay_corr_fig,
             pass
 
         jobid = get_jobid(cur)
-        add_path(cur, decay_corr_dat, 'CORR'  , jobid, opts.workdir)
-        add_path(cur, decay_corr_fig, 'FIGURE', jobid, opts.workdir)
-        add_path(cur, eigen_corr_dat, 'CORR'  , jobid, opts.workdir)
-        add_path(cur, eigen_corr_fig, 'FIGURE', jobid, opts.workdir)
+        add_path(cur, decay_corr_dat, 'CORR'   , jobid, opts.workdir)
+        add_path(cur, decay_corr_fig, 'FIGURE' , jobid, opts.workdir)
+        add_path(cur, eigen_corr_dat, 'CORR'   , jobid, opts.workdir)
+        add_path(cur, eigen_corr_fig, 'FIGURE' , jobid, opts.workdir)
+
+        add_path(cur, opts.workdir , 'WORKDIR' , jobid)
+        add_path(cur, opts.workdir1, 'WORKDIR1', jobid, opts.workdir)
+        add_path(cur, opts.workdir2, 'WORKDIR2', jobid, opts.workdir)
+        add_path(cur, mreads1      , '2D_BED'  , jobid, opts.workdir)
+        add_path(cur, mreads2      , '2D_BED'  , jobid, opts.workdir)
+        add_path(cur, outbed       , '2D_BED'  , jobid, opts.workdir)
         
-        try:
-            cur.execute("""
-            insert into NORMALIZE_OUTPUTs
-            (Id  , JOBid,     Input, N_columns,   N_filtered, CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
-            values
-            (NULL,    %d,        %d,        %d,           %d,               %f,                 %f,                 %f,                 %f,               %f,           %d,          %f)
-            """ % (jobid, input_bed,  ncolumns, nbad_columns,    cis_trans_N_D,      cis_trans_N_d,      cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
-        except lite.OperationalError:
-            try:
-                cur.execute("""
-                insert into NORMALIZE_OUTPUTs
-                (Id  , JOBid,     Input, N_columns,   N_filtered,  CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
-                values
-                (NULL,    %d,        %d,        %d,           %d,                %f,                 %f,               %f,           %d,          %f)
-                """ % (jobid, input_bed,  ncolumns, nbad_columns,     cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
-            except lite.OperationalError:
-                print 'WANRING: Normalized table not written!!!'
+        cur.execute("select id from paths where path = '%s'" % (
+            path.relpath(mreads1, opts.workdir)))
+        bed1 = cur.fetchall()[0][0]
+        cur.execute("select id from paths where path = '%s'" % (
+            path.relpath(opts.workdir1, opts.workdir)))
+        w1path = cur.fetchall()[0][0]
+        cur.execute("select id from paths where path = '%s'" % (
+            path.relpath(mreads2, opts.workdir)))
+        bed2 = cur.fetchall()[0][0]
+        cur.execute("select id from paths where path = '%s'" % (
+            path.relpath(opts.workdir2, opts.workdir)))
+        w2path = cur.fetchall()[0][0]
+        cur.execute("select id from paths where path = '%s'" % (
+            path.relpath(outbed, opts.workdir)))
+        outbedid = cur.fetchall()[0][0]
+        cur.execute("""
+        insert into MERGE_OUTPUTs
+        (Id  , JOBid, Wrkd1_PathId, Wrkd2_PathId, Bed1_PathId, Bed2_PathId, Merge_PathId, N_columns,   N_filtered, Resolution)
+        values
+        (NULL,    %d,           %d,           %d,          %d,          %d,           %d,        %d,           %d,         %d)
+        """ % (jobid,          w1path,          w2path,        bed1,        bed2,      outbedid,  ncolumns, nbad_columns, opts.reso ))
             
-        print_db(cur, 'MAPPED_INPUTs')
+        masked1 = {}
+        if opts.workdir1:
+            tmpcon = lite.connect(path.join(opts.workdir1, 'trace.db'))
+            with tmpcon:
+                tmpcur = tmpcon.cursor()
+                tmpcur.execute("select Name, PATHid, Count from filter_outputs")
+                for name, pathid, count in tmpcur.fetchall():
+                    res = tmpcur.execute("select Path from PATHs where Id = %d" % (pathid))
+                    tmppath = res.fetchall()[0][0]
+                    masked1[name] = {'path': tmppath, 'count': count}
+
+        masked2 = {}
+        if opts.workdir2:
+            tmpcon = lite.connect(path.join(opts.workdir2, 'trace.db'))
+            with tmpcon:
+                tmpcur = tmpcon.cursor()
+                tmpcur.execute("select Name, PATHid, Count from filter_outputs")
+                for name, pathid, count in tmpcur.fetchall():
+                    res = tmpcur.execute("select Path from PATHs where Id = %d" % (pathid))
+                    tmppath = res.fetchall()[0][0]
+                    masked2[name] = {'path': tmppath, 'count': count}
+
+        for f in masked1:
+            if f  != 'valid-pairs':
+                outmask = path.join(opts.workdir, '03_filtered_reads',
+                                    'all_r1-r2_intersection_%s.tsv_%s.tsv' % (
+                    param_hash, f))
+                out = open(outmask, 'w')
+                for line in open(path.join(opts.workdir1, masked1[f]['path'])):
+                    out.write(line)
+                for line in open(path.join(opts.workdir2, masked2[f]['path'])):
+                    out.write(line)
+                add_path(cur, outmask, 'FILTER', jobid, opts.workdir)
+            else:
+                outmask = outbed
+
+            cur.execute("""
+            insert into FILTER_OUTPUTs
+            (Id  , PATHid, Name, Count, JOBid)
+            values
+            (NULL,     %d, '%s',  '%s',    %d)
+            """ % (get_path_id(cur, outmask, opts.workdir),
+                   f, masked1[f]['count'] + masked2[f]['count'], jobid))
+
         print_db(cur, 'PATHs')
-        print_db(cur, 'MAPPED_OUTPUTs')
-        print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
-        print_db(cur, 'INTERSECTION_OUTPUTs')        
+        print_db(cur, 'MERGE_OUTPUTs')        
         print_db(cur, 'FILTER_OUTPUTs')
-        print_db(cur, 'NORMALIZE_OUTPUTs')
+
     if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
@@ -243,12 +331,6 @@ def populate_args(parser):
                         help='''[%(default)s] normalization(s) to apply.
                         Order matters.''')
 
-    glopts.add_argument('--factor', dest='factor', metavar="NUM",
-                        action='store', default=1, type=float,
-                        help='''[%(default)s] target mean value of a cell after
-                        normalization (can be used to weight experiments before
-                        merging)''')
-
     glopts.add_argument('--save', dest='save', metavar="STR",
                         action='store', default='genome', nargs='+', type=str,
                         choices=['genome', 'chromosomes'],
@@ -277,9 +359,7 @@ def populate_args(parser):
 
 
 def check_options(opts):
-    # check resume
-    if not path.exists(opts.workdir):
-        raise IOError('ERROR: wordir not found.')
+    mkdir(opts.workdir)
 
     # for lustre file system....
     if 'tmpdb' in opts and opts.tmpdb:

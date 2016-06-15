@@ -59,7 +59,7 @@ def run(opts):
         # allows the use of cPickle genome to make it faster
         genome = load(open(opts.genome[0]))
     except UnpicklingError:
-        genome = parse_fasta(opts.genome)
+        genome = parse_fasta(opts.genome, chr_regexp=opts.filter_chrom)
 
     if not opts.skip:
         logging.info('parsing reads in %s project', name)
@@ -293,6 +293,10 @@ def populate_args(parser):
     glopts.add_argument('--read', dest='read', metavar="INT",
                         type=int, default=None, 
                         help='In case only one of the reads needs to be parsed')
+
+    glopts.add_argument('--filter_chrom', dest='filter_chrom',
+                        default="^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$",
+                        help='[%(default)s] regexp to consider only chromosome names passing')
 
     glopts.add_argument('--skip', dest='skip', action='store_true',
                       default=False,

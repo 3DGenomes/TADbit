@@ -275,8 +275,8 @@ class HiC_data(dict):
                 self, draw_hist=draw_hist, silent=silent,
                 savefig=savefig, bads=self.bads))
         if not silent:
-            print 'Found %d of %d columnswith poor signal' % (len(self.bads),
-                                                              len(self))
+            print 'Found %d of %d columns with poor signal' % (len(self.bads),
+                                                               len(self))
 
     def sum(self, bias=None, bads=None):
         """
@@ -751,13 +751,15 @@ class HiC_data(dict):
                     subset = set([i for i, c in enumerate(cmprts[sec])
                                  if c['type'] == typ])
                     dens = sum(cmprts[sec][c]['dens'] * (cmprts[sec][c]['end'] - cmprts[sec][c]['start']) for c in subset)
-                    leng = sum(cmprts[sec][c]['end'] - cmprts[sec][c]['start'] for c in subset)
+                    leng = sum((cmprts[sec][c]['end'] - cmprts[sec][c]['start'])**2 / 2. for c in subset)
                     # leng = sum(1 for c in subset)
                     val = float(dens) / leng if leng else 0.
-                    if typ == 0:#typ < max_type / 2.:
+                    #if typ == 0:
+                    if typ < max_type / 2.:
                         alen += leng
                         atyp += val * leng
-                    elif typ == max_type: #typ > max_type / 2.:
+                    # elif typ == max_type:
+                    elif typ > max_type / 2.:
                         blen += leng
                         btyp += val * leng
                 print atyp / alen, btyp / blen

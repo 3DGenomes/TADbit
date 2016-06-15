@@ -824,7 +824,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
 
 def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
                        savefig=None, show=False, savedata=None,
-                       normalized=False, remove_bad_columns=True):
+                       normalized=False, remove_bad_columns=True, **kwargs):
     """
     Compare the iteractions of two Hi-C matrices at a given distance,
     with spearman rank correlation
@@ -915,7 +915,10 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
         for i in xrange(len(corr)):
             out.write('%s\t%s\n' % (dist[i], corr[i]))
         out.close()
-    return corr, dist
+    if kwargs.get('get_bads', False):
+        return corr, dist, bads
+    else:
+        return corr, dist
 
 def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False, 
                            savefig=None, show=False, savedata=None,
@@ -1018,10 +1021,10 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
             out.write('\t'.join([str(corr[i][j])
                                  for j in xrange(nvect)]) + '\n')
         out.close()
-
-    return corr
-
-
+    if kwargs.get('get_bads', False):
+        return corr, bads
+    else:
+        return corr
 
 def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
         maxdist=1000):

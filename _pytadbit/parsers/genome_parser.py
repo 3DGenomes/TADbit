@@ -6,9 +6,10 @@ convert a bunch of fasta files, or a single multi fasta file, into a dictionary
 
 from collections import OrderedDict
 from pytadbit.utils.file_handling import magic_open
+import re
 
-
-def parse_fasta(f_names, chr_names=None, chr_filter=None, verbose=True):
+def parse_fasta(f_names, chr_names=None, chr_filter=None, chr_regexp=None,
+                verbose=True):
     """
     Parse a list of fasta files, or just one fasta.
 
@@ -18,6 +19,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, verbose=True):
     :param None chr_names: pass list of chromosome names, or just one. If None
        are passed, then chromosome names will be inferred from fasta headers
     :param None chr_filter: use only chromosome in the input list
+    :param None chr_regexp: use only chromosome matching
 
     :returns: a sorted dictionary with chromosome names as keys, and sequences
        as values (sequence in upper case)
@@ -32,6 +34,11 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, verbose=True):
     else:
         bad_chrom = lambda x: False
 
+    if chr_regexp:
+        chr_regexp = re.compile(chr_regexp)
+    else:
+        chr_regexp = re.compile('.*')
+
     genome_seq = OrderedDict()
     if len(f_names) == 1:
         header = None
@@ -41,7 +48,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, verbose=True):
                 if header:
                     genome_seq[header] = ''.join(seq).upper()
                 header = line[1:].split()[0]
-                if bad_chrom(header):
+                if bad_chrom(header) or not chr_regexp.match(header):
                     header = 'UNWANTED'
                 elif not chr_names:
                     if verbose:
@@ -65,7 +72,7 @@ def parse_fasta(f_names, chr_names=None, chr_filter=None, verbose=True):
                         header = fhandler.next()
                         if header.startswith('>'):
                             header = header[1:].split()[0]
-                            if bad_chrom(header):
+                            if bad_chrom(header) or not chr_regexp.match(header):
                                 header = 'UNWANTED'
                             genome_seq[header] = ''
                             break

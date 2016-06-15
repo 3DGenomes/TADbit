@@ -312,12 +312,15 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
             except lite.OperationalError:
                 print 'WANRING: Normalized table not written!!!'
             
-        print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs')
-        print_db(cur, 'MAPPED_OUTPUTs')
-        print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
-        print_db(cur, 'INTERSECTION_OUTPUTs')        
+        try:
+            print_db(cur, 'INTERSECTION_OUTPUTs')        
+            print_db(cur, 'MAPPED_INPUTs')
+            print_db(cur, 'MAPPED_OUTPUTs')
+            print_db(cur, 'PARSED_OUTPUTs')
+        except lite.OperationalError:
+            pass
         print_db(cur, 'FILTER_OUTPUTs')
         print_db(cur, 'NORMALIZE_OUTPUTs')
     if 'tmpdb' in opts and opts.tmpdb:
@@ -342,7 +345,7 @@ def load_parameters_fromdb(opts):
             # get the JOBid of the parsing job
             cur.execute("""
             select distinct Id from JOBs
-            where Type = 'Filter'
+            where Type = 'Filter' or Type = 'Merge'
             """)
             jobids = cur.fetchall()
             if len(jobids) > 1:
