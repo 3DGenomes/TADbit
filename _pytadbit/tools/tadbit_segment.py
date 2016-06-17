@@ -27,16 +27,17 @@ def run(opts):
     launch_time = time.localtime()
     param_hash = digest_parameters(opts)
 
-    if not opts.nosql:
-        (bad_co, bad_co_id, biases, biases_id,
-         mreads, mreads_id, reso) = load_parameters_fromdb(opts)
-        # store path ids to be saved in database
-        inputs = bad_co_id, biases_id, mreads_id
-    else:
+    if opts.nosql:
         bad_co = opts.bad_co
         biases = opts.biases
         mreads = opts.mreads
         reso   = opts.reso
+        inputs = []
+    else:
+        (bad_co, bad_co_id, biases, biases_id,
+         mreads, mreads_id, reso) = load_parameters_fromdb(opts)
+        # store path ids to be saved in database
+        inputs = bad_co_id, biases_id, mreads_id
 
     mreads = path.join(opts.workdir, mreads)
     bad_co = path.join(opts.workdir, bad_co)
