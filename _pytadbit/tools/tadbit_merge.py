@@ -38,7 +38,7 @@ def run(opts):
         biases1 = opts.biases1
     else:
         bad_co1, biases1, mreads1, reso1 = load_parameters_fromdb(
-                opts.workdir1, opts.jobid1, opts)
+                opts.workdir1, opts.jobid1, opts, opts.tmpdb1)
         mreads1 = path.join(opts.workdir1, mreads1)
 
     if opts.bed2:
@@ -47,7 +47,7 @@ def run(opts):
         biases2 = opts.biases2
     else:
         bad_co2, biases2, mreads2, reso2 = load_parameters_fromdb(
-                opts.workdir2, opts.jobid2, opts)
+                opts.workdir2, opts.jobid2, opts, opts.tmpdb2)
         mreads2 = path.join(opts.workdir2, mreads2)
 
     if reso1 != reso2:
@@ -323,9 +323,9 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
     except OSError:
         pass
 
-def load_parameters_fromdb(workdir, jobid, opts):
-    if 'tmpdb' in opts and opts.tmpdb:
-        dbfile = opts.tmpdb
+def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
+    if tmpdb:
+        dbfile = tmpdb
     else:
         dbfile = path.join(workdir, 'trace.db')
     con = lite.connect(dbfile)
@@ -517,11 +517,33 @@ def check_options(opts):
             copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
         except IOError:
             pass
+        if opts.workdir1:
+            # tmp file
+            dbfile1 = 'trace1_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                              for _ in range(10)]))
+            opts.tmpdb1 = path.join(dbdir, dbfile1)
+            try:
+                copyfile(path.join(opts.workdir1, 'trace.db'), opts.tmpdb1)
+            except IOError:
+                pass
+        if opts.workdir2:
+            # tmp file
+            dbfile2 = 'trace2_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                              for _ in range(10)]))
+            opts.tmpdb2 = path.join(dbdir, dbfile2)
+            try:
+                copyfile(path.join(opts.workdir2, 'trace.db'), opts.tmpdb2)
+            except IOError:
+                pass
 
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
         if 'tmpdb' in opts and opts.tmpdb:
             remove(path.join(dbdir, dbfile))
+            if opts.workdir1:
+                remove(path.join(dbdir, dbfile1))
+            if opts.workdir2:
+                remove(path.join(dbdir, dbfile2))
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 def nice(reso):
