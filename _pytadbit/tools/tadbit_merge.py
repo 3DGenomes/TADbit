@@ -62,16 +62,20 @@ def run(opts):
 
     if opts.norm and biases1:
         bad_co1 = path.join(opts.workdir1, bad_co1)
+        print 'loading bad columns from first sample', bad_co1
         hic_data1.bads = dict((int(l.strip()), True) for l in open(bad_co1))
         biases1 = path.join(opts.workdir1, biases1)
+        print 'loading biases from first sample', biases1
         hic_data1.bias = dict((int(l.split()[0]), float(l.split()[1]))
                               for l in open(biases1))
     elif opts.norm:
         raise Exception('ERROR: biases or filtered-columns not found')
     if opts.norm and biases2:
         bad_co2 = path.join(opts.workdir2, bad_co2)
+        print 'loading bad columns from second sample', bad_co2
         hic_data2.bads = dict((int(l.strip()), True) for l in open(bad_co2))
         biases2 = path.join(opts.workdir2, biases2)
+        print 'loading biases from second sample', biases2
         hic_data2.bias = dict((int(l.split()[0]), float(l.split()[1]))
                               for l in open(biases2))
     elif opts.norm:
