@@ -843,17 +843,17 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
 
     :returns: list of correlations and list of genomic distances
     """
-    corr = []
-    dist = []
+    corrs = []
+    dists = []
 
     if normalized:
-        get_the_guy1 = lambda i, j: (hic_data1[j, i + j] / hic_data1.bias[i] /
+        get_the_guy1 = lambda i, j: (hic_data1[j, i] / hic_data1.bias[i] /
                                      hic_data1.bias[j])
-        get_the_guy2 = lambda i, j: (hic_data2[j, i + j] / hic_data2.bias[i] /
+        get_the_guy2 = lambda i, j: (hic_data2[j, i] / hic_data2.bias[i] /
                                      hic_data2.bias[j])
     else:
-        get_the_guy1 = lambda i, j: hic_data1[j, i + j]
-        get_the_guy2 = lambda i, j: hic_data2[j, i + j]
+        get_the_guy1 = lambda i, j: hic_data1[j, i]
+        get_the_guy2 = lambda i, j: hic_data2[j, i]
     
     if remove_bad_columns:
         # union of bad columns
@@ -862,36 +862,36 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
 
     if (intra and hic_data1.sections and hic_data2.sections and 
         hic_data1.sections == hic_data2.sections):
-        for i in xrange(1, max_dist + 1):
-            if i in bads:
-                continue
+        for dist in xrange(1, max_dist + 1):
             diag1 = []
             diag2 = []
             for crm in hic_data1.section_pos:
                 for j in xrange(hic_data1.section_pos[crm][0],
-                                hic_data1.section_pos[crm][1] - i):
-                    if j in bads:
+                                hic_data1.section_pos[crm][1] - dist):
+                    i = j + dist
+                    if j in bads or i in bads:
                         continue
                     diag1.append(get_the_guy1(i, j))
                     diag2.append(get_the_guy2(i, j))
-            corr.append(spearmanr(diag1, diag2)[0])
-            dist.append(i)
+            corrs.append(spearmanr(diag1, diag2)[0])
+            dists.append(dist)
     else:
         if intra:
             warn('WARNING: hic_dta does not contain chromosome coordinates, ' +
                  'intra set to False')
-        for i in xrange(1, max_dist + 1):
+        for dist in xrange(1, max_dist + 1):
             if i in bads:
                 continue
             diag1 = []
             diag2 = []
-            for j in xrange(len(hic_data1) - i):
-                if j in bads:
+            for j in xrange(len(hic_data1) - dist):
+                i = j + dist
+                if j in bads or i in bads:
                     continue
                 diag1.append(get_the_guy1(i, j))
                 diag2.append(get_the_guy2(i, j))
-            corr.append(spearmanr(diag1, diag2)[0])
-            dist.append(i)
+            corrs.append(spearmanr(diag1, diag2)[0])
+            dists.append(dist)
     if show or savefig or axe:
         if not axe:
             fig = plt.figure()
@@ -899,10 +899,10 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
             given_axe = False
         else:
             given_axe = True
-        axe.plot(dist, corr, color='orange', linewidth=3, alpha=.8)
+        axe.plot(dists, corrs, color='orange', linewidth=3, alpha=.8)
         axe.set_xlabel('Genomic distance in bins')
         axe.set_ylabel('Spearman rank correlation')
-        axe.set_xlim((0, dist[-1]))
+        axe.set_xlim((0, dists[-1]))
         if savefig:
             tadbit_savefig(savefig)
         if show:
@@ -912,13 +912,13 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
     if savedata:
         out = open(savedata, 'w')
         out.write('# genomic distance\tSpearman rank correlation\n')
-        for i in xrange(len(corr)):
-            out.write('%s\t%s\n' % (dist[i], corr[i]))
+        for i in xrange(len(corrs)):
+            out.write('%s\t%s\n' % (dists[i], corrs[i]))
         out.close()
     if kwargs.get('get_bads', False):
-        return corr, dist, bads
+        return corrs, dists, bads
     else:
-        return corr, dist
+        return corrs, dists
 
 def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False, 
                            savefig=None, show=False, savedata=None,
