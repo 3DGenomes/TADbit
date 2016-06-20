@@ -880,8 +880,6 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
             warn('WARNING: hic_dta does not contain chromosome coordinates, ' +
                  'intra set to False')
         for dist in xrange(1, max_dist + 1):
-            if i in bads:
-                continue
             diag1 = []
             diag2 = []
             for j in xrange(len(hic_data1) - dist):
