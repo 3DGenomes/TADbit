@@ -873,7 +873,7 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
                     if j in bads:
                         continue
                     diag1.append(get_the_guy1(i, j))
-                    diag2.append(get_the_guy1(i, j))
+                    diag2.append(get_the_guy2(i, j))
             corr.append(spearmanr(diag1, diag2)[0])
             dist.append(i)
     else:
