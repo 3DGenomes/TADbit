@@ -1,5 +1,5 @@
 #include "tadbit.h"
-
+#include <stdint.h>
 
 // Global variables. //
 
@@ -9,6 +9,68 @@ int n_processed;              // Number of slices processed so far.
 int n_to_process;             // Total number of slices to process.
 int taskQ_i;                  // Index used for task queue.
 pthread_mutex_t tadbit_lock;  // Mutex to access task queue.
+
+#ifndef M_LN2
+#define M_LN2 0.69314718055994530942
+#endif
+
+
+typedef union
+{
+    double   f;
+    uint64_t ui;
+    int64_t  si;
+} fi_t;
+
+static const uint64_t fastlog_exp_mask = 0x7ff0000000000000;
+static const uint64_t fastlog_man_mask = 0x000fffffffffffff;
+
+
+double* fastlog_lookup  = NULL;
+uint64_t fastlog_man_offset = 0;
+
+
+void fastlog_init(int prec)
+{
+    if (prec < 1 || prec > 52) {
+        abort();
+    }
+
+    free(fastlog_lookup);
+
+    uint64_t n = 1 << prec; // 2^prec
+    fastlog_lookup = malloc(n * sizeof(double));
+
+    if (fastlog_lookup == NULL) {
+        abort();
+    }
+
+    fastlog_man_offset = 52 - prec;
+    uint64_t x;
+    fi_t y;
+    for (x = 0; x < n; ++x) {
+        y.ui = ((uint64_t) 1023 << 52) | (x << fastlog_man_offset);
+        fastlog_lookup[x] = log(y.f);
+    }
+
+}
+
+
+void fastlog_free()
+{
+    free(fastlog_lookup); fastlog_lookup = NULL;
+}
+
+
+double fastlog(double x)
+{
+    fi_t y;
+    y.f = x;
+    register const int exp  = ((int) (y.si >> 52)) - 1023;
+    register const uint64_t man  = (y.ui & fastlog_man_mask) >> fastlog_man_offset;
+
+    return M_LN2 * (double) exp + fastlog_lookup[man];
+}
 
 // Convenience function to erase tadbit_output data structure //
 void
@@ -95,13 +157,15 @@ fg(
          index = _cache_index[i+j*n];
          if (c[index] != c[index]) {
             //c[index] = exp(a+da+(b+db)*d[i+j*n]);
-        	c[index] = exp(a+da+(b+db)*log(abs(dp[i]-dp[j])));
+        	//c[index] = exp(a+da+(b+db)*log(abs(dp[i]-dp[j])));
+        	c[index] = exp(a+da+(b+db)*fastlog(abs(dp[i]-dp[j])));
          }
          //tmp  =  w[i+j*n] * c[index] - k[i+j*n];
          tmp  =  w[i]*w[j] * c[index] - k[i+j*n];
          *f  +=  tmp;
          //*g  +=  tmp * d[i+j*n];
-         *g  +=  tmp * log(abs(dp[i]-dp[j]));
+         //*g  +=  tmp * log(abs(dp[i]-dp[j]));
+         *g  +=  tmp * fastlog(abs(dp[i]-dp[j]));
       }
    }
 
@@ -121,7 +185,7 @@ ll(
   //const double *d,
   const int    *dp,
   const double *w,
-  //const double *lg,
+  const double *lg,
         double *c
 ){
 // SYNOPSIS:                                                            
@@ -203,16 +267,19 @@ ll(
             // Retrieve value of the exponential from cache.
             if (c[index] != c[index]) { // ERROR.
                //c[index] = exp(a+b*d[i+j*n]);
-               c[index] = exp(a+b*log(abs(dp[i]-dp[j])));
+               //c[index] = exp(a+b*log(abs(dp[i]-dp[j])));
+            	c[index] = exp(a+b*fastlog(abs(dp[i]-dp[j])));
             }
             //tmp   =   w[i+j*n] * c[index];
             tmp   =   w[i]*w[j] * c[index];
             dfda +=   tmp;
             //tmp  *=   d[i+j*n];
-            tmp  *=   log(abs(dp[i]-dp[j]));
+            //tmp  *=   log(abs(dp[i]-dp[j]));
+            tmp  *=   fastlog(abs(dp[i]-dp[j]));
             dgda +=   tmp;
             //tmp  *=   d[i+j*n];
-            tmp  *=   log(abs(dp[i]-dp[j]));
+            //tmp  *=   log(abs(dp[i]-dp[j]));
+            tmp  *=   fastlog(abs(dp[i]-dp[j]));
             dgdb +=   tmp;
          }
       }
@@ -257,7 +324,8 @@ ll(
          index = _cache_index[i+j*n];
          // Retrieve value of the exponential from cache.
          //llik += c[index] + k[i+j*n]*(a+b*d[i+j*n]) - lg[i+j*n];
-         llik += c[index] + k[i+j*n]*(a+b*log(abs(dp[i]-dp[j]))) - lgamma(k[i+j*n]+1);
+         //llik += c[index] + k[i+j*n]*(a+b*log(abs(dp[i]-dp[j]))) - lg[i+j*n];
+         llik += c[index] + k[i+j*n]*(a+b*fastlog(abs(dp[i]-dp[j]))) - lg[i+j*n];
 
       }
    }
@@ -488,7 +556,7 @@ fill_llikmat(
    //const double *d = (const double*) myargs->d;
    const int *dp = (const int*) myargs->dp;
    const double **w = (const double **) myargs->w;
-   //const double **lg= (const double **) myargs->lg;
+   const double **lg= (const double **) myargs->lg;
    const char *skip = (const char *) myargs->skip;
    double *llikmat = myargs->llikmat;
    const int verbose = myargs->verbose;
@@ -535,9 +603,9 @@ fill_llikmat(
       for (l = 0 ; l < m ; l++) {
          // LABEL: slice ll summation.
          llikmat[i+j*n] +=
-            ll(n,   0, i-1, i, j, 0, k[l], dp, w[l], c) / 2 +
-        	ll(n,   i,   j, i, j, 1, k[l], dp, w[l], c) +
-        	ll(n, j+1, n-1, i, j, 0, k[l], dp, w[l], c) / 2;
+            ll(n,   0, i-1, i, j, 0, k[l], dp, w[l], lg[l], c) / 2 +
+        	ll(n,   i,   j, i, j, 1, k[l], dp, w[l], lg[l], c) +
+        	ll(n, j+1, n-1, i, j, 0, k[l], dp, w[l], lg[l], c) / 2;
             //ll(n,   0, i-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2 +
             //ll(n,   i,   j, i, j, 1, k[l], d, w[l], lg[l], c) +
             //ll(n, j+1, n-1, i, j, 0, k[l], d, w[l], lg[l], c) / 2;
@@ -752,7 +820,6 @@ tadbit
    int l;
    int i0;
 
-
    // Allocate memory and initialize variables. The distance
    // matrix 'dist' is the distance to the main diagonal. Every
    // element of coordinate (i,j) is on a diagonal; the distance
@@ -784,6 +851,7 @@ tadbit
 //      l++;
 //   }
 //   }
+   fastlog_init(16);
 
    // Exit if there are too few rows/columns after removal.
    if (n < 6) {
@@ -801,13 +869,13 @@ tadbit
    _cache_index = (int *) malloc(n*n * sizeof(int));
    _max_cache_index = N+1;
    // Allocate and copy.
-   //double **log_gamma  = (double **) malloc(m * sizeof(double *));
+   double **log_gamma  = (double **) malloc(m * sizeof(double *));
    int    **new_obs    = (int **) malloc(m * sizeof(int *));
    //double *dist = (double *) malloc(n*n * sizeof(double));
    int *dp = (int *) malloc(n * sizeof(int));
    for (k = 0 ; k < m ; k++) {
       l = i0 = 0;
-      //log_gamma[k] = (double *) malloc(n*n * sizeof(double));
+      log_gamma[k] = (double *) malloc(n*n * sizeof(double));
       new_obs[k] = (int *) malloc(n*n * sizeof(int));
       for (j = 0 ; j < N ; j++) {
     	  if (!remove[j]) {
@@ -817,7 +885,7 @@ tadbit
 		  for (i = 0 ; i < N ; i++) {
 			 if (remove[i] || remove[j]) continue;
 			 _cache_index[l] = i > j ? i-j : j-i;
-			 //log_gamma [k][l] = lgamma(obs[k][i+j*N]+1);
+			 log_gamma [k][l] = lgamma(obs[k][i+j*N]+1);
 			 new_obs[k][l]    = obs[k][i+j*N];
 			 //dist[l] = init_dist[i+j*N];
 			 l++;
@@ -912,7 +980,7 @@ tadbit
       for (i = 0 ; i < n*n ; i++) heur_score[i] = NAN;
       for (j = 1 ; j < n ; j++)
       for (i = 0 ; i < j ; i++)
-        heur_score[i+j*n] = log(S[i+j*n]);
+    	  heur_score[i+j*n] = log(S[i+j*n]);
 
       // Use dynamic programming to find approximate break points.
       // The matrix 'mllik' is used only to make the function call valid
@@ -975,7 +1043,7 @@ tadbit
 	  .dp = dp,
       //.w = (const double **) weights,
 	  .w = (const double *) rowsums,
-      //.lg = (const double **) log_gamma,
+      .lg = (const double **) log_gamma,
       .skip = skip,
       .llikmat = llikmat,
       .verbose = verbose,
@@ -1144,11 +1212,12 @@ tadbit
 
    for (k = 0 ; k < m ; k++) {
       free(new_obs[k]);
-      //free(log_gamma[k]);
+      free(log_gamma[k]);
    }
    free(new_obs);
-   //free(log_gamma);
+   free(log_gamma);
    //free(dist);
+   fastlog_free();
    free(dp);
    free(remove);
 
