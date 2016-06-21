@@ -22,7 +22,7 @@ typedef struct {
    const int *dp;
    //const double **w;
    const double *w;
-   //const double **lg;
+   const double **lg;
    const char *skip;
    double *llikmat;
    const int verbose;
