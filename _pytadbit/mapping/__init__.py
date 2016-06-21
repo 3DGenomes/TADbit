@@ -3,7 +3,7 @@ from pytadbit.mapping.restriction_enzymes import map_re_sites
 from itertools                            import combinations
 from os                                   import path, system
 from sys                                  import stdout
-
+from collections import OrderedDict
 
 def eq_reads(rd1, rd2):
     """
@@ -17,6 +17,83 @@ def gt_reads(rd1, rd2):
     """
     return rd1.split('~', 1)[0] > rd2.split('~', 1)[0]
 
+def merge_2d_beds(path1, path2, outpath):
+    """
+    Merge two result files (file resulting from get_intersection or from
+       the filtering) into one.
+
+    :param path1: path to first file
+    :param path2: path to first file
+
+    :returns: number of reads processed
+    """
+    fh1 = open(path1)
+    fh2 = open(path2)
+    # parse header
+    chromosomes = OrderedDict()
+    parsed = 0
+    for line in fh1:
+        if not line.startswith('#'):
+            break
+        parsed += len(line)
+        if not line.startswith('# CRM'):
+            continue
+        _, _, crm, val = line.split()
+        chromosomes[crm] = val
+    fh1.seek(parsed)
+    # check other headers
+    parsed = 0
+    for line in fh2:
+        if not line.startswith('#'):
+            break
+        parsed += len(line)
+        if not line.startswith('# CRM'):
+            continue
+        _, _, crm, val = line.split()
+        if chromosomes[crm] != val:
+            raise Exception('ERROR: files are the result of mapping on '
+                            'different reference genomes')
+    fh2.seek(parsed)
+    # comparison function
+    greater = lambda x, y: x.split('\t', 1)[0].split('~')[0] > y.split('\t', 1)[0].split('~')[0]
+    # write headers
+    out = open(outpath, 'w')
+    for crm in chromosomes:
+        out.write('# CRM %s\t%s\n' % (crm, chromosomes[crm]))
+    # merge sort the two files
+    read1 = fh1.next()
+    read2 = fh2.next()
+    nreads = 0
+    while True:
+        if greater(read2, read1):
+            out.write(read1)
+            nreads += 1
+            try:
+                read1 = fh1.next()
+            except StopIteration:
+                out.write(read2)
+                nreads += 1
+                break
+        else:
+            out.write(read2)
+            nreads += 1
+            try:
+                read2 = fh2.next()
+            except StopIteration:
+                out.write(read1)
+                nreads += 1
+                break
+    for read in fh1:
+        out.write(read)
+        nreads += 1
+    for read in fh2:
+        out.write(read)
+        nreads += 1
+    fh1.close()
+    fh2.close()
+    out.close()
+    return nreads
+    
 def get_intersection(fname1, fname2, out_path, verbose=False):
     """
     Merges the two files corresponding to each reads sides. Reads found in both
@@ -202,20 +279,24 @@ def _process_lines(line1, line2, buf, multiples, lchunk):
                 # take first and last
                 map1, map2 = sorted(
                     elts[elt], key=lambda x: int(x[2]))[::len(elts[elt])-1]
+                strand = map1[3]
+                # if the 2 strands are different keep the longest fragment
+                if strand != map2[3]:
+                    map1 = tuple(max(elts[elt], key=lambda x: int(x[4])))
+                    elts[elt] = map1
+                    continue
                 elts[elt] = map1
                 # sum up read-frags in the RE fragment  by putting
                 # them on the same strand
-                if map1[3] == '1':
+                # use the strand of the first fragment as reference
+                if strand == '1':
                     beg = int(map1[2])
+                    nts = int(map2[2]) + int(map2[4]) - beg
                 else:
-                    beg = int(map1[2]) - int(map1[4]) - 1
-                if map2[3] == '0':
-                    nts = int(map2[2]) - beg
-                else:
-                    nts = int(map2[2]) + int(map2[4]) + 1 - beg
-                elts[elt] = tuple(list(elts[elt][:2]) +
-                                  [str(beg), '1', str(nts)] +
-                                  list(elts[elt][5:]))
+                    beg = int(map2[2])
+                    nts = beg - (int(map1[2]) - (int(map1[4])))
+                elts[elt] = tuple(list(map1[:2]) + [str(beg), strand, str(nts)]
+                                  + list(map1[5:]))
         contacts = len(elts) - 1
         if contacts > 1:
             multiples.setdefault(contacts, 0)

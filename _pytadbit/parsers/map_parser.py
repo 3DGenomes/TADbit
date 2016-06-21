@@ -207,7 +207,7 @@ def merge_sort(file1, file2, outfiles, nfile):
     greater = lambda x, y: x.split('\t', 1)[0].split('~')[0] > y.split('\t', 1)[0].split('~')[0]
     read1 = fh1.next()
     read2 = fh2.next()
-    while not False:
+    while True:
         if greater(read2, read1):
             tmp_file.write(read1)
             try:

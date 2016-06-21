@@ -11,7 +11,11 @@ from pytadbit.utils.sqlite_utils  import already_run, digest_parameters
 from pytadbit.utils.sqlite_utils  import add_path, get_jobid, print_db
 from pytadbit.utils.file_handling import mkdir
 from pytadbit.mapping.analyze     import plot_distance_vs_interactions, hic_map
-from os                           import path
+from os                           import path, remove
+from string                       import ascii_letters
+from random                       import random
+from shutil                       import copyfile
+from cPickle                      import dump
 import sqlite3 as lite
 import time
 
@@ -63,6 +67,7 @@ def run(opts):
                                factor=opts.factor)
 
     print 'Getting cis/trans...'
+    cis_trans_N_D = cis_trans_N_d = float('nan')
     if not opts.filter_only:
         cis_trans_N_D = hic_data.cis_trans_ratio(normalized=True , diagonal=True )
         cis_trans_N_d = hic_data.cis_trans_ratio(normalized=True , diagonal=False)
@@ -96,6 +101,15 @@ def run(opts):
                                   for i in hic_data.bias])
                        + '\n')
         out_bias.close()
+
+
+    # pickle the HiC-data object
+    print 'Saving genomic matrix'
+    pickle_path = path.join(opts.workdir, '04_normalization',
+                            'hic-data_%s_%s.pickle' % (nice(opts.reso), param_hash))
+    out = open(pickle_path, 'w')
+    dump(hic_data, out)
+    out.close()
 
     # to feed the save_to_db funciton
     intra_dir_nrm_fig = intra_dir_nrm_txt = None
@@ -186,7 +200,7 @@ def run(opts):
                 intra_dir_raw_fig, intra_dir_raw_txt,
                 inter_dir_raw_fig, inter_dir_raw_txt,
                 genom_map_raw_fig, genom_map_raw_txt,
-                launch_time, finish_time)
+                pickle_path, launch_time, finish_time)
 
 def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
                a2, bad_columns_file, bias_file, inter_vs_gcoord, mreads,
@@ -197,8 +211,22 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
                intra_dir_raw_fig, intra_dir_raw_txt,
                inter_dir_raw_fig, inter_dir_raw_txt,
                genom_map_raw_fig, genom_map_raw_txt,
-               launch_time, finish_time):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+               pickle_path, launch_time, finish_time):
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        try: # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
@@ -233,6 +261,7 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
         except lite.IntegrityError:
             pass
         jobid = get_jobid(cur)
+        add_path(cur, pickle_path     , 'PICKLE'     , jobid, opts.workdir)
         add_path(cur, bad_columns_file, 'BAD_COLUMNS', jobid, opts.workdir)
         add_path(cur, bias_file       , 'BIASES'     , jobid, opts.workdir)
         add_path(cur, inter_vs_gcoord , 'FIGURE'     , jobid, opts.workdir)
@@ -265,30 +294,58 @@ def save_to_db(opts, cis_trans_N_D, cis_trans_N_d, cis_trans_n_D, cis_trans_n_d,
         if genom_map_raw_txt:
             add_path(cur, genom_map_raw_txt, 'RAW_MATRIX', jobid, opts.workdir)
 
-        cur.execute("""
-        insert into NORMALIZE_OUTPUTs
-        (Id  , JOBid,     Input, N_columns,   N_filtered, CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
-        values
-        (NULL,    %d,        %d,        %d,           %d,               %f,                 %f,                 %f,                 %f,               %f,           %d,          %f)
-        """ % (jobid, input_bed,  ncolumns, nbad_columns,    cis_trans_N_D,      cis_trans_N_d,      cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
-        print_db(cur, 'MAPPED_INPUTs')
+        try:
+            cur.execute("""
+            insert into NORMALIZE_OUTPUTs
+            (Id  , JOBid,     Input, N_columns,   N_filtered, CisTrans_nrm_all,   CisTrans_nrm_out,   CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
+            values
+            (NULL,    %d,        %d,        %d,           %d,               %f,                 %f,                 %f,                 %f,               %f,           %d,          %f)
+            """ % (jobid, input_bed,  ncolumns, nbad_columns,    cis_trans_N_D,      cis_trans_N_d,      cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
+        except lite.OperationalError:
+            try:
+                cur.execute("""
+                insert into NORMALIZE_OUTPUTs
+                (Id  , JOBid,     Input, N_columns,   N_filtered,  CisTrans_raw_all,   CisTrans_raw_out, Slope_700kb_10Mb,   Resolution,      Factor)
+                values
+                (NULL,    %d,        %d,        %d,           %d,                %f,                 %f,               %f,           %d,          %f)
+                """ % (jobid, input_bed,  ncolumns, nbad_columns,     cis_trans_n_D,      cis_trans_n_d,               a2,    opts.reso, opts.factor))
+            except lite.OperationalError:
+                print 'WANRING: Normalized table not written!!!'
+            
         print_db(cur, 'PATHs')
-        print_db(cur, 'MAPPED_OUTPUTs')
-        print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
-        print_db(cur, 'INTERSECTION_OUTPUTs')        
+        try:
+            print_db(cur, 'INTERSECTION_OUTPUTs')        
+            print_db(cur, 'MAPPED_INPUTs')
+            print_db(cur, 'MAPPED_OUTPUTs')
+            print_db(cur, 'PARSED_OUTPUTs')
+        except lite.OperationalError:
+            pass
         print_db(cur, 'FILTER_OUTPUTs')
         print_db(cur, 'NORMALIZE_OUTPUTs')
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
 def load_parameters_fromdb(opts):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         if not opts.jobid:
             # get the JOBid of the parsing job
             cur.execute("""
             select distinct Id from JOBs
-            where Type = 'Filter'
+            where Type = 'Filter' or Type = 'Merge'
             """)
             jobids = cur.fetchall()
             if len(jobids) > 1:
@@ -347,11 +404,6 @@ def populate_args(parser):
                         normalization (can be used to weight experiments before
                         merging)''')
 
-    glopts.add_argument('--save', dest='save', metavar="STR",
-                        action='store', default='genome', nargs='+', type=str,
-                        choices=['genome', 'chromosomes'],
-                        help='''[%(default)s] save genomic or chromosomic matrix.''')
-
     glopts.add_argument('-j', '--jobid', dest='jobid', metavar="INT",
                         action='store', default=None, type=int,
                         help='''Use as input data generated by a job with a given
@@ -359,7 +411,7 @@ def populate_args(parser):
 
     glopts.add_argument('--keep', dest='keep', action='store',
                         default=['intra', 'genome'], nargs='+',
-                        choices = ['intra', 'inter', 'genome'],
+                        choices = ['intra', 'inter', 'genome', 'none'],
                         help='''%(default)s Matrices to save, choices are
                         "intra" to keep intra-chromosomal matrices, "inter" to
                         keep inter-chromosomal matrices and "genome", to keep
@@ -369,6 +421,10 @@ def populate_args(parser):
                       default=False,
                       help='Save only text file for matrices, not images')
 
+    glopts.add_argument('--filter_only', dest='filter_only', action='store_true',
+                      default=False,
+                      help='skip normalization')
+
     glopts.add_argument('--fast_filter', dest='fast_filter', action='store_true',
                       default=False,
                       help='only filter according to the percentage of zero count')
@@ -376,6 +432,11 @@ def populate_args(parser):
     glopts.add_argument('--force', dest='force', action='store_true',
                       default=False,
                       help='overwrite previously run job')
+
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
 
     parser.add_argument_group(glopts)
 
@@ -385,7 +446,22 @@ def check_options(opts):
     if not path.exists(opts.workdir):
         raise IOError('ERROR: wordir not found.')
 
-    if already_run(opts) and not opts.force:
+    # for lustre file system....
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+        try:
+            copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
+        except IOError:
+            pass
+
+    # check if job already run using md5 digestion of parameters
+    if already_run(opts):
+        if 'tmpdb' in opts and opts.tmpdb:
+            remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
 
 def nice(reso):

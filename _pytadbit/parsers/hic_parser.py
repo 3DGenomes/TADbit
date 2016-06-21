@@ -205,7 +205,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         if isinstance(thing, HiC_data):
             matrices.append(thing)
         elif isinstance(thing, file):
-            matrix, size, header = parser(thing)
+            matrix, size, header, masked = parser(thing)
             thing.close()
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)

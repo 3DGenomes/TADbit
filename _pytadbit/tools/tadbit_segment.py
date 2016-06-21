@@ -27,16 +27,17 @@ def run(opts):
     launch_time = time.localtime()
     param_hash = digest_parameters(opts)
 
-    if not opts.nosql:
-        (bad_co, bad_co_id, biases, biases_id,
-         mreads, mreads_id, reso) = load_parameters_fromdb(opts)
-        # store path ids to be saved in database
-        inputs = bad_co_id, biases_id, mreads_id
-    else:
+    if opts.nosql:
         bad_co = opts.bad_co
         biases = opts.biases
         mreads = opts.mreads
         reso   = opts.reso
+        inputs = []
+    else:
+        (bad_co, bad_co_id, biases, biases_id,
+         mreads, mreads_id, reso) = load_parameters_fromdb(opts)
+        # store path ids to be saved in database
+        inputs = bad_co_id, biases_id, mreads_id
 
     mreads = path.join(opts.workdir, mreads)
     bad_co = path.join(opts.workdir, bad_co)
@@ -59,8 +60,18 @@ def run(opts):
         cmprt_dir = path.join(opts.workdir, '05_segmentation',
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
-        hic_data.find_compartments(crms=opts.crms, savefig=cmprt_dir,
-                                   suffix=param_hash)
+        firsts = hic_data.find_compartments(crms=opts.crms, savefig=cmprt_dir,
+                                            suffix=param_hash, log=cmprt_dir,
+                                            rich_in_A=opts.rich_in_A)
+
+        for crm in opts.crms or hic_data.chromosomes:
+            if not crm in firsts:
+                continue
+            ev_file = open(path.join(cmprt_dir,
+                                     '%s_EigVect_%s.tsv' % (crm, param_hash)), 'w')
+            ev_file.write('\n'.join([str(v) for v in firsts[crm]]))
+            ev_file.close()
+
         for crm in opts.crms or hic_data.chromosomes:
             cmprt_file = path.join(cmprt_dir, '%s_%s.tsv' % (crm, param_hash))
             hic_data.write_compartments(cmprt_file,
@@ -116,14 +127,14 @@ def run(opts):
 
 def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                launch_time, finish_time):
-    if 'tmp' in opts and opts.tmp:
+    if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
             sleep(0.5)
         # close lock
-        open(path.join(opts.workdir, '__lock_db'), 'wa').close()
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
         # tmp file
-        dbfile = opts.tmp
+        dbfile = opts.tmpdb
         copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
@@ -163,6 +174,8 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
                          jobid, opts.workdir)
             if crm in tad_result:
                 add_path(cur, tad_result[crm]['path'], 'TAD', jobid, opts.workdir)
+            if opts.rich_in_A:
+                add_path(cur, opts.rich_in_A, 'BED', jobid, opts.workdir)
             cur.execute("""
             insert into SEGMENT_OUTPUTs
             (Id  , JOBid, Inputs, TADs, Compartments, Chromosome, Resolution)
@@ -177,7 +190,7 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
             print_db(cur, 'PATHs')
             print_db(cur, 'JOBs')
             print_db(cur, 'SEGMENT_OUTPUTs')
-    if 'tmp' in opts and opts.tmp:
+    if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
         remove(dbfile)
@@ -185,8 +198,8 @@ def save_to_db(opts, cmp_result, tad_result, reso, inputs,
         remove(path.join(opts.workdir, '__lock_db'))
 
 def load_parameters_fromdb(opts):
-    if 'tmp' in opts and opts.tmp:
-        dbfile = opts.tmp
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
     con = lite.connect(dbfile)
@@ -245,7 +258,7 @@ def populate_args(parser):
                         help='''path to working directory (generated with the
                         tool tadbit mapper)''')
 
-    glopts.add_argument('--tmp', dest='tmp', action='store', default=None,
+    glopts.add_argument('--tmp', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
                         help='''if provided uses this directory to manipulate the
                         database''')
@@ -280,6 +293,13 @@ def populate_args(parser):
                         action='store', default=None, type=str, 
                         help='''path to a matrix file with raw read
                         counts''')
+
+    glopts.add_argument('--rich_in_A', dest='rich_in_A', metavar="PATH",
+                        action='store', default=None, type=str, 
+                        help='''path to a BAD or bedGraph file with list of
+                        protein coding gene or other active epigenetic mark,
+                        to be used to label compartments instead of using
+                        the relative interaction count.''')
 
     glopts.add_argument('--only_compartments', dest='only_compartments',
                         action='store_true', default=False, 
@@ -329,16 +349,16 @@ def check_options(opts):
     if not path.exists(opts.workdir):
         raise IOError('ERROR: %s does not exists' % opts.workdir)
 
-    if 'tmp' in opts and opts.tmp:
-        dbdir = opts.tmp
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
         # tmp file
         dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
                                         for _ in range(10)]))
-        opts.tmp = path.join(dbdir, dbfile)
-        copyfile(path.join(opts.workdir, 'trace.db'), opts.tmp)
+        opts.tmpdb = path.join(dbdir, dbfile)
+        copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
 
     if already_run(opts) and not opts.force:
-        if 'tmp' in opts and opts.tmp:
+        if 'tmpdb' in opts and opts.tmpdb:
             remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
 

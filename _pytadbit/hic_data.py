@@ -10,10 +10,14 @@ from pytadbit.utils.normalize_hic   import iterative, expected
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.bed_parser    import parse_bed
 from pytadbit.utils.file_handling   import mkdir
+from pytadbit.utils.hmm             import gaussian_prob, best_path, train
 from numpy.linalg                   import LinAlgError
-from numpy                          import corrcoef, nansum, array, isnan
-from numpy                          import nanpercentile as npperc
-from scipy.cluster.hierarchy        import linkage, fcluster
+from numpy                          import corrcoef, nansum, array, isnan, mean
+from numpy                          import meshgrid, asarray, exp, linspace, std
+from numpy                          import nanpercentile as npperc, log as nplog
+from numpy                          import nanmax
+from scipy.special                  import gammaincc
+from scipy.cluster.hierarchy        import linkage, fcluster, dendrogram
 from scipy.sparse.linalg            import eigsh
 from pytadbit.utils.tadmaths        import calinski_harabasz
 from scipy.stats                    import ttest_ind
@@ -271,8 +275,8 @@ class HiC_data(dict):
                 self, draw_hist=draw_hist, silent=silent,
                 savefig=savefig, bads=self.bads))
         if not silent:
-            print 'Found %d of %d columnswith poor signal' % (len(self.bads),
-                                                              len(self))
+            print 'Found %d of %d columns with poor signal' % (len(self.bads),
+                                                               len(self))
 
     def sum(self, bias=None, bads=None):
         """
@@ -450,8 +454,8 @@ class HiC_data(dict):
                 return mtrx
 
     def find_compartments(self, crms=None, savefig=None, savedata=None,
-                          savecorr=None, show=False, suffix='',
-                          label_compartments=True, log=None, max_mean_size=10000,
+                          savecorr=None, show=False, suffix='', how='',
+                          label_compartments='hmm', log=None, max_mean_size=10000,
                           ev_index=None, rich_in_A=None, **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
@@ -495,8 +499,12 @@ class HiC_data(dict):
            interactions.
         :param None log: path to a folder where to save log of the assignment
            of A/B compartments
-        :param True label_compartments: label compartments into A/B categories,
-           otherwise just find borders (faster).
+        :param hmm label_compartments: label compartments into A/B categories,
+           otherwise just find borders (faster). Can be either hmm (default), or
+           cluster.
+        :param 'ratio' how: ratio divide by column, subratio divide by
+           compartment, diagonal only uses diagonal
+           
 
         TODO: this is really slow...
 
@@ -533,16 +541,17 @@ class HiC_data(dict):
         # parse bed file
         if rich_in_A:
             rich_in_A = parse_bed(rich_in_A, resolution=self.resolution)
+
         cmprts = {}
         firsts = {}
         ev_nums = {}
         count = 0
+
         for sec in self.section_pos:
             if crms and sec not in crms:
                 continue
             if kwargs.get('verbose', False):
                 print 'Processing chromosome', sec
-                warn('Processing chromosome %s' % (sec))
             matrix = [[(float(self[i,j]) / self.expected[abs(j-i)]
                        / self.bias[i] / self.bias[j])
                       for i in xrange(*self.section_pos[sec])
@@ -597,6 +606,7 @@ class HiC_data(dict):
                         vals.append(str(matrix[row-badrows][col-badcols]))
                     out.write(rownam.pop(0) + '\t' +'\t'.join(vals) + '\n')
                 out.close()
+
             try:
                 # This eighs is very very fast, only ask for one eigvector
                 _, evect = eigsh(array(matrix), k=ev_index[count] if ev_index else 2)
@@ -614,12 +624,19 @@ class HiC_data(dict):
                           if a * b < 0] + [len(first) - 1]
                 breaks = [{'start': breaks[i-1] + 1 if i else 0, 'end': b}
                           for i, b in enumerate(breaks)]
-                if self.resolution * float(len(breaks)) / len(matrix) > max_mean_size:
+                if (self.resolution * (len(breaks) - 1.0) / len(matrix)
+                    > max_mean_size):
                     warn('WARNING: number of compartments found with the '
-                         'EigenVector number %d is too low (%d compartments)'
-                         % (ev_num, len(breaks)))
+                         'EigenVector number %d is too low (%d compartments '
+                         'in %d rows), for chromosome %s' % (
+                             ev_num, len(breaks), len(matrix), sec))
                 else:
                     break
+            if (self.resolution * (len(breaks) - 1.0) / len(matrix)
+                > max_mean_size):
+                warn('WARNING: keeping first eigenvector, for chromosome %s' % (
+                    sec))
+                ev_num = 1
             ev_nums[sec] = ev_num
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]
@@ -636,26 +653,38 @@ class HiC_data(dict):
             cmprts[sec] = breaks
             
             firsts[sec] = two_first
-            self.__apply_metric(cmprts, sec, rich_in_A)
-            if label_compartments:
+            # needed for the plotting
+            self._apply_metric(cmprts, sec, rich_in_A, how=how)
+            
+            if label_compartments == 'cluster':
                 if log:
                     logf = os.path.join(log, sec + suffix + '.log')
                 else:
                     logf = None
+
                 gammas = {}
-                for gamma in range(101):
-                    gammas[gamma] = _find_ab_compartments(float(gamma)/100, matrix,
-                                                          breaks, cmprts[sec],
-                                                          rich_in_A, ev_num=ev_num,
-                                                          log=logf, save=False)
+                for n_clust in range(2, 4):
+                    for gamma in range(0, 101, 1):
+                        scorett, tt, prop = _cluster_ab_compartments(
+                            float(gamma)/100, matrix, breaks, cmprts[sec],
+                            rich_in_A, ev_num=ev_num, log=logf, save=False,
+                            verbose=kwargs.get('verbose', False),
+                            n_clust=n_clust)
+                        gammas[gamma] = scorett, tt, prop
+                    gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
+                    if gammas[gamma][0] - gammas[gamma][1] > 7:
+                        print (' WARNING: minimum showing very low '
+                               'intermeagling of A/B compartments, trying '
+                               'with 3 clusters, for chromosome %s', sec)
+                        gammas = {}
+                        continue
                     if kwargs.get('verbose', False):
-                        print gamma, gammas[gamma]
-                gamma = min(gammas.keys(), key=lambda k: gammas[k][0])
-                if kwargs.get('verbose', False):
-                    print '   ====>  minimum:', gamma
-                _ = _find_ab_compartments(float(gamma)/100, matrix, breaks,
+                        print '   ====>  minimum:', gamma
+                    break
+                _ = _cluster_ab_compartments(float(gamma)/100, matrix, breaks,
                                           cmprts[sec], rich_in_A, save=True,
-                                          log=logf, ev_num=ev_num)
+                                          log=logf, ev_num=ev_num, n_clust=n_clust)
+
             if savefig or show:
                 vmin = kwargs.get('vmin', -1)
                 vmax = kwargs.get('vmax',  1)
@@ -671,13 +700,94 @@ class HiC_data(dict):
                     sec, cmprts, show,
                     savefig + '/chr' + sec + suffix + '_summ.pdf' if savefig else None)
             count += 1
+
+        if label_compartments == 'hmm':
+            x = {}
+            for sec in self.section_pos:
+                try:
+                    x[sec] = firsts[sec][ev_nums[sec] - 1]
+                except KeyError:
+                    continue
+                
+            # train two HMMs on the genomic data:
+            #  - one with 2 states A B
+            #  - one with 3 states A B I 
+            #  - one with 4 states A a B b
+            #  - one with 5 states A a B b I 
+            models = {}
+            for n in range(2, 6):
+                if kwargs.get('verbose', False):
+                    print ('Training HMM for %d categories of '
+                           'compartments' % n)
+                models[n] = _training(x, n, kwargs.get('verbose', False))
+
+            results = {}
+            for sec in self.section_pos:
+                if not sec in x:
+                    continue
+                if kwargs.get('verbose', False):
+                    print 'Chromosome', sec
+                beg, end = self.section_pos[sec]
+                bads = [k - beg for k in self.bads if beg <= k <= end]
+                n_states, breaks = _hmm_refine_compartments(
+                    x, sec, models, bads, kwargs.get('verbose', False))
+                results[sec] = n_states, breaks
+                cmprts[sec] = breaks
+                self._apply_metric(cmprts, sec, rich_in_A, how=how)
+                
+                if rich_in_A:
+                    test = lambda x: x >= 1
+                else:
+                    test = lambda x: x < 1
+                max_type = nanmax([c['type'] for c in cmprts[sec]])
+
+                # find which category of compartment has the highest "density"
+                atyp = 0.
+                alen = 0.
+                btyp = 0.
+                blen = 0.
+                max_type = nanmax([c['type'] for c in cmprts[sec]])
+                for typ in range(5):
+                    subset = set([i for i, c in enumerate(cmprts[sec])
+                                 if c['type'] == typ])
+                    dens = sum(cmprts[sec][c]['dens'] * (cmprts[sec][c]['end'] - cmprts[sec][c]['start']) for c in subset)
+                    leng = sum((cmprts[sec][c]['end'] - cmprts[sec][c]['start'])**2 / 2. for c in subset)
+                    # leng = sum(1 for c in subset)
+                    val = float(dens) / leng if leng else 0.
+                    #if typ == 0:
+                    if typ < max_type / 2.:
+                        alen += leng
+                        atyp += val * leng
+                    # elif typ == max_type:
+                    elif typ > max_type / 2.:
+                        blen += leng
+                        btyp += val * leng
+                print atyp / alen, btyp / blen
+
+                for i, comp in enumerate(cmprts[sec]):
+                    if comp['type'] < max_type / 2.:
+                        # if mean density of compartments of type 0 is higher than 1
+                        # than label them as 'B', otherwise, as 'A'
+                        if comp['type'] == 0:
+                            comp['type'] = 'A' if test(val) else 'B'
+                        else:
+                            comp['type'] = 'a' if test(val) else 'b'
+                    elif comp['type'] > max_type / 2.:
+                        if comp['type'] == max_type:
+                            comp['type'] = 'B' if test(val) else 'A'
+                        else:
+                            comp['type'] = 'b' if test(val) else 'a'
+                    elif isnan(comp['type']):
+                        comp['type'] = 'NA'
+                    else:
+                        comp['type'] = 'I'
         self.compartments = cmprts
         if savedata:
             self.write_compartments(savedata, chroms=self.compartments.keys(),
                                     ev_nums=ev_nums)
         return firsts
 
-    def __apply_metric(self, cmprts, sec, rich_in_A):
+    def _apply_metric(self, cmprts, sec, rich_in_A, how='ratio'):
         """
         calculate compartment internal density if no rich_in_A, otherwise
         sum this list
@@ -693,26 +803,56 @@ class HiC_data(dict):
                 except ZeroDivisionError:
                     cmprt['dens'] = 0.
             else:
-                beg = self.section_pos[sec][0]
+                beg, end = self.section_pos[sec]
                 beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg + 1
-                sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
-                               / self.bias[i] / self.bias[j])
-                              for i in xrange(beg1, end1) if not i in self.bads
-                              for j in xrange(i, end1) if not j in self.bads]
+                if 'diagonal' in how:
+                    sec_matrix = [(self[i,i] / self.expected[0] / self.bias[i]**2)
+                                  for i in xrange(beg1, end1) if not i in self.bads]
+                else: #if 'compartment' in how:
+                    sec_matrix = [(self[i,j] / self.expected[abs(j-i)]
+                                   / self.bias[i] / self.bias[j])
+                                  for i in xrange(beg1, end1) if not i in self.bads
+                                  for j in xrange(beg1, end1) if not j in self.bads]
+                if '/compartment' in how: # diagonal / compartment
+                    sec_column = [(self[i,j] / self.expected[abs(j-i)]
+                                   / self.bias[i] / self.bias[j])
+                                  for i in xrange(beg1, end1) if not i in self.bads
+                                  for j in xrange(beg1, end1) if not j in self.bads]
+                elif '/column' in how:
+                    sec_column = [(self[i,j] / self.expected[abs(j-i)]
+                                   / self.bias[i] / self.bias[j])
+                                  for i in xrange(beg1, end1) if not i in self.bads
+                                  for j in range(beg, end)
+                                  if not j in self.bads]
+                else:
+                    sec_column = [1.]
                 try:
-                    cmprt['dens'] = sum(sec_matrix) / len(sec_matrix)
+                    if 'type' in cmprt and isnan(cmprt['type']):
+                        cmprt['dens'] = 1.
+                    else:
+                        cmprt['dens'] = float(sum(sec_matrix)) / sum(sec_column)
                 except ZeroDivisionError:
-                    cmprt['dens'] = 0.
+                    cmprt['dens'] = 1.
+        # normalize to 1.0
         try:
-            meanh = sum([cmprt['dens'] for cmprt in cmprts[sec]]) / len(cmprts[sec])
+            if 'type' in cmprt: # hmm already run and have the types definded
+                meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec]
+                             if not isnan(cmprt['type'])) /
+                         sum(1 for cmprt in cmprts[sec]
+                             if not isnan(cmprt['type'])))
+            else:
+                meanh = (sum(cmprt['dens'] for cmprt in cmprts[sec]) /
+                         sum(1 for cmprt in cmprts[sec]))
         except ZeroDivisionError:
             meanh = 1.
         for cmprt in cmprts[sec]:
             try:
-                cmprt['dens'] /= meanh
+                if 'type' in cmprt and isnan(cmprt['type']):
+                    cmprt['dens'] = 1.0
+                else:
+                    cmprt['dens'] /= meanh
             except ZeroDivisionError:
                 cmprt['dens'] = 1.
-
 
     def write_compartments(self, savedata, chroms=None, ev_nums=None):
         """
@@ -727,22 +867,23 @@ class HiC_data(dict):
         sections = chroms if chroms else self.compartments.keys()
         if ev_nums:
             for sec in sections:
-                out.write('## CHR %s\tEigenvector: %d\n' % (sec, ev_nums[sec]))
+                try:
+                    out.write('## CHR %s\tEigenvector: %d\n' % (sec, ev_nums[sec]))
+                except KeyError:
+                    continue
         out.write('#%sstart\tend\tdensity\ttype\n'% (
             'CHR\t' if len(sections) > 1 else ''))
-        try:
-            out.write('\n'.join(['\n'.join(['%s%d\t%d\t%.2f\t%s' % (
-                (sec + '\t') if sections else '',
-                c['start'] + 1, c['end'] + 1,
-                c['dens'], c['type'])
-                                            for c in self.compartments[sec]])
-                                 for sec in sections]) + '\n')
-        except KeyError:
-            out.write('\n'.join(['\n'.join(['%s%d\t%d\t%.2f\t%s' % (
-                (sec + '\t') if sections else '',
-                c['start'], c['end'], c['dens'], '')
-                                            for c in self.compartments[sec]])
-                                 for sec in sections]) + '\n')
+        for sec in sections:
+            for c in self.compartments[sec]:
+                try:
+                    out.write('%s%d\t%d\t%.2f\t%s\n' % (
+                        (sec + '\t') if sections else '',
+                        c['start'] + 1, c['end'] + 1,
+                        c['dens'], c['type']))
+                except KeyError:
+                    out.write('%s%d\t%d\t%.2f\t%s\n' % (
+                        (sec + '\t') if sections else '',
+                        c['start'], c['end'], c['dens'], ''))
         out.close()
         
 
@@ -816,8 +957,65 @@ class HiC_data(dict):
                            [0] + 
                            [self[i, j] for j in xrange(i + 1, end1)])
 
-def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
-                          ev_num=1, log=None, verbose=False):
+def _hmm_refine_compartments(x, sec, models, bads, verbose):
+    prevll = float('-inf')
+    prevdf = 0
+    results = {}
+    for n in range(2, 6):
+        E, pi, T = models[n]
+        probs = gaussian_prob(x[sec], E)
+        pathm, llm = best_path(probs, pi, T)
+        pathm = asarray(map(float, pathm))
+        df = n**2 - n + n * 2 + n - 1
+        len_seq = len(pathm)
+        lrt = gammaincc((df - prevdf) / 2., (llm - prevll) / 2.)
+        bic = -2 * llm + df * nplog(len_seq)
+        aic = 2 * df - 2 * llm
+        if verbose:
+            print 'Ll for %d states (%d df): %4.0f AIC: %4.0f BIC: %4.0f LRT=%f'% (
+                n, df, llm, aic, bic, lrt)
+        prevdf = df
+        prevll = llm
+        results[n] = {'AIC': aic,
+                      'BIC': bic,
+                      'LRT': lrt,
+                      'PATH': pathm
+                      }
+    n_states = min(results, key=lambda x: results[x]['BIC'])
+    for n in range(2, 6):
+        results[n]['PATH'] = list(results[n_states]['PATH'])
+        _ = [results[n]['PATH'].insert(b, float('nan')) for b in sorted(bads)]
+    breaks = [(i, b) for i, (a, b) in
+              enumerate(zip(results[n_states]['PATH'][1:],
+                            results[n_states]['PATH'][:-1]))
+              if str(a) != str(b)] + [len(results[n_states]['PATH']) - 1]
+    breaks[-1] = (breaks[-1], results[n_states]['PATH'][-1])
+    breaks = [{'start': breaks[i-1][0] + 1 if i else 0, 'end': b,
+               'type': a}
+              for i, (b, a) in enumerate(breaks)]
+    return n_states, breaks
+
+def _training(x, n, verbose):
+    """
+    define default emision transition and initial states, and train the hmm
+    """
+    pi = [0.5 - ((n - 2) * 0.05)**2 if i == 0 or i == n - 1 else ((n - 2)*0.05)**2*2 / (n - 2) for i in range(n)]
+    T = [[0.9 if i==j else 0.1/(n-1) for i in xrange(n)] for j in xrange(n)]
+    E =  asarray(zip(linspace(-1, 1, n), [1./n for _ in range(n)]))
+
+    # normalize values of the first eigenvector
+    for c in x:
+        this_mean = mean(x[c])
+        this_std  = std (x[c])
+        x[c] = [v - this_mean for v in x[c]]
+        x[c] = [v / this_std  for v in x[c]]
+
+    train(pi, T, E, x.values(), verbose=verbose, threshold=1e-6, n_iter=1000)
+    return E, pi, T
+    
+def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
+                             ev_num=1, log=None, verbose=False, savefig=None,
+                             n_clust=2):
     # function to convert correlation into distances
 
     gamma += 1
@@ -856,16 +1054,41 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
              enumerate(fcluster(clust, k, criterion='distance'))]
         solutions[k] = {'out': clusters}
         solutions[k]['score'] = calinski_harabasz(scores, clusters)
+    # plot
+    if savefig:
+        xedges = [b['start'] for b in breaks]
+        yedges = [b['start'] for b in breaks]
+        xedges += [breaks[-1]['end']]
+        yedges += [breaks[-1]['end']]
+        X, Y = meshgrid(xedges, yedges)
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(10,10))
+        ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
+        Z1 = dendrogram(clust, orientation='left')
+        idx1 = Z1['leaves']
+        idx2 = Z1['leaves']
+        D = asarray(dist_matrix)[idx1,:]
+        D = D[:,idx2]
+        Xx = asarray(X)[idx1]
+        Yy = asarray(Y)[idx1]
+        axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
+        m = axmatrix.pcolormesh(X, Y, D)
+        axmatrix.set_aspect('equal')
+        axmatrix.set_yticks([])
+        axmatrix.set_xlim((0, breaks[-1]['end']))
+        axmatrix.set_ylim((0, breaks[-1]['end']))
+        plt.colorbar(m)
+        plt.savefig(savefig)
     try:
         # take best cluster according to calinski_harabasz score
         clusters = [solutions[s] for s in sorted(
             solutions, key=lambda x: solutions[x]['score'])
-                    if solutions[s]['score']>0][-1]['out']
+                    if solutions[s]['score']>0][1 - n_clust]['out']
     except IndexError:
-        #warn('WARNING: compartment clustering is not clear. Skipping')
+        # warn('WARNING1: compartment clustering is not clear. Skipping')
         return (float('inf'), float('inf'), float('inf'))
-    if len(clusters) != 2:
-        #warn('WARNING: compartment clustering is too clear. Skipping')
+    if len(clusters) != n_clust:
+        # warn('WARNING2: compartment clustering is too clear. Skipping')
         return (float('inf'), float('inf'), float('inf'))
     # labelling compartments. A compartments shall have lower
     # mean intra-interactions
@@ -880,40 +1103,44 @@ def _find_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=True,
         dens['A' if test(val) else 'B'] = [
             cmprtsec[c]['dens'] for c in clusters[k]
             if cmprtsec[c]['end'] + 1 - cmprtsec[c]['start'] > 2]
-        if save:
-            for c in clusters[k]:
-                cmprtsec[c]['type'] = 'A' if test(val) else 'B'
+        for c in clusters[k]:
+            cmprtsec[c]['type'] = 'A' if test(val) else 'B'
     try:
         tt, pval = ttest_ind(dens['A'], dens['B'])
     except ZeroDivisionError:
         return (float('inf'), float('inf'), float('inf'))
     prop = float(len(dens['A'])) / (len(dens['A']) + len(dens['B']))
     # to avoid having all A or all B
-    score1 = 5000 * (prop - 0.5)**4 - 2
+    # score = 5000 * (prop - 0.5)**4 - 2
     # to avoid having  consecutive As or Bs
-    score2 = 0
+    score = 0.
     prev = None
     for cmprt in cmprtsec:
         if cmprt.get('type', None) == prev:
-            score2 += 1
+            score += 1.
         prev = cmprt.get('type', prev)
-    score2 /= float(len(cmprtsec))
-    score = score1 + score2
+    score /= len(cmprtsec)
+    score = exp(10 * (score - 0.4)) # 5000 * (score - 0.5)**4 - 2
+    # score = score1 + score2
     if verbose:
-        print ('[EV%d] g:%5s %5s%% tt:%7s '
-               'score-proportion:%7s score-interleave:%7s '
-               'final: %7s pv:%s' % (
-                   ev_num, gamma - 1, round(prop * 100, 1),
-                   round(tt, 3), round(score1, 3), round(score2, 3), 
-                   round(score + tt, 3), pval))
+        print ('[EV%d CL%s] g:%5s prop:%5s%% tt:%7s '
+               'score-interleave:%5s ' # score-proportion:%7s 
+               'final: %7s pv:%7s' % (
+                   ev_num, n_clust, gamma - 1, round(prop * 100, 1),
+                   round(tt, 3), round(score, 3), #round(score2, 3), 
+                   round(score + tt, 3), round(pval, 5)))
     if log:
         log = open(log, 'a')
-        log.write('[EV%d] g:%5s %5s%% tt:%7s '
-                  'score-proportion:%7s score-interleave:%7s '
+        log.write('[EV%d CL%s] g:%5s prop:%5s%% tt:%6s '
+                  'score-interleave:%6s ' # score-proportion:%7s 
                   'final: %7s pv:%s\n' % (
-                      ev_num, gamma - 1, round(prop * 100, 1),
-                      round(tt, 3), round(score1, 3), round(score2, 3), 
-                      round(score + tt, 3), pval))
+                      ev_num, n_clust, gamma - 1, round(prop * 100, 1),
+                      round(tt, 3), round(score, 3), # round(score2, 3), 
+                      round(score + tt, 3), round(pval, 4)))
         log.close()
+    if not save:
+        for cmprt in cmprtsec:
+            if 'type' in cmprt:
+                cmprt['type'] = None 
     return score + tt, tt, prop
 

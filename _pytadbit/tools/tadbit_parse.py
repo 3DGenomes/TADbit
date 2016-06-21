@@ -10,13 +10,15 @@ from argparse                       import HelpFormatter
 from pytadbit                       import get_dependencies_version
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser    import parse_map
-from os                             import path
+from os                             import path, remove
+from string                         import ascii_letters
+from random                         import random
+from shutil                         import copyfile
 from pytadbit.utils.file_handling   import mkdir
 from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
 from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
 import time
 import logging
-import fcntl
 from cPickle import load, UnpicklingError
 import sqlite3 as lite
 from warnings import warn
@@ -29,7 +31,7 @@ def run(opts):
     launch_time = time.localtime()
 
     reads = [1] if opts.read == 1 else [2] if opts.read == 2 else [1, 2]
-    f_names1, f_names2, renz = load_parameters_fromdb(opts.workdir, reads, opts.jobids)
+    f_names1, f_names2, renz = load_parameters_fromdb(opts, reads, opts.jobids)
 
     name = path.split(opts.workdir)[-1]
 
@@ -57,7 +59,7 @@ def run(opts):
         # allows the use of cPickle genome to make it faster
         genome = load(open(opts.genome[0]))
     except UnpicklingError:
-        genome = parse_fasta(opts.genome)
+        genome = parse_fasta(opts.genome, chr_regexp=opts.filter_chrom)
 
     if not opts.skip:
         logging.info('parsing reads in %s project', name)
@@ -94,14 +96,20 @@ def run(opts):
                     multis[1] += line.count('|||')                
 
     # write machine log
+    while path.exists(path.join(opts.workdir, '__lock_log')):
+        time.sleep(0.5)
+    open(path.join(opts.workdir, '__lock_log'), 'a').close()
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
-        fcntl.flock(mlog, fcntl.LOCK_EX)
         for read in counts:
             for item in counts[read]:
                 mlog.write('# PARSED READ%s PATH\t%d\t%s\n' % (
                     read, counts[read][item],
                     out_file1 if read == 1 else out_file2))
-        fcntl.flock(mlog, fcntl.LOCK_UN)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_log'))
+    except OSError:
+        pass
 
     finish_time = time.localtime()
 
@@ -111,7 +119,21 @@ def run(opts):
 
 def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                launch_time, finish_time):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        try: # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
@@ -182,9 +204,22 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
         print_db(cur, 'MAPPED_OUTPUTs')
         print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
-def load_parameters_fromdb(workdir, reads=None, jobids=None):
-    con = lite.connect(path.join(workdir, 'trace.db'))
+def load_parameters_fromdb(opts, reads=None, jobids=None):
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     fnames = {1: [], 2: []}
     ids = []
     with con:
@@ -205,6 +240,8 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                           '(jobids: %s), use "tadbit describe" and select corresponding '
                           'jobid with --jobids option') % (
                              read, ', '.join([str(j) for j in jobids[read]])))
+        else:
+            jobids = dict([(read, jobids) for read in reads])
         for read in reads:
             for jobid in jobids[read]:
                 cur.execute("""
@@ -214,7 +251,7 @@ def load_parameters_fromdb(workdir, reads=None, jobids=None):
                 """ % (read, jobid))
                 for fname in cur.fetchall():
                     ids.append(fname[0])
-                    fnames[read].append(path.join(workdir, fname[1]))
+                    fnames[read].append(path.join(opts.workdir, fname[1]))
         # GET enzyme name
         enzymes = []
         for fid in ids:
@@ -257,6 +294,10 @@ def populate_args(parser):
                         type=int, default=None, 
                         help='In case only one of the reads needs to be parsed')
 
+    glopts.add_argument('--filter_chrom', dest='filter_chrom',
+                        default="^(chr)?[A-Za-z]?[0-9]{0,3}[XVI]{0,3}(?:ito)?[A-Z-a-z]?$",
+                        help='[%(default)s] regexp to consider only chromosome names passing')
+
     glopts.add_argument('--skip', dest='skip', action='store_true',
                       default=False,
                       help='[DEBUG] in case already mapped.')
@@ -266,6 +307,11 @@ def populate_args(parser):
                         help='''Compress input mapped files when parsing is 
                         done. This is done in background, while next MAP file is
                         processed, or while reads are sorted.''')
+
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
 
     glopts.add_argument('--genome', dest='genome', metavar="PATH", nargs='+',
                         type=str,
@@ -331,6 +377,20 @@ def check_options(opts):
         vlog.write(dependencies)
         vlog.close()
 
+    # for lustre file system....
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+        try:
+            copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
+        except IOError:
+            pass
+
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
+        if 'tmpdb' in opts and opts.tmpdb:
+            remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')

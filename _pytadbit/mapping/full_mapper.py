@@ -8,10 +8,11 @@ from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
 from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
 from tempfile import gettempdir, mkstemp
-from subprocess import check_call, CalledProcessError, PIPE, Popen
+from subprocess import CalledProcessError, PIPE, Popen
 
 def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
-                    min_seq_len=15, fastq=True, verbose=True, **kwargs):
+                    min_seq_len=15, fastq=True, verbose=True,
+                    light_storage=False, **kwargs):
     """
     Given a FASTQ file it can split it into chunks of a given number of reads,
     trim each read according to a start/end positions or split them into
@@ -23,7 +24,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     """
     skip = kwargs.get('skip', False)
     ## define local funcitons to process reads and sequences
-    def _get_fastq_read(rlines):
+    def _get_fastq_read_heavy(rlines):
         """
         returns header and sequence of 1 FASTQ entry
         Note: header also contains the sequence
@@ -36,11 +37,26 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         return (rlines + ' ' + seq.strip() + ' ' + qal.strip(),
                 seq.strip(), qal.strip())
 
-    def _get_map_read(line):
+    def _get_fastq_read_light(rlines):
+        """
+        returns header and sequence of 1 FASTQ entry
+        Note: header also contains the sequence
+        """
+        rlines = rlines.rstrip('\n').split()[0][1:]
+        seq = fhandler.next()
+        _   = fhandler.next()  # lose qualities header but not needed
+        qal = fhandler.next()  # lose qualities but not needed
+        return (rlines, seq.strip(), qal.strip())
+
+    def _get_map_read_heavy(line):
         header = line.split('\t', 1)[0]
         seq, qal    = header.rsplit(' ', 2)[-2:]
         return header, seq, qal
-        
+
+    def _get_map_read_light(line):
+        header, seq, qal, _ = line.split('\t', 3)
+        return header, seq, qal
+
     def _split_read_re(seq, qal, pattern, max_seq_len=None, site='', cnt=0):
         """
         Recursive generator that splits reads according to the
@@ -87,7 +103,7 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
                                           max_seq_len, site=site, cnt=cnt):
             yield sseq, sqal, cnt
 
-    # Define function for stripping lines according to ficus
+    # Define function for stripping lines according to focus
     if isinstance(trim, tuple):
         beg, end = trim
         beg -= 1
@@ -111,8 +127,13 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         split_read = lambda x, y, z, after_z, after_after_z: (yield x, y , 1)
 
     # function to yield reads from input file
-    get_seq = _get_fastq_read if fastq else _get_map_read
-
+    if light_storage:
+        get_seq = _get_fastq_read_light if fastq else _get_map_read_light
+        insert_mark = insert_mark_light
+    else:
+        get_seq = _get_fastq_read_heavy if fastq else _get_map_read_heavy
+        insert_mark = insert_mark_heavy
+        
     ## Start processing the input file
     if verbose:
         print 'Preparing %s file' % ('FASTQ' if fastq else 'MAP')
@@ -171,11 +192,16 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     out.close()
     return out_name, counter
 
-def insert_mark(header, num):
+def insert_mark_heavy(header, num):
     if num == 1 :
         return header
     h, s, q = header.rsplit(' ', 2)
     return '%s~%d~ %s %s' % (h, num, s, q)
+
+def insert_mark_light(header, num):
+    if num == 1 :
+        return header
+    return '%s~%d~' % (header, num)
 
 def _map2fastq(read):
     return '@{0}\n{1}\n+\n{2}\n'.format(*read.split('\t', 3)[:-1])
@@ -250,23 +276,23 @@ def gem_mapping(gem_index_path, fastq_path, out_map_path,
     kgt = kwargs.get
     gem_cmd = [
         gem_binary, '-I', gem_index_path,
-        '-q'                        , kgt('q', 'offset-33'                     ),
-        '-m'                        , kgt('m', str(max_edit_distance          )),
-        '-s'                        , kgt('s', kgt('strata-after-best', '0'   )),
-        '--allow-incomplete-strata' , kgt('allow-incomplete-strata', '0.00'    ),
-        '--granularity'             , kgt('granularity', '10000'               ),
-        '--max-decoded-matches'     , kgt('max-decoded-matches', kgt('d', '1' )),
-        '--min-decoded-strata'      , kgt('min-decoded-strata', kgt('D', '0'  )),
-        '--min-insert-size'         , kgt('min-insert-size', '0'               ),
-        '--max-insert-size'         , kgt('max-insert-size', '0'               ),
-        '--min-matched-bases'       , kgt('min-matched-bases', '0.8'           ),
-        '--gem-quality-threshold'   , kgt('gem-quality-threshold', '26'        ),
-        '--max-big-indel-length'    , kgt('max-big-indel-length', '15'         ),
-        '--mismatch-alphabet'       , kgt('mismatch-alphabet', 'ACGT'          ),
-        '-E'                        , kgt('E', '0.30'                          ),
-        '--max-extendable-matches'  , kgt('max-extendable-matches', '20'       ),
-        '--max-extensions-per-match', kgt('max-extensions-per-match', '1'      ),
-        '-e'                        , kgt('e', str(mismatches                 )),
+        '-q'                        , kgt('q', 'offset-33'                    ),
+        '-m'                        , kgt('m', str(max_edit_distance       )  ),
+        '-s'                        , kgt('s', kgt('strata-after-best', '0')  ),
+        '--allow-incomplete-strata' , kgt('allow-incomplete-strata', '0.00'   ),
+        '--granularity'             , kgt('granularity', '10000'              ),
+        '--max-decoded-matches'     , kgt('max-decoded-matches', kgt('d', '1')),
+        '--min-decoded-strata'      , kgt('min-decoded-strata', kgt('D', '0') ),
+        '--min-insert-size'         , kgt('min-insert-size', '0'              ),
+        '--max-insert-size'         , kgt('max-insert-size', '0'              ),
+        '--min-matched-bases'       , kgt('min-matched-bases', '0.8'          ),
+        '--gem-quality-threshold'   , kgt('gem-quality-threshold', '26'       ),
+        '--max-big-indel-length'    , kgt('max-big-indel-length', '15'        ),
+        '--mismatch-alphabet'       , kgt('mismatch-alphabet', 'ACGT'         ),
+        '-E'                        , kgt('E', '0.30'                         ),
+        '--max-extendable-matches'  , kgt('max-extendable-matches', '20'      ),
+        '--max-extensions-per-match', kgt('max-extensions-per-match', '1'     ),
+        '-e'                        , kgt('e', str(mismatches)                ),
         '-T'                        , str(nthreads),
         '-i'                        , fastq_path,
         '-o', out_map_path.replace('.map', '')]
@@ -359,20 +385,26 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
     for rep in [temp_dir, out_map_dir]:
         mkdir(rep)
     # check space
-    if get_free_space_mb(temp_dir, div=3) < 50:
-        warn('WARNING: less than 50 Gb left on tmp_dir: %s\n' % temp_dir)
+    fspace = int(get_free_space_mb(temp_dir, div=3))
+    if fspace < 200:
+        warn('WARNING: only %d Gb left on tmp_dir: %s\n' % (fspace, temp_dir))
 
     # iterative mapping
     base_name = os.path.split(fastq_path)[-1].replace('.gz', '')
     base_name = base_name.replace('.fastq', '')
     input_reads = fastq_path
     if windows is None:
+        light_storage = True
         windows = (None, )
     elif isinstance(windows[0], int):
         windows = [tuple(windows)]
+        light_storage = True
     else:
         # ensure that each element is a tuple, not a list
         windows = [tuple(win) for win in windows]
+        # in this case we will need to keep the information about original
+        # sequence at any point, light storage is thus not possible.
+        light_storage = False
     for win in windows:
         # Prepare the FASTQ file and iterate over them
         curr_map, counter = transform_fastq(
@@ -381,7 +413,8 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
                    or input_reads.endswith('.fastq.gz')
                    or input_reads.endswith('.fq.gz'   )
                    or input_reads.endswith('.dsrc'    )),
-            min_seq_len=min_seq_len, trim=win, skip=skip, nthreads=nthreads)
+            min_seq_len=min_seq_len, trim=win, skip=skip, nthreads=nthreads,
+            light_storage=light_storage)
         # clean
         if input_reads != fastq_path and clean:
             print '   x removing original input %s' % input_reads
@@ -401,9 +434,11 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             gem_mapping(gem_index_path, curr_map, out_map_path, **kwargs)
             # parse map file to extract not uniquely mapped reads
             print 'Parsing result...'
-            _gem_filter(out_map_path, curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
+            _gem_filter(out_map_path,
+                        curr_map + '_filt_%s-%s%s.map' % (beg, end, suffix),
                         os.path.join(out_map_dir,
-                                     base_name + '_full_%s-%s%s.map' % (beg, end, suffix)))
+                                     base_name + '_full_%s-%s%s.map' % (
+                                         beg, end, suffix)))
             # clean
             if clean:
                 print '   x removing GEM input %s' % curr_map
@@ -425,7 +460,12 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         frag_map, counter = transform_fastq(
             input_reads, mkstemp(prefix=base_name + '_', dir=temp_dir)[1],
             min_seq_len=min_seq_len, trim=win, fastq=False, r_enz=r_enz,
-            add_site=add_site, skip=skip, nthreads=nthreads)
+            add_site=add_site, skip=skip, nthreads=nthreads,
+            light_storage=light_storage)
+        # clean
+        if clean:
+            print '   x removing pre-GEM input %s' % input_reads
+            os.system('rm -f %s' % (input_reads))
         if not win:
             beg, end = 1, 'end'
         else:
@@ -438,6 +478,14 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
             _gem_filter(out_map_path, curr_map + '_fail%s.map' % (suffix),
                         os.path.join(out_map_dir,
                                      base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)))
+        # clean
+        if clean:
+            print '   x removing GEM input %s' % frag_map
+            os.system('rm -f %s' % (frag_map))
+            print '   x removing failed to map ' + curr_map + '_fail%s.map' % (suffix)
+            os.system('rm -f %s' % (curr_map + '_fail%s.map' % (suffix)))
+            print '   x removing tmp mapped %s' % out_map_path
+            os.system('rm -f %s' % (out_map_path))
         outfiles.append((os.path.join(out_map_dir,
                                       base_name + '_frag_%s-%s%s.map' % (beg, end, suffix)),
                          counter))

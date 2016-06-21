@@ -624,7 +624,7 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
 
 
 def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
-                 xlog=False, stats=('median', 'perc_max')):
+                 show=False, xlog=False, stats=('median', 'perc_max')):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
@@ -691,7 +691,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
         raise Exception('ERROR: not found')
     to_return['perc_max'] = max_perc
     to_return['MAD'] = mad(des)
-    if not savefig and not axe:
+    if not savefig and not axe and not show:
         return [to_return[k] for k in stats]
     
     ax = setup_plot(axe, figsize=(10, 5.5))
@@ -716,13 +716,13 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     ax.legend(bbox_to_anchor=(1.4, 1), frameon=False)
     if savefig:
         tadbit_savefig(savefig)
-    elif not axe:
+    elif show and not axe:
         plt.show()
     plt.close('all')
     return [to_return[k] for k in stats]
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
-                              axe=None, ylim=None, savefig=None,
+                              axe=None, ylim=None, savefig=None, show=False,
                               savedata=None, chr_names=None, nreads=None):
     """
     :param fnam: input file name
@@ -739,7 +739,6 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
        them the need to be plotted (this option may last even more than default)
     
     """
-
     distr = {}
     idx1, idx2 = (1, 3) if first_read else (7, 9)
     genome_seq = OrderedDict()
@@ -783,37 +782,49 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         pass
     fhandler.close()
     if not axe:
-        _ = plt.figure(figsize=(15, 3 + 3 * len(distr.keys())))
+        _ = plt.figure(figsize=(15, 1 + 3 * len(
+                              chr_names if chr_names else distr.keys())))
 
     max_y = max([max(distr[c].values()) for c in distr])
     max_x = max([len(distr[c].values()) for c in distr])
-    ncrms = len(genome_seq if genome_seq else distr)
+    ncrms = len(chr_names if chr_names else genome_seq if genome_seq else distr)
+    data = {}
     for i, crm in enumerate(chr_names if chr_names else genome_seq
                             if genome_seq else distr):
-        plt.subplot(ncrms, 1, i + 1)
         try:
-            plt.plot(range(max(distr[crm])),
-                     [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))],
-                     color='red', lw=1.5, alpha=0.7)
+            data[crm] = [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))]
+            if savefig:
+                plt.subplot(ncrms, 1, i + 1)
+                plt.plot(range(max(distr[crm])), data[crm],
+                         color='red', lw=1.5, alpha=0.7)
         except KeyError:
             pass
-        if ylim:
-            plt.vlines(genome_seq[crm] / resolution, ylim[0], ylim[1])
-        else:
-            plt.vlines(genome_seq[crm] / resolution, 0, max_y)
-        plt.xlim((0, max_x))
-        plt.ylim(ylim or (0, max_y))
-        plt.title(crm)
+        if savefig:
+            if ylim:
+                plt.vlines(genome_seq[crm] / resolution, ylim[0], ylim[1])
+            else:
+                plt.vlines(genome_seq[crm] / resolution, 0, max_y)
+            plt.xlim((0, max_x))
+            plt.ylim(ylim or (0, max_y))
+            plt.title(crm)
 
     if savefig:
         tadbit_savefig(savefig)
-    elif not axe:
+        plt.close('all')
+    elif show:
         plt.show()
-    plt.close('all')
 
+    if savedata:
+        out = open(savedata, 'w')
+        out.write('# CRM\tstart-end\tcount\n')
+        out.write('\n'.join('%s\t%d-%d\t%d' % (c, (i * resolution) + 1, ((i + 1) * resolution), v) for c in data
+                            for i, v in enumerate(data[c])))
+        out.write('\n')
+        out.close()
 
-def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
-                       savefig=None, show=False, savedata=None, axe=None):
+def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False, axe=None,
+                       savefig=None, show=False, savedata=None,
+                       normalized=False, remove_bad_columns=True, **kwargs):
     """
     Compare the iteractions of two Hi-C matrices at a given distance,
     with spearman rank correlation
@@ -826,35 +837,59 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
     :param None savefig: path to save the plot
     :param False intra: only takes into account intra-chromosomal contacts
     :param False show: displays the plot
+    :param False normalized: use normalized data
+    :param True remove_bads: computes the union of bad columns between samples
+       and exclude them from the comparison
 
     :returns: list of correlations and list of genomic distances
     """
-    corr = []
-    dist = []
+    corrs = []
+    dists = []
+
+    if normalized:
+        get_the_guy1 = lambda i, j: (hic_data1[j, i] / hic_data1.bias[i] /
+                                     hic_data1.bias[j])
+        get_the_guy2 = lambda i, j: (hic_data2[j, i] / hic_data2.bias[i] /
+                                     hic_data2.bias[j])
+    else:
+        get_the_guy1 = lambda i, j: hic_data1[j, i]
+        get_the_guy2 = lambda i, j: hic_data2[j, i]
+    
+    if remove_bad_columns:
+        # union of bad columns
+        bads = hic_data1.bads.copy()
+        bads.update(hic_data2.bads)
+
     if (intra and hic_data1.sections and hic_data2.sections and 
         hic_data1.sections == hic_data2.sections):
-        for i in xrange(1, max_dist + 1):
+        for dist in xrange(1, max_dist + 1):
             diag1 = []
             diag2 = []
             for crm in hic_data1.section_pos:
                 for j in xrange(hic_data1.section_pos[crm][0],
-                                hic_data1.section_pos[crm][1] - i):
-                    diag1.append(hic_data1[j, i + j])
-                    diag2.append(hic_data2[j, i + j])
-            corr.append(spearmanr(diag1, diag2)[0])
-            dist.append(i)
+                                hic_data1.section_pos[crm][1] - dist):
+                    i = j + dist
+                    if j in bads or i in bads:
+                        continue
+                    diag1.append(get_the_guy1(i, j))
+                    diag2.append(get_the_guy2(i, j))
+            corrs.append(spearmanr(diag1, diag2)[0])
+            dists.append(dist)
     else:
         if intra:
             warn('WARNING: hic_dta does not contain chromosome coordinates, ' +
                  'intra set to False')
-        for i in xrange(1, max_dist + 1):
+        for dist in xrange(1, max_dist + 1):
             diag1 = []
             diag2 = []
-            for j in xrange(len(hic_data1) - i):
-                diag1.append(hic_data1[j, i + j])
-                diag2.append(hic_data2[j, i + j])
-            corr.append(spearmanr(diag1, diag2)[0])
-            dist.append(i)
+            for j in xrange(len(hic_data1) - dist):
+                i = j + dist
+                if j in bads or i in bads:
+                    continue
+                diag1.append(get_the_guy1(i, j))
+                diag2.append(get_the_guy2(i, j))
+            corrs.append(spearmanr(diag1, diag2)[0])
+            dists.append(dist)
     if show or savefig or axe:
         if not axe:
             fig = plt.figure()
@@ -862,10 +897,10 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
             given_axe = False
         else:
             given_axe = True
-        axe.plot(dist, corr, color='orange', linewidth=3, alpha=.8)
+        axe.plot(dists, corrs, color='orange', linewidth=3, alpha=.8)
         axe.set_xlabel('Genomic distance in bins')
         axe.set_ylabel('Spearman rank correlation')
-        axe.set_xlim((0, dist[-1]))
+        axe.set_xlim((0, dists[-1]))
         if savefig:
             tadbit_savefig(savefig)
         if show:
@@ -875,14 +910,17 @@ def correlate_matrices(hic_data1, hic_data2, max_dist=10, intra=False,
     if savedata:
         out = open(savedata, 'w')
         out.write('# genomic distance\tSpearman rank correlation\n')
-        for i in xrange(len(corr)):
-            out.write('%s\t%s\n' % (dist[i], corr[i]))
+        for i in xrange(len(corrs)):
+            out.write('%s\t%s\n' % (dists[i], corrs[i]))
         out.close()
-    return corr, dist
+    if kwargs.get('get_bads', False):
+        return corrs, dists, bads
+    else:
+        return corrs, dists
 
-
-def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
-                           savefig=None, show=False, savedata=None, **kwargs):
+def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False, 
+                           savefig=None, show=False, savedata=None,
+                           remove_bad_columns=True, **kwargs):
     """
     Compare the iteractions of two Hi-C matrices using their 6 first
     eigenvectors, with pearson correlation
@@ -892,12 +930,27 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
     :param 6 nvect: number of eigenvectors to compare
     :param None savefig: path to save the plot
     :param False show: displays the plot
+    :param False normalized: use normalized data
+    :param True remove_bads: computes the union of bad columns between samples
+       and exclude them from the comparison
     :param kwargs: any argument to pass to matplotlib imshow function
 
     :returns: matrix of correlations
     """
-    data1 = hic_data1.get_matrix()
-    data2 = hic_data2.get_matrix()
+    data1 = hic_data1.get_matrix(normalized=normalized)
+    data2 = hic_data2.get_matrix(normalized=normalized)
+    ## reduce matrices to remove bad columns
+    if remove_bad_columns:
+        # union of bad columns
+        bads = hic_data1.bads.copy()
+        bads.update(hic_data2.bads)
+        # remove them form both matrices
+        for bad in sorted(bads, reverse=True):
+            del(data1[bad])
+            del(data2[bad])
+            for i in xrange(len(data1)):
+                _ = data1[i].pop(bad)
+                _ = data2[i].pop(bad)
     # get the log
     size = len(data1)
     data1 = nozero_log(data1, np.log2)
@@ -966,10 +1019,10 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6,
             out.write('\t'.join([str(corr[i][j])
                                  for j in xrange(nvect)]) + '\n')
         out.close()
-
-    return corr
-
-
+    if kwargs.get('get_bads', False):
+        return corr, bads
+    else:
+        return corr
 
 def plot_rsite_reads_distribution(reads_file, outprefix, window=20,
         maxdist=1000):

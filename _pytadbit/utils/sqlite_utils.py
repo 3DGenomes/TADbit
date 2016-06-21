@@ -7,6 +7,9 @@ from hashlib import md5
 
 def digest_parameters(opts, get_md5=True, extra=None):
     """
+    digestion is truncated at 10 characters. More than a 1000 runs are not
+    expected on a same sample (usually ~10).
+    
     :param None extra: extra parameter to remove from digestion
     """
     extra = extra or []
@@ -15,13 +18,13 @@ def digest_parameters(opts, get_md5=True, extra=None):
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
              if not k in ['force', 'workdir', 'func', 'tmp',
-                          'keep_tmp'] + extra])).hexdigest()
+                          'skip', 'keep_tmp', 'tmpdb'] + extra])).hexdigest()[:10]
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
          for k, v in opts.__dict__.iteritems()
          if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                      'func', 'tmp', 'keep_tmp'] + extra and not v is None])
+                      'skip', 'func', 'tmp', 'keep_tmp'] + extra and not v is None])
     parameters = parameters.replace("'", "")
     return parameters
 
@@ -46,8 +49,8 @@ def delete_entries(cur, table, col, val):
         pass
 
 def already_run(opts):
-    if 'tmp' in opts and opts.tmp:
-        dbpath = opts.tmp
+    if 'tmpdb' in opts and 'tmp' in opts and opts.tmp and opts.tmpdb:
+        dbpath = opts.tmpdb
     else:
         dbpath = join(opts.workdir, 'trace.db')
     con = lite.connect(dbpath)
@@ -100,7 +103,7 @@ def add_path(cur, path, typ, jobid, workdir=None):
     except lite.IntegrityError:
         pass
 
-def print_db(cur, name, no_print='Parameters_md5'):
+def print_db(cur, name, no_print=''):
     cur.execute('select * from %s' % name)
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()

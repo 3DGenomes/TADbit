@@ -60,6 +60,6 @@ def main():
         
     PATH = os.path.realpath('notebooks')
     os.system('cd %s; make html' % CURPATH)
-    
+
 if __name__ == "__main__":
     exit(main())

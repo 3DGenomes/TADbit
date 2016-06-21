@@ -5,7 +5,7 @@ _tadbit()
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="map parse filter describe clean normalize compare[NOT_YET] merge[NOT_YET] segment model"
+  opts="map parse filter describe clean normalize merge segment model"
 
   case $prev in
       tadbit)

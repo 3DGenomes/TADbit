@@ -22,5 +22,7 @@ Bibliography
 
 .. [MilliganCooper1985] Milligan, G. W., & Cooper, M. C. (1985). An examination of procedures for determining the number of clusters in a data set. Psychometrika, 50, 159–179. doi:10.1007/BF02294245
 
+.. [Rao2014] Rao, S.S.P. et al. (2014). A 3D Map of the Human Genome at Kilobase Resolution Reveals Principles of Chromatin Looping. Cell, 159(7), pp.25497547.25497547
+
 .. [Tibshirani2001] Tibshirani, R., Walther, G., & Hastie, T. (2001). Estimating the number of clusters in a data set via the gap statistic. Journal of the Royal Statistical Society - Series B: Statistical Methodology, 63, 411–423. doi:10.1111/1467-9868.00293
 

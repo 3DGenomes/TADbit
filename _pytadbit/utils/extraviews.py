@@ -886,8 +886,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
             plt.show()
         
 def plot_compartments(crm, first, cmprts, matrix, show, savefig,
-                      vmin=-1, vmax=1):
-    plt.close('all')
+                      vmin=-1, vmax=1, whichpc=1):
     heights = []
     val = 0
     for i in xrange(len(matrix)):
@@ -919,11 +918,13 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axim = plt.axes(rect_scatter)
     axex = plt.axes(rect_histx, sharex=axim)
     axey = plt.axes(rect_histy)
-    
+    axey.set_ylabel('density (orange)')
+
     im = axim.imshow(matrix, interpolation='nearest', cmap='coolwarm',
                      vmin=vmin, vmax=vmax)
     axim.minorticks_on()
-    plt.colorbar(im, cax=axey)
+    cb = plt.colorbar(im, cax=axey)
+    cb.set_label('Pearson product-moment correlation coefficients')
     axim.grid()
 
     # scale first PC
@@ -938,13 +939,38 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
                       where=np.array(first) < 0, color='darkgreen', alpha=0.5)
     axex.set_yticks([0])
+    axex.set_ylabel('%s PC (green)\ndensity (orange)' % ('First' if whichpc==1 else 'Second'))
     breaks = [0] + [i + 0.5 for i, (a, b) in
                     enumerate(zip(first[1:], first[:-1]))
                     if a * b < 0] + [len(first)]
-    axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
-                color='red' , linewidth=4, alpha=0.7)
-    axex.hlines([0]*((len(breaks) - 1)/2), breaks[1:-1:2], breaks[2::2],
-                color='blue', linewidth=4, alpha=0.7)
+    # COMPARTMENTS A/B
+    a_comp = []
+    b_comp = []
+    breaks = []
+    for cmprt in cmprts[crm]:
+        breaks.append(cmprt['start'])
+        try:
+            if cmprt['type'] == 'A':
+                a_comp.append((cmprt['start'], cmprt['end']))
+            elif cmprt['type'] == 'B':
+                b_comp.append((cmprt['start'], cmprt['end']))
+        except KeyError:
+            if cmprt['dens'] > 1:
+                a_comp.append((cmprt['start'], cmprt['end']))
+            else:
+                b_comp.append((cmprt['start'], cmprt['end']))            
+    a_comp.sort()
+    b_comp.sort()
+    axex.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
+                [a[1] for a in a_comp], color='red' , linewidth=6)
+    axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
+                [b[1] for b in b_comp], color='blue' , linewidth=6)
+
+    # axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
+    #             color='red' , linewidth=4, alpha=0.7)
+    # axex.hlines([0]*((len(breaks) - 1)/2), breaks[1:-1:2], breaks[2::2],
+    #             color='blue', linewidth=4, alpha=0.7)
+
     axex.grid()
     axex.minorticks_on()
     axex.grid(b=True, which='minor')

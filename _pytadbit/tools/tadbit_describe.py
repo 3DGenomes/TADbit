@@ -18,8 +18,8 @@ DESC = "Describe jobs and results in a given working directory"
 
 def run(opts):
     check_options(opts)
-    if 'tmp' in opts and opts.tmp:
-        dbfile = opts.tmp
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
         copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
@@ -30,7 +30,7 @@ def run(opts):
         for table in cur.fetchall():
             if table[0].lower() in opts.tables:
                 print_db(cur, table[0])
-    if 'tmp' in opts and opts.tmp:
+    if 'tmpdb' in opts and opts.tmpdb:
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
         remove(dbfile)
 
@@ -58,7 +58,7 @@ def populate_args(parser):
                         6: intersection_outputs, 7: filter_outputs,
                         8: normalize_outputs, 9: segment_outputs''')
 
-    glopts.add_argument('--tmp', dest='tmp', action='store', default=None,
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
                         help='''if provided uses this directory to manipulate the
                         database''')
@@ -107,9 +107,9 @@ def check_options(opts):
     for rec in recovered:
         opts.tables.append(rec)
 
-    if 'tmp' in opts and opts.tmp:
-        dbdir = opts.tmp
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
         # tmp file
         dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
                                         for _ in range(10)]))
-        opts.tmp = path.join(dbdir, dbfile)
+        opts.tmpdb = path.join(dbdir, dbfile)

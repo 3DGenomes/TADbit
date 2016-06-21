@@ -26,10 +26,12 @@ from pytadbit.mapping.full_mapper         import full_mapping
 from pytadbit.utils.sqlite_utils          import get_path_id, add_path, print_db
 from pytadbit.utils.sqlite_utils          import get_jobid, already_run, digest_parameters
 from pytadbit                             import get_dependencies_version
-from os                                   import system, path
+from os                                   import system, path, remove
+from string                               import ascii_letters
+from random                               import random
+from shutil                               import copyfile
 from multiprocessing                      import cpu_count
 import logging
-import fcntl
 import sqlite3 as lite
 import time
 
@@ -56,11 +58,12 @@ def run(opts):
         return
 
     logging.info('mapping %s read %s to %s', opts.fastq, opts.read, opts.workdir)
+
     outfiles = full_mapping(opts.index, opts.fastq,
                             path.join(opts.workdir,
                                       '01_mapped_r%d' % (opts.read)),
-                            opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
-                            frag_map=not opts.iterative, clean=opts.keep_tmp,
+                            r_enz=opts.renz, temp_dir=opts.tmp, nthreads=opts.cpus,
+                            frag_map=not opts.iterative, clean=not opts.keep_tmp,
                             windows=opts.windows, get_nread=True, skip=opts.skip,
                             suffix=param_hash, **opts.gem_param)
 
@@ -68,24 +71,30 @@ def run(opts):
     if opts.skip:
         for i, (out, _) in enumerate(outfiles[1:], 1):
             outfiles[i] = out, outfiles[i-1][1] - sum(1 for _ in open(outfiles[i-1][0]))
-    
+
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
     save_to_db(opts, outfiles, launch_time, finish_time)
-    
+
     # write machine log
+    while path.exists(path.join(opts.workdir, '__lock_log')):
+        time.sleep(0.5)
+    open(path.join(opts.workdir, '__lock_log'), 'a').close()
     with open(path.join(opts.workdir, 'trace.log'), "a") as mlog:
-        fcntl.flock(mlog, fcntl.LOCK_EX)
         mlog.write('\n'.join([
             ('# MAPPED READ%s\t%d\t%s' % (opts.read, num, out))
             for out, num in outfiles]) + '\n')
-        fcntl.flock(mlog, fcntl.LOCK_UN)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_log'))
+    except OSError:
+        pass
 
     # clean
-    if not opts.keep_tmp:
-        logging.info('cleaning temporary files')
-        system('rm -rf ' + opts.tmp)
+    # if not opts.keep_tmp:
+    #     logging.info('cleaning temporary files')
+    #     system('rm -rf ' + opts.tmp)
 
 def populate_args(parser):
     """
@@ -137,6 +146,11 @@ def populate_args(parser):
                       default=None, type=str,
                       help='''path to a temporary directory (default next to
                       "workdir" directory)''')
+
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
 
     mapper.add_argument('--iterative', dest='iterative', default=False,
                         action='store_true',
@@ -238,8 +252,9 @@ def check_options(opts):
 
     if not path.exists(opts.fastq):
         raise IOError('ERROR: FASTQ file not found at ' + opts.fastq)
-    
+
     # create tmp directory
+
     if not opts.tmp:
         opts.tmp = opts.workdir + '_tmp_r%d' % opts.read
 
@@ -248,7 +263,7 @@ def check_options(opts):
                         for win in opts.windows]
     except TypeError:
         pass
-        
+
     mkdir(opts.workdir)
     # write log
     # if opts.mapping_only:
@@ -302,14 +317,45 @@ def check_options(opts):
         if not k in gem_valid_option:
             raise NotImplementedError(('ERROR: option "%s" not a valid GEM option'
                                        'or not suported by this tool.') % k)
+
+    # for lustre file system....
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+        try:
+            copyfile(path.join(opts.workdir, 'trace.db'), opts.tmpdb)
+        except IOError:
+            pass
+
     # check if job already run using md5 digestion of parameters
     if already_run(opts):
+        if 'tmpdb' in opts and opts.tmpdb:
+            remove(path.join(dbdir, dbfile))
         exit('WARNING: exact same job already computed, see JOBs table above')
-        
+
 
 def save_to_db(opts, outfiles, launch_time, finish_time):
-    # write little DB to keep track of processes and options
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    """
+    write little DB to keep track of processes and options
+    """
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        try: # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         # check if table exists
         cur = con.cursor()
@@ -386,6 +432,15 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
         print_db(cur, 'MAPPED_INPUTs')
         print_db(cur, 'PATHs' )
         print_db(cur, 'JOBs'  )
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
 def get_options_from_cfg(cfg_file, opts):
     raise NotImplementedError()
