@@ -869,7 +869,7 @@ class StructuralModels(object):
 
     def accessibility(self, radius, models=None, cluster=None, nump=100,
                       superradius=200, savefig=None, savedata=None, axe=None,
-                      plot=True, error=True):
+                      plot=True, error=True, steps=(1, )):
         """
         Calculates a mesh surface around the model (distance equal to input
         **radius**) and checks if each point of this mesh could be replaced by
@@ -887,6 +887,8 @@ class StructuralModels(object):
            of the angle formed by the edges surrounding a given particle, only
            10% to 50% of the ``nump`` will be drawn in fact.*
         :param None savefig: path where to save chimera image
+        :param (1, ) steps: how many particles to group for the
+           estimation. By default 1 curve is drawn
         :param 200 superradius: radius of an object used to exclude outer
            surface of the model. Superradius must be higher than radius.
 
@@ -947,6 +949,7 @@ class StructuralModels(object):
            each particle (percentage burried can be infered afterwards by
            accessible/(accessible+inaccessible) )
         """
+
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -954,68 +957,35 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
             models = [m for m in self.__models]
-        acc = [[] for _ in xrange(self.nloci)]
+        acc = []
         for model in models:
             acc_vs_inacc = self[model].accessible_surface(
-                radius, nump=nump, superradius=superradius, include_edges=False)[-1]
-            for i, j, k in acc_vs_inacc:
-                try:
-                    acc[i-1].append(float(j) / (j + k))
-                except ZeroDivisionError:
-                    acc[i-1].append(0.0)
-        errorp = []
-        errorn = []
-        accper = []
-        for i in xrange(self.nloci):
-            accper.append(np_mean(acc[i]))
-            errorp.append(accper[-1] + 2 * np_std(acc[i]))
-            if errorp[-1] > 1:
-                errorp[-1] = 1
-            errorn.append(accper[-1] - 2 * np_std(acc[i]))
-            if errorn[-1] < 0:
-                errorn[-1] = 0
+                radius, nump=nump, superradius=superradius,
+                include_edges=False)[-1]
+            acc.append([(float(j) / (j + k))  if (j + k) else 0.0
+                        for _, j, k in acc_vs_inacc])
+        accper, errorn, errorp = self._windowize(zip(*acc), steps, average=True)
         if savedata:
             out = open(savedata, 'w')
-            out.write('#Particle\taccessibility\t2*stddev\n')
-            for i in xrange(self.nloci):
-                out.write('%s\t%.3f\t%.3f\n' % (
-                    i + 1, accper[i], 2 * np_std(acc[i])))
+            out.write('# Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
+            '2*stddev(%d)' % c for c in steps])))
+            for part in xrange(self.nloci):
+                out.write('%s\t%s\n' % (part + 1, '\t'.join(
+                    ['nan\tnan' if part >= len(accper[c]) else
+                    (str(round(accper[c][part], 3)) + '\t' +
+                     str(round(errorp[c][part] - accper[c][part], 3)))
+                     if accper[c][part] else 'nan\tnan'
+                     for c in steps])))
             out.close()
-            if not plot:
-                return # stop here, we do not want to display anything
+        if not plot:
+            return # stop here, we do not want to display anything
         # plot
-        ax = setup_plot(axe)
-        plots = []
-        plots += ax.plot(range(1, len(accper) + 1), accper,
-                         color='darkred',
-                         lw=2, alpha=0.5)
-        if error:
-            plots += ax.plot(range(1, len(errorp) + 1), errorp,
-                             color='darkred', ls='--')
-            ax.plot(range(1, len(errorp) + 1), errorn,
-                    color='darkred', ls='--')
-        ax.set_ylabel('Accessibility to an object with a radius of %s nm ' % (radius))
-        ax.set_xlabel('Particle number')
-        self._plot_polymer(ax)
-        scat1 = plt.Line2D((0,1),(0,0), color=(0.15,0.15,0.15), marker='o', linestyle='')
-        scat2 = plt.Line2D((0,1),(0,0), color=(0.7,0.7,0.7), marker='o', linestyle='')
-        if error:
-            plot_labels = ['mean accessibility', '2*stddev of accessibility',
-                           'particles with restraints',
-                           'particles without restraints']
-        else:
-            plot_labels = ['mean accessibility', 'particles with restraints',
-                           'particles without restraints']
-        try:
-            ax.legend(plots + [scat1, scat2], plot_labels,
-                      fontsize='small', numpoints=1,
-                      bbox_to_anchor=(1, 0.5), loc='center left')
-        except TypeError:
-            ax.legend(plots + [scat1, scat2], plot_labels,
-                      numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
-        ax.set_xlim((1, self.nloci))
-        ax.set_title('Accesibility per particle')
-        plt.subplots_adjust(left=0.1, right=0.77)
+        ylabel = 'Accessibility to an object with a radius of %s nm ' % (radius)
+        xlabel = 'Particle number'
+        title = 'Accesibility per particle'
+        self._generic_per_particle_plot(steps, accper, error, errorp,
+                                        errorn, savefig, axe, xlabel=xlabel,
+                                        ylabel=ylabel, title=title, ylim=(0, 1))
         if savefig:
             tadbit_savefig(savefig)
         elif not axe:
@@ -1100,7 +1070,7 @@ class StructuralModels(object):
                 out.write('%s\t%s\n' % (part + 1, '\t'.join(
                     ['nan\tnan' if part >= len(distsk[c]) else
                     (str(round(distsk[c][part], 3)) + '\t' +
-                     str(round(errorp[c][part], 3)))
+                     str(round(errorp[c][part] - round(distsk[c][part], 3))))
                      if distsk[c][part] else 'nan\tnan'
                      for c in steps])))
             out.close()
@@ -2560,7 +2530,7 @@ class StructuralModels(object):
 
     def _generic_per_particle_plot(self, steps, distsk, error, errorp, errorn,
                                    savefig, axe, xlabel='', ylabel='', title='',
-                                   colors=None):
+                                   colors=None, ylim=None):
         if not colors:
             colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
                       'darkred'][-len(steps):]
@@ -2598,6 +2568,9 @@ class StructuralModels(object):
                                                                'particles without restraints']), 
                       numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
         ax.set_xlim((1, self.nloci))
+        if ylim:
+            a, b = ax.get_ylim()
+            ax.set_ylim((max(0, a), min(1, b)))
         ax.set_title(title)
         plt.subplots_adjust(left=0.1, right=0.77)
         if savefig:

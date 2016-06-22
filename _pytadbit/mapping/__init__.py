@@ -115,6 +115,10 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
        :func:`pytadbit.parsers.sam_parser.parse_sam`
     :param out_path: path to an outfile. It will written in a similar format as
        the inputs
+
+    :returns: final number of pair of interacting fragments, and a dictionary with
+       the number of multiple contacts (keys of the dictionary being the number of
+       fragment cought together, can be 3, 4, 5..)
     """
     
     # Get the headers of the two files 

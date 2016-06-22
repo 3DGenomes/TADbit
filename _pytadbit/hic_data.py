@@ -708,7 +708,7 @@ class HiC_data(dict):
                     x[sec] = firsts[sec][ev_nums[sec] - 1]
                 except KeyError:
                     continue
-                
+
             # train two HMMs on the genomic data:
             #  - one with 2 states A B
             #  - one with 3 states A B I 
@@ -762,7 +762,6 @@ class HiC_data(dict):
                     elif typ > max_type / 2.:
                         blen += leng
                         btyp += val * leng
-                print atyp / alen, btyp / blen
 
                 for i, comp in enumerate(cmprts[sec]):
                     if comp['type'] < max_type / 2.:

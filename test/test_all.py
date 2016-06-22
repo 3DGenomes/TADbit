@@ -529,7 +529,7 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual([round(float(i), 1) if i != 'nan' else i for i in lines[1].split('\t')[:3]],
                          [1.0, 'nan', 'nan'])
         self.assertEqual([round(float(i), 1) for i in lines[15].split('\t')[:3]],
-                         [15, 100.0, 100.0])
+                         [15, 100.0, 0.0])
         # contacts
         cmap = models.get_contact_matrix(cutoff=300)
         self.assertEqual(round(
@@ -580,8 +580,8 @@ class TestTadbit(unittest.TestCase):
         # accessibility
         models.accessibility(radius=75, nump=10, plot=False, savedata='model.acc')
         vals = [l.split() for l in open('model.acc').readlines()[1:]]
-        self.assertEqual(vals[0][1:3], ['0.560', '0.993'])
-        self.assertEqual(vals[20][1:3], ['1.000', '0.000'])
+        self.assertEqual(vals[0][1:3], ['0.56', '0.993'])
+        self.assertEqual(vals[20][1:3], ['1.0', '0.0'])
         # contact map
         models.contact_map(savedata='model.contacts')
         vals = [l.split() for l in open('model.contacts').readlines()[1:]]
