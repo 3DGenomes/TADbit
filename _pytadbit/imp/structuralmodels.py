@@ -1327,7 +1327,8 @@ class StructuralModels(object):
         plt.close('all')
 
     def walking_angle(self, models=None, cluster=None, steps=(1,3), signed=True,
-                      savefig=None, savedata=None, axe=None):
+                      savefig=None, savedata=None, axe=None, plot=True,
+                      error=False):
         """
         Plots the angle between successive loci in a given model or set of
         models. In order to limit the noise of the measure angle is calculated
@@ -1367,77 +1368,49 @@ class StructuralModels(object):
 
 
         """
-        # plot
-        ax = setup_plot(axe)
-        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
-                  'darkred'][-len(steps):]
-        #
         if not isinstance(steps, tuple):
             steps = (steps,)
-        rads = {}
-        rads[1] = []
+        models = self._get_models(models, cluster)
+        rads = []
         sign = 1
-        for res in xrange(self.nloci - 6):
-            rads[1].append(self.angle_between_3_particles(res + 1, res + 4,
-                                                          res + 7,
-                                                          models=models,
-                                                          cluster=cluster))
-            if signed:
-                res1 = self.particle_coordinates(res+1)
-                res2 = self.particle_coordinates(res+4)
-                res3 = self.particle_coordinates(res+7)
-                vec1 = array(res1) - array(res2) / norm(array(res1) - array(res2))
-                vec2 = array(res1) - array(res3) / norm(array(res1) - array(res3))
-                sign = dot(array([1.,1.,1.]), cross(vec1, vec2))
-                sign = -1 if sign < 0 else 1
-            rads[1][-1] *= sign
-        for k in (steps[1:] if steps[0]==1 else steps):
-            rads[k] = [None for _ in range(k/2)]
-            for i in range(1, self.nloci - k - 5):
-                rads[k].append(reduce(lambda x, y: x + y,
-                                      [rads[1][i+j] for j in range(k)]) / k)
-                if k == 1:
-                    continue
-        plots = []
-        for k in steps:
-            plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
-                             color=colors[steps.index(k)],
-                             lw=steps.index(k) + 1, alpha=0.5)
+        for model in models:
+            subrad = [None] * 3
+            for res in xrange(1, self.nloci - 5):
+                subrad.append(self.angle_between_3_particles(
+                    res, res + 3, res + 6, models=[model], all_angles=False))
+                if signed:
+                    res1 = self.particle_coordinates(res    )
+                    res2 = self.particle_coordinates(res + 3)
+                    res3 = self.particle_coordinates(res + 6)
+                    vec1 = array(res1) - array(res2) / norm(array(res1) - array(res2))
+                    vec2 = array(res1) - array(res3) / norm(array(res1) - array(res3))
+                    sign = dot(array([1., 1., 1.]), cross(vec1, vec2))
+                    sign = -1 if sign < 0 else 1
+                subrad[-1] *= sign
+            subrad += [None] * 3
+            rads.append(subrad)
+
+        radsk, errorn, errorp = self._windowize(zip(*rads), steps, interval=0,
+                                                average=False, minerr=-360)
+        if plot:
+            xlabel = 'Particle number'
+            ylabel = 'Angle in degrees'
+            title  = 'Angle between consecutive loci'
+            self._generic_per_particle_plot(steps, radsk, error, errorp,
+                                            errorn, savefig, axe, xlabel=xlabel,
+                                            ylabel=ylabel, title=title)
         if savedata:
             out = open(savedata, 'w')
-            out.write('#Particle\t' +
-                      '\t'.join(['angle(step:%s)' % (s) for s in steps]) + '\n')
-            for p in xrange(len(rads[1])):
-                out.write(str(p+1))
-                for s in steps:
-                    try:
-                        out.write('\t%s' % rads[s][p])
-                    except IndexError:
-                        out.write('\tNone')
-                out.write('\n')
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
+            '2*stddev(%d)' % c for c in steps])))
+            for part in xrange(self.nloci):
+                out.write('%s\t%s\n' % (part + 1, '\t'.join(
+                    ['nan\tnan' if part >= len(radsk[c]) else
+                    (str(round(radsk[c][part], 3)) + '\t' +
+                     str(round(errorp[c][part] - round(radsk[c][part], 3))))
+                     if radsk[c][part] else 'nan\tnan'
+                     for c in steps])))
             out.close()
-
-        ax.set_ylabel('Angle in degrees')
-        ax.set_xlabel('Particle number')
-        self._plot_polymer(ax)
-        scat1 = plt.Line2D((0,1),(0,0), color=(0.15,0.15,0.15), marker='o', linestyle='')
-        scat2 = plt.Line2D((0,1),(0,0), color=(0.7,0.7,0.7), marker='o', linestyle='')
-        try:
-            ax.legend(plots + [scat1, scat2],
-                      ['Average for %s angle%s' % (k, 's' if k else '')
-                       for k in steps] + ['particles with restraints',
-                                          'particles without restraints'],
-                      numpoints=1, fontsize='small',
-                      bbox_to_anchor=(1, 0.5), loc='center left')
-        except TypeError:
-            ax.legend(plots + [scat1, scat2],
-                      ['Average for %s angle%s' % (k, 's' if k else '')
-                       for k in steps] + ['particles with restraints',
-                                          'particles without restraints'],
-                      numpoints=1, bbox_to_anchor=(1, 0.5), loc='center left')
-        ax.set_xlim((1, self.nloci))
-        ax.set_title('Angle between consecutive loci')
-        plt.subplots_adjust(left=0.1, right=0.8)
 
         if savefig:
             tadbit_savefig(savefig)
@@ -2470,7 +2443,7 @@ class StructuralModels(object):
             models = [m for m in self.__models]
         return models
 
-    def _windowize(self, dists, steps, average=True, interval=0):
+    def _windowize(self, dists, steps, average=True, interval=0, minerr=0.):
         lmodels = len(dists[0])
         distsk = {1: dists}
         for k in steps[1:] if steps[0] == 1 else steps:
@@ -2506,12 +2479,12 @@ class StructuralModels(object):
                 try:
                     errorn[k].append(mean_part - 2 * np_std(
                         [p for p in part if p != None]))
-                    if errorn[k][-1] < 0:
-                        errorn[k][-1] =  0.0
+                    if errorn[k][-1] < minerr:
+                        errorn[k][-1] =  minerr
                     errorp[k].append(mean_part + 2 * np_std(
                         [p for p in part if p != None]))
-                    if errorp[k][-1] < 0:
-                        errorp[k][-1] = 0.0
+                    if errorp[k][-1] < minerr:
+                        errorp[k][-1] = minerr
                 except TypeError:
                     errorn[k].append(None)
                     errorp[k].append(None)

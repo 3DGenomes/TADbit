@@ -34,6 +34,7 @@ import sys
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
 ONLY = None#'10'
+# ONLY = '15'
 
 def check_hic(hic, size):
     """
@@ -595,10 +596,10 @@ class TestTadbit(unittest.TestCase):
         # walking angle
         models.walking_angle(savedata='model.walkang')
         vals = [[round(float(i), 2) if i != 'None' else i for i in l.split()] for l in open('model.walkang').readlines()[1:]]
-        self.assertEqual(vals[0],  [1.0, 137.06, 'None'],)
-        self.assertEqual(vals[14], [15.0, -49.65, 'None'],)
-        self.assertEqual(vals[13], [14.0, -101.41, 'None'])
-        self.assertEqual(vals[12], [13.0, 150.45, -0.2])
+        self.assertEqual(vals[17], [18.0, -49.74, 3.0, -73.02, 19.0],)
+        self.assertEqual(vals[3],  [4.0, 133.89, 24.0, 129.35, 23.0],)
+        self.assertEqual(vals[16], [17.0, -96.92, 37.0, -3.39, 17.0])
+        self.assertEqual(vals[15], [16.0, 140.06, 32.0, 66.97, 18.0])
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -797,8 +798,8 @@ class TestTadbit(unittest.TestCase):
         return_code = system('make test')
         chdir(PATH)
         if return_code != 0:
-            self.assertEqual(True, False)
             print 'ERROR problem with C test'
+            self.assertEqual(True, False)
         if CHKTIME:
             self.assertEqual(True, True)
             print '20', time() - t0
