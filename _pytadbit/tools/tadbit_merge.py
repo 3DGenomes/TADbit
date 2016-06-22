@@ -83,24 +83,34 @@ def run(opts):
 
     mkdir(path.join(opts.workdir, '00_merge'))
 
-    decay_corr_dat = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
-    decay_corr_fig = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.png' % (opts.reso, param_hash))
-    eigen_corr_dat = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
-    eigen_corr_fig = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.png' % (opts.reso, param_hash))
-
+    if not opts.skip_comparison:
+        decay_corr_dat = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
+        decay_corr_fig = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.png' % (opts.reso, param_hash))
+        eigen_corr_dat = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
+        eigen_corr_fig = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.png' % (opts.reso, param_hash))
+    else:
+        decay_corr_dat = 'None'
+        decay_corr_fig = 'None'
+        eigen_corr_dat = 'None'
+        eigen_corr_fig = 'None'
+        
     # if opts.norm:
         # has bias file
 
-    print 'correlation between equidistant loci'
-    corr, _, bads = correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
-                                       remove_bad_columns=True,
-                                       savefig=decay_corr_fig,
-                                       savedata=decay_corr_dat, get_bads=True)
-    print 'correlation between eigenvectors'
-    eig_corr = eig_correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
-                                      remove_bad_columns=True, nvect=6,
-                                      savefig=eigen_corr_fig,
-                                      savedata=eigen_corr_dat)
+    if not opts.skip_comparison:
+        print 'correlation between equidistant loci'
+        corr, _, bads = correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
+                                           remove_bad_columns=True,
+                                           savefig=decay_corr_fig,
+                                           savedata=decay_corr_dat, get_bads=True)
+        print 'correlation between eigenvectors'
+        eig_corr = eig_correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
+                                          remove_bad_columns=True, nvect=6,
+                                          savefig=eigen_corr_fig,
+                                          savedata=eigen_corr_dat)
+    else:
+        corr = eig_corr = None
+        bads = {}
 
     # merge inputs
     mkdir(path.join(opts.workdir, '03_filtered_reads'))
@@ -250,10 +260,13 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
         cur.execute("select id from paths where path = '%s'" % (
             path.relpath(outbed, opts.workdir)))
         outbedid = cur.fetchall()[0][0]
-        decay_corr = '-'.join(['%.1f' % (v)
-                               for v in corr[:10:2]]).replace('0.', '.')
-        eigen_corr = '-'.join(['%.2f' % (max(v))
-                               for v in eig_corr[:4]]).replace('0.', '.')
+        if not opts.skip_comparison:
+            decay_corr = '-'.join(['%.1f' % (v)
+                                   for v in corr[:10:2]]).replace('0.', '.')
+            eigen_corr = '-'.join(['%.2f' % (max(v))
+                                   for v in eig_corr[:4]]).replace('0.', '.')
+        else:
+            decay_corr = eigen_corr = None
         cur.execute("""
         insert into MERGE_OUTPUTs
         (Id  , JOBid, Wrkd1Path, Wrkd2Path, Bed1Path, Bed2Path, MergePath)
@@ -314,7 +327,8 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
 
         print_db(cur, 'PATHs')
         print_db(cur, 'JOBs')
-        print_db(cur, 'MERGE_OUTPUTs')        
+        print_db(cur, 'MERGE_OUTPUTs')
+        print_db(cur, 'MERGE_STATs')
         print_db(cur, 'FILTER_OUTPUTs')
 
     if 'tmpdb' in opts and opts.tmpdb:
@@ -443,9 +457,17 @@ def populate_args(parser):
                         working directory database)''')
 
     glopts.add_argument('-r', '--resolution', dest='reso', metavar="INT",
-                        action='store', default=None, type=int, required=True,
+                        action='store', default=None, type=int, 
                         help='''resolution at which to do the comparison,
                         and generate the matrices.''')
+
+    glopts.add_argument('--skip_comparison', dest='skip_comparison',
+                        action='store_true', default=False,
+                        help='''skip the comparison between replicates (faster).''')
+
+    glopts.add_argument('--skip_merge', dest='skip_merge',
+                        action='store_true', default=False,
+                        help='''skip the merge of replicates (faster).''')
 
     glopts.add_argument('--perc_zeros', dest='perc_zeros', metavar="FLOAT",
                         action='store', default=95, type=float, 
