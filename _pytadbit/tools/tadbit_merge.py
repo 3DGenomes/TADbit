@@ -283,7 +283,16 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
             
         masked1 = {'valid-pairs': {'count': nreads}}
         if opts.workdir1:
-            tmpcon = lite.connect(path.join(opts.workdir1, 'trace.db'))
+            if 'tmpdb' in opts and opts.tmpdb:
+                # tmp file
+                dbfile1 = opts.tmpdb1
+                try: # to copy in case read1 was already mapped for example
+                    copyfile(path.join(opts.workdir1, 'trace.db'), dbfile1)
+                except IOError:
+                    pass
+            else:
+                dbfile1 = path.join(opts.workdir1, 'trace.db')
+            tmpcon = lite.connect(dbfile1)
             with tmpcon:
                 tmpcur = tmpcon.cursor()
                 tmpcur.execute("select Name, PATHid, Count from filter_outputs")
@@ -291,10 +300,20 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                     res = tmpcur.execute("select Path from PATHs where Id = %d" % (pathid))
                     tmppath = res.fetchall()[0][0]
                     masked1[name] = {'path': tmppath, 'count': count}
-
+            if 'tmpdb' in opts and opts.tmpdb:
+                remove(dbfile1)
         masked2 = {'valid-pairs': {'count': 0}}
         if opts.workdir2:
-            tmpcon = lite.connect(path.join(opts.workdir2, 'trace.db'))
+            if 'tmpdb' in opts and opts.tmpdb:
+                # tmp file
+                dbfile2 = opts.tmpdb2
+                try: # to copy in case read2 was already mapped for example
+                    copyfile(path.join(opts.workdir2, 'trace.db'), dbfile2)
+                except IOError:
+                    pass
+            else:
+                dbfile2 = path.join(opts.workdir2, 'trace.db')
+            tmpcon = lite.connect(dbfile2)
             with tmpcon:
                 tmpcur = tmpcon.cursor()
                 tmpcur.execute("select Name, PATHid, Count from filter_outputs")
@@ -302,6 +321,8 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                     res = tmpcur.execute("select Path from PATHs where Id = %d" % (pathid))
                     tmppath = res.fetchall()[0][0]
                     masked2[name] = {'path': tmppath, 'count': count}
+            if 'tmpdb' in opts and opts.tmpdb:
+                remove(dbfile2)
 
         for f in masked1:
             if f  != 'valid-pairs':
