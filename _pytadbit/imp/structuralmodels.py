@@ -1372,19 +1372,23 @@ class StructuralModels(object):
             steps = (steps,)
         models = self._get_models(models, cluster)
         rads = []
+        ones = array([1., 1., 1.])
         sign = 1
         for model in models:
+            mox = self[model]['x']
+            moy = self[model]['y']
+            moz = self[model]['z']
             subrad = [None] * 3
             for res in xrange(1, self.nloci - 5):
                 subrad.append(self.angle_between_3_particles(
                     res, res + 3, res + 6, models=[model], all_angles=False))
                 if signed:
-                    res1 = self.particle_coordinates(res    )
-                    res2 = self.particle_coordinates(res + 3)
-                    res3 = self.particle_coordinates(res + 6)
-                    vec1 = array(res1) - array(res2) / norm(array(res1) - array(res2))
-                    vec2 = array(res1) - array(res3) / norm(array(res1) - array(res3))
-                    sign = dot(array([1., 1., 1.]), cross(vec1, vec2))
+                    res1 = array([mox[res - 1], moy[res - 1], moz[res - 1]]) # faster than get_particle coordinate
+                    res2 = array([mox[res + 2], moy[res + 2], moz[res + 2]])
+                    res3 = array([mox[res + 5], moy[res + 5], moz[res + 5]])
+                    vec1 = res1 - res2 / norm(res1 - res2)
+                    vec2 = res1 - res3 / norm(res1 - res3)
+                    sign = dot(ones, cross(vec1, vec2))
                     sign = -1 if sign < 0 else 1
                 subrad[-1] *= sign
             subrad += [None] * 3
@@ -1965,23 +1969,26 @@ class StructuralModels(object):
         """
         # WARNING: here particle numbers are +1, they will be reduced
         # inside median_3d_dist
-        a = self.median_3d_dist(partb, partc, models=models,
-                                cluster=cluster, plot=False)
-        c = self.median_3d_dist(parta, partb, models=models,
-                                cluster=cluster, plot=False)
-        b = self.median_3d_dist(parta, partc, models=models,
-                                cluster=cluster, plot=False)
-
+        a2 = np_median(self.__square_3d_dist(partb, partc, models=models,
+                                             cluster=cluster))
+        c2 = np_median(self.__square_3d_dist(parta, partb, models=models,
+                                          cluster=cluster))
+        b2 = np_median(self.__square_3d_dist(parta, partc, models=models,
+                                          cluster=cluster))
+        a = a2**0.5
+        c = c2**0.5
+        
         try:
-            g = acos((a**2 - b**2 + c**2) / (2 * a * c))
+            g = acos((a2 - b2 + c2) / (2 * a * c))
         except ValueError:
             g = 0.
 
         if not all_angles:
             return g if radian else degrees(g)
 
+        b = b2**0.5
         try:
-            h = acos((a**2 + b**2 - c**2) / (2 * a * b))
+            h = acos((a2 + b2 - c2) / (2 * a * b))
         except ValueError:
             h = 0.
 
