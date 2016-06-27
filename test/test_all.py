@@ -34,7 +34,6 @@ import sys
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
 ONLY = None#'10'
-ONLY = '15'
 
 def check_hic(hic, size):
     """

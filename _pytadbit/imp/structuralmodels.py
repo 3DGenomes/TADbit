@@ -1092,11 +1092,14 @@ class StructuralModels(object):
         for i in xrange(self.nloci):
             for m in models:
                 val = 0
+                mdl = self[m]
                 for j in xrange(self.nloci):
                     if i == j:
                         continue
-                    val += self.__square_3d_dist(i + 1, j + 1,
-                                                 models=[m])[0] < cutoff2
+                    val += ((mdl['x'][i] - mdl['x'][j])**2 +
+                            (mdl['y'][i] - mdl['y'][j])**2 +
+                            (mdl['z'][i] - mdl['z'][j])**2) < cutoff2
+                    # val += self.__square_3d_dist(i + 1, j + 1, models=[m])[0] < cutoff2
                 interactions[i].append(val)
         return interactions
 

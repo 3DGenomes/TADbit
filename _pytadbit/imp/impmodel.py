@@ -568,7 +568,6 @@ class IMPmodel(dict):
         points, dots, superdots, points2dots = build_mesh(
             self['x'], self['y'], self['z'], len(self), nump, radius,
             superradius, include_edges)
-
         
         # calculates the number of inaccessible peaces of surface
         if superradius:
