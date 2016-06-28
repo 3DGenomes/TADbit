@@ -21,7 +21,8 @@ ll
   const int    _j,
   const int    diag,
   const int    *k,
-  const double *d,
+  //const double *d,
+  const int    *dp,
   const double *w,
   const double *lg,
         double *c
@@ -33,4 +34,10 @@ enforce_symmetry
   int **obs,
   int n,
   int m
+);
+
+void
+fastlog_init
+(
+		int prec
 );
