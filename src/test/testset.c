@@ -205,7 +205,8 @@ test_ll
    double *c = malloc(21 * sizeof(double));
 
    double w[400] = {[0 ... 399] = 1.0};
-   double d[400];
+   //double d[400];
+   int dp[20];
    int C[400];
 
    _cache_index = C;
@@ -213,27 +214,33 @@ test_ll
 
    for (int j = 0 ; j < 20 ; j++) {
       for (int i = 0 ; i < 20 ; i++) {
-         d[i+j*20] = log(abs(j-i));
+         //d[i+j*20] = log(abs(j-i));
+    	 dp[j] = j;
          C[i+j*20] = abs(j-i);
       }
    }
 
-   double loglik1 = ll(20, 0, 9, 0, 9, 1, ideal_matrix_20x20, d, w, lg, c);
+   fastlog_init(16);
+   //double loglik1 = ll(20, 0, 9, 0, 9, 1, ideal_matrix_20x20, d, w, lg, c);
+   double loglik1 = ll(20, 0, 9, 0, 9, 1, ideal_matrix_20x20, dp, w, lg, c);
    // Value checked manually with R. The value is sensitive to
    // the value of the estimates, which is why the  precision
    // cannot be higher than 0.1.
    g_assert_cmpfloat(abs(loglik1-6138.2), <, 1e-1);
 
    // Check symmetry/reproducibility.
-   double loglik2 = ll(20, 10, 19, 10, 19, 1, ideal_matrix_20x20, d, w, lg, c);
+   //double loglik2 = ll(20, 10, 19, 10, 19, 1, ideal_matrix_20x20, d, w, lg, c);
+   double loglik2 = ll(20, 10, 19, 10, 19, 1, ideal_matrix_20x20, dp, w, lg, c);
    g_assert_cmpfloat(abs(loglik1-loglik2), <, 1e-12);
 
    // Same as above, checked manually with R.
-   loglik1 = ll(20, 0, 9, 10, 19, 0, ideal_matrix_20x20, d, w, lg, c);
+   //loglik1 = ll(20, 0, 9, 10, 19, 0, ideal_matrix_20x20, d, w, lg, c);
+   loglik1 = ll(20, 0, 9, 10, 19, 0, ideal_matrix_20x20, dp, w, lg, c);
    g_assert_cmpfloat(abs(loglik1-3036.8), <, 1e-1);
 
    // Check symmetry/reproducibility again.
-   loglik2 = ll(20, 10, 19, 0, 9, 0, ideal_matrix_20x20, d, w, lg, c);
+   //loglik2 = ll(20, 10, 19, 0, 9, 0, ideal_matrix_20x20, d, w, lg, c);
+   loglik2 = ll(20, 10, 19, 0, 9, 0, ideal_matrix_20x20, dp, w, lg, c);
    g_assert_cmpfloat(abs(loglik1-loglik2), <, 1e-12);
 
    free(c);
