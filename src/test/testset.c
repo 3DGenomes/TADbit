@@ -321,7 +321,7 @@ main(
    backup = dup(STDERR_FILENO);
 
    g_test_init(&argc, &argv, NULL);
-   /* g_test_add_func("/ll", test_ll); */
+   g_test_add_func("/ll", test_ll);
    g_test_add_func("/enforce_symmetry", test_enforce_symmetry);
    g_test_add_func("/tadbit", test_tadbit);
    if (g_test_thorough()) {
