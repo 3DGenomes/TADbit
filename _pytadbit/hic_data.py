@@ -611,7 +611,7 @@ class HiC_data(dict):
             try:
                 # This eighs is very very fast, only ask for one eigvector
                 _, evect = eigsh(array(matrix), k=ev_index[count] if ev_index else 2)
-            except LinAlgError:
+            except (LinAlgError, ValueError):
                 warn('Chromosome %s too small to compute PC1' % (sec))
                 cmprts[sec] = [] # Y chromosome, or so...
                 count += 1
