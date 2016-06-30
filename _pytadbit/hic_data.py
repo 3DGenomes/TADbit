@@ -761,7 +761,7 @@ class HiC_data(dict):
                     else:
                         blen += leng
                         btyp += val * leng
-                print atyp / alen, btyp / blen
+                #print atyp / alen, btyp / blen
 
                 for i, comp in enumerate(cmprts[sec]):
                     if comp['type'] < max_type / 2.:
