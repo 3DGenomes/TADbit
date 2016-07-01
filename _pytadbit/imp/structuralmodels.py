@@ -1050,7 +1050,7 @@ class StructuralModels(object):
            of the file name will determine the desired format).
         :param None savedata: path to a file where to save the density data
            generated (1 column per step + 1 for particle number).
-        :param True plot: e.g. only saves data. No plotting done
+        :param True plot: e.g. if False, only saves data. No plotting done
 
         """
         if isinstance(steps, int):
@@ -1260,7 +1260,8 @@ class StructuralModels(object):
         plt.close('all')
 
     def walking_dihedral(self, models=None, cluster=None, steps=(1,3),
-                         plot=True, savefig=None, axe=None):
+                         span=(-2, 1, 0, 1, 3), error=False,
+                         plot=True, savefig=None, axe=None, savedata=None):
         """
         Plots the dihedral angle between successive planes. A plane is formed by
         3 successive loci.
@@ -1276,9 +1277,16 @@ class StructuralModels(object):
            to a normal plane, or not.
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
+        :param (-3, -1, 0, 1, 2) span: by default computes angle between a plane
+           comprising the current residue (*0*), the residue after (*1*) and the
+           residue 3 positions before (*-3*), and the plane with the current
+           residue, the residue directly after (*1*) and the residue 3 positions
+           after (*3*). e.g. In the scheme bellow it's plane ACD vs plane CDF.
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param False error: represent the error of the estimates
+        :param True plot: e.g. if False, only saves data. No plotting done
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).                
 
@@ -1298,31 +1306,49 @@ class StructuralModels(object):
 
 
         """
-        # plot
-        ax = setup_plot(axe)
-        colors = ['grey', 'darkgreen', 'darkblue', 'purple', 'darkorange',
-                  'darkred'][-len(steps):]
-        #
+        models = self._get_models(models, cluster)
         rads = {}
-        rads[1] = []
-        for res in xrange(self.nloci - 6):
-            rads[1].append(self.dihedral_angle(res + 1, res + 4,
-                                               res + 5, res + 7,
-                                               models=models, cluster=cluster))
-        lmodels = len(rads[1])
-        for k in (steps[1:] if steps[0]==1 else steps):
-            rads[k] = [None for _ in range(k/2)]
-            for i in range(1, self.nloci - k - 5):
-                rads[k].append(reduce(lambda x, y: x + y,
-                                      [rads[1][i+j] for j in range(k)]) / k)
-                if k == 1:
-                    continue
-        plots = []
-        for k in steps:
-            plots += ax.plot(range(1, len(rads[k]) + 1), rads[k],
-                             color=colors[steps.index(k)],
-                             lw=steps.index(k) + 1, alpha=0.5)
+        if span[0] > 0:
+            raise ValueError('ERROR: first element of span should be negative')
+        if span[-1] < 0:
+            raise ValueError('ERROR: last element of span should be negative')
         
+        rads = [[None] * len(models)] * (-span[0])
+        for res in xrange(-span[0], self.nloci - span[-1]):
+            subrad = self.dihedral_angle(res + span[0], res + span[1],
+                                         res + span[2],
+                                         res + span[3], res + span[4], models)
+            # rads.append([None] * abs(span[0]) + subrad + [None] * span[3])
+            rads.append(subrad)
+        rads += [[None] * len(models)] * (span[-1])
+        radsk, errorn, errorp = self._windowize(rads, steps, interval=0,
+                                                average=False, minerr=-360)
+        if plot:
+            xlabel = 'Particle number'
+            ylabel = 'Dihedral angle in degrees'
+            title  = 'Dihedral angle between consecutive loci'
+            self._generic_per_particle_plot(steps, radsk, error, errorp,
+                                            errorn, savefig, axe, xlabel=xlabel,
+                                            ylabel=ylabel, title=title)
+        
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#Particle\t%s\n' % ('\t'.join([str(c) + '\t' +
+            '2*stddev(%d)' % c for c in steps])))
+            for part in xrange(self.nloci):
+                out.write('%s\t%s\n' % (part + 1, '\t'.join(
+                    ['nan\tnan' if part >= len(radsk[c]) else
+                    (str(round(radsk[c][part], 3)) + '\t' +
+                     str(round(errorp[c][part] - round(radsk[c][part], 3))))
+                     if radsk[c][part] else 'nan\tnan'
+                     for c in steps])))
+            out.close()
+
+        if savefig:
+            tadbit_savefig(savefig)
+        elif not axe:
+            plt.show()
+        plt.close('all')
         if savefig:
             tadbit_savefig(savefig)
         elif not axe:
@@ -1349,9 +1375,11 @@ class StructuralModels(object):
            to a normal plane, or not.
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
+        :param False error: represent the error of the estimates
         :param None savefig: path to a file where to save the image generated;
            if None, the image will be shown using matplotlib GUI (the extension
            of the file name will determine the desired format).
+        :param True plot: e.g. if False, only saves data. No plotting done
         :param None savedata: path to a file where to save the angle data
            generated (1 column per step + 1 for particle number).                
 
@@ -2034,10 +2062,10 @@ class StructuralModels(object):
         return [xis, yis, zis]
 
 
-    def dihedral_angle(self, parta, partb, partc, partd, models=None,
-                       cluster=None):
+    def dihedral_angle(self, pa, pb, pc, pd, pe, models):
         """
-        Calculates the dihedral angle between 2 planes formed by 4 particles.
+        Calculates the dihedral angle between 2 planes formed by 5 particles
+           (one common to both planes).
         
         :param None models:  if None (default) the angle will be computed
            using all the models. A list of numbers corresponding to a given set
@@ -2045,12 +2073,20 @@ class StructuralModels(object):
         :param None cluster: compute the angle only for the models in the
            cluster number 'cluster'
         """
-        parta = array(self.particle_coordinates(parta, models, cluster))
-        partb = array(self.particle_coordinates(partb, models, cluster))
-        partc = array(self.particle_coordinates(partc, models, cluster))
-        partd = array(self.particle_coordinates(partd, models, cluster))
-        return dihedral(parta, partb, partc, partd)
-
+        pa -= 1
+        pb -= 1
+        pc -= 1
+        pd -= 1
+        pe -= 1
+        dangles = []
+        for m in models:
+            parta = array([self[m]['x'][pa], self[m]['y'][pa], self[m]['z'][pa]])
+            partb = array([self[m]['x'][pb], self[m]['y'][pb], self[m]['z'][pb]])
+            partc = array([self[m]['x'][pc], self[m]['y'][pc], self[m]['z'][pc]])
+            partd = array([self[m]['x'][pd], self[m]['y'][pd], self[m]['z'][pd]])
+            parte = array([self[m]['x'][pe], self[m]['y'][pe], self[m]['z'][pe]])
+            dangles.append(dihedral(parta, partb, partc, partd, parte))
+        return dangles
 
     def median_3d_dist(self, part1, part2, models=None, cluster=None,
                        plot=True, median=True, axe=None, savefig=None):

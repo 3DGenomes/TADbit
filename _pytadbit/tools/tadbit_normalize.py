@@ -38,24 +38,20 @@ def run(opts):
 
     print 'Get poor bins...'
     try:
-        hic_data.filter_columns(perc_zero=opts.perc_zeros, draw_hist=True,
+        hic_data.filter_columns(perc_zero=opts.perc_zeros, min_count=opts.min_count,
+                                draw_hist=True,
                                 by_mean=not opts.fast_filter, savefig=path.join(
                                     opts.workdir, '04_normalization',
-                                    'bad_columns_%s_%d_%s.pdf' % (
-                                        opts.reso, opts.perc_zeros, param_hash)) if
+                                    'bad_columns_%s_%d_%d_%s.pdf' % (
+                                        opts.reso, opts.perc_zeros, opts.min_count,
+                                        param_hash)) if
                                 not opts.fast_filter else None)
     except ValueError:
-        hic_data.filter_columns(perc_zero=100, draw_hist=True,
-                                by_mean=not opts.fast_filter, savefig=path.join(
-                                    opts.workdir, '04_normalization',
-                                    'bad_columns_%s_%d_%s.pdf' % (
-                                        opts.reso, opts.perc_zeros, param_hash)) if
-                                not opts.fast_filter else None)
-
+        raise ValueError('ERROR: probably all columns filtered out...')
     # bad columns
     bad_columns_file = path.join(opts.workdir, '04_normalization',
-                                 'bad_columns_%s_%d_%s.tsv' % (
-                                     opts.reso, opts.perc_zeros, param_hash))
+                                 'bad_columns_%s_%d_%d_%s.tsv' % (
+                                     opts.reso, opts.perc_zeros, opts.min_count, param_hash))
     out_bad = open(bad_columns_file, 'w')
     out_bad.write('\n'.join([str(i) for i in hic_data.bads.keys()]))
     out_bad.close()
@@ -392,6 +388,13 @@ def populate_args(parser):
                         help=('[%(default)s%%] maximum percentage of zeroes '
                               'allowed per column.'))
 
+    glopts.add_argument('--min_count', dest='min_count', metavar="INT",
+                        action='store', default=0, type=float, 
+                        help=('''[%(default)s%%] minimum number of reads mapped to
+                        a bin (recommended value could be 2500). If set this
+                        option overrides the perc_zero filtering... This option is
+                        slightly slower.'''))
+
     glopts.add_argument('--normalization', dest='resolution', metavar="STR",
                         action='store', default='ICE', nargs='+', type=str,
                         choices=['ICE', 'EXP'],
@@ -427,7 +430,8 @@ def populate_args(parser):
 
     glopts.add_argument('--fast_filter', dest='fast_filter', action='store_true',
                       default=False,
-                      help='only filter according to the percentage of zero count')
+                      help='''only filter according to the percentage of zero
+                      count or minimum count of reads''')
 
     glopts.add_argument('--force', dest='force', action='store_true',
                       default=False,

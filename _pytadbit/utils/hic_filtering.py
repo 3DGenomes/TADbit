@@ -14,12 +14,10 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
-
 def get_r2 (fun, X, Y, *args):
     sstot = sum([(Y[i]-np.mean(Y))**2 for i in xrange(len(Y))])
     sserr = sum([(Y[i] - fun(X[i], *args))**2 for i in xrange(len(Y))])
     return 1 - sserr/sstot
-
 
 def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None):
     """
@@ -168,12 +166,14 @@ def filter_by_mean(matrx, draw_hist=False, silent=False, bads=None, savefig=None
         plt.close('all')
     return bads
 
-
-def filter_by_zero_count(matrx, perc_zero, silent=True):
+def filter_by_zero_count(matrx, perc_zero, min_count=None, silent=True):
     """
     :param matrx: Hi-C matrix of a given experiment
     :param perc: percentage of cells with no count allowed to consider a column
        as valid.
+    :param None min_count: minimum number of reads mapped to a bin (recommended
+       value could be 2500). If set this option overrides the perc_zero
+       filtering... This option is slightly slower.
 
     :returns: a dicitionary, which has as keys the index of the filtered out
        columns.
@@ -181,23 +181,39 @@ def filter_by_zero_count(matrx, perc_zero, silent=True):
     bads = {}
     size = len(matrx)
     cols = [size for i in xrange(size)]
-    for k in matrx:
-        cols[k / size] -= 1
-    min_val = int(size * float(perc_zero) / 100)
+    if min_count is None:
+        for k in matrx:
+            cols[k / size] -= 1
+        min_val = int(size * float(perc_zero) / 100)
+    else:
+        for k in matrx:
+            cols[k / size] -= matrx[k]
+        min_val = size - min_count
+    if min_count is None:
+        check = lambda x: x > min_val
+    else:
+        check = lambda x: x < min_count
     for i, col in enumerate(cols):
-        if col > min_val:
+        if check(col):
             bads[i] = True
     if bads and not silent:
-        stderr.write(('\nWARNING: removing columns having more than %s ' +
-                      'zeroes:\n %s\n') % (
-                         min_val, ' '.join(
-                             ['%5s'%str(i + 1) + (''if (j + 1) % 20 else '\n')
-                              for j, i in enumerate(sorted(bads.keys()))])))
+        if min_count is None:
+            stderr.write(('\nWARNING: removing columns having more than %s ' +
+                          'zeroes:\n %s\n') % (
+                             min_val, ' '.join(
+                                 ['%5s' % str(i + 1) + (''if (j + 1) % 20 else '\n')
+                                  for j, i in enumerate(sorted(bads.keys()))])))
+        else:
+            stderr.write(('\nWARNING: removing columns having less than %s ' +
+                          'counts:\n %s\n') % (
+                             int(size - min_val), ' '.join(
+                                 ['%5s' % str(i + 1) + (''if (j + 1) % 20 else '\n')
+                                  for j, i in enumerate(sorted(bads.keys()))])))
     return bads
 
-
 def hic_filtering_for_modelling(matrx, silent=False, perc_zero=90, auto=True,
-                                draw_hist=False, savefig=None, diagonal=True):
+                                min_count=None, draw_hist=False, savefig=None,
+                                diagonal=True):
     """
     Call filtering function, to remove artefactual columns in a given Hi-C
     matrix. This function will detect columns with very low interaction
@@ -213,13 +229,16 @@ def hic_filtering_for_modelling(matrx, silent=False, perc_zero=90, auto=True,
     :param True diagonal: remove row/columns with zero in the diagonal
     :param 90 perc_zero: maximum percentage of cells with no interactions
        allowed.
+    :param None min_count: minimum number of reads mapped to a bin (recommended
+       value could be 2500). If set this option overrides the perc_zero
+       filtering... This option is slightly slower.
     :param True auto: if False, only filters based on the given percentage
        zeros
 
     :returns: the indexes of the columns not to be considered for the
        calculation of the z-score
     """
-    bads = filter_by_zero_count(matrx, perc_zero, silent=silent)
+    bads = filter_by_zero_count(matrx, perc_zero, min_count=min_count, silent=silent)
     if auto:
         bads.update(filter_by_mean(matrx, draw_hist=draw_hist, silent=silent,
                                    savefig=savefig, bads=bads))
