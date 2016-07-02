@@ -1000,17 +1000,20 @@ class StructuralModels(object):
             if use_mass_center:
                 subdists = []
                 for m in models:
-                    coord1 = get_center_of_mass(
-                        self[m]['x'][part1:part2],
-                        self[m]['y'][part1:part2],
-                        self[m]['z'][part1:part2],
-                        self._zeros)
-                    coord2 = get_center_of_mass(
-                        self[m]['x'][part2:part3],
-                        self[m]['y'][part2:part3],
-                        self[m]['z'][part2:part3],
-                        self._zeros)
-                    subdists.append(distance(coord1, coord2))
+                    try:
+                        coord1 = get_center_of_mass(
+                            self[m]['x'][part1:part2],
+                            self[m]['y'][part1:part2],
+                            self[m]['z'][part1:part2],
+                            self._zeros)
+                        coord2 = get_center_of_mass(
+                            self[m]['x'][part2:part3],
+                            self[m]['y'][part2:part3],
+                            self[m]['z'][part2:part3],
+                            self._zeros)
+                        subdists.append(distance(coord1, coord2))
+                    except ZeroDivisionError: # part1==part2 or part2==part3
+                        subdists.append(float('nan'))
                 dists.append([float(interval * self.resolution) / d for d in subdists])
             else:
                 dist1 = self.median_3d_dist(part1 + 1, part2 + 1, models,
