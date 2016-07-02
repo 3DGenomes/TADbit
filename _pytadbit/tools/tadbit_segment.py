@@ -41,8 +41,7 @@ def run(opts):
 
     mreads = path.join(opts.workdir, mreads)
     bad_co = path.join(opts.workdir, bad_co)
-    if not opts.only_tads:
-        biases = path.join(opts.workdir, biases)
+    biases = path.join(opts.workdir, biases)
 
     mkdir(path.join(opts.workdir, '05_segmentation'))
 
@@ -52,9 +51,12 @@ def run(opts):
     print 'loading filtered columns %s' % (bad_co)
     print '    with %d of %d filtered out columns' % (len(hic_data.bads),
                                                       len(hic_data))
-    if not opts.only_tads:
+    try:
         hic_data.bias = dict((int(l.split()[0]), float(l.split()[1]))
                              for l in open(biases))
+    except IOError:
+        if not opts.only_tads:
+            raise Exception('ERROR: data should be normalized to get compartments')
 
     # compartments
     cmp_result = {}
