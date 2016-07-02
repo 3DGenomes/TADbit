@@ -46,9 +46,12 @@ def run(opts):
 
     mkdir(path.join(opts.workdir, '05_segmentation'))
 
-    print 'loading %s at resolution %s' % (mreads, nice(reso))
+    print 'loading %s \n    at resolution %s' % (mreads, nice(reso))
     hic_data = load_hic_data_from_reads(mreads, reso)
     hic_data.bads = dict((int(l.strip()), True) for l in open(bad_co))
+    print 'loading filtered columns %s' % (bad_co)
+    print '    with %d of %d filtered out columns' % (len(hic_data.bads),
+                                                      len(hic_data))
     if not opts.only_tads:
         hic_data.bias = dict((int(l.split()[0]), float(l.split()[1]))
                              for l in open(biases))
