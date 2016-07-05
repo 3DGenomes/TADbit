@@ -128,10 +128,12 @@ def autoreader(f):
     if ncol != nrow:
         raise AutoReadFail('ERROR: non square matrix')
 
+    symmetricized = False
     if is_asymmetric(items):
         warn('WARNING: matrix not symmetric: summing cell_ij with cell_ji')
         symmetrize(items)
-    return tuple([a for line in items for a in line]), ncol, header, masked
+        symmetricized = True
+    return tuple([a for line in items for a in line]), ncol, header, masked, symmetricized
 
 def _header_to_section(header, resolution):
     """
@@ -205,20 +207,21 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
         if isinstance(thing, HiC_data):
             matrices.append(thing)
         elif isinstance(thing, file):
-            matrix, size, header, masked = parser(thing)
+            matrix, size, header, masked, sym = parser(thing)
             thing.close()
             chromosomes, sections, resolution = _header_to_section(header,
                                                                    resolution)
             matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
                                       if matrix[i]], size, dict_sec=sections,
                                      chromosomes=chromosomes,
-                                     resolution=resolution))
+                                     resolution=resolution,
+                                     symmetricized=sym))
         elif isinstance(thing, str):
             try:
-                matrix, size, header, masked = parser(gzopen(thing))
+                matrix, size, header, masked, sym = parser(gzopen(thing))
             except IOError:
                 if len(thing.split('\n')) > 1:
-                    matrix, size, header, masked = parser(thing.split('\n'))
+                    matrix, size, header, masked, sym = parser(thing.split('\n'))
                 else:
                     raise IOError('\n   ERROR: file %s not found\n' % thing)
             sections = dict([(h, i) for i, h in enumerate(header)])
@@ -227,7 +230,8 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
             matrices.append(HiC_data([(i, matrix[i]) for i in xrange(size**2)
                                       if matrix[i]], size, dict_sec=sections,
                                      chromosomes=chromosomes, masked=masked,
-                                     resolution=resolution))
+                                     resolution=resolution,
+                                     symmetricized=sym))
         elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
                 matrix  = reduce(lambda x, y: x+y, thing)
@@ -302,6 +306,7 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
             ps2 = int(ps2) / resolution
         imx[ps1, ps2] += 1
         imx[ps2, ps1] += 1
+        imx.symmetricized = True
         try:
             line = fhandler.next()
         except StopIteration:

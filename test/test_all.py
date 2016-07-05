@@ -567,9 +567,9 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual([round(x, 2) for x in models.particle_coordinates(15)],
                          [3199.84, 4361.61, -4695.41])
         # dihedral_angle
-        self.assertTrue (round(models.dihedral_angle(2,8,15, 16)  , 2), -13.44)
-        self.assertEqual(round(models.dihedral_angle(15,19,20,21) , 2), 64.26 )
-        self.assertEqual(round(models.dihedral_angle(15,14,11, 12), 2), 8.95  )
+        self.assertTrue (round(models.dihedral_angle(2 ,  8, 15,  8, 16, [0])[0], 2), -13.44)
+        self.assertEqual(round(models.dihedral_angle(15, 19, 20, 19, 21, [0])[0], 2),  75.95)
+        self.assertEqual(round(models.dihedral_angle(15, 14, 11, 14, 12, [0])[0], 2),   2.07)
         # median distance
         self.assertEqual(round(models.median_3d_dist(3, 20, plot=False)/100, 0),
                          15)

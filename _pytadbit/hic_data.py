@@ -32,7 +32,7 @@ class HiC_data(dict):
     This may also hold the print/write-to-file matrix functions
     """
     def __init__(self, items, size, chromosomes=None, dict_sec=None,
-                 resolution=1, masked=None):
+                 resolution=1, masked=None, symmetricized=False):
         super(HiC_data, self).__init__(items)
         self.__size = size
         self._size2 = size**2
@@ -43,6 +43,7 @@ class HiC_data(dict):
         self.section_pos = {}
         self.resolution = resolution
         self.expected = None
+        self.symmetricized = symmetricized
         self.compartments = {}
         if self.chromosomes:
             total = 0

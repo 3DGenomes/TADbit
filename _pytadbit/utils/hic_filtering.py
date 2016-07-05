@@ -180,14 +180,17 @@ def filter_by_zero_count(matrx, perc_zero, min_count=None, silent=True):
     """
     bads = {}
     size = len(matrx)
-    cols = [size for i in xrange(size)]
     if min_count is None:
+        cols = [size for i in xrange(size)]
         for k in matrx:
             cols[k / size] -= 1
         min_val = int(size * float(perc_zero) / 100)
     else:
-        for k in matrx:
-            cols[k / size] -= matrx[k]
+        if matrx.symmetricized:
+            min_count *= 2
+        cols = [0 for i in xrange(size)]
+        for k, v in matrx.iteritems(): # linear representation of the matrix
+            cols[k / size] += v
         min_val = size - min_count
     if min_count is None:
         check = lambda x: x > min_val
