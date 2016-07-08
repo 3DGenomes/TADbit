@@ -74,7 +74,9 @@ def run(opts):
                 continue
             ev_file = open(path.join(cmprt_dir,
                                      '%s_EigVect_%s.tsv' % (crm, param_hash)), 'w')
-            ev_file.write('\n'.join([str(v) for v in firsts[crm]]))
+            ev_file.write('# first EV\tsecond EV\n')
+            ev_file.write('\n'.join(['\t'.join([str(v) for v in vs])
+                                     for vs in zip(*firsts[crm])]))
             ev_file.close()
 
         for crm in opts.crms or hic_data.chromosomes:
