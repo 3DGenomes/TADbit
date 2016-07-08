@@ -6,22 +6,24 @@ information needed
 
 """
 
-from argparse                       import HelpFormatter
-from os                             import path, listdir
-from pytadbit.imp.imp_modelling import generate_3d_models, TADbitModelingOutOfBound
-from pytadbit import load_structuralmodels
-from pytadbit import Chromosome
-from pytadbit.utils.file_handling   import mkdir
-from pytadbit.utils.sqlite_utils    import get_path_id, add_path, print_db, get_jobid
-from pytadbit.utils.sqlite_utils    import already_run, digest_parameters
-from itertools import product
-import time
-import logging
-import fcntl
+from argparse                     import HelpFormatter
+from os                           import path, listdir, remove
+from string                       import ascii_letters
+from random                       import random
+from shutil                       import copyfile
+from pytadbit.imp.imp_modelling   import generate_3d_models, TADbitModelingOutOfBound
+from pytadbit                     import load_structuralmodels
+from pytadbit                     import Chromosome
+from pytadbit.utils.file_handling import mkdir
+from pytadbit.utils.sqlite_utils  import get_path_id, add_path, print_db, get_jobid
+from pytadbit.utils.sqlite_utils  import digest_parameters
+from pytadbit                     import load_hic_data_from_reads
+from itertools                    import product
+from warnings                     import warn
+from numpy                        import arange
+from cPickle                      import load
 import sqlite3 as lite
-from warnings import warn
-from numpy import arange
-from cPickle import load
+import time
 
 
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
@@ -208,7 +210,16 @@ def run(opts):
     mkdir(outdir)
 
     # load data
-    crm = load_hic_data(opts)
+    if opts.matrix:
+        crm = load_hic_data(opts)
+    else:
+        (bad_co, bad_co_id, biases, biases_id,
+         mreads, mreads_id, reso) = load_parameters_fromdb(opts)
+        hic_data = load_hic_data_from_reads(mreads, reso)
+        hic_data.bads = dict((int(l.strip()), True) for l in open(bad_co))
+        hic_data.bias = dict((int(l.split()[0]), float(l.split()[1]))
+                             for l in open(biases))
+        
     exp = crm.experiments[0]
     opts.beg, opts.end = opts.beg or 1, opts.end or exp.size
 
@@ -273,7 +284,21 @@ def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
 
 def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                launch_time, finish_time):
-    con = lite.connect(path.join(opts.workdir, 'trace.db'))
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        try: # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
     with con:
         cur = con.cursor()
         cur.execute("""SELECT name FROM sqlite_master WHERE
@@ -344,53 +369,15 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
         print_db(cur, 'MAPPED_OUTPUTs')
         print_db(cur, 'PARSED_OUTPUTs')
         print_db(cur, 'JOBs')
-
-def load_parameters_fromdb(workdir, reads=None, jobids=None):
-    con = lite.connect(path.join(workdir, 'trace.db'))
-    fnames = {1: [], 2: []}
-    ids = []
-    with con:
-        cur = con.cursor()
-        # fetch file names to parse
-        if not jobids:
-            jobids = {}
-            for read in reads:
-                cur.execute("""
-                select distinct JOBs.Id from JOBs
-                   inner join PATHs on (JOBs.Id = PATHs.JOBid)
-                   inner join MAPPED_INPUTs on (PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid)
-                 where MAPPED_INPUTs.Read = %d
-                """ % read)
-                jobids[read] = [j[0] for j in cur.fetchall()]
-                if len(jobids[read]) > 1:
-                    warn(('WARNING: more than one possible input found for read %d '
-                          '(jobids: %s), use "tadbit describe" and select corresponding '
-                          'jobid with --jobids option') % (
-                             read, ', '.join([str(j) for j in jobids[read]])))
-        for read in reads:
-            for jobid in jobids[read]:
-                cur.execute("""
-                select distinct PATHs.Id,PATHs.Path from PATHs
-                inner join MAPPED_INPUTs on PATHs.Id = MAPPED_INPUTs.MAPPED_OUTPUTid
-                where MAPPED_INPUTs.Read = %d and PATHs.JOBid = %d
-                """ % (read, jobid))
-                for fname in cur.fetchall():
-                    ids.append(fname[0])
-                    fnames[read].append(path.join(workdir, fname[1]))
-        # GET enzyme name
-        enzymes = []
-        for fid in ids:
-            cur.execute("""
-            select distinct MAPPED_INPUTs.Enzyme from MAPPED_INPUTs
-            where MAPPED_INPUTs.MAPPED_OUTPUTid=%d
-            """ % fid)
-            enzymes.extend(cur.fetchall())
-        if len(set(reduce(lambda x, y: x+ y, enzymes))) != 1:
-            raise Exception(
-                'ERROR: different enzymes used to generate these files')
-        renz = enzymes[0][0]
-    return fnames[1], fnames[2], renz
-        
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
 def populate_args(parser):
     """
@@ -418,9 +405,6 @@ def populate_args(parser):
                         help='''[%(default)s] random initial number. NOTE:
                         when running single model at the time, should be
                         different for each run''')
-    glopts.add_argument('--skip', dest='skip', action='store_true',
-                      default=False,
-                      help='[DEBUG] in case already mapped.')
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
@@ -481,10 +465,17 @@ def populate_args(parser):
                         than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
+    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''if provided uses this directory to manipulate the
+                        database''')
 
     parser.add_argument_group(glopts)
 
 def check_options(opts):
+    # check resume
+    if not path.exists(opts.workdir):
+        raise IOError('ERROR: wordir not found.')
     # do the division to bins
     try:
         opts.beg = int(float(opts.beg) / opts.reso)
@@ -513,10 +504,64 @@ def check_options(opts):
 
     opts.nmodels_run = opts.nmodels_run or opts.nmodels
 
-    opts.matrix  = path.abspath(opts.matrix)
+    if opts.matrix:
+        opts.matrix  = path.abspath(opts.matrix)
     opts.workdir = path.abspath(opts.workdir)
 
     mkdir(opts.workdir)
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbdir = opts.tmpdb
+        # tmp file
+        dbfile = 'trace_%s' % (''.join([ascii_letters[int(random() * 52)]
+                                        for _ in range(10)]))
+        opts.tmpdb = path.join(dbdir, dbfile)
+
+def load_parameters_fromdb(opts):
+    if 'tmpdb' in opts and opts.tmpdb:
+        dbfile = opts.tmpdb
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+    con = lite.connect(dbfile)
+    with con:
+        cur = con.cursor()
+        if not opts.jobid:
+            # get the JOBid of the parsing job
+            cur.execute("""
+            select distinct Id from JOBs
+            where Type = 'Normalize'
+            """)
+            jobids = cur.fetchall()
+            if len(jobids) > 1:
+                raise Exception('ERROR: more than one possible input found, use'
+                                '"tadbit describe" and select corresponding '
+                                'jobid with --jobid')
+            parse_jobid = jobids[0][0]
+        else:
+            parse_jobid = opts.jobid
+        # fetch path to parsed BED files
+        cur.execute("""
+        select distinct Path, PATHs.Id from PATHs
+        where paths.jobid = %s and paths.Type = 'BAD_COLUMNS'
+        """ % parse_jobid)
+        bad_co, bad_co_id  = cur.fetchall()[0]
+        cur.execute("""
+        select distinct Path, PATHs.Id from PATHs
+        where paths.jobid = %s and paths.Type = 'BIASES'
+        """ % parse_jobid)
+        biases, biases_id = cur.fetchall()[0]
+        cur.execute("""
+        select distinct Path, PATHs.Id from PATHs
+        inner join NORMALIZE_OUTPUTs on PATHs.Id = NORMALIZE_OUTPUTs.Input
+        where NORMALIZE_OUTPUTs.JOBid = %d;
+        """ % parse_jobid)
+        mreads, mreads_id = cur.fetchall()[0]
+        cur.execute("""
+        select distinct Resolution from NORMALIZE_OUTPUTs
+        where NORMALIZE_OUTPUTs.JOBid = %d;
+        """ % parse_jobid)
+        reso = int(cur.fetchall()[0][0])
+        return (bad_co, bad_co_id, biases, biases_id,
+                mreads, mreads_id, reso)
 
 def load_hic_data(opts):
     """

@@ -296,20 +296,20 @@ def load_hic_data_from_reads(fnam, resolution, **kwargs):
             sections.extend([(crm, i) for i in xrange(len_crm)])
     dict_sec = dict([(j, i) for i, j in enumerate(sections)])
     imx = HiC_data((), size, genome_seq, dict_sec, resolution=resolution)
-    while True:
-        _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
-        try:
-            ps1 = dict_sec[(cr1, int(ps1) / resolution)]
-            ps2 = dict_sec[(cr2, int(ps2) / resolution)]
-        except KeyError:
-            ps1 = int(ps1) / resolution
-            ps2 = int(ps2) / resolution
-        imx[ps1, ps2] += 1
-        imx[ps2, ps1] += 1
-        imx.symmetricized = True
-        try:
+    try:
+        while True:
+            _, cr1, ps1, _, _, _, _, cr2, ps2, _ = line.split('\t', 9)
+            try:
+                ps1 = dict_sec[(cr1, int(ps1) / resolution)]
+                ps2 = dict_sec[(cr2, int(ps2) / resolution)]
+            except KeyError:
+                ps1 = int(ps1) / resolution
+                ps2 = int(ps2) / resolution
+            imx[ps1, ps2] += 1
+            imx[ps2, ps1] += 1
             line = fhandler.next()
-        except StopIteration:
-            break
+    except StopIteration:
+        pass
+    imx.symmetricized = True
     return imx
 
