@@ -164,14 +164,14 @@ def run(opts):
     if "genome" in opts.keep:
         print "  Saving normalized genomic matrix..."
         if opts.only_txt:
+            genom_map_nrm_fig = None
+            genom_map_raw_fig = None
+        else:
             if not opts.filter_only:
                 genom_map_nrm_fig = path.join(opts.workdir, '04_normalization',
                                               'genomic_maps_nrm_%s_%s.pdf' % (opts.reso, param_hash))
             genom_map_raw_fig = path.join(opts.workdir, '04_normalization',
                                           'genomic_maps_raw_%s_%s.pdf' % (opts.reso, param_hash))
-        else:
-            genom_map_nrm_fig = None
-            genom_map_raw_fig = None
         if not opts.filter_only:
             genom_map_nrm_txt = path.join(opts.workdir, '04_normalization',
                                           'genomic_nrm_%s_%s.tsv' % (opts.reso, param_hash))
