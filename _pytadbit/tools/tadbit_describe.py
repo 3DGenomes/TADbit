@@ -24,12 +24,19 @@ def run(opts):
     else:
         dbfile = path.join(opts.workdir, 'trace.db')
     con = lite.connect(dbfile)
+    if opts.tsv and path.exists(opts.tsv):
+        remove(opts.tsv)
     with con:
         cur = con.cursor()
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
         for table in cur.fetchall():
+            if table[0].lower() in ['jobs', 'paths'] and opts.tsv:
+                continue
             if table[0].lower() in opts.tables:
-                print_db(cur, table[0])
+                print_db(cur, table[0], savedata=opts.tsv, append=True,
+                         no_print=['JOBid','Id', 'Input',
+                                   '' if table[0]=='MAPPED_OUTPUTs'
+                                   else 'PATHid'] if opts.tsv else '')
     if 'tmpdb' in opts and opts.tmpdb:
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
         remove(dbfile)
@@ -62,6 +69,11 @@ def populate_args(parser):
                         metavar='PATH', type=str,
                         help='''if provided uses this directory to manipulate the
                         database''')
+
+    glopts.add_argument('--tsv', dest='tsv', action='store', default=None,
+                        metavar='PATH', type=str,
+                        help='''store output in tab separated format to the
+                        provided path.''')
 
     parser.add_argument_group(glopts)
 

@@ -103,22 +103,66 @@ def add_path(cur, path, typ, jobid, workdir=None):
     except lite.IntegrityError:
         pass
 
-def print_db(cur, name, no_print=''):
+def print_db(cur, name, no_print='', savedata=None, append=False):
+    """
+    print the content of a table to stdout in ascii/human-friendly format,
+    or write it to a file in tab separated format (suitable for excel).
+
+    :param cur: sqlite cursor
+    :param name: DB name
+    :param '' no_print: columns to skip
+    :param None savedata: path to file. If provided than output will be saved in
+       tsv format,otherwise, it will be written to stdout in ascii format
+    :param False append: whether to append to file,or to overwrite it.
+    """
     cur.execute('select * from %s' % name)
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
-    if no_print in names:
-        bad = names.index(no_print)
-        names.pop(bad)
-        rows = [[v for i, v in enumerate(row) if i != bad] for row in rows]
-    cols = [max(vals) for vals in zip(*[[len(str(v)) for v in row]
-                                        for row in rows + [names]])]
+    if isinstance(no_print, str):
+        no_print = [no_print]
+    for nop in no_print:
+        if nop in names:
+            bad = names.index(nop)
+            names.pop(bad)
+            rows = [[v for i, v in enumerate(row) if i != bad] for row in rows]
+    if savedata is None:
+        cols = [max(vals) for vals in zip(*[[len(str(v)) for v in row]
+                                            for row in rows + [names]])]
+        _ascii_print_db(name, names, cols, rows)
+    else:
+        if name == 'FILTER_OUTPUTs':
+            _rev_tsv_print_db(names,rows,savedata, append)
+        else:
+            _tsv_print_db(name,names,rows,savedata, append)
+
+def _ascii_print_db(name, names, cols, rows):
     print ',-' + '-' * len(name) + '-.'
     print '| ' + name + ' |'
     print ',-' + '-.-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-.'
-    print '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v) for i, v in enumerate(names)]) + ' |'
+    print '| ' + ' | '.join([('%{}s'.format(cols[i])) % str(v)
+                             for i, v in enumerate(names)]) + ' |'
     print '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|'
     print '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
                                         for i, v in enumerate(row)]) + ' |'
                               for row in rows])
     print "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'"
+
+def _tsv_print_db(name, names, rows, savedata, append):
+    out = open(savedata, 'a' if append else 'w')
+    out.write('\t' + '\t'.join(names) + '\n')
+    out.write(name)
+    for row in rows:
+        out.write('\t' + '\t'.join([str(v) for v in row]) + '\n')
+    out.write('\n')
+    out.close()
+
+def _rev_tsv_print_db(names, rows, savedata, append):
+    out = open(savedata, 'a' if append else 'w')
+    pos = names.index('Name')
+    out.write('\t'.join([row[pos] for row in rows]) + '\n')
+    for col in xrange(len(rows[pos])):
+        if col == pos:
+            continue
+        out.write('\t'.join([str(row[col]) for row in rows]) + '\n')
+    out.write('\n')
+    out.close()
