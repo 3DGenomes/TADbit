@@ -247,7 +247,10 @@ class HiC_data(dict):
                 continue
             if valid(i, j): # diagonal thing
                 intra += transform(v, i, j)
-        return float(intra) / self.sum(bias=self.bias if normalized else None, bads=bads)
+        try:
+            return float(intra) / self.sum(bias=self.bias if normalized else None, bads=bads)
+        except ZeroDivisionError:
+            return 0.
 
     def filter_columns(self, draw_hist=False, savefig=None, perc_zero=75,
                        by_mean=True, min_count=None, silent=False):
