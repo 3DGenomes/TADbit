@@ -624,7 +624,7 @@ class HiC_data(dict):
                 count += 1
                 continue
             index = ev_index[count] if ev_index else 1
-            two_first = [evect[:, -1], evect[:, -2]]
+            two_first = [list(evect[:, -1]), list(evect[:, -2])]
             for ev_num in range(index, 3):
                 first = list(evect[:, -ev_num])
                 breaks = [i for i, (a, b) in
@@ -648,6 +648,8 @@ class HiC_data(dict):
             ev_nums[sec] = ev_num
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]
+            for evect in two_first:
+                _ = [evect.insert(b, 0) for b in bads]
             _ = [first.insert(b, 0) for b in bads]
             _ = [matrix.insert(b, [float('nan')] * len(matrix[0]))
                  for b in bads]
