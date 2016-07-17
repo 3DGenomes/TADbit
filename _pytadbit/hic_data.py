@@ -649,7 +649,7 @@ class HiC_data(dict):
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]
             for evect in two_first:
-                _ = [evect.insert(b, 0) for b in bads]
+                _ = [evect.insert(b, float('nan')) for b in bads]
             _ = [first.insert(b, 0) for b in bads]
             _ = [matrix.insert(b, [float('nan')] * len(matrix[0]))
                  for b in bads]
