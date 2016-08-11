@@ -15,9 +15,11 @@ from pytadbit.imp.imp_modelling   import generate_3d_models, TADbitModelingOutOf
 from pytadbit                     import load_structuralmodels
 from pytadbit                     import Chromosome
 from pytadbit.utils.file_handling import mkdir
+from pytadbit.utils.extraviews    import nicer
 from pytadbit.utils.sqlite_utils  import get_path_id, add_path, print_db, get_jobid
 from pytadbit.utils.sqlite_utils  import digest_parameters
 from pytadbit                     import load_hic_data_from_reads
+from pytadbit                     import get_dependencies_version
 from itertools                    import product
 from warnings                     import warn
 from numpy                        import arange
@@ -29,6 +31,7 @@ import time
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
 
+
 def write_one_job(opts, rand, m, u, l, s, job_file_handler):
     (m, u, l, s) = tuple(map(my_round, (m, u, l, s)))
     job_file_handler.write(
@@ -39,11 +42,12 @@ def write_one_job(opts, rand, m, u, l, s, job_file_handler):
             opts.workdir, opts.reso,
             min(opts.cpus, opts.nmodels_run), opts.matrix,
             m, u, l, s, rand,
-            opts.nmodels_run, # equal to nmodels if not defined
-            opts.nkeep, # keep, equal to nmodel_run if defined
+            opts.nmodels_run,  # equal to nmodels if not defined
+            opts.nkeep,        # keep, equal to nmodel_run if defined
             opts.beg * opts.reso, opts.end * opts.reso,
             opts.perc_zero,
             '--optimize ' if opts.optimize else ''))
+
 
 def run_batch_job(exp, opts, m, u, l, s, outdir):
     zscores, values, zeros = exp._sub_experiment_zscore(opts.beg, opts.end)
@@ -74,14 +78,16 @@ def run_batch_job(exp, opts, m, u, l, s, outdir):
                   if opts.nmodels > 1 else 
                   ('model_%s.pick' % (opts.rand))))
 
+
 def my_round(num, val=4):
     num = round(float(num), val)
     return str(int(num) if num == int(num) else num)
 
+
 def optimization(exp, opts, job_file_handler, outdir):
     models = compile_models(opts, outdir)
-    print 'Optimizing parameters...'
-    print ('# %3s %6s %7s %7s %6s\n' % (
+    print('\nOptimizing parameters...')
+    print('# %3s %6s %7s %7s %6s\n' % (
         "num", "upfrq", "lowfrq", "maxdist",
         "scale"))
     for m, u, l, s in product(opts.maxdist, opts.upfreq, opts.lowfreq, opts.scale):
@@ -113,6 +119,7 @@ def optimization(exp, opts, job_file_handler, outdir):
     if opts.job_list:
         job_file_handler.close()
 
+
 def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
                      verbose=True):
     models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
@@ -141,10 +148,10 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
                 result = 0
         if verbose:
             print('%5s/%-5s %6s %7s %7s %6s %6s %.4f' % (num, len(models),
-                                                        u, l, m, s, d, result))
+                                                         u, l, m, s, d, result))
         results[muls] = result
     # get the best combination
-    best= (None, [None, None, None, None, None])
+    best = (None, [None, None, None, None, None])
     for m, u, l, d, s in results:
         mulds = tuple(map(my_round, (m, u, l, d, s)))
         if results[mulds] > best[0]:
@@ -161,6 +168,7 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
               'kforce' : 5}
     return optpar, d
     
+
 def big_run(exp, opts, job_file_handler, outdir, optpar):
     m, u, l, s = (optpar['maxdist'], 
                   optpar['upfreq' ],
@@ -198,10 +206,22 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
              'lower than maxdist (here %d instead of at least: %d)' % (
                  s, opts.reso, m, s * opts.reso))
 
+
 def run(opts):
     check_options(opts)
 
     launch_time = time.localtime()
+
+    print('''
+%s
+
+  - Region: Chromosome %s from %d to %d at resolution %s (%d particles)
+
+
+    ''' % (('Optimizing\n' + '*' * 10) if opts.optimize else
+           ('Modeling\n' + '*' * 8),
+           opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
+           opts.end - opts.beg))
 
     # prepare output folders
     mkdir(path.join(opts.workdir, '06_model'))
@@ -219,7 +239,7 @@ def run(opts):
         hic_data.bads = dict((int(l.strip()), True) for l in open(bad_co))
         hic_data.bias = dict((int(l.split()[0]), float(l.split()[1]))
                              for l in open(biases))
-        
+
     exp = crm.experiments[0]
     opts.beg, opts.end = opts.beg or 1, opts.end or exp.size
 
@@ -233,12 +253,15 @@ def run(opts):
     if opts.optimize:
         optimization(exp, opts, job_file_handler, outdir)
         finish_time = time.localtime()
+        print('\n optimization done')
         return
 
-    # correlate all optimizations and get best set of parqameters
+    # correlate all optimization and get best set of parameters
     optpar, dcutoff = correlate_models(opts, outdir, exp)
 
-    # run good mmodels
+    print 'BEST:', optpar
+
+    # run good models
     big_run(exp, opts, job_file_handler, outdir, optpar)
 
     finish_time = time.localtime()
@@ -246,6 +269,7 @@ def run(opts):
     # save all job information to sqlite DB
     # save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
     #            launch_time, finish_time)
+
 
 def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
     if exp:
@@ -263,7 +287,7 @@ def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
         for fmodel in listdir(path.join(outdir, cfg_dir)):
             if not fmodel.startswith('models_'):
                 continue
-            if not muls in models:
+            if muls not in models:
                 # print 'create new optimization entry', m, u, l, s, fmodel
                 models[muls] = load_structuralmodels(path.join(
                     outdir, cfg_dir, fmodel))
@@ -271,7 +295,8 @@ def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
                 # print 'populate optimization entry', m, u, l, s, fmodel
                 sm = load(open(path.join(outdir, cfg_dir, fmodel)))
                 if models[muls]._config != sm['config']:
-                    raise Exception('ERROR: clean directory, hetergoneous data')
+                    raise Exception('ERROR: clean directory, '
+                                    'heterogeneous data')
                 models[muls]._extend_models(sm['models'])
                 models[muls]._extend_models(sm['bad_models'])
             if exp:
@@ -281,6 +306,7 @@ def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
             if ngood:
                 models[muls].define_best_models(ngood)
     return models
+
 
 def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
                launch_time, finish_time):
@@ -292,7 +318,7 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
         open(path.join(opts.workdir, '__lock_db'), 'a').close()
         # tmp file
         dbfile = opts.tmpdb
-        try: # to copy in case read1 was already mapped for example
+        try:  # to copy in case read1 was already mapped for example
             copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
         except IOError:
             pass
@@ -379,18 +405,19 @@ def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
     except OSError:
         pass
 
+
 def populate_args(parser):
     """
     parse option from call
     """
-    parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
-                                                      max_help_position=27)
+    parser.formatter_class = lambda prog: HelpFormatter(prog, width=95,
+                                                        max_help_position=27)
 
     glopts = parser.add_argument_group('General options')
 
     glopts.add_argument('--job_list', dest='job_list', action='store_true',
-                      default=False,
-                      help='generate a a file with a list of jobs to be run in '
+                        default=False,
+                        help='generate a a file with a list of jobs to be run in '
                         'a cluster')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
@@ -431,7 +458,7 @@ def populate_args(parser):
     glopts.add_argument('--nkeep', dest='nkeep', metavar="INT",
                         default=1000, type=int,
                         help=('[%(default)s] number of models to keep for ' +
-                        'modeling'))
+                              'modeling'))
     glopts.add_argument('--perc_zero', dest='perc_zero', metavar="FLOAT",
                         type=float, default=90)
 
@@ -472,12 +499,24 @@ def populate_args(parser):
 
     parser.add_argument_group(glopts)
 
+
 def check_options(opts):
     # check resume
     if not path.exists(opts.workdir):
-        raise IOError('ERROR: wordir not found.')
+        warn('ERROR: workdir not found, creating it')
+        mkdir(opts.workdir)
+        # write version log
+        vlog_path = path.join(opts.workdir, 'TADbit_and_dependencies_versions.log')
+        dependencies = get_dependencies_version()
+        if not path.exists(vlog_path) or open(vlog_path).readlines() != dependencies:
+            print('Writing versions of TADbit and dependencies')
+            vlog = open(vlog_path, 'w')
+            vlog.write(dependencies)
+            vlog.close()
     # do the division to bins
     try:
+        opts.ori_beg = opts.beg
+        opts.ori_end = opts.end
         opts.beg = int(float(opts.beg) / opts.reso)
         opts.end = int(float(opts.end) / opts.reso)
         if opts.end - opts.beg <= 2:
@@ -516,7 +555,12 @@ def check_options(opts):
                                         for _ in range(10)]))
         opts.tmpdb = path.join(dbdir, dbfile)
 
+
 def load_parameters_fromdb(opts):
+    """
+    TODO: should load optimization specific parameters like nkeep nmodels etc.. 
+          to ensure they are always the same.
+    """
     if 'tmpdb' in opts and opts.tmpdb:
         dbfile = opts.tmpdb
     else:
@@ -563,12 +607,13 @@ def load_parameters_fromdb(opts):
         return (bad_co, bad_co_id, biases, biases_id,
                 mreads, mreads_id, reso)
 
+
 def load_hic_data(opts):
     """
     Load Hi-C data
     """
     # Start reading the data
-    crm = Chromosome(opts.crm) # Create chromosome object
+    crm = Chromosome(opts. crm)  # Create chromosome object
 
     crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
                        norm_data=opts.matrix)
