@@ -57,10 +57,10 @@ def run_batch_job(exp, opts, m, u, l, s, outdir):
               "start": opts.beg,
               "end"  : opts.end}
 
-    optpar = {'maxdist': m,
-              'upfreq' : u,
-              'lowfreq': l,
-              'scale'  : s,
+    optpar = {'maxdist': float(m),
+              'upfreq' : float(u),
+              'lowfreq': float(l),
+              'scale'  : float(s),
               'kforce' : 5}
 
     models = generate_3d_models(zscores, opts.reso, nloci,
@@ -124,41 +124,38 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
                      verbose=True):
     models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
     results = {}
+    num = 1
     if verbose:
-        print ('# %7s %6s %7s %7s %6s %7s\n' % (
-            "num", "upfrq", "lowfrq", "maxdist",
-            "scale", "cutoff"))
-    for num, (m, u, l, s) in enumerate(models, 1):
+        print('\n\n# %13s %6s %7s %7s %6s %7s %7s\n' % (
+            "Optimization", "UpFreq", "LowFreq", "MaxDist",
+            "scale", "cutoff", "| Correlation"))
+    for m, u, l, s in models:
         muls = tuple(map(my_round, (m, u, l, s)))
         result = 0
         d = float('nan')
-        for cutoff in opts.dcutoff:
-            sub_result = models[muls].correlate_with_real_data(
-                cutoff=(int(cutoff * opts.reso * float(s))),
-                corr=corr, off_diag=off_diag)[0]
+        for d in opts.dcutoff:
             try:
-                sub_result = models[muls].correlate_with_real_data(
-                    cutoff=(int(cutoff * opts.reso * float(s))),
+                result = models[muls].correlate_with_real_data(
+                    cutoff=(int(d * opts.reso * float(s))),
                     corr=corr, off_diag=off_diag)[0]
-                if result < sub_result:
-                    result = sub_result
-                    d = cutoff
             except Exception, e:
                 print '  SKIPPING: %s' % e
                 result = 0
-        if verbose:
-            print('%5s/%-5s %6s %7s %7s %6s %6s %.4f' % (num, len(models),
-                                                         u, l, m, s, d, result))
-        results[muls] = result
+            name = tuple(map(my_round, (m, u, l, d, s)))
+            if verbose:
+                print(('%8s/%-6s %6s %7s %7s %6s %7s | %.4f' %
+                       (num, len(models), u, l, m, s, d, result)))
+            num += 1
+            results[name] = result
     # get the best combination
     best = (None, [None, None, None, None, None])
     for m, u, l, d, s in results:
-        mulds = tuple(map(my_round, (m, u, l, d, s)))
-        if results[mulds] > best[0]:
-            best = results[mulds], [u, l, m, s, d]
+        if results[(m, u, l, d, s)] > best[0]:
+            best = results[(m, u, l, d, s)], [u, l, m, s, d]
     if verbose:
-        print 'Best combination:'
-        print('  %5s     %6s %7s %7s %6s %6s %.4f' % tuple(['=>'] + best[1] + [best[0]]))
+        print '\nBest combination:'
+        print('  %5s     %6s %7s %7s %6s %6s %.4f\n' % tuple(
+            ['=>'] + best[1] + [best[0]]))
 
     u, l, m, s, d = best[1]
     optpar = {'maxdist': m,
@@ -190,7 +187,7 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
         raise Exception('ERROR: found %s precomputed models, use a higher '
                         'rand. init. number or delete the files')
     
-    print 'Computing %s models' % len(opts.nmodels)
+    print 'Computing %s models' % opts.nmodels
     if opts.job_list:
         # write jobs
         for rand in xrange(start, opts.nmodels + start, opts.nmodels_run):
@@ -249,26 +246,119 @@ def run(opts):
     else:
         job_file_handler = None
 
-    # optimization
+    ###############
+    # Optimization
     if opts.optimize:
         optimization(exp, opts, job_file_handler, outdir)
         finish_time = time.localtime()
         print('\n optimization done')
-        return
 
-    # correlate all optimization and get best set of parameters
-    optpar, dcutoff = correlate_models(opts, outdir, exp)
+    else:
+        # correlate all optimization and get best set of parameters
+        optpar, dcutoff = correlate_models(opts, outdir, exp)
 
-    print 'BEST:', optpar
+        print 'BEST:', optpar
 
-    # run good models
-    big_run(exp, opts, job_file_handler, outdir, optpar)
+        ###########
+        # Modeling
+        big_run(exp, opts, job_file_handler, outdir, optpar)
 
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
-    # save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
-    #            launch_time, finish_time)
+    save_to_db(opts, outdir, exp, optpar,
+               launch_time, finish_time)
+
+
+def save_to_db(opts, outdir, exp, optpar,
+               launch_time, finish_time):
+    if 'tmpdb' in opts and opts.tmpdb:
+        # check lock
+        while path.exists(path.join(opts.workdir, '__lock_db')):
+            time.sleep(0.5)
+        # close lock
+        open(path.join(opts.workdir, '__lock_db'), 'a').close()
+        # tmp file
+        dbfile = opts.tmpdb
+        try:  # to copy in case read1 was already mapped for example
+            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
+        except IOError:
+            pass
+    else:
+        dbfile = path.join(opts.workdir, 'trace.db')
+
+    con = lite.connect(dbfile)
+    with con:
+        cur = con.cursor()
+        cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='JOBs'""")
+        if not cur.fetchall():
+            cur.execute("""
+            create table PATHs
+               (Id integer primary key,
+                JOBid int, Path text, Type text,
+                unique (Path))""")
+            cur.execute("""
+            create table JOBs
+               (Id integer primary key,
+                Parameters text,
+                Launch_time text,
+                Finish_time text,
+                Type text,
+                Parameters_md5 text,
+                unique (Parameters_md5))""")
+        cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='MODELED_OUTPUTs'""")
+        if not cur.fetchall():
+            cur.execute("""
+        create table MODELED_OUTPUTs
+           (Id integer primary key,
+            PATHid int,
+            BEDid int,
+            Uniquely_mapped int,
+            unique (PATHid, BEDid))""")
+        cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='OPTIMIZED_OUTPUTs'""")
+        if not cur.fetchall():
+            cur.execute("""
+        create table OPTIMIZED_OUTPUTs
+           (Id integer primary key,
+            PATHid int,
+            JOBid int,
+            MaxDist int,
+            UpFreq int,
+            LowFreq int,
+            Scale int,
+            Cutoff int,
+            Correlation int)""")
+        try:
+            parameters = digest_parameters(opts, get_md5=False)
+            # In case optimization or modeling  is split in different computers
+            param_hash = digest_parameters(opts, get_md5=True)
+            cur.execute("""
+    insert into JOBs
+     (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
+    values
+     (NULL,       '%s',        '%s',        '%s', 'Parse',           '%s')
+     """ % ((parameters, time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
+             time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash)))
+        except lite.IntegrityError:
+            pass
+        
+        jobid = get_jobid(cur)
+        add_path(cur, outdir, 'DIR', jobid, opts.workdir)
+        models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
+        for model in models:
+            print model
+    if 'tmpdb' in opts and opts.tmpdb:
+        # copy back file
+        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
+        remove(dbfile)
+    # release lock
+    try:
+        remove(path.join(opts.workdir, '__lock_db'))
+    except OSError:
+        pass
 
 
 def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
@@ -294,7 +384,17 @@ def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
             else:
                 # print 'populate optimization entry', m, u, l, s, fmodel
                 sm = load(open(path.join(outdir, cfg_dir, fmodel)))
+                for k in sm['config']:
+                    if not isinstance(sm['config'][k], float):
+                        continue
+                    sm['config'][k] = float(my_round(sm['config'][k]))
                 if models[muls]._config != sm['config']:
+                    print 'Different configuration found in this directory:'
+                    print '=' * 80
+                    print sm['config']
+                    print '-' * 80
+                    print models[muls]._config
+                    print '=' * 80
                     raise Exception('ERROR: clean directory, '
                                     'heterogeneous data')
                 models[muls]._extend_models(sm['models'])
@@ -306,104 +406,6 @@ def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
             if ngood:
                 models[muls].define_best_models(ngood)
     return models
-
-
-def save_to_db(opts, counts, multis, f_names1, f_names2, out_file1, out_file2,
-               launch_time, finish_time):
-    if 'tmpdb' in opts and opts.tmpdb:
-        # check lock
-        while path.exists(path.join(opts.workdir, '__lock_db')):
-            time.sleep(0.5)
-        # close lock
-        open(path.join(opts.workdir, '__lock_db'), 'a').close()
-        # tmp file
-        dbfile = opts.tmpdb
-        try:  # to copy in case read1 was already mapped for example
-            copyfile(path.join(opts.workdir, 'trace.db'), dbfile)
-        except IOError:
-            pass
-    else:
-        dbfile = path.join(opts.workdir, 'trace.db')
-    con = lite.connect(dbfile)
-    with con:
-        cur = con.cursor()
-        cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='PARSED_OUTPUTs'""")
-        if not cur.fetchall():
-            cur.execute("""
-        create table MAPPED_OUTPUTs
-           (Id integer primary key,
-            PATHid int,
-            BEDid int,
-            Uniquely_mapped int,
-            unique (PATHid, BEDid))""")
-            cur.execute("""
-        create table PARSED_OUTPUTs
-           (Id integer primary key,
-            PATHid int,
-            Total_interactions int,
-            Multiples int,
-            unique (PATHid))""")
-        try:
-            parameters = digest_parameters(opts, get_md5=False)
-            param_hash = digest_parameters(opts, get_md5=True )
-            cur.execute("""
-    insert into JOBs
-     (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
-    values
-     (NULL,       '%s',        '%s',        '%s', 'Parse',           '%s')
-     """ % (parameters,
-            time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
-            time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash))
-        except lite.IntegrityError:
-            pass
-        jobid = get_jobid(cur)
-        add_path(cur, out_file1, 'BED', jobid, opts.workdir)
-        for genome in opts.genome:
-            add_path(cur, genome, 'FASTA', jobid, opts.workdir)
-        if out_file2:
-            add_path(cur, out_file2, 'BED', jobid, opts.workdir)
-        fnames = f_names1, f_names2
-        outfiles = out_file1, out_file2
-        for count in counts:
-            try:
-                sum_reads = 0
-                for i, item in enumerate(counts[count]):
-                    cur.execute("""
-                    insert into MAPPED_OUTPUTs
-                    (Id  , PATHid, BEDid, Uniquely_mapped)
-                    values
-                    (NULL,    %d,     %d,      %d)
-                    """ % (get_path_id(cur, fnames[count][i], opts.workdir),
-                           get_path_id(cur, outfiles[count], opts.workdir),
-                           counts[count][item]))
-                    sum_reads += counts[count][item]
-            except lite.IntegrityError:
-                print 'WARNING: already parsed (MAPPED_OUTPUTs)'
-            try:
-                cur.execute("""
-                insert into PARSED_OUTPUTs
-                (Id  , PATHid, Total_interactions, Multiples)
-                values
-                (NULL,     %d,      %d,        %d)
-                """ % (get_path_id(cur, outfiles[count], opts.workdir),
-                       sum_reads, multis[count]))
-            except lite.IntegrityError:
-                print 'WARNING: already parsed (PARSED_OUTPUTs)'
-        print_db(cur, 'MAPPED_INPUTs')
-        print_db(cur, 'PATHs')
-        print_db(cur, 'MAPPED_OUTPUTs')
-        print_db(cur, 'PARSED_OUTPUTs')
-        print_db(cur, 'JOBs')
-    if 'tmpdb' in opts and opts.tmpdb:
-        # copy back file
-        copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
-        remove(dbfile)
-    # release lock
-    try:
-        remove(path.join(opts.workdir, '__lock_db'))
-    except OSError:
-        pass
 
 
 def populate_args(parser):

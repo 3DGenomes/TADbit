@@ -5,6 +5,7 @@ import sqlite3 as lite
 from os.path import abspath, relpath, join
 from hashlib import md5
 
+
 def digest_parameters(opts, get_md5=True, extra=None):
     """
     digestion is truncated at 10 characters. More than a 1000 runs are not
@@ -17,21 +18,23 @@ def digest_parameters(opts, get_md5=True, extra=None):
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
-             if not k in ['force', 'workdir', 'func', 'tmp',
+             if k not in ['force', 'workdir', 'func', 'tmp',
                           'skip', 'keep_tmp', 'tmpdb'] + extra])).hexdigest()[:10]
         return param_hash
     parameters = ' '.join(
         ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
          for k, v in opts.__dict__.iteritems()
-         if not k in ['fastq', 'index', 'renz', 'iterative', 'workdir',
-                      'skip', 'func', 'tmp', 'keep_tmp'] + extra and not v is None])
+         if k not in ['fastq', 'index', 'renz', 'iterative', 'workdir',
+                      'skip', 'func', 'tmp', 'keep_tmp'] + extra and v is not None])
     parameters = parameters.replace("'", "")
     return parameters
+
 
 def update_wordir_path(cur, new_path):
     cur.execute("update paths set path='%s' where type='WORKDIR'" % (
         new_path))
 
+    
 def delete_entries(cur, table, col, val):
     try:
         cur.execute("select %s from %s where %s.%s = %d" % (
@@ -47,6 +50,7 @@ def delete_entries(cur, table, col, val):
         print ' - deleted %d elements with %s = %s' % (len(elts), col, val)
     except lite.OperationalError:
         pass
+
 
 def already_run(opts):
     if 'tmpdb' in opts and 'tmp' in opts and opts.tmp and opts.tmpdb:
@@ -67,6 +71,7 @@ def already_run(opts):
         return False
     return found
 
+
 def get_jobid(cur=None, workdir=None):
     try:
         if cur:
@@ -81,6 +86,7 @@ def get_jobid(cur=None, workdir=None):
     except lite.OperationalError:
         return 0
 
+
 def get_path_id(cur, path, workdir=None):
     path = abspath(path)
     if workdir:
@@ -88,6 +94,7 @@ def get_path_id(cur, path, workdir=None):
         path    = relpath(path, workdir)
     cur.execute('SELECT Id from PATHs where Path="%s"' % path)
     return cur.fetchall()[0][0]
+
 
 def add_path(cur, path, typ, jobid, workdir=None):
     if not path: # case where path is None
@@ -102,6 +109,7 @@ def add_path(cur, path, typ, jobid, workdir=None):
         values (NULL, '%s', '%s', '%s')""" % (path, typ, jobid))
     except lite.IntegrityError:
         pass
+
 
 def print_db(cur, name, no_print='', savedata=None, append=False):
     """
@@ -131,9 +139,10 @@ def print_db(cur, name, no_print='', savedata=None, append=False):
         _ascii_print_db(name, names, cols, rows)
     else:
         if name == 'FILTER_OUTPUTs':
-            _rev_tsv_print_db(names,rows,savedata, append)
+            _rev_tsv_print_db(names, rows, savedata, append)
         else:
-            _tsv_print_db(name,names,rows,savedata, append)
+            _tsv_print_db(name, names, rows, savedata, append)
+
 
 def _ascii_print_db(name, names, cols, rows):
     print ',-' + '-' * len(name) + '-.'
@@ -143,9 +152,10 @@ def _ascii_print_db(name, names, cols, rows):
                              for i, v in enumerate(names)]) + ' |'
     print '|-' + '-+-'.join(['-' * cols[i] for i, v in enumerate(names)]) + '-|'
     print '| ' + '\n| '.join([' | '.join([('%{}s'.format(cols[i])) % str(v)
-                                        for i, v in enumerate(row)]) + ' |'
+                                          for i, v in enumerate(row)]) + ' |'
                               for row in rows])
     print "'-" + '-^-'.join(['-' * cols[i] for i, v in enumerate(names)]) + "-'"
+
 
 def _tsv_print_db(name, names, rows, savedata, append):
     out = open(savedata, 'a' if append else 'w')
@@ -155,6 +165,7 @@ def _tsv_print_db(name, names, rows, savedata, append):
         out.write('\t' + '\t'.join([str(v) for v in row]) + '\n')
     out.write('\n')
     out.close()
+
 
 def _rev_tsv_print_db(names, rows, savedata, append):
     out = open(savedata, 'a' if append else 'w')
