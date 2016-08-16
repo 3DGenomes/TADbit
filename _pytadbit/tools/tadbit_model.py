@@ -86,6 +86,7 @@ def my_round(num, val=4):
 
 def optimization(exp, opts, job_file_handler, outdir):
     models = compile_models(opts, outdir)
+    optimized = []
     print('\nOptimizing parameters...')
     print('# %3s %6s %7s %7s %6s\n' % (
         "num", "upfrq", "lowfrq", "maxdist",
@@ -99,6 +100,7 @@ def optimization(exp, opts, job_file_handler, outdir):
             print('%5s %6s %7s %7s %6s  ' % ('o', u, l, m, s))
         else:
             print('%5s %6s %7s %7s %6s  ' % ('-', u, l, m, s))
+            optimized.append(tuple(map(my_round, (m, u, l, s))))
         mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s' % muls))
 
         # write list of jobs to be run separately
@@ -118,6 +120,7 @@ def optimization(exp, opts, job_file_handler, outdir):
 
     if opts.job_list:
         job_file_handler.close()
+    return optimized
 
 
 def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
@@ -163,7 +166,7 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
               'lowfreq': l,
               'scale'  : s,
               'kforce' : 5}
-    return optpar, d
+    return optpar, d, results
     
 
 def big_run(exp, opts, job_file_handler, outdir, optpar):
@@ -249,29 +252,30 @@ def run(opts):
     ###############
     # Optimization
     if opts.optimize:
-        optimization(exp, opts, job_file_handler, outdir)
+        optimized = optimization(exp, opts, job_file_handler, outdir)
         finish_time = time.localtime()
         print('\n optimization done')
-
-    else:
         # correlate all optimization and get best set of parameters
-        optpar, dcutoff = correlate_models(opts, outdir, exp)
+    else:
+        optimized = []
 
-        print 'BEST:', optpar
+    optpar, dcutoff, results = correlate_models(opts, outdir, exp)
 
-        ###########
-        # Modeling
-        big_run(exp, opts, job_file_handler, outdir, optpar)
+    print 'BEST:', optpar
+
+    ###########
+    # Modeling
+    big_run(exp, opts, job_file_handler, outdir, optpar)
 
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
-    save_to_db(opts, outdir, exp, optpar,
-               launch_time, finish_time)
+    save_to_db(opts, outdir, exp, optpar, results,
+               optimized, launch_time, finish_time)
 
 
-def save_to_db(opts, outdir, exp, optpar,
-               launch_time, finish_time):
+def save_to_db(opts, outdir, exp, optpar, results,
+               optimized, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -318,12 +322,25 @@ def save_to_db(opts, outdir, exp, optpar,
             Uniquely_mapped int,
             unique (PATHid, BEDid))""")
         cur.execute("""SELECT name FROM sqlite_master WHERE
+                       type='table' AND name='OPTIMIZATIONs'""")
+        if not cur.fetchall():
+            cur.execute("""
+        create table OPTIMIZATIONs
+           (Id integer primary key,
+            PATHid int,
+            OPTIM_md5 text,
+            MODELED int,
+            KEPT int,
+            BEG int,
+            END int,
+            unique (OPTIM_md5))""")
+        cur.execute("""SELECT name FROM sqlite_master WHERE
                        type='table' AND name='OPTIMIZED_OUTPUTs'""")
         if not cur.fetchall():
             cur.execute("""
         create table OPTIMIZED_OUTPUTs
            (Id integer primary key,
-            PATHid int,
+            OPTIMIZATIONid int,
             JOBid int,
             MaxDist int,
             UpFreq int,
@@ -344,12 +361,57 @@ def save_to_db(opts, outdir, exp, optpar,
              time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash)))
         except lite.IntegrityError:
             pass
-        
+        ##### STORE OPTIMIZATION RESULT
         jobid = get_jobid(cur)
         add_path(cur, outdir, 'DIR', jobid, opts.workdir)
-        models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
-        for model in models:
-            print model
+        pathid = get_path_id(cur, outdir, opts.workdir)
+        # models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
+        optimize_hash = digest_parameters(opts, get_md5=True , extra=[
+            'maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff',
+            'nmodels_run'])
+        if opts.optimize:
+            ### STORE GENERAL OPTIMIZATION INFO
+            try:
+                cur.execute("""
+                insert into OPTIMIZATIONs
+                (Id  , PATHid, OPTIM_md5, MODELED, KEPT, BEG, END)
+                values
+                (NULL,     %d,      "%s",      %d,   %d,  %d,  %d)
+                """ % (pathid, optimize_hash, opts.nmodels, opts.nkeep,
+                       opts.beg, opts.end))
+            except lite.IntegrityError:
+                pass
+            ### STORE EACH OPTIMIZATION
+            cur.execute("SELECT Id from OPTIMIZATIONs where OPTIM_md5='%s'" % (
+                optimize_hash))
+            optimid = cur.fetchall()[0][0]
+            for m, u, l, d, s in results:
+                if (m, u, l, s) not in optimized:
+                    # this is from an other job, and already stored
+                    continue
+                cur.execute("""
+        insert into OPTIMIZED_OUTPUTs
+                (Id  , OPTIMIZATIONid, JOBid, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Correlation)
+        values
+                (NULL,             %d,    %d,      %s,     %s,      %s,     %s,    %s,          %f)
+         """ % ((optimid, jobid, m, u, l, d, s, results[(m, u, l, d, s)])))
+
+        ### MODELING
+        if not opts.optimization_id:
+            cur.execute("SELECT Id from OPTIMIZATIONs")
+            optimid = cur.fetchall()[0]
+            if len(optimid) > 1:
+                raise IndexError("ERROR: more than 1 optimization in folder "
+                                 "choose with 'tadbit describe' and "
+                                 "--optimization_id")
+            optimid = optimid[0]
+        else:
+            cur.execute("SELECT Id from OPTIMIZATIONs where Id=%d" % (
+                opts.optimization_id))
+            optimid = cur.fetchall()[0][0]
+        
+
+                
     if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
@@ -456,6 +518,10 @@ def populate_args(parser):
                         default=5000, type=int,
                         help=('[%(default)s] number of models to generate for' +
                               ' modeling'))
+
+    glopts.add_argument('--optimization_id', dest='optimization_id', metavar="INT",
+                        type=float, default=None,
+                        help="[%(default)s] ID of a pre-run optimization batch job")
 
     glopts.add_argument('--nkeep', dest='nkeep', metavar="INT",
                         default=1000, type=int,

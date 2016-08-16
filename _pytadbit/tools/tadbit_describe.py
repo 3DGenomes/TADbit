@@ -16,6 +16,7 @@ from shutil                      import copyfile
 
 DESC = "Describe jobs and results in a given working directory"
 
+
 def run(opts):
     check_options(opts)
     if 'tmpdb' in opts and opts.tmpdb:
@@ -34,19 +35,20 @@ def run(opts):
                 continue
             if table[0].lower() in opts.tables:
                 print_db(cur, table[0], savedata=opts.tsv, append=True,
-                         no_print=['JOBid','Id', 'Input',
-                                   '' if table[0]=='MAPPED_OUTPUTs'
+                         no_print=['JOBid', 'Id', 'Input',
+                                   '' if table[0] == 'MAPPED_OUTPUTs'
                                    else 'PATHid'] if opts.tsv else '')
     if 'tmpdb' in opts and opts.tmpdb:
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
         remove(dbfile)
 
+
 def populate_args(parser):
     """
     parse option from call
     """
-    parser.formatter_class=lambda prog: HelpFormatter(prog, width=95,
-                                                      max_help_position=27)
+    parser.formatter_class = lambda prog: HelpFormatter(prog, width=95,
+                                                        max_help_position=27)
 
     glopts = parser.add_argument_group('General options')
 
@@ -57,13 +59,14 @@ def populate_args(parser):
 
     glopts.add_argument('-t', '--table', dest='tables', metavar='',
                         action='store', nargs='+', type=str,
-                        default=[str(t) for t in range(1, 10)],
+                        default=[str(t) for t in range(1, 13)],
                         help='''[%(default)s] what tables to show, wrte either the sequence of
                         names or indexes, according to this list:
                         1: paths, 2: jobs, 3: mapped_outputs,
                         4: mapped_inputs, 5: parsed_outputs,
                         6: intersection_outputs, 7: filter_outputs,
-                        8: normalize_outputs, 9: segment_outputs''')
+                        8: normalize_outputs, 9: segment_outputs, 
+                        10: optimized_outputs, 11: modeled_outputs, 12: optimizations''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
@@ -77,25 +80,31 @@ def populate_args(parser):
 
     parser.add_argument_group(glopts)
 
-def check_options(opts):
-    if not opts.workdir: raise Exception('ERROR: output option required.')
 
-    choices=['1', 'paths', '2', 'jobs',
-             '3', 'mapped_outputs',
-             '4', 'mapped_inputs', '5', 'parsed_outputs',
-             '6', 'intersection_outputs',
-             '7', 'filter_outputs', '8', 'normalize_outputs',
-             '9', 'segment_outputs']
+def check_options(opts):
+    if not opts.workdir:
+        raise Exception('ERROR: output option required.')
+
+    choices = ['1', 'paths', '2', 'jobs',
+               '3', 'mapped_outputs',
+               '4', 'mapped_inputs', '5', 'parsed_outputs',
+               '6', 'intersection_outputs',
+               '7', 'filter_outputs', '8', 'normalize_outputs',
+               '9', 'segment_outputs', '10', 'optimized_outputs',
+               '11', 'modeled_outputs', '12', 'optimizations']
     table_idx = {
-        '1': 'paths',
-        '2': 'jobs',
-        '3': 'mapped_outputs',
-        '4': 'mapped_inputs',
-        '5': 'parsed_outputs',
-        '6': 'intersection_outputs',
-        '7': 'filter_outputs',
-        '8': 'normalize_outputs',
-        '9': 'segment_outputs'}
+        '1' : 'paths',
+        '2' : 'jobs',
+        '3' : 'mapped_outputs',
+        '4' : 'mapped_inputs',
+        '5' : 'parsed_outputs',
+        '6' : 'intersection_outputs',
+        '7' : 'filter_outputs',
+        '8' : 'normalize_outputs',
+        '9' : 'segment_outputs',
+        '10': 'optimized_outputs',
+        '11': 'modeled_outputs',
+        '12': 'optimizations'}
     recovered = []
     bads = []
     for t in range(len(opts.tables)):

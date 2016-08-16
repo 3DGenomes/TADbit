@@ -97,7 +97,7 @@ def get_path_id(cur, path, workdir=None):
 
 
 def add_path(cur, path, typ, jobid, workdir=None):
-    if not path: # case where path is None
+    if not path:  # case where path is None
         return
     path    = abspath(path)
     if workdir:
