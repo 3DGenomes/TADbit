@@ -38,13 +38,13 @@ def write_one_job(opts, rand, m, u, l, s, job_file_handler):
         'tadbit model -w %s -r %d -C %d --input_matrix %s '
         '--maxdist %s --upfreq %s --lowfreq=%s '
         '--scale %s --rand %s --nmodels %s --nkeep %s '
-        '--beg %d --end %d --perc_zero %f %s\n' % (
+        '--crm %s --beg %d --end %d --perc_zero %s %s\n' % (
             opts.workdir, opts.reso,
             min(opts.cpus, opts.nmodels_run), opts.matrix,
             m, u, l, s, rand,
             opts.nmodels_run,  # equal to nmodels if not defined
             opts.nkeep,        # keep, equal to nmodel_run if defined
-            opts.beg * opts.reso, opts.end * opts.reso,
+            opts.crm, opts.beg * opts.reso, opts.end * opts.reso,
             opts.perc_zero,
             '--optimize ' if opts.optimize else ''))
 
@@ -125,7 +125,7 @@ def optimization(exp, opts, job_file_handler, outdir):
 
 def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
                      verbose=True):
-    models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
+    models = compile_models(opts, outdir, exp=exp)
     results = {}
     num = 1
     if verbose:
@@ -184,11 +184,12 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
     opts.nmodels -= len(runned)
     
     if opts.rand == '1':
-        print 'Using %s precalculated models with m:%s u:%s l:%s s:%s ' % (start, m, u, l, s)
+        print 'Using %s precalculated models with m:%s u:%s l:%s s:%s ' % (
+            start, m, u, l, s)
         opts.rand = str(int(start) + 1)
     elif opts.rand != '1' and int(opts.rand) < int(start):
         raise Exception('ERROR: found %s precomputed models, use a higher '
-                        'rand. init. number or delete the files')
+                        'rand. init. number or delete the files' % (start))
     
     print 'Computing %s models' % opts.nmodels
     if opts.job_list:
@@ -197,7 +198,7 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
             write_one_job(opts, rand, m, u, l, s, job_file_handler)
         job_file_handler.close()
         return
-    
+
     # compute models
     try:
         run_batch_job(exp, opts, m, u, l, s, outdir)
@@ -213,21 +214,16 @@ def run(opts):
     launch_time = time.localtime()
 
     print('''
-%s
+%s%s
 
   - Region: Chromosome %s from %d to %d at resolution %s (%d particles)
 
 
-    ''' % (('Optimizing\n' + '*' * 10) if opts.optimize else
-           ('Modeling\n' + '*' * 8),
+    ''' % ('Preparing ' if opts.job_list else '',
+           ('Optimization\n' + '*' * (21 if opts.job_list else 11)) if opts.optimize else
+           ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
            opts.crm, opts.ori_beg, opts.ori_end, nicer(opts.reso),
            opts.end - opts.beg))
-
-    # prepare output folders
-    mkdir(path.join(opts.workdir, '06_model'))
-    outdir = path.join(opts.workdir, '06_model',
-                       'chr%s_%s-%s' % (opts.crm, opts.beg, opts.end))
-    mkdir(outdir)
 
     # load data
     if opts.matrix:
@@ -243,9 +239,22 @@ def run(opts):
     exp = crm.experiments[0]
     opts.beg, opts.end = opts.beg or 1, opts.end or exp.size
 
+    # prepare output folders
+    batch_job_hash = digest_parameters(opts, get_md5=True , extra=[
+        'maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff',
+        'nmodels_run', 'job_list', 'rand', 'nmodels', 'nkeep',
+        'optimization_id', 'cpus', 'workdir', 'matrix', 'ori_beg', 'ori_end'])
+
+    mkdir(path.join(opts.workdir, '06_model'))
+    outdir = path.join(opts.workdir, '06_model',
+                       '%s_chr%s_%s-%s' % (batch_job_hash,
+                                           opts.crm, opts.beg, opts.end))
+    mkdir(outdir)
+
     # in case we are not going to run
     if opts.job_list:
-        job_file_handler = open(path.join(outdir, 'job_list.q'), 'w')
+        job_file_handler = open(path.join(
+            outdir, 'job_list.q'), 'w')
     else:
         job_file_handler = None
 
@@ -259,22 +268,26 @@ def run(opts):
     else:
         optimized = []
 
-    optpar, dcutoff, results = correlate_models(opts, outdir, exp)
+    if not (opts.optimize and opts.job_list):
+        optpar, dcutoff, results = correlate_models(opts, outdir, exp)
 
-    print 'BEST:', optpar
+        print 'BEST:', optpar
+    else:
+        results = []
 
     ###########
     # Modeling
-    big_run(exp, opts, job_file_handler, outdir, optpar)
+    if not opts.optimize:
+        big_run(exp, opts, job_file_handler, outdir, optpar)
 
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
-    save_to_db(opts, outdir, exp, optpar, results,
+    save_to_db(opts, outdir, exp, results, batch_job_hash,
                optimized, launch_time, finish_time)
 
 
-def save_to_db(opts, outdir, exp, optpar, results,
+def save_to_db(opts, outdir, exp, results, batch_job_hash, 
                optimized, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
@@ -356,9 +369,11 @@ def save_to_db(opts, outdir, exp, optpar, results,
     insert into JOBs
      (Id  , Parameters, Launch_time, Finish_time,    Type, Parameters_md5)
     values
-     (NULL,       '%s',        '%s',        '%s', 'Parse',           '%s')
+     (NULL,       '%s',        '%s',        '%s',    '%s',           '%s')
      """ % ((parameters, time.strftime("%d/%m/%Y %H:%M:%S", launch_time),
-             time.strftime("%d/%m/%Y %H:%M:%S", finish_time), param_hash)))
+             time.strftime("%d/%m/%Y %H:%M:%S", finish_time),
+             (('PRE_' if opts.job_list else '') +
+              ('OPTIM' if opts.optimize else 'MODEL')), param_hash)))
         except lite.IntegrityError:
             pass
         ##### STORE OPTIMIZATION RESULT
@@ -366,9 +381,6 @@ def save_to_db(opts, outdir, exp, optpar, results,
         add_path(cur, outdir, 'DIR', jobid, opts.workdir)
         pathid = get_path_id(cur, outdir, opts.workdir)
         # models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
-        optimize_hash = digest_parameters(opts, get_md5=True , extra=[
-            'maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff',
-            'nmodels_run'])
         if opts.optimize:
             ### STORE GENERAL OPTIMIZATION INFO
             try:
@@ -377,13 +389,13 @@ def save_to_db(opts, outdir, exp, optpar, results,
                 (Id  , PATHid, OPTIM_md5, MODELED, KEPT, BEG, END)
                 values
                 (NULL,     %d,      "%s",      %d,   %d,  %d,  %d)
-                """ % (pathid, optimize_hash, opts.nmodels, opts.nkeep,
+                """ % (pathid, batch_job_hash, opts.nmodels, opts.nkeep,
                        opts.beg, opts.end))
             except lite.IntegrityError:
                 pass
             ### STORE EACH OPTIMIZATION
             cur.execute("SELECT Id from OPTIMIZATIONs where OPTIM_md5='%s'" % (
-                optimize_hash))
+                batch_job_hash))
             optimid = cur.fetchall()[0][0]
             for m, u, l, d, s in results:
                 if (m, u, l, s) not in optimized:
@@ -410,8 +422,6 @@ def save_to_db(opts, outdir, exp, optpar, results,
                 opts.optimization_id))
             optimid = cur.fetchall()[0][0]
         
-
-                
     if 'tmpdb' in opts and opts.tmpdb:
         # copy back file
         copyfile(dbfile, path.join(opts.workdir, 'trace.db'))
@@ -440,11 +450,9 @@ def compile_models(opts, outdir, exp=None, ngood=None, wanted=None):
             if not fmodel.startswith('models_'):
                 continue
             if muls not in models:
-                # print 'create new optimization entry', m, u, l, s, fmodel
                 models[muls] = load_structuralmodels(path.join(
                     outdir, cfg_dir, fmodel))
             else:
-                # print 'populate optimization entry', m, u, l, s, fmodel
                 sm = load(open(path.join(outdir, cfg_dir, fmodel)))
                 for k in sm['config']:
                     if not isinstance(sm['config'][k], float):
@@ -481,8 +489,9 @@ def populate_args(parser):
 
     glopts.add_argument('--job_list', dest='job_list', action='store_true',
                         default=False,
-                        help='generate a a file with a list of jobs to be run in '
-                        'a cluster')
+                        help=('generate a list of commands stored in a file '
+                              'named joblist_HASH.q (where HASH is replaced by '
+                              'a string specific to the parameters used)'))
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str, required=True,
@@ -528,7 +537,7 @@ def populate_args(parser):
                         help=('[%(default)s] number of models to keep for ' +
                               'modeling'))
     glopts.add_argument('--perc_zero', dest='perc_zero', metavar="FLOAT",
-                        type=float, default=90)
+                        type=float, default=90.0)
 
     glopts.add_argument('--maxdist', action='store', metavar="LIST",
                         default='400', dest='maxdist',
