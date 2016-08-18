@@ -156,16 +156,19 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
                 print(('%8s/%-6s %6s %7s %7s %6s %7s | %.4f' %
                        (num, len(models), u, l, m, s, d, result)))
             num += 1
-            results[name] = result
+            results[name] = {'corr'   : result,
+                             'nmodels': (len(models[muls]) +
+                                         len(models[muls]._bad_models)),
+                             'kept'   : len(models[muls])}
     # get the best combination
-    best = (None, [None, None, None, None, None])
+    best = ({'corr': None}, [None, None, None, None, None])
     for m, u, l, d, s in results:
-        if results[(m, u, l, d, s)] > best[0]:
+        if results[(m, u, l, d, s)]['corr'] > best[0]['corr']:
             best = results[(m, u, l, d, s)], [u, l, m, s, d]
     if verbose:
         print '\nBest combination:'
         print('  %5s     %6s %7s %7s %6s %6s %.4f\n' % tuple(
-            ['=>'] + best[1] + [best[0]]))
+            ['=>'] + best[1] + [best[0]['corr']]))
 
     u, l, m, s, d = best[1]
     optpar = {'maxdist': m,
@@ -342,28 +345,17 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                 Parameters_md5 text,
                 unique (Parameters_md5))""")
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='MODELED_OUTPUTs'""")
+                       type='table' AND name='MODELED'""")
         if not cur.fetchall():
             cur.execute("""
-        create table MODELED_OUTPUTs
+        create table MODELED
            (Id integer primary key,
             PATHid int,
-            BEDid int,
-            Uniquely_mapped int,
-            unique (PATHid, BEDid))""")
-        cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='OPTIMIZATIONs'""")
-        if not cur.fetchall():
-            cur.execute("""
-        create table OPTIMIZATIONs
-           (Id integer primary key,
-            PATHid int,
-            OPTIM_md5 text,
-            MODELED int,
-            KEPT int,
+            PARAM_md5 text,
+            RESO int,
             BEG int,
             END int,
-            unique (OPTIM_md5))""")
+            unique (PARAM_md5))""")
         cur.execute("""SELECT name FROM sqlite_master WHERE
                        type='table' AND name='OPTIMIZED_OUTPUTs'""")
         if not cur.fetchall():
@@ -377,6 +369,8 @@ def save_to_db(opts, outdir, results, batch_job_hash,
             LowFreq int,
             Scale int,
             Cutoff int,
+            Nmodels int,
+            Kept int,
             Correlation int)""")
         try:
             parameters = digest_parameters(opts, get_md5=False)
@@ -402,16 +396,16 @@ def save_to_db(opts, outdir, results, batch_job_hash,
             ### STORE GENERAL OPTIMIZATION INFO
             try:
                 cur.execute("""
-                insert into OPTIMIZATIONs
-                (Id  , PATHid, OPTIM_md5, MODELED, KEPT, BEG, END)
+                insert into MODELED
+                (Id  , PATHid, PARAM_md5, RESO, BEG, END)
                 values
-                (NULL,     %d,      "%s",      %d,   %d,  %d,  %d)
-                """ % (pathid, batch_job_hash, opts.nmodels, opts.nkeep,
+                (NULL,     %d,      "%s",   %d,  %d,  %d)
+                """ % (pathid, batch_job_hash, opts.reso,
                        opts.beg, opts.end))
             except lite.IntegrityError:
                 pass
             ### STORE EACH OPTIMIZATION
-            cur.execute("SELECT Id from OPTIMIZATIONs where OPTIM_md5='%s'" % (
+            cur.execute("SELECT Id from MODELED where PARAM_md5='%s'" % (
                 batch_job_hash))
             optimid = cur.fetchall()[0][0]
             for m, u, l, d, s in results:
@@ -420,14 +414,17 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                     continue
                 cur.execute("""
         insert into OPTIMIZED_OUTPUTs
-                (Id  , OPTIMIZATIONid, JOBid, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Correlation)
+                (Id  , OPTIMIZATIONid, JOBid, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Nmodels, Kept, Correlation)
         values
-                (NULL,             %d,    %d,      %s,     %s,      %s,     %s,    %s,          %f)
-         """ % ((optimid, jobid, m, u, l, d, s, results[(m, u, l, d, s)])))
+                (NULL,             %d,    %d,      %s,     %s,      %s,     %s,    %s,      %d,   %d,          %f)
+         """ % ((optimid, jobid, m, u, l, d, s,
+                 results[(m, u, l, d, s)]['nmodels'],
+                 results[(m, u, l, d, s)]['kept'],
+                 results[(m, u, l, d, s)]['corr'])))
 
         ### MODELING
         if not opts.optimization_id:
-            cur.execute("SELECT Id from OPTIMIZATIONs")
+            cur.execute("SELECT Id from MODELED")
             optimid = cur.fetchall()[0]
             if len(optimid) > 1:
                 raise IndexError("ERROR: more than 1 optimization in folder "
@@ -435,7 +432,7 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                                  "--optimization_id")
             optimid = optimid[0]
         else:
-            cur.execute("SELECT Id from OPTIMIZATIONs where Id=%d" % (
+            cur.execute("SELECT Id from MODELED where Id=%d" % (
                 opts.optimization_id))
             optimid = cur.fetchall()[0][0]
         
