@@ -28,22 +28,25 @@ import sqlite3 as lite
 import time
 
 
+
 DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
 
 
-def write_one_job(opts, rand, m, u, l, s, job_file_handler):
+def write_one_job(opts, rand, m, u, l, s, job_file_handler, nmodels_run=None):
+    if nmodels_run is None:
+        nmodels_run = opts.nmodels_run
     (m, u, l, s) = tuple(map(my_round, (m, u, l, s)))
     job_file_handler.write(
         'tadbit model -w %s -r %d -C %d --input_matrix %s '
-        '--maxdist %s --upfreq %s --lowfreq=%s '
-        '--scale %s --rand %s --nmodels %s --nkeep %s '
+        '--maxdist %s --upfreq %s --lowfreq=%s --scale %s '
+        '--rand %s --nmodels %s --nkeep %s '
         '--crm %s --beg %d --end %d --perc_zero %s %s\n' % (
             opts.workdir, opts.reso,
             min(opts.cpus, opts.nmodels_run), opts.matrix,
             m, u, l, s, rand,
-            opts.nmodels_run,  # equal to nmodels if not defined
-            opts.nkeep,        # keep, equal to nmodel_run if defined
+            nmodels_run,  # equal to nmodels if not defined
+            nmodels_run,  # keep, equal to nmodel_run if defined
             opts.crm, opts.beg * opts.reso, opts.end * opts.reso,
             opts.perc_zero,
             '--optimize ' if opts.optimize else ''))
@@ -72,11 +75,15 @@ def run_batch_job(exp, opts, m, u, l, s, outdir):
                                 zeros=zeros)
     # Save models
     muls = tuple(map(my_round, (m, u, l, s)))
+    dirname = 'cfg_%s_%s_%s_%s' % muls
+    runned = [int(mod['rand_init']) for mod in models]
+    if not len(runned):
+        Exception("ERROR: no models runned")
     models.save_models(
-        path.join(outdir, 'cfg_%s_%s_%s_%s' % muls,
-                  ('models_%s-%s.pick' % (opts.rand, int(opts.rand) + opts.nmodels))
-                  if opts.nmodels > 1 else 
-                  ('model_%s.pick' % (opts.rand))))
+        path.join(outdir, dirname,
+                  ('models_%s-%s.pick' % (min(runned), max(runned)))
+                  if len(runned) > 1 else
+                  ('model_%s.pick' % (runned[0]))))
 
 
 def my_round(num, val=4):
@@ -166,8 +173,8 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
               'lowfreq': l,
               'scale'  : s,
               'kforce' : 5}
-    return optpar, d, results
-    
+    return optpar, results
+
 
 def big_run(exp, opts, job_file_handler, outdir, optpar):
     m, u, l, s = (optpar['maxdist'], 
@@ -178,24 +185,35 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
     # this to take advantage of previously runned models
     models = compile_models(opts, outdir, wanted=muls)[muls]
     models.define_best_models(len(models) + len(models._bad_models))
-    runned = [int(mod['rand_init']) for mod in models]
-    start = str(max(runned))
-    # reduce number of models to run
-    opts.nmodels -= len(runned)
     
     if opts.rand == '1':
+        # In this case we can use models already_run runned
+        runned = [int(mod['rand_init']) for mod in models]
+        start = str(max(runned) + 1)
+        # reduce number of models to run
+        opts.nmodels -= len(runned)
+        print sorted(runned)
+        print "lala", opts.nmodels, len(runned)
         print 'Using %s precalculated models with m:%s u:%s l:%s s:%s ' % (
             start, m, u, l, s)
         opts.rand = str(int(start) + 1)
-    elif opts.rand != '1' and int(opts.rand) < int(start):
+    else:
+        start = 1
+    if opts.rand != '1' and int(opts.rand) < int(start):
         raise Exception('ERROR: found %s precomputed models, use a higher '
                         'rand. init. number or delete the files' % (start))
-    
+
     print 'Computing %s models' % opts.nmodels
     if opts.job_list:
         # write jobs
-        for rand in xrange(start, opts.nmodels + start, opts.nmodels_run):
-            write_one_job(opts, rand, m, u, l, s, job_file_handler)
+        nmodels_run = opts.nmodels_run
+        print 'START', int(start), int(start) + opts.nmodels
+        for rand in xrange(int(start), int(start) + opts.nmodels,
+                           opts.nmodels_run):
+            nmodels_run = min(opts.nmodels_run,
+                              int(start) + opts.nmodels - rand)
+            write_one_job(opts, rand, m, u, l, s, job_file_handler,
+                          nmodels_run)
         job_file_handler.close()
         return
 
@@ -242,7 +260,7 @@ def run(opts):
     # prepare output folders
     batch_job_hash = digest_parameters(opts, get_md5=True , extra=[
         'maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff',
-        'nmodels_run', 'job_list', 'rand', 'nmodels', 'nkeep',
+        'nmodels_run', 'job_list', 'rand', 'nmodels', 'nkeep', 'optimize',
         'optimization_id', 'cpus', 'workdir', 'matrix', 'ori_beg', 'ori_end'])
 
     mkdir(path.join(opts.workdir, '06_model'))
@@ -254,7 +272,8 @@ def run(opts):
     # in case we are not going to run
     if opts.job_list:
         job_file_handler = open(path.join(
-            outdir, 'job_list.q'), 'w')
+            outdir, 'job_list_%s.q' % ('optimization' if
+                                       opts.optimize else 'modeling')), 'w')
     else:
         job_file_handler = None
 
@@ -269,9 +288,7 @@ def run(opts):
         optimized = []
 
     if not (opts.optimize and opts.job_list):
-        optpar, dcutoff, results = correlate_models(opts, outdir, exp)
-
-        print 'BEST:', optpar
+        optpar, results = correlate_models(opts, outdir, exp)
     else:
         results = []
 
@@ -283,11 +300,11 @@ def run(opts):
     finish_time = time.localtime()
 
     # save all job information to sqlite DB
-    save_to_db(opts, outdir, exp, results, batch_job_hash,
+    save_to_db(opts, outdir, results, batch_job_hash,
                optimized, launch_time, finish_time)
 
 
-def save_to_db(opts, outdir, exp, results, batch_job_hash, 
+def save_to_db(opts, outdir, results, batch_job_hash, 
                optimized, launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
@@ -508,9 +525,10 @@ def populate_args(parser):
     glopts.add_argument('--crm', dest='crm', metavar="NAME",
                         help='chromosome name')
     glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
-                        default=None,
+                        required=True,
                         help='genomic coordinate from which to start modeling')
     glopts.add_argument('--end', dest='end', metavar="INT", type=float,
+                        required=True,
                         help='genomic coordinate where to end modeling')
     glopts.add_argument('-r', '--reso', dest='reso', metavar="INT", type=int,
                         help='resolution of the Hi-C experiment')

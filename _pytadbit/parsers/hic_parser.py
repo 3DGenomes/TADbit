@@ -83,7 +83,7 @@ def autoreader(f):
             # Case 3: matrix with row information.
             header = False
             trim = ncol - nrow
-            warn('WARNING: found %d colum(s) of row names' % trim)
+            # warn('WARNING: found %d colum(s) of row names' % trim)
         else:
             # Case 4: matrix with header and row information.
             header = True

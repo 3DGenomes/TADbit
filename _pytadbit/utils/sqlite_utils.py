@@ -15,6 +15,11 @@ def digest_parameters(opts, get_md5=True, extra=None):
     """
     extra = extra or []
     if get_md5:
+        # print 'MD5', ' '.join(
+        #     ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
+        #      for k, v in sorted(opts.__dict__.iteritems())
+        #      if k not in ['force', 'workdir', 'func', 'tmp',
+        #                   'skip', 'keep_tmp', 'tmpdb'] + extra])
         param_hash = md5(' '.join(
             ['%s:%s' % (k, int(v) if isinstance(v, bool) else v)
              for k, v in sorted(opts.__dict__.iteritems())
