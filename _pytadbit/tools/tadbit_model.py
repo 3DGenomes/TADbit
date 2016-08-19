@@ -24,6 +24,7 @@ from itertools                    import product
 from warnings                     import warn
 from numpy                        import arange
 from cPickle                      import load
+from hashlib                      import md5
 import sqlite3 as lite
 import time
 
@@ -93,7 +94,6 @@ def my_round(num, val=4):
 
 def optimization(exp, opts, job_file_handler, outdir):
     models = compile_models(opts, outdir)
-    optimized = []
     print('\nOptimizing parameters...')
     print('# %3s %6s %7s %7s %6s\n' % (
         "num", "upfrq", "lowfrq", "maxdist",
@@ -107,7 +107,6 @@ def optimization(exp, opts, job_file_handler, outdir):
             print('%5s %6s %7s %7s %6s  ' % ('o', u, l, m, s))
         else:
             print('%5s %6s %7s %7s %6s  ' % ('-', u, l, m, s))
-            optimized.append(tuple(map(my_round, (m, u, l, s))))
         mkdir(path.join(outdir, 'cfg_%s_%s_%s_%s' % muls))
 
         # write list of jobs to be run separately
@@ -127,7 +126,6 @@ def optimization(exp, opts, job_file_handler, outdir):
 
     if opts.job_list:
         job_file_handler.close()
-    return optimized
 
 
 def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
@@ -250,6 +248,7 @@ def run(opts):
     if opts.matrix:
         crm = load_hic_data(opts)
     else:
+        # FIXME: copied from somewhere else
         (bad_co, bad_co_id, biases, biases_id,
          mreads, mreads_id, reso) = load_parameters_fromdb(opts)
         hic_data = load_hic_data_from_reads(mreads, reso)
@@ -283,12 +282,10 @@ def run(opts):
     ###############
     # Optimization
     if opts.optimize:
-        optimized = optimization(exp, opts, job_file_handler, outdir)
+        optimization(exp, opts, job_file_handler, outdir)
         finish_time = time.localtime()
         print('\n optimization done')
         # correlate all optimization and get best set of parameters
-    else:
-        optimized = []
 
     if not (opts.optimize and opts.job_list):
         optpar, results = correlate_models(opts, outdir, exp)
@@ -304,11 +301,11 @@ def run(opts):
 
     # save all job information to sqlite DB
     save_to_db(opts, outdir, results, batch_job_hash,
-               optimized, launch_time, finish_time)
+               launch_time, finish_time)
 
 
 def save_to_db(opts, outdir, results, batch_job_hash, 
-               optimized, launch_time, finish_time):
+               launch_time, finish_time):
     if 'tmpdb' in opts and opts.tmpdb:
         # check lock
         while path.exists(path.join(opts.workdir, '__lock_db')):
@@ -364,6 +361,7 @@ def save_to_db(opts, outdir, results, batch_job_hash,
            (Id integer primary key,
             OPTIMIZATIONid int,
             JOBid int,
+            OPTPARmd5 text,
             MaxDist int,
             UpFreq int,
             LowFreq int,
@@ -409,18 +407,30 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                 batch_job_hash))
             optimid = cur.fetchall()[0][0]
             for m, u, l, d, s in results:
-                if (m, u, l, s) not in optimized:
-                    # this is from an other job, and already stored
-                    continue
-                cur.execute("""
-        insert into OPTIMIZED_OUTPUTs
-                (Id  , OPTIMIZATIONid, JOBid, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Nmodels, Kept, Correlation)
-        values
-                (NULL,             %d,    %d,      %s,     %s,      %s,     %s,    %s,      %d,   %d,          %f)
-         """ % ((optimid, jobid, m, u, l, d, s,
-                 results[(m, u, l, d, s)]['nmodels'],
-                 results[(m, u, l, d, s)]['kept'],
-                 results[(m, u, l, d, s)]['corr'])))
+                optpar_md5 = md5('%s%s%s%s%s' %
+                                 (m, u, l, d, s)).hexdigest()[:12]
+                cur.execute(("SELECT Id from OTIMIZED_OUTPUTs where"
+                             "OPTPARmd5='%s' and OPTIMIZATIONid='%s'") % (
+                                 optpar_md5, optimid))
+                if not cur.fetchall():
+                    cur.execute("""
+                    insert into OPTIMIZED_OUTPUTs
+                    (Id  , OPTIMIZATIONid, JOBid, OPTPARmd5, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Nmodels, Kept, Correlation)
+                    values
+                    (NULL,             %d,    %d,        %s,      %s,     %s,      %s,     %s,    %s,      %d,   %d,          %f)
+                    """ % ((optimid, jobid, optpar_md5, m, u, l, d, s,
+                            results[(m, u, l, d, s)]['nmodels'],
+                            results[(m, u, l, d, s)]['kept'],
+                            results[(m, u, l, d, s)]['corr'])))
+                else:
+                    cur.execute(("update OPTIMIZED_OUTPUTs "
+                                 "set Nmodels=%d, Kept=%d, Correlation=%f "
+                                 "where "
+                                 "OPTPARmd5='%s' and OPTIMIZATIONid='%s'") % (
+                                     results[(m, u, l, d, s)]['nmodels'],
+                                     results[(m, u, l, d, s)]['kept'],
+                                     results[(m, u, l, d, s)]['corr'],
+                                     optpar_md5, optimid))
 
         ### MODELING
         if not opts.optimization_id:
