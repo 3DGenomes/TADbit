@@ -66,7 +66,7 @@ def populate_args(parser):
                         4: mapped_inputs, 5: parsed_outputs,
                         6: intersection_outputs, 7: filter_outputs,
                         8: normalize_outputs, 9: segment_outputs, 
-                        10: models, 11: modeled_regions, 12: optimizations''')
+                        10: models, 11: modeled_regions''')
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
@@ -91,7 +91,7 @@ def check_options(opts):
                '6', 'intersection_outputs',
                '7', 'filter_outputs', '8', 'normalize_outputs',
                '9', 'segment_outputs', '10', 'models',
-               '11', 'modeled_regions', '12', 'optimizations']
+               '11', 'modeled_regions']
     table_idx = {
         '1' : 'paths',
         '2' : 'jobs',
@@ -103,8 +103,7 @@ def check_options(opts):
         '8' : 'normalize_outputs',
         '9' : 'segment_outputs',
         '10': 'models',
-        '11': 'modeled_regions',
-        '12': 'optimizations'}
+        '11': 'modeled_regions'}
     recovered = []
     bads = []
     for t in range(len(opts.tables)):
