@@ -79,7 +79,11 @@ def run_batch_job(exp, opts, m, u, l, s, outdir):
     dirname = 'cfg_%s_%s_%s_%s' % muls
     runned = [int(mod['rand_init']) for mod in models]
     if not len(runned):
-        Exception("ERROR: no models runned")
+        raise Exception(("\n\n\nNothing to be done.\n\n"
+                         "   All models asked for are already run.\n"
+                         "    - ask for more models\n"
+                         "    - use higher random initial number\n"
+                         "    - go ahead with the analysis!"))
     models.save_models(
         path.join(outdir, dirname,
                   ('models_%s-%s.pick' % (min(runned), max(runned)))
@@ -193,15 +197,13 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
         start = str(max(runned) + 1)
         # reduce number of models to run
         opts.nmodels -= len(runned)
-        print sorted(runned)
-        print "lala", opts.nmodels, len(runned)
-        print 'Using %s precalculated models with m:%s u:%s l:%s s:%s ' % (
+        print 'Using %s pre-calculated models with m:%s u:%s l:%s s:%s ' % (
             start, m, u, l, s)
         opts.rand = str(int(start) + 1)
     else:
         start = 1
     if opts.rand != '1' and int(opts.rand) < int(start):
-        raise Exception('ERROR: found %s precomputed models, use a higher '
+        raise Exception('ERROR: found %s pre-computed models, use a higher '
                         'rand. init. number or delete the files' % (start))
 
     print 'Computing %s models' % opts.nmodels
@@ -342,10 +344,10 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                 Parameters_md5 text,
                 unique (Parameters_md5))""")
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='MODELED'""")
+                       type='table' AND name='MODELED_REGIONs'""")
         if not cur.fetchall():
             cur.execute("""
-        create table MODELED
+        create table MODELED_REGIONs
            (Id integer primary key,
             PATHid int,
             PARAM_md5 text,
@@ -354,14 +356,14 @@ def save_to_db(opts, outdir, results, batch_job_hash,
             END int,
             unique (PARAM_md5))""")
         cur.execute("""SELECT name FROM sqlite_master WHERE
-                       type='table' AND name='OPTIMIZED_OUTPUTs'""")
+                       type='table' AND name='MODELs'""")
         if not cur.fetchall():
             cur.execute("""
-        create table OPTIMIZED_OUTPUTs
+        create table MODELs
            (Id integer primary key,
-            OPTIMIZATIONid int,
+            REGIONid int,
             JOBid int,
-            OPTPARmd5 text,
+            OPTPAR_md5 text,
             MaxDist int,
             UpFreq int,
             LowFreq int,
@@ -390,51 +392,50 @@ def save_to_db(opts, outdir, results, batch_job_hash,
         add_path(cur, outdir, 'DIR', jobid, opts.workdir)
         pathid = get_path_id(cur, outdir, opts.workdir)
         # models = compile_models(opts, outdir, exp=exp, ngood=opts.nkeep)
-        if opts.optimize:
-            ### STORE GENERAL OPTIMIZATION INFO
-            try:
+        ### STORE GENERAL OPTIMIZATION INFO
+        try:
+            cur.execute("""
+            insert into MODELED_REGIONs
+            (Id  , PATHid, PARAM_md5, RESO, BEG, END)
+            values
+            (NULL,     %d,      "%s",   %d,  %d,  %d)
+            """ % (pathid, batch_job_hash, opts.reso,
+                   opts.beg, opts.end))
+        except lite.IntegrityError:
+            pass
+        ### STORE EACH OPTIMIZATION
+        cur.execute("SELECT Id from MODELED_REGIONs where PARAM_md5='%s'" % (
+            batch_job_hash))
+        optimid = cur.fetchall()[0][0]
+        for m, u, l, d, s in results:
+            optpar_md5 = md5('%s%s%s%s%s' %
+                             (m, u, l, d, s)).hexdigest()[:12]
+            cur.execute(("SELECT Id from MODELs where "
+                         "OPTPAR_md5='%s' and REGIONid='%s'") % (
+                             optpar_md5, optimid))
+            if not cur.fetchall():
                 cur.execute("""
-                insert into MODELED
-                (Id  , PATHid, PARAM_md5, RESO, BEG, END)
+                insert into MODELs
+                (Id  , REGIONid, JOBid, OPTPAR_md5, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Nmodels, Kept, Correlation)
                 values
-                (NULL,     %d,      "%s",   %d,  %d,  %d)
-                """ % (pathid, batch_job_hash, opts.reso,
-                       opts.beg, opts.end))
-            except lite.IntegrityError:
-                pass
-            ### STORE EACH OPTIMIZATION
-            cur.execute("SELECT Id from MODELED where PARAM_md5='%s'" % (
-                batch_job_hash))
-            optimid = cur.fetchall()[0][0]
-            for m, u, l, d, s in results:
-                optpar_md5 = md5('%s%s%s%s%s' %
-                                 (m, u, l, d, s)).hexdigest()[:12]
-                cur.execute(("SELECT Id from OTIMIZED_OUTPUTs where"
-                             "OPTPARmd5='%s' and OPTIMIZATIONid='%s'") % (
+                (NULL,             %d,    %d,      '%s',      %s,     %s,      %s,     %s,    %s,      %d,   %d,          %f)
+                """ % ((optimid, jobid, optpar_md5, m, u, l, d, s,
+                        results[(m, u, l, d, s)]['nmodels'],
+                        results[(m, u, l, d, s)]['kept'],
+                        results[(m, u, l, d, s)]['corr'])))
+            else:
+                cur.execute(("update MODELs "
+                             "set Nmodels = %d, Kept = %d, Correlation = %f "
+                             "where "
+                             "OPTPAR_md5='%s' and REGIONid='%s'") % (
+                                 results[(m, u, l, d, s)]['nmodels'],
+                                 results[(m, u, l, d, s)]['kept'],
+                                 results[(m, u, l, d, s)]['corr'],
                                  optpar_md5, optimid))
-                if not cur.fetchall():
-                    cur.execute("""
-                    insert into OPTIMIZED_OUTPUTs
-                    (Id  , OPTIMIZATIONid, JOBid, OPTPARmd5, MaxDist, UpFreq, LowFreq, Cutoff, Scale, Nmodels, Kept, Correlation)
-                    values
-                    (NULL,             %d,    %d,        %s,      %s,     %s,      %s,     %s,    %s,      %d,   %d,          %f)
-                    """ % ((optimid, jobid, optpar_md5, m, u, l, d, s,
-                            results[(m, u, l, d, s)]['nmodels'],
-                            results[(m, u, l, d, s)]['kept'],
-                            results[(m, u, l, d, s)]['corr'])))
-                else:
-                    cur.execute(("update OPTIMIZED_OUTPUTs "
-                                 "set Nmodels=%d, Kept=%d, Correlation=%f "
-                                 "where "
-                                 "OPTPARmd5='%s' and OPTIMIZATIONid='%s'") % (
-                                     results[(m, u, l, d, s)]['nmodels'],
-                                     results[(m, u, l, d, s)]['kept'],
-                                     results[(m, u, l, d, s)]['corr'],
-                                     optpar_md5, optimid))
 
         ### MODELING
         if not opts.optimization_id:
-            cur.execute("SELECT Id from MODELED")
+            cur.execute("SELECT Id from MODELED_REGIONs")
             optimid = cur.fetchall()[0]
             if len(optimid) > 1:
                 raise IndexError("ERROR: more than 1 optimization in folder "
@@ -442,7 +443,7 @@ def save_to_db(opts, outdir, results, batch_job_hash,
                                  "--optimization_id")
             optimid = optimid[0]
         else:
-            cur.execute("SELECT Id from MODELED where Id=%d" % (
+            cur.execute("SELECT Id from MODELED_REGIONs where Id=%d" % (
                 opts.optimization_id))
             optimid = cur.fetchall()[0][0]
         
@@ -510,91 +511,96 @@ def populate_args(parser):
                                                         max_help_position=27)
 
     glopts = parser.add_argument_group('General options')
-
-    glopts.add_argument('--job_list', dest='job_list', action='store_true',
-                        default=False,
-                        help=('generate a list of commands stored in a file '
-                              'named joblist_HASH.q (where HASH is replaced by '
-                              'a string specific to the parameters used)'))
+    reopts = parser.add_argument_group('Modeling preparation')
+    opopts = parser.add_argument_group('Parameter optimization')
+    anopts = parser.add_argument_group('Analysis')
+    ruopts = parser.add_argument_group('Computation')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str, required=True,
                         help='''path to working directory (generated with the
-                        tool tadbit mapper)''')
-    glopts.add_argument('--optimize', dest='optimize', 
-                        default=False, action="store_true",
-                        help='''optimization run, store less info about models''')
+                        tool TADbit mapper)''')
+    glopts.add_argument('--input_matrix', dest='matrix', metavar="PATH",
+                        type=str,
+                        help='''In case input was not generated with the TADbit
+                        tools''')
     glopts.add_argument('--rand', dest='rand', metavar="INT",
                         type=str, default='1', 
                         help='''[%(default)s] random initial number. NOTE:
                         when running single model at the time, should be
                         different for each run''')
-    glopts.add_argument('--crm', dest='crm', metavar="NAME",
-                        help='chromosome name')
-    glopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
-                        required=True,
-                        help='genomic coordinate from which to start modeling')
-    glopts.add_argument('--end', dest='end', metavar="INT", type=float,
-                        required=True,
-                        help='genomic coordinate where to end modeling')
-    glopts.add_argument('-r', '--reso', dest='reso', metavar="INT", type=int,
-                        help='resolution of the Hi-C experiment')
-    glopts.add_argument('--input_matrix', dest='matrix', metavar="PATH",
-                        type=str,
-                        help='''In case input was not generated with the TADbit
-                        tools''')
-
-    glopts.add_argument('--nmodels_run', dest='nmodels_run', metavar="INT",
-                        default=None, type=int,
-                        help='[ALL] number of models to run with this call')
-
     glopts.add_argument('--nmodels', dest='nmodels', metavar="INT",
                         default=5000, type=int,
                         help=('[%(default)s] number of models to generate for' +
                               ' modeling'))
-
-    glopts.add_argument('--optimization_id', dest='optimization_id', metavar="INT",
-                        type=float, default=None,
-                        help="[%(default)s] ID of a pre-run optimization batch job")
-
     glopts.add_argument('--nkeep', dest='nkeep', metavar="INT",
                         default=1000, type=int,
                         help=('[%(default)s] number of models to keep for ' +
                               'modeling'))
-    glopts.add_argument('--perc_zero', dest='perc_zero', metavar="FLOAT",
+    glopts.add_argument('--optimization_id', dest='optimization_id', metavar="INT",
+                        type=float, default=None,
+                        help="[%(default)s] ID of a pre-run optimization batch job")
+
+    reopts.add_argument('--crm', dest='crm', metavar="NAME",
+                        help='chromosome name')
+    reopts.add_argument('--beg', dest='beg', metavar="INT", type=float,
+                        required=True,
+                        help='genomic coordinate from which to start modeling')
+    reopts.add_argument('--end', dest='end', metavar="INT", type=float,
+                        required=True,
+                        help='genomic coordinate where to end modeling')
+    reopts.add_argument('-r', '--reso', dest='reso', metavar="INT", type=int,
+                        help='resolution of the Hi-C experiment')
+    reopts.add_argument('--perc_zero', dest='perc_zero', metavar="FLOAT",
                         type=float, default=90.0)
 
-    glopts.add_argument('--maxdist', action='store', metavar="LIST",
+    opopts.add_argument('--optimize', dest='optimize', 
+                        default=False, action="store_true",
+                        help='''optimization run, store less info about models''')
+    opopts.add_argument('--maxdist', action='store', metavar="LIST",
                         default='400', dest='maxdist',
                         help='range of numbers for maxdist' +
                         ', i.e. 400:1000:100 -- or just a number')
-    glopts.add_argument('--upfreq', dest='upfreq', metavar="LIST",
+    opopts.add_argument('--upfreq', dest='upfreq', metavar="LIST",
                         default='0',
                         help='range of numbers for upfreq' +
                         ', i.e. 0:1.2:0.3 --  or just a number')
-    glopts.add_argument('--lowfreq', dest='lowfreq', metavar="LIST",
+    opopts.add_argument('--lowfreq', dest='lowfreq', metavar="LIST",
                         default='0',
                         help='range of numbers for lowfreq' +
                         ', i.e. -1.2:0:0.3 -- or just a number')
-    glopts.add_argument('--scale', dest='scale', metavar="LIST",
+    opopts.add_argument('--scale', dest='scale', metavar="LIST",
                         default="0.01",
                         help='[%(default)s] range of numbers to be test as ' +
                         'optimal scale value, i.e. 0.005:0.01:0.001 -- Can ' +
                         'also pass only one number')
-    glopts.add_argument('--dcutoff', dest='dcutoff', metavar="LIST",
+    opopts.add_argument('--dcutoff', dest='dcutoff', metavar="LIST",
                         default="2",
                         help='[%(default)s] range of numbers to be test as ' +
                         'optimal distance cutoff parameter (distance, in ' +
                         'number of beads, from which to consider 2 beads as ' +
                         'being close), i.e. 1:5:0.5 -- Can also pass only one' +
                         ' number')
-    glopts.add_argument("-C", "--cpu", dest="cpus", type=int,
+
+    anopts.add_argument('--analyze', dest='analyze', 
+                        default=False, action="store_true",
+                        help='''analyze models.''')
+    
+    ruopts.add_argument('--nmodels_run', dest='nmodels_run', metavar="INT",
+                        default=None, type=int,
+                        help='[ALL] number of models to run with this call')
+    ruopts.add_argument("-C", "--cpu", dest="cpus", type=int,
                         default=1, help='''[%(default)s] Maximum number of CPU
                         cores  available in the execution host. If higher
                         than 1, tasks with multi-threading
                         capabilities will enabled (if 0 all available)
                         cores will be used''')
-    glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
+    ruopts.add_argument('--job_list', dest='job_list', action='store_true',
+                        default=False,
+                        help=('generate a list of commands stored in a file '
+                              'named joblist_HASH.q (where HASH is replaced by '
+                              'a string specific to the parameters used)'))
+    ruopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
                         help='''if provided uses this directory to manipulate the
                         database''')
