@@ -16,6 +16,20 @@ from shutil                      import copyfile
 
 DESC = "Describe jobs and results in a given working directory"
 
+TABLE_IDX = {
+    '1' : 'paths',
+    '2' : 'jobs',
+    '3' : 'mapped_outputs',
+    '4' : 'mapped_inputs',
+    '5' : 'parsed_outputs',
+    '6' : 'intersection_outputs',
+    '7' : 'filter_outputs',
+    '8' : 'normalize_outputs',
+    '9' : 'segment_outputs',
+    '10': 'models',
+    '11': 'modeled_regions'}
+
+
 
 def run(opts):
     check_options(opts)
@@ -59,14 +73,12 @@ def populate_args(parser):
 
     glopts.add_argument('-t', '--table', dest='tables', metavar='',
                         action='store', nargs='+', type=str,
-                        default=[str(t) for t in range(1, 13)],
-                        help='''[%(default)s] what tables to show, wrte either the sequence of
-                        names or indexes, according to this list:
-                        1: paths, 2: jobs, 3: mapped_outputs,
-                        4: mapped_inputs, 5: parsed_outputs,
-                        6: intersection_outputs, 7: filter_outputs,
-                        8: normalize_outputs, 9: segment_outputs, 
-                        10: models, 11: modeled_regions''')
+                        default=[str(t) for t in range(1, len(TABLE_IDX) + 1)],
+                        help=('[%(default)s] what tables to show, wrte either '
+                              'the sequence of names or indexes, according to '
+                              'this list: {}').format(', '.join(
+                                  ['%s: %s' % (k, v)
+                                   for k, v in TABLE_IDX.iteritems()])))
 
     glopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
@@ -85,25 +97,10 @@ def check_options(opts):
     if not opts.workdir:
         raise Exception('ERROR: output option required.')
 
-    choices = ['1', 'paths', '2', 'jobs',
-               '3', 'mapped_outputs',
-               '4', 'mapped_inputs', '5', 'parsed_outputs',
-               '6', 'intersection_outputs',
-               '7', 'filter_outputs', '8', 'normalize_outputs',
-               '9', 'segment_outputs', '10', 'models',
-               '11', 'modeled_regions']
-    table_idx = {
-        '1' : 'paths',
-        '2' : 'jobs',
-        '3' : 'mapped_outputs',
-        '4' : 'mapped_inputs',
-        '5' : 'parsed_outputs',
-        '6' : 'intersection_outputs',
-        '7' : 'filter_outputs',
-        '8' : 'normalize_outputs',
-        '9' : 'segment_outputs',
-        '10': 'models',
-        '11': 'modeled_regions'}
+    choices = reduce(lambda x, y: x + y,
+                     [kv for kv in sorted(TABLE_IDX.iteritems(),
+                                          key=lambda x: int(x[0]))])
+    
     recovered = []
     bads = []
     for t in range(len(opts.tables)):
@@ -112,7 +109,7 @@ def check_options(opts):
             # check if the begining of the input string matches any of
             # the possible choices
             found = False
-            for choice in table_idx.values():
+            for choice in TABLE_IDX.values():
                 if choice.startswith(opts.tables[t]):
                     recovered.append(choice)
                     found = True
@@ -121,7 +118,7 @@ def check_options(opts):
                        '(choose from %s )') % (opts.tables[t], str(choices)))
                 exit()
             bads.append(t)
-        opts.tables[t] = table_idx.get(opts.tables[t], opts.tables[t])
+        opts.tables[t] = TABLE_IDX.get(opts.tables[t], opts.tables[t])
     for bad in bads[::-1]:
         del(opts.tables[bad])
     for rec in recovered:
