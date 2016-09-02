@@ -481,7 +481,8 @@ class Experiment(object):
         """
         self.hic_data = read_matrix(hic_data, parser=parser, one=False)
         self._ori_size       = self.size       = len(self.hic_data[0])
-        self._ori_resolution = self.resolution = data_resolution or self._ori_resolution
+        self._ori_resolution = self.resolution = (data_resolution or
+                                                  self._ori_resolution)
         wanted_resolution = wanted_resolution or self.resolution
         self.set_resolution(wanted_resolution, keep_original=False)
         if self.hic_data[0].bads:

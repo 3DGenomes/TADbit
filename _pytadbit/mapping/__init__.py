@@ -212,7 +212,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     # sort also according to read 2 (to filter duplicates)
     #      and also according to strand
     if verbose:
-        print 'Sorting easch temporary file by genomic coordinate'
+        print 'Sorting each temporary file by genomic coordinate'
 
     out = open(out_path, 'w')
     out.write(header1)
@@ -234,7 +234,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
 
 def _loc_reads(r1, r2):
     """
-    put upstream read before, get position in buf
+    Put upstream read before, get position in buf
     """
     pos1 = CHROM_START[r1[1]] + int(r1[2])
     pos2 = CHROM_START[r2[1]] + int(r2[2])
@@ -320,3 +320,4 @@ def _process_lines(line1, line2, buf, multiples, lchunk):
     else:
         r1, r2, idx = _loc_reads(line1.strip().split('\t'), line2.strip().split('\t'))
         buf[idx / lchunk].append('%d\t%s\t%s' % (idx, '\t'.join(r1), '\t'.join(r2[1:])))
+

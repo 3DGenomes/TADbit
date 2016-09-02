@@ -20,6 +20,7 @@ from pytadbit.utils.sqlite_utils  import get_path_id, add_path, print_db, get_jo
 from pytadbit.utils.sqlite_utils  import digest_parameters
 from pytadbit                     import load_hic_data_from_reads
 from pytadbit                     import get_dependencies_version
+from pytadbit.parsers.hic_parser  import optimal_reader
 from itertools                    import product
 from warnings                     import warn
 from numpy                        import arange
@@ -722,9 +723,15 @@ def load_hic_data(opts):
     """
     # Start reading the data
     crm = Chromosome(opts. crm)  # Create chromosome object
-
-    crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
-                       norm_data=opts.matrix)
+    try:
+        global HIC_DATA
+        HIC_DATA = False # we are reading a normalized matrix
+        hic = optimal_reader(open(opts.matrix), resolution=opts.reso)
+        crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
+                           norm_data=hic)
+    except:
+         crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
+                            norm_data=opts.matrix)
     # TODO: if not bad columns:...
     crm.experiments[-1].filter_columns(perc_zero=opts.perc_zero)
     if opts.beg > crm.experiments[-1].size:

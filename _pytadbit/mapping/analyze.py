@@ -793,13 +793,13 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                             if genome_seq else distr):
         try:
             data[crm] = [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))]
-            if savefig:
+            if savefig or show:
                 plt.subplot(ncrms, 1, i + 1)
                 plt.plot(range(max(distr[crm])), data[crm],
                          color='red', lw=1.5, alpha=0.7)
         except KeyError:
             pass
-        if savefig:
+        if savefig or show:
             if ylim:
                 plt.vlines(genome_seq[crm] / resolution, ylim[0], ylim[1])
             else:
@@ -810,7 +810,8 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
 
     if savefig:
         tadbit_savefig(savefig)
-        plt.close('all')
+        if not show:
+            plt.close('all')
     elif show:
         plt.show()
 

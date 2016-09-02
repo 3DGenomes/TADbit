@@ -416,9 +416,9 @@ class Chromosome(object):
         return ali, (score, p_value, perc1, perc2)
 
 
-    def add_experiment(self, name, resolution=None, tad_def=None,
-                       hic_data=None, norm_data=None, replace=False,
-                       parser=None, conditions=None, **kwargs):
+    def add_experiment(self, name, resolution=None, tad_def=None, hic_data=None,
+                       norm_data=None, replace=False, parser=None, 
+                       conditions=None, **kwargs):
         """
         Add a Hi-C experiment to Chromosome
         
