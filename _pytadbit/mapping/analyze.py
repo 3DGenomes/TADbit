@@ -722,15 +722,16 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     return [to_return[k] for k in stats]
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
-                              axe=None, ylim=None, savefig=None, show=False,
+                              ylim=None, yscale=None, savefig=None, show=False,
                               savedata=None, chr_names=None, nreads=None):
     """
     :param fnam: input file name
     :param True first_read: uses first read.
     :param 100 resolution: group reads that are closer than this resolution
        parameter
-    :param None axe: a matplotlib.axes.Axes object to define the plot
-       appearance
+    :param None ylim: a tuple of lower and upper bound for the y axis
+    :param None yscale: if set_bad to "log" values will be represented in log2 
+       scale
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
@@ -781,9 +782,9 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     except StopIteration:
         pass
     fhandler.close()
-    if not axe:
+    if savefig or show:
         _ = plt.figure(figsize=(15, 1 + 3 * len(
-                              chr_names if chr_names else distr.keys())))
+            chr_names if chr_names else distr.keys())))
 
     max_y = max([max(distr[c].values()) for c in distr])
     max_x = max([len(distr[c].values()) for c in distr])
@@ -797,6 +798,8 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                 plt.subplot(ncrms, 1, i + 1)
                 plt.plot(range(max(distr[crm])), data[crm],
                          color='red', lw=1.5, alpha=0.7)
+                if yscale:
+                    plt.yscale(yscale)
         except KeyError:
             pass
         if savefig or show:
