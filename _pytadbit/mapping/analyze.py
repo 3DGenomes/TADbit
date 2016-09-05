@@ -756,31 +756,32 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
         cond2 = lambda x: False
     cond = lambda x, y: cond1(x) and cond2(y)
     count = 0
-    while line.startswith('#'):
-        if line.startswith('# CRM '):
-            crm, clen = line[6:].split('\t')
-            genome_seq[crm] = int(clen)
-        line = fhandler.next()
-    try:
-        while True:
-            crm, pos = line.strip().split('\t')[idx1:idx2]
-            count += 1
-            if cond(crm, count):
-                line = fhandler.next()
-                if cond2(count):
-                    break
-                continue
-            pos = int(pos) / resolution
-            try:
-                distr[crm][pos] += 1
-            except KeyError:
-                try:
-                    distr[crm][pos] = 1
-                except KeyError:
-                    distr[crm] = {pos: 1}
+    pos = 0
+    for line in fhandler: 
+        if line.startswith('#'):
+            if line.startswith('# CRM '):
+                crm, clen = line[6:].split('\t')
+                genome_seq[crm] = int(clen)
+            pos += len(line)
+        else:
+            break
+    fhandler.seek(pos)
+    for line in fhandler:
+        crm, pos = line.strip().split('\t')[idx1:idx2]
+        count += 1
+        if cond(crm, count):
             line = fhandler.next()
-    except StopIteration:
-        pass
+            if cond2(count):
+                break
+            continue
+        pos = int(pos) / resolution
+        try:
+            distr[crm][pos] += 1
+        except KeyError:
+            try:
+                distr[crm][pos] = 1
+            except KeyError:
+                distr[crm] = {pos: 1}
     fhandler.close()
     if savefig or show:
         _ = plt.figure(figsize=(15, 1 + 3 * len(
@@ -1248,6 +1249,5 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
     plt.gca().set_xlim([0,maxlen])
     pp.savefig()
     pp.close()
-
 
 
