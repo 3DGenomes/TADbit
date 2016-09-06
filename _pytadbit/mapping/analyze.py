@@ -743,8 +743,6 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     distr = {}
     idx1, idx2 = (1, 3) if first_read else (7, 9)
     genome_seq = OrderedDict()
-    fhandler = open(fnam)
-    line = fhandler.next()
     if chr_names:
         chr_names = set(chr_names)
         cond1 = lambda x: x not in chr_names
@@ -757,14 +755,15 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     cond = lambda x, y: cond1(x) and cond2(y)
     count = 0
     pos = 0
+    fhandler = open(fnam)
     for line in fhandler: 
         if line.startswith('#'):
             if line.startswith('# CRM '):
                 crm, clen = line[6:].split('\t')
                 genome_seq[crm] = int(clen)
-            pos += len(line)
         else:
             break
+        pos += len(line)
     fhandler.seek(pos)
     for line in fhandler:
         crm, pos = line.strip().split('\t')[idx1:idx2]
@@ -1249,5 +1248,6 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
     plt.gca().set_xlim([0,maxlen])
     pp.savefig()
     pp.close()
+
 
 
