@@ -112,7 +112,10 @@ def optimal_reader(f, resolution=1):
 
     def fast_getitem(self, key):
         "Use directly dict setitem"
-        return super(HiC_data, self).__getitem__(key)
+        try:
+            return super(HiC_data, self).__getitem__(key)
+        except KeyError:
+            return 0
 
     original_setitem = HiC_data.__setitem__
     original_getitem = HiC_data.__getitem__
