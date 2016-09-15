@@ -643,6 +643,9 @@ class StructuralModels(object):
                                            method=method, tmp_file=tmp_file,
                                            n_cpus=n_cpus, mclargs=mclargs,
                                            external=True, what=what)
+        if len(clusters) <= 1:
+            raise Exception('ERROR: did not found clusters to be compared ' +
+                            '(try different clustering parameters).\n')
         if verbose:
             print clusters
         n_best_clusters = min(len(clusters), n_best_clusters)
