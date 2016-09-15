@@ -730,8 +730,8 @@ def load_hic_data(opts):
         crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
                            norm_data=hic)
     except:
-         crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
-                            norm_data=opts.matrix)
+        crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
+                           norm_data=opts.matrix)
     # TODO: if not bad columns:...
     crm.experiments[-1].filter_columns(perc_zero=opts.perc_zero)
     if opts.beg > crm.experiments[-1].size:

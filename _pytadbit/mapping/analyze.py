@@ -646,29 +646,29 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
     """
     distr = {}
     genome_seq = OrderedDict()
+    pos = 0
     fhandler = open(fnam)
-    line = fhandler.next()
-    while line.startswith('#'):
-        if line.startswith('# CRM '):
-            crm, clen = line[6:].split()
-            genome_seq[crm] = int(clen)
-        line = fhandler.next()
+    for line in fhandler: 
+        if line.startswith('#'):
+            if line.startswith('# CRM '):
+                crm, clen = line[6:].split('\t')
+                genome_seq[crm] = int(clen)
+        else:
+            break
+        pos += len(line)
+    fhandler.seek(pos)
     des = []
     if nreads:
         nreads /= 2
-    try:
-        while True:
-            (crm1, pos1, dir1, _, re1, _,
-             crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
-            if re1==re2 and crm1 == crm2 and dir1 != dir2:
-                pos1, pos2 = int(pos1), int(pos2)
-                if (pos2 > pos1) == int(dir1):
-                    des.append(abs(pos2 - pos1))
-                if len(des) == nreads:
-                    break
-            line = fhandler.next()
-    except StopIteration:
-        pass
+    for line in fhandler:
+        (crm1, pos1, dir1, _, re1, _,
+         crm2, pos2, dir2, _, re2) = line.strip().split('\t')[1:12]
+        if re1==re2 and crm1 == crm2 and dir1 != dir2:
+            pos1, pos2 = int(pos1), int(pos2)
+            if (pos2 > pos1) == int(dir1):
+                des.append(abs(pos2 - pos1))
+            if len(des) == nreads:
+                break
     fhandler.close()
     max_perc = np.percentile(des, max_size)
     perc99   = np.percentile(des, 99)
@@ -720,6 +720,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
         plt.show()
     plt.close('all')
     return [to_return[k] for k in stats]
+
 
 def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                               ylim=None, yscale=None, savefig=None, show=False,
@@ -1248,6 +1249,7 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
     plt.gca().set_xlim([0,maxlen])
     pp.savefig()
     pp.close()
+
 
 
 
