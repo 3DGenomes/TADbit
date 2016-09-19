@@ -724,8 +724,6 @@ def load_hic_data(opts):
     crm = Chromosome(opts. crm)  # Create chromosome object
     print '     o Loading Hi-C matrix'
     try:
-        global HIC_DATA
-        HIC_DATA = False # we are reading a normalized matrix
         hic = optimal_reader(open(opts.matrix), normalized=True, resolution=opts.reso)
         crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
                            norm_data=hic)
