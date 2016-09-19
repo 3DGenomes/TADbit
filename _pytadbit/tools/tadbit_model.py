@@ -239,8 +239,6 @@ def run(opts):
 %s%s
 
   - Region: Chromosome %s from %d to %d at resolution %s (%d particles)
-
-
     ''' % ('Preparing ' if opts.job_list else '',
            ('Optimization\n' + '*' * (21 if opts.job_list else 11)) if opts.optimize else
            ('Modeling\n' + '*' * (18 if opts.job_list else 8)),
@@ -284,6 +282,7 @@ def run(opts):
 
     ###############
     # Optimization
+    print '     o Optimizing parameters'
     if opts.optimize:
         optimization(exp, opts, job_file_handler, outdir)
         finish_time = time.localtime()
@@ -723,17 +722,22 @@ def load_hic_data(opts):
     """
     # Start reading the data
     crm = Chromosome(opts. crm)  # Create chromosome object
+    print '     o Loading Hi-C matrix'
     try:
         global HIC_DATA
         HIC_DATA = False # we are reading a normalized matrix
-        hic = optimal_reader(open(opts.matrix), resolution=opts.reso)
+        hic = optimal_reader(open(opts.matrix), normalized=True, resolution=opts.reso)
         crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
                            norm_data=hic)
-    except:
+    except Exception, e:
+        print str(e)
+        warn('WARNING: failed to load data as TADbit standardized matrix\n')
         crm.add_experiment('test', exp_type='Hi-C', resolution=opts.reso,
                            norm_data=opts.matrix)
     # TODO: if not bad columns:...
-    crm.experiments[-1].filter_columns(perc_zero=opts.perc_zero)
+    if not crm.experiments[0]._zeros:
+        crm.experiments[-1].filter_columns(perc_zero=opts.perc_zero)
+    
     if opts.beg > crm.experiments[-1].size:
         raise Exception('ERROR: beg parameter is larger than chromosome size.')
     if opts.end > crm.experiments[-1].size:

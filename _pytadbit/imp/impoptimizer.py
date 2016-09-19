@@ -288,7 +288,7 @@ class IMPoptimizer(object):
             models.update(load(inf))
             inf.close()
         count = 0
-        pool = mu.Pool(n_cpus, maxtasksperchild=20)
+        pool = mu.Pool(n_cpus, maxtasksperchild=1)
         jobs = {}
         for scale, maxdist, upfreq, lowfreq, dcutoff in models:
             svd = models[(scale, maxdist, upfreq, lowfreq, dcutoff)]

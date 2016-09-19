@@ -390,12 +390,12 @@ def populate_args(parser):
 
     glopts.add_argument('--min_count', dest='min_count', metavar="INT",
                         action='store', default=0, type=float, 
-                        help=('''[%(default)s%%] minimum number of reads mapped to
+                        help=('''[%(default)s] minimum number of reads mapped to
                         a bin (recommended value could be 2500). If set this
                         option overrides the perc_zero filtering... This option is
                         slightly slower.'''))
 
-    glopts.add_argument('--normalization', dest='resolution', metavar="STR",
+    glopts.add_argument('--normalization', dest='normalization', metavar="STR",
                         action='store', default='ICE', nargs='+', type=str,
                         choices=['ICE', 'EXP'],
                         help='''[%(default)s] normalization(s) to apply.

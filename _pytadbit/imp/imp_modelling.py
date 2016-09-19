@@ -310,7 +310,7 @@ def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     :param n_models: number of models to generate
     """
 
-    pool = mu.Pool(n_cpus)
+    pool = mu.Pool(n_cpus, maxtasksperchild=1)
     jobs = {}
     for rand_init in xrange(START, n_models + START):
         jobs[rand_init] = pool.apply_async(generate_IMPmodel,
