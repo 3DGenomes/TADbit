@@ -55,6 +55,16 @@ TADbit training
 Next editions
 -------------
 
+* October 10th to October 14th 2016: `3DAROC16 3C-based data analysis and 3D reconstruction of chromatin folding
+  <http://gtpb.igc.gulbenkian.pt/bicourses/3DAROC16/>`_ at the
+  `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
+  training programme Oeiras (Portugal)
+* November 28th to December 2nd 2016: `Chromosomal Conformation course
+  <http://www.crg.eu/en/event/coursescrg-chromosomal-conformation-0>`_ at the
+  `CRG <http://www.crg.eu/en/content/training/>`_
+  training programme Bracelona (Spain)
+
+
 Past editions
 -------------
 
