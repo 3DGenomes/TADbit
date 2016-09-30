@@ -1,5 +1,4 @@
-from pytadbit.utils.file_handling         import mkdir
-from pytadbit.mapping.restriction_enzymes import map_re_sites
+from pytadbit.utils.file_handling         import mkdir, magic_open
 from itertools                            import combinations
 from os                                   import path, system
 from sys                                  import stdout
@@ -122,7 +121,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
     """
     
     # Get the headers of the two files 
-    reads1 = open(fname1)
+    reads1 = magic_open(fname1)
     line1 = reads1.next()
     header1 = ''
     while line1.startswith('#'):
@@ -131,7 +130,7 @@ def get_intersection(fname1, fname2, out_path, verbose=False):
         line1 = reads1.next()
     read1 = line1.split('\t', 1)[0]
 
-    reads2 = open(fname2)
+    reads2 = magic_open(fname2)
     line2 = reads2.next()
     header2 = ''
     while line2.startswith('#'):

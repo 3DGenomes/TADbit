@@ -371,13 +371,16 @@ def draw_map(data, genome_seq, cumcs, savefig, show, one=False, clim=None,
 
 def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                                   genome_seq=None, resolution=None, axe=None,
-                                  savefig=None, normalized=False):
+                                  savefig=None, normalized=False,
+                                  plot_each_cell=False):
     """
     :param data: input file name, or HiC_data object or list of lists
     :param 10 min_diff: lower limit (in number of bins)
     :param 1000 max_diff: upper limit (in number of bins) to look for
     :param 100 resolution: group reads that are closer than this resolution
        parameter
+    :param_hash False plot_each_cell: if false, only the mean distances by bin
+       will be represented, otherwise each pair of interactions will be plotted.
     :param None axe: a matplotlib.axes.Axes object to define the plot
        appearance
     :param None savefig: path to a file where to save the image generated;
@@ -387,7 +390,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     :returns: slope, intercept and R square of each of the 3 correlations
     """
     resolution = resolution or 1
-    dist_intr = dict([(i, 0) for i in xrange(min_diff, max_diff)])
+    dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
     if isinstance(data, str):
         fhandler = open(data)
         line = fhandler.next()
@@ -401,7 +404,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                     continue
                 diff = abs(int(ps1)  / resolution - int(ps2) / resolution)
                 if max_diff > diff >= min_diff:
-                    dist_intr[diff] += 1
+                    dist_intr[diff].append(1.)
                 line = fhandler.next()
         except StopIteration:
             pass
@@ -418,12 +421,12 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                     (max_diff, 1 + data.chromosomes[crm]))):
                     for i in xrange(data.section_pos[crm][0],
                                     data.section_pos[crm][1] - diff):
-                        dist_intr[diff] += get_data(i, i + diff)
+                        dist_intr[diff].append(get_data(i, i + diff))
         else:
             for diff in xrange(min_diff, max_diff):
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i, i + diff]):
-                        dist_intr[diff] += get_data(i, diff)
+                        dist_intr[diff].append(get_data(i, diff))
     else:
         if genome_seq:
             max_diff = min(max(genome_seq.values()), max_diff)
@@ -433,14 +436,14 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                     (max_diff, genome_seq[crm]))):
                     for i in xrange(cnt, cnt + genome_seq[crm] - diff):
                         if not np.isnan(data[i][i + diff]):
-                            dist_intr[diff] += data[i][i + diff]
+                            dist_intr[diff].append(data[i][i + diff])
                 cnt += genome_seq[crm]
         else:
             max_diff = min(len(data), max_diff)
             for diff in xrange(min_diff, max_diff):
                 for i in xrange(len(data) - diff):
                     if not np.isnan(data[i][i + diff]):
-                        dist_intr[diff] += data[i][i + diff]
+                        dist_intr[diff].append(data[i][i + diff])
     if not axe:
         fig=plt.figure()
         axe = fig.add_subplot(111)
@@ -455,7 +458,23 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
             max_diff -=1
             continue
         break
-    xp, yp = zip(*sorted(dist_intr.items(), key=lambda x:x[0]))
+    # get_cmap the mean values perc bins
+    mean_intr = dict([(i, float(sum(dist_intr[i])) / len(dist_intr[i]))
+                      for i in dist_intr])
+    if plot_each_cell:
+        xp, yp = [], []
+        for x, y in sorted(dist_intr.items(), key=lambda x:x[0]):
+            xp.extend([x] * len(y))
+            yp.extend(y)
+        x = []
+        y = []
+        for k in xrange(len(xp)):
+            if yp[k]:
+                x.append(xp[k])
+                y.append(yp[k])
+        axe.plot(x, y, color='grey', marker='.', alpha=0.1, ms=1,
+                 linestyle='None')
+    xp, yp = zip(*sorted(mean_intr.items(), key=lambda x:x[0]))
     x = []
     y = []
     for k in xrange(len(xp)):

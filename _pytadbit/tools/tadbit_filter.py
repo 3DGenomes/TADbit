@@ -253,6 +253,12 @@ def load_parameters_fromdb(opts):
         where Id = %d or Id = %d
         """ % (pathids[0], pathids[1]))
         fname1, fname2 = [path.join(opts.workdir, e[0]) for e in cur.fetchall()]
+        if not path.exists(fname1):
+            if path.exists(fname1 + '.gz') and path.exists(fname2 + '.gz'):
+                fname1 += '.gz'
+                fname2 += '.gz'
+            else:
+                raise IOError('ERROR: unput file_handling does not exist')
 
     return fname1, fname2
 
