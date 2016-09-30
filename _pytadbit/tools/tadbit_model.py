@@ -558,29 +558,33 @@ def populate_args(parser):
                         default=False, action="store_true",
                         help='''optimization run, store less info about models''')
     opopts.add_argument('--maxdist', action='store', metavar="LIST",
-                        default='400', dest='maxdist',
+                        default=[400], dest='maxdist', nargs='+',
                         help='range of numbers for maxdist' +
-                        ', i.e. 400:1000:100 -- or just a number')
+                        ', i.e. 400:1000:100 -- or just a number -- or a ' +
+                        'list of numbers')
     opopts.add_argument('--upfreq', dest='upfreq', metavar="LIST",
-                        default='0',
+                        default=[0], nargs='+',
                         help='range of numbers for upfreq' +
-                        ', i.e. 0:1.2:0.3 --  or just a number')
+                        ', i.e. 0:1.2:0.3 -- or just a number -- or a ' +
+                        'list of numbers')
     opopts.add_argument('--lowfreq', dest='lowfreq', metavar="LIST",
-                        default='0',
+                        default=[0], nargs='+',
                         help='range of numbers for lowfreq' +
-                        ', i.e. -1.2:0:0.3 -- or just a number')
+                        ', i.e. -1.2:0:0.3 -- or just a number -- or a ' +
+                        'list of numbers')
     opopts.add_argument('--scale', dest='scale', metavar="LIST",
-                        default="0.01",
+                        default=[0.01], nargs='+',
                         help='[%(default)s] range of numbers to be test as ' +
                         'optimal scale value, i.e. 0.005:0.01:0.001 -- Can ' +
-                        'also pass only one number')
+                        'also pass only one number -- or a ' +
+                        'list of numbers')
     opopts.add_argument('--dcutoff', dest='dcutoff', metavar="LIST",
-                        default="2",
+                        default=[2], nargs='+',
                         help='[%(default)s] range of numbers to be test as ' +
                         'optimal distance cutoff parameter (distance, in ' +
                         'number of beads, from which to consider 2 beads as ' +
                         'being close), i.e. 1:5:0.5 -- Can also pass only one' +
-                        ' number')
+                        ' number -- or a list of numbers')
 
     anopts.add_argument('--analyze', dest='analyze', 
                         default=False, action="store_true",
@@ -634,20 +638,18 @@ def check_options(opts):
         pass
 
     # turn options into lists
-    opts.scale   = (tuple(arange(*[float(s) for s in opts.scale.split(':')  ]))
-                    if ':' in opts.scale   else [float(opts.scale  )])
-    
-    opts.maxdist = (tuple(range (*[int  (i) for i in opts.maxdist.split(':')]))
-                    if ':' in opts.maxdist else [int  (opts.maxdist)])
+    def _load_range(range_str, num=float):
+        try:
+            beg, end, step = map(num, range_str[0].split(':'))
+            return tuple(arange(beg, end + step, step))
+        except (AttributeError, ValueError):
+            return tuple([num(v) for v in range_str])
 
-    opts.upfreq  = (tuple(arange(*[float(i) for i in opts.upfreq.split(':') ]))
-                    if ':' in opts.upfreq  else [float(opts.upfreq )])
-
-    opts.lowfreq = (tuple(arange(*[float(i) for i in opts.lowfreq.split(':')]))
-                    if ':' in opts.lowfreq else [float(opts.lowfreq)])
-
-    opts.dcutoff = (tuple(arange(*[float(i) for i in opts.dcutoff.split(':')]))
-                    if ':' in opts.dcutoff else [float(opts.dcutoff)])
+    opts.scale   = _load_range(opts.scale)
+    opts.maxdist = _load_range(opts.maxdist, num=int)
+    opts.upfreq  = _load_range(opts.upfreq)
+    opts.lowfreq = _load_range(opts.lowfreq)
+    opts.dcutoff = _load_range(opts.dcutoff)
 
     opts.nmodels_run = opts.nmodels_run or opts.nmodels
 
