@@ -460,7 +460,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
         break
     # get_cmap the mean values perc bins
     mean_intr = dict([(i, float(sum(dist_intr[i])) / len(dist_intr[i]))
-                      for i in dist_intr])
+                      for i in dist_intr if len(dist_intr[i])])
     if plot_each_cell:
         xp, yp = [], []
         for x, y in sorted(dist_intr.items(), key=lambda x:x[0]):
