@@ -35,18 +35,18 @@ DESC = ("Generates 3D models given an input interaction matrix and a set of "
         "input parameters")
 
 
-def write_one_job(opts, rand, m, u, l, s, job_file_handler, nmodels_run=None):
+def write_one_job(opts, rand, m, u, l, s, d, job_file_handler, nmodels_run=None):
     if nmodels_run is None:
         nmodels_run = opts.nmodels_run
     (m, u, l, s) = tuple(map(my_round, (m, u, l, s)))
     job_file_handler.write(
         'tadbit model -w %s -r %d -C %d --input_matrix %s '
         '--maxdist %s --upfreq %s --lowfreq=%s --scale %s '
-        '--rand %s --nmodels %s --nkeep %s '
+        '--dcutoff %s --rand %s --nmodels %s --nkeep %s '
         '--crm %s --beg %d --end %d --perc_zero %s %s\n' % (
             opts.workdir, opts.reso,
             min(opts.cpus, opts.nmodels_run), opts.matrix,
-            m, u, l, s, rand,
+            m, u, l, s, ' '.join(map(str, d)), rand,
             nmodels_run,  # equal to nmodels if not defined
             nmodels_run,  # keep, equal to nmodel_run if defined
             opts.crm, opts.beg * opts.reso, opts.end * opts.reso,
@@ -117,7 +117,7 @@ def optimization(exp, opts, job_file_handler, outdir):
         # write list of jobs to be run separately
         if opts.job_list:
             for rand in xrange(1, opts.nmodels + 1, opts.nmodels_run):
-                write_one_job(opts, rand, m, u, l, s, job_file_handler)
+                write_one_job(opts, rand, m, u, l, s, opts.dcutoff, job_file_handler)
             continue
 
         # compute models
@@ -514,7 +514,7 @@ def populate_args(parser):
     reopts = parser.add_argument_group('Modeling preparation')
     opopts = parser.add_argument_group('Parameter optimization')
     anopts = parser.add_argument_group('Analysis')
-    ruopts = parser.add_argument_group('Computation')
+    ruopts = parser.add_argument_group('Running jobs')
 
     glopts.add_argument('-w', '--workdir', dest='workdir', metavar="PATH",
                         action='store', default=None, type=str, required=True,
@@ -574,13 +574,13 @@ def populate_args(parser):
                         'list of numbers')
     opopts.add_argument('--scale', dest='scale', metavar="LIST",
                         default=[0.01], nargs='+',
-                        help='[%(default)s] range of numbers to be test as ' +
+                        help='%(default)s range of numbers to be test as ' +
                         'optimal scale value, i.e. 0.005:0.01:0.001 -- Can ' +
                         'also pass only one number -- or a ' +
                         'list of numbers')
     opopts.add_argument('--dcutoff', dest='dcutoff', metavar="LIST",
                         default=[2], nargs='+',
-                        help='[%(default)s] range of numbers to be test as ' +
+                        help='%(default)s range of numbers to be test as ' +
                         'optimal distance cutoff parameter (distance, in ' +
                         'number of beads, from which to consider 2 beads as ' +
                         'being close), i.e. 1:5:0.5 -- Can also pass only one' +
@@ -601,9 +601,25 @@ def populate_args(parser):
                         cores will be used''')
     ruopts.add_argument('--job_list', dest='job_list', action='store_true',
                         default=False,
-                        help=('generate a list of commands stored in a file '
-                              'named joblist_HASH.q (where HASH is replaced by '
-                              'a string specific to the parameters used)'))
+                        help=('generate a list of commands stored in a '
+                              'file named joblist_HASH.q (where HASH is '
+                              'replaced by a string specific to the parameters '
+                              'used). note that dcutoff will nwver be split as '
+                              'it does not require to re-run models.'))
+    # ruopts.add_argument('--job_list', dest='job_list', metavar='LIST/nothing', nargs='*',
+    #                     choices=['maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff'],
+    #                     default=None,
+    #                     help=('[False] generate a list of commands stored in a '
+    #                           'file named joblist_HASH.q (where HASH is '
+    #                           'replaced by a string specific to the parameters '
+    #                           'used). With no extra argument any combination of'
+    #                           ' optimized parameters will generate a new job. '
+    #                           'Otherwise the parameters to be splitted can be '
+    #                           'specified (e.g. "--job_list maxdist lowfreq '
+    #                           'upfreq scale" will run in a single job all '
+    #                           'combinations of dcutoff -- which makes sense as '
+    #                           'dcutoff does not require to re-run models). '
+    #                           'Choices are: %(choices)s'))
     ruopts.add_argument('--tmpdb', dest='tmpdb', action='store', default=None,
                         metavar='PATH', type=str,
                         help='''if provided uses this directory to manipulate the
@@ -626,6 +642,9 @@ def check_options(opts):
             vlog.write(dependencies)
             vlog.close()
     # do the division to bins
+    if opts.job_list is not None:
+        if opts.job_list == []:
+            opts.job_list = ['maxdist', 'upfreq', 'lowfreq', 'scale', 'dcutoff']
     try:
         opts.ori_beg = opts.beg
         opts.ori_end = opts.end
