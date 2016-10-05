@@ -15,6 +15,7 @@ from pytadbit.utils.extraviews      import color_residues, chimera_view
 from pytadbit.imp.impmodel          import IMPmodel
 from pytadbit.centroid              import centroid_wrapper
 from pytadbit.aligner3d             import aligner3d_wrapper
+from pytadbit                       import get_dependencies_version
 from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
 from math                           import acos, degrees, pi, sqrt
@@ -32,7 +33,7 @@ from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
 from os.path                        import exists
-from pytadbit                       import get_dependencies_version
+from itertools                      import combinations
 import uuid
 
 try:
@@ -530,18 +531,23 @@ class StructuralModels(object):
                                  axe, savefig, z, **kwargs)
         return d
 
-    def get_contact_matrix(self, models=None, cluster=None, cutoff=None):
+    def get_contact_matrix(self, models=None, cluster=None, cutoff=None,
+                           distance=False):
         """
         Returns a matrix with the number of interactions observed below a given
         cutoff distance.
 
-        :param None models: if None (default) the contact matrix will be computed
-           using all the models. A list of numbers corresponding to a given set
-           of models can be passed
-        :param None cluster: compute the contact matrix only for the models in the
-           cluster number 'cluster'
+        :param None models: if None (default) the contact matrix will be 
+           computed using all the models. A list of numbers corresponding to a 
+           given set of models can be passed
+        :param None cluster: compute the contact matrix only for the models in
+           the cluster number 'cluster'
         :param None cutoff: distance cutoff (nm) to define whether two particles
            are in contact or not, default is 2 times resolution, times scale.
+           Cutoff can also be a list of values, in wich case the returned object 
+           will be a dictionnary of matrices (keys being square cutoffs)
+        :param False distance: returns the distance matrix of all_angles against 
+           all_angles particles instead of a contact_map matrix using the cutoff
 
         :returns: matrix frequency of interaction
         """
@@ -552,22 +558,32 @@ class StructuralModels(object):
             models = [self[str(m)]['index'] for m in self.clusters[cluster]]
         else:
             models = [m for m in self.__models]
-        matrix = [[float('nan') for _ in xrange(self.nloci)]
-                  for _ in xrange(self.nloci)]
+        cutoff_list = True
+        if not isinstance(cutoff, list):
+            cutoff = [cutoff]
+            cutoff_list = False
+        cutoff.sort(reverse=True)
         if not cutoff:
-            cutoff = int(2 * self.resolution * self._config['scale'])
-        cutoff = cutoff**2
-        for i in xrange(self.nloci):
-            if not self._zeros[i]:
-                continue
-            for j in xrange(i + 1, self.nloci):
-                if not self._zeros[j]:
-                    continue
-                val = len([k for k in self.__square_3d_dist(
-                    i + 1, j + 1, models=models)
-                    if k < cutoff])
-                matrix[i][j] = matrix[j][i] = float(val) / len(models)  # * 100
-        return matrix
+            cutoff = [int(2 * self.resolution * self._config['scale'])]
+        cutoff = [c**2 for c in cutoff]
+        matrix = dict([(c, [[float('nan') for _ in xrange(self.nloci)]
+                            for _ in xrange(self.nloci)]) for c in cutoff])
+        wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
+        models = [self[mdl] for mdl in models]
+        for i, j in combinations(wloci, 2):
+            dists = self.__fast_square_3d_dist(i, j, models)
+            vals = dict([(c, 0) for c in cutoff])
+            for v in dists:
+                for c in cutoff:
+                    if v > c:
+                        # cutoffs are sorted so we do not need to check further
+                        break
+                    vals[c] += 1
+            for c in cutoff:
+                matrix[c][i][j] = matrix[c][j][i] = float(vals[c]) / len(models)  # * 100
+        if cutoff_list:
+            return matrix
+        return matrix.values()[0]
 
     def define_best_models(self, nbest):
         """
@@ -1607,7 +1623,7 @@ class StructuralModels(object):
     def correlate_with_real_data(self, models=None, cluster=None, cutoff=None,
                                  off_diag=1, plot=False, axe=None, savefig=None,
                                  corr='spearman', midplot='hexbin',
-                                 log_corr=True):
+                                 log_corr=True, contact_matrix=None):
         """
         Plots the result of a correlation between a given group of models and
         original Hi-C data.
@@ -1626,6 +1642,8 @@ class StructuralModels(object):
         :param True log_corr: log plot for correlation
         :param None axe: a matplotlib.axes.Axes object to define the plot
            appearance
+        :param None contact_matrix: input a contact matrix instead of computing
+           it from the models
 
         :returns: correlation coefficient rho, between the two
            matrices. A rho value greater than 0.7 indicates a very good
@@ -1634,8 +1652,11 @@ class StructuralModels(object):
         """
         if not cutoff:
             cutoff = int(2 * self.resolution * self._config['scale'])
-        model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
-                                               cutoff=cutoff)
+        if contact_matrix:
+            model_matrix = contact_matrix
+        else:
+            model_matrix = self.get_contact_matrix(models=models, cluster=cluster,
+                                                   cutoff=cutoff)
         oridata = []
         moddata = []
         for i in xrange(len(self._original_data)):
@@ -2147,6 +2168,16 @@ class StructuralModels(object):
         else:
             models = [m for m in self.__models]
         models = [self[mdl] for mdl in models]
+        return [(mdl['x'][part1] - mdl['x'][part2])**2 +
+                (mdl['y'][part1] - mdl['y'][part2])**2 +
+                (mdl['z'][part1] - mdl['z'][part2])**2
+                for mdl in models]
+    
+    def __fast_square_3d_dist(self, part1, part2, models):
+        """
+        same as median_3d_dist, but return the square of the distance instead
+        we know what we are doing.
+        """
         return [(mdl['x'][part1] - mdl['x'][part2])**2 +
                 (mdl['y'][part1] - mdl['y'][part2])**2 +
                 (mdl['z'][part1] - mdl['z'][part2])**2

@@ -227,15 +227,19 @@ class IMPoptimizer(object):
                                 close_bins=self.close_bins, zeros=self.zeros)
                             result = 0
                             cutoff = my_round(dcutoff_arange[0])
-                            for cut in [i for i in dcutoff_arange]:
+
+                            matrices = tdm.get_contact_matrix(
+                                cutoff=[int(i * self.resolution * float(scale))
+                                        for i in dcutoff_arange])
+                            for m in matrices:
+                                cut = int(m**0.5)
                                 sub_result = tdm.correlate_with_real_data(
-                                    cutoff=(int(cut * self.resolution *
-                                                float(scale))),
-                                    corr=corr,
-                                    off_diag=off_diag)[0]
+                                    cutoff=cut, corr=corr,
+                                    off_diag=off_diag, contact_matrix=matrices[m])[0]
                                 if result < sub_result:
                                     result = sub_result
-                                    cutoff = my_round(cut)
+                                    cutoff = my_round(float(cut) / self.resolution /
+                                                      float(scale))
                         except Exception, e:
                             print '  SKIPPING: %s' % e
                             result = 0
