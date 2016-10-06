@@ -754,7 +754,7 @@ class TestTadbit(unittest.TestCase):
         
         self.assertEqual([round(i, 2) if str(i)!='nan' else 0.0 for i in
                           reduce(lambda x, y: x + y, vals)],
-                         [-1.74, 4.2, 0.52, 1.82, -0.44, 0.0, -0.5, 2.95, 0.0])
+                         [-1.68, -2.08, 0.02, 2.76, -8.99, 0.0, 0.82, -6.8, 0.0])
         
         a, b = insert_sizes('lala-map~')
         self.assertEqual([int(a),int(b)], [43, 1033])
