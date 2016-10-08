@@ -390,8 +390,9 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
     :returns: slope, intercept and R square of each of the 3 correlations
     """
     resolution = resolution or 1
-    dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
     if isinstance(data, str):
+        dist_intr = dict([(i, {})
+                          for i in xrange(min_diff, max_diff)])
         fhandler = open(data)
         line = fhandler.next()
         while line.startswith('#'):
@@ -404,12 +405,19 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                     continue
                 diff = abs(int(ps1)  / resolution - int(ps2) / resolution)
                 if max_diff > diff >= min_diff:
-                    dist_intr[diff].append(1.)
+                    try:
+                        dist_intr[diff][int(ps1) / resolution] += 1.
+                    except KeyError:
+                        dist_intr[diff][int(ps1) / resolution] = 1.
                 line = fhandler.next()
         except StopIteration:
             pass
         fhandler.close()
+        for diff in dist_intr:
+            dist_intr[diff] = [dist_intr[diff].get(k, 0)
+                               for k in xrange(max(dist_intr[diff]) - diff)]
     elif isinstance(data, HiC_data):
+        dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
         if normalized:
             get_data = lambda x, y: data[x, y] / data.bias[x] / data.bias[y]
         else:
@@ -428,6 +436,7 @@ def plot_distance_vs_interactions(data, min_diff=1, max_diff=1000, show=False,
                     if not np.isnan(data[i, i + diff]):
                         dist_intr[diff].append(get_data(i, diff))
     else:
+        dist_intr = dict([(i, []) for i in xrange(min_diff, max_diff)])
         if genome_seq:
             max_diff = min(max(genome_seq.values()), max_diff)
             cnt = 0
@@ -996,6 +1005,7 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
             corr[i][j] = abs(pearsonr(evect1[:,-i-1],
                                       evect2[:,-j-1])[0])
     # plot
+    plt.figure(figsize=(10, 8))
     axe    = plt.axes([0.1, 0.1, 0.6, 0.8])
     cbaxes = plt.axes([0.85, 0.1, 0.03, 0.8])
     if show or savefig:
