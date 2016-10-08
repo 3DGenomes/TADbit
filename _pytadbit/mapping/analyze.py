@@ -1005,7 +1005,6 @@ def eig_correlate_matrices(hic_data1, hic_data2, nvect=6, normalized=False,
             corr[i][j] = abs(pearsonr(evect1[:,-i-1],
                                       evect2[:,-j-1])[0])
     # plot
-    plt.figure(figsize=(10, 8))
     axe    = plt.axes([0.1, 0.1, 0.6, 0.8])
     cbaxes = plt.axes([0.85, 0.1, 0.03, 0.8])
     if show or savefig:

@@ -146,18 +146,25 @@ def correlate_models(opts, outdir, exp, corr='spearman', off_diag=1,
         muls = tuple(map(my_round, (m, u, l, s)))
         result = 0
         d = float('nan')
-        for d in opts.dcutoff:
+        try:
+            cuts = dict([(d, int(d * opts.reso * float(s))) for d in opts.dcutoff])
+            matrices = models[muls].get_contact_matrix(cutoff=cuts.values())
+        except Exception, e:
+            print '  SKIPPING contact matrix: %s' % e
+            continue
+        for d, cut in sorted(cuts.iteritems()):
+            matrix = cut**2
             try:
                 result = models[muls].correlate_with_real_data(
-                    cutoff=(int(d * opts.reso * float(s))),
-                    corr=corr, off_diag=off_diag)[0]
+                    cutoff=cut, corr=corr,
+                    off_diag=off_diag, contact_matrix=matrices[matrix])[0]
             except Exception, e:
-                print '  SKIPPING: %s' % e
+                print '  SKIPPING correlation: %s' % e
                 result = 0
             name = tuple(map(my_round, (m, u, l, d, s)))
             if verbose:
                 print(('%8s/%-6s %6s %7s %7s %6s %7s | %.4f' %
-                       (num, len(models), u, l, m, s, d, result)))
+                       (num, len(models) * len(cuts), u, l, m, s, d, result)))
             num += 1
             results[name] = {'corr'   : result,
                              'nmodels': (len(models[muls]) +
