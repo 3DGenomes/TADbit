@@ -155,9 +155,10 @@ def hic_map(data, resolution=None, normalized=False, masked=None,
                 warn('WARNING: Matrix image not created, more than '
                      '10000 rows, use a lower resolution to create images')
                 return
+            start1 = hic_data._focus_coords(focus)[0]
             if focus and masked:
                 # rescale masked
-                masked = dict([(m - focus[0], masked[m]) for m in masked])
+                masked = dict([(m - start1, masked[m]) for m in masked])
             if masked:
                 for i in xrange(len(subdata)):
                     if i in masked:
@@ -1277,7 +1278,5 @@ def plot_diagonal_distributions(reads_file, outprefix, ma_window=20,
     plt.gca().set_xlim([0,maxlen])
     pp.savefig()
     pp.close()
-
-
 
 

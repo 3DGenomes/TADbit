@@ -413,29 +413,9 @@ class HiC_data(dict):
 
         :returns: matrix (a list of lists of values)
         """
-        siz = len(self)
         if normalized and not self.bias:
             raise Exception('ERROR: experiment not normalized yet')
-        if focus:
-            if isinstance(focus, tuple) and isinstance(focus[0], int):
-                if len(focus) == 2:
-                    start1, end1 = focus
-                    start2, end2 = focus
-                    start1 -= 1
-                    start2 -= 1
-                else:
-                    start1, end1, start2, end2 = focus
-                    start1 -= 1
-                    start2 -= 1
-            elif isinstance(focus, tuple) and isinstance(focus[0], str):
-                start1, end1 = self.section_pos[focus[0]]
-                start2, end2 = self.section_pos[focus[1]]
-            else:
-                start1, end1 = self.section_pos[focus]
-                start2, end2 = self.section_pos[focus]
-        else:
-            start1 = start2 = 0
-            end1   = end2   = siz
+        start1, start2, end1, end2 = self._focus_coords(focus)
         if normalized:
             if diagonal:
                 return [[self[i, j] / self.bias[i] / self.bias[j]
@@ -461,6 +441,30 @@ class HiC_data(dict):
                         mtrx[i][i] = 1 if mtrx[i][i] else 0
                 return mtrx
 
+    def _focus_coords(self, focus):
+        siz = len(self)
+        if focus:
+            if isinstance(focus, tuple) and isinstance(focus[0], int):
+                if len(focus) == 2:
+                    start1, end1 = focus
+                    start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+                else:
+                    start1, end1, start2, end2 = focus
+                    start1 -= 1
+                    start2 -= 1
+            elif isinstance(focus, tuple) and isinstance(focus[0], str):
+                start1, end1 = self.section_pos[focus[0]]
+                start2, end2 = self.section_pos[focus[1]]
+            else:
+                start1, end1 = self.section_pos[focus]
+                start2, end2 = self.section_pos[focus]
+        else:
+            start1 = start2 = 0
+            end1   = end2   = siz
+        return start1, start2, end1, end2
+            
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', how='',
                           label_compartments='hmm', log=None, max_mean_size=10000,
