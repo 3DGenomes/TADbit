@@ -10,7 +10,10 @@ try:
     locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
 except:
     environ["LANG"] = "en_US.UTF-8"
-    locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
+    try:
+        locale.setlocale(locale.LC_ALL, '.'.join(locale.getdefaultlocale()))
+    except:
+        pass
 
 ## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib
 if not "DISPLAY" in environ:
