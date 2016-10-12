@@ -85,7 +85,7 @@ def tadbit(x, remove=None, n_cpus=1, verbose=True,
     else:
         result = {'start': [], 'end'  : [], 'score': [], 'tag': []}
     
-        ret = TopDom(nums[0],window_size=5)
+        ret = TopDom(nums[0],window_size=topdom_window)
         
         
         for key in sorted(ret):
