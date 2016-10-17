@@ -582,6 +582,9 @@ def check_options(opts):
                 copyfile(path.join(opts.workdir2, 'trace.db'), opts.tmpdb2)
             except IOError:
                 pass
+    else:
+        opts.tmpdb1 = path.join(opts.workdir1, 'trace.db')
+        opts.tmpdb2 = path.join(opts.workdir2, 'trace.db')
 
     # check if job already run using md5 digestion of parameters
     if already_run(opts):

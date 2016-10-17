@@ -155,8 +155,11 @@ def main():
         plus = git_status != ''
         if plus:
             print '\n\nFOUND changes:\n' + git_status + '.'
-        git_version  = git_revision.split('-')[0]
-        git_revision = str(int(git_revision.split('-')[1]) + plus)
+        git_version  = git_revision.split('-')[0].strip()
+        try:
+            git_revision = str(int(git_revision.split('-')[1]) + plus)
+        except IndexError:
+            git_revision = str(1)
     except OSError:
         git_revision = revision
         git_version  = version

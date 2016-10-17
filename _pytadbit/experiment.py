@@ -1167,8 +1167,10 @@ class Experiment(object):
         :param None clim: tuple with minimum and maximum value range for color
            scale. I.e. clim=(-4, 10)
         """
-        if logarithm:
+        if logarithm==True:
             fun = log2
+        elif logarithm:
+            fun = logarithm
         else:
             fun = lambda x: x
         size = self.size
@@ -1289,7 +1291,7 @@ class Experiment(object):
         if decorate:
             cbar = axe.figure.colorbar(img)
             cbar.ax.set_ylabel('%sHi-C %sinteraction count' % (
-                'Log2 ' * logarithm, 'normalized ' * normalized), rotation=-90)
+                'Log2 ' * (logarithm==True), 'normalized ' * normalized), rotation=-90)
             axe.set_title(('Chromosome %s experiment %s %s') % (
                 self.crm.name, self.name,
                 'focus: %s-%s' % (start, end) if tad else ''))
