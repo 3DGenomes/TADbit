@@ -54,41 +54,44 @@ def run(opts):
         raise Exception('ERROR: differing resolutions between experiments to '
                         'be merged')
 
-    print 'loading first sample', mreads1
-    hic_data1 = load_hic_data_from_reads(mreads1, opts.reso)
-
-    print 'loading second sample', mreads2
-    hic_data2 = load_hic_data_from_reads(mreads2, opts.reso)
-
-    if opts.norm and biases1:
-        bad_co1 = path.join(opts.workdir1, bad_co1)
-        print 'loading bad columns from first sample', bad_co1
-        hic_data1.bads = dict((int(l.strip()), True) for l in open(bad_co1))
-        biases1 = path.join(opts.workdir1, biases1)
-        print 'loading biases from first sample', biases1
-        hic_data1.bias = dict((int(l.split()[0]), float(l.split()[1]))
-                              for l in open(biases1))
-    elif opts.norm:
-        raise Exception('ERROR: biases or filtered-columns not found')
-    if opts.norm and biases2:
-        bad_co2 = path.join(opts.workdir2, bad_co2)
-        print 'loading bad columns from second sample', bad_co2
-        hic_data2.bads = dict((int(l.strip()), True) for l in open(bad_co2))
-        biases2 = path.join(opts.workdir2, biases2)
-        print 'loading biases from second sample', biases2
-        hic_data2.bias = dict((int(l.split()[0]), float(l.split()[1]))
-                              for l in open(biases2))
-    elif opts.norm:
-        raise Exception('ERROR: biases or filtered-columns not found')
 
     mkdir(path.join(opts.workdir, '00_merge'))
 
     if not opts.skip_comparison:
+        print 'Comparison'
+        print ' - loading first sample', mreads1
+        hic_data1 = load_hic_data_from_reads(mreads1, opts.reso)
+
+        print ' - loading second sample', mreads2
+        hic_data2 = load_hic_data_from_reads(mreads2, opts.reso)
+
+        if opts.norm and biases1:
+            bad_co1 = path.join(opts.workdir1, bad_co1)
+            print ' - loading bad columns from first sample', bad_co1
+            hic_data1.bads = dict((int(l.strip()), True) for l in open(bad_co1))
+            biases1 = path.join(opts.workdir1, biases1)
+            print ' - loading biases from first sample', biases1
+            hic_data1.bias = dict((int(l.split()[0]), float(l.split()[1]))
+                                  for l in open(biases1))
+        elif opts.norm:
+            raise Exception('ERROR: biases or filtered-columns not found')
+        if opts.norm and biases2:
+            bad_co2 = path.join(opts.workdir2, bad_co2)
+            print ' - loading bad columns from second sample', bad_co2
+            hic_data2.bads = dict((int(l.strip()), True) for l in open(bad_co2))
+            biases2 = path.join(opts.workdir2, biases2)
+            print ' - loading biases from second sample', biases2
+            hic_data2.bias = dict((int(l.split()[0]), float(l.split()[1]))
+                                  for l in open(biases2))
+        elif opts.norm:
+            raise Exception('ERROR: biases or filtered-columns not found')
         decay_corr_dat = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
         decay_corr_fig = path.join(opts.workdir, '00_merge', 'decay_corr_dat_%s_%s.png' % (opts.reso, param_hash))
         eigen_corr_dat = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.txt' % (opts.reso, param_hash))
         eigen_corr_fig = path.join(opts.workdir, '00_merge', 'eigen_corr_dat_%s_%s.png' % (opts.reso, param_hash))
     else:
+        hic_data1 = {}
+        hic_data2 = {}
         decay_corr_dat = 'None'
         decay_corr_fig = 'None'
         eigen_corr_dat = 'None'
@@ -98,18 +101,18 @@ def run(opts):
         # has bias file
 
     if not opts.skip_comparison:
-        print 'correlation between equidistant loci'
+        print '  => correlation between equidistant loci'
         corr, _, bads = correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
                                            remove_bad_columns=True,
                                            savefig=decay_corr_fig,
                                            savedata=decay_corr_dat, get_bads=True)
-        print 'correlation between eigenvectors'
+        print '  => correlation between eigenvectors'
         eig_corr = eig_correlate_matrices(hic_data1, hic_data2, normalized=opts.norm,
                                           remove_bad_columns=True, nvect=6,
                                           savefig=eigen_corr_fig,
                                           savedata=eigen_corr_dat)
     else:
-        corr = eig_corr = None
+        corr = eig_corr = 0
         bads = {}
 
     # merge inputs
@@ -117,6 +120,7 @@ def run(opts):
     outbed = path.join(opts.workdir, '03_filtered_reads', 'valid_r1-r2_intersection_%s.tsv' % (
         param_hash))
 
+    print '\nMergeing...'
     nreads = merge_2d_beds(mreads1, mreads2, outbed)
 
     finish_time = time.localtime()
@@ -124,6 +128,7 @@ def run(opts):
                 len(bads.keys()), len(hic_data1), nreads,
                 eigen_corr_dat, eigen_corr_fig, outbed, corr, eig_corr,
                 biases1, bad_co1, biases2, bad_co2, launch_time, finish_time)
+    print '\n\nDone.'
 
 def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
                nbad_columns, ncolumns, nreads,
@@ -274,13 +279,14 @@ def save_to_db(opts, mreads1, mreads2, decay_corr_dat, decay_corr_fig,
         (NULL,    %d,        %d,        %d,       %d,       %d,        %d)
         """ % (jobid,    w1path,    w2path,     bed1,     bed2,  outbedid))
 
-        cur.execute("""
-        insert into MERGE_STATs
-        (Id  , JOBid, N_columns,   N_filtered, Resolution, decay_corr, eigen_corr, bias1Path, bads1Path, bias2Path, bads2Path)
-        values
-        (NULL,    %d,        %d,           %d,         %d,       '%s',       '%s',        %d,        %d,        %d,        %d)
-        """ % (jobid,  ncolumns, nbad_columns, opts.reso , decay_corr, eigen_corr,   biasid1,   badsid1,   biasid2,   badsid2))
-            
+        if not opts.skip_comparison:    
+            cur.execute("""
+            insert into MERGE_STATs
+            (Id  , JOBid, N_columns,   N_filtered, Resolution, decay_corr, eigen_corr, bias1Path, bads1Path, bias2Path, bads2Path)
+            values
+            (NULL,    %d,        %d,           %d,         %d,       '%s',       '%s',        %d,        %d,        %d,        %d)
+            """ % (jobid,  ncolumns, nbad_columns, opts.reso , decay_corr, eigen_corr,   biasid1,   badsid1,   biasid2,   badsid2))
+                
         masked1 = {'valid-pairs': {'count': nreads}}
         if opts.workdir1:
             if 'tmpdb' in opts and opts.tmpdb:
@@ -385,7 +391,10 @@ def load_parameters_fromdb(workdir, jobid, opts, tmpdb):
                 where Type = '%s'
                 """ % ('Filter'))
                 jobids = cur.fetchall()
-                parse_jobid = jobids[0][0]
+                try:
+                    parse_jobid = jobids[0][0]
+                except IndexError:
+                    parse_jobid = 1
             if len(jobids) > 1:
                 raise Exception('ERROR: more than one possible input found, use'
                                 '"tadbit describe" and select corresponding '

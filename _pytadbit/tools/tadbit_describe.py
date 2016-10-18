@@ -25,9 +25,11 @@ TABLE_IDX = {
     '6' : 'intersection_outputs',
     '7' : 'filter_outputs',
     '8' : 'normalize_outputs',
-    '9' : 'segment_outputs',
-    '10': 'models',
-    '11': 'modeled_regions'}
+    '9' : 'merge_stats',
+    '10': 'merge_outputs',
+    '11': 'segment_outputs',
+    '12': 'models',
+    '13': 'modeled_regions'}
 
 
 
