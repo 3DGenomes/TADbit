@@ -386,7 +386,20 @@ class Chromosome(object):
             if reciprocal, a method based on reciprocal closest boundaries is
             used (see :func:`pytadbit.boundary_aligner.reciprocally.reciprocal`)
 
-        :returns: the alignment or the score, p-value of the alignment
+        :returns: an alignment object or, if the randomizattion was invoked,
+           an alignment object, and a list of statistics that are, the alignment 
+           score, the probability that observed alignment performs better than 
+           randoms, the proportion of borders from the first experiment found 
+           aligned in the second experiment and the proportion of borders from
+           the second experiment found aligned in the first experiment.
+           Returned calues can be catched like this:
+
+               ali = crm.align_experiments()
+
+           or, with randomization test:
+
+               ali, (score, pval, prop1, prop2) = crm.align_experiments(randomize=True)
+
         """
         if names:
             xpers = ExperimentList([self.get_experiment(n) for n in names],
