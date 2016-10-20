@@ -651,6 +651,8 @@ class Chromosome(object):
            of the file name will determine the desired format).
         :param None clim: tuple with minimum and maximum value range for color
            scale. I.e. clim=(-4, 10)
+        :param 'jet' cmap: color map from matplotlib. Can also be a 
+           preconfigured cmap object.
         """
         if names == None:
             names = [xpr.name for xpr in self.experiments]

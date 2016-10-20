@@ -1166,6 +1166,8 @@ class Experiment(object):
            of the file name will determine the desired format).
         :param None clim: tuple with minimum and maximum value range for color
            scale. I.e. clim=(-4, 10)
+        :param 'jet' cmap: color map from matplotlib. Can also be a 
+           preconfigured cmap object.
         """
         if logarithm==True:
             fun = log2
@@ -1272,8 +1274,10 @@ class Experiment(object):
             jet._init()
             jet._lut[:,-1] = alphas
 
-        cmap = plt.get_cmap(cmap)
-        cmap.set_bad('darkgrey', 1)
+        if isinstance(cmap, str):
+            print 'que conio esta pasando???'
+            cmap = plt.get_cmap(cmap)
+            cmap.set_bad('darkgrey', 1)
         if relative:
             img = axe.imshow(nozero_log_matrix(matrix, fun), origin='lower', vmin=vmin, vmax=vmax,
                              interpolation="nearest", cmap=cmap,
