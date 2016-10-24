@@ -333,8 +333,12 @@ class HiC_data(dict):
         if factor:
             if not silent:
                 print 'rescaling to factor %d' % factor
+                print '  - getting the sum of the matrix'
             # get the sum on half of the matrix
             norm_sum = self.sum(bias)
+            if not silent:
+                print '    => %.3f' % norm_sum
+                print '  - rescaling biases'
             # divide biases
             target = (norm_sum / float(len(self) * len(self) * factor))**0.5
             bias = dict([(b, bias[b] * target) for b in bias])
@@ -468,7 +472,7 @@ class HiC_data(dict):
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', how='',
                           label_compartments='hmm', log=None, max_mean_size=10000,
-                          ev_index=None, rich_in_A=None, **kwargs):
+                          ev_index=None, rich_in_A=None, max_ev=3, **kwargs):
         """
         Search for A/B copartments in each chromsome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -500,6 +504,7 @@ class HiC_data(dict):
         :param False yield_ev1: if True yields one list per chromosome with the
            first eigenvector used to compute compartments.
         :param '' suffix: to be placed after file names of compartment images
+        :param 3 max_ev: maximum number of EV to try
         :param None ev_index: a list of number refering to the index of the
            eigenvector to be used. By default the first eigenvector is used.
            WARNING: index starts at 1, default is thus a list of ones.
@@ -523,7 +528,7 @@ class HiC_data(dict):
         Notes: building the distance matrix using the amount of interactions
                instead of the mean correlation, gives generally worse results.
 
-        :returns: a dictionary with the two first eigen vectors used to define
+        :returns: a dictionary with the N (max_ev) first eigen vectors used to define
            compartment borders for each chromosome (keys are chromosome names)
         """
         if not self.bads:
@@ -621,15 +626,15 @@ class HiC_data(dict):
 
             try:
                 # This eighs is very very fast, only ask for one eigvector
-                _, evect = eigsh(array(matrix), k=ev_index[count] if ev_index else 2)
+                _, evect = eigsh(array(matrix), k=ev_index[count] if ev_index else max_ev)
             except (LinAlgError, ValueError):
                 warn('Chromosome %s too small to compute PC1' % (sec))
                 cmprts[sec] = [] # Y chromosome, or so...
                 count += 1
                 continue
             index = ev_index[count] if ev_index else 1
-            two_first = [list(evect[:, -1]), list(evect[:, -2])]
-            for ev_num in range(index, 3):
+            n_first = [list(evect[:, -i]) for i in xrange(1, max_ev + 1)]
+            for ev_num in range(index, max_ev + 1):
                 first = list(evect[:, -ev_num])
                 breaks = [i for i, (a, b) in
                           enumerate(zip(first[1:], first[:-1]))
@@ -652,7 +657,7 @@ class HiC_data(dict):
             ev_nums[sec] = ev_num
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]
-            for evect in two_first:
+            for evect in n_first:
                 _ = [evect.insert(b, float('nan')) for b in bads]
             _ = [first.insert(b, 0) for b in bads]
             _ = [matrix.insert(b, [float('nan')] * len(matrix[0]))
@@ -665,8 +670,7 @@ class HiC_data(dict):
             breaks = [{'start': breaks[i-1] + 1 if i else 0, 'end': b}
                       for i, b in enumerate(breaks)]
             cmprts[sec] = breaks
-            
-            firsts[sec] = two_first
+            firsts[sec] = n_first
             # needed for the plotting
             self._apply_metric(cmprts, sec, rich_in_A, how=how)
             
@@ -735,6 +739,7 @@ class HiC_data(dict):
                            'compartments' % n)
                 models[n] = _training(x, n, kwargs.get('verbose', False))
 
+            # apply HMM models on each chromosome
             results = {}
             for sec in self.section_pos:
                 if not sec in x:
@@ -743,10 +748,12 @@ class HiC_data(dict):
                     print 'Chromosome', sec
                 beg, end = self.section_pos[sec]
                 bads = [k - beg for k in self.bads if beg <= k <= end]
+                # print 'CMPRTS before   ', sec, cmprts[sec]
                 n_states, breaks = _hmm_refine_compartments(
                     x, sec, models, bads, kwargs.get('verbose', False))
                 results[sec] = n_states, breaks
                 cmprts[sec] = breaks
+                # print 'CMPRTS after hmm', sec, cmprts[sec]
                 self._apply_metric(cmprts, sec, rich_in_A, how=how)
                 
                 if rich_in_A:
@@ -805,6 +812,11 @@ class HiC_data(dict):
         calculate compartment internal density if no rich_in_A, otherwise
         sum this list
         """
+        # print 'SEGMENTS'
+        # print sec, self.section_pos[sec]
+        # for i in range(0, len(cmprts[sec]), 20):
+        #     print '  ' + ''.join(['%5d/%-5d'% (s['start'], s['end']) for s in cmprts[sec][i:i+20]])
+        # print 'CHROMSOME', sec
         for cmprt in cmprts[sec]:
             if rich_in_A:
                 beg1, end1 = cmprt['start'], cmprt['end'] + 1
@@ -818,6 +830,8 @@ class HiC_data(dict):
             else:
                 beg, end = self.section_pos[sec]
                 beg1, end1 = cmprt['start'] + beg, cmprt['end'] + beg + 1
+                # print 'BEG:%7d, END:%7d, LEN bias:%7d, LEN self:%7d, LEN expected:%7d' % (beg1, end1, len(self.bias),
+                                                                                          # len(self), len(self.expected))
                 if 'diagonal' in how:
                     sec_matrix = [(self[i,i] / self.expected[0] / self.bias[i]**2)
                                   for i in xrange(beg1, end1) if not i in self.bads]
@@ -995,17 +1009,20 @@ def _hmm_refine_compartments(x, sec, models, bads, verbose):
                       'PATH': pathm
                       }
     n_states = min(results, key=lambda x: results[x]['BIC'])
-    for n in range(2, 6):
-        results[n]['PATH'] = list(results[n_states]['PATH'])
-        _ = [results[n]['PATH'].insert(b, float('nan')) for b in sorted(bads)]
+    results = list(results[n_states]['PATH'])
+    # print 'RESULTS', results
+    _ = [results.insert(b, float('nan')) for b in sorted(bads)]
+    # print 'RESULTS', results
     breaks = [(i, b) for i, (a, b) in
-              enumerate(zip(results[n_states]['PATH'][1:],
-                            results[n_states]['PATH'][:-1]))
-              if str(a) != str(b)] + [len(results[n_states]['PATH']) - 1]
-    breaks[-1] = (breaks[-1], results[n_states]['PATH'][-1])
+              enumerate(zip(results[1:], results[:-1]))
+              if str(a) != str(b)] + [len(results) - 1]
+    # print 'BREAKS', breaks
+    breaks[-1] = (breaks[-1], results[-1])
+    # print 'BREAKS', breaks
     breaks = [{'start': breaks[i-1][0] + 1 if i else 0, 'end': b,
                'type': a}
               for i, (b, a) in enumerate(breaks)]
+    # print 'BREAKS', breaks
     return n_states, breaks
 
 def _training(x, n, verbose):
@@ -1030,7 +1047,6 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
                              ev_num=1, log=None, verbose=False, savefig=None,
                              n_clust=2):
     # function to convert correlation into distances
-
     gamma += 1
     func = lambda x: -abs(x)**gamma / x
     funczero = lambda x: 0.0
@@ -1056,7 +1072,6 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
     try:
         clust = linkage(dist_matrix, method='ward')
     except UnboundLocalError:
-        print('WARNING: Chromosome probably too small. Skipping')
         warn('WARNING: Chromosome probably too small. Skipping')
         return (float('inf'), float('inf'), float('inf'))
     # find best place to divide dendrogram (only check 1, 2, 3 or 4 clusters)
@@ -1076,14 +1091,12 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
         X, Y = meshgrid(xedges, yedges)
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(10,10))
-        ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
+        _ = fig.add_axes([0.09,0.1,0.2,0.6])
         Z1 = dendrogram(clust, orientation='left')
         idx1 = Z1['leaves']
         idx2 = Z1['leaves']
         D = asarray(dist_matrix)[idx1,:]
         D = D[:,idx2]
-        Xx = asarray(X)[idx1]
-        Yy = asarray(Y)[idx1]
         axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
         m = axmatrix.pcolormesh(X, Y, D)
         axmatrix.set_aspect('equal')

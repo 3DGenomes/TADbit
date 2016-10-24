@@ -100,7 +100,7 @@ def run(opts):
 
 
     # pickle the HiC-data object
-    print 'Saving genomic matrix'
+    print ' - Saving genomic matrix pickle'
     pickle_path = path.join(opts.workdir, '04_normalization',
                             'hic-data_%s_%s.pickle' % (nice(opts.reso), param_hash))
     out = open(pickle_path, 'w')
@@ -116,7 +116,7 @@ def run(opts):
     genom_map_raw_fig = genom_map_raw_txt = None
 
     if "intra" in opts.keep:
-        print "  Saving intra chromosomal raw and normalized matrices..."
+        print " - Saving intra chromosomal raw and normalized matrices..."
         if opts.only_txt:
             intra_dir_nrm_fig = None
             intra_dir_raw_fig = None
@@ -162,7 +162,7 @@ def run(opts):
                 savefig=inter_dir_raw_fig, savedata=inter_dir_raw_txt)
 
     if "genome" in opts.keep:
-        print "  Saving normalized genomic matrix..."
+        print " - Saving normalized genomic matrix..."
         if opts.only_txt:
             genom_map_nrm_fig = None
             genom_map_raw_fig = None
