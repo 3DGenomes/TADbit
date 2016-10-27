@@ -608,15 +608,17 @@ class HiC_data(dict):
                 length = self.section_pos[sec][1] - self.section_pos[sec][0]
                 empty = 'NaN\t' * (length - 1) + 'NaN\n'
                 badrows = 0
-                for row in xrange(length):
-                    if row in self.bads:
-                        out.write(rownam.pop(0) + '\t' +empty)
+                for row, posx in enumerate(xrange(self.section_pos[sec][0],
+                                                  self.section_pos[sec][1])):
+                    if posx in self.bads:
+                        out.write(rownam.pop(0) + '\t' + empty)
                         badrows += 1
                         continue
                     vals = []
                     badcols = 0
-                    for col in xrange(length):
-                        if col in self.bads:
+                    for col, posy in enumerate(xrange(self.section_pos[sec][0],
+                                                      self.section_pos[sec][1])):
+                        if posy in self.bads:
                             vals.append('NaN')
                             badcols += 1
                             continue

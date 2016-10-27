@@ -65,7 +65,9 @@ def run(opts):
         cmprt_dir = path.join(opts.workdir, '05_segmentation',
                               'compartments_%s' % (nice(reso)))
         mkdir(cmprt_dir)
-        firsts = hic_data.find_compartments(crms=opts.crms, savefig=cmprt_dir,
+        firsts = hic_data.find_compartments(crms=opts.crms,
+                                            label_compartments='cluster',
+                                            savefig=cmprt_dir,
                                             suffix=param_hash, log=cmprt_dir,
                                             rich_in_A=opts.rich_in_A)
 
