@@ -507,7 +507,9 @@ class HiC_data(dict):
         :param 3 max_ev: maximum number of EV to try
         :param None ev_index: a list of number refering to the index of the
            eigenvector to be used. By default the first eigenvector is used.
-           WARNING: index starts at 1, default is thus a list of ones.
+           WARNING: index starts at 1, default is thus a list of ones. Note:
+           if asking for only one chromsome the list should be only of one 
+           element.
         :param None rich_in_A: by default compartments are identified using mean
            number of intra-interactions (A compartments are expected to have
            less). However this measure is not very accurate. Using this
@@ -628,7 +630,7 @@ class HiC_data(dict):
 
             try:
                 # This eighs is very very fast, only ask for one eigvector
-                _, evect = eigsh(array(matrix), k=ev_index[count] if ev_index else max_ev)
+                _, evect = eigsh(array(matrix), k=max_ev)
             except (LinAlgError, ValueError):
                 warn('Chromosome %s too small to compute PC1' % (sec))
                 cmprts[sec] = [] # Y chromosome, or so...
@@ -656,6 +658,14 @@ class HiC_data(dict):
                 warn('WARNING: keeping first eigenvector, for chromosome %s' % (
                     sec))
                 ev_num = 1
+            if ev_index:
+                ev_num = ev_index[count]
+            first = list(evect[:, -ev_num])
+            breaks = [i for i, (a, b) in
+                      enumerate(zip(first[1:], first[:-1]))
+                      if a * b < 0] + [len(first) - 1]
+            breaks = [{'start': breaks[i-1] + 1 if i else 0, 'end': b}
+                      for i, b in enumerate(breaks)]
             ev_nums[sec] = ev_num
             beg, end = self.section_pos[sec]
             bads = [k - beg for k in self.bads if beg <= k <= end]

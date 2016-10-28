@@ -15,6 +15,20 @@ try:
 except ImportError:
     warn('matplotlib not found\n')
 
+NTH = {
+    1 : "First",
+    2 : "Second",
+    3 : "Third",
+    4 : "Fourth",
+    5 : "Fifth",
+    6 : "Sixth",
+    7 : "Seventh",
+    8 : "Eighth",
+    9 : "Ninth",
+    10: "Tenth",
+    11: "Eleventh",
+    12: "Twelfth"
+}
 
 def setup_plot(axe, figsize=None):
     if axe:
@@ -939,7 +953,7 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
     axex.fill_between(range(len(matrix)), [0] * len(matrix), first,
                       where=np.array(first) < 0, color='darkgreen', alpha=0.5)
     axex.set_yticks([0])
-    axex.set_ylabel('%s PC (green)\ndensity (orange)' % ('First' if whichpc==1 else 'Second'))
+    axex.set_ylabel('%s PC (green)\ndensity (orange)' % (NTH[whichpc]))
     breaks = [0] + [i + 0.5 for i, (a, b) in
                     enumerate(zip(first[1:], first[:-1]))
                     if a * b < 0] + [len(first)]
