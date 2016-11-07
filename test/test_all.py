@@ -11,8 +11,8 @@ import unittest
 from pytadbit                             import Chromosome, load_chromosome
 from pytadbit                             import tadbit, batch_tadbit
 from pytadbit.tad_clustering.tad_cmo      import optimal_cmo
-from pytadbit.imp.structuralmodels        import load_structuralmodels
-from pytadbit.imp.impmodel                import load_impmodel_from_cmm
+from pytadbit.modelling.structuralmodels        import load_structuralmodels
+from pytadbit.modelling.impmodel                import load_impmodel_from_cmm
 from pytadbit.eqv_rms_drms                import rmsdRMSD_wrapper
 from pytadbit.parsers.genome_parser       import parse_fasta
 from pytadbit.mapping.restriction_enzymes import map_re_sites, RESTRICTION_ENZYMES

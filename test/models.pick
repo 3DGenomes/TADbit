@@ -1320,7 +1320,7 @@ I0
 ccopy_reg
 _reconstructor
 p429
-(cpytadbit.imp.impmodel
+(cpytadbit.modelling.impmodel
 IMPmodel
 p430
 c__builtin__
@@ -12485,7 +12485,7 @@ p1100
 sS'clusters'
 p1102
 g429
-(cpytadbit.imp.structuralmodels
+(cpytadbit.modelling.structuralmodels
 ClusterOfModels
 p1103
 g431

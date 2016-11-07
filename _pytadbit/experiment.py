@@ -14,14 +14,14 @@ from pytadbit.utils.hic_filtering import hic_filtering_for_modelling
 from pytadbit.parsers.tad_parser  import parse_tads
 from math                         import isnan
 from numpy                        import log2, array
-from pytadbit.imp.CONFIG          import CONFIG
+from pytadbit.modelling.IMP_CONFIG import CONFIG
 from copy                         import deepcopy as copy
 from sys                          import stderr
 from warnings                     import warn
 
 try:
-    from pytadbit.imp.impoptimizer  import IMPoptimizer
-    from pytadbit.imp.imp_modelling import generate_3d_models
+    from pytadbit.modelling.impoptimizer  import IMPoptimizer
+    from pytadbit.modelling.imp_modelling import generate_3d_models
 except ImportError:
     stderr.write('IMP not found, check PYTHONPATH\n')
 
