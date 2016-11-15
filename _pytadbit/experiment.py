@@ -1275,7 +1275,6 @@ class Experiment(object):
             jet._lut[:,-1] = alphas
 
         if isinstance(cmap, str):
-            print 'que conio esta pasando???'
             cmap = plt.get_cmap(cmap)
             cmap.set_bad('darkgrey', 1)
         if relative:
