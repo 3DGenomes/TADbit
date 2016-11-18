@@ -72,7 +72,7 @@ zscores)</li>
 <li><strong>experiment</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; experiment from which to do the modelling (used only
 for descriptive purpose)</li>
 <li><strong>coords</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>a dictionary like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;crm&#39;</span>  <span class="p">:</span> <span class="s1">&#39;19&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;crm&#39;</span>  <span class="p">:</span> <span class="s1">&#39;19&#39;</span><span class="p">,</span>
  <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="mi">14637</span><span class="p">,</span>
  <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="mi">15689</span><span class="p">}</span>
 </pre></div>
@@ -97,12 +97,12 @@ to a square matrix)</li>
 parameters used to generate the models. The dictionary should contain
 the keys kforce, lowrdist, maxdist, upfreq and lowfreq. Examples can be
 seen by doing:</p>
-<div class="highlight-python"><div class="highlight"><pre>from pytadbit.imp.CONFIG import CONFIG
+<div class="highlight-python"><div class="highlight"><pre><span></span>from pytadbit.imp.CONFIG import CONFIG
 
 where CONFIG is a dictionary of dictionaries to be passed to this function:
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>CONFIG = {
+<div class="highlight-python"><div class="highlight"><pre><span></span>CONFIG = {
  &#39;dmel_01&#39;: {
      # Paramaters for the Hi-C dataset from:
      &#39;reference&#39; : &#39;victor corces dataset 2013&#39;,
@@ -206,7 +206,7 @@ generation of three dimensional models.</li>
 </table>
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.accessibility">
-<code class="descname">accessibility</code><span class="sig-paren">(</span><em>radius</em>, <em>models=None</em>, <em>cluster=None</em>, <em>nump=100</em>, <em>superradius=200</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em>, <em>plot=True</em>, <em>error=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.accessibility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.accessibility" title="Permalink to this definition">¶</a></dt>
+<code class="descname">accessibility</code><span class="sig-paren">(</span><em>radius</em>, <em>models=None</em>, <em>cluster=None</em>, <em>nump=100</em>, <em>superradius=200</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em>, <em>plot=True</em>, <em>error=True</em>, <em>steps=(1</em>, <em>)</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.accessibility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.accessibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates a mesh surface around the model (distance equal to input
 <strong>radius</strong>) and checks if each point of this mesh could be replaced by
 an object (i.e. a protein) of a given <strong>radius</strong></p>
@@ -226,6 +226,8 @@ number is considerably lowered by the occupancy of edges, depending
 of the angle formed by the edges surrounding a given particle, only
 10% to 50% of the ``nump`` will be drawn in fact.</em></li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path where to save chimera image</li>
+<li><strong>) steps</strong> (<em>(1,</em>) &#8211; how many particles to group for the
+estimation. By default 1 curve is drawn</li>
 <li><strong>superradius</strong> (<em>200</em>) &#8211; radius of an object used to exclude outer
 surface of the model. Superradius must be higher than radius.</li>
 </ul>
@@ -313,7 +315,7 @@ each model</li>
 <code class="descname">angle_between_3_particles</code><span class="sig-paren">(</span><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>models=None</em>, <em>cluster=None</em>, <em>radian=False</em>, <em>all_angles=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.angle_between_3_particles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.angle_between_3_particles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the angle between 3 particles.</p>
 <p>Given three particles A, B and C, the angle g (angle ACB, shown below):</p>
-<div class="highlight-python"><div class="highlight"><pre>      A
+<div class="highlight-python"><div class="highlight"><pre><span></span>      A
      /|
     /i|
   c/  |
@@ -540,7 +542,7 @@ of models where these two particles are in contact)</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data">
-<code class="descname">correlate_with_real_data</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>off_diag=1</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>corr='spearman'</em>, <em>midplot='hexbin'</em>, <em>log_corr=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
+<code class="descname">correlate_with_real_data</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>off_diag=1</em>, <em>plot=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>corr='spearman'</em>, <em>midplot='hexbin'</em>, <em>log_corr=True</em>, <em>contact_matrix=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.correlate_with_real_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.correlate_with_real_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the result of a correlation between a given group of models and
 original Hi-C data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -562,6 +564,8 @@ of the file name will determine the desired format).</li>
 <li><strong>log_corr</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; log plot for correlation</li>
 <li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
 appearance</li>
+<li><strong>contact_matrix</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; input a contact matrix instead of computing
+it from the models</li>
 </ul>
 </td>
 </tr>
@@ -679,7 +683,7 @@ if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
 <li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the density data
 generated (1 column per step + 1 for particle number).</li>
-<li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; e.g. only saves data. No plotting done</li>
+<li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; e.g. if False, only saves data. No plotting done</li>
 </ul>
 </td>
 </tr>
@@ -689,8 +693,11 @@ generated (1 column per step + 1 for particle number).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle">
-<code class="descname">dihedral_angle</code><span class="sig-paren">(</span><em>parta</em>, <em>partb</em>, <em>partc</em>, <em>partd</em>, <em>models=None</em>, <em>cluster=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.dihedral_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the dihedral angle between 2 planes formed by 4 particles.</p>
+<code class="descname">dihedral_angle</code><span class="sig-paren">(</span><em>pa</em>, <em>pb</em>, <em>pc</em>, <em>pd</em>, <em>pe</em>, <em>models</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.dihedral_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.dihedral_angle" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the dihedral angle between 2 planes formed by 5 particles</dt>
+<dd>(one common to both planes).</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -735,7 +742,7 @@ StructuralModels.models[N][&#8216;rand_init&#8217;].</p>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix">
-<code class="descname">get_contact_matrix</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_contact_matrix</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>cutoff=None</em>, <em>distance=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.get_contact_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.get_contact_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a matrix with the number of interactions observed below a given
 cutoff distance.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -743,13 +750,17 @@ cutoff distance.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact matrix will be computed
-using all the models. A list of numbers corresponding to a given set
-of models can be passed</li>
-<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact matrix only for the models in the
-cluster number &#8216;cluster&#8217;</li>
+<li><strong>models</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if None (default) the contact matrix will be 
+computed using all the models. A list of numbers corresponding to a 
+given set of models can be passed</li>
+<li><strong>cluster</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; compute the contact matrix only for the models in
+the cluster number &#8216;cluster&#8217;</li>
 <li><strong>cutoff</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; distance cutoff (nm) to define whether two particles
-are in contact or not, default is 2 times resolution, times scale.</li>
+are in contact or not, default is 2 times resolution, times scale.
+Cutoff can also be a list of values, in wich case the returned object 
+will be a dictionnary of matrices (keys being square cutoffs)</li>
+<li><strong>distance</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; returns the distance matrix of all_angles against 
+all_angles particles instead of a contact_map matrix using the cutoff</li>
 </ul>
 </td>
 </tr>
@@ -1001,7 +1012,7 @@ with the lowest IMP objective function value</li>
 <li><strong>show</strong> (<em>'all'</em>) &#8211; models to be displayed. Can be either &#8216;all&#8217;, &#8216;grid&#8217;
 or &#8216;highlighted&#8217;.</li>
 <li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer. The chimera list is:</p>
-<div class="highlight-python"><div class="highlight"><pre>focus
+<div class="highlight-python"><div class="highlight"><pre><span></span>focus
 set bg_color white
 windowsize 800 600
 bonddisplay never #0
@@ -1018,7 +1029,7 @@ scale 0.8
 </pre></div>
 </div>
 <p>Followed by the movie command to record movies:</p>
-<div class="highlight-python"><div class="highlight"><pre>movie record supersample 1
+<div class="highlight-python"><div class="highlight"><pre><span></span>movie record supersample 1
 turn y 3 120
 wait 120
 movie stop
@@ -1026,11 +1037,11 @@ movie encode output SAVEFIG
 </pre></div>
 </div>
 <p>Or the copy command for images:</p>
-<div class="highlight-python"><div class="highlight"><pre>copy file SAVEFIG png
+<div class="highlight-python"><div class="highlight"><pre><span></span>copy file SAVEFIG png
 </pre></div>
 </div>
 <p>Passing as the following list as &#8216;cmd&#8217; parameter:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s1">&#39;windowsize 800 600&#39;</span><span class="p">,</span> <span class="s1">&#39;bonddisplay never #0&#39;</span><span class="p">,</span> <span class="s1">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span> <span class="s1">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s1">&#39;~label&#39;</span><span class="p">,</span> <span class="s1">&#39;set subdivision 1&#39;</span><span class="p">,</span> <span class="s1">&#39;set depth_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_start 0.5&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_end 1&#39;</span><span class="p">,</span> <span class="s1">&#39;scale 0.8&#39;</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s1">&#39;windowsize 800 600&#39;</span><span class="p">,</span> <span class="s1">&#39;bonddisplay never #0&#39;</span><span class="p">,</span> <span class="s1">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span> <span class="s1">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s1">&#39;~label&#39;</span><span class="p">,</span> <span class="s1">&#39;set subdivision 1&#39;</span><span class="p">,</span> <span class="s1">&#39;set depth_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_color black&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_start 0.5&#39;</span><span class="p">,</span> <span class="s1">&#39;set dc_end 1&#39;</span><span class="p">,</span> <span class="s1">&#39;scale 0.8&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>will return the default image (other commands can be passed to
@@ -1049,7 +1060,7 @@ to pass to this function. See also coloring function</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.walking_angle">
-<code class="descname">walking_angle</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>signed=True</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_angle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">walking_angle</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>signed=True</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>axe=None</em>, <em>plot=True</em>, <em>error=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the angle between successive loci in a given model or set of
 models. In order to limit the noise of the measure angle is calculated
 between 3 loci, between each are two other loci. E.g. in the scheme
@@ -1070,9 +1081,11 @@ By default 2 curves are drawn</li>
 to a normal plane, or not.</li>
 <li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
 appearance</li>
+<li><strong>error</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; represent the error of the estimates</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
+<li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; e.g. if False, only saves data. No plotting done</li>
 <li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the angle data
 generated (1 column per step + 1 for particle number).</li>
 </ul>
@@ -1080,7 +1093,7 @@ generated (1 column per step + 1 for particle number).</li>
 </tr>
 </tbody>
 </table>
-<div class="highlight-python"><div class="highlight"><pre>                      C..........D
+<div class="highlight-python"><div class="highlight"><pre><span></span>                      C..........D
                    ...            ...
                 ...                 ...
              ...                       ...
@@ -1096,7 +1109,7 @@ generated (1 column per step + 1 for particle number).</li>
 
 <dl class="method">
 <dt id="pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral">
-<code class="descname">walking_dihedral</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>plot=True</em>, <em>savefig=None</em>, <em>axe=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral" title="Permalink to this definition">¶</a></dt>
+<code class="descname">walking_dihedral</code><span class="sig-paren">(</span><em>models=None</em>, <em>cluster=None</em>, <em>steps=(1</em>, <em>3)</em>, <em>span=(-2</em>, <em>1</em>, <em>0</em>, <em>1</em>, <em>3)</em>, <em>error=False</em>, <em>plot=True</em>, <em>savefig=None</em>, <em>axe=None</em>, <em>savedata=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/structuralmodels.html#StructuralModels.walking_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.structuralmodels.StructuralModels.walking_dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the dihedral angle between successive planes. A plane is formed by
 3 successive loci.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1115,9 +1128,16 @@ By default 2 curves are drawn</li>
 to a normal plane, or not.</li>
 <li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
 appearance</li>
+<li><strong>-1, 0, 1, 2) span</strong> (<em>(-3,</em>) &#8211; by default computes angle between a plane
+comprising the current residue (<em>0</em>), the residue after (<em>1</em>) and the
+residue 3 positions before (<em>-3</em>), and the plane with the current
+residue, the residue directly after (<em>1</em>) and the residue 3 positions
+after (<em>3</em>). e.g. In the scheme bellow it&#8217;s plane ACD vs plane CDF.</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
+<li><strong>error</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; represent the error of the estimates</li>
+<li><strong>plot</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; e.g. if False, only saves data. No plotting done</li>
 <li><strong>savedata</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the angle data
 generated (1 column per step + 1 for particle number).</li>
 </ul>
@@ -1125,7 +1145,7 @@ generated (1 column per step + 1 for particle number).</li>
 </tr>
 </tbody>
 </table>
-<div class="highlight-python"><div class="highlight"><pre>                      C..........D
+<div class="highlight-python"><div class="highlight"><pre><span></span>                      C..........D
                    ...            ...
                 ...                 ...
              ...                       ...
@@ -1383,7 +1403,7 @@ of the file name will determine the desired format).</li>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 20, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

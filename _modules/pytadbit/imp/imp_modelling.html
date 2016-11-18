@@ -47,7 +47,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.imp.imp_modelling</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">05 Jul 2013</span>
 
 
@@ -185,6 +185,7 @@
                                <span class="s1">&#39;cforce&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
     <span class="c1"># Particles initial radius</span>
     <span class="k">global</span> <span class="n">RADIUS</span>
+
     <span class="n">RADIUS</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">resolution</span> <span class="o">*</span> <span class="n">CONFIG</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
     <span class="n">CONFIG</span><span class="p">[</span><span class="s1">&#39;lowrdist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RADIUS</span> <span class="o">*</span> <span class="mf">2.</span>
     
@@ -358,7 +359,7 @@
 <span class="sd">    :param n_models: number of models to generate</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">n_cpus</span><span class="p">)</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">n_cpus</span><span class="p">,</span> <span class="n">maxtasksperchild</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">jobs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">rand_init</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="n">n_models</span> <span class="o">+</span> <span class="n">START</span><span class="p">):</span>
         <span class="n">jobs</span><span class="p">[</span><span class="n">rand_init</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">generate_IMPmodel</span><span class="p">,</span>
@@ -710,7 +711,12 @@
 <span class="k">def</span> <span class="nf">addHarmonicNeighborsRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span><span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span>
+            <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span> <span class="c1"># older versions</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
@@ -719,8 +725,12 @@
 <span class="k">def</span> <span class="nf">addHarmonicUpperBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicUpperBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span>
-                                    <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicUpperBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span>
+            <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicUpperBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span> <span class="c1"># older versions</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
@@ -729,7 +739,12 @@
 <span class="k">def</span> <span class="nf">addHarmonicRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span>
+            <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Harmonic</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span> <span class="c1"># older versions</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
@@ -738,8 +753,12 @@
 <span class="k">def</span> <span class="nf">addHarmonicLowerBoundRestraints</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">ParticlePair</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="n">model</span><span class="p">[</span><span class="s1">&#39;pps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicLowerBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span>
-                                    <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicLowerBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">DistanceRestraint</span><span class="p">(</span>
+            <span class="n">IMP</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">HarmonicLowerBound</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">kforce</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span> <span class="c1"># older versions</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">model</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_restraint</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
@@ -805,7 +824,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 25, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

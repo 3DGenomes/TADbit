@@ -48,7 +48,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.mapping.full_mapper</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">09 Jun 2015</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -58,10 +58,11 @@
 <span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span> <span class="kn">import</span> <span class="n">magic_open</span><span class="p">,</span> <span class="n">get_free_space_mb</span>
 <span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">RESTRICTION_ENZYMES</span><span class="p">,</span> <span class="n">religated</span>
 <span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">gettempdir</span><span class="p">,</span> <span class="n">mkstemp</span>
-<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">check_call</span><span class="p">,</span> <span class="n">CalledProcessError</span><span class="p">,</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">Popen</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">CalledProcessError</span><span class="p">,</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">Popen</span>
 
 <span class="k">def</span> <span class="nf">transform_fastq</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">,</span> <span class="n">out_fastq</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">add_site</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">min_seq_len</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fastq</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                    <span class="n">min_seq_len</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fastq</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">light_storage</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Given a FASTQ file it can split it into chunks of a given number of reads,</span>
 <span class="sd">    trim each read according to a start/end positions or split them into</span>
@@ -73,7 +74,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">skip</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;skip&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
     <span class="c1">## define local funcitons to process reads and sequences</span>
-    <span class="k">def</span> <span class="nf">_get_fastq_read</span><span class="p">(</span><span class="n">rlines</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_fastq_read_heavy</span><span class="p">(</span><span class="n">rlines</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        returns header and sequence of 1 FASTQ entry</span>
 <span class="sd">        Note: header also contains the sequence</span>
@@ -86,11 +87,26 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">rlines</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
                 <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">_get_map_read</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_fastq_read_light</span><span class="p">(</span><span class="n">rlines</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns header and sequence of 1 FASTQ entry</span>
+<span class="sd">        Note: header also contains the sequence</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rlines</span> <span class="o">=</span> <span class="n">rlines</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">_</span>   <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c1"># lose qualities header but not needed</span>
+        <span class="n">qal</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c1"># lose qualities but not needed</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">rlines</span><span class="p">,</span> <span class="n">seq</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">qal</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_get_map_read_heavy</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span>    <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
         <span class="k">return</span> <span class="n">header</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span>
-        
+
+    <span class="k">def</span> <span class="nf">_get_map_read_light</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+        <span class="n">header</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">header</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">qal</span>
+
     <span class="k">def</span> <span class="nf">_split_read_re</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">qal</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">max_seq_len</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cnt</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Recursive generator that splits reads according to the</span>
@@ -137,7 +153,7 @@
                                           <span class="n">max_seq_len</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">cnt</span><span class="o">=</span><span class="n">cnt</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">sseq</span><span class="p">,</span> <span class="n">sqal</span><span class="p">,</span> <span class="n">cnt</span>
 
-    <span class="c1"># Define function for stripping lines according to ficus</span>
+    <span class="c1"># Define function for stripping lines according to focus</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trim</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">trim</span>
         <span class="n">beg</span> <span class="o">-=</span> <span class="mi">1</span>
@@ -161,8 +177,13 @@
         <span class="n">split_read</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">after_z</span><span class="p">,</span> <span class="n">after_after_z</span><span class="p">:</span> <span class="p">(</span><span class="k">yield</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># function to yield reads from input file</span>
-    <span class="n">get_seq</span> <span class="o">=</span> <span class="n">_get_fastq_read</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="n">_get_map_read</span>
-
+    <span class="k">if</span> <span class="n">light_storage</span><span class="p">:</span>
+        <span class="n">get_seq</span> <span class="o">=</span> <span class="n">_get_fastq_read_light</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="n">_get_map_read_light</span>
+        <span class="n">insert_mark</span> <span class="o">=</span> <span class="n">insert_mark_light</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">get_seq</span> <span class="o">=</span> <span class="n">_get_fastq_read_heavy</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="n">_get_map_read_heavy</span>
+        <span class="n">insert_mark</span> <span class="o">=</span> <span class="n">insert_mark_heavy</span>
+        
     <span class="c1">## Start processing the input file</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="k">print</span> <span class="s1">&#39;Preparing </span><span class="si">%s</span><span class="s1"> file&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;FASTQ&#39;</span> <span class="k">if</span> <span class="n">fastq</span> <span class="k">else</span> <span class="s1">&#39;MAP&#39;</span><span class="p">)</span>
@@ -221,11 +242,16 @@
     <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">out_name</span><span class="p">,</span> <span class="n">counter</span>
 
-<span class="k">def</span> <span class="nf">insert_mark</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">insert_mark_heavy</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">num</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">:</span>
         <span class="k">return</span> <span class="n">header</span>
     <span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
     <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">~</span><span class="si">%d</span><span class="s1">~ </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">insert_mark_light</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">num</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="n">header</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">~</span><span class="si">%d</span><span class="s1">~&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_map2fastq</span><span class="p">(</span><span class="n">read</span><span class="p">):</span>
     <span class="k">return</span> <span class="s1">&#39;@{0}</span><span class="se">\n</span><span class="s1">{1}</span><span class="se">\n</span><span class="s1">+</span><span class="se">\n</span><span class="s1">{2}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">read</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -300,23 +326,23 @@
     <span class="n">kgt</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span>
     <span class="n">gem_cmd</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">gem_binary</span><span class="p">,</span> <span class="s1">&#39;-I&#39;</span><span class="p">,</span> <span class="n">gem_index_path</span><span class="p">,</span>
-        <span class="s1">&#39;-q&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;offset-33&#39;</span>                     <span class="p">),</span>
-        <span class="s1">&#39;-m&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_edit_distance</span>          <span class="p">)),</span>
-        <span class="s1">&#39;-s&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;strata-after-best&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>   <span class="p">)),</span>
-        <span class="s1">&#39;--allow-incomplete-strata&#39;</span> <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;allow-incomplete-strata&#39;</span><span class="p">,</span> <span class="s1">&#39;0.00&#39;</span>    <span class="p">),</span>
-        <span class="s1">&#39;--granularity&#39;</span>             <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;granularity&#39;</span><span class="p">,</span> <span class="s1">&#39;10000&#39;</span>               <span class="p">),</span>
-        <span class="s1">&#39;--max-decoded-matches&#39;</span>     <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-decoded-matches&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span> <span class="p">)),</span>
-        <span class="s1">&#39;--min-decoded-strata&#39;</span>      <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-decoded-strata&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>  <span class="p">)),</span>
-        <span class="s1">&#39;--min-insert-size&#39;</span>         <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>               <span class="p">),</span>
-        <span class="s1">&#39;--max-insert-size&#39;</span>         <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>               <span class="p">),</span>
-        <span class="s1">&#39;--min-matched-bases&#39;</span>       <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-matched-bases&#39;</span><span class="p">,</span> <span class="s1">&#39;0.8&#39;</span>           <span class="p">),</span>
-        <span class="s1">&#39;--gem-quality-threshold&#39;</span>   <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;gem-quality-threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;26&#39;</span>        <span class="p">),</span>
-        <span class="s1">&#39;--max-big-indel-length&#39;</span>    <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-big-indel-length&#39;</span><span class="p">,</span> <span class="s1">&#39;15&#39;</span>         <span class="p">),</span>
-        <span class="s1">&#39;--mismatch-alphabet&#39;</span>       <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;mismatch-alphabet&#39;</span><span class="p">,</span> <span class="s1">&#39;ACGT&#39;</span>          <span class="p">),</span>
-        <span class="s1">&#39;-E&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;0.30&#39;</span>                          <span class="p">),</span>
-        <span class="s1">&#39;--max-extendable-matches&#39;</span>  <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-extendable-matches&#39;</span><span class="p">,</span> <span class="s1">&#39;20&#39;</span>       <span class="p">),</span>
-        <span class="s1">&#39;--max-extensions-per-match&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-extensions-per-match&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span>      <span class="p">),</span>
-        <span class="s1">&#39;-e&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mismatches</span>                 <span class="p">)),</span>
+        <span class="s1">&#39;-q&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;offset-33&#39;</span>                    <span class="p">),</span>
+        <span class="s1">&#39;-m&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_edit_distance</span>       <span class="p">)</span>  <span class="p">),</span>
+        <span class="s1">&#39;-s&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;strata-after-best&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>  <span class="p">),</span>
+        <span class="s1">&#39;--allow-incomplete-strata&#39;</span> <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;allow-incomplete-strata&#39;</span><span class="p">,</span> <span class="s1">&#39;0.00&#39;</span>   <span class="p">),</span>
+        <span class="s1">&#39;--granularity&#39;</span>             <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;granularity&#39;</span><span class="p">,</span> <span class="s1">&#39;10000&#39;</span>              <span class="p">),</span>
+        <span class="s1">&#39;--max-decoded-matches&#39;</span>     <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-decoded-matches&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">)),</span>
+        <span class="s1">&#39;--min-decoded-strata&#39;</span>      <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-decoded-strata&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="p">),</span>
+        <span class="s1">&#39;--min-insert-size&#39;</span>         <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>              <span class="p">),</span>
+        <span class="s1">&#39;--max-insert-size&#39;</span>         <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-insert-size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>              <span class="p">),</span>
+        <span class="s1">&#39;--min-matched-bases&#39;</span>       <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;min-matched-bases&#39;</span><span class="p">,</span> <span class="s1">&#39;0.8&#39;</span>          <span class="p">),</span>
+        <span class="s1">&#39;--gem-quality-threshold&#39;</span>   <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;gem-quality-threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;26&#39;</span>       <span class="p">),</span>
+        <span class="s1">&#39;--max-big-indel-length&#39;</span>    <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-big-indel-length&#39;</span><span class="p">,</span> <span class="s1">&#39;15&#39;</span>        <span class="p">),</span>
+        <span class="s1">&#39;--mismatch-alphabet&#39;</span>       <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;mismatch-alphabet&#39;</span><span class="p">,</span> <span class="s1">&#39;ACGT&#39;</span>         <span class="p">),</span>
+        <span class="s1">&#39;-E&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;0.30&#39;</span>                         <span class="p">),</span>
+        <span class="s1">&#39;--max-extendable-matches&#39;</span>  <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-extendable-matches&#39;</span><span class="p">,</span> <span class="s1">&#39;20&#39;</span>      <span class="p">),</span>
+        <span class="s1">&#39;--max-extensions-per-match&#39;</span><span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;max-extensions-per-match&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span>     <span class="p">),</span>
+        <span class="s1">&#39;-e&#39;</span>                        <span class="p">,</span> <span class="n">kgt</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mismatches</span><span class="p">)</span>                <span class="p">),</span>
         <span class="s1">&#39;-T&#39;</span>                        <span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nthreads</span><span class="p">),</span>
         <span class="s1">&#39;-i&#39;</span>                        <span class="p">,</span> <span class="n">fastq_path</span><span class="p">,</span>
         <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">out_map_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.map&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span>
@@ -409,20 +435,26 @@
     <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="p">[</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">out_map_dir</span><span class="p">]:</span>
         <span class="n">mkdir</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span>
     <span class="c1"># check space</span>
-    <span class="k">if</span> <span class="n">get_free_space_mb</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">div</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: less than 50 Gb left on tmp_dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">temp_dir</span><span class="p">)</span>
+    <span class="n">fspace</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_free_space_mb</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">div</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">fspace</span> <span class="o">&lt;</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: only </span><span class="si">%d</span><span class="s1"> Gb left on tmp_dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fspace</span><span class="p">,</span> <span class="n">temp_dir</span><span class="p">))</span>
 
     <span class="c1"># iterative mapping</span>
     <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fastq_path</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
     <span class="n">base_name</span> <span class="o">=</span> <span class="n">base_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.fastq&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
     <span class="n">input_reads</span> <span class="o">=</span> <span class="n">fastq_path</span>
     <span class="k">if</span> <span class="n">windows</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">light_storage</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">windows</span> <span class="o">=</span> <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">windows</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
         <span class="n">windows</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">windows</span><span class="p">)]</span>
+        <span class="n">light_storage</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># ensure that each element is a tuple, not a list</span>
         <span class="n">windows</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win</span><span class="p">)</span> <span class="k">for</span> <span class="n">win</span> <span class="ow">in</span> <span class="n">windows</span><span class="p">]</span>
+        <span class="c1"># in this case we will need to keep the information about original</span>
+        <span class="c1"># sequence at any point, light storage is thus not possible.</span>
+        <span class="n">light_storage</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="k">for</span> <span class="n">win</span> <span class="ow">in</span> <span class="n">windows</span><span class="p">:</span>
         <span class="c1"># Prepare the FASTQ file and iterate over them</span>
         <span class="n">curr_map</span><span class="p">,</span> <span class="n">counter</span> <span class="o">=</span> <span class="n">transform_fastq</span><span class="p">(</span>
@@ -431,7 +463,8 @@
                    <span class="ow">or</span> <span class="n">input_reads</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.fastq.gz&#39;</span><span class="p">)</span>
                    <span class="ow">or</span> <span class="n">input_reads</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.fq.gz&#39;</span>   <span class="p">)</span>
                    <span class="ow">or</span> <span class="n">input_reads</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.dsrc&#39;</span>    <span class="p">)),</span>
-            <span class="n">min_seq_len</span><span class="o">=</span><span class="n">min_seq_len</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="n">win</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">)</span>
+            <span class="n">min_seq_len</span><span class="o">=</span><span class="n">min_seq_len</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="n">win</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">,</span>
+            <span class="n">light_storage</span><span class="o">=</span><span class="n">light_storage</span><span class="p">)</span>
         <span class="c1"># clean</span>
         <span class="k">if</span> <span class="n">input_reads</span> <span class="o">!=</span> <span class="n">fastq_path</span> <span class="ow">and</span> <span class="n">clean</span><span class="p">:</span>
             <span class="k">print</span> <span class="s1">&#39;   x removing original input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">input_reads</span>
@@ -451,9 +484,11 @@
             <span class="n">gem_mapping</span><span class="p">(</span><span class="n">gem_index_path</span><span class="p">,</span> <span class="n">curr_map</span><span class="p">,</span> <span class="n">out_map_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="c1"># parse map file to extract not uniquely mapped reads</span>
             <span class="k">print</span> <span class="s1">&#39;Parsing result...&#39;</span>
-            <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_filt_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">),</span>
+            <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span>
+                        <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_filt_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">),</span>
                         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
-                                     <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_full_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
+                                     <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_full_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                                         <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
             <span class="c1"># clean</span>
             <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
                 <span class="k">print</span> <span class="s1">&#39;   x removing GEM input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">curr_map</span>
@@ -475,7 +510,12 @@
         <span class="n">frag_map</span><span class="p">,</span> <span class="n">counter</span> <span class="o">=</span> <span class="n">transform_fastq</span><span class="p">(</span>
             <span class="n">input_reads</span><span class="p">,</span> <span class="n">mkstemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
             <span class="n">min_seq_len</span><span class="o">=</span><span class="n">min_seq_len</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="n">win</span><span class="p">,</span> <span class="n">fastq</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">r_enz</span><span class="o">=</span><span class="n">r_enz</span><span class="p">,</span>
-            <span class="n">add_site</span><span class="o">=</span><span class="n">add_site</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">)</span>
+            <span class="n">add_site</span><span class="o">=</span><span class="n">add_site</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="n">nthreads</span><span class="p">,</span>
+            <span class="n">light_storage</span><span class="o">=</span><span class="n">light_storage</span><span class="p">)</span>
+        <span class="c1"># clean</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s1">&#39;   x removing pre-GEM input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">input_reads</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_reads</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">win</span><span class="p">:</span>
             <span class="n">beg</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -488,6 +528,14 @@
             <span class="n">_gem_filter</span><span class="p">(</span><span class="n">out_map_path</span><span class="p">,</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">),</span>
                         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
                                      <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_frag_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
+        <span class="c1"># clean</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s1">&#39;   x removing GEM input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">frag_map</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">frag_map</span><span class="p">))</span>
+            <span class="k">print</span> <span class="s1">&#39;   x removing failed to map &#39;</span> <span class="o">+</span> <span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">curr_map</span> <span class="o">+</span> <span class="s1">&#39;_fail</span><span class="si">%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">suffix</span><span class="p">)))</span>
+            <span class="k">print</span> <span class="s1">&#39;   x removing tmp mapped </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">out_map_path</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm -f </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">out_map_path</span><span class="p">))</span>
         <span class="n">outfiles</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_map_dir</span><span class="p">,</span>
                                       <span class="n">base_name</span> <span class="o">+</span> <span class="s1">&#39;_frag_</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s%s</span><span class="s1">.map&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)),</span>
                          <span class="n">counter</span><span class="p">))</span>
@@ -545,7 +593,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 25, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

@@ -47,7 +47,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.parsers.hic_parser</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">November 7, 2013.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -60,12 +60,18 @@
 
 <span class="n">HIC_DATA</span> <span class="o">=</span> <span class="bp">True</span>
 
-<span class="c1"># Exception to handle failed autoread.</span>
+
 <span class="k">class</span> <span class="nc">AutoReadFail</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Exception to handle failed autoreader.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span>
 
-<span class="c1"># Helper functions for the autoreader.</span>
+
 <span class="k">def</span> <span class="nf">is_asymmetric</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper functions for the autoreader.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">maxn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxn</span><span class="p">):</span>
         <span class="n">maxi</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="c1"># slightly more efficient</span>
@@ -76,11 +82,116 @@
                 <span class="k">return</span> <span class="bp">True</span>
     <span class="k">return</span> <span class="bp">False</span>
 
+
+<span class="k">def</span> <span class="nf">is_asymmetric_dico</span><span class="p">(</span><span class="n">hic</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper functions for the optimal_reader</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hic</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">ncol</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ncol</span><span class="p">):</span>
+            <span class="n">p1</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">ncol</span> <span class="o">+</span> <span class="n">j</span>
+            <span class="n">p2</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="n">ncol</span> <span class="o">+</span> <span class="n">i</span>
+            <span class="k">if</span> <span class="n">hic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">hic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+
+<span class="k">def</span> <span class="nf">symmetrize_dico</span><span class="p">(</span><span class="n">hic</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make an HiC_data object symmetric by summing two halves of the matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hic</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">ncol</span><span class="p">):</span>
+        <span class="n">incol</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">ncol</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ncol</span><span class="p">):</span>
+            <span class="n">p1</span> <span class="o">=</span> <span class="n">incol</span> <span class="o">+</span> <span class="n">j</span>
+            <span class="n">p2</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="n">ncol</span> <span class="o">+</span> <span class="n">i</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">hic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">hic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+                <span class="n">hic</span><span class="p">[</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">hic</span><span class="p">[</span><span class="n">p2</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+
 <span class="k">def</span> <span class="nf">symmetrize</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a matrix symmetric by summing two halves of the matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">maxn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxn</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">maxn</span><span class="p">):</span>
             <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">optimal_reader</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads a matrix generated by TADbit.</span>
+<span class="sd">    Can be slower than autoreader, but uses almost a third of the memory</span>
+
+<span class="sd">    :param f: an iterable (typically an open file).</span>
+<span class="sd">    :param False normalized: if the matrix is normalized</span>
+<span class="sd">    :param 1 resolution: resolution of the matrix</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get masked bins</span>
+    <span class="n">masked</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;#&#39;</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">pos</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# MASKED&#39;</span><span class="p">):</span>
+            <span class="n">masked</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">:]])</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+    <span class="c1"># super fast</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[:</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    
+    <span class="c1"># Get the numeric values and remove extra columns</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="nb">float</span> <span class="k">if</span> <span class="n">normalized</span> <span class="k">else</span> <span class="nb">int</span>
+    <span class="n">chromosomes</span><span class="p">,</span> <span class="n">sections</span><span class="p">,</span> <span class="n">resolution</span> <span class="o">=</span> <span class="n">_header_to_section</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span>
+
+    <span class="c1">#############################################################</span>
+    <span class="c1"># monkey patch HiC_data to make it faster</span>
+    <span class="k">def</span> <span class="nf">fast_setitem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="s2">&quot;Use directly dict setitem&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">fast_getitem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="s2">&quot;Use directly dict setitem&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">original_setitem</span> <span class="o">=</span> <span class="n">HiC_data</span><span class="o">.</span><span class="n">__setitem__</span>
+    <span class="n">original_getitem</span> <span class="o">=</span> <span class="n">HiC_data</span><span class="o">.</span><span class="n">__getitem__</span>
+    <span class="c1"># apply_async the patch</span>
+    <span class="n">HiC_data</span><span class="o">.</span><span class="n">__setitem__</span> <span class="o">=</span> <span class="n">fast_setitem</span>
+    <span class="n">HiC_data</span><span class="o">.</span><span class="n">__getitem__</span> <span class="o">=</span> <span class="n">fast_getitem</span>
+
+    <span class="n">hic</span> <span class="o">=</span> <span class="n">HiC_data</span><span class="p">(((</span><span class="n">j</span><span class="p">,</span> <span class="n">num</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">:],</span> <span class="n">i</span> <span class="o">*</span> <span class="n">ncol</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">num</span><span class="p">(</span><span class="n">v</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="n">ncol</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="n">masked</span><span class="p">,</span>
+                   <span class="n">dict_sec</span><span class="o">=</span><span class="n">sections</span><span class="p">,</span> <span class="n">chromosomes</span><span class="o">=</span><span class="n">chromosomes</span><span class="p">,</span>
+                   <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">,</span> <span class="n">symmetricized</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c1"># make it symmetric</span>
+    <span class="k">if</span> <span class="n">is_asymmetric_dico</span><span class="p">(</span><span class="n">hic</span><span class="p">):</span>
+        <span class="n">hic</span><span class="o">.</span><span class="n">symmetricized</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">symmetrize_dico</span><span class="p">(</span><span class="n">hic</span><span class="p">)</span>
+
+    <span class="c1"># undo patching</span>
+    <span class="n">HiC_data</span><span class="o">.</span><span class="n">__setitem__</span> <span class="o">=</span> <span class="n">original_setitem</span>
+    <span class="n">HiC_data</span><span class="o">.</span><span class="n">__getitem__</span> <span class="o">=</span> <span class="n">original_getitem</span>
+    <span class="n">hic</span><span class="o">.</span><span class="n">__setitem__</span> <span class="o">=</span> <span class="n">original_setitem</span>
+    <span class="n">hic</span><span class="o">.</span><span class="n">__getitem__</span> <span class="o">=</span> <span class="n">original_getitem</span>
+    <span class="c1">#############################################################</span>
+    <span class="k">return</span> <span class="n">hic</span>
 
 
 <span class="k">def</span> <span class="nf">autoreader</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
@@ -113,6 +224,9 @@
     <span class="k">if</span> <span class="n">S</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">AutoReadFail</span><span class="p">(</span><span class="s1">&#39;ERROR: unequal column number&#39;</span><span class="p">)</span>
 
+    <span class="c1"># free little memory</span>
+    <span class="k">del</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    
     <span class="n">nrow</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
     <span class="c1"># Auto-detect the format, there are only 4 cases.</span>
     <span class="k">if</span> <span class="n">ncol</span> <span class="o">==</span> <span class="n">nrow</span><span class="p">:</span>
@@ -132,7 +246,7 @@
             <span class="c1"># Case 3: matrix with row information.</span>
             <span class="n">header</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">trim</span> <span class="o">=</span> <span class="n">ncol</span> <span class="o">-</span> <span class="n">nrow</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: found </span><span class="si">%d</span><span class="s1"> colum(s) of row names&#39;</span> <span class="o">%</span> <span class="n">trim</span><span class="p">)</span>
+            <span class="c1"># warn(&#39;WARNING: found %d colum(s) of row names&#39; % trim)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Case 4: matrix with header and row information.</span>
             <span class="n">header</span> <span class="o">=</span> <span class="bp">True</span>
@@ -151,9 +265,9 @@
         <span class="n">nrow</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[:</span><span class="n">trim</span><span class="p">]])</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
     <span class="c1"># Get the numeric values and remove extra columns</span>
-    <span class="n">what</span> <span class="o">=</span> <span class="nb">int</span> <span class="k">if</span> <span class="n">HIC_DATA</span> <span class="k">else</span> <span class="nb">float</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span> <span class="k">if</span> <span class="n">HIC_DATA</span> <span class="k">else</span> <span class="nb">float</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">items</span> <span class="o">=</span> <span class="p">[[</span><span class="n">what</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="n">trim</span><span class="p">:]]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[[</span><span class="n">num</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="n">trim</span><span class="p">:]]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">HIC_DATA</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">AutoReadFail</span><span class="p">(</span><span class="s1">&#39;ERROR: non numeric values&#39;</span><span class="p">)</span>
@@ -177,10 +291,13 @@
     <span class="k">if</span> <span class="n">ncol</span> <span class="o">!=</span> <span class="n">nrow</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">AutoReadFail</span><span class="p">(</span><span class="s1">&#39;ERROR: non square matrix&#39;</span><span class="p">)</span>
 
+    <span class="n">symmetricized</span> <span class="o">=</span> <span class="bp">False</span>
     <span class="k">if</span> <span class="n">is_asymmetric</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
         <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;WARNING: matrix not symmetric: summing cell_ij with cell_ji&#39;</span><span class="p">)</span>
         <span class="n">symmetrize</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">]),</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">masked</span>
+        <span class="n">symmetricized</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">items</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">line</span><span class="p">]),</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">symmetricized</span>
+
 
 <span class="k">def</span> <span class="nf">_header_to_section</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">resolution</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -254,20 +371,21 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="n">HiC_data</span><span class="p">):</span>
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">file</span><span class="p">):</span>
-            <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
+            <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">sym</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
             <span class="n">thing</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="n">chromosomes</span><span class="p">,</span> <span class="n">sections</span><span class="p">,</span> <span class="n">resolution</span> <span class="o">=</span> <span class="n">_header_to_section</span><span class="p">(</span><span class="n">header</span><span class="p">,</span>
                                                                    <span class="n">resolution</span><span class="p">)</span>
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
                                       <span class="k">if</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">size</span><span class="p">,</span> <span class="n">dict_sec</span><span class="o">=</span><span class="n">sections</span><span class="p">,</span>
                                      <span class="n">chromosomes</span><span class="o">=</span><span class="n">chromosomes</span><span class="p">,</span>
-                                     <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">))</span>
+                                     <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">,</span>
+                                     <span class="n">symmetricized</span><span class="o">=</span><span class="n">sym</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="n">masked</span><span class="p">))</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">masked</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">gzopen</span><span class="p">(</span><span class="n">thing</span><span class="p">))</span>
+                <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">sym</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">gzopen</span><span class="p">(</span><span class="n">thing</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">thing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">masked</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+                    <span class="n">matrix</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">sym</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">thing</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">   ERROR: file </span><span class="si">%s</span><span class="s1"> not found</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">thing</span><span class="p">)</span>
             <span class="n">sections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">h</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">header</span><span class="p">)])</span>
@@ -276,7 +394,8 @@
             <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HiC_data</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
                                       <span class="k">if</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">size</span><span class="p">,</span> <span class="n">dict_sec</span><span class="o">=</span><span class="n">sections</span><span class="p">,</span>
                                      <span class="n">chromosomes</span><span class="o">=</span><span class="n">chromosomes</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="n">masked</span><span class="p">,</span>
-                                     <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">))</span>
+                                     <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">,</span>
+                                     <span class="n">symmetricized</span><span class="o">=</span><span class="n">sym</span><span class="p">))</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">thing</span><span class="p">]):</span>
                 <span class="n">matrix</span>  <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span><span class="p">,</span> <span class="n">thing</span><span class="p">)</span>
@@ -341,20 +460,21 @@
             <span class="n">sections</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">crm</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">len_crm</span><span class="p">)])</span>
     <span class="n">dict_sec</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sections</span><span class="p">)])</span>
     <span class="n">imx</span> <span class="o">=</span> <span class="n">HiC_data</span><span class="p">((),</span> <span class="n">size</span><span class="p">,</span> <span class="n">genome_seq</span><span class="p">,</span> <span class="n">dict_sec</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">)</span>
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">cr1</span><span class="p">,</span> <span class="n">ps1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cr2</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">ps1</span> <span class="o">=</span> <span class="n">dict_sec</span><span class="p">[(</span><span class="n">cr1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps1</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)]</span>
-            <span class="n">ps2</span> <span class="o">=</span> <span class="n">dict_sec</span><span class="p">[(</span><span class="n">cr2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps2</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">ps1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps1</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span>
-            <span class="n">ps2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps2</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span>
-        <span class="n">imx</span><span class="p">[</span><span class="n">ps1</span><span class="p">,</span> <span class="n">ps2</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">imx</span><span class="p">[</span><span class="n">ps2</span><span class="p">,</span> <span class="n">ps1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">try</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">cr1</span><span class="p">,</span> <span class="n">ps1</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cr2</span><span class="p">,</span> <span class="n">ps2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ps1</span> <span class="o">=</span> <span class="n">dict_sec</span><span class="p">[(</span><span class="n">cr1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps1</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)]</span>
+                <span class="n">ps2</span> <span class="o">=</span> <span class="n">dict_sec</span><span class="p">[(</span><span class="n">cr2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps2</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span><span class="p">)]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">ps1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps1</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span>
+                <span class="n">ps2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ps2</span><span class="p">)</span> <span class="o">/</span> <span class="n">resolution</span>
+            <span class="n">imx</span><span class="p">[</span><span class="n">ps1</span><span class="p">,</span> <span class="n">ps2</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">imx</span><span class="p">[</span><span class="n">ps2</span><span class="p">,</span> <span class="n">ps1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-            <span class="k">break</span>
+    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">imx</span><span class="o">.</span><span class="n">symmetricized</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="k">return</span> <span class="n">imx</span>
 
 </pre></div>
@@ -406,7 +526,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 25, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

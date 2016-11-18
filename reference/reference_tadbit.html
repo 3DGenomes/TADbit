@@ -57,7 +57,7 @@
 <h1>TAD detection functions<a class="headerlink" href="#tad-detection-functions" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pytadbit.tadbit.tadbit">
-<code class="descclassname">pytadbit.tadbit.</code><code class="descname">tadbit</code><span class="sig-paren">(</span><em>x</em>, <em>remove=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='max'</em>, <em>no_heuristic=0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tadbit.html#tadbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tadbit.tadbit" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.tadbit.</code><code class="descname">tadbit</code><span class="sig-paren">(</span><em>x</em>, <em>remove=None</em>, <em>n_cpus=1</em>, <em>verbose=True</em>, <em>max_tad_size='max'</em>, <em>no_heuristic=0</em>, <em>use_topdom=False</em>, <em>topdom_window=5</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/tadbit.html#tadbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.tadbit.tadbit" title="Permalink to this definition">¶</a></dt>
 <dd><p>The TADbit algorithm works on raw chromosome interaction count data.
 The normalization is neither necessary nor recommended,
 since the data is assumed to be discrete counts.</p>
@@ -89,6 +89,8 @@ n_cpus=&#8217;max&#8217; the total number of CPUs will be used</li>
 <li><strong>max_tad_size</strong> (<em>auto</em>) &#8211; an integer defining maximum size of TAD. Default
 (auto or max) defines it as the number of rows/columns</li>
 <li><strong>no_heuristic</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to use or not some heuristics</li>
+<li><strong>use_topdom</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; whether to use TopDom algorithm to find tads or not (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/26704975">http://www.ncbi.nlm.nih.gov/pubmed/26704975</a>, <a class="reference external" href="http://zhoulab.usc.edu/TopDom/">http://zhoulab.usc.edu/TopDom/</a>)</li>
+<li><strong>topdom_window</strong> (<em>5</em>) &#8211; the window size for topdom algorithm</li>
 <li><strong>get_weights</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; either to return the weights corresponding to the
 Hi-C count (weights are a normalization dependent of the count of each
 columns)</li>
@@ -184,6 +186,7 @@ results</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
@@ -243,7 +246,7 @@ results</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 12, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

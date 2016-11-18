@@ -47,7 +47,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.alignment</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">14 May 2013</span>
 
 
@@ -142,17 +142,17 @@
 <span class="sd">        Iterate over experiment names and aligned boundaries</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div>
 
-</div>
+
 <div class="viewcode-block" id="Alignment.itervalues"><a class="viewcode-back" href="../../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment.itervalues">[docs]</a>    <span class="k">def</span> <span class="nf">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterate over experiment names and aligned boundaries</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">__values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
-</div>
+
 <div class="viewcode-block" id="Alignment.itercolumns"><a class="viewcode-back" href="../../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment.itercolumns">[docs]</a>    <span class="k">def</span> <span class="nf">itercolumns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterate over columns in the alignment</span>
@@ -161,9 +161,9 @@
             <span class="n">col</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__keys</span><span class="p">)):</span>
                 <span class="n">col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">exp</span><span class="p">][</span><span class="n">pos</span><span class="p">])</span>
-            <span class="k">yield</span> <span class="n">col</span>
+            <span class="k">yield</span> <span class="n">col</span></div>
 
-</div>
+
 <div class="viewcode-block" id="Alignment.write_alignment"><a class="viewcode-back" href="../../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment.write_alignment">[docs]</a>    <span class="k">def</span> <span class="nf">write_alignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">xpers</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s1">&#39;ansi&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -221,10 +221,10 @@
             <span class="n">out</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;&#39;</span>
         <span class="k">if</span> <span class="n">string</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">out</span>
-        <span class="k">print</span> <span class="n">out</span>
+        <span class="k">print</span> <span class="n">out</span></div>
 
 
-</div>
+
 <div class="viewcode-block" id="Alignment.get_column"><a class="viewcode-back" href="../../reference/reference_boundary_alignment.html#pytadbit.alignment.Alignment.get_column">[docs]</a>    <span class="k">def</span> <span class="nf">get_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cond1</span><span class="p">,</span> <span class="n">cond2</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_num</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get a list of column responding to a given characteristic.</span>
@@ -284,9 +284,9 @@
                     <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;=</span> <span class="n">min_num</span><span class="p">:</span>
                 <span class="n">column</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pos</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">column</span>
+        <span class="k">return</span> <span class="n">column</span></div>
 
-</div>
+
     <span class="k">def</span> <span class="nf">add_aligned_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">seq</span><span class="p">):</span>
         <span class="n">p</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
@@ -382,8 +382,8 @@
                                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">maxy</span> <span class="o">+</span> <span class="o">.</span><span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)])</span>
             <span class="k">if</span> <span class="n">ymax</span><span class="p">:</span>
                 <span class="n">axes</span><span class="p">[</span><span class="n">iex</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">ymax</span><span class="p">))</span>
-        <span class="c1"># axes[iex].set_xlim((starting, max(maxxs)))</span>
-        <span class="c1"># </span>
+            <span class="n">axes</span><span class="p">[</span><span class="n">iex</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span><span class="o">=</span><span class="n">starting</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">maxxs</span><span class="p">))</span>
+
         <span class="n">pos</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ha&#39;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;va&#39;</span><span class="p">:</span> <span class="s1">&#39;bottom&#39;</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itercolumns</span><span class="p">()):</span>
             <span class="n">ends</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">],</span> <span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="k">if</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]])</span>
@@ -431,9 +431,9 @@
         <span class="k">if</span> <span class="n">savefig</span><span class="p">:</span>
             <span class="n">tadbit_savefig</span><span class="p">(</span><span class="n">savefig</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div></div>
 
-</div></div>
+
 <div class="viewcode-block" id="TAD"><a class="viewcode-back" href="../../reference/reference_boundary_alignment.html#pytadbit.alignment.TAD">[docs]</a><span class="k">class</span> <span class="nc">TAD</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Specific class of TADs, used only within Alignment objects.</span>
@@ -456,9 +456,9 @@
         
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;&gt;&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;exp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">resolution</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> \
-                      <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&lt;&#39;</span>
+                      <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&lt;&#39;</span></div>
 
-</div>
+
 <span class="k">def</span> <span class="nf">_interpolation</span><span class="p">(</span><span class="n">experiments</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the distribution of TAD lengths, and interpolate it using</span>
@@ -567,9 +567,9 @@
         <span class="k">print</span> <span class="s1">&#39;Randomized scores between </span><span class="si">%s</span><span class="s1"> and </span><span class="si">%s</span><span class="s1">; observed: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
             <span class="nb">min</span><span class="p">(</span><span class="n">rnd_distr</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">rnd_distr</span><span class="p">),</span> <span class="n">score</span><span class="p">)</span>
         <span class="k">print</span> <span class="s1">&#39;p-value: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pval</span> <span class="k">if</span> <span class="n">pval</span> <span class="k">else</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">num</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">pval</span>
+    <span class="k">return</span> <span class="n">pval</span></div>
 
-</div>
+
 <div class="viewcode-block" id="generate_rnd_tads"><a class="viewcode-back" href="../../reference/reference_boundary_alignment.html#pytadbit.alignment.generate_rnd_tads">[docs]</a><span class="k">def</span> <span class="nf">generate_rnd_tads</span><span class="p">(</span><span class="n">chromosome_len</span><span class="p">,</span> <span class="n">distr</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates random TADs over a chromosome of a given size according to a given</span>
@@ -589,9 +589,9 @@
         <span class="k">if</span> <span class="n">pos</span> <span class="o">&gt;</span> <span class="n">chromosome_len</span><span class="p">:</span>
             <span class="k">break</span>
         <span class="n">tads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">tads</span>
+    <span class="k">return</span> <span class="n">tads</span></div>
 
-</div>
+
 <div class="viewcode-block" id="generate_shuffle_tads"><a class="viewcode-back" href="../../reference/reference_boundary_alignment.html#pytadbit.alignment.generate_shuffle_tads">[docs]</a><span class="k">def</span> <span class="nf">generate_shuffle_tads</span><span class="p">(</span><span class="n">tads</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a shuffle version of a given list of TADs</span>
@@ -657,7 +657,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 25, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

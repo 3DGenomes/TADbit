@@ -47,12 +47,11 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.mapping</h1><div class="highlight"><pre>
-<span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span>         <span class="kn">import</span> <span class="n">mkdir</span>
-<span class="kn">from</span> <span class="nn">pytadbit.mapping.restriction_enzymes</span> <span class="kn">import</span> <span class="n">map_re_sites</span>
+<span></span><span class="kn">from</span> <span class="nn">pytadbit.utils.file_handling</span>         <span class="kn">import</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">magic_open</span>
 <span class="kn">from</span> <span class="nn">itertools</span>                            <span class="kn">import</span> <span class="n">combinations</span>
 <span class="kn">from</span> <span class="nn">os</span>                                   <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">system</span>
 <span class="kn">from</span> <span class="nn">sys</span>                                  <span class="kn">import</span> <span class="n">stdout</span>
-
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 
 <span class="k">def</span> <span class="nf">eq_reads</span><span class="p">(</span><span class="n">rd1</span><span class="p">,</span> <span class="n">rd2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -66,6 +65,83 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">rd1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">rd2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
+<span class="k">def</span> <span class="nf">merge_2d_beds</span><span class="p">(</span><span class="n">path1</span><span class="p">,</span> <span class="n">path2</span><span class="p">,</span> <span class="n">outpath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merge two result files (file resulting from get_intersection or from</span>
+<span class="sd">       the filtering) into one.</span>
+
+<span class="sd">    :param path1: path to first file</span>
+<span class="sd">    :param path2: path to first file</span>
+
+<span class="sd">    :returns: number of reads processed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fh1</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path1</span><span class="p">)</span>
+    <span class="n">fh2</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path2</span><span class="p">)</span>
+    <span class="c1"># parse header</span>
+    <span class="n">chromosomes</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="n">parsed</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="n">parsed</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# CRM&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">crm</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">chromosomes</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+    <span class="n">fh1</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+    <span class="c1"># check other headers</span>
+    <span class="n">parsed</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="n">parsed</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# CRM&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">crm</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">chromosomes</span><span class="p">[</span><span class="n">crm</span><span class="p">]</span> <span class="o">!=</span> <span class="n">val</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;ERROR: files are the result of mapping on &#39;</span>
+                            <span class="s1">&#39;different reference genomes&#39;</span><span class="p">)</span>
+    <span class="n">fh2</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+    <span class="c1"># comparison function</span>
+    <span class="n">greater</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">y</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># write headers</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">crm</span> <span class="ow">in</span> <span class="n">chromosomes</span><span class="p">:</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# CRM </span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crm</span><span class="p">,</span> <span class="n">chromosomes</span><span class="p">[</span><span class="n">crm</span><span class="p">]))</span>
+    <span class="c1"># merge sort the two files</span>
+    <span class="n">read1</span> <span class="o">=</span> <span class="n">fh1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="n">read2</span> <span class="o">=</span> <span class="n">fh2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="n">nreads</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">greater</span><span class="p">(</span><span class="n">read2</span><span class="p">,</span> <span class="n">read1</span><span class="p">):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read1</span><span class="p">)</span>
+            <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">read1</span> <span class="o">=</span> <span class="n">fh1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read2</span><span class="p">)</span>
+                <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read2</span><span class="p">)</span>
+            <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">read2</span> <span class="o">=</span> <span class="n">fh2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read1</span><span class="p">)</span>
+                <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">break</span>
+    <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">fh1</span><span class="p">:</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+        <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">fh2</span><span class="p">:</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+        <span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">fh1</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">fh2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">nreads</span>
+    
 <div class="viewcode-block" id="get_intersection"><a class="viewcode-back" href="../../reference/reference_mapping.html#pytadbit.mapping.get_intersection">[docs]</a><span class="k">def</span> <span class="nf">get_intersection</span><span class="p">(</span><span class="n">fname1</span><span class="p">,</span> <span class="n">fname2</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merges the two files corresponding to each reads sides. Reads found in both</span>
@@ -87,10 +163,14 @@
 <span class="sd">       :func:`pytadbit.parsers.sam_parser.parse_sam`</span>
 <span class="sd">    :param out_path: path to an outfile. It will written in a similar format as</span>
 <span class="sd">       the inputs</span>
+
+<span class="sd">    :returns: final number of pair of interacting fragments, and a dictionary with</span>
+<span class="sd">       the number of multiple contacts (keys of the dictionary being the number of</span>
+<span class="sd">       fragment cought together, can be 3, 4, 5..)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="c1"># Get the headers of the two files </span>
-    <span class="n">reads1</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname1</span><span class="p">)</span>
+    <span class="n">reads1</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fname1</span><span class="p">)</span>
     <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">header1</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="k">while</span> <span class="n">line1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
@@ -99,7 +179,7 @@
         <span class="n">line1</span> <span class="o">=</span> <span class="n">reads1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">read1</span> <span class="o">=</span> <span class="n">line1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="n">reads2</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname2</span><span class="p">)</span>
+    <span class="n">reads2</span> <span class="o">=</span> <span class="n">magic_open</span><span class="p">(</span><span class="n">fname2</span><span class="p">)</span>
     <span class="n">line2</span> <span class="o">=</span> <span class="n">reads2</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="n">header2</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="k">while</span> <span class="n">line2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
@@ -180,7 +260,7 @@
     <span class="c1"># sort also according to read 2 (to filter duplicates)</span>
     <span class="c1">#      and also according to strand</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s1">&#39;Sorting easch temporary file by genomic coordinate&#39;</span>
+        <span class="k">print</span> <span class="s1">&#39;Sorting each temporary file by genomic coordinate&#39;</span>
 
     <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header1</span><span class="p">)</span>
@@ -202,7 +282,7 @@
 
 <span class="k">def</span> <span class="nf">_loc_reads</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    put upstream read before, get position in buf</span>
+<span class="sd">    Put upstream read before, get position in buf</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pos1</span> <span class="o">=</span> <span class="n">CHROM_START</span><span class="p">[</span><span class="n">r1</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">r1</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">pos2</span> <span class="o">=</span> <span class="n">CHROM_START</span><span class="p">[</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
@@ -251,20 +331,24 @@
                 <span class="c1"># take first and last</span>
                 <span class="n">map1</span><span class="p">,</span> <span class="n">map2</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
                     <span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]))[::</span><span class="nb">len</span><span class="p">(</span><span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">strand</span> <span class="o">=</span> <span class="n">map1</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="c1"># if the 2 strands are different keep the longest fragment</span>
+                <span class="k">if</span> <span class="n">strand</span> <span class="o">!=</span> <span class="n">map2</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+                    <span class="n">map1</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
+                    <span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">]</span> <span class="o">=</span> <span class="n">map1</span>
+                    <span class="k">continue</span>
                 <span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">]</span> <span class="o">=</span> <span class="n">map1</span>
                 <span class="c1"># sum up read-frags in the RE fragment  by putting</span>
                 <span class="c1"># them on the same strand</span>
-                <span class="k">if</span> <span class="n">map1</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span>
+                <span class="c1"># use the strand of the first fragment as reference</span>
+                <span class="k">if</span> <span class="n">strand</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span>
                     <span class="n">beg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">map1</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">nts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">map2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">map2</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="o">-</span> <span class="n">beg</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">beg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">map1</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">map1</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="k">if</span> <span class="n">map2</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;0&#39;</span><span class="p">:</span>
-                    <span class="n">nts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">map2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">-</span> <span class="n">beg</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">nts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">map2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">map2</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">beg</span>
-                <span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">][:</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span>
-                                  <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">beg</span><span class="p">),</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nts</span><span class="p">)]</span> <span class="o">+</span>
-                                  <span class="nb">list</span><span class="p">(</span><span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">][</span><span class="mi">5</span><span class="p">:]))</span>
+                    <span class="n">beg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">map2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">nts</span> <span class="o">=</span> <span class="n">beg</span> <span class="o">-</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">map1</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">map1</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
+                <span class="n">elts</span><span class="p">[</span><span class="n">elt</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">map1</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">beg</span><span class="p">),</span> <span class="n">strand</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nts</span><span class="p">)]</span>
+                                  <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">map1</span><span class="p">[</span><span class="mi">5</span><span class="p">:]))</span>
         <span class="n">contacts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">elts</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">contacts</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">multiples</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">contacts</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -284,6 +368,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">_loc_reads</span><span class="p">(</span><span class="n">line1</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">line2</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">))</span>
         <span class="n">buf</span><span class="p">[</span><span class="n">idx</span> <span class="o">/</span> <span class="n">lchunk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="se">\t</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r1</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
+
 </pre></div>
 
           </div>
@@ -333,7 +418,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 25, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

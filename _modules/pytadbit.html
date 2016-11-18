@@ -46,7 +46,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit</h1><div class="highlight"><pre>
-
+<span></span>
 <span class="kn">from</span> <span class="nn">pytadbit._version</span> <span class="kn">import</span> <span class="n">__version__</span>
 <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">environ</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">check_call</span><span class="p">,</span> <span class="n">CalledProcessError</span>
@@ -58,7 +58,10 @@
     <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">getdefaultlocale</span><span class="p">()))</span>
 <span class="k">except</span><span class="p">:</span>
     <span class="n">environ</span><span class="p">[</span><span class="s2">&quot;LANG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en_US.UTF-8&quot;</span>
-    <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">getdefaultlocale</span><span class="p">()))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">getdefaultlocale</span><span class="p">()))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
 
 <span class="c1">## Check if we have X display http://stackoverflow.com/questions/8257385/automatic-detection-of-display-availability-with-matplotlib</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;DISPLAY&quot;</span> <span class="ow">in</span> <span class="n">environ</span><span class="p">:</span>
@@ -218,7 +221,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 25, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

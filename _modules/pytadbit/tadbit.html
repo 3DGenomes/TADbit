@@ -47,17 +47,21 @@
           <div class="body" role="main">
             
   <h1>Source code for pytadbit.tadbit</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">24 Oct 2012</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">os</span>                           <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">listdir</span>
 <span class="kn">from</span> <span class="nn">pytadbit.parsers.hic_parser</span>  <span class="kn">import</span> <span class="n">read_matrix</span>
 <span class="kn">from</span> <span class="nn">pytadbit.tadbit_py</span>           <span class="kn">import</span> <span class="n">_tadbit_wrapper</span>
+<span class="kn">from</span> <span class="nn">math</span>                         <span class="kn">import</span> <span class="n">isnan</span><span class="p">,</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.csr</span>             <span class="kn">import</span> <span class="n">csr_matrix</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span>                  <span class="kn">import</span> <span class="n">mannwhitneyu</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 
 <div class="viewcode-block" id="tadbit"><a class="viewcode-back" href="../../reference/reference_tadbit.html#pytadbit.tadbit.tadbit">[docs]</a><span class="k">def</span> <span class="nf">tadbit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-           <span class="n">max_tad_size</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">no_heuristic</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+           <span class="n">max_tad_size</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">no_heuristic</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_topdom</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">topdom_window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The TADbit algorithm works on raw chromosome interaction count data.</span>
 <span class="sd">    The normalization is neither necessary nor recommended,</span>
@@ -87,6 +91,8 @@
 <span class="sd">    :param auto max_tad_size: an integer defining maximum size of TAD. Default</span>
 <span class="sd">       (auto or max) defines it as the number of rows/columns</span>
 <span class="sd">    :param False no_heuristic: whether to use or not some heuristics</span>
+<span class="sd">    :param False use_topdom: whether to use TopDom algorithm to find tads or not (http://www.ncbi.nlm.nih.gov/pubmed/26704975, http://zhoulab.usc.edu/TopDom/)</span>
+<span class="sd">    :param 5 topdom_window: the window size for topdom algorithm</span>
 <span class="sd">    :param False get_weights: either to return the weights corresponding to the</span>
 <span class="sd">       Hi-C count (weights are a normalization dependent of the count of each</span>
 <span class="sd">       columns)</span>
@@ -96,33 +102,53 @@
 <span class="sd">       If no weights are given, it may also return calculated weights.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">hic_data</span> <span class="k">for</span> <span class="n">hic_data</span> <span class="ow">in</span> <span class="n">read_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">)]</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">get_as_tuple</span><span class="p">()</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">]</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">remove</span><span class="p">:</span>
-        <span class="c1"># if not given just remove columns with zero in diagonal</span>
-        <span class="n">remove</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">0</span> <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)])</span>
-    <span class="n">n_cpus</span> <span class="o">=</span> <span class="n">n_cpus</span> <span class="k">if</span> <span class="n">n_cpus</span> <span class="o">!=</span> <span class="s1">&#39;max&#39;</span> <span class="k">else</span> <span class="mi">0</span>
-    <span class="n">max_tad_size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="n">max_tad_size</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">max_tad_size</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">nbks</span><span class="p">,</span> <span class="n">passages</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bkpts</span> <span class="o">=</span> \
-       <span class="n">_tadbit_wrapper</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span>             <span class="c1"># list of lists of Hi-C data</span>
-                       <span class="n">remove</span><span class="p">,</span>           <span class="c1"># list of columns marking filtered</span>
-                       <span class="n">size</span><span class="p">,</span>             <span class="c1"># size of one row/column</span>
-                       <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">),</span>        <span class="c1"># number of matrices</span>
-                       <span class="n">n_cpus</span><span class="p">,</span>           <span class="c1"># number of threads</span>
-                       <span class="nb">int</span><span class="p">(</span><span class="n">verbose</span><span class="p">),</span>     <span class="c1"># verbose 0/1</span>
-                       <span class="n">max_tad_size</span><span class="p">,</span>     <span class="c1"># max_tad_size</span>
-                       <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ntads&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                       <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span><span class="c1"># heuristic 0/1</span>
-                       <span class="p">)</span>
-
-    <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">bkpts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">nbks</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">passages</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="p">[]}</span>
-    <span class="k">for</span> <span class="n">brk</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span>  <span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">use_topdom</span><span class="p">:</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">get_as_tuple</span><span class="p">()</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">remove</span><span class="p">:</span>
+            <span class="c1"># if not given just remove columns with zero in diagonal</span>
+            <span class="n">remove</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">0</span> <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">*</span><span class="n">size</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)])</span>
+        <span class="n">n_cpus</span> <span class="o">=</span> <span class="n">n_cpus</span> <span class="k">if</span> <span class="n">n_cpus</span> <span class="o">!=</span> <span class="s1">&#39;max&#39;</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">max_tad_size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="n">max_tad_size</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">max_tad_size</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">nbks</span><span class="p">,</span> <span class="n">passages</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bkpts</span> <span class="o">=</span> \
+           <span class="n">_tadbit_wrapper</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span>             <span class="c1"># list of lists of Hi-C data</span>
+                           <span class="n">remove</span><span class="p">,</span>           <span class="c1"># list of columns marking filtered</span>
+                           <span class="n">size</span><span class="p">,</span>             <span class="c1"># size of one row/column</span>
+                           <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">),</span>        <span class="c1"># number of matrices</span>
+                           <span class="n">n_cpus</span><span class="p">,</span>           <span class="c1"># number of threads</span>
+                           <span class="nb">int</span><span class="p">(</span><span class="n">verbose</span><span class="p">),</span>     <span class="c1"># verbose 0/1</span>
+                           <span class="n">max_tad_size</span><span class="p">,</span>     <span class="c1"># max_tad_size</span>
+                           <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ntads&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                           <span class="nb">int</span><span class="p">(</span><span class="n">no_heuristic</span><span class="p">),</span><span class="c1"># heuristic 0/1</span>
+                           <span class="p">)</span>
+    
+        <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">bkpts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">nbks</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">passages</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+    
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">brk</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span>  <span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">breaks</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">brk</span><span class="p">]</span> <span class="k">if</span> <span class="n">brk</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">breaks</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+    
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">TopDom</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">window_size</span><span class="o">=</span><span class="n">topdom_window</span><span class="p">)</span>
+        
+        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ret</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;tag&#39;</span><span class="p">])</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">])</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">])</span>    
+            <span class="k">if</span> <span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;domain&#39;</span><span class="p">:</span>    
+                <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;score&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">max_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])):</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">-</span><span class="nb">int</span><span class="p">((</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">max_score</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">result</span></div>
 
@@ -198,6 +224,361 @@
         <span class="k">print</span> <span class="n">table</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">table</span></div>
+
+
+<span class="k">def</span> <span class="nf">TopDom</span><span class="p">(</span><span class="n">hic_data</span><span class="p">,</span><span class="n">window_size</span><span class="p">,</span><span class="n">statFilter</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Python implementation of the algorithm TopDom for the identification of TADs. See http://www.ncbi.nlm.nih.gov/pubmed/26704975 and http://zhoulab.usc.edu/TopDom/ </span>
+
+<span class="sd">    :param hic_data: a list corresponding to the Hi-C data </span>
+<span class="sd">    :param window_size: window size parameter for the TopDom algorithm</span>
+<span class="sd">    :param True statFilter: whether to apply or not statistical filtering for false detection of TADs </span>
+
+<span class="sd">    :returns: the :py:func:`list` of topologically associated domains, boundaries and gaps. Domains include the mean value </span>
+<span class="sd">        of computed p-values by Wilcox Ranksum Test as score while boundaries and gaps have a score of zero.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hic_data</span><span class="p">)</span>
+    <span class="n">mean_cf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+    <span class="n">pvalue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+      
+    <span class="n">local_ext</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+    
+    <span class="c1">#Step 1</span>
+    <span class="n">csr_mat</span> <span class="o">=</span> <span class="n">hic_data</span><span class="o">.</span><span class="n">get_hic_data_as_csr</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
+        <span class="n">diamond_mean</span> <span class="o">=</span> <span class="n">Get_Diamond_Matrix_Mean</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">csr_mat</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">window_size</span><span class="p">)</span>
+        <span class="n">mean_cf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">diamond_mean</span>
+        
+    <span class="c1">#Step 2</span>
+    <span class="n">gap_idx</span> <span class="o">=</span> <span class="n">Which_Gap_Region</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">csr_mat</span><span class="p">)</span>
+    <span class="n">proc_regions</span> <span class="o">=</span> <span class="n">Which_process_region</span><span class="p">(</span><span class="n">rmv_idx</span><span class="o">=</span><span class="n">gap_idx</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">proc_regions</span><span class="p">:</span>
+        
+        <span class="n">start</span> <span class="o">=</span> <span class="n">proc_regions</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">proc_regions</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;end&quot;</span><span class="p">]</span>
+    
+        <span class="c1">#print &quot;Process Regions from &quot; + str(start) + &quot; to &quot; + str(end)</span>
+      
+        <span class="n">local_ext</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Detect_Local_Extreme</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">mean_cf</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+    
+    <span class="k">if</span> <span class="n">statFilter</span><span class="p">:</span>
+        <span class="c1">#Step 3</span>
+        <span class="n">lil_mat</span> <span class="o">=</span> <span class="n">csr_mat</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,(</span><span class="mi">2</span><span class="o">*</span><span class="n">window_size</span><span class="p">)):</span>
+        
+          <span class="n">mat_row</span> <span class="o">=</span> <span class="p">[]</span>
+          <span class="n">mat_column</span> <span class="o">=</span> <span class="p">[]</span>
+          <span class="n">my_range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">((</span><span class="n">n_bins</span><span class="o">*</span><span class="n">k</span><span class="p">),</span> <span class="p">(</span><span class="n">n_bins</span><span class="o">*</span><span class="n">n_bins</span><span class="p">),</span> <span class="mi">1</span><span class="o">+</span><span class="n">n_bins</span><span class="p">)</span>
+          <span class="n">mat_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">my_range</span><span class="p">))</span>
+          <span class="n">col_arr</span> <span class="o">=</span> <span class="mi">0</span> 
+          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">my_range</span><span class="p">:</span>
+              <span class="n">mat_row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">j</span><span class="o">/</span><span class="n">lil_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+              <span class="n">mat_column</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="o">%</span><span class="n">lil_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+              <span class="n">mat_values</span><span class="p">[</span><span class="n">col_arr</span><span class="p">]</span> <span class="o">=</span> <span class="n">lil_mat</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">j</span><span class="o">/</span><span class="n">lil_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span><span class="n">j</span><span class="o">%</span><span class="n">lil_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+              <span class="n">col_arr</span> <span class="o">=</span> <span class="n">col_arr</span> <span class="o">+</span> <span class="mi">1</span>
+          
+          <span class="n">scale_values</span> <span class="o">=</span> <span class="n">scale</span><span class="p">(</span><span class="n">mat_values</span><span class="p">)</span>
+          
+          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat_row</span><span class="p">)):</span>
+              <span class="n">lil_mat</span><span class="p">[</span><span class="n">mat_column</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">mat_row</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">scale_values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+              
+        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">proc_regions</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">proc_regions</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">proc_regions</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">]</span>
+            
+            <span class="n">pvalue</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="o">=</span> <span class="n">Get_Pvalue</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">lil_mat</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">local_ext</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">local_ext</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">pvalue</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span>
+                <span class="n">local_ext</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+        <span class="n">local_ext</span><span class="p">[</span><span class="n">local_ext</span><span class="o">==-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">local_ext</span><span class="p">[</span><span class="n">local_ext</span><span class="o">==-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  
+        
+        <span class="n">pvalue_cut</span><span class="o">=</span><span class="mf">0.05</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pvalue</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">pvalue_cut</span><span class="o">=</span><span class="bp">None</span>
+        
+    <span class="n">domains</span> <span class="o">=</span> <span class="n">Convert_Bin_To_Domain_TMP</span><span class="p">(</span><span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span>
+                                  <span class="n">signal_idx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">local_ext</span><span class="o">==-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> 
+                                  <span class="n">gap_idx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">local_ext</span><span class="o">==-</span><span class="mf">0.5</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> 
+                                  <span class="n">pvalues</span><span class="o">=</span><span class="n">pvalue</span><span class="p">,</span> 
+                                  <span class="n">pvalue_cut</span><span class="o">=</span><span class="n">pvalue_cut</span><span class="p">)</span>
+    
+        
+    <span class="k">return</span> <span class="n">domains</span>
+    
+<span class="k">def</span> <span class="nf">Get_Diamond_Matrix_Mean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+
+  <span class="n">n_bins</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+  <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="n">n_bins</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+       <span class="k">return</span>
+  
+  <span class="n">lowerbound</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="o">-</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span> <span class="p">)</span>
+  <span class="n">upperbound</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span> <span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+      
+  <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">lowerbound</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span><span class="n">upperbound</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+  
+<span class="k">def</span> <span class="nf">Which_Gap_Region</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+  
+  <span class="n">n_bins</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+  <span class="n">gap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+  
+  <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+  <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_bins</span><span class="p">:</span>
+  
+    <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n_bins</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">gap</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">break</span>
+    
+    <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>  
+  
+  <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">gap</span><span class="o">==-</span><span class="mf">0.5</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+  
+  <span class="c1">#return dict(zip(idx,idx))</span>
+  <span class="k">return</span> <span class="n">idx</span>
+
+<span class="k">def</span> <span class="nf">Which_process_region</span><span class="p">(</span><span class="n">rmv_idx</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">min_size</span><span class="p">):</span>
+
+  <span class="n">gap_idx</span> <span class="o">=</span> <span class="n">rmv_idx</span>
+  
+  <span class="n">proc_regions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="n">proc_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+  <span class="n">proc_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">proc_set</span><span class="p">,</span><span class="n">gap_idx</span><span class="p">)</span>
+      
+  <span class="n">n_proc_set</span> <span class="o">=</span> <span class="n">proc_set</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+   
+  <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+  <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_proc_set</span><span class="p">:</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">proc_set</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+      
+    <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n_proc_set</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">proc_set</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">proc_set</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tmp_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span><span class="n">start</span><span class="p">,</span><span class="s1">&#39;end&#39;</span><span class="p">:</span><span class="n">proc_set</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]}</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">proc_set</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">start</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_size</span><span class="p">:</span>
+                <span class="n">proc_regions</span><span class="p">[</span><span class="n">start</span><span class="p">]</span><span class="o">=</span><span class="n">tmp_dict</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">n_proc_set</span><span class="p">:</span>
+        <span class="n">tmp_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span><span class="n">start</span><span class="p">,</span><span class="s1">&#39;end&#39;</span><span class="p">:</span><span class="n">proc_set</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]}</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">proc_set</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">start</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_size</span><span class="p">:</span>
+            <span class="n">proc_regions</span><span class="p">[</span><span class="n">start</span><span class="p">]</span><span class="o">=</span><span class="n">tmp_dict</span>
+        <span class="k">break</span>
+
+  <span class="k">return</span><span class="p">(</span><span class="n">proc_regions</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">Detect_Local_Extreme</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    
+  <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+  <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span><span class="o">=</span><span class="mi">0</span>
+  
+  <span class="k">if</span> <span class="n">n_bins</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+      <span class="n">ret</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span><span class="o">=-</span><span class="mi">1</span>
+      <span class="n">ret</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span><span class="o">=</span><span class="mi">1</span>
+      
+      <span class="k">return</span> <span class="n">ret</span>
+  <span class="c1"># Norm##################################################3</span>
+  <span class="n">new_point_x</span><span class="p">,</span> <span class="n">new_point_y</span> <span class="o">=</span> <span class="n">Data_Norm</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_bins</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+  
+  
+  <span class="n">x</span><span class="o">=</span><span class="n">new_point_y</span>
+  <span class="n">cp</span><span class="p">,</span><span class="n">Fv</span><span class="p">,</span><span class="n">Ev</span> <span class="o">=</span> <span class="n">Change_Point</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_bins</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+   
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span> 
+      <span class="k">return</span> <span class="n">ret</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+      <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">&gt;=</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">&gt;=</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+           <span class="n">ret</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+      <span class="k">else</span><span class="p">:</span>
+           <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+               <span class="n">ret</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+     
+      <span class="n">min_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span> <span class="n">x</span><span class="p">[</span> <span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">],</span> <span class="n">x</span><span class="p">[</span> <span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">]</span> <span class="p">)</span>
+      <span class="n">max_val</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span> <span class="n">x</span><span class="p">[</span> <span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">],</span> <span class="n">x</span><span class="p">[</span> <span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">]</span> <span class="p">)</span>
+      
+      <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_val</span><span class="p">:</span>
+           <span class="n">ret</span><span class="p">[</span> <span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span> <span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+      <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_val</span><span class="p">:</span>
+           <span class="n">ret</span><span class="p">[</span> <span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span> <span class="n">x</span><span class="p">[</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span><span class="n">cp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span> <span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+      
+  <span class="k">return</span> <span class="n">ret</span>
+     
+<span class="k">def</span> <span class="nf">Data_Norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">ret_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">ret_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+  
+    <span class="n">ret_x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ret_y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+  
+    <span class="n">diff_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">diff_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+  
+    <span class="n">scale_x</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">scale_y</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+  
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="n">ret_x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret_x</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">diff_x</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">scale_x</span><span class="p">)</span>
+        <span class="n">ret_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret_y</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">diff_y</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">scale_y</span><span class="p">)</span>
+  
+    
+    <span class="c1">#return dict(zip(ret_x,ret_y))</span>
+    <span class="k">return</span> <span class="n">ret_x</span><span class="p">,</span> <span class="n">ret_y</span>
+
+<span class="k">def</span> <span class="nf">Change_Point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;ERROR : The length of x and y should be the same&quot;</span>
+        <span class="k">return</span> <span class="mi">0</span>
+  
+    <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">Fv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+    <span class="n">Fv</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NAN</span>
+    <span class="n">Ev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+    <span class="n">Ev</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NAN</span>
+    <span class="n">cp</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  
+    <span class="c1">#print x</span>
+    <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">Fv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_bins</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">j</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+        <span class="n">Fv</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+        <span class="c1">#print Fv[j]</span>
+        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n_bins</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">j</span><span class="o">=</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span>
+            <span class="c1">#k=(i+1):(j-1)</span>
+            <span class="n">Ev</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="p">[(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="n">y</span><span class="p">[(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="c1">#print Ev[j]</span>
+            <span class="c1">#print x[(i+1):j] </span>
+            <span class="n">Fv</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="o">-</span> <span class="p">(</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="p">[(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="n">y</span><span class="p">[(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="c1">#################################################</span>
+            <span class="c1">#Not Original Code</span>
+            <span class="k">if</span> <span class="n">isnan</span><span class="p">(</span><span class="n">Fv</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="ow">or</span> <span class="n">isnan</span><span class="p">(</span><span class="n">Fv</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span>
+                <span class="n">cp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="c1">####################################################3</span>
+            <span class="k">if</span> <span class="n">Fv</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">Fv</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">cp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="k">break</span>
+        <span class="n">i</span><span class="o">=</span><span class="n">j</span>
+  
+    <span class="n">cp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_bins</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">cp</span><span class="p">,</span> <span class="n">Fv</span><span class="p">,</span> <span class="n">Ev</span>
+
+<span class="k">def</span> <span class="nf">Convert_Bin_To_Domain_TMP</span><span class="p">(</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">signal_idx</span><span class="p">,</span> <span class="n">gap_idx</span><span class="p">,</span> <span class="n">pvalues</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pvalue_cut</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    
+    <span class="n">bins</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+   
+    <span class="n">rmv_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_bins</span><span class="p">),</span><span class="n">gap_idx</span><span class="p">)</span>
+    <span class="n">proc_region</span> <span class="o">=</span> <span class="n">Which_process_region</span><span class="p">(</span><span class="n">rmv_idx</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">proc_region</span><span class="p">:</span>
+        <span class="n">bins</span><span class="p">[</span><span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">(</span><span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;tag&#39;</span> <span class="p">:</span> <span class="s1">&#39;gap&#39;</span><span class="p">}</span>
+    
+    
+    <span class="n">rmv_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">union1d</span><span class="p">(</span><span class="n">signal_idx</span><span class="p">,</span> <span class="n">gap_idx</span><span class="p">)</span>
+    <span class="n">proc_region</span> <span class="o">=</span> <span class="n">Which_process_region</span><span class="p">(</span><span class="n">rmv_idx</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">proc_region</span><span class="p">:</span>
+        <span class="n">bins</span><span class="p">[</span><span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">(</span><span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;tag&#39;</span> <span class="p">:</span> <span class="s1">&#39;domain&#39;</span><span class="p">}</span>
+    
+    <span class="n">rmv_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_bins</span><span class="p">),</span><span class="n">signal_idx</span><span class="p">)</span>
+    <span class="n">proc_region</span> <span class="o">=</span> <span class="n">Which_process_region</span><span class="p">(</span><span class="n">rmv_idx</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">proc_region</span><span class="p">:</span>
+        <span class="n">bins</span><span class="p">[</span><span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="s1">&#39;end&#39;</span>  <span class="p">:</span> <span class="p">(</span><span class="n">proc_region</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;tag&#39;</span> <span class="p">:</span> <span class="s1">&#39;boundary&#39;</span><span class="p">}</span>
+    
+        
+    
+
+    <span class="k">if</span> <span class="n">pvalues</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">pvalue_cut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bins</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bins</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;domain&#39;</span><span class="p">:</span>
+                <span class="n">start_id</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
+                <span class="n">end_id</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;end&#39;</span><span class="p">]</span>
+                <span class="n">p_value_constr</span> <span class="o">=</span> <span class="n">pvalues</span><span class="p">[</span><span class="n">start_id</span><span class="p">:</span><span class="n">end_id</span><span class="p">]</span>
+                <span class="n">bins</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_value_constr</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">p_value_constr</span> <span class="o">=</span> <span class="n">p_value_constr</span><span class="p">[</span><span class="n">p_value_constr</span> <span class="o">&lt;</span> <span class="n">pvalue_cut</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">end_id</span> <span class="o">-</span> <span class="n">start_id</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">p_value_constr</span><span class="p">):</span>
+                     <span class="n">bins</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;boundary&quot;</span>
+    
+    <span class="k">return</span> <span class="n">bins</span>
+    
+<span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+    
+    <span class="n">x</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="n">x</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># WTF different in numpy and R http://stackoverflow.com/questions/6457755/standard-deviation-in-r-seems-to-be-returning-the-wrong-answer-am-i-doing-some</span>
+    
+    <span class="k">return</span> <span class="n">x</span>
+
+<span class="k">def</span> <span class="nf">Get_Pvalue</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+    
+    <span class="n">n_bins</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">pvalue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_bins</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+  
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">n_bins</span><span class="p">):</span>
+        <span class="n">dia</span> <span class="o">=</span> <span class="n">Get_Diamond_Matrix2</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">ups</span> <span class="o">=</span> <span class="n">Get_Upstream_Triangle</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">downs</span> <span class="o">=</span> <span class="n">Get_Downstream_Triangle</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
+            
+        <span class="n">wil_test</span> <span class="o">=</span>  <span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">dia</span><span class="o">*</span><span class="n">scale</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">ups</span><span class="o">+</span><span class="n">downs</span><span class="p">,</span> <span class="n">use_continuity</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s1">&#39;less&#39;</span><span class="p">)</span>
+        <span class="n">pvalue</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">wil_test</span><span class="o">.</span><span class="n">pvalue</span>
+        
+  
+    <span class="n">pvalue</span><span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">pvalue</span><span class="p">)</span> <span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">pvalue</span><span class="p">)</span>
+    
+<span class="k">def</span> <span class="nf">Get_Diamond_Matrix2</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+    
+    <span class="n">n_bins</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1">#new_mat = np.ones_like(data)*np.NaN</span>
+    <span class="n">new_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="n">size</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
+    
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">-</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_bins</span><span class="p">:</span>
+            <span class="n">lower</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+            <span class="n">upper</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+            <span class="n">new_mat</span><span class="p">[</span><span class="n">size</span><span class="o">-</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:(</span><span class="n">upper</span><span class="o">-</span><span class="n">lower</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">lower</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">upper</span><span class="p">]</span>
+    
+    <span class="n">new_mat</span> <span class="o">=</span> <span class="n">new_mat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">new_mat</span><span class="p">))]</span>
+    
+    <span class="k">return</span> <span class="p">((</span><span class="n">new_mat</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">Get_Upstream_Triangle</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+    
+    <span class="n">lower</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="o">-</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">tmp_mat</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">lower</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">,</span><span class="n">lower</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">]</span>
+    
+    <span class="n">triag</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">tmp_mat</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    
+    <span class="k">return</span> <span class="n">triag</span><span class="p">[</span><span class="n">triag</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> 
+
+<span class="k">def</span> <span class="nf">Get_Downstream_Triangle</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+    
+    <span class="n">n_bins</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="n">n_bins</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">NaN</span>  
+  
+    <span class="n">upperbound</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+    <span class="n">tmp_mat</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">upperbound</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span><span class="n">upperbound</span><span class="p">]</span>
+    
+    <span class="n">triag</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">tmp_mat</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">triag</span><span class="p">[</span><span class="n">triag</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> 
 </pre></div>
 
           </div>
@@ -247,7 +628,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 25, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

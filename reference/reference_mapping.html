@@ -179,7 +179,7 @@ Default is equal to resolution of the matrix.</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.correlate_matrices">
-<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">correlate_matrices</code><span class="sig-paren">(</span><em>hic_data1</em>, <em>hic_data2</em>, <em>max_dist=10</em>, <em>intra=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>axe=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">correlate_matrices</code><span class="sig-paren">(</span><em>hic_data1</em>, <em>hic_data2</em>, <em>max_dist=10</em>, <em>intra=False</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>normalized=False</em>, <em>remove_bad_columns=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.correlate_matrices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare the iteractions of two Hi-C matrices at a given distance,
 with spearman rank correlation</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -195,6 +195,9 @@ not look further than 10 times the resolution)</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to save the plot</li>
 <li><strong>intra</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; only takes into account intra-chromosomal contacts</li>
 <li><strong>show</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; displays the plot</li>
+<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; use normalized data</li>
+<li><strong>remove_bads</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; computes the union of bad columns between samples
+and exclude them from the comparison</li>
 </ul>
 </td>
 </tr>
@@ -207,7 +210,7 @@ not look further than 10 times the resolution)</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.eig_correlate_matrices">
-<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">eig_correlate_matrices</code><span class="sig-paren">(</span><em>hic_data1</em>, <em>hic_data2</em>, <em>nvect=6</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#eig_correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.eig_correlate_matrices" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">eig_correlate_matrices</code><span class="sig-paren">(</span><em>hic_data1</em>, <em>hic_data2</em>, <em>nvect=6</em>, <em>normalized=False</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>remove_bad_columns=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#eig_correlate_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.eig_correlate_matrices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare the iteractions of two Hi-C matrices using their 6 first
 eigenvectors, with pearson correlation</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -220,6 +223,9 @@ eigenvectors, with pearson correlation</p>
 <li><strong>nvect</strong> (<em>6</em>) &#8211; number of eigenvectors to compare</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to save the plot</li>
 <li><strong>show</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; displays the plot</li>
+<li><strong>normalized</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#False" title="(in Python v2.7)"><em>False</em></a>) &#8211; use normalized data</li>
+<li><strong>remove_bads</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; computes the union of bad columns between samples
+and exclude them from the comparison</li>
 <li><strong>kwargs</strong> &#8211; any argument to pass to matplotlib imshow function</li>
 </ul>
 </td>
@@ -233,7 +239,7 @@ eigenvectors, with pearson correlation</p>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_distance_vs_interactions">
-<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_distance_vs_interactions</code><span class="sig-paren">(</span><em>data</em>, <em>min_diff=1</em>, <em>max_diff=1000</em>, <em>show=False</em>, <em>genome_seq=None</em>, <em>resolution=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_distance_vs_interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_distance_vs_interactions" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_distance_vs_interactions</code><span class="sig-paren">(</span><em>data</em>, <em>min_diff=1</em>, <em>max_diff=1000</em>, <em>show=False</em>, <em>genome_seq=None</em>, <em>resolution=None</em>, <em>axe=None</em>, <em>savefig=None</em>, <em>normalized=False</em>, <em>plot_each_cell=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_distance_vs_interactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_distance_vs_interactions" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -252,7 +258,12 @@ of the file name will determine the desired format).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">slope, intercept and R square of each of the 3 correlations</p>
+<tr class="field-even field"><th class="field-name" colspan="2">Param_hash False plot_each_cell:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first">if false, only the mean distances by bin
+will be represented, otherwise each pair of interactions will be plotted.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">slope, intercept and R square of each of the 3 correlations</p>
 </td>
 </tr>
 </tbody>
@@ -286,7 +297,7 @@ of the file name will determine the desired format).</li>
 
 <dl class="function">
 <dt id="pytadbit.mapping.analyze.plot_genomic_distribution">
-<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_genomic_distribution</code><span class="sig-paren">(</span><em>fnam</em>, <em>first_read=True</em>, <em>resolution=10000</em>, <em>axe=None</em>, <em>ylim=None</em>, <em>savefig=None</em>, <em>savedata=None</em>, <em>chr_names=None</em>, <em>nreads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pytadbit.mapping.analyze.</code><code class="descname">plot_genomic_distribution</code><span class="sig-paren">(</span><em>fnam</em>, <em>first_read=True</em>, <em>resolution=10000</em>, <em>ylim=None</em>, <em>yscale=None</em>, <em>savefig=None</em>, <em>show=False</em>, <em>savedata=None</em>, <em>chr_names=None</em>, <em>nreads=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/mapping/analyze.html#plot_genomic_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.mapping.analyze.plot_genomic_distribution" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -296,8 +307,9 @@ of the file name will determine the desired format).</li>
 <li><strong>first_read</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#True" title="(in Python v2.7)"><em>True</em></a>) &#8211; uses first read.</li>
 <li><strong>resolution</strong> (<em>100</em>) &#8211; group reads that are closer than this resolution
 parameter</li>
-<li><strong>axe</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a matplotlib.axes.Axes object to define the plot
-appearance</li>
+<li><strong>ylim</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; a tuple of lower and upper bound for the y axis</li>
+<li><strong>yscale</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; if set_bad to &#8220;log&#8221; values will be represented in log2 
+scale</li>
 <li><strong>savefig</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; path to a file where to save the image generated;
 if None, the image will be shown using matplotlib GUI (the extension
 of the file name will determine the desired format).</li>
@@ -374,7 +386,7 @@ in the positive strand)</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>fname1</strong> &#8211; path to a tab separated file generated by the function
 <code class="xref py py-func docutils literal"><span class="pre">pytadbit.parsers.sam_parser.parse_sam()</span></code></li>
 <li><strong>fname2</strong> &#8211; path to a tab separated file generated by the function
@@ -382,6 +394,11 @@ in the positive strand)</li>
 <li><strong>out_path</strong> &#8211; path to an outfile. It will written in a similar format as
 the inputs</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">final number of pair of interacting fragments, and a dictionary with
+the number of multiple contacts (keys of the dictionary being the number of
+fragment cought together, can be 3, 4, 5..)</p>
 </td>
 </tr>
 </tbody>
@@ -569,7 +586,7 @@ reads filtered, not the valid pairs.</li>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 22, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img

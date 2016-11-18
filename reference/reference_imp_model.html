@@ -57,7 +57,7 @@
 <dt id="pytadbit.imp.impmodel.load_impmodel_from_cmm">
 <code class="descclassname">pytadbit.imp.impmodel.</code><code class="descname">load_impmodel_from_cmm</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_cmm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_cmm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an cmm file of the form:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;marker_set name=&quot;1&quot;&gt;
+<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;marker_set name=&quot;1&quot;&gt;
   &lt;marker id=&quot;1&quot; x=&quot;7347.50964739&quot; y=&quot;-7743.92836303&quot; z=&quot;-8283.39749204&quot; r=&quot;0.00990099009901&quot; g=&quot;0&quot; b=&quot;0.990099009901&quot; radius=&quot;500.0&quot; note=&quot;1&quot;/&gt;
   &lt;marker id=&quot;2&quot; x=&quot;7647.90254377&quot; y=&quot;-7308.1816344&quot; z=&quot;-7387.75932893&quot; r=&quot;0.019801980198&quot; g=&quot;0&quot; b=&quot;0.980198019802&quot; radius=&quot;500.0&quot; note=&quot;2&quot;/&gt;
   &lt;link id1=&quot;1&quot; id2=&quot;2&quot; r=&quot;1&quot; g=&quot;1&quot; b=&quot;1&quot; radius=&quot;250.0&quot;/&gt;
@@ -85,7 +85,7 @@
 <dt id="pytadbit.imp.impmodel.load_impmodel_from_xyz">
 <code class="descclassname">pytadbit.imp.impmodel.</code><code class="descname">load_impmodel_from_xyz</code><span class="sig-paren">(</span><em>f_name</em>, <em>rand_init=None</em>, <em>radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pytadbit/imp/impmodel.html#load_impmodel_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytadbit.imp.impmodel.load_impmodel_from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an IMPmodel object using an xyz file of the form:</p>
-<div class="highlight-python"><div class="highlight"><pre># ID              : some identifier
+<div class="highlight-python"><div class="highlight"><pre><span></span># ID              : some identifier
 # SPECIES         : None
 # CELL TYPE       : None
 # EXPERIMENT TYPE : Hi-C
@@ -479,7 +479,7 @@ mass of the model</li>
 with radius equal to the radius of gyration of the model</li>
 <li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>list of commands to be passed to the viewer.
 The chimera list is:</p>
-<div class="highlight-python"><div class="highlight"><pre>focus
+<div class="highlight-python"><div class="highlight"><pre><span></span>focus
 set bg_color white
 windowsize 800 600
 bonddisplay never #0
@@ -496,7 +496,7 @@ scale 0.8
 </pre></div>
 </div>
 <p>Followed by the movie command to record movies:</p>
-<div class="highlight-python"><div class="highlight"><pre>movie record supersample 1
+<div class="highlight-python"><div class="highlight"><pre><span></span>movie record supersample 1
 turn y 3 120
 wait 120
 movie stop
@@ -504,11 +504,11 @@ movie encode output SAVEFIG
 </pre></div>
 </div>
 <p>Or the copy command for images:</p>
-<div class="highlight-python"><div class="highlight"><pre>copy file SAVEFIG png
+<div class="highlight-python"><div class="highlight"><pre><span></span>copy file SAVEFIG png
 </pre></div>
 </div>
 <p>Passing as the following list as &#8216;cmd&#8217; parameter:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s1">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focus&#39;</span><span class="p">,</span> <span class="s1">&#39;set bg_color white&#39;</span><span class="p">,</span> <span class="s1">&#39;windowsize 800 600&#39;</span><span class="p">,</span>
        <span class="s1">&#39;bonddisplay never #0&#39;</span><span class="p">,</span>
        <span class="s1">&#39;shape tube #0 radius 10 bandLength 200 segmentSubdivisions 100 followBonds on&#39;</span><span class="p">,</span>
        <span class="s1">&#39;clip yon -500&#39;</span><span class="p">,</span> <span class="s1">&#39;~label&#39;</span><span class="p">,</span> <span class="s1">&#39;set subdivision 1&#39;</span><span class="p">,</span>
@@ -712,6 +712,7 @@ the file has been written</li>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installing TADbit on GNU/Linux</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">TADbit tools</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference_mapping.html">From FASTQ to matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_chromosome.html">Chromosome class</a></li>
@@ -771,7 +772,7 @@ the file has been written</li>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright .
-      Last updated on Apr 12, 2016.
+      Last updated on Nov 18, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div><style>div.related ul {padding-right:150px;}</style>
         <a href="https://github.com/3DGenomes/tadbit" target="_blank"><img
