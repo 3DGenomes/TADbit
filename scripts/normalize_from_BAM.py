@@ -16,8 +16,12 @@ import multiprocessing  as mu
 import datetime
 
 
-def printime():
-    return '[' + str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')) + ']'
+def printime(msg):
+    print (msg +
+           (' ' * (79 - len(msg.replace('\n', '')))) +
+           '[' +
+           str(datetime.datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')) +
+           ']')
 
 
 def read_bam_frag(inbam, filter_exclude, sections, bin2crm,
@@ -138,7 +142,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     ends[-1] += 1  # last nucleotide included
 
     # print '\n'.join(['%s %d %d' % (a, b, c) for a, b, c in zip(regs, begs, ends)])
-    print '\n  - Parsing BAM (%d chunks)' % (len(regs)), printime()
+    printime('\n  - Parsing BAM (%d chunks)' % (len(regs)))
     bins_dict = dict([(j, i) for i, j in enumerate(bins)])
     bin2crm = dict((v, k[0]) for k, v in bins_dict.iteritems())
     pool = mu.Pool(ncpus)
@@ -169,7 +173,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         if colsum.get(c, 0) < min_count:
             badcol[c] = colsum.get(c, 0)
 
-    print '  - Joining HiC data and rescaling biases', printime()
+    printime('  - Joining HiC data and rescaling biases')
     size = len(bins)
     biases = [colsum.get(k, 1.) for k in range(size)]
     mean_col = float(sum(biases)) / len(biases)
@@ -230,7 +234,7 @@ def main():
                                      min_count=min_count, ncpus=ncpus,
                                      factor=factor, outdir=outdir)
     
-    print '  - Saving biases and badcol columns', printime()
+    printime('  - Saving biases and badcol columns')
     # biases
     out = open(os.path.join(outdir, 'biases_%s.pickle' % (
         nicer(resolution).replace(' ', ''))), 'w')
@@ -242,7 +246,7 @@ def main():
     out.close()
     
     # hic_data.write_matrix('chr_names%s_%d-%d.mat' % (region, start, end), focus=())
-    print '\nDone.\n', printime()
+    printime('\nDone.\n')
 
 
 def get_options():
