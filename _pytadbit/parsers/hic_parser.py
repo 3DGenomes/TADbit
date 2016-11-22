@@ -349,7 +349,7 @@ def read_matrix(things, parser=None, hic=True, resolution=1, **kwargs):
                                      symmetricized=sym))
         elif isinstance(thing, list):
             if all([len(thing)==len(l) for l in thing]):
-                matrix  = reduce(lambda x, y: x+y, thing)
+                matrix  = [v for l in thing for v in l]
                 size = len(thing)
             else:
                 raise Exception('must be list of lists, all with same length.')
