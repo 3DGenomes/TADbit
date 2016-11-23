@@ -57,6 +57,8 @@ def read_bam_frag(inbam, filter_exclude, sections,
             pos1 = r.reference_start + 1
             crm2 = refs[r.mrnm]
             pos2 = r.mpos + 1
+            print r
+            print crm1, pos1, crm2, pos2
             try:
                 pos1 = sections[(crm1, pos1 / resolution)]
                 pos2 = sections[(crm2, pos2 / resolution)]

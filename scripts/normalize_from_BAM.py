@@ -220,9 +220,16 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     pool.join()
 
     # to correct biases
-    sumdec = sum(p.get() for p in procs)
-    target = sumdec / float(size * size * factor)
-    diasum = dict([(d, diasum[d] * target) for d in diasum])
+    sumdec = {}
+    for proc in procs:
+        for k, v in proc.get().iteritems():
+            try:
+                sumdec[k] += v
+            except KeyError:
+                sumdec[k]  = v
+    target = dict([(d, sumdec[d] / float((total - d) * factor * 2))
+                   for d in sumdec])
+    diasum = dict([(d, diasum[d] * target[d]) for d in diasum])
 
     return biases, diasum, badcol
 
@@ -236,12 +243,16 @@ def sum_nrm_matrix(fname, biases):
 
 def sum_dec_matrix(fname, biases, decay):
     dico = load(open(fname))
-    sumdec = 0
-    for (i, j), v in dico.iteritems(): 
+    sumdec = {}
+    for (i, j), v in dico.iteritems():
+        k = abs(i-j)
         try:
-            sumdec += v / (biases[i] * biases[j] * decay[abs(i-j)])
+            sumdec[k] += v / (biases[i] * biases[j] * decay[k])
         except KeyError:
-            pass
+            try:
+                sumdec[k]  = v / (biases[i] * biases[j] * decay[k])
+            except KeyError:
+                pass
     os.system('rm -f %s' % (fname))
     return sumdec
 
