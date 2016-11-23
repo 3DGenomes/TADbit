@@ -1,3 +1,5 @@
+#! /usr/bin/python
+
 """
 extract subset-matrix from a BAM file, and evantually normalizes it using
  precomputed biases
@@ -150,7 +152,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         beg_crm = section_pos[crm][0]
         if len(regions) == 1:
             start = start_bin - beg_crm
-            end   = end_bin   - beg_crm + 1
+            end   = end_bin   - beg_crm
         else:
             start = 0
             end   = section_pos[crm][1] - section_pos[crm][0] + 1
@@ -171,6 +173,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
     pool.close()
     print_progress(procs)
     pool.join()
+
     printime('  - Writing matrices')
     bias  = dict((k - start_bin, v)
                  for k, v in biases.get('biases', {}).iteritems()
@@ -258,6 +261,10 @@ def main():
         biases     = {}
     outdir         = opts.outdir
     coord          = opts.coord
+
+    if biases['resolution'] != resolution:
+        raise Exception('ERROR: different resolution in bias file (you want %d,'
+                        ' there is %d).\n' % (resolution, biases['resolution']))
     
     if not coord:
         region = None
@@ -292,6 +299,7 @@ def main():
     
     printime('\nDone.')
 
+
 def get_options():
     parser = ArgumentParser(usage="%(prog)s -i PATH -r INT [options]")
 
@@ -301,9 +309,9 @@ def get_options():
                         required=True, default=False, help='output directory.')
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
                         required=True, help='''wanted resolution form th generated matrix''')
-    parser.add_argument('-c', '--coord', dest='coord',  metavar='',
-                        default=None, help='''Coordinate of the_shape region to 
-                        retrieve. By default all_bins genome, arguments can be 
+    parser.add_argument('-c', '--coord', dest='coord',  metavar='', 
+                        default=None, help='''Coordinate of the region to 
+                        retrieve. By default all genome, arguments can be 
                         either one chromosome name, or the_shape coordinate in 
                         the form "chr3:110000000-120000000"''')
     parser.add_argument('-b', '--biases', dest='biases', metavar='',

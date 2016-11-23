@@ -1,3 +1,5 @@
+#! /usr/bin/python
+
 """
 reads a BAM file extracts valid pairs, and from them, computes an array of 
 biases (1 round ICE) and array of normalized expected counts according to 
@@ -173,7 +175,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         if colsum.get(c, 0) < min_count:
             badcol[c] = colsum.get(c, 0)
 
-    printime('  - Joining HiC data and rescaling biases')
+    printime('  - Rescaling biases')
     size = len(bins)
     biases = [colsum.get(k, 1.) for k in range(size)]
     mean_col = float(sum(biases)) / len(biases)
@@ -186,17 +188,20 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     procs = []
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
         fname = os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (region, start, end))
-        procs.append(pool.apply_async(read_sub_matrix, args=(fname, biases, )))
+        procs.append(pool.apply_async(sum_nrm_matrix, args=(fname, biases, )))
     pool.close()
     print_progress(procs)
     pool.join()
-    
-    sumnorm = sum(p.get() for p in procs)
 
-    target = (sumnorm / float(size * size * factor))**0.5
+    # to correct biases
+    sumnrm = sum(p.get() for p in procs)
+
+    target = (sumnrm / float(size * size * factor))**0.5
     biases = dict([(b, biases[b] * target) for b in biases])
 
-    # normalize decay by size of the diagonal
+    printime('  - Rescaling decay')
+    # normalize decay by size of the diagonal, and by Vanilla correction
+    # (all cells must still be equals to 1 in average)
     for d in xrange(max(diasum)):
         try:
             diasum[d] /= float(size - d)
@@ -205,15 +210,41 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         except KeyError:
             diasum[d] = 1.
 
+    pool = mu.Pool(ncpus)
+    procs = []
+    for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
+        fname = os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (region, start, end))
+        procs.append(pool.apply_async(sum_dec_matrix, args=(fname, biases, diasum, )))
+    pool.close()
+    print_progress(procs)
+    pool.join()
+
+    # to correct biases
+    sumdec = sum(p.get() for p in procs)
+    target = sumdec / float(size * size * factor)
+    diasum = dict([(d, diasum[d] * target) for d in diasum])
+
     return biases, diasum, badcol
 
 
-def read_sub_matrix(fname, biases):
+def sum_nrm_matrix(fname, biases):
     dico = load(open(fname))
-    sumnorm = sum(v / (biases[i] * biases[j]) for (i, j), v in dico.iteritems())
+    sumnrm = sum(v / (biases[i] * biases[j])
+                 for (i, j), v in dico.iteritems())
+    return sumnrm
+
+
+def sum_dec_matrix(fname, biases, decay):
+    dico = load(open(fname))
+    sumdec = 0
+    for (i, j), v in dico.iteritems(): 
+        try:
+            sumdec += v / (biases[i] * biases[j] * decay[abs(i-j)])
+        except KeyError:
+            pass
     os.system('rm -f %s' % (fname))
-    return sumnorm
-    
+    return sumdec
+
 
 def main():
     opts          = get_options()
@@ -246,7 +277,7 @@ def main():
     out.close()
     
     # hic_data.write_matrix('chr_names%s_%d-%d.mat' % (region, start, end), focus=())
-    printime('\nDone.\n')
+    printime('\nDone.')
 
 
 def get_options():
