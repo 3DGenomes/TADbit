@@ -227,6 +227,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
                 sumdec[k] += v
             except KeyError:
                 sumdec[k]  = v
+    # divide by the average of the diagonals and multiply by two, because 1 diag per half square
     target = dict([(d, sumdec[d] / float((total - d) * factor * 2))
                    for d in sumdec])
     diasum = dict([(d, diasum[d] * target[d]) for d in diasum])
