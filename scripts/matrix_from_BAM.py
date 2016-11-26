@@ -119,6 +119,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         end_bin = section_pos[region1][0] + end1 / resolution
     else:
         end = len(bins)
+        end1 = (section_pos[region1][1] - section_pos[region1][0]) * resolution
 
     total = end_bin - start_bin + 1
     regs  = []
@@ -134,13 +135,13 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         except IndexError:
             (crm1, beg1), (crm2, fin2) = bins[i], bins[-1]
         if crm1 != crm2:
-            end1 = sections[crm1]
+            fin1 = sections[crm1]
             beg2 = 0
             regs.append(crm1)
             regs.append(crm2)
             begs.append(beg1 * resolution)
             begs.append(beg2 * resolution)
-            ends.append(end1 * resolution + resolution)  # last nt included
+            ends.append(fin1 * resolution + resolution)  # last nt included
             ends.append(fin2 * resolution + resolution - 1)  # last nt not included (overlap with next window)
         else:
             regs.append(crm1)
@@ -167,8 +168,10 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
             start_bin2 = section_pos[region2][0] + start2 / resolution
             end_bin2   = section_pos[region2][0] + end2   / resolution
         else:
+            start2 = 0
             start_bin2 = 0
-            end_bin2   = section_pos[region2][0]
+            end_bin2   = section_pos[region2][1]
+            end2       = (sections[region2]) * resolution
         start = start_bin2 - beg_crm
         end   = end_bin2   - beg_crm
         bins = [(region2, i) for i in xrange(start, end)]
