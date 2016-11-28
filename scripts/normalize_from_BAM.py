@@ -63,9 +63,9 @@ def read_bam_frag(inbam, filter_exclude, sections, bin2crm,
                 continue
             l = abs(j - i)
             try:
-                sumdia[l] += v
+                sumdia[l].append(v)
             except KeyError:
-                sumdia[l]  = v
+                sumdia[l] = [v]
         out = open(os.path.join(outdir,
                                 'tmp_%s:%d-%d.pickle' % (region, start, end)), 'w')
         dump(dico, out)
@@ -165,10 +165,11 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         colsum.update(c)
         for k, v in d.iteritems():
             try:
-                diasum[k] += v
+                diasum[k].extend(v)
             except KeyError:
-                diasum[k]  = v
-
+                diasum[k] = v
+    for k in diasum:
+        diasum[k] = float(sum(diasum[k])) / len(diasum[k])
     # bad columns
     badcol = {}
     for c in xrange(total):
@@ -202,13 +203,13 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     printime('  - Rescaling decay')
     # normalize decay by size of the diagonal, and by Vanilla correction
     # (all cells must still be equals to 1 in average)
-    for d in xrange(max(diasum)):
-        try:
-            diasum[d] /= float(size - d)
-        except ZeroDivisionError:
-            diasum[d] = 1.
-        except KeyError:
-            diasum[d] = 1.
+    # for d in xrange(max(diasum)):
+    #     try:
+    #         diasum[d] /= float(size - d)
+    #     except ZeroDivisionError:
+    #         diasum[d] = 1.
+    #     except KeyError:
+    #         diasum[d] = 1.
 
     pool = mu.Pool(ncpus)
     procs = []
@@ -219,14 +220,16 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     print_progress(procs)
     pool.join()
 
-    # to correct biases
+    # to correct decay
     sumdec = {}
     for proc in procs:
         for k, v in proc.get().iteritems():
             try:
-                sumdec[k] += v
+                sumdec[k].extend(v)
             except KeyError:
-                sumdec[k]  = v
+                sumdec[k] = v
+    for k in sumdec:
+        sumdec[k] = float(sum(sumdec[k])) / len(sumdec[k])
     # divide by the average of the diagonals and multiply by two, because 1 diag per half square
     target = dict([(d, sumdec[d] / float((total - d) * factor * 2))
                    for d in sumdec])
@@ -248,10 +251,10 @@ def sum_dec_matrix(fname, biases, decay):
     for (i, j), v in dico.iteritems():
         k = abs(i-j)
         try:
-            sumdec[k] += v / (biases[i] * biases[j] * decay[k])
+            sumdec[k].append(v / (biases[i] * biases[j] * decay[k]))
         except KeyError:
             try:
-                sumdec[k]  = v / (biases[i] * biases[j] * decay[k])
+                sumdec[k] = [v / (biases[i] * biases[j] * decay[k])]
             except KeyError:
                 pass
     os.system('rm -f %s' % (fname))

@@ -56,10 +56,10 @@ def align(sequences, method='reciprocal', **kwargs):
                                    'implemented right now.\n'))
     if len(sequences) > 2:
         dico = {}
-        reference = None
+        consensus = None
         for j, (i, seq) in enumerate(sorted(enumerate(sequences),
                                             key=lambda x: x[1])):
-            reference = reference or seq
+            consensus = consensus or seq
             dico[j] = {'sort':i,
                        'seq' :seq}
         aligneds = []
@@ -69,14 +69,14 @@ def align(sequences, method='reciprocal', **kwargs):
         for other in xrange(1, len(sequences)):
             try:
                 ([align1, align2], score,
-                 p1, p2) = aligner(reference, dico[other]['seq'], **kwargs)
+                 p1, p2) = aligner(consensus, dico[other]['seq'], **kwargs)
                 perc1 += p1
                 perc2 += p2
             except ValueError:
-                [align1, align2], score = aligner(reference, dico[other]['seq'],
+                [align1, align2], score = aligner(consensus, dico[other]['seq'],
                                                   **kwargs)
             scores += score
-            if len(reference) != len(align1):
+            if len(consensus) != len(align1):
                 for pos in xrange(len(align1)):
                     try:
                         if align1[pos] != '-':
@@ -89,13 +89,15 @@ def align(sequences, method='reciprocal', **kwargs):
             if not aligneds:
                 aligneds.append(align1)
             aligneds.append(align2)
-            reference = consensusize(align1, align2, other)
+            consensus = consensusize(align1, align2, other)
             
         sort_alis = [[] for _ in xrange(len(dico))]
         for seq in xrange(len(dico)):
             sort_alis[dico[seq]['sort']] = aligneds[seq][:]
         return (sort_alis, scores,
                 perc1 / (len(sequences) - 1.),
-                perc2 / (len(sequences) - 1.))
-    return aligner(sequences[0], sequences[1], **kwargs)
+                perc2 / (len(sequences) - 1.)), consensus
+    ([align1, align2], score, p1, p2) = aligner(sequences[0], sequences[1], **kwargs) 
+    consensus = consensusize(align1, align2, sequences[1])
+    return ([align1, align2], score, p1, p2), consensus
 

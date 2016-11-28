@@ -412,9 +412,9 @@ class Chromosome(object):
                 raise Exception('No TADs defined, use find_tad function.\n')
             tads.append([xpr.tads[x]['brk'] * xpr.resolution for x in xpr.tads
                          if xpr.tads[x]['score'] >= 0])
-        aligneds, score, perc1, perc2 = align(tads, verbose=verbose, **kwargs)
+        (aligneds, score, perc1, perc2), consensus = align(tads, verbose=verbose, **kwargs)
         name = tuple(sorted([x.name for x in xpers]))
-        ali = Alignment(name, aligneds, xpers, score=score)
+        ali = Alignment(name, aligneds, xpers, consensus, score=score)
         self.alignment[name] = ali
         if verbose:
             print self.alignment[name]

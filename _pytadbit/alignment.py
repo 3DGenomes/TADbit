@@ -21,12 +21,13 @@ class Alignment(object):
     """
     Alignment of TAD borders
     """
-    def __init__(self, name, alignment, experiments, score=None):
+    def __init__(self, name, alignment, experiments, consensus, score=None):
         self.name = name
         self.__experiments = experiments
         self.__values = []        
         self.__keys = []
         self.__len = None
+        self.consensus = consensus
         for seq, exp in zip(alignment, experiments):
             self.add_aligned_exp(exp.name, seq)
         self.score = score
