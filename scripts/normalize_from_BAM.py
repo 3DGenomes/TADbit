@@ -51,21 +51,12 @@ def read_bam_frag(inbam, filter_exclude, sections, bin2crm,
             except KeyError:
                 dico[(pos1, pos2)] = 1
         sumcol = {}
-        sumdia = {}
-        for (i, j), v in dico.iteritems():
+        for (i, _), v in dico.iteritems():
             # out.write('%d\t%d\t%d\n' % (i, j, v))
             try:
                 sumcol[i] += v
             except KeyError:
                 sumcol[i]  = v
-            # we only measure genomic distance if same chromsome
-            if bin2crm[i] != bin2crm[j]:
-                continue
-            l = abs(j - i)
-            try:
-                sumdia[l].append(v)
-            except KeyError:
-                sumdia[l] = [v]
         out = open(os.path.join(outdir,
                                 'tmp_%s:%d-%d.pickle' % (region, start, end)), 'w')
         dump(dico, out)
@@ -75,7 +66,7 @@ def read_bam_frag(inbam, filter_exclude, sections, bin2crm,
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print e
         print(exc_type, fname, exc_tb.tb_lineno)
-    return sumcol, sumdia
+    return sumcol
 
 
 def print_progress(procs):
@@ -159,17 +150,9 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
 
     ## COLLECT RESULTS
     colsum = {}
-    diasum = {}
     for p in procs:
-        c, d = p.get()
+        c = p.get()
         colsum.update(c)
-        for k, v in d.iteritems():
-            try:
-                diasum[k].extend(v)
-            except KeyError:
-                diasum[k] = v
-    for k in diasum:
-        diasum[k] = float(sum(diasum[k])) / len(diasum[k])
     # bad columns
     badcol = {}
     for c in xrange(total):
@@ -203,19 +186,12 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     printime('  - Rescaling decay')
     # normalize decay by size of the diagonal, and by Vanilla correction
     # (all cells must still be equals to 1 in average)
-    # for d in xrange(max(diasum)):
-    #     try:
-    #         diasum[d] /= float(size - d)
-    #     except ZeroDivisionError:
-    #         diasum[d] = 1.
-    #     except KeyError:
-    #         diasum[d] = 1.
 
     pool = mu.Pool(ncpus)
     procs = []
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
         fname = os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (region, start, end))
-        procs.append(pool.apply_async(sum_dec_matrix, args=(fname, biases, diasum, )))
+        procs.append(pool.apply_async(sum_dec_matrix, args=(fname, bins)))
     pool.close()
     print_progress(procs)
     pool.join()
@@ -225,17 +201,25 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     for proc in procs:
         for k, v in proc.get().iteritems():
             try:
-                sumdec[k].extend(v)
+                sumdec[k] +=v 
             except KeyError:
                 sumdec[k] = v
-    for k in sumdec:
-        sumdec[k] = float(sum(sumdec[k])) / len(sumdec[k])
-    # divide by the average of the diagonals and multiply by two, because 1 diag per half square
-    target = dict([(d, sumdec[d] / float((total - d) * factor * 2))
-                   for d in sumdec])
-    diasum = dict([(d, diasum[d] * target[d]) for d in diasum])
 
-    return biases, diasum, badcol
+    # count the number of cells perc1 diagonal
+    ndiags = {}
+    for crm in section_pos:
+        diff = section_pos[crm][1] - section_pos[crm][0]
+        for i in xrange(diff):
+            try:
+                ndiags[i] += diff - i
+            except KeyError:
+                ndiags[i]  = diff - i
+
+    # normalize sum per diagonal by total number of cells in diagonal
+    for k in sumdec:
+        sumdec[k] = float(sumdec[k]) / ndiags[k]
+    
+    return biases, sumdec, badcol
 
 
 def sum_nrm_matrix(fname, biases):
@@ -245,18 +229,17 @@ def sum_nrm_matrix(fname, biases):
     return sumnrm
 
 
-def sum_dec_matrix(fname, biases, decay):
+def sum_dec_matrix(fname, bins):
     dico = load(open(fname))
     sumdec = {}
     for (i, j), v in dico.iteritems():
+        if bins[i][0] != bins[j][0]:
+            continue
         k = abs(i-j)
         try:
-            sumdec[k].append(v / (biases[i] * biases[j] * decay[k]))
+            sumdec[k] += v
         except KeyError:
-            try:
-                sumdec[k] = [v / (biases[i] * biases[j] * decay[k])]
-            except KeyError:
-                pass
+            sumdec[k]  = v
     os.system('rm -f %s' % (fname))
     return sumdec
 
