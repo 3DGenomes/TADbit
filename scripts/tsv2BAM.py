@@ -143,8 +143,9 @@ def main():
     
     # close file handlers
     fhandler.close()
-    for i in filter_handler:
-        filter_handler[i].close()    
+    if not opts.valid:
+        for i in filter_handler:
+            filter_handler[i].close()    
 
 
 def get_filters(infile):
