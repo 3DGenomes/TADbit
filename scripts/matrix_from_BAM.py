@@ -257,21 +257,21 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         out_raw.write('%d\t%d\t%d\n' % (a, b, c))
     def write2matrices(a, b, c):
         out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / (bias1[a] * bias2[b])))
-        out_dec.write('%d\t%d\t%f\n' % (a, b, c / (bias1[a] * bias2[b] *
-                                                   decay[abs(a-b)])))
+        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
+        out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
+                                                   decay[abs(a-b)]))
     def write2matrices_2reg(a, b, c):
         out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / (bias1[a] * bias2[b])))
-        out_dec.write('%d\t%d\t%f\n' % (a, b, c / (bias1[a] * bias2[b] *
-                                                   decay[abs((a + start_bin) -
-                                                             (b + start_bin2))])))
+        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
+        out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
+                                        decay[abs((a + start_bin) -
+                                                  (b + start_bin2))]))
     def write2matrices_err(a, b, c):
         out_raw.write('%d\t%d\t%d\n' % (a, b, c))
-        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / (bias1[a] * bias2[b])))
+        out_nrm.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b]))
         try:
-            out_dec.write('%d\t%d\t%f\n' % (a, b, c / (bias1[a] * bias2[b] *
-                                                       decay[abs(a-b)])))
+            out_dec.write('%d\t%d\t%f\n' % (a, b, c / bias1[a] / bias2[b] /
+                                            decay[abs(a-b)]))
         except KeyError:  # different chromsomes
             out_dec.write('%d\t%d\t%s\n' % (a, b, 'nan'))
 

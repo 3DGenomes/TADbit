@@ -4,11 +4,6 @@ into compressed BAM format.
 
 """
 
-"""
-extract subset-matrix from a BAM file, and evantually normalizes it using
- precomputed biases
-"""
-
 from pytadbit.utils.file_handling import mkdir
 from cPickle                      import load, dump
 from time                         import sleep, time

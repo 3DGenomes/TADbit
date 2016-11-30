@@ -12,6 +12,8 @@ from pytadbit.utils.extraviews    import nicer
 from cPickle                      import dump, load
 from time                         import sleep, time
 from argparse                     import ArgumentParser
+from scipy.optimize               import curve_fit
+import numpy as np
 import sys, os
 import pysam
 import multiprocessing  as mu
@@ -154,10 +156,35 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
         c = p.get()
         colsum.update(c)
     # bad columns
+    def func_gen(x, *args):
+        cmd = "zzz = " + func_restring % (args)
+        exec(cmd) in globals(), locals()
+        #print cmd
+        try:
+            return np.lib.asarray_chkfinite(zzz)
+        except:
+            # avoid the creation of NaNs when invalid values for power or log
+            return x
+    print '  - Removing columns with few interactions'
+    if not min_count:
+        x = np.array(sorted(v for v in colsum.values() if v))
+        y = np.array(range(len(x)))
+        func_restring = "{}/(1 + np.exp(-%s*(x-%s)))+%s".format(len(x))
+        # p0 starting values
+        # sigma defines more weight to large values (right of the curve)
+        logx = np.log(len(x))
+        z, _ = curve_fit(func_gen, x, y, p0=[1., 1., len(x)/500], maxfev=10000,
+                         sigma=[np.log(i) / logx for i in range(1, len(x) + 1)])
+        cutoff = func_gen(0, *z)
+        min_count = x[int(cutoff)]
+    print '      -> few interactions defined as less than %d interactions' % (
+        min_count)
     badcol = {}
     for c in xrange(total):
         if colsum.get(c, 0) < min_count:
             badcol[c] = colsum.get(c, 0)
+    print '      -> removed %d columns of %d (%.1f%%)' % (
+        len(badcol), total, float(len(badcol)) / total * 100)
 
     printime('  - Rescaling biases')
     size = len(bins)
@@ -191,17 +218,17 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     procs = []
     for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
         fname = os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (region, start, end))
-        procs.append(pool.apply_async(sum_dec_matrix, args=(fname, bins)))
+        procs.append(pool.apply_async(sum_dec_matrix, args=(fname, biases, badcol, bins)))
     pool.close()
     print_progress(procs)
     pool.join()
 
-    # to correct decay
+    # collect results
     sumdec = {}
     for proc in procs:
         for k, v in proc.get().iteritems():
             try:
-                sumdec[k] +=v 
+                sumdec[k] +=v
             except KeyError:
                 sumdec[k] = v
 
@@ -217,29 +244,34 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
 
     # normalize sum per diagonal by total number of cells in diagonal
     for k in sumdec:
-        sumdec[k] = float(sumdec[k]) / ndiags[k]
+        sumdec[k] = sumdec[k] / ndiags[k]
     
     return biases, sumdec, badcol
 
 
 def sum_nrm_matrix(fname, biases):
     dico = load(open(fname))
-    sumnrm = sum(v / (biases[i] * biases[j])
+    sumnrm = sum(v / biases[i] / biases[j]
                  for (i, j), v in dico.iteritems())
     return sumnrm
 
 
-def sum_dec_matrix(fname, bins):
+def sum_dec_matrix(fname, biases, badcol, bins):
     dico = load(open(fname))
     sumdec = {}
     for (i, j), v in dico.iteritems():
+        if i < j:
+            continue
+        if i in badcol or j in badcol:
+            continue
         if bins[i][0] != bins[j][0]:
             continue
-        k = abs(i-j)
+        k = i - j
+        val = v / biases[i] / biases[j]
         try:
-            sumdec[k] += v
+            sumdec[k] += val
         except KeyError:
-            sumdec[k]  = v
+            sumdec[k]  = val
     os.system('rm -f %s' % (fname))
     return sumdec
 
@@ -286,10 +318,12 @@ def get_options():
     parser.add_argument('-o', '--outdir', dest='outdir', metavar='',
                         required=True, default=False, help='output directory.')
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
-                        required=True, help='''wanted resolution form th generated matrix''')
+                        required=True, help='''wanted resolution form the 
+                        generated matrix''')
     parser.add_argument('--min_count', dest='min_count', type=int, metavar='',
-                        default=2500,
-                        help='''[%(default)s] minimum number of interactions perc_zero bin''')
+                        default=None,
+                        help='''[%(default)s] minimum number of interactions 
+                        perc_zero bin. By default this value is optimized.''')
     parser.add_argument('-C', '--cpus', dest='cpus', metavar='', type=int,
                         default=8, help='''[%(default)s] number of cpus to be 
                         used for parsing the HiC-BAM file''')
