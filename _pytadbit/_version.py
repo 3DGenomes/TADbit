@@ -1,1 +1,1 @@
-__version__ = "3DAROC_2016.24"
+__version__ = "3DAROC_2016.25"
