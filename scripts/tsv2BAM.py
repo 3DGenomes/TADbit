@@ -163,5 +163,5 @@ for line in fhandler:
 
 # close file handlers
 fhandler.close()
-for i in filter_files:
+for i in filter_handler:
     filter_handler[i].close()
