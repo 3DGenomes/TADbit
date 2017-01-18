@@ -36,8 +36,8 @@ before_script:
 # command to run tests, e.g. python setup.py test
 script: cd test; coverage run --source=pytadbit test_all.py; coverage report
 
-after_success:
-    coveralls
+# after_success:
+#    coveralls
 
 branches:
   only:
