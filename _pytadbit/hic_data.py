@@ -474,14 +474,14 @@ class HiC_data(dict):
                           label_compartments='hmm', log=None, max_mean_size=10000,
                           ev_index=None, rich_in_A=None, max_ev=3, **kwargs):
         """
-        Search for A/B copartments in each chromsome of the Hi-C matrix.
+        Search for A/B copartments in each chromosome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
         distance, and by visibility (one iteration of ICE). A correlation matrix
         is then calculated from this normalized matrix, and its first
         eigenvector is used to identify compartments. Changes in sign marking
         boundaries between compartments.
         Result is stored as a dictionary of compartment boundaries, keys being
-        chromsome names.
+        chromosome names.
         
         :param 99 perc_zero: to filter bad columns
         :param 0.05 signal_to_noise: to calculate expected interaction counts,
@@ -508,7 +508,7 @@ class HiC_data(dict):
         :param None ev_index: a list of number refering to the index of the
            eigenvector to be used. By default the first eigenvector is used.
            WARNING: index starts at 1, default is thus a list of ones. Note:
-           if asking for only one chromsome the list should be only of one 
+           if asking for only one chromosome the list should be only of one 
            element.
         :param None rich_in_A: by default compartments are identified using mean
            number of intra-interactions (A compartments are expected to have
@@ -828,7 +828,7 @@ class HiC_data(dict):
         # print sec, self.section_pos[sec]
         # for i in range(0, len(cmprts[sec]), 20):
         #     print '  ' + ''.join(['%5d/%-5d'% (s['start'], s['end']) for s in cmprts[sec][i:i+20]])
-        # print 'CHROMSOME', sec
+        # print 'CHROMOSOME', sec
         for cmprt in cmprts[sec]:
             if rich_in_A:
                 beg1, end1 = cmprt['start'], cmprt['end'] + 1
@@ -1181,4 +1181,5 @@ def _cluster_ab_compartments(gamma, matrix, breaks, cmprtsec, rich_in_A, save=Tr
             if 'type' in cmprt:
                 cmprt['type'] = None 
     return score + tt, tt, prop
+
 

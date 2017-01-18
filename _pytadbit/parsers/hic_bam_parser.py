@@ -82,7 +82,7 @@ def read_bam_frag(inbam, filter_exclude, sections1, sections2,
 def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
              region1=None, start1=None, end1=None, verbose=False,
              region2=None, start2=None, end2=None, outdir=None,
-             tmpdir='/tmp/', normalized=False, decay=False):
+             tmpdir='/tmp/', normalized=False, by_decay=False):
     if outdir:
         mkdir(outdir)
     mkdir(tmpdir)
@@ -326,11 +326,14 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         if normalized:
             for i, j in dico:
                 dico[(i, j)] /= bias1[i] * bias2[j]
-        if decay:
+        if by_decay:
             if region2:
                 for i, j in dico:
-                    dico[(i, j)] /= bias1[i] * bias2[j] * decay[abs((i + start_bin) -
-                                                                    (j + start_bin2))]
+                    try:
+                        dico[(i, j)] /= bias1[i] * bias2[j] * decay[abs((i + start_bin) -
+                                                                        (j + start_bin2))]
+                    except KeyError:
+                        dico[(i, j)] = float('nan')  # no value in decay
             else:
                 for i, j in dico:
                     dico[(i, j)] /= bias1[i] * bias2[j] * decay[abs(i - j)]
