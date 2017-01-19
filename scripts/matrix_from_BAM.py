@@ -97,7 +97,6 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
     for crm in sections:
         len_crm = sections[crm]
         bins.extend([(crm, i) for i in xrange(len_crm + 1)])
-
     start_bin = 0
     end_bin   = len(bins) + 1
     if region1:

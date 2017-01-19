@@ -499,7 +499,7 @@ def randomization_test(xpers, score=None, num=1000, verbose=False, max_dist=1000
                         for _ in xrange(len(tads))]
             # rnd_len.append(len(tads))
         rnd_distr.append(align(rnd_tads, verbose=False, method=method,
-                               max_dist=max_dist)[1])
+                               max_dist=max_dist)[0][1])
         # aligns, sc = align(rnd_tads, verbose=False)
         # rnd_distr.append(sc)
         # for xpr in aligns:
