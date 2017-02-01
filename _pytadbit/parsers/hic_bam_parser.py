@@ -9,6 +9,7 @@ from cPickle                      import load, dump
 from time                         import sleep, time
 from collections                  import OrderedDict
 from pytadbit.utils.extraviews    import nicer
+from warnings                     import warn
 import pysam
 import datetime
 import sys, os
@@ -82,7 +83,34 @@ def read_bam_frag(inbam, filter_exclude, sections1, sections2,
 def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
              region1=None, start1=None, end1=None, verbose=False,
              region2=None, start2=None, end2=None, outdir=None,
-             tmpdir='/tmp/', normalized=False, by_decay=False):
+             tmpdir='/tmp/', normalized=False, by_decay=False,
+             get_decay=False,get_norm=False):
+    """
+    Extracts a (normalized) submatrix at wanted resolution from pseudo-BAM file
+
+    :param inbam: path to pseudoBAM file
+    :param filter_exclude:
+    :param resolution:
+    :param biases: path to pickle file with biases and low-coverage columns
+    :param 8 ncpus:
+    :param None region1: chromosome name of region 1
+    :param None start1: start genomic coordinate of region 1
+    :param None end1: end genomic coordinate of region 1
+    :param None region1: chromosome name of region 2 (if not given use region1)
+    :param None start1: start genomic coordinate of region 2 (if not given use region1)
+    :param None end1: end genomic coordinate of region 2 (if not given use region1)
+    :param False normalized: returns the dictionary of Vanilla normalized matrix
+    :param False decay: returns the dictionary of Decay normalized matrix (decay
+       option can not be used at the same time as normalized option)
+    :param False get_decay:
+    :param False get_norm:
+
+    returns: dictionary of interactions. If get_decay is set to True, returns an
+       array of decay. If get_norm is set to True, returns two arrays one for
+       each bias (bias on the x axis, and bias on the y axis). If both,
+       get_decay, and get_norm are set to True, returns, the dictionary followed
+       by the arrays of biases, and finally the array of decay.
+    """
     if outdir:
         mkdir(outdir)
     mkdir(tmpdir)
@@ -322,13 +350,14 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
     if verbose:
         print '%s %9s\n' % (' ' * (54 - (i % 50) - (i % 50) / 10),
                             '%s/%s' % (len(regs),len(regs)))
+    if normalized and by_decay:
+        warn('WARNING: choose either normalized or by_decay. Using decay normalization')
     if not outdir:
-        if normalized:
-            for i, j in dico:
-                dico[(i, j)] /= bias1[i] * bias2[j]
         if by_decay:
             if region2:
                 for i, j in dico:
+                    if i in bads1 or j in bads2:
+                        continue
                     try:
                         dico[(i, j)] /= bias1[i] * bias2[j] * decay[abs((i + start_bin) -
                                                                         (j + start_bin2))]
@@ -337,6 +366,15 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
             else:
                 for i, j in dico:
                     dico[(i, j)] /= bias1[i] * bias2[j] * decay[abs(i - j)]
+        elif normalized:
+            for i, j in dico:
+                dico[(i, j)] /= bias1[i] * bias2[j]
+        if get_decay and get_norm:
+            return dico, bias1, bias2, decay
+        elif get_decay:
+            return dico, decay
+        if get_norm:
+            return dico, bias1, bias2
         return dico
         
 
