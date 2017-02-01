@@ -3,9 +3,9 @@
 
 
 """
-from pytadbit.imp.CONFIG           import CONFIG, NROUNDS, STEPS, LSTEPS
-from pytadbit.imp.structuralmodels import StructuralModels
-from pytadbit.imp.impmodel         import IMPmodel
+from pytadbit.modelling.IMP_CONFIG           import CONFIG, NROUNDS, STEPS, LSTEPS
+from pytadbit.modelling.structuralmodels import StructuralModels
+from pytadbit.modelling.impmodel         import IMPmodel
 from scipy                         import polyfit
 from math                          import fabs, pow as power
 from cPickle                       import load, dump
@@ -71,7 +71,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
 
        ::
 
-         from pytadbit.imp.CONFIG import CONFIG
+         from pytadbit.modelling.CONFIG import CONFIG
 
          where CONFIG is a dictionary of dictionaries to be passed to this function:
 
@@ -304,7 +304,7 @@ def _get_restraints():
 def multi_process_model_generation(n_cpus, n_models, n_keep, keep_all):
     """
     Parallelize the
-    :func:`pytadbit.imp.imp_model.StructuralModels.generate_IMPmodel`.
+    :func:`pytadbit.modelling.imp_model.StructuralModels.generate_IMPmodel`.
 
     :param n_cpus: number of CPUs to use
     :param n_models: number of models to generate

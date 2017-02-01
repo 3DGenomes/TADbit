@@ -11,8 +11,8 @@ import unittest
 from pytadbit                             import Chromosome, load_chromosome
 from pytadbit                             import tadbit, batch_tadbit
 from pytadbit.tad_clustering.tad_cmo      import optimal_cmo
-from pytadbit.imp.structuralmodels        import load_structuralmodels
-from pytadbit.imp.impmodel                import load_impmodel_from_cmm
+from pytadbit.modelling.structuralmodels        import load_structuralmodels
+from pytadbit.modelling.impmodel                import load_impmodel_from_cmm
 from pytadbit.eqv_rms_drms                import rmsdRMSD_wrapper
 from pytadbit.parsers.genome_parser       import parse_fasta
 from pytadbit.mapping.restriction_enzymes import map_re_sites, RESTRICTION_ENZYMES
@@ -504,10 +504,10 @@ class TestTadbit(unittest.TestCase):
         # fetching models
         models.define_best_models(5)
         m = models.fetch_model_by_rand_init('1', all_models=True)
-        self.assertEqual(m, 8)
+        self.assertEqual(m, 6)
         models.define_best_models(25)
         m = models.fetch_model_by_rand_init('1', all_models=False)
-        self.assertEqual(m, 8)
+        self.assertEqual(m, 6)
         if CHKTIME:
             print '14', time() - t0
 
@@ -553,7 +553,7 @@ class TestTadbit(unittest.TestCase):
         lines = open('lala').readlines()
         self.assertEqual(len(lines), 22)
         self.assertEqual([round(float(i)/15, 0) for i in lines[1].split('\t')],
-                         [0, 2, 2, 3, 4])
+                         [0, 2, 3, 3, 3])
         self.assertEqual([round(float(i)/15, 0) for i in lines[15].split('\t')],
                          [1, 5, 6, 7, 7])
         # measure angle
@@ -562,14 +562,14 @@ class TestTadbit(unittest.TestCase):
         self.assertEqual(round(models.angle_between_3_particles(19,20,21), 0),
                          60)
         self.assertEqual(round(models.angle_between_3_particles(15,14,11)/5, 0),
-                         14)
+                         13)
         # coordinates
         self.assertEqual([round(x, 2) for x in models.particle_coordinates(15)],
-                         [3199.84, 4361.61, -4695.41])
+                         [2098.32, 1565.63, -4319.62])
         # dihedral_angle
         self.assertTrue (round(models.dihedral_angle(2 ,  8, 15,  8, 16, [0])[0], 2), -13.44)
-        self.assertEqual(round(models.dihedral_angle(15, 19, 20, 19, 21, [0])[0], 2),  75.95)
-        self.assertEqual(round(models.dihedral_angle(15, 14, 11, 14, 12, [0])[0], 2),   2.07)
+        self.assertEqual(round(models.dihedral_angle(15, 19, 20, 19, 21, [0])[0], 2),  76.24)
+        self.assertEqual(round(models.dihedral_angle(15, 14, 11, 14, 12, [0])[0], 2),   0.07)
         # median distance
         self.assertEqual(round(models.median_3d_dist(3, 20, plot=False)/100, 0),
                          15)
@@ -580,25 +580,25 @@ class TestTadbit(unittest.TestCase):
         # accessibility
         models.accessibility(radius=75, nump=10, plot=False, savedata='model.acc')
         vals = [l.split() for l in open('model.acc').readlines()[1:]]
-        self.assertEqual(vals[0][1:3], ['0.56', '0.993'])
+        self.assertEqual(vals[0][1:3], ['0.68', '0.933'])
         self.assertEqual(vals[20][1:3], ['1.0', '0.0'])
         # contact map
         models.contact_map(savedata='model.contacts')
         vals = [l.split() for l in open('model.contacts').readlines()[1:]]
         self.assertEqual(vals[0], ['0', '1', '1.0'])
-        self.assertEqual(vals[1], ['0', '2', '0.72'])
+        self.assertEqual(vals[1], ['0', '2', '0.96'])
         self.assertEqual(vals[192], ['14', '18', '0.12'])
         # interactions
         models.interactions(plot=False, savedata='model.inter')
         vals = [[float(i) for i in l.split()] for l in open('model.inter').readlines()[1:]]
-        self.assertEqual(vals[2], [3.0, 4.68, 1.23, 3.78, 0.7, 4.65, 0.87, 3.92, 0.72, 4.74, 0.57])
+        self.assertEqual(vals[2], [3.0, 4.92, 1.12, 3.88, 0.65, 4.69, 0.82, 4.01, 0.62, 4.81, 0.5])
         # walking angle
         models.walking_angle(savedata='model.walkang')
         vals = [[round(float(i), 2) if i != 'None' else i for i in l.split()] for l in open('model.walkang').readlines()[1:]]
-        self.assertEqual(vals[17], [18.0, -45.42, 100.0, -9.78, 135.0],)
-        self.assertEqual(vals[3],  [4.0, 124.97, 274.0, 2.05, 254.0],)
-        self.assertEqual(vals[16], [17.0, -62.84, 201.0, -3.20, 77.0])
-        self.assertEqual(vals[15], [16.0, -132.38, 286.0, -12.70, 124.0])
+        self.assertEqual(vals[17], [18.0, -45.42, 100.0, -14.14, 137.0],)
+        self.assertEqual(vals[3],  [4.0, 125.36, 273.0, 1.96, 253.0],)
+        self.assertEqual(vals[16], [17.0, -70.14, 200.0, -2.5, 84.0])
+        self.assertEqual(vals[15], [16.0, -134.88, 287.0, -20.48, 121.0])
         # write cmm
         models.write_cmm('.', model_num=2)
         models.write_cmm('.', models=range(5))
@@ -639,7 +639,7 @@ class TestTadbit(unittest.TestCase):
         self.assertTrue(21 <= round((model.shortest_axe() +
                                      model.longest_axe()) / 100,
                                     0) <= 22)
-        self.assertEqual([15, 16], model.inaccessible_particles(1000))
+        self.assertEqual([11, 15, 16], model.inaccessible_particles(1000))
 
         acc, num, acc_area, tot_area, bypt = model.accessible_surface(
             150, superradius=200, nump=150)
