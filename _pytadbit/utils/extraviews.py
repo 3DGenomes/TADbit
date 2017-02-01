@@ -586,7 +586,7 @@ def my_round(num, val):
 
 def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
                                               'lowfreq'), dcutoff=None,
-                                show_best=0, skip=None, savefig=None):
+                                show_best=0, skip=None, savefig=None,clim=None):
     """
     A grid of heatmaps representing the result of the optimization.
 
@@ -601,6 +601,8 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
     :param None savefig: path to a file where to save the image generated;
        if None, the image will be shown using matplotlib GUI (the extension
        of the file name will determine the desired format).
+    :param None clim: color scale. If None max and min values are used.
+    
     """
     from mpl_toolkits.axes_grid1 import AxesGrid
     import matplotlib.patches as patches
@@ -617,6 +619,11 @@ def plot_2d_optimization_result(result, axes=('scale', 'maxdist', 'upfreq',
     # defines axes
     vmin = result.min()
     vmax = result.max()
+    
+    if clim:
+      vmin=clim[0]
+      vmax=clim[1]
+    
     wax = [my_round(i, 3) for i in axes_range[0]]
     zax = [my_round(i, 3) for i in axes_range[1]]
     xax = [my_round(i, 3) for i in axes_range[3]]
