@@ -84,7 +84,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
              region1=None, start1=None, end1=None, verbose=False,
              region2=None, start2=None, end2=None, outdir=None,
              tmpdir='/tmp/', normalized=False, by_decay=False,
-             get_decay=False,get_norm=False):
+             get_decay=False, get_norm=False, use_bads=False):
     """
     Extracts a (normalized) submatrix at wanted resolution from pseudo-BAM file
 
@@ -193,7 +193,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
     if region2:
         bins = []
         beg_crm = section_pos[region2][0]
-        if start2:
+        if start2 is not None:
             start_bin2 = section_pos[region2][0] + start2 / resolution
             end_bin2   = section_pos[region2][0] + end2   / resolution
         else:
@@ -248,6 +248,8 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
                       if start_bin2 <= k <= end_bin2)
     else:
         bads2 = bads1
+    if use_bads:
+        bads2 = bads1 = {}
     # hic_data = HiC_data((), len(bins_dict), sections,
     #                     bins_dict, resolution=resolution)
     if len(regions) == 1:
