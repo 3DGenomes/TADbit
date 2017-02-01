@@ -3,10 +3,10 @@
 
 
 """
-from pytadbit.imp.imp_modelling    import generate_3d_models
+from pytadbit.modelling.imp_modelling    import generate_3d_models
 from pytadbit.utils.extraviews     import plot_2d_optimization_result
 from pytadbit.utils.extraviews     import plot_3d_optimization_result
-from pytadbit.imp.structuralmodels import StructuralModels
+from pytadbit.modelling.structuralmodels import StructuralModels
 from cPickle                       import dump, load
 from sys                           import stderr
 import numpy           as np
@@ -429,7 +429,7 @@ class IMPoptimizer(object):
         parameter, and the resulting correlation value.
 
         This file can be used to load or merge data a posteriori using 
-        the function pytadbit.imp.impoptimizer.IMPoptimizer.load_from_file
+        the function pytadbit.modelling.impoptimizer.IMPoptimizer.load_from_file
         
         :param f_name: file name with the absolute path
         """
@@ -466,7 +466,7 @@ class IMPoptimizer(object):
     def load_from_file(self, f_name):
         """
         Loads the optimized parameters from a file generated with the function:
-        pytadbit.imp.impoptimizer.IMPoptimizer.write_result.
+        pytadbit.modelling.impoptimizer.IMPoptimizer.write_result.
         This function does not overwrite the parameters that were already 
         loaded or calculated.
 
