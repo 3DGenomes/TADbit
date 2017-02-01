@@ -84,7 +84,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
              region1=None, start1=None, end1=None, verbose=False,
              region2=None, start2=None, end2=None, outdir=None,
              tmpdir='/tmp/', normalized=False, by_decay=False,
-             get_decay=False,get_norm=False):
+             get_all_data=False):
     """
     Extracts a (normalized) submatrix at wanted resolution from pseudo-BAM file
 
@@ -102,8 +102,7 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
     :param False normalized: returns the dictionary of Vanilla normalized matrix
     :param False decay: returns the dictionary of Decay normalized matrix (decay
        option can not be used at the same time as normalized option)
-    :param False get_decay:
-    :param False get_norm:
+    :param False get_all_data:
 
     returns: dictionary of interactions. If get_decay is set to True, returns an
        array of decay. If get_norm is set to True, returns two arrays one for
@@ -231,21 +230,21 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         printime('  - Writing matrices')
     bias1  = dict((k - start_bin, v)
                   for k, v in biases.get('biases', {}).iteritems()
-                  if start_bin <= k <= end_bin)
+                  if start_bin <= k < end_bin)
     if region2:
         bias2  = dict((k - start_bin2, v)
                       for k, v in biases.get('biases', {}).iteritems()
-                      if start_bin2 <= k <= end_bin2)
+                      if start_bin2 <= k < end_bin2)
     else:
         bias2 = bias1
     decay = biases.get('decay' , {})
     bads1  = dict((k - start_bin, v)
                   for k, v in biases.get('badcol', {}).iteritems()
-                  if start_bin <= k <= end_bin)
+                  if start_bin <= k < end_bin)
     if region2:
         bads2  = dict((k - start_bin2, v)
                       for k, v in biases.get('badcol', {}).iteritems()
-                      if start_bin2 <= k <= end_bin2)
+                      if start_bin2 <= k < end_bin2)
     else:
         bads2 = bads1
     # hic_data = HiC_data((), len(bins_dict), sections,
@@ -369,13 +368,14 @@ def read_bam(inbam, filter_exclude, resolution, biases, ncpus=8,
         elif normalized:
             for i, j in dico:
                 dico[(i, j)] /= bias1[i] * bias2[j]
-        if get_decay and get_norm:
-            return dico, bias1, bias2, decay
-        elif get_decay:
-            return dico, decay
-        if get_norm:
-            return dico, bias1, bias2
-        return dico
+        if get_all_data:
+            return {'matrix': dico,
+                    'bias1' : bias1,
+                    'bias2' : bias2,
+                    'bads1' : bads1,
+                    'bads2' : bads2,
+                    'decay' : decay}
+        return to_return
         
 
 def bam_to_hic_data(inbam, resolution_list, filter_exclude, filter_include):
