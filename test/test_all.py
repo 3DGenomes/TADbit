@@ -417,12 +417,12 @@ class TestTadbit(unittest.TestCase):
         result = exp.optimal_imp_parameters(50, 70, n_cpus=4,
                                             n_models=8, n_keep=2,
                                             lowfreq_range=[-0.6],
-                                            upfreq_range=(0, 1.1, 1.1),
-                                            maxdist_range=[500, 600],
+                                            upfreq_range=(0, 1.1, 1.1),#from 0 till 1.1 in step of 1.1 with ()
+                                            maxdist_range=[500, 600],# it will use 500 and 600 with []
                                             verbose=False)
 
         # get best correlations
-        config = result.get_best_parameters_dict()
+        config = result.get_best_parameters_dict()#dict with parameters
         wanted = {'maxdist': 600.0, 'upfreq': 0.0, 'kforce': 5,
                   'dcutoff': 2,
                   'reference': '', 'lowfreq': -0.6, 'scale': 0.01}
@@ -432,7 +432,7 @@ class TestTadbit(unittest.TestCase):
             print '12', time() - t0
 
 
-    def test_13_3d_modelling_centroid(self):
+    def test_13_3d_modelling_centroid(self):#model with no optimisation
         """
         quick test to generate 3D coordinates from 3? simple models???
         """

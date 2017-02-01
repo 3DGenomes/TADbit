@@ -357,7 +357,7 @@ class IMPoptimizer(object):
     
 
     def plot_2d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq'),
-                show_best=0, skip=None, savefig=None):
+                show_best=0, skip=None, savefig=None,clim=None):
         """
         A grid of heatmaps representing the result of the optimization.
 
@@ -380,7 +380,7 @@ class IMPoptimizer(object):
                                       [float(i) for i in self.upfreq_range],
                                       [float(i) for i in self.lowfreq_range]),
                                      results), axes=axes, show_best=show_best,
-                                    skip=skip, savefig=savefig)
+                                    skip=skip, savefig=savefig,clim=clim)
 
 
     def plot_3d(self, axes=('scale', 'maxdist', 'upfreq', 'lowfreq')):
