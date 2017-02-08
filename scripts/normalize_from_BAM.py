@@ -11,7 +11,7 @@ from pytadbit.utils.file_handling import mkdir
 from pytadbit.utils.extraviews    import nicer
 from cPickle                      import dump, load
 from time                         import sleep, time
-from argparse                     import ArgumentParser
+from argparse                     import ArgumentParser, SUPPRESS
 from scipy.optimize               import curve_fit
 import numpy as np
 import sys, os
@@ -210,6 +210,21 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     target = (sumnrm / float(size * size * factor))**0.5
     biases = dict([(b, biases[b] * target) for b in biases])
 
+    # check the sum
+    if opts.check_sum:
+        pool = mu.Pool(ncpus)
+        procs = []
+        for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
+            fname = os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (region, start, end))
+            procs.append(pool.apply_async(sum_nrm_matrix, args=(fname, biases, )))
+        pool.close()
+        print_progress(procs)
+        pool.join()
+
+        # to correct biases
+        sumnrm = sum(p.get() for p in procs)
+        print 'SUM:', sumnrm
+
     printime('  - Rescaling decay')
     # normalize decay by size of the diagonal, and by Vanilla correction
     # (all cells must still be equals to 1 in average)
@@ -320,6 +335,10 @@ def get_options():
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
                         required=True, help='''wanted resolution form the 
                         generated matrix''')
+    parser.add_argument('--check_sum', dest='chrck_sum', type=int, metavar='',
+                        required=True, help=SUPPRESS
+    #                    '''print the sum_dec_matrix of the normalized matrix and exit'''
+                        )
     parser.add_argument('--min_count', dest='min_count', type=int, metavar='',
                         default=None,
                         help='''[%(default)s] minimum number of interactions 
