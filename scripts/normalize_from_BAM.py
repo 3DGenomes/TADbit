@@ -335,8 +335,8 @@ def get_options():
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
                         required=True, help='''wanted resolution form the 
                         generated matrix''')
-    parser.add_argument('--check_sum', dest='chrck_sum', type=int, metavar='',
-                        required=True, help=SUPPRESS
+    parser.add_argument('--check_sum', dest='check_sum', 
+                        action='store_true', default=False, help=SUPPRESS
     #                    '''print the sum_dec_matrix of the normalized matrix and exit'''
                         )
     parser.add_argument('--min_count', dest='min_count', type=int, metavar='',
