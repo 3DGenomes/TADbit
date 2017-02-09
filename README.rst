@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/tadbit/badge.svg?branch=master :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master |
-| Current version: v0.2.0.4           |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
+| Current version: v0.2.0.5           |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
 |                                     |                                                                           |                                                                                                                                                           |
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 

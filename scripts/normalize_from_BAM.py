@@ -90,7 +90,7 @@ def print_progress(procs):
 
 
 def read_bam(inbam, filter_exclude, resolution, min_count=2500,
-             ncpus=8, factor=1, outdir='.'):
+             ncpus=8, factor=1, outdir='.', check_sum=False):
     bamfile = pysam.AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
@@ -211,7 +211,7 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     biases = dict([(b, biases[b] * target) for b in biases])
 
     # check the sum
-    if opts.check_sum:
+    if check_sum:
         pool = mu.Pool(ncpus)
         procs = []
         for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
@@ -308,7 +308,7 @@ def main():
 
     biases, decay, badcol = read_bam(inbam, filter_exclude, resolution,
                                      min_count=min_count, ncpus=ncpus,
-                                     factor=factor, outdir=outdir)
+                                     factor=factor, outdir=outdir, check_sum=opts.check_sum)
     
     printime('  - Saving biases and badcol columns')
     # biases
