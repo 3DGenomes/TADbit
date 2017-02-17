@@ -112,15 +112,15 @@ from pytadbit.tadbit               import tadbit, batch_tadbit
 from pytadbit.chromosome           import Chromosome
 from pytadbit.experiment           import Experiment, load_experiment_from_reads
 from pytadbit.chromosome           import load_chromosome
-from pytadbit.imp.structuralmodels import StructuralModels
-from pytadbit.imp.structuralmodels import load_structuralmodels
+from pytadbit.modelling.structuralmodels import StructuralModels
+from pytadbit.modelling.structuralmodels import load_structuralmodels
 from pytadbit.parsers.hic_parser   import load_hic_data_from_reads
-from pytadbit.imp.impmodel         import load_impmodel_from_cmm
-from pytadbit.imp.impmodel         import load_impmodel_from_xyz
-from pytadbit.imp.impmodel         import IMPmodel
+from pytadbit.modelling.impmodel   import load_impmodel_from_cmm
+from pytadbit.modelling.impmodel   import load_impmodel_from_xyz
+from pytadbit.modelling.impmodel   import IMPmodel
 from pytadbit.parsers.hic_parser   import read_matrix
 try:
-    from pytadbit.imp.impoptimizer import IMPoptimizer
+    from pytadbit.modelling.impoptimizer import IMPoptimizer
 except ImportError:
     from warnings                  import warn
     warn('IMP not found, check PYTHONPATH\n')

@@ -7,15 +7,14 @@ from pytadbit.utils.three_dim_stats import get_center_of_mass, distance
 from pytadbit.utils.tadmaths        import calinski_harabasz, nozero_log_list
 from pytadbit.utils.tadmaths        import mean_none
 from pytadbit.utils.extraviews      import plot_3d_model, setup_plot
-from pytadbit.utils.extraviews      import tadbit_savefig
+from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
 from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
 from pytadbit.utils.extraviews      import tad_coloring
 from pytadbit.utils.extraviews      import tad_border_coloring
-from pytadbit.utils.extraviews      import color_residues, chimera_view
-from pytadbit.imp.impmodel          import IMPmodel
+from pytadbit.utils.extraviews      import color_residues
+from pytadbit.modelling.impmodel    import IMPmodel
 from pytadbit.centroid              import centroid_wrapper
 from pytadbit.aligner3d             import aligner3d_wrapper
-from pytadbit                       import get_dependencies_version
 from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
 from math                           import acos, degrees, pi, sqrt
@@ -33,6 +32,7 @@ from warnings                       import warn
 from string                         import uppercase as uc, lowercase as lc
 from random                         import random
 from os.path                        import exists
+from pytadbit                       import get_dependencies_version
 from itertools                      import combinations
 import uuid
 
@@ -45,13 +45,13 @@ except ImportError:
 
 def load_structuralmodels(path_f):
     """
-    Loads :class:`pytadbit.imp.structuralmodels.StructuralModels` from a file
+    Loads :class:`pytadbit.modelling.structuralmodels.StructuralModels` from a file
     (generated with
-    :class:`pytadbit.imp.structuralmodels.StructuralModels.save_models`).
+    :class:`pytadbit.modelling.structuralmodels.StructuralModels.save_models`).
     
     :param path: to the pickled StructuralModels object.
 
-    :returns: a :class:`pytadbit.imp.imp_model.StructuralModels`.
+    :returns: a :class:`pytadbit.modelling.imp_model.StructuralModels`.
     """
     svd = load(open(path_f))
     try:
@@ -78,18 +78,18 @@ class StructuralModels(object):
 
     :param nloci: number of particles in the selected region
     :param models: a dictionary containing the generated
-       :class:`pytadbit.imp.impmodel.IMPmodel` to be used as 'best models'
-    :param bad_models: a dictionary of :class:`pytadbit.imp.impmodel.IMPmodel`,
+       :class:`pytadbit.modelling.impmodel.IMPmodel` to be used as 'best models'
+    :param bad_models: a dictionary of :class:`pytadbit.modelling.impmodel.IMPmodel`,
        these model will not be used, just stored in case the set of
        'best models' needs to be extended later-on (
-       :func:`pytadbit.imp.structuralmodels.StructuralModels.define_best_models`
+       :func:`pytadbit.modelling.structuralmodels.StructuralModels.define_best_models`
        ).
     :param resolution: number of nucleotides per Hi-C bin. This will be the
        number of nucleotides in each model's particle.
     :param None original_data: a list of list (equivalent to a square matrix) of
        the normalized Hi-C data, used to build this list of models.
     :param None clusters: a dictionary of type
-       :class:`pytadbit.imp.structuralmodels.ClusterOfModels`
+       :class:`pytadbit.modelling.structuralmodels.ClusterOfModels`
     :param None config: a dictionary containing the parameter to be used for the
        generation of three dimensional models.
 
@@ -589,7 +589,7 @@ class StructuralModels(object):
         """
         Defines the number of top models (based on the objective function) to
         keep. If keep_all is set to True in
-        :func:`pytadbit.imp.imp_model.generate_3d_models` or in
+        :func:`pytadbit.modelling.imp_model.generate_3d_models` or in
         :func:`pytadbit.experiment.Experiment.model_region`, then the full set
         of models (n_models parameter) will be used, otherwise only the n_keep
         models will be available.
@@ -617,7 +617,7 @@ class StructuralModels(object):
         .. note::
 
           Clusters defined here are different from the one defined when using
-          :func:`pytadbit.imp.structuralmodels.StructuralModels.cluster_models`.
+          :func:`pytadbit.modelling.structuralmodels.StructuralModels.cluster_models`.
           They are also not stored into StructuralModels.clusters
 
         :param 0.75 fact: factor to define the percentage of equivalent
@@ -965,7 +965,6 @@ class StructuralModels(object):
            each particle (percentage burried can be infered afterwards by
            accessible/(accessible+inaccessible) )
         """
-
         if models:
             models = [m if isinstance(m, int) else self[m]['index']
                       if isinstance(m, str) else m['index'] for m in models]
@@ -1007,6 +1006,7 @@ class StructuralModels(object):
         elif not axe:
             plt.show()
         plt.close('all')
+
 
     def _get_density(self, models, interval, use_mass_center):
         dists = [[None] * len(models)] * interval
@@ -1871,6 +1871,7 @@ class StructuralModels(object):
            will return the default image (other commands can be passed to
            modified the final image/movie).
         :param True align: show aligned models
+        :param 15 radius: radius for the chimera particles
         :param kwargs: see :func:`pytadbit.utils.extraviews.plot_3d_model` or
            :func:`pytadbit.utils.extraviews.chimera_view` for other arguments
            to pass to this function. See also coloring function
@@ -1973,7 +1974,7 @@ class StructuralModels(object):
                      savefig=savefig, chimera_bin=tool, chimera_cmd=cmd,
                      highlight=(0 if (show == 'highlighted' and mdl != 'all')
                                 else models.index(mdl) if mdl != 'all' else mdl),
-                     align=align, grid=show == 'grid')
+                     align=align, grid=show == 'grid', radius=radius)
 
     def angle_between_3_particles(self, parta, partb, partc,
                                   models=None, cluster=None,

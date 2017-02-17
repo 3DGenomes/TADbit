@@ -11,7 +11,7 @@ from pytadbit.utils.file_handling import mkdir
 from pytadbit.utils.extraviews    import nicer
 from cPickle                      import dump, load
 from time                         import sleep, time
-from argparse                     import ArgumentParser
+from argparse                     import ArgumentParser, SUPPRESS
 from scipy.optimize               import curve_fit
 import numpy as np
 import sys, os
@@ -90,7 +90,7 @@ def print_progress(procs):
 
 
 def read_bam(inbam, filter_exclude, resolution, min_count=2500,
-             ncpus=8, factor=1, outdir='.'):
+             ncpus=8, factor=1, outdir='.', check_sum=False):
     bamfile = pysam.AlignmentFile(inbam, 'rb')
     sections = OrderedDict(zip(bamfile.references,
                                [x / resolution + 1 for x in bamfile.lengths]))
@@ -210,6 +210,21 @@ def read_bam(inbam, filter_exclude, resolution, min_count=2500,
     target = (sumnrm / float(size * size * factor))**0.5
     biases = dict([(b, biases[b] * target) for b in biases])
 
+    # check the sum
+    if check_sum:
+        pool = mu.Pool(ncpus)
+        procs = []
+        for i, (region, start, end) in enumerate(zip(regs, begs, ends)):
+            fname = os.path.join(outdir, 'tmp_%s:%d-%d.pickle' % (region, start, end))
+            procs.append(pool.apply_async(sum_nrm_matrix, args=(fname, biases, )))
+        pool.close()
+        print_progress(procs)
+        pool.join()
+
+        # to correct biases
+        sumnrm = sum(p.get() for p in procs)
+        print 'SUM:', sumnrm
+
     printime('  - Rescaling decay')
     # normalize decay by size of the diagonal, and by Vanilla correction
     # (all cells must still be equals to 1 in average)
@@ -293,7 +308,7 @@ def main():
 
     biases, decay, badcol = read_bam(inbam, filter_exclude, resolution,
                                      min_count=min_count, ncpus=ncpus,
-                                     factor=factor, outdir=outdir)
+                                     factor=factor, outdir=outdir, check_sum=opts.check_sum)
     
     printime('  - Saving biases and badcol columns')
     # biases
@@ -320,6 +335,10 @@ def get_options():
     parser.add_argument('-r', '--resolution', dest='reso', type=int, metavar='',
                         required=True, help='''wanted resolution form the 
                         generated matrix''')
+    parser.add_argument('--check_sum', dest='check_sum', 
+                        action='store_true', default=False, help=SUPPRESS
+    #                    '''print the sum_dec_matrix of the normalized matrix and exit'''
+                        )
     parser.add_argument('--min_count', dest='min_count', type=int, metavar='',
                         default=None,
                         help='''[%(default)s] minimum number of interactions 

@@ -5,8 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/tadbit/badge.svg?branch=master :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master |
-| Current version: 3DAROC_2016
-.1     |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
+| Current version: v0.2.0.5           |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
 |                                     |                                                                           |                                                                                                                                                           |
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 
@@ -56,11 +55,7 @@ TADbit training
 Next editions
 -------------
 
-* October 10th to October 14th 2016: `3DAROC16 3C-based data analysis and 3D reconstruction of chromatin folding
-  <http://gtpb.igc.gulbenkian.pt/bicourses/3DAROC16/>`_ at the
-  `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
-  training programme Oeiras (Portugal)
-* November 28th to December 2nd 2016: `Chromosomal Conformation course
+* April 3rd to April 7th 2016: `Chromosomal Conformation course
   <http://www.crg.eu/en/event/coursescrg-chromosomal-conformation-0>`_ at the
   `CRG <http://www.crg.eu/en/content/training/>`_
   training programme Bracelona (Spain)
@@ -69,6 +64,10 @@ Next editions
 Past editions
 -------------
 
+* October 10th to October 14th 2016: `3DAROC16 3C-based data analysis and 3D reconstruction of chromatin folding
+  <http://gtpb.igc.gulbenkian.pt/bicourses/3DAROC16/>`_ at the
+  `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
+  training programme Oeiras (Portugal)
 * September 28th to October 2nd 2015: `Chromosomal Conformation course
   <http://gtpb.igc.gulbenkian.pt/bicourses/2014/CSDM14/>`_ at the
   `CRG <http://www.crg.eu/en/content/training/>`_

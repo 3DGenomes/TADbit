@@ -197,7 +197,7 @@ def main():
         package_dir  = {'pytadbit': PATH + '/_pytadbit'},
         packages     = ['pytadbit', 'pytadbit.parsers', 'pytadbit.tools',
                         'pytadbit.boundary_aligner', 'pytadbit.utils',
-                        'pytadbit.tad_clustering', 'pytadbit.imp',
+                        'pytadbit.tad_clustering', 'pytadbit.modelling',
                         'pytadbit.mapping'],
         # py_modules   = ["pytadbit"],
         platforms = "OS Independent",
