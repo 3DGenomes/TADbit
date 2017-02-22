@@ -45,7 +45,6 @@ def baum_welch_optimization(xh, T, E, new_pi, new_T, corrector,
     """
     n = len(T)
     m = len(gammas[0])
-    delta = 0.
     for i in xrange(n):
         for j in xrange(n):
             new_pi[i] += etas[i][j][0]
@@ -59,15 +58,15 @@ def baum_welch_optimization(xh, T, E, new_pi, new_T, corrector,
             corrector[i] += gik
             new_E[i][0] += gik * xh[k]
             new_E[i][1] += gik * (xh[k] - E[i][0])**2
-    return delta
 
-def update_parameters(corrector, pi, new_pi, T, new_T, E, new_E, delta):
+def update_parameters(corrector, pi, new_pi, T, new_T, E, new_E):
     """
     final round of the baum-welch
     """
     ### update initial probabilities
     n = len(T)
     total = 0.
+    delta = 0.
     for i in xrange(n):
         total += new_pi[i]
     for i in xrange(n):
@@ -111,10 +110,9 @@ def train(pi, T, E, observations, verbose=False, threshold=1e-6, n_iter=1000):
             betas  = get_beta(probs, T, scalars)
             etas   = get_eta(probs, T, alphas, betas)
             gammas = get_gamma(T, alphas, betas)
-            delta = baum_welch_optimization(observations[h], T,
-                                             E, new_pi, new_T, corrector,
-                                             new_E, etas, gammas)
-        delta = update_parameters(corrector, pi, new_pi, T, new_T, E, new_E, delta)
+            baum_welch_optimization(observations[h], T, E, new_pi, new_T, corrector,
+                                    new_E, etas, gammas)
+        delta = update_parameters(corrector, pi, new_pi, T, new_T, E, new_E)
         if verbose:
             print ("\rTraining: %03i/%04i (diff: %.8f)") % (it, n_iter, delta),
             sys.stdout.flush()
