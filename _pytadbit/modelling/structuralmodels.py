@@ -15,14 +15,17 @@ from pytadbit.utils.extraviews      import color_residues
 from pytadbit.modelling.impmodel    import IMPmodel
 from pytadbit.centroid              import centroid_wrapper
 from pytadbit.aligner3d             import aligner3d_wrapper
+from pytadbit.squared_distance_matrix import squared_distance_matrix_calculation_wrapper
 from cPickle                        import load, dump
 from subprocess                     import Popen, PIPE
 from math                           import acos, degrees, pi, sqrt
+from numpy                          import exp as np_exp
 from numpy                          import median as np_median
 from numpy                          import mean as np_mean
 from numpy                          import std as np_std, log2
 from numpy                          import array, cross, dot, ma, isnan
 from numpy                          import histogram, linspace
+from scipy.optimize                 import curve_fit
 from numpy.linalg                   import norm
 from scipy.cluster.hierarchy        import linkage, fcluster
 from scipy.stats                    import spearmanr, pearsonr, chisquare
@@ -43,6 +46,23 @@ except ImportError:
     warn('matplotlib not found\n')
 
 
+def R2_vs_L(L, P):
+    """
+    Calculates the persistence length (Lp) of given section of the model.
+    Persistence length is calculated according to [Bystricky2004]_ :
+    
+    .. math::
+    
+    <R^2> = 2 \\times Lp^2 \\times (\\frac{Lc}{Lp} - 1 + e^{\\frac{-Lc}{Lp}})
+    
+    with the contour length as :math:`Lc = \\frac{d}{c}` where :math:`d` is
+    the genomic dstance in bp and :math:`c` the linear mass density of the
+    chromatin (in bp/nm).
+    
+    :returns: persistence length, or 2 times the Kuhn length
+    """
+    return 2.0 * P * ( L - P * ( 1.0 - np_exp( - L / P ) ) )
+    
 def load_structuralmodels(path_f):
     """
     Loads :class:`pytadbit.modelling.structuralmodels.StructuralModels` from a file
@@ -566,21 +586,29 @@ class StructuralModels(object):
         if not cutoff:
             cutoff = [int(2 * self.resolution * self._config['scale'])]
         cutoff = [c**2 for c in cutoff]
-        matrix = dict([(c, [[float('nan') for _ in xrange(self.nloci)]
+        matrix = dict([(c, [[float('0') for _ in xrange(self.nloci)]
                             for _ in xrange(self.nloci)]) for c in cutoff])
         wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
-        models = [self[mdl] for mdl in models]
-        for i, j in combinations(wloci, 2):
-            dists = self.__fast_square_3d_dist(i, j, models)
-            vals = dict([(c, 0) for c in cutoff])
-            for v in dists:
+        mdl = [self[mdl] for mdl in models]
+
+        for model in xrange(len(models)):
+            x = []
+            y = []
+            z = []
+            for locus in xrange(self.nloci):
+                x.append(self[model]['x'][locus])
+                y.append(self[model]['y'][locus])
+                z.append(self[model]['z'][locus])
+            squared_distance_matrix = squared_distance_matrix_calculation_wrapper(x, y, z, self.nloci)
+
+            #print model, len(x), len(y), len(z)
+            for i, j in combinations(wloci, 2):
                 for c in cutoff:
-                    if v > c:
-                        # cutoffs are sorted so we do not need to check further
-                        break
-                    vals[c] += 1
-            for c in cutoff:
-                matrix[c][i][j] = matrix[c][j][i] = float(vals[c]) / len(models)  # * 100
+                    if squared_distance_matrix[i][j] <= c:
+                        matrix[c][i][j] += 1.0 / len(models)  # * 100
+                        matrix[c][j][i] += 1.0 / len(models)  # * 100
+                    else:
+                        break                    
         if cutoff_list:
             return matrix
         return matrix.values()[0]
@@ -2328,8 +2356,7 @@ class StructuralModels(object):
                  ],
         "clusters":%(cluster)s,
         "centroids":%(centroid)s,
-        "restraints": %(restr)s,
-        "hic_data": { "data": { %(hic_data)s }, "n": %(len_hic_data)i , "tads": [%(tad_def)s] }
+        "restraints": %(restr)s
 }
 '''
         fil = {}
@@ -2413,14 +2440,6 @@ class StructuralModels(object):
         fil['centroid'] = '[' + ','.join(
             [self[self.centroid_model(cluster=c)]['rand_init']
              for c in self.clusters]) + ']'
-        fil['hic_data'] = ''
-        for i, nrow in enumerate(self._original_data):
-            for j, ncol in enumerate(nrow):
-                if not isnan(ncol):
-                    fil['hic_data'] += '"'+str((i*len(nrow))+j)+'":'+"{:2.6f}".format(ncol) + ','
-        fil['hic_data'] = fil['hic_data'][:-1]
-        fil['len_hic_data'] = len(self._original_data)
-        fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']),str(self.experiment.tads[tad]['end']),str(self.experiment.tads[tad]['height'])])+']' for i,tad in enumerate(self.experiment.tads)])
         out_f = open(filename, 'w')
         out_f.write(form % fil)
         out_f.close()
@@ -2468,6 +2487,121 @@ class StructuralModels(object):
                                      get_path=get_path, rndname=rndname)
         if get_path:
             return path_f
+
+    def get_persistence_length(self, begin=0, end=None, axe=None, savefig=None, savedata=None,
+                               plot=True):
+        """
+        Calculates the persistence length (Lp) of given section of the model.
+        Persistence length is calculated according to [Bystricky2004]_ :
+
+        .. math::
+
+          <R^2> = 2 \\times Lp^2 \\times (\\frac{Lc}{Lp} - 1 + e^{\\frac{-Lc}{Lp}})
+
+        with the contour length as :math:`Lc = \\frac{d}{c}` where :math:`d` is
+        the genomic dstance in bp and :math:`c` the linear mass density of the
+        chromatin (in bp/nm).
+
+        :param 0  begin: starting particle of the region to consider
+        :param None end: ending particle of the region to consider
+
+
+        :returns: (float) persistence length
+        """
+        if not end:
+            end = self.nloci
+            
+        wloci = [i for i in xrange(self.nloci)]
+        
+        # Maximum genomic distance
+        max_gen_dist=end-begin
+        # Quantities for all models
+        R2_all  = [0]*max_gen_dist
+        R4_all  = [0]*max_gen_dist
+        cnt_all = [0]*max_gen_dist
+        
+        for model in xrange(len(self.__models)):
+
+            # Quantities within each model
+            R2  = [0]*max_gen_dist
+            R4  = [0]*max_gen_dist
+            cnt = [0]*max_gen_dist
+
+            x = [] ; y = [] ; z = []
+            for locus in xrange(begin,end):
+                x.append(self[model]['x'][locus])
+                y.append(self[model]['y'][locus])
+                z.append(self[model]['z'][locus])
+
+            #Compute the contact matrix
+            squared_distance_matrix = squared_distance_matrix_calculation_wrapper(x, y, z, max_gen_dist)
+
+            # Compute the average R2 per single model
+            for i, j in combinations(wloci, 2):
+                R2[abs(i-j)]  += squared_distance_matrix[i][j]
+                R4[abs(i-j)]  += (squared_distance_matrix[i][j]*squared_distance_matrix[i][j])
+                cnt[abs(i-j)] += 1
+                
+            for i in xrange(max_gen_dist):
+                if cnt[i] != 0:
+                    R2[i] = R2[i] / cnt[i]
+                    R4[i] = R4[i] / cnt[i]
+                else:
+                    R2[i] = 0.0
+                    R4[i] = 0.0
+
+            for i in xrange(max_gen_dist):
+                R2_all[i]  += R2[i]
+                R4_all[i]  += R4[i]
+                cnt_all[i] += 1
+                
+        avgs     = []
+        std_devs = []
+        for i in xrange(max_gen_dist):
+            if cnt_all[i] != 0:
+                avg     = R2_all[i]/cnt_all[i]
+                avg2    = R4_all[i]/cnt_all[i]
+                std_dev = sqrt(avg2-avg*avg)
+                avgs.append(avg)
+                std_devs.append(std_dev)
+            else:
+                avgs.append(0)
+                std_devs.append(0)
+                
+        x = linspace(0.0 , float(max_gen_dist), num=max_gen_dist, endpoint=False)
+        persistence_length, pcov = curve_fit(R2_vs_L, x, avgs)
+
+        # write a 3 column file with genomic_distance | R2 | std_dev_R2
+        if savedata:
+            out = open(savedata, 'w')
+            out.write('#gen_dist\tR2\tstd_dev_R2\n')
+            out.write('#persistence_length = %f\n' % (persistence_length))
+            for gen_dist in xrange(max_gen_dist):
+                out.write('%f\t%f\t%f\n' % (gen_dist,avgs[gen_dist],std_devs[gen_dist]))
+            out.close()
+
+        if not plot:
+            return persistence_length[0]
+
+        # If plot we do the plot of R2 vs L
+        show = False if axe else True
+        axe = setup_plot(axe)
+        plots = []
+        plots = axe.plot(range(0, self.nloci),
+                         avgs, color='black')
+
+        axe.set_xlim((0, max_gen_dist))
+        axe.set_xlabel('Genomic distance (particle)')
+        axe.set_ylim((0, max(avgs)))
+        axe.set_ylabel('<$R^{2}$> $(nm^2)$')
+
+        if savefig:
+            tadbit_savefig(savefig)
+        elif show:
+            plt.show()
+        plt.close('all')
+
+        return persistence_length[0]
 
     def save_models(self, outfile):
         """
