@@ -919,12 +919,12 @@ class HiC_data(dict):
             for c in self.compartments[sec]:
                 try:
                     out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (sec + '\t') if sections else '',
+                        (str(sec) + '\t') if sections else '',
                         c['start'] + 1, c['end'] + 1,
                         c['dens'], c['type']))
                 except KeyError:
                     out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (sec + '\t') if sections else '',
+                        (str(sec) + '\t') if sections else '',
                         c['start'], c['end'], c['dens'], ''))
         out.close()
         
