@@ -230,40 +230,6 @@ class StructuralModel(dict):
                 inaccessibles.append(i + 1)
         return inaccessibles
 
-
-    def persistence_length(self, start=1, end=None, return_guess=False):
-        """
-        Calculates the persistence length (Lp) of given section of the model.
-        Persistence length is calculated according to [Bystricky2004]_ :
-
-        .. math::
-
-          <r^2> = 2 \\times Lp^2 \\times (\\frac{Lc}{Lp} - 1 + e^{\\frac{-Lc}{Lp}})
-
-        with the contour length as :math:`Lc = \\frac{d}{c}` where :math:`d` is
-        the genomic dstance in bp and :math:`c` the linear mass density of the
-        chromatin (in bp/nm).
-
-        :param 1 start: start particle from which to calculate the persistence
-           length
-        :param None end: end particle from which to calculate the persistence
-           length. Uses the last particle by default
-        :param False return_guess: Computes persistence length using the
-           approximation :math:`Lp=\\frac{Lc}{Lp}`
-
-        :returns: persistence length, or 2 times the Kuhn length
-        """
-        clength = float(self.contour())
-        end = end or len(self)
-        sq_length = float(self._square_distance(start, end))
-        
-        guess = sq_length / clength
-        if return_guess:
-            return guess # incredible!
-        kuhn = newton_raphson(guess, clength, sq_length)
-        return 2 * kuhn
-
-
     def accessible_surface(self, radius, nump=100, superradius=200,
                            include_edges=True, view_mesh=False, savefig=None,
                            write_cmm_file=None, verbose=False,
