@@ -907,7 +907,7 @@ def _tad_density_plot(xpr, maxys=None, fact_res=1., axe=None,
             plt.show()
         
 def plot_compartments(crm, first, cmprts, matrix, show, savefig,
-                      vmin=-1, vmax=1, whichpc=1):
+                      vmin=-1, vmax=1, whichpc=1,showAB=False):
     heights = []
     val = 0
     for i in xrange(len(matrix)):
@@ -965,26 +965,27 @@ def plot_compartments(crm, first, cmprts, matrix, show, savefig,
                     enumerate(zip(first[1:], first[:-1]))
                     if a * b < 0] + [len(first)]
     # COMPARTMENTS A/B
-    a_comp = []
-    b_comp = []
-    breaks = []
-    for cmprt in cmprts[crm]:
-        breaks.append(cmprt['start'])
-        try:
-            if cmprt['type'] == 'A':
-                a_comp.append((cmprt['start'], cmprt['end']))
-            elif cmprt['type'] == 'B':
-                b_comp.append((cmprt['start'], cmprt['end']))
-        except KeyError:
-            if cmprt['dens'] > 1:
-                a_comp.append((cmprt['start'], cmprt['end']))
-            else:
-                b_comp.append((cmprt['start'], cmprt['end']))            
-    a_comp.sort()
-    b_comp.sort()
-    axex.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
+    if showAB:
+      a_comp = []
+      b_comp = []
+      breaks = []
+      for cmprt in cmprts[crm]:
+	  breaks.append(cmprt['start'])
+	  try:
+	      if cmprt['type'] == 'A':
+		  a_comp.append((cmprt['start'], cmprt['end']))
+	      elif cmprt['type'] == 'B':
+		  b_comp.append((cmprt['start'], cmprt['end']))
+	  except KeyError:
+	      if cmprt['dens'] > 1:
+		  a_comp.append((cmprt['start'], cmprt['end']))
+	      else:
+		  b_comp.append((cmprt['start'], cmprt['end']))            
+      a_comp.sort()
+      b_comp.sort()
+      axex.hlines([0.05]*len(a_comp), [a[0] for a in a_comp],
                 [a[1] for a in a_comp], color='red' , linewidth=6)
-    axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
+      axex.hlines([-0.05]*len(b_comp), [b[0] for b in b_comp],
                 [b[1] for b in b_comp], color='blue' , linewidth=6)
 
     # axex.hlines([0]*(len(breaks)/2), breaks[ :-1:2], breaks[1::2],
