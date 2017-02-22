@@ -734,8 +734,11 @@ class HiC_data(dict):
         if label_compartments == 'hmm':
             x = {}
             for sec in self.section_pos:
+                beg, end = self.section_pos[sec]
+                bads = [k - beg for k in self.bads if beg <= k <= end]
                 try:
-                    x[sec] = firsts[sec][ev_nums[sec] - 1]
+                    x[sec] = [j for i, j in enumerate(firsts[sec][ev_nums[sec] - 1])
+                              if not i in bads]
                 except KeyError:
                     continue
 
@@ -756,13 +759,13 @@ class HiC_data(dict):
             for sec in self.section_pos:
                 if not sec in x:
                     continue
-                if kwargs.get('verbose', False):
-                    print 'Chromosome', sec
                 beg, end = self.section_pos[sec]
                 bads = [k - beg for k in self.bads if beg <= k <= end]
+                if kwargs.get('verbose', False):
+                    print 'Chromosome', sec
                 # print 'CMPRTS before   ', sec, cmprts[sec]
                 n_states, breaks = _hmm_refine_compartments(
-                    x, sec, models, bads, kwargs.get('verbose', False))
+                    x[sec], models, bads, kwargs.get('verbose', False))
                 results[sec] = n_states, breaks
                 cmprts[sec] = breaks
                 # print 'CMPRTS after hmm', sec, cmprts[sec]
@@ -916,12 +919,12 @@ class HiC_data(dict):
             for c in self.compartments[sec]:
                 try:
                     out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (sec + '\t') if sections else '',
+                        (str(sec) + '\t') if sections else '',
                         c['start'] + 1, c['end'] + 1,
                         c['dens'], c['type']))
                 except KeyError:
                     out.write('%s%d\t%d\t%.2f\t%s\n' % (
-                        (sec + '\t') if sections else '',
+                        (str(sec) + '\t') if sections else '',
                         c['start'], c['end'], c['dens'], ''))
         out.close()
         
@@ -996,13 +999,13 @@ class HiC_data(dict):
                            [0] + 
                            [self[i, j] for j in xrange(i + 1, end1)])
 
-def _hmm_refine_compartments(x, sec, models, bads, verbose):
+def _hmm_refine_compartments(xsec, models, bads, verbose):
     prevll = float('-inf')
     prevdf = 0
     results = {}
     for n in range(2, 6):
         E, pi, T = models[n]
-        probs = gaussian_prob(x[sec], E)
+        probs = gaussian_prob(xsec, E)
         pathm, llm = best_path(probs, pi, T)
         pathm = asarray(map(float, pathm))
         df = n**2 - n + n * 2 + n - 1
@@ -1018,8 +1021,7 @@ def _hmm_refine_compartments(x, sec, models, bads, verbose):
         results[n] = {'AIC': aic,
                       'BIC': bic,
                       'LRT': lrt,
-                      'PATH': pathm
-                      }
+                      'PATH': pathm}
     n_states = min(results, key=lambda x: results[x]['BIC'])
     results = list(results[n_states]['PATH'])
     # print 'RESULTS', results
@@ -1051,7 +1053,6 @@ def _training(x, n, verbose):
         this_std  = std (x[c])
         x[c] = [v - this_mean for v in x[c]]
         x[c] = [v / this_std  for v in x[c]]
-
     train(pi, T, E, x.values(), verbose=verbose, threshold=1e-6, n_iter=1000)
     return E, pi, T
     
