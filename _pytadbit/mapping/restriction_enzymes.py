@@ -159,7 +159,24 @@ def religated(r_enz):
     site = RESTRICTION_ENZYMES[r_enz]
     beg, end = site.split('|')
     site = site.replace('|', '')
-    return beg + site[min(len(beg), len(end)) : max(len(beg), len(end))] + end
+    return beg + end[:len(end)-len(beg)] + end
+
+def religateds(r_enzs):
+    """
+    returns the resulting list of all possible sequences after religation of two
+    digested and repaired ends.
+    """
+    ligations = []
+    for r_enz1 in r_enzs:
+        for r_enz2 in r_enzs:
+            site1 = RESTRICTION_ENZYMES[r_enz1]
+            site2 = RESTRICTION_ENZYMES[r_enz2]
+            beg1, end1 = site1.split('|')
+            _, end2 = site2.split('|')
+            site1 = site1.replace('|', '')
+            site2 = site2.replace('|', '')
+            ligations.append(beg1 + end1[:len(end1)-len(beg1)] + end2)
+    return ligations
 
 
 class RE_dict(dict):
