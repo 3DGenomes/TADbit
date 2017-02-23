@@ -45,6 +45,10 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         r_enzs = r_enz
     elif isinstance(r_enz, str):
         r_enzs = [r_enz]
+    for k in RESTRICTION_ENZYMES.keys():
+        for i in range(len(r_enzs)):
+            if k.lower() == r_enz[i].lower():
+                r_enz[i] = k
     # else let it as None
     
     quals = []
@@ -243,13 +247,15 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 liges[k][len(line) / 2 - site_len:
                          len(line) / 2] = [float('nan')] * site_len
         # plot undigested cut-sites
-        colors = ['darkred', 'pink']
-        for i, r_enz in enumerate(sites):
+        color = iter(plt.cm.Reds(np.linspace(0.3, 0.95, len(r_enzs))))
+        for r_enz in sites:
             # print 'undigested', r_enz
             # print sites[r_enz][:20]
-            ax2.plot(sites[r_enz], linewidth=2, color=colors[i],  # TODO: change color
-                     alpha=0.5,
-                     label='Undigested RE site (%s: %s)' % (r_enz, r_sites[r_enz]))
+            ax2.plot(sites[r_enz], linewidth=2, color = color.next(),
+                     alpha=0.9,
+                     label='Undigested RE site (%s: %s)' % (r_enz, r_sites[r_enz])
+                     if any([f > 0 for f in fixes[r_enz]])
+                     else 'Undigested & Dangling-Ends (%s: %s)' % (r_enz, r_sites[r_enz]))
         ax2.set_ylabel('Undigested')
         ax2.yaxis.label.set_color('darkred')
         ax2.tick_params(axis='y', colors='darkred', **tkw)
@@ -257,12 +263,13 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         lines, labels = ax2.get_legend_handles_labels()
         
         ax3 = ax2.twinx()
-        colors = ['darkblue', 'cyan', 'green', 'purple']
-        for i, (r1, r2) in enumerate(liges):
+        color = iter(plt.cm.Blues(np.linspace(0.3, 0.95, len(liges))))
+        for r1, r2 in liges:
             # print 'ligated', r1, r2
             # print liges[(r1, r2)][:20]
-            ax3.plot(liges[(r1, r2)], linewidth=2, color=colors[i],  # TODO: change color
-                     label = 'Ligated (%s, %s: %s)' % (r1, r2, l_sites[(r1, r2)]))
+            ax3.plot(liges[(r1, r2)], linewidth=2, color=color.next(),
+                     alpha=0.9,
+                     label = 'Ligated (%s-%s: %s)' % (r1, r2, l_sites[(r1, r2)].upper()))
         ax3.yaxis.label.set_color('darkblue')
         ax3.tick_params(axis='y', colors='darkblue', **tkw)
         ax3.set_ylabel('Ligated')
@@ -271,7 +278,7 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
         lines.extend(tmp_lines)
         labels.extend(tmp_labels)
         
-        colors = ['darkorange', 'yellow']
+        color = iter(plt.cm.Greens(np.linspace(0.3, 0.95, len(r_enzs))))
         for i, r_enz in enumerate(r_enzs):
             if any([f > 0 for f in fixes[r_enz]]):
                 ax4 = ax2.twinx()
@@ -280,10 +287,11 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                 ax4.spines["right"].set_visible(True)
                 # print 'repaired', r_enz
                 # print fixes[r_enz][:20]
-                ax4.plot(fixes[r_enz], linewidth=2, color=colors[i],  # TODO: change color
+                ax4.plot(fixes[r_enz], linewidth=2, color=color.next(),
+                         alpha=0.9,
                          label='Dangling-ends (%s: %s)' % (r_enz, d_sites[r_enz]))
-                ax4.yaxis.label.set_color('darkorange')
-                ax4.tick_params(axis='y', colors='darkorange', **tkw)
+                ax4.yaxis.label.set_color('darkgreen')
+                ax4.tick_params(axis='y', colors='darkgreen', **tkw)
                 ax4.set_ylabel('Dangling-ends')
                 tmp_lines, tmp_labels = ax4.get_legend_handles_labels()
                 lines.extend(tmp_lines)
@@ -312,26 +320,23 @@ def quality_plot(fnam, r_enz=None, nreads=float('inf'), axe=None, savefig=None, 
                                                          if paired else 0))) / nreads
         title = ''
         for r_enz in r_enzs:
-            
             lcnt = float(sum([lig_cnt[(r_enz1, r_enz2)] * (2 if r_enz1 == r_enz2 else 1)
                               for r_enz1 in r_enzs for r_enz2 in r_enzs
                               if r_enz1 == r_enz or r_enz2 == r_enz]))
-            title += ('Percentage of digested sites (not considering Dangling-Ends) :'
-                      '%s: %.4f%%\n' % (r_enz,
+            title += ('Percentage of digested sites (not considering Dangling-Ends) '
+                      '%s: %.1f%%\n' % (r_enz,
                                         100. * float(lcnt) / (lcnt + sit_cnt[r_enz])))
         for r_enz in r_enzs:
-            title += 'Percentage of dangling-ends %s: %.4f%%\n' % (r_enz, des[r_enz])
+            title += 'Percentage of dangling-ends %s: %.1f%%\n' % (r_enz, des[r_enz])
 
         for r_enz1 in r_enzs:
             for r_enz2 in r_enzs:
-                title += ('Percentage of reads with ligation site (%s, %s): %.4f%% \n' %
+                title += ('Percentage of reads with ligation site (%s-%s): %.1f%% \n' %
                           (r_enz1, r_enz2, (ligep[(r_enz1, r_enz2)] * 100.) / nreads))
-        
-
-        plt.title(title, size=10, ha='left')
+        plt.title(title.strip(), size=10, ha='left', x=0)
         plt.subplots_adjust(right=0.85)
-        ax2.legend(lines, labels, bbox_to_anchor=(0.2, 1.4),
-                   frameon=False, fontsize=9)
+        ax2.legend(lines, labels, bbox_to_anchor=(0.75, 1.0),
+                   loc=3, borderaxespad=0., frameon=False, fontsize=9)
     plt.tight_layout()
     if savefig:
         tadbit_savefig(savefig)
@@ -349,7 +354,7 @@ def make_patch_spines_invisible(ax):
     for sp in ax.spines.itervalues():
         sp.set_visible(False)
 
-
+        
 def count_reads(fnam):
     """
     Count the number of reads in a FASTQ file (can be slow on big files, try
