@@ -166,7 +166,7 @@ def religateds(r_enzs):
     returns the resulting list of all possible sequences after religation of two
     digested and repaired ends.
     """
-    ligations = []
+    ligations = {}
     for r_enz1 in r_enzs:
         for r_enz2 in r_enzs:
             site1 = RESTRICTION_ENZYMES[r_enz1]
@@ -175,7 +175,7 @@ def religateds(r_enzs):
             _, end2 = site2.split('|')
             site1 = site1.replace('|', '')
             site2 = site2.replace('|', '')
-            ligations.append(beg1 + end1[:len(end1)-len(beg1)] + end2)
+            ligations[(r_enz1, r_enz2)] = beg1 + end1[:len(end1)-len(beg1)] + end2
     return ligations
 
 

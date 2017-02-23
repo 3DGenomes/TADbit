@@ -6,7 +6,8 @@ import os
 from pytadbit.utils.file_handling import mkdir, which
 from warnings import warn
 from pytadbit.utils.file_handling import magic_open, get_free_space_mb
-from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated
+from pytadbit.mapping.restriction_enzymes import religated, religateds
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
 from tempfile import gettempdir, mkstemp
 from subprocess import CalledProcessError, PIPE, Popen
 
@@ -57,6 +58,9 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         header, seq, qal, _ = line.split('\t', 3)
         return header, seq, qal
 
+    def _find_pattern(seq, pattern):
+        return seq.index(pattern)
+
     def _split_read_re(seq, qal, pattern, max_seq_len=None, site='', cnt=0):
         """
         Recursive generator that splits reads according to the
@@ -80,10 +84,20 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
             GATCo~~~~~~~~~~~~
             HHHHxxxxxxxxxxxxx
         
+        :param seq: sequence of the read fragment
+        :param qal: quality of the sequence of the read fragment
+        :param pattern: pattern of the ligated cut sites
+        :param None max_seq_len: to control that all reads are bellow this 
+           length
+        :param '' site: non-ligated cut site to replace ligation site
+        :param 0 cnt: to count number of fragments
+
+        :yields: seq fragments, their qualities and their count, or index 
+           (higher than 0 if ligation sites are found)
         """
         cnt += 1
         try:
-            pos = seq.index(pattern)
+            pos = find_pattern(seq, pattern)
         except ValueError:
             if len(seq) == max_seq_len:
                 raise ValueError
@@ -121,6 +135,19 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
         print '  - ligation sites are replaced by RE sites to match the reference genome'
         print '    * enzyme: %s, ligation site: %s, RE site: %s' % (r_enz, enz_pattern, enzyme)
         split_read = _split_read_re
+        find_pattern = _find_pattern
+    elif isinstance(r_enz, list):
+        for rez in r_enz:
+            enzyme = RESTRICTION_ENZYMES[rez].replace('|', '')
+        enz_pattern = religateds(r_enz)
+        sub_enz_pattern = [e[:len(e) / 2] for e in enz_pattern]
+        len_relg = [len(e) for e in enz_pattern]
+        print '  - splitting into restriction enzyme (RE) fragments using ligation sites'
+        print '  - ligation sites are replaced by RE sites to match the reference genome'
+        for e, rez in enumerate(r_enz):
+            print '    * enzyme: %s, ligation site: %s, RE site: %s' % (rez, enz_pattern[e], enzyme[e])
+        split_read = _split_read_re
+        find_pattern = _find_patterns
     else:
         enzyme = ''
         enz_pattern = ''
@@ -156,7 +183,10 @@ def transform_fastq(fastq_path, out_fastq, trim=None, r_enz=None, add_site=True,
     out_name = out_fastq
     out = open(out_fastq, 'w')
     # iterate over reads and strip them
-    site = enzyme if add_site else ''
+    if isinstance(enzyme, list):
+        site = enzyme if add_site else ['' for _ in xrange(len(enzyme))]
+    else:
+        site = enzyme if add_site else ''
     for header in fhandler:
         header, seq, qal = get_seq(header)
         counter += 1
