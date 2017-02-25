@@ -27,6 +27,7 @@ from bisect                         import bisect_right as bisect
 from scipy.sparse                   import csr_matrix
 import os
 
+
 class HiC_data(dict):
     """
     This may also hold the print/write-to-file matrix functions

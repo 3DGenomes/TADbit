@@ -30,7 +30,6 @@ def count_re_fragments(fnam):
     return frag_count
 
 
-
 def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
     """
     map all restriction enzyme (RE) sites of a given enzyme in a genome.
@@ -70,6 +69,7 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
         print 'Found %d RE sites' % count
     return frags
 
+
 def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     """
     map all restriction enzyme (RE) sites of a given enzyme in a genome.
@@ -93,9 +93,17 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     :param 100000 frag_chunk: in order to optimize the search for nearby RE
        sites, each chromosome is splitted into chunks.
     """
-    enzyme      = RESTRICTION_ENZYMES[enzyme_name]
-    enz_pattern = compile(enzyme.replace('|', ''))
-    enz_cut     = enzyme.index('|') + 1 # re search starts at 0
+    if isinstance(enzyme_name, str):
+        enzyme_names = [enzyme_name]
+    elif isinstance(enzyme_name, list):
+        enzyme_names = enzyme_name
+    enzymes = {}
+    for name in enzyme_names:
+        enzymes[name] = RESTRICTION_ENZYMES[name]
+    # we match the full cut-site but report the position after the cut site
+    restring = ('%s') % ('|'.join(['((?<=%s)(%s))' % tuple(enzymes[n].split('|'))
+                                   for n in enzymes]))
+    enz_pattern = compile(restring)
     frags = {}
     count = 0
     for crm in genome_seq:
@@ -103,7 +111,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         frags[crm] = dict([(i, []) for i in xrange(len(seq) / frag_chunk + 1)])
         frags[crm][0] = [1]
         for match in enz_pattern.finditer(seq):
-            pos = match.start() + enz_cut
+            pos = match.start()
             frags[crm][pos / frag_chunk].append(pos)
             count += 1
         # at the end of last chunk we add the chromosome length
@@ -136,9 +144,11 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         print 'Found %d RE sites' % count
     return frags
 
+
 def complementary(seq):
     trs = dict([(nt1, nt2) for nt1, nt2 in zip('ATGCN', 'TACGN')])
     return ''.join([trs[s] for s in seq[::-1]])
+
 
 def repaired(r_enz):
     """
@@ -151,6 +161,7 @@ def repaired(r_enz):
     return complementary(beg + site[min(len(beg), len(end)) :
                                     max(len(beg), len(end))])
 
+
 def religated(r_enz):
     """
     returns the resulting sequence after religation of two digested and repaired
@@ -160,6 +171,7 @@ def religated(r_enz):
     beg, end = site.split('|')
     site = site.replace('|', '')
     return beg + end[:len(end)-len(beg)] + end
+
 
 def religateds(r_enzs):
     """

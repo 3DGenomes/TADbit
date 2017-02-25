@@ -2,16 +2,17 @@
 12 nov. 2014
 """
 
-from warnings import warn
-from gzip import open as gopen
-import numpy as np
-from pytadbit.utils.extraviews import tadbit_savefig
-from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES, religated, religateds, repaired
-from os import SEEK_END
-from numpy import std, mean
-from random import random
-from subprocess import Popen, PIPE
+from warnings                             import warn
+from gzip                                 import open as gopen
+from pytadbit.utils.extraviews            import tadbit_savefig
+from pytadbit.mapping.restriction_enzymes import RESTRICTION_ENZYMES
+from pytadbit.mapping.restriction_enzymes import religateds, repaired
+from os                                   import SEEK_END
+from numpy                                import std, mean
+from random                               import random
+from subprocess                           import Popen, PIPE
 import re
+import numpy as np
 
 try:
     from matplotlib import pyplot as plt
