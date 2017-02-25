@@ -5,7 +5,7 @@ Definition and mapping of restriction enymes
 """
 
 from re import compile
-
+from warnings import warn
 
 def count_re_fragments(fnam):
     frag_count = {}
@@ -51,6 +51,7 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
     :param genome_seq: a dictionary containing the genomic sequence by
        chromosome
     """
+    warn('WARNING: not reviewed since multiple-cut branch, and the use of regexpinstead of index')
     enzyme      = RESTRICTION_ENZYMES[enzyme_name]
     enz_pattern = compile(enzyme.replace('|', ''))
     enz_cut     = enzyme.index('|') + 1 # re search starts at 0
@@ -111,7 +112,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         frags[crm] = dict([(i, []) for i in xrange(len(seq) / frag_chunk + 1)])
         frags[crm][0] = [1]
         for match in enz_pattern.finditer(seq):
-            pos = match.start()
+            pos = match.start() + 1
             frags[crm][pos / frag_chunk].append(pos)
             count += 1
         # at the end of last chunk we add the chromosome length

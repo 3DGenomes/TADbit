@@ -33,7 +33,10 @@ import sys
 
 PATH = path.abspath(path.split(path.realpath(__file__))[0])
 
-ONLY = None#'10'
+try:
+    ONLY = sys.argv[1]
+except IndexError:
+    ONLY = None  #'10'
 
 def check_hic(hic, size):
     """
