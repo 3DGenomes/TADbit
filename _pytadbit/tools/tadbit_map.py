@@ -134,8 +134,8 @@ def populate_args(parser):
                         help='read number')
 
     glopts.add_argument('--renz', dest='renz', metavar="STR", 
-                        type=str, required=True,
-                        help='restriction enzyme name')
+                        type=str, required=True, nargs='+',
+                        help='restriction enzyme name(s)')
 
     glopts.add_argument('--chr_name', dest='chr_name', metavar="STR", nargs='+',
                         default=[], type=str,
@@ -226,14 +226,16 @@ def check_options(opts):
                         'not provide any binary for MAC-OS.')
 
     # check RE name
-    try:
-        _ = RESTRICTION_ENZYMES[opts.renz]
-    except KeyError:
-        print ('\n\nERROR: restriction enzyme not found. Use one of:\n\n'
-               + ' '.join(sorted(RESTRICTION_ENZYMES)) + '\n\n')
-        raise KeyError()
-    except AttributeError:
-        pass
+    for renz in opts.renz:
+        try:
+            _ = RESTRICTION_ENZYMES[renz]
+        except KeyError:
+            print ('\n\nERROR: restriction enzyme %s not found.' % (renz)
+                   +  'Use one of:\n\n'
+                   + ' '.join(sorted(RESTRICTION_ENZYMES)) + '\n\n')
+            raise KeyError()
+        except AttributeError:
+            pass
 
     # check skip
     if not path.exists(opts.workdir) and opts.skip:
@@ -424,7 +426,7 @@ def save_to_db(opts, outfiles, launch_time, finish_time):
     values
      (NULL,      %d,     %d, '%s', '%s',   %d,   '%s',       %d,    %d,      %d)
      """ % (get_path_id(cur, opts.fastq, opts.workdir), num, window, frag,
-            opts.read, opts.renz, get_path_id(cur, opts.workdir),
+            opts.read, '-'.join(opts.renz), get_path_id(cur, opts.workdir),
             get_path_id(cur, out, opts.workdir),
             get_path_id(cur, opts.index, opts.workdir)))
             except lite.IntegrityError:

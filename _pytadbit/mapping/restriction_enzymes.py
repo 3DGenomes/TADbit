@@ -163,17 +163,6 @@ def repaired(r_enz):
                                     max(len(beg), len(end))])
 
 
-def religated(r_enz):
-    """
-    returns the resulting sequence after religation of two digested and repaired
-    ends.
-    """
-    site = RESTRICTION_ENZYMES[r_enz]
-    beg, end = site.split('|')
-    site = site.replace('|', '')
-    return beg + end[:len(end)-len(beg)] + end
-
-
 def religateds(r_enzs):
     """
     returns the resulting list of all possible sequences after religation of two
