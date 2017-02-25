@@ -33,6 +33,8 @@ def run(opts):
     reads = [1] if opts.read == 1 else [2] if opts.read == 2 else [1, 2]
     f_names1, f_names2, renz = load_parameters_fromdb(opts, reads, opts.jobids)
 
+    renz = renz.split('-')
+
     name = path.split(opts.workdir)[-1]
 
     param_hash = digest_parameters(opts)
