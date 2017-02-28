@@ -1,42 +1,42 @@
 """
 19 Jul 2013
 """
-from pytadbit.utils.three_dim_stats import calc_consistency, mass_center
-from pytadbit.utils.three_dim_stats import dihedral, calc_eqv_rmsd
-from pytadbit.utils.three_dim_stats import get_center_of_mass, distance
-from pytadbit.utils.tadmaths        import calinski_harabasz, nozero_log_list
-from pytadbit.utils.tadmaths        import mean_none
-from pytadbit.utils.extraviews      import plot_3d_model, setup_plot
-from pytadbit.utils.extraviews      import chimera_view, tadbit_savefig
-from pytadbit.utils.extraviews      import augmented_dendrogram, plot_hist_box
-from pytadbit.utils.extraviews      import tad_coloring
-from pytadbit.utils.extraviews      import tad_border_coloring
-from pytadbit.utils.extraviews      import color_residues
-from pytadbit.modelling.impmodel    import IMPmodel
-from pytadbit.centroid              import centroid_wrapper
-from pytadbit.aligner3d             import aligner3d_wrapper
+from pytadbit.utils.three_dim_stats   import calc_consistency, mass_center
+from pytadbit.utils.three_dim_stats   import dihedral, calc_eqv_rmsd
+from pytadbit.utils.three_dim_stats   import get_center_of_mass, distance
+from pytadbit.utils.tadmaths          import calinski_harabasz, nozero_log_list
+from pytadbit.utils.tadmaths          import mean_none
+from pytadbit.utils.extraviews        import plot_3d_model, setup_plot
+from pytadbit.utils.extraviews        import chimera_view, tadbit_savefig
+from pytadbit.utils.extraviews        import augmented_dendrogram, plot_hist_box
+from pytadbit.utils.extraviews        import tad_coloring
+from pytadbit.utils.extraviews        import tad_border_coloring
+from pytadbit.utils.extraviews        import color_residues
+from pytadbit.modelling.impmodel      import IMPmodel
+from pytadbit.centroid                import centroid_wrapper
+from pytadbit.aligner3d               import aligner3d_wrapper
 from pytadbit.squared_distance_matrix import squared_distance_matrix_calculation_wrapper
-from cPickle                        import load, dump
-from subprocess                     import Popen, PIPE
-from math                           import acos, degrees, pi, sqrt
-from numpy                          import exp as np_exp
-from numpy                          import median as np_median
-from numpy                          import mean as np_mean
-from numpy                          import std as np_std, log2
-from numpy                          import array, cross, dot, ma, isnan
-from numpy                          import histogram, linspace
-from scipy.optimize                 import curve_fit
-from numpy.linalg                   import norm
-from scipy.cluster.hierarchy        import linkage, fcluster
-from scipy.stats                    import spearmanr, pearsonr, chisquare
-from scipy.stats                    import linregress
-from scipy.stats                    import normaltest, norm as sc_norm
-from warnings                       import warn
-from string                         import uppercase as uc, lowercase as lc
-from random                         import random
-from os.path                        import exists
-from pytadbit                       import get_dependencies_version
-from itertools                      import combinations
+from cPickle                          import load, dump
+from subprocess                       import Popen, PIPE
+from math                             import acos, degrees, pi, sqrt
+from numpy                            import exp as np_exp
+from numpy                            import median as np_median
+from numpy                            import mean as np_mean
+from numpy                            import std as np_std, log2
+from numpy                            import array, cross, dot, ma, isnan
+from numpy                            import histogram, linspace
+from scipy.optimize                   import curve_fit
+from numpy.linalg                     import norm
+from scipy.cluster.hierarchy          import linkage, fcluster
+from scipy.stats                      import spearmanr, pearsonr, chisquare
+from scipy.stats                      import linregress
+from scipy.stats                      import normaltest, norm as sc_norm
+from warnings                         import warn
+from string                           import uppercase as uc, lowercase as lc
+from random                           import random
+from os.path                          import exists
+from pytadbit                         import get_dependencies_version
+from itertools                        import combinations
 import uuid
 
 try:
@@ -586,29 +586,23 @@ class StructuralModels(object):
         if not cutoff:
             cutoff = [int(2 * self.resolution * self._config['scale'])]
         cutoff = [c**2 for c in cutoff]
-        matrix = dict([(c, [[float('0') for _ in xrange(self.nloci)]
+        matrix = dict([(c, [[0. for _ in xrange(self.nloci)]
                             for _ in xrange(self.nloci)]) for c in cutoff])
         wloci = [i for i in xrange(self.nloci) if self._zeros[i]]
-        mdl = [self[mdl] for mdl in models]
+        models = [self[mdl] for mdl in models]
 
-        for model in xrange(len(models)):
-            x = []
-            y = []
-            z = []
-            for locus in xrange(self.nloci):
-                x.append(self[model]['x'][locus])
-                y.append(self[model]['y'][locus])
-                z.append(self[model]['z'][locus])
-            squared_distance_matrix = squared_distance_matrix_calculation_wrapper(x, y, z, self.nloci)
+        frac = 1.0 / len(models)
+        
+        for model in models:
+            squared_distance_matrix = squared_distance_matrix_calculation_wrapper(
+                model['x'], model['y'], model['z'], self.nloci)
 
             #print model, len(x), len(y), len(z)
-            for i, j in combinations(wloci, 2):
-                for c in cutoff:
+            for c in cutoff:
+                for i, j in combinations(wloci, 2):
                     if squared_distance_matrix[i][j] <= c:
-                        matrix[c][i][j] += 1.0 / len(models)  # * 100
-                        matrix[c][j][i] += 1.0 / len(models)  # * 100
-                    else:
-                        break                    
+                        matrix[c][i][j] += frac  # * 100
+                        matrix[c][j][i] += frac  # * 100
         if cutoff_list:
             return matrix
         return matrix.values()[0]
@@ -2779,3 +2773,4 @@ class ClusterOfModels(dict):
             len(self),
             ''.join([out1 % (k, len(self[k]), self[k][0]) for k in self]))
         return out
+
