@@ -2329,7 +2329,9 @@ class StructuralModels(object):
         "clusters":%(cluster)s,
         "centroids":%(centroid)s,
         "restraints": %(restr)s,
-        "hic_data": { "data": { %(hic_data)s }, "n": %(len_hic_data)i , "tads": [%(tad_def)s] }
+        "hic_data": { "data": { 
+'''
+        form_end = '''}, "n": %(len_hic_data)i , "tads": [%(tad_def)s] }
 }
 '''
         fil = {}
@@ -2413,16 +2415,22 @@ class StructuralModels(object):
         fil['centroid'] = '[' + ','.join(
             [self[self.centroid_model(cluster=c)]['rand_init']
              for c in self.clusters]) + ']'
-        fil['hic_data'] = ''
-        for i, nrow in enumerate(self._original_data):
-            for j, ncol in enumerate(nrow):
-                if not isnan(ncol):
-                    fil['hic_data'] += '"'+str((i*len(nrow))+j)+'":'+"{:2.6f}".format(ncol) + ','
-        fil['hic_data'] = fil['hic_data'][:-1]
         fil['len_hic_data'] = len(self._original_data)
         fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']),str(self.experiment.tads[tad]['end']),str(self.experiment.tads[tad]['height'])])+']' for i,tad in enumerate(self.experiment.tads)])
         out_f = open(filename, 'w')
         out_f.write(form % fil)
+        first = True
+        for i, nrow in enumerate(self._original_data):
+            for j, ncol in enumerate(nrow):
+                if not isnan(ncol):
+                    if not first:
+                        out_f.write(',')
+                    first = False
+                    if isinstance( ncol, ( int, long ) ):
+                        out_f.write('"'+str((i*len(nrow))+j)+'":'+str(ncol))
+                    else:
+                        out_f.write('"'+str((i*len(nrow))+j)+'":'+"{:2.6f}".format(ncol))
+        out_f.write(form_end % fil)
         out_f.close()
 
     def write_xyz(self, directory, model_num=None, models=None, cluster=None,
