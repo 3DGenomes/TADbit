@@ -39,7 +39,7 @@ belongs the message.
 
 from argparse import ArgumentParser, HelpFormatter
 from pytadbit import Chromosome, get_dependencies_version
-from pytadbit.imp.structuralmodels import load_structuralmodels
+from pytadbit.modelling.structuralmodels import load_structuralmodels
 import os, sys
 import logging
 from cPickle import load, dump
@@ -283,7 +283,7 @@ def model_region(exp, optpar, opts, name):
     tmp = open('_tmp_model_' + tmp_name + '.py', 'w')
     tmp.write('''
 from cPickle import load, dump
-from pytadbit.imp.imp_modelling import generate_3d_models
+from pytadbit.modelling.imp_modelling import generate_3d_models
 import os
 
 tmp_name = "%s"
