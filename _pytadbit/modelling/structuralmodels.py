@@ -2329,8 +2329,7 @@ class StructuralModels(object):
         "clusters":%(cluster)s,
         "centroids":%(centroid)s,
         "restraints": %(restr)s,
-        "hic_data": { "data": { 
-'''
+        "hic_data": { "data": {'''
         form_end = '''}, "n": %(len_hic_data)i , "tads": [%(tad_def)s] }
 }
 '''
@@ -2416,7 +2415,13 @@ class StructuralModels(object):
             [self[self.centroid_model(cluster=c)]['rand_init']
              for c in self.clusters]) + ']'
         fil['len_hic_data'] = len(self._original_data)
-        fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']),str(self.experiment.tads[tad]['end']),str(self.experiment.tads[tad]['height'])])+']' for i,tad in enumerate(self.experiment.tads)])
+        try:
+            fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']),
+                                    str(self.experiment.tads[tad]['end']),
+                                    str(self.experiment.tads[tad]['height'])])+']' 
+                                       for i,tad in enumerate(self.experiment.tads)])
+        except:
+            fil['tad_def'] = ''
         out_f = open(filename, 'w')
         out_f.write(form % fil)
         first = True
