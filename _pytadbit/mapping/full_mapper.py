@@ -397,8 +397,11 @@ def full_mapping(gem_index_path, fastq_path, out_map_dir, r_enz=None, frag_map=T
         light_storage = True
         windows = (None, )
     elif isinstance(windows[0], int):
+        # if windows starts at zero we do not need to store all the sequence
+        # otherwise we need it because sequence can be trimmed two times
+        # in fragment based mapping
+        light_storage = True if not windows[0] else False
         windows = [tuple(windows)]
-        light_storage = True
     else:
         # ensure that each element is a tuple, not a list
         windows = [tuple(win) for win in windows]
