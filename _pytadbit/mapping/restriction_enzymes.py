@@ -52,16 +52,40 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
        chromosome
     """
     warn('WARNING: not reviewed since multiple-cut branch, and the use of regexpinstead of index')
-    enzyme      = RESTRICTION_ENZYMES[enzyme_name]
-    enz_pattern = compile(enzyme.replace('|', ''))
-    enz_cut     = enzyme.index('|') + 1 # re search starts at 0
+    if isinstance(enzyme_name, str):
+        enzyme_names = [enzyme_name]
+    elif isinstance(enzyme_name, list):
+        enzyme_names = enzyme_name
+    enzymes = {}
+    for name in enzyme_names:
+        enzymes[name] = RESTRICTION_ENZYMES[name]
+
+    # we match the full cut-site but report the position after the cut site
+    # (third group of the regexp)
+    restring = ('%s') % ('|'.join(['((%s)(%s))' % tuple(enzymes[n].split('|'))
+                                   for n in enzymes]))
+    # IUPAC conventions
+    restring.replace('R', '[AG]')
+    restring.replace('Y', '[CT]')
+    restring.replace('M', '[AC]')
+    restring.replace('K', '[GT]')
+    restring.replace('S', '[CG]')
+    restring.replace('W', '[AT]')
+    restring.replace('H', '[ACT]')
+    restring.replace('B', '[CGT]')
+    restring.replace('V', '[ACG]')
+    restring.replace('D', '[AGT]')
+    restring.replace('N', '[ATGC]')
+
+    enz_pattern = compile(restring)
+
     frags = {}
     count = 0
     for crm in genome_seq:
         seq = genome_seq[crm]
         frags[crm] = [1]
         for match in enz_pattern.finditer(seq):
-            pos = match.start() + enz_cut
+            pos = match.start(3) + 1  # get 3rd group of regex (after the cut)
             frags[crm].append(pos)
             count += 1
         # at the end of last chunk we add the chromosome length
@@ -102,9 +126,24 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
     for name in enzyme_names:
         enzymes[name] = RESTRICTION_ENZYMES[name]
     # we match the full cut-site but report the position after the cut site
-    restring = ('%s') % ('|'.join(['((?<=%s)(%s))' % tuple(enzymes[n].split('|'))
+    # (third group of the regexp)
+    restring = ('%s') % ('|'.join(['((%s)(%s))' % tuple(enzymes[n].split('|'))
                                    for n in enzymes]))
+    # IUPAC conventions
+    restring.replace('R', '[AG]')
+    restring.replace('Y', '[CT]')
+    restring.replace('M', '[AC]')
+    restring.replace('K', '[GT]')
+    restring.replace('S', '[CG]')
+    restring.replace('W', '[AT]')
+    restring.replace('H', '[ACT]')
+    restring.replace('B', '[CGT]')
+    restring.replace('V', '[ACG]')
+    restring.replace('D', '[AGT]')
+    restring.replace('N', '[ATGC]')
+
     enz_pattern = compile(restring)
+    
     frags = {}
     count = 0
     for crm in genome_seq:
@@ -112,7 +151,7 @@ def map_re_sites(enzyme_name, genome_seq, frag_chunk=100000, verbose=False):
         frags[crm] = dict([(i, []) for i in xrange(len(seq) / frag_chunk + 1)])
         frags[crm][0] = [1]
         for match in enz_pattern.finditer(seq):
-            pos = match.start() + 1
+            pos = match.start(3) + 1
             frags[crm][pos / frag_chunk].append(pos)
             count += 1
         # at the end of last chunk we add the chromosome length
