@@ -85,7 +85,7 @@ def map_re_sites_nochunk(enzyme_name, genome_seq, verbose=False):
         seq = genome_seq[crm]
         frags[crm] = [1]
         for match in enz_pattern.finditer(seq):
-            pos = match.start(3) + 1  # get 3rd group of regex (after the cut)
+            pos = match.end() + 1
             frags[crm].append(pos)
             count += 1
         # at the end of last chunk we add the chromosome length
