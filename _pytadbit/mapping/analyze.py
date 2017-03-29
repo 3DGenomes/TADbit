@@ -823,7 +823,9 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     for i, crm in enumerate(chr_names if chr_names else genome_seq
                             if genome_seq else distr):
         try:
-            data[crm] = [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))]
+            # data[crm] = [distr[crm].get(j, 0) for j in xrange(max(distr[crm]))]  # genome_seq[crm]
+            data[crm] = [distr[crm].get(j, 0)
+                         for j in xrange(genome_seq[crm] / resolution + 1)]
             if savefig or show:
                 plt.subplot(ncrms, 1, i + 1)
                 plt.plot(range(max(distr[crm])), data[crm],
@@ -851,8 +853,9 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
     if savedata:
         out = open(savedata, 'w')
         out.write('# CRM\tstart-end\tcount\n')
-        out.write('\n'.join('%s\t%d-%d\t%d' % (c, (i * resolution) + 1, ((i + 1) * resolution), v) for c in data
-                            for i, v in enumerate(data[c])))
+        out.write('\n'.join('%s\t%d-%d\t%d' % (c, (i * resolution) + 1,
+                                               ((i + 1) * resolution), v)
+                            for c in data for i, v in enumerate(data[c])))
         out.write('\n')
         out.close()
 

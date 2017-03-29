@@ -18,6 +18,7 @@ from pytadbit.modelling.IMP_CONFIG import CONFIG
 from copy                         import deepcopy as copy
 from sys                          import stderr
 from warnings                     import warn
+from pytadbit.modelling.structuralmodels import StructuralModels
 
 try:
     from pytadbit.modelling.impoptimizer  import IMPoptimizer
@@ -1413,6 +1414,46 @@ class Experiment(object):
             out = open(savedata, 'w')
         out.write(table)
 
+    def write_json(self, filename, focus=None, normalized=False):
+        """
+        Save hic matrix in the json format, read by TADkit.
+
+        :param filename: location where the file will be written
+        :param None focus: if a tuple is passed (start, end), json will contain a Hi-C
+           matrix starting at start, and ending at end (all inclusive).
+        :para False normalized: use normalized data instead of raw Hi-C
+
+        """
+        if not self.crm.species:
+            warn("WARNING: no species specified in chromosome. TADkit will not be able to interpret the file")
+        if not self.crm.name:
+            warn("WARNING: no name specified in chromosome. TADkit will not be able to interpret the file")
+        
+        if focus:
+            start_j, end_j = focus
+            size = end_j-start_j+1
+        else:
+            start_j = 1
+            end_j = size = self.size
+        
+        if size > 1200:
+            warn("WARNING: this is a very big matrix, consider using focus. TADkit will not be able to render the file")
+        
+        new_hic_data = self.get_hic_matrix(focus=focus,  normalized=normalized)
+            
+        chrom_start = start_j * self.resolution
+        chrom_end = end_j * self.resolution
+        descr = {'chromosome'   : self.crm.name,
+                 'species'      : self.crm.species,
+                 'resolution'   : self.resolution,
+                 'chrom_start'  : chrom_start,
+                 'chrom_end'    : chrom_end,
+                 'start'        : self.resolution,
+                 'end'          : size * self.resolution}
+        
+        # Fake structural models object to produce json
+        sm = StructuralModels(nloci=size, models = [], bad_models = [], experiment=self, resolution=self.resolution, original_data=new_hic_data, description=descr)
+        sm.write_json(filename=filename)
 
     # def generate_densities(self):
     #     """

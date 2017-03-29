@@ -5,7 +5,7 @@
 
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 |                                     | .. image:: https://travis-ci.org/3DGenomes/TADbit.png?branch=master       | .. image:: https://coveralls.io/repos/github/3DGenomes/tadbit/badge.svg?branch=master :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master |
-| Current version: v0.2.0.5           |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
+| Current version: v0.2.0.24          |   :target: https://travis-ci.org/3DGenomes/TADbit                         |   :target: https://coveralls.io/github/3DGenomes/tadbit?branch=master                                                                                     |
 |                                     |                                                                           |                                                                                                                                                           |
 +-------------------------------------+---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 
@@ -58,7 +58,13 @@ Next editions
 * April 3rd to April 7th 2016: `Chromosomal Conformation course
   <http://www.crg.eu/en/event/coursescrg-chromosomal-conformation-0>`_ at the
   `CRG <http://www.crg.eu/en/content/training/>`_
-  training programme Bracelona (Spain)
+  training programme Barcelona (Spain)
+
+* April 10th to April 11th 2016: `MuG
+  <http://www.multiscalegenomics.eu/MuGVRE/>`_ workshop: `Multi-scale study of 3D Chromatin structure
+  <http://www.multiscalegenomics.eu/MuGVRE/multi-scale-study-of-3d-chromatin-structure/>`_ at the
+  `European Bioinformatics Institute (EMBL-EBI) <https://www.embl.de/training/cco/>`_,
+  Hinxton, Cambridge, (United Kingdom)
 
 
 Past editions
@@ -71,7 +77,7 @@ Past editions
 * September 28th to October 2nd 2015: `Chromosomal Conformation course
   <http://gtpb.igc.gulbenkian.pt/bicourses/2014/CSDM14/>`_ at the
   `CRG <http://www.crg.eu/en/content/training/>`_
-  training programme Bracelona (Spain)
+  training programme Barcelona (Spain)
 * November 25th to November 28th 2014: `CSDM 2014
   <http://gtpb.igc.gulbenkian.pt/bicourses/2014/CSDM14/>`_ at the
   `GTPB <http://gtpb.igc.gulbenkian.pt/bicourses/index.html>`_
