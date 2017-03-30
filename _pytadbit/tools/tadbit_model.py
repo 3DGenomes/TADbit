@@ -16,7 +16,7 @@ from pytadbit                     import load_structuralmodels
 from pytadbit                     import Chromosome
 from pytadbit.utils.file_handling import mkdir
 from pytadbit.utils.extraviews    import nicer
-from pytadbit.utils.sqlite_utils  import get_path_id, add_path, print_db, get_jobid
+from pytadbit.utils.sqlite_utils  import get_path_id, add_path, get_jobid
 from pytadbit.utils.sqlite_utils  import digest_parameters
 from pytadbit                     import load_hic_data_from_reads
 from pytadbit                     import get_dependencies_version
@@ -78,6 +78,7 @@ def run_batch_job(exp, opts, m, u, l, s, outdir):
     # Save models
     muls = tuple(map(my_round, (m, u, l, s)))
     dirname = 'cfg_%s_%s_%s_%s' % muls
+    mkdir(path.join(outdir, dirname))
     runned = [int(mod['rand_init']) for mod in models]
     if not len(runned):
         raise Exception(("\n\n\nNothing to be done.\n\n"
@@ -196,12 +197,16 @@ def big_run(exp, opts, job_file_handler, outdir, optpar):
                   optpar['scale'  ])
     muls = tuple(map(my_round, (m, u, l, s)))
     # this to take advantage of previously runned models
-    models = compile_models(opts, outdir, wanted=muls)[muls]
-    models.define_best_models(len(models) + len(models._bad_models))
-    
+    try:
+        models = compile_models(opts, outdir, wanted=muls)[muls]
+        models.define_best_models(len(models) + len(models._bad_models))
+        runned = [int(mod['rand_init']) for mod in models]
+    except KeyError:
+        runned = [0]
+
+        
     if opts.rand == '1':
         # In this case we can use models already_run runned
-        runned = [int(mod['rand_init']) for mod in models]
         start = str(max(runned) + 1)
         # reduce number of models to run
         opts.nmodels -= len(runned)
@@ -289,17 +294,24 @@ def run(opts):
 
     ###############
     # Optimization
-    print '     o Optimizing parameters'
     if opts.optimize:
+        print '     o Optimizing parameters'
         optimization(exp, opts, job_file_handler, outdir)
         finish_time = time.localtime()
         print('\n optimization done')
         # correlate all optimization and get best set of parameters
 
-    if not (opts.optimize and opts.job_list):
-        optpar, results = correlate_models(opts, outdir, exp)
+    results = []
+    if not opts.force:
+        print '     o Loading optimized parameters'
+        if not (opts.optimize and opts.job_list):
+            optpar, results = correlate_models(opts, outdir, exp)
     else:
-        results = []
+        optpar = {'maxdist': opts.maxdist[0],
+                  'upfreq' : opts.upfreq[0],
+                  'lowfreq': opts.lowfreq[0],
+                  'scale'  : opts.scale[0],
+                  'kforce' : 5}
 
     ###########
     # Modeling
@@ -564,6 +576,10 @@ def populate_args(parser):
     opopts.add_argument('--optimize', dest='optimize', 
                         default=False, action="store_true",
                         help='''optimization run, store less info about models''')
+    opopts.add_argument('--force', dest='force', 
+                        default=False, action="store_true",
+                        help='''use input parameters, and skip any precalculated 
+                        optimization''')
     opopts.add_argument('--maxdist', action='store', metavar="LIST",
                         default=[400], dest='maxdist', nargs='+',
                         help='range of numbers for maxdist' +

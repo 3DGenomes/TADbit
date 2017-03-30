@@ -225,6 +225,7 @@ def generate_3d_models(zscores, resolution, nloci, start=1, n_models=5000,
             restraints=_get_restraints(),
             description=description)
 
+    
 def _get_restraints():
     """
     Same function as addAllHarmonic but just to get restraints
