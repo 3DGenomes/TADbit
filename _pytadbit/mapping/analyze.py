@@ -653,7 +653,8 @@ def plot_iterative_mapping(fnam1, fnam2, total_reads=None, axe=None, savefig=Non
 
 
 def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
-                 show=False, xlog=False, stats=('median', 'perc_max')):
+                 show=False, xlog=False, stats=('median', 'perc_max'),
+                 too_large=10000):
     """
     Plots the distribution of dangling-ends lengths
     :param fnam: input file name
@@ -670,6 +671,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
             a given value (this given value is equal to the sum of all
             sizes divided by 100 000)
         - 'MAD' Double Median Adjusted Deviation
+    :param 10000 too_large: upper bound limit for fragment size to consider
 
     :returns: the median value and the percentile inputed as max_size.
     """
@@ -698,6 +700,7 @@ def insert_sizes(fnam, savefig=None, nreads=None, max_size=99.9, axe=None,
                 des.append(abs(pos2 - pos1))
             if len(des) == nreads:
                 break
+    des = [i for i in des if i <= too_large]
     fhandler.close()
     max_perc = np.percentile(des, max_size)
     perc99   = np.percentile(des, 99)
@@ -828,7 +831,7 @@ def plot_genomic_distribution(fnam, first_read=True, resolution=10000,
                          for j in xrange(genome_seq[crm] / resolution + 1)]
             if savefig or show:
                 plt.subplot(ncrms, 1, i + 1)
-                plt.plot(range(max(distr[crm])), data[crm],
+                plt.plot(range(genome_seq[crm] / resolution + 1), data[crm],
                          color='red', lw=1.5, alpha=0.7)
                 if yscale:
                     plt.yscale(yscale)
