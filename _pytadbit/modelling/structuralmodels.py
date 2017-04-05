@@ -2420,7 +2420,7 @@ class StructuralModels(object):
         try:
             fil['tad_def'] = ','.join(['['+','.join([str(i),str(self.experiment.tads[tad]['start']*self.resolution),
                                     str(self.experiment.tads[tad]['end']*self.resolution),
-                                    str(self.experiment.tads[tad]['height'])])+']' 
+                                    str(self.experiment.tads[tad]['score'])])+']' 
                                        for i,tad in enumerate(self.experiment.tads) 
                                         if self.experiment.tads[tad]['start']*self.resolution >= my_descr['chrom_start'][0] 
                                             and self.experiment.tads[tad]['end']*self.resolution <= my_descr['chrom_end'][0]])
