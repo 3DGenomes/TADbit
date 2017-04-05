@@ -542,7 +542,7 @@ class StructuralModel(dict):
                            self['x'][i], self['y'][i], self['z'][i],
                            color[i][0], color[i][1], color[i][2], i + 1)
         form = ('<link id1=\"%s\" id2=\"%s\" r=\"1\" ' +
-                'g=\"1\" b=\"1\" radius=\"' + str(10) +
+                'g=\"1\" b=\"1\" radius=\"' + str(self['radius']/10.) +
                 # str(self['radius']/2) +
                 '\"/>\n')
         for i in xrange(1, len(self['x'])):
