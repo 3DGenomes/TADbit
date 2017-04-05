@@ -1239,7 +1239,7 @@ def write_initial_conformation_file(chromosomes,
             fileout.write("%-4d %s %5d %5d %5d\n" % (angle_number, "1", first_particle_index, first_particle_index+1, first_particle_index+2))
             angle_number         += 1    
             first_particle_index += 1
-            first_particle_index += 2 # I have to go to the end of the chromosome!
+        first_particle_index += 2 # I have to go to the end of the chromosome!
 
     fileout.close()
 
