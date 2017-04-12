@@ -1001,11 +1001,11 @@ class StructuralModels(object):
         self._generic_per_particle_plot(steps, accper, error, errorp,
                                         errorn, savefig, axe, xlabel=xlabel,
                                         ylabel=ylabel, title=title, ylim=(0, 1))
-        if savefig:
-            tadbit_savefig(savefig)
-        elif not axe:
-            plt.show()
-        plt.close('all')
+        #if savefig:
+        #    tadbit_savefig(savefig)
+        #elif not axe:
+        #    plt.show()
+        #plt.close('all')
 
 
     def _get_density(self, models, interval, use_mass_center):
@@ -1467,11 +1467,11 @@ class StructuralModels(object):
                      for c in steps])))
             out.close()
 
-        if savefig:
-            tadbit_savefig(savefig)
-        elif not axe:
-            plt.show()
-        plt.close('all')
+        #if savefig:
+        #    tadbit_savefig(savefig)
+        #elif not axe:
+        #    plt.show()
+        #plt.close('all')
 
     def zscore_plot(self, axe=None, savefig=None, do_normaltest=False):
         """

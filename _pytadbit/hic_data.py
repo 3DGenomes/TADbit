@@ -472,7 +472,7 @@ class HiC_data(dict):
     def find_compartments(self, crms=None, savefig=None, savedata=None,
                           savecorr=None, show=False, suffix='', how='',
                           label_compartments='hmm', log=None, max_mean_size=10000,
-                          ev_index=None, rich_in_A=None, max_ev=3, **kwargs):
+                          ev_index=None, rich_in_A=None, max_ev=3,show_compartment_labels=False, **kwargs):
         """
         Search for A/B copartments in each chromosome of the Hi-C matrix.
         Hi-C matrix is normalized by the number interaction expected at a given
@@ -523,6 +523,7 @@ class HiC_data(dict):
            cluster.
         :param 'ratio' how: ratio divide by column, subratio divide by
            compartment, diagonal only uses diagonal
+        :param False'show_compartment_labels': if True draw A and B compartment blocks.
            
 
         TODO: this is really slow...
@@ -725,8 +726,10 @@ class HiC_data(dict):
                 plot_compartments(
                     sec, first, cmprts, matrix, show,
                     savefig + '/chr' + str(sec) + suffix + '.pdf' if savefig else None,
-                    vmin=vmin, vmax=vmax, whichpc=ev_num)
-                plot_compartments_summary(
+                    vmin=vmin, vmax=vmax, whichpc=ev_num,showAB=show_compartment_labels)
+		
+		if label_compartments == 'cluster' or label_compartments == 'hmm':
+		  plot_compartments_summary(
                     sec, cmprts, show,
                     savefig + '/chr' + str(sec) + suffix + '_summ.pdf' if savefig else None)
             count += 1
